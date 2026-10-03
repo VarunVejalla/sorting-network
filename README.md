@@ -1,252 +1,142 @@
-# AKS sorting network — Lean formalisation
+﻿# Sorting-network depth bounds in Lean
 
-This local project studies explicit sorting-depth constants. Start with the
-[current research index](docs/research-index.md) for the local Paterson progress,
-proof boundaries, and modular build commands, and [AGENTS.md](AGENTS.md) for
-shared agent guidance. The local verified bound is now
-`D(n) <= 10^6 * ceil(log_2 n)`, with a formal limsup corollary in
-[`AKS/Bounds/Paterson.lean`](AKS/Bounds/Paterson.lean). It uses formally proved
-Paterson halvers with the established Seiferas scheduler, selected classically.
-The previous executable MGG-based networks remain available. The refined
-Paterson sorting bound is still unfinished; its modular interior proof is in
-[`AKS/Paterson/Interior.lean`](AKS/Paterson/Interior.lean). The original upstream
-construction is documented below.
+This project studies explicit bounds on the minimum depth `D(n)` of a sorting
+network on `n` inputs using binary comparators. The research goals are to refine
 
-[![comparator](https://github.com/girving/aks/actions/workflows/comparator.yml/badge.svg)](https://github.com/girving/aks/actions/workflows/comparator.yml)
+$$
+\liminf_{n\to\infty}\frac{D(n)}{\log_2 n}
+\quad\text{and}\quad
+\limsup_{n\to\infty}\frac{D(n)}{\log_2 n}.
+$$
 
-A formal verification of the Ajtai–Komlós–Szemerédi (1983) `O(n log n)` sorting network
-construction in [Lean 4](https://lean-lang.org/) with
-[Mathlib](https://github.com/leanprover-community/mathlib4), using the Seiferas (2009)
-separator-based correctness proof and the Margulis–Gabber–Galil (1973/1981) expander.
-All code and proofs were written by Claude Code + Claude Opus 4.6, with extensive human
-hand-holding throughout.
+The current focus is improving the upper bound through Paterson's construction.
+The project builds on [Geoffrey Irving's AKS formalization](https://github.com/girving/aks)
+in [Lean 4](https://lean-lang.org/) with
+[Mathlib](https://github.com/leanprover-community/mathlib4).
 
-The toplevel results in [`AKS/Seiferas.lean`](AKS/Seiferas.lean) are:
+## Current verified result
 
-```lean4
-/-- Seiferas's network for large `n`, bitonic sort for small `n` -/
-def network (n : ℕ) : ComparatorNetwork n :=
-  ...  -- Here be dragons 🐉
+For every natural number `n`, Lean proves
 
-/-- We correctly sort all inputs -/
-theorem network_sorts (n : ℕ) : (network n).Sorts
-
-/-- Our network has `O(log n)` depth -/
-theorem network_depth_le (n : ℕ) :
-    (network n).depth ≤ 141 * 10 ^ 62 * Nat.clog 2 n
-
-/-- Our network has `O(n log n)` size -/
-theorem network_size_le (n : ℕ) :
-    (network n).size ≤ 705 * 10 ^ 61 * n * Nat.clog 2 n
+```text
+D(n) <= 10^6 * Nat.clog 2 n.
 ```
 
-The sorting network is a computable `def`, and the gate structure is computable in polylog parallel
-depth ([NC](https://en.wikipedia.org/wiki/NC_(complexity))), though we do not yet prove this.
+For `n >= 1`, `Nat.clog 2 n` is `ceil(log_2 n)`. The formal statement also handles
+`n = 0`. Consequently,
 
-## Proof outline
+$$
+\limsup_{n\to\infty}\frac{D(n)}{\log_2 n}\le 10^6.
+$$
 
-The construction follows three papers:
+The endpoints in [AKS/Bounds/Paterson.lean](AKS/Bounds/Paterson.lean) are:
 
-1. **Ajtai, Komlós, Szemerédi** (1983): the original construction showing that
-   expander-based ε-halvers yield `O(log n)`-depth sorting networks.
-
-2. **Seiferas** (2009): replaces the AKS tree-distance wrongness argument with
-   (γ,ε)-separators and a single potential function (stranger counting in a bag tree),
-   giving a cleaner correctness proof.
-
-3. **Margulis** (1973) / **Gabber–Galil** (1981): an explicit 8-regular expander on
-   (ℤ/nℤ)² with spectral gap ≤ 5√2/8. We use this as the base expander, avoiding both
-   the zig-zag product's base certificate requirements and the heavy algebraic machinery
-   of Margulis/LPS Ramanujan graphs.
-
-The key proof path is:
-
-```
-MGG expander → repeated squaring → ε-halvers (via Tanner bound + expander mixing lemma)
-    → (γ,ε)-separators (prefix-doubling) → bag-tree sorting → O(log n) depth
+```lean
+SortingDepth.minimum_depth_le_million
+SortingDepth.limsup_minimum_div_logb_le_million
 ```
 
-Batcher's bitonic sort ([`Bitonic/`](AKS/Bitonic/)) handles inputs smaller than 1024,
-and is used as a finish-up step after bag-tree sorting.
+This complete proof combines full-support Paterson halvers, prefix-doubling
+separators, and the established Seiferas bag scheduler. It covers small inputs,
+arbitrary arities, rounding, and final cleanup. The scalar coefficient certificate
+is `999189 = 14 * 71370 + 9 < 10^6`.
 
-## Depth constants
+The networks are selected classically from formally proved existence results.
+This is a sorting-network existence bound, rather than an executable search
+algorithm. The original executable MGG-based constructions remain available.
+This improves the bound formalized in this repository; it is not a new
+improvement over published mathematical bounds.
 
-The depth bound is `(network n).depth ≤ C · ⌈log₂ n⌉` where C is a computable constant.
-The current value is astronomically large:
+## Tighter Paterson construction: work in progress
 
-1. **6 March 2026**: C ≈ 1.41 × 10⁶⁴ (initial proof, unoptimised MGG path)
+The refined Paterson bag construction is **not yet a complete sorting theorem**.
+Verified components include restricted-halver existence, a five-level separator
+of depth at most 989 for arities divisible by 32, local stranger estimates,
+conditional interior invariant preservation, and lattice rounding and routing
+identities.
 
-The large constant comes from **repeated graph squaring**: the MGG expander has spectral
-gap ≤ 5√2/8 ≈ 0.884, which is too weak for direct use as a halver. We square the graph
-6 times to bring the gap below the ε threshold, producing a graph of degree
-8^(2⁶) = 8⁶⁴ ≈ 6.3 × 10⁵⁷. The halver depth scales with this degree.
-Better base expanders or tighter spectral bounds would dramatically reduce C.
+The main remaining steps are:
 
-## Contributions welcome
+- Construct the rounded bag scheduler, including cold storage and root transitions.
+- Connect its actual placements to the global stranger invariant and discharge
+  the conditional interior hypotheses.
+- Prove final sorting, stage counts, cleanup costs, and the resulting depth bound.
 
-There are several paths to improving the constant:
+The local depth-989 separator alone does not establish the tighter global bound.
+Published arguments guide the formalization; paper results are not assumed as
+new Lean axioms.
 
-- Better spectral gap bound for MGG (the 5√2/8 bound is loose)
-- Fewer squarings via a tighter Tanner bound or better ε parameters
-- Optimising the Seiferas parameters (γ, ε, ν, A)
-- Paterson's (1990) construction achieves depth < 6100 log n; Seiferas claims ~49 log n
+Start with [the research index](docs/research-index.md) for theorem endpoints,
+precise proof boundaries, parameters, and focused build commands.
+[The interface audit](docs/paterson-interface.md) provides more detail.
 
-Other extensions:
+## Repository map
 
-- Proving the construction is in [NC](https://en.wikipedia.org/wiki/NC_(complexity)) (polylog parallel depth, polynomial work)
+| Path | Contents |
+| --- | --- |
+| [AKS/Bounds/](AKS/Bounds/) | Minimum-depth definition, all-arity bounds, and asymptotic theorems |
+| [AKS/Paterson/](AKS/Paterson/) | Refined bag construction in progress |
+| [AKS/Halver/](AKS/Halver/) | Paterson halvers, probabilistic existence, and expander-based halvers |
+| [AKS/Separator/](AKS/Separator/) | Generic and Paterson separator constructions |
+| [AKS/Bags/](AKS/Bags/) | Verified Seiferas scheduler and shared bag infrastructure |
+| [AKS/Seiferas.lean](AKS/Seiferas.lean) | Original executable MGG-based sorting construction |
+| `AKS/Sort/`, `AKS/Bitonic/` | Comparator networks, sorting correctness, and bitonic cleanup |
+| `AKS/Graph/`, `AKS/MGG/`, `AKS/ZigZag/` | Expander constructions and spectral proofs |
+| [docs/](docs/) | Current research notes, source material, and historical visualization |
+| [AKS_CODEX_HANDOFF_2026-09-27/](AKS_CODEX_HANDOFF_2026-09-27/) | Preserved historical handoff; some claims are superseded |
+| `Random/`, `rust/`, `scripts/` | Optional certificates, experiments, and maintenance tools |
 
-## Directory structure
+The `AKS` module and package names are retained for compatibility with the
+inherited formalization.
 
-```
-AKS/                    Main formalisation (68 Lean files)
-  Seiferas.lean         Top-level assembly: network, network_sorts, network_depth_le
-  Sort/                 Comparator networks, 0-1 principle, monotonicity
-  Bitonic/              Batcher's bitonic sort (small inputs)
-  Graph/                Regular graphs, spectral gap, squaring, contraction
-  MGG/                  Margulis–Gabber–Galil 8-regular expander
-  Halver/               ε-halvers: Tanner bound, expander mixing, MGG→halver bridge
-  Separator/            (γ,ε)-separators: prefix-doubling construction from halvers
-  Bags/                 Bag-tree sorting: network, sizes, stranger bounds, depth
-  ZigZag/               Zig-zag product, RVW inequality (not used in main path)
-  Konig/                König's theorem (matching for scatter embedding)
-  Misc/                 Fin arithmetic helpers
-Random/                 Base expander certificates (optional, not needed for main proof)
-docs/                   Papers, design docs, proof visualisation
-scripts/                Build helpers, sorry audit, visualisation updater
-rust/                   Empirical testing of theorem statements
-```
+## Setup and build
 
-## Alternative path: zig-zag product with certified base expander
+Install [elan](https://github.com/leanprover/elan); the repository's
+`lean-toolchain` selects the required Lean version. From the repository root:
 
-The codebase also contains a fully proved **zig-zag product** construction
-([`ZigZag/`](AKS/ZigZag/)) following Reingold–Vadhan–Wigderson (2002), with:
-
-- Zig-zag graph product and walk operators ([`ZigZag/Operators.lean`](AKS/ZigZag/Operators.lean))
-- RVW spectral bound: fully proved quadratic inequality ([`ZigZag/RVWInequality.lean`](AKS/ZigZag/RVWInequality.lean),
-  [`ZigZag/RVWBound.lean`](AKS/ZigZag/RVWBound.lean))
-- Iterated zig-zag families with spectral gap bounds ([`ZigZag/Expanders.lean`](AKS/ZigZag/Expanders.lean))
-
-This path requires a **certified base expander** — a specific small graph with a verified
-spectral gap. The [`Random/`](Random/) library implements this using
-[davidad's triangular-inverse method](https://x.com/davidad/status/2022316806094913669)
-for certifying spectral gaps of concrete graphs. The certificate is generated by an
-`O(n³)` dense BLAS computation in [Rust](rust/certificate.rs), and the certificate check is `O(n²)` in Lean
-via `native_decide` (~100M arithmetic operations for the 65536-vertex, 12-regular graph).
-
-We chose **not** to use this path for the main proof because:
-
-1. **`native_decide` extends the trust boundary.** It introduces the `Lean.ofReduceBool`
-   and `Lean.trustCompiler` axioms, trusting Lean's native code generator to correctly
-   implement Lean semantics. The MGG path avoids this entirely.
-2. **Large certificate data.** The base expander certificate is ~8 GB, requiring C FFI
-   (`mmap`) to load efficiently. This is engineering complexity outside the proof.
-3. **The MGG expander is simpler.** The MGG construction is a clean mathematical
-   definition with a fully formal spectral bound — no external data or native
-   evaluation needed.
-
-The certificate infrastructure ([`Random/Cert/`](Random/Cert/), [`Random/Bridge/`](Random/Bridge/), [`Random/Concrete/`](Random/Concrete/))
-is fully proved.
-
-## References
-
-- **Ajtai, Komlós, Szemerédi** (1983). "An O(n log n) sorting network."
-  *STOC '83*, pp. 1–9.
-  [ACM DL](https://dl.acm.org/doi/10.1145/800061.808726)
-
-- **Seiferas** (2009). "A simpler proof that an O(n log n) sorting network sorts in
-  O(n log n) time."
-  [ACM DL](https://dl.acm.org/doi/10.5555/3118778.3119194)
-
-- **Paterson** (1990). "Improved sorting networks with O(log N) depth."
-  *Algorithmica* 5(1), 75–92.
-  [Springer](https://doi.org/10.1007/BF01840378)
-
-- **Reingold, Vadhan, Wigderson** (2002). "Entropy waves, the zig-zag product, and new
-  constant-degree expanders." *Annals of Mathematics* 155(1), 157–187.
-  [arXiv:math/0406038](https://arxiv.org/abs/math/0406038)
-
-- **Margulis** (1973). "Explicit constructions of expanders."
-  *Problemy Peredači Informacii* 9(4), 71–80.
-
-- **Gabber, Galil** (1981). "Explicit constructions of linear-sized superconcentrators."
-  *JCSS* 22(3), 407–420.
-  [ScienceDirect](https://doi.org/10.1016/0022-0000(81)90040-4)
-
-- **Tanner** (1984). "Explicit concentrators from generalized N-gons."
-  *SIAM J. Algebraic Discrete Methods* 5(3), 287–293.
-  [SIAM](https://doi.org/10.1137/0605030)
-
-- **Batcher** (1968). "Sorting networks and their applications."
-  *AFIPS '68*, pp. 307–314.
-  [ACM DL](https://doi.org/10.1145/1468075.1468121)
-
-- **Goodrich** (2014). "Zig-zag sort: A simple deterministic data-oblivious sorting
-  algorithm running in O(n log n) time."
-  [arXiv:1403.2777](https://arxiv.org/abs/1403.2777)
-
-- **Lean 4** — de Moura, Ullrich (2021). "The Lean 4 theorem prover and programming
-  language." *CADE-28*.
-  [GitHub](https://github.com/leanprover/lean4)
-
-- **Mathlib** — The Mathlib community (2020). "The Lean mathematical library."
-  *CPP '20*.
-  [GitHub](https://github.com/leanprover-community/mathlib4)
-
-## Setup
-
-Requires [elan](https://github.com/leanprover/elan) (Lean version manager).
-
-```bash
-# Linux
-curl https://elan.dev/install.sh -sSf | sh
-
-# macOS
-brew install elan-init
+```sh
+lake exe cache get
+lake build AKS
 ```
 
-## Building
+Use `lake build AKS` for the main formalization. The default `lake build` also
+includes optional certificate targets that can download multi-gigabyte data.
 
-```bash
-lake exe cache get    # Download prebuilt Mathlib oleans (required after clone/clean)
-lake build AKS        # Build the core proof
-```
+The complete `AKS` build passed at the current mathematical milestone. The
+source audits found no `sorry`, declared axioms, or `native_decide` in `AKS/`.
 
-**Warning:** `lake build` (without arguments) also builds the `Random` library, which
-downloads multi-gigabyte certificates and takes significantly longer. Use
-`lake build AKS` to check just the core proof.
+## Proof trust and reproducibility
 
-```bash
-lake build            # Builds AKS + Random (downloads ~8 GB certificate data)
-lake build AKS Random # Same as above, explicit
-```
+The main results depend only on Lean's standard `propext`, `Classical.choice`,
+and `Quot.sound` axioms. Guarded axiom checks for the new bound are in
+[AKS/Bounds/PatersonAxioms.lean](AKS/Bounds/PatersonAxioms.lean).
+The main proof does not require the optional expander certificate data.
 
-## Trusted codebase
+The optional `Random/` certificate path has a separate trust boundary involving
+native evaluation and C FFI; see [docs/trust.md](docs/trust.md).
+The inherited comparator challenge and dependency visualization concern the
+original construction and should not be treated as audits of the new bound.
 
-The core proof ([`AKS/`](AKS/)) depends only on Lean's standard axioms,
-as checked by `#guard_msgs in #print axioms` in [`AKS/Seiferas.lean`](AKS/Seiferas.lean).
+## Working on the project
 
-[`Challenge.lean`](Challenge.lean) and [`challenge.json`](challenge.json) can be used to
-check the proof using [comparator](https://github.com/leanprover/comparator), which
-(successfully) reruns the generated proof terms through the Lean checker and
-[nanoda](https://github.com/ammkrn/nanoda_lib) (use nanoda's master branch, not the
-debug branch that comparator suggests):
+[AGENTS.md](AGENTS.md) contains the shared project instructions for Claude,
+Codex, Cursor, and other agents. Current source declarations and the research
+index take precedence over historical handoff status reports.
 
-```bash
-% lake env ~/comparator/.lake/build/bin/comparator challenge.json
-...
-Running nanoda kernel on solution
-Nanoda kernel accepts the solution
-Running Lean default kernel on solution.
-Lean default kernel accepts the solution
-Your solution is okay!
-```
+## Mathematical sources and attribution
 
-The optional [`Random/`](Random/) library (base expander certificates) additionally uses
-`native_decide` and C FFI for loading large certificate data. See
-[`docs/trust.md`](docs/trust.md) for the complete trust analysis.
+The inherited AKS, MGG, and Seiferas formalization is credited to the
+[upstream project](https://github.com/girving/aks). Local work extends it with
+Paterson halver proofs, explicit minimum-depth and asymptotic bounds, and the
+refined bag construction in progress.
 
-## Resources
+Principal mathematical sources:
 
-- **[Proof dependency graph](https://girving.github.io/aks/)** — Interactive visualisation (not carefully checked)
-- **[CLAUDE.md](CLAUDE.md)** — Development guide and accumulated proof tactics
-- **[LICENSE](LICENSE)** — Apache 2.0
+- Ajtai, Komlos, Szemeredi (1983), *An O(n log n) sorting network*.
+- Seiferas (2009), *A simpler proof that an O(n log n) sorting network sorts in O(n log n) time*.
+- Paterson (1990), *Improved sorting networks with O(log N) depth*.
+- Margulis (1973) and Gabber, Galil (1981), explicit expander constructions.
+- Batcher (1968), *Sorting networks and their applications*.
+
+Source discussions and proof-specific references are in the Lean modules and
+[docs/](docs/). This repository retains the upstream [Apache 2.0 license](LICENSE).
