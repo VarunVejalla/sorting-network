@@ -56,7 +56,10 @@ ALLOW_MARKER: dict[str, frozenset[str]] = {
                                "AKS/Bags/PatersonNumerics.lean",
                                # Minimum over sorting networks is a classical
                                # mathematical quantity; upperNetwork is a def.
-                               "AKS/Bounds/Upper.lean"}),
+                               "AKS/Bounds/Upper.lean",
+                               # The Paterson existential matching family is
+                               # selected by choice; its bound is kernel proved.
+                               "AKS/Bounds/Paterson.lean"}),
 }
 
 # ---------------------------------------------------------------------------

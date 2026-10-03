@@ -33,7 +33,7 @@ public import AKS.Separator.General
     Equals the depth of the underlying separator construction,
     independent of `k` and the number of wires. -/
 def stageDepth (p : Params) : ℕ :=
-  separatorDepth p.γ p.ε p.hγ_pos p.hε_pos
+  p.separators.depth
 
 /-! **numStages Bound** -/
 
@@ -122,27 +122,26 @@ theorem bag_wire_count_le_capacity (p : Params) (k : ℕ) (hk : 10 ≤ k)
 
 /-! **Per-bag depth bound** -/
 
-/-- Each bag's scatter-embedded separator has depth ≤ `separatorDepth γₑ ε`. -/
+/-- Each bag's scatter-embedded separator satisfies its provider's uniform depth budget. -/
 theorem built_depth_le (p : Params) (k : ℕ) (hk : 10 ≤ k) (t : ℕ) (ht : t ≤ numStages p k)
     (b : Bag k) :
     let pl := (stages p k t).value
     let regs := pl.regs b
     let γₑ := effectiveGamma p.γ (capacity p k t b.l) (2 * (regs.card / 2))
     let hγₑ := effectiveGamma_pos p.hγ_pos (capacity_pos p k t b.l) _
-    (separateAndSplit γₑ p.ε hγₑ p.hε_pos regs (fringe p k t b.l regs.card)).net.depth ≤
+    (separateAndSplit γₑ p.ε hγₑ p.hε_pos regs (fringe p k t b.l regs.card) p.separators.net).net.depth ≤
     stageDepth p := by
   intro pl regs γₑ hγₑ
-  show (⟨((separatorNet γₑ p.ε hγₑ p.hε_pos (regs.card / 2)).scatterEmbed
+  show (⟨((p.separators.net γₑ hγₑ (regs.card / 2)).scatterEmbed
     (2 ^ k) _).comparators ++ []⟩ : ComparatorNetwork (2 ^ k)).depth ≤ _
   rw [List.append_nil]
-  calc (((separatorNet γₑ p.ε hγₑ p.hε_pos (regs.card / 2)).scatterEmbed (2 ^ k) _)).depth
-      ≤ (separatorNet γₑ p.ε hγₑ p.hε_pos (regs.card / 2)).depth :=
+  calc (((p.separators.net γₑ hγₑ (regs.card / 2)).scatterEmbed (2 ^ k) _)).depth
+      ≤ (p.separators.net γₑ hγₑ (regs.card / 2)).depth :=
         depth_scatterEmbed_le _ _ _
-    _ ≤ separatorDepth γₑ p.ε hγₑ p.hε_pos := separatorNet_depth_le _ _ _ _ _
-    _ ≤ separatorDepth p.γ p.ε p.hγ_pos p.hε_pos :=
-        separatorDepth_antitone p.hγ_pos hγₑ
+    _ ≤ p.separators.depth :=
+        p.separators.depth_le γₑ hγₑ
           (effectiveGamma_ge_gamma p.γ _ p.hγ_pos _
-            (bag_wire_count_le_capacity p k hk t ht b)) p.hε_pos
+            (bag_wire_count_le_capacity p k hk t ht b)) _
 
 /-! **Wire disjointness between bags** -/
 
@@ -170,13 +169,13 @@ theorem stage_comparators_subset (p : Params) {k : ℕ} (pl : Placement k)
       let regs := pl.regs b
       let γₑ := effectiveGamma p.γ (capacity p k t b.l) (2 * (regs.card / 2))
       (separateAndSplit γₑ p.ε (effectiveGamma_pos p.hγ_pos (capacity_pos p k t b.l) _) p.hε_pos
-        regs (fringe p k t b.l regs.card)).net) a).comparators) :
+        regs (fringe p k t b.l regs.card) p.separators.net).net) a).comparators) :
     c.i ∈ (pl.regs a : Set (Fin (2 ^ k))) ∧
     c.j ∈ (pl.regs a : Set (Fin (2 ^ k))) := by
   -- (built a).net.comparators = scatter-embedded comparators ++ []
   simp only at hc
-  rw [show (separateAndSplit _ _ _ _ _ _).net.comparators =
-    ((separatorNet _ _ _ _ _).scatterEmbed _ _).comparators ++ [] from rfl] at hc
+  rw [show (separateAndSplit _ _ _ _ _ _ p.separators.net).net.comparators =
+    ((p.separators.net _ _ _).scatterEmbed _ _).comparators ++ [] from rfl] at hc
   rw [List.append_nil] at hc
   have ⟨hi, hj⟩ := scatterEmbed_wire_mem _ _ c hc
   exact ⟨separate_emb_range_subset _ hi, separate_emb_range_subset _ hj⟩
@@ -197,7 +196,7 @@ theorem stage_depth_le (p : Params) (k : ℕ) (hk : 10 ≤ k) (t : ℕ)
     let regs := pl.regs b
     let γₑ := effectiveGamma p.γ (capacity p k t b.l) (2 * (regs.card / 2))
     separateAndSplit γₑ p.ε (effectiveGamma_pos p.hγ_pos (capacity_pos p k t b.l) _) p.hε_pos
-      regs (fringe p k t b.l regs.card)
+      regs (fringe p k t b.l regs.card) p.separators.net
   -- Step 1: strip trailing [] from Build.emit >>= return
   have h1 : (stage p pl t).net.depth ≤
       (⟨(allBags k).flatMap fun b ↦ (built b).net.comparators⟩ :

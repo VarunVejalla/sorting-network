@@ -333,8 +333,11 @@ lemma sep_initial_levels_bound
 
 /-- The prefix-doubling separator satisfies `SepInitial`. -/
 theorem separatorNet_sepInitial (γ ε : ℚ) (hγ : 0 < γ) (hε : 0 < ε)
-    (hγ_le : γ ≤ 1 / 2) (m : ℕ) (v : Equiv.Perm (Fin (2 * m))) :
-    SepInitial ((separatorNet γ ε hγ hε m).exec v) ↑γ ↑ε := by
+    (hγ_le : γ ≤ 1 / 2) (m : ℕ) (v : Equiv.Perm (Fin (2 * m)))
+    (halverFamily : HalverFamily (ε / ↑(sepTotalLayers γ)) :=
+      halvers (ε / ↑(sepTotalLayers γ))
+        (div_pos hε (Nat.cast_pos.mpr (sepTotalLayers_pos γ)))) :
+    SepInitial ((separatorNet γ ε hγ hε m halverFamily).exec v) ↑γ ↑ε := by
   -- Trivial case: ⌊γ(2m)⌋₊ = 0
   by_cases hfloor : ⌊(γ : ℝ) * ↑(2 * m)⌋₊ = 0
   · exact sepInitial_trivial _ ↑γ ↑ε (by exact_mod_cast hε.le) (by exact_mod_cast hγ.le) hfloor
@@ -343,10 +346,12 @@ theorem separatorNet_sepInitial (γ ε : ℚ) (hγ : 0 < γ) (hε : 0 < ε)
     rw [(floor_rat_real_mul_nat γ (2 * m) hγ.le).symm]
     exact Nat.pos_of_ne_zero hfloor
   -- Setup
-  set t := sepTotalLayers γ with ht_def
-  set ε₀_Q := ε / ↑t with hε₀_Q_def
+  let t := sepTotalLayers γ
+  have ht_def : t = sepTotalLayers γ := rfl
+  let ε₀_Q := ε / ↑t
+  have hε₀_Q_def : ε₀_Q = ε / ↑t := rfl
   have hε₀_Q_pos : (0 : ℚ) < ε₀_Q := div_pos hε (Nat.cast_pos.mpr (sepTotalLayers_pos γ))
-  set family := halvers ε₀_Q hε₀_Q_pos
+  let family := halverFamily
   set m₀ := sepBaseChunk γ (2 * m) with hm₀_def
   set K := numSepLevels γ + 1 with hK_def
   have hm₀_eq : m₀ = ⌊(γ : ℚ) * ↑(2 * m)⌋₊ := sepBaseChunk_eq_floor γ (2 * m) hfloor_pos
@@ -354,7 +359,7 @@ theorem separatorNet_sepInitial (γ ε : ℚ) (hγ : 0 < γ) (hε : 0 < ε)
   set ε₀ : ℝ := ↑ε₀_Q with hε₀_def
   have hε₀ : (0 : ℝ) ≤ ε₀ := by show (0 : ℝ) ≤ ↑ε₀_Q; exact_mod_cast hε₀_Q_pos.le
   -- Decompose separator
-  have hsep_eq : (separatorNet γ ε hγ hε m).comparators =
+  have hsep_eq : (separatorNet γ ε hγ hε m halverFamily).comparators =
       (family.net m).comparators ++
       ((List.range K).reverse.flatMap fun k ↦
         sepLevelComparators (2 * m) family.net m₀ k) := by
@@ -362,11 +367,11 @@ theorem separatorNet_sepInitial (γ ε : ℚ) (hγ : 0 < γ) (hε : 0 < ε)
   set w₀ := (family.net m).exec (v : Fin (2 * m) → Fin (2 * m))
   have hw₀_inj : Function.Injective w₀ :=
     ComparatorNetwork.exec_injective _ v.injective
-  have hresult_eq : (separatorNet γ ε hγ hε m).exec (v : Fin (2 * m) → Fin (2 * m)) =
+  have hresult_eq : (separatorNet γ ε hγ hε m halverFamily).exec (v : Fin (2 * m) → Fin (2 * m)) =
       (⟨(List.range K).reverse.flatMap fun k ↦
         sepLevelComparators (2 * m) family.net m₀ k⟩ :
         ComparatorNetwork (2 * m)).exec w₀ := by
-    show (⟨(separatorNet γ ε hγ hε m).comparators⟩ : ComparatorNetwork (2 * m)).exec v = _
+    show (⟨(separatorNet γ ε hγ hε m halverFamily).comparators⟩ : ComparatorNetwork (2 * m)).exec v = _
     rw [hsep_eq, ComparatorNetwork.exec_append]
   -- Open SepInitial, simplify rank/Fintype.card, rewrite exec and floor
   intro γ' hγ' hγ'_le
@@ -725,8 +730,11 @@ lemma sep_final_levels_bound
 
 /-- The prefix-doubling separator satisfies `SepFinal`. -/
 theorem separatorNet_sepFinal (γ ε : ℚ) (hγ : 0 < γ) (hε : 0 < ε)
-    (hγ_le : γ ≤ 1 / 2) (m : ℕ) (v : Equiv.Perm (Fin (2 * m))) :
-    SepFinal ((separatorNet γ ε hγ hε m).exec v) ↑γ ↑ε := by
+    (hγ_le : γ ≤ 1 / 2) (m : ℕ) (v : Equiv.Perm (Fin (2 * m)))
+    (halverFamily : HalverFamily (ε / ↑(sepTotalLayers γ)) :=
+      halvers (ε / ↑(sepTotalLayers γ))
+        (div_pos hε (Nat.cast_pos.mpr (sepTotalLayers_pos γ)))) :
+    SepFinal ((separatorNet γ ε hγ hε m halverFamily).exec v) ↑γ ↑ε := by
   -- SepFinal = SepInitial for order dual
   show SepInitial (α := (Fin (2 * m))ᵒᵈ) _ _ _
   -- Trivial case
@@ -735,17 +743,19 @@ theorem separatorNet_sepFinal (γ ε : ℚ) (hγ : 0 < γ) (hε : 0 < ε)
   have hfloor_pos : 0 < ⌊(γ : ℚ) * ↑(2 * m)⌋₊ := by
     rw [(floor_rat_real_mul_nat γ (2 * m) hγ.le).symm]; exact Nat.pos_of_ne_zero hfloor
   -- Setup (same as SepInitial)
-  set t := sepTotalLayers γ with ht_def
-  set ε₀_Q := ε / ↑t with hε₀_Q_def
+  let t := sepTotalLayers γ
+  have ht_def : t = sepTotalLayers γ := rfl
+  let ε₀_Q := ε / ↑t
+  have hε₀_Q_def : ε₀_Q = ε / ↑t := rfl
   have hε₀_Q_pos : (0 : ℚ) < ε₀_Q := div_pos hε (Nat.cast_pos.mpr (sepTotalLayers_pos γ))
-  set family := halvers ε₀_Q hε₀_Q_pos
+  let family := halverFamily
   set m₀ := sepBaseChunk γ (2 * m) with hm₀_def
   set K := numSepLevels γ + 1 with hK_def
   have hm₀_eq : m₀ = ⌊(γ : ℚ) * ↑(2 * m)⌋₊ := sepBaseChunk_eq_floor γ (2 * m) hfloor_pos
   have hm₀_pos : 0 < m₀ := by omega
   set ε₀ : ℝ := ↑ε₀_Q with hε₀_def
   have hε₀ : (0 : ℝ) ≤ ε₀ := by show (0 : ℝ) ≤ ↑ε₀_Q; exact_mod_cast hε₀_Q_pos.le
-  have hsep_eq : (separatorNet γ ε hγ hε m).comparators =
+  have hsep_eq : (separatorNet γ ε hγ hε m halverFamily).comparators =
       (family.net m).comparators ++
       ((List.range K).reverse.flatMap fun k ↦
         sepLevelComparators (2 * m) family.net m₀ k) := by
@@ -753,11 +763,11 @@ theorem separatorNet_sepFinal (γ ε : ℚ) (hγ : 0 < γ) (hε : 0 < ε)
   set w₀ := (family.net m).exec (v : Fin (2 * m) → Fin (2 * m))
   have hw₀_inj : Function.Injective w₀ :=
     ComparatorNetwork.exec_injective _ v.injective
-  have hresult_eq : (separatorNet γ ε hγ hε m).exec (v : Fin (2 * m) → Fin (2 * m)) =
+  have hresult_eq : (separatorNet γ ε hγ hε m halverFamily).exec (v : Fin (2 * m) → Fin (2 * m)) =
       (⟨(List.range K).reverse.flatMap fun k ↦
         sepLevelComparators (2 * m) family.net m₀ k⟩ :
         ComparatorNetwork (2 * m)).exec w₀ := by
-    show (⟨(separatorNet γ ε hγ hε m).comparators⟩ : ComparatorNetwork (2 * m)).exec v = _
+    show (⟨(separatorNet γ ε hγ hε m halverFamily).comparators⟩ : ComparatorNetwork (2 * m)).exec v = _
     rw [hsep_eq, ComparatorNetwork.exec_append]
   -- Open SepInitial (order dual), simplify
   intro γ' hγ' hγ'_le
@@ -885,29 +895,36 @@ theorem separatorNet_sepFinal (γ ε : ℚ) (hγ : 0 < γ) (hε : 0 < ε)
 /-! **Separator Property** -/
 
 theorem separatorNet_isSeparator (γ ε : ℚ) (hγ : 0 < γ) (hε : 0 < ε)
-    (hγ_le : γ ≤ 1 / 2) (m : ℕ) :
-    IsSeparator (separatorNet γ ε hγ hε m) ↑γ ↑ε := by
+    (hγ_le : γ ≤ 1 / 2) (m : ℕ)
+    (halverFamily : HalverFamily (ε / ↑(sepTotalLayers γ)) :=
+      halvers (ε / ↑(sepTotalLayers γ))
+        (div_pos hε (Nat.cast_pos.mpr (sepTotalLayers_pos γ)))) :
+    IsSeparator (separatorNet γ ε hγ hε m halverFamily) ↑γ ↑ε := by
   intro v
-  exact ⟨separatorNet_sepInitial γ ε hγ hε hγ_le m v,
-         separatorNet_sepFinal γ ε hγ hε hγ_le m v⟩
+  exact ⟨separatorNet_sepInitial γ ε hγ hε hγ_le m v halverFamily,
+         separatorNet_sepFinal γ ε hγ hε hγ_le m v halverFamily⟩
 
 /-- The prefix-doubling separator is an ε-halver: the initial halver layer
     gives `IsEpsilonHalver ε₀`, appending prefix/suffix layers preserves it
     (`IsEpsilonHalver_append`), and `ε₀ ≤ ε` gives `IsEpsilonHalver ε`. -/
 theorem separatorNet_isHalver (γ ε : ℚ) (hγ : 0 < γ) (hε : 0 < ε)
-    (m : ℕ) : IsEpsilonHalver (separatorNet γ ε hγ hε m) ↑ε := by
+    (m : ℕ)
+    (halverFamily : HalverFamily (ε / ↑(sepTotalLayers γ)) :=
+      halvers (ε / ↑(sepTotalLayers γ))
+        (div_pos hε (Nat.cast_pos.mpr (sepTotalLayers_pos γ)))) : IsEpsilonHalver (separatorNet γ ε hγ hε m halverFamily) ↑ε := by
   -- Setup: decompose separatorNet into halver ++ remaining layers
-  set t := sepTotalLayers γ
-  set ε₀_Q := ε / ↑t with hε₀_Q_def
+  let t := sepTotalLayers γ
+  let ε₀_Q := ε / ↑t
+  have hε₀_Q_def : ε₀_Q = ε / ↑t := rfl
   have hε₀_Q_pos : (0 : ℚ) < ε₀_Q := div_pos hε (Nat.cast_pos.mpr (sepTotalLayers_pos γ))
-  set family := halvers ε₀_Q hε₀_Q_pos
+  let family := halverFamily
   set m₀ := sepBaseChunk γ (2 * m)
   set K := numSepLevels γ + 1
   -- ε₀ ≤ ε
   have hε₀_le : (ε₀_Q : ℝ) ≤ (ε : ℝ) := by
     exact_mod_cast div_le_self hε.le (by exact_mod_cast sepTotalLayers_pos γ : (1 : ℚ) ≤ ↑t)
   -- separatorNet = family.net m ++ remaining layers
-  have hsep_eq : (separatorNet γ ε hγ hε m).comparators =
+  have hsep_eq : (separatorNet γ ε hγ hε m halverFamily).comparators =
       (family.net m).comparators ++
       ((List.range K).reverse.flatMap fun k ↦
         sepLevelComparators (2 * m) family.net m₀ k) := by
@@ -921,7 +938,7 @@ theorem separatorNet_isHalver (γ ε : ℚ) (hγ : 0 < γ) (hε : 0 < ε)
   have h_append : IsEpsilonHalver ⟨(family.net m).comparators ++ remaining.comparators⟩ ↑ε₀_Q :=
     IsEpsilonHalver_append h_init remaining
   -- separatorNet = halver ++ remaining
-  have h_eq : separatorNet γ ε hγ hε m = ⟨(family.net m).comparators ++ remaining.comparators⟩ :=
+  have h_eq : separatorNet γ ε hγ hε m halverFamily = ⟨(family.net m).comparators ++ remaining.comparators⟩ :=
     ComparatorNetwork.ext hsep_eq
   rw [h_eq]
   exact h_append.mono hε₀_le

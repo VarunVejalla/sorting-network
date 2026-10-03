@@ -4,7 +4,9 @@ For the current local file map, verified milestones, and the path to a limsup
 bound, start with [the research index](research-index.md). This document gives
 the detailed interface and source audit.
 
-Status: the restricted-halver theorem, its uniform probability estimate, a shared depth-263 first-level primitive, the injective local-input bridge, a supported-range separator interface, and a concrete five-level network of depth at most 989 are formalized in Lean. The network's supported-range separator property is now proved when its arity is divisible by 32. Odd-size separator correctness and the top-level sorting bound are not yet formalized.
+Status: the restricted-halver theorem, its uniform probability estimate, a shared depth-263 first-level primitive, the injective local-input bridge, a supported-range separator interface, and a concrete five-level network of depth at most 989 are formalized in Lean. The network's supported-range separator property is proved when its arity is divisible by 32. The refined Paterson bag construction's top-level sorting theorem remains unfinished.
+
+A separate complete route now proves `D(n) <= 10^6 * Nat.clog 2 n` and the corresponding limsup bound, using full-support Paterson halvers with the existing Seiferas bag scheduler (`AKS/Bounds/Paterson.lean`). For the tighter construction, `AKS/Paterson/LatticeRounding.lean` proves rounding, routing counts, and a local separator certificate for bags whose sizes are multiples of 32. Connecting these to an actual scheduler and its global invariant remains necessary; arbitrary-size separator correctness is another possible route.
 
 ## Formal proof components
 

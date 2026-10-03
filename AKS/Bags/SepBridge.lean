@@ -322,9 +322,9 @@ theorem stage_exec_on_regs (p : Params) (k : ℕ)
     let C := regs.card
     let embed := regs.orderEmbOfFin rfl
     let γₑ := effectiveGamma p.γ (capacity p k t c.l) (2 * (C / 2))
-    let sep := (separatorNet γₑ p.ε
+    let sep := (p.separators.net γₑ
       (effectiveGamma_pos p.hγ_pos (capacity_pos p k t c.l) (2 * (C / 2)))
-      p.hε_pos (C / 2)).scatterEmbed (2 ^ k)
+      (C / 2)).scatterEmbed (2 ^ k)
       ((Fin.castLEOrderEmb (by omega : 2 * (C / 2) ≤ C)).trans embed)
     (stage p pl t).net.exec perm r = sep.exec perm r := by
   intro regs C embed γₑ sep
@@ -335,7 +335,7 @@ theorem stage_exec_on_regs (p : Params) (k : ℕ)
   set built := fun b : Bag k ↦
     separateAndSplit (effectiveGamma p.γ (capacity p k t b.l) (2 * ((pl.regs b).card / 2))) p.ε
       (effectiveGamma_pos p.hγ_pos (capacity_pos p k t b.l) _) p.hε_pos
-      (pl.regs b) (fringe p k t b.l (pl.regs b).card)
+      (pl.regs b) (fringe p k t b.l (pl.regs b).card) p.separators.net
   have hnet : (stage p pl t).net = ⟨(allBags k).flatMap fun b ↦ (built b).net.comparators⟩ := by
     unfold stage
     simp only [built, separateAndSplit, separate, Build.net_bind, Build.net_emit, Build.net_pure,
@@ -547,8 +547,8 @@ theorem separator_filter_strangers (p : Params) (k : ℕ)
 
   let n_local := 2 * (C / 2)
   let γₑ := effectiveGamma p.γ (capacity p k t c.l) n_local
-  let sep_local := separatorNet γₑ p.ε
-    (effectiveGamma_pos p.hγ_pos (capacity_pos p k t c.l) n_local) p.hε_pos (C / 2)
+  let sep_local := p.separators.net γₑ
+    (effectiveGamma_pos p.hγ_pos (capacity_pos p k t c.l) n_local) (C / 2)
 
   let boundary := ⌊p.γ * capacity p k t c.l⌋₊
   let L := (regs.filter (fun r ↦ (perm_t r).val < anc.lo)).card
@@ -690,9 +690,9 @@ theorem separator_filter_strangers (p : Params) (k : ℕ)
       exact_mod_cast Nat.lt_of_floor_lt (by omega : ⌊p.γ * ↑(capacity p k t c.l)⌋₊ < C / 2)
     linarith
   have hsep_is : IsSeparator sep_local ↑γₑ ↑p.ε :=
-    separatorNet_isSeparator γₑ p.ε
+    p.separators.isSeparator γₑ
       (effectiveGamma_pos p.hγ_pos (capacity_pos p k t c.l) n_local)
-      p.hε_pos hγₑ_le (C / 2)
+      hγₑ_le (C / 2)
   have hboundary_eq : ⌊(↑γₑ : ℝ) * ↑n_local⌋₊ = boundary := by
     have : (↑γₑ : ℝ) * ↑n_local = ↑(γₑ * ↑n_local) := by push_cast; ring
     rw [this, floor_rat_real_eq _ (mul_nonneg (le_of_lt (effectiveGamma_pos p.hγ_pos

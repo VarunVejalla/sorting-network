@@ -91,11 +91,9 @@ def sepLevelComparators (n : ℕ)
     The halver error is `ε₀ = ε / sepTotalLayers(γ)`, so total error
     ≤ sepTotalLayers(γ) · ε₀ = ε. -/
 def separatorNet (γ ε : ℚ) (_hγ : 0 < γ) (hε : 0 < ε)
-    (m : ℕ) : ComparatorNetwork (2 * m) :=
-  let t := sepTotalLayers γ
-  let ε₀ := ε / ↑t
-  have hε₀ : (0 : ℚ) < ε₀ := div_pos hε (Nat.cast_pos.mpr (sepTotalLayers_pos γ))
-  let family := halvers ε₀ hε₀
+    (m : ℕ) (family : HalverFamily (ε / ↑(sepTotalLayers γ)) :=
+      halvers (ε / ↑(sepTotalLayers γ))
+        (div_pos hε (Nat.cast_pos.mpr (sepTotalLayers_pos γ)))) : ComparatorNetwork (2 * m) :=
   let n := 2 * m
   let m₀ := sepBaseChunk γ n
   { comparators :=
@@ -109,11 +107,11 @@ def separatorNet (γ ε : ℚ) (_hγ : 0 < γ) (hε : 0 < ε)
     At each level, prefix and suffix halvers may overlap (when
     `4 · halfLen > n`), giving worst-case 2 sequential depths per level.
     Total depth ≤ `(2 · (numSepLevels(γ) + 1) + 1) · halverDepth(ε₀)`. -/
-def separatorDepth (γ ε : ℚ) (_hγ : 0 < γ) (hε : 0 < ε) : ℕ :=
-  let t := sepTotalLayers γ
-  let ε₀ := ε / ↑t
-  have hε₀ : (0 : ℚ) < ε₀ := div_pos hε (Nat.cast_pos.mpr (sepTotalLayers_pos γ))
-  (2 * (numSepLevels γ + 1) + 1) * (halvers ε₀ hε₀).depth
+def separatorDepth (γ ε : ℚ) (_hγ : 0 < γ) (hε : 0 < ε)
+    (family : HalverFamily (ε / ↑(sepTotalLayers γ)) :=
+      halvers (ε / ↑(sepTotalLayers γ))
+        (div_pos hε (Nat.cast_pos.mpr (sepTotalLayers_pos γ)))) : ℕ :=
+  (2 * (numSepLevels γ + 1) + 1) * family.depth
 
 
 /-! **Separator Property** -/
@@ -215,13 +213,13 @@ lemma depth_sepLevelComparators_le {n : ℕ}
 
 
 /-- Depth bound for `separatorNet`. -/
-theorem separatorNet_depth_le (γ ε : ℚ) (hγ : 0 < γ) (hε : 0 < ε) (m : ℕ) :
-    (separatorNet γ ε hγ hε m).depth ≤ separatorDepth γ ε hγ hε := by
+theorem separatorNet_depth_le (γ ε : ℚ) (hγ : 0 < γ) (hε : 0 < ε) (m : ℕ)
+    (halverFamily : HalverFamily (ε / ↑(sepTotalLayers γ)) :=
+      halvers (ε / ↑(sepTotalLayers γ))
+        (div_pos hε (Nat.cast_pos.mpr (sepTotalLayers_pos γ)))) :
+    (separatorNet γ ε hγ hε m halverFamily).depth ≤ separatorDepth γ ε hγ hε halverFamily := by
   unfold separatorNet separatorDepth
-  set t := sepTotalLayers γ
-  set ε₀ := ε / ↑t
-  set hε₀ : (0 : ℚ) < ε₀ := div_pos hε (Nat.cast_pos.mpr (sepTotalLayers_pos γ))
-  set family := halvers ε₀ hε₀
+  let family := halverFamily
   set n := 2 * m
   set m₀ := sepBaseChunk γ n
   set K := numSepLevels γ + 1

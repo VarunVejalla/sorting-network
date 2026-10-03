@@ -129,23 +129,27 @@ theorem split_toLeft_toRight_disjoint (regs : Finset (Fin (2 ^ k))) (f : ℕ) :
 
 /-! **Separator Application** -/
 
-/-- Apply a separator to a register set via scatter embedding.
-    Uses `separatorNet γₑ ε` directly (not via `SeparatorFamily`), where `γₑ`
+/-- Apply a supplied separator to a register set via scatter embedding.
+    The default provider uses `separatorNet γₑ ε`, where `γₑ`
     is the effective separator fraction for this bag. The caller computes `γₑ`
     to absorb the capacity/bagCard gap (Seiferas 2009, p.7). -/
 def separate (γₑ ε : ℚ) (hγₑ : 0 < γₑ) (hε : 0 < ε)
-    (regs : Finset (Fin (2 ^ k))) :
+    (regs : Finset (Fin (2 ^ k)))
+    (provider : (δ : ℚ) → 0 < δ → (m : ℕ) → ComparatorNetwork (2 * m) :=
+      fun δ hδ m ↦ separatorNet δ ε hδ hε m) :
     Build (2 ^ k) Unit :=
   let s := regs.card
   let emb : Fin (2 * (s / 2)) ↪o Fin (2 ^ k) :=
     (Fin.castLEOrderEmb (by omega : 2 * (s / 2) ≤ s)).trans (regs.orderEmbOfFin rfl)
-  Build.emit ((separatorNet γₑ ε hγₑ hε (s / 2)).scatterEmbed (2 ^ k) emb)
+  Build.emit ((provider γₑ hγₑ (s / 2)).scatterEmbed (2 ^ k) emb)
 
 /-- Apply a separator to a register set, then split by sorted position.
     Emits the separator comparators via `Build` and returns the split. -/
 def separateAndSplit (γₑ ε : ℚ) (hγₑ : 0 < γₑ) (hε : 0 < ε)
-    (regs : Finset (Fin (2 ^ k))) (f : ℕ) : Build (2 ^ k) (BagSplit k) := do
-  separate γₑ ε hγₑ hε regs
+    (regs : Finset (Fin (2 ^ k))) (f : ℕ)
+    (provider : (δ : ℚ) → 0 < δ → (m : ℕ) → ComparatorNetwork (2 * m) :=
+      fun δ hδ m ↦ separatorNet δ ε hδ hε m) : Build (2 ^ k) (BagSplit k) := do
+  separate γₑ ε hγₑ hε regs provider
   return split regs f
 
 /-! **Rebag after Stage** -/
@@ -412,7 +416,7 @@ def stage (p : Params)
     let regs := pl.regs b
     let γₑ := effectiveGamma p.γ (capacity p k t b.l) (2 * (regs.card / 2))
     separateAndSplit γₑ p.ε (effectiveGamma_pos p.hγ_pos (capacity_pos p k t b.l) _) p.hε_pos
-      regs (fringe p k t b.l regs.card)
+      regs (fringe p k t b.l regs.card) p.separators.net
   let net : ComparatorNetwork (2 ^ k) :=
     ⟨(allBags k).flatMap fun b ↦ (built b).net.comparators⟩
   Build.emit net

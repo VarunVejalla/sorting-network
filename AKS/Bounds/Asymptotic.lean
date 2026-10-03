@@ -14,11 +14,12 @@ namespace SortingDepth
 open Filter
 open scoped Topology
 
-theorem limsup_minimum_div_logb_le :
+theorem limsup_of_depth_bound (bound : ℕ)
+    (hbound : ∀ n, minimum n ≤ bound * Nat.clog 2 n) :
     limsup (fun n : ℕ ↦ (minimum n : ℝ) / Real.logb 2 n) atTop ≤
-      (102 * 10 ^ 62 : ℝ) := by
-  let C : ℝ := 102 * 10 ^ 62
-  have hC : 0 ≤ C := by positivity
+      (bound : ℝ) := by
+  let C : ℝ := bound
+  have hC : 0 ≤ C := Nat.cast_nonneg _
   have hlog : Tendsto (fun n : ℕ ↦ Real.logb 2 (n : ℝ)) atTop atTop :=
     (Real.tendsto_logb_atTop (by norm_num : (1 : ℝ) < 2)).comp
       tendsto_natCast_atTop_atTop
@@ -40,7 +41,7 @@ theorem limsup_minimum_div_logb_le :
       exact Nat.ceil_lt_add_one hl.le
     have hd : (minimum n : ℝ) ≤ C * (Nat.clog 2 n : ℝ) := by
       dsimp [C]
-      exact_mod_cast minimum_depth_le n
+      exact_mod_cast hbound n
     calc (minimum n : ℝ) / Real.logb 2 n
         ≤ (C * (Real.logb 2 n + 1)) / Real.logb 2 n := by
           apply div_le_div_of_nonneg_right _ hl.le
@@ -50,5 +51,11 @@ theorem limsup_minimum_div_logb_le :
   exact (limsup_le_limsup hle
     (isCoboundedUnder_le_of_eventually_le atTop hnonneg) henv.isBoundedUnder_le).trans
       henv.limsup_eq.le
+
+theorem limsup_minimum_div_logb_le :
+    limsup (fun n : ℕ ↦ (minimum n : ℝ) / Real.logb 2 n) atTop ≤
+      (102 * 10 ^ 62 : ℝ) := by
+  simpa only [Nat.cast_mul, Nat.cast_pow, Nat.cast_ofNat] using
+    limsup_of_depth_bound (102 * 10 ^ 62) minimum_depth_le
 
 end SortingDepth

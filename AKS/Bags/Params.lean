@@ -17,6 +17,7 @@ module
 
 public import AKS.Sort.Defs
 public import AKS.Misc.Log
+public import AKS.Separator.Provider
 
 @[expose] public section
 
@@ -79,6 +80,8 @@ structure Params where
       This constraint may be removable if the ancestor argument can use
       only `hconv` directly. -/
   hA2_le : 1 ≤ γ * A ^ 2
+  /-- Network provider, independent of the scalar bag constraints. -/
+  separators : BagSeparators γ ε := mggBagSeparators γ ε hγ_pos hε_pos
 
 /-- Concrete satisfying values from Seiferas (2009), p.6:
     `γ = 1/100, ε = 1/100, ν = 13/20, A = 10`. -/

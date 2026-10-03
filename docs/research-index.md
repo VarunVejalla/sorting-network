@@ -11,31 +11,40 @@ sorting-network depth. A constant for natural logarithms is the base-two constan
 divided by `ln 2`.
 
 The best complete bound currently formalized in this repository is
-[`SortingDepth.minimum_depth_le`](../AKS/Bounds/Upper.lean):
+[`SortingDepth.minimum_depth_le_million`](../AKS/Bounds/Paterson.lean):
 
 ```text
-SortingDepth.minimum n <= 102 * 10^62 * Nat.clog 2 n.
+SortingDepth.minimum n <= 10^6 * Nat.clog 2 n.
 ```
 
 `SortingDepth.minimum` defines `D(n)` as the minimum over sorting networks.
-[`SortingDepth.limsup_minimum_div_logb_le`](../AKS/Bounds/Asymptotic.lean)
-formally derives `limsup D(n)/log_2 n <= 102 * 10^62`, accounting for the
-ceiling logarithm. The new executable `SortingDepth.upperNetwork` uses the
-existing Seiferas correctness proof with `A = 8`, `gamma = 1/64`,
-`epsilon = 1/57`, `nu = 41/50`. This improves the repository's previous
-`141 * 10^62` coefficient by about 28%; it is a conservative parameter
-improvement, not an improvement over published sorting bounds.
+[`SortingDepth.limsup_minimum_div_logb_le_million`](../AKS/Bounds/Paterson.lean)
+formally derives `limsup D(n)/log_2 n <= 10^6`, accounting for the ceiling
+logarithm. This combines the proved full-support Paterson halver with the
+prefix-doubling separator and the established Seiferas bag scheduler. It is
+a complete first Paterson-based bound, not the refined Paterson bag theorem
+or an improvement over published sorting bounds. The matching family and
+network are selected classically; this is an existence bound, not an
+executable search algorithm.
+
+The coefficient certificate is `999189 = 14 * 71370 + 9 < 10^6`.
+Parameters: `A = 397/50`, `gamma = 1/63`, `epsilon = 89/5000`,
+`nu = 8203/10000`. The underlying full-support halver has error `89/35000`
+and depth at most 5490. Every finite-size and cleanup contribution in the
+million bound is covered by the complete existing scheduler proof.
 
 The original `network` and its old bound remain in `AKS/Seiferas.lean`.
-No Paterson result is used in the new complete theorem's dependency chain. The smaller
-numbers below are proved local bounds and arithmetic certificates; they do not
-yet establish a new bound for `D(n)`.
+The previous executable `upperNetwork` with coefficient `102 * 10^62`
+remains in `Bounds/Upper.lean`. The smaller five-level numbers below are local
+bounds and arithmetic certificates; they do not yet establish the refined
+roughly-6100 bound for `D(n)`.
 
 ## Proved milestones
 
 | Component | Endpoint and source | Precise scope |
 | --- | --- | --- |
 | Restricted halvers | `Paterson.exists_paterson_halver_all_arities` in [PatersonTail](../AKS/Halver/PatersonTail.lean) | Every side arity, including zero; entropy-formula ceiling depth; existential and selected noncomputably. |
+| Full-support provider and complete sorting bound | [PatersonFull](../AKS/Halver/PatersonFull.lean), [PatersonProvider](../AKS/Separator/PatersonProvider.lean), [Bounds/Paterson](../AKS/Bounds/Paterson.lean) | Full halvers at every even arity, the complete scheduler, all-n restriction, and a limsup coefficient at most `10^6`. |
 | Shared first-level network | `Paterson.exists_paterson_first_level_all_arities` in [PatersonJointTail](../AKS/Halver/PatersonJointTail.lean) | One network satisfies both required contracts with depth at most 263. Separate existence theorems would not suffice. |
 | Five-level network depth | `Paterson.separatorNetwork_depth_le` in [PatersonConstruction](../AKS/Separator/PatersonConstruction.lean) | Depth at most 989 for every arity; correctness has a narrower domain. |
 | Supported separator | `Paterson.separatorNetwork_certificate_of_dvd32` in [PatersonCertificate](../AKS/Separator/PatersonCertificate.lean) | For `32 ∣ n`: both extreme cohorts of size `k <= n/50` reach fringes of size `n/32`, with error at most `patersonTailError * k`, and the same network has depth at most 989. |
@@ -88,6 +97,11 @@ New reusable pieces:
 - [Rounding](../AKS/Paterson/Rounding.lean): even subtree totals, exact bag
   subtraction, `b - 8 < actual size < b + 2`, rounded fringe error below one,
   support slack, and coverage of the `n/32` fringe.
+- [LatticeRounding](../AKS/Paterson/LatticeRounding.lean): an alternative
+  32-lattice subtree recipe, `b - 128 < actual size < b + 32`, support slack,
+  and routing-count identities preserving divisibility by 32. The existing
+  989-depth separator applies directly to these local bag sizes. The actual
+  scheduler still has to prove the rounded subtree and fringe identities.
 - [PatersonGood](../AKS/Separator/PatersonGood.lean): later comparator layers
   preserve the jointly selected first halver's large-cohort guarantee at
   every even whole-bag arity. This does not remove the divisibility restriction
@@ -101,13 +115,13 @@ New reusable pieces:
   modular Paterson endpoints.
 
 Next obligations: derive input balance from actual placements and cold
-storage, construct the rounded local
-separator at all required even sizes, and discharge the two parent hypotheses
+storage, either realize the 32-lattice scheduler or finish the all-even-size
+separator, and discharge the two parent hypotheses
 for the scheduler. Root/partial-level rules, root splitting, and global depth
 accounting remain open. The looser working instance above does not certify
 the older conditional `<6100` numerical target.
 
-## Further conservative improvement via full-support Paterson halvers
+## Completed full-support Paterson route
 
 There is also a route that does not require completing Paterson's refined bag
 argument. The proved `exists_paterson_halver_all_arities` permits `alpha = 1`.
@@ -115,19 +129,17 @@ At full support its two-sided contract matches the ordinary halver interface,
 after a rank/count conversion. Such halvers could replace the enormous-degree
 MGG halvers while retaining the current Seiferas parameters and invariant.
 
-This is not a drop-in change today: [`separatorNet`](../AKS/Separator/General.lean)
-selects `halvers` directly, and [`separate`](../AKS/Bags/Network.lean) selects
-`separatorNet` directly. A useful next refactor would parameterize those
-constructions and the consuming proofs over a separator provider with explicit
-correctness and depth fields. Then certify a full-support Paterson provider's
-depth and assemble a new existential sorting theorem. Noncomputable selection
-is sufficient for a bound on minimum depth, although it would not preserve the
-existing executable construction without a separate search implementation.
+The refactor is now implemented: `separatorNet` and its correctness/depth
+theorems accept a supplied halver family; [BagSeparators](../AKS/Separator/Provider.lean)
+bundles networks at effective fringe fractions and a uniform depth budget;
+`Params.separators` supplies the provider to the scheduler. The existing MGG
+construction remains the default and its computable network still builds.
+The Paterson provider uses full-support matching networks with a certified
+entropy bound. Noncomputable selection suffices for the minimum-depth theorem.
 
 This route sacrifices the level-dependent depth advantage behind the 989
-budget. It offers a potentially much larger completed improvement over the MGG
-baseline; its final numerical coefficient still needs to be proved. The
-refined `<6100` target requires the additional work below.
+budget. It gives the completed million bound above. The refined `<6100`
+target requires the additional work below.
 
 ## Remaining path to the refined Paterson bound
 
@@ -167,8 +179,8 @@ The minimum-depth and limsup infrastructure is now in `Bounds/Upper.lean` and
 For the refined track, the next mathematical task should be the rounded
 separator interface consumed by one precise bag transition. Validate that
 interface before building the entire scheduler, so the existing local proof
-and the global invariant agree. For a further complete improvement, consider
-the full-support provider refactor above.
+and the global invariant agree. The full-support milestone is now complete;
+the active next task is the tighter rounded scheduler.
 
 ## Build and audit
 
@@ -185,6 +197,7 @@ lake build AKS.Halver.PatersonAxioms
 lake build AKS.Paterson.Interior
 lake build AKS.Paterson.GoodRouting
 lake build AKS.Bounds.Axioms
+lake build AKS.Bounds.PatersonAxioms
 
 # Full core, including the existing sorting theorem and local research.
 lake build AKS
@@ -201,8 +214,9 @@ and `Quot.sound`. Source audits found no `sorry`, `#exit`,
 or declared `axiom` in the protected files. The `Random/` native-evaluation
 path is separate from the AKS and Paterson proofs. The audit now reads UTF-8 on
 Windows and permits the classical minimum-depth definition in the exact
-`Bounds/Upper.lean` file, alongside the two named analytic Paterson files in
-`Bags/`. Both `network` and `SortingDepth.upperNetwork` are computable definitions.
+`Bounds/Upper.lean` file and selected Paterson network in `Bounds/Paterson.lean`,
+alongside the two named analytic Paterson files in `Bags/`. Both `network`
+and `SortingDepth.upperNetwork` remain computable definitions.
 
 ## Documents and history
 

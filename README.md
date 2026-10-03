@@ -4,9 +4,10 @@ This local project studies explicit sorting-depth constants. Start with the
 [current research index](docs/research-index.md) for the local Paterson progress,
 proof boundaries, and modular build commands, and [AGENTS.md](AGENTS.md) for
 shared agent guidance. The local verified bound is now
-`D(n) <= 102 * 10^62 * ceil(log_2 n)`, with a formal limsup corollary in
-[`AKS/Bounds/Asymptotic.lean`](AKS/Bounds/Asymptotic.lean), improving the previous
-`141 * 10^62` coefficient by tuning the Seiferas parameters. The refined
+`D(n) <= 10^6 * ceil(log_2 n)`, with a formal limsup corollary in
+[`AKS/Bounds/Paterson.lean`](AKS/Bounds/Paterson.lean). It uses formally proved
+Paterson halvers with the established Seiferas scheduler, selected classically.
+The previous executable MGG-based networks remain available. The refined
 Paterson sorting bound is still unfinished; its modular interior proof is in
 [`AKS/Paterson/Interior.lean`](AKS/Paterson/Interior.lean). The original upstream
 construction is documented below.

@@ -37,6 +37,7 @@ import AKS.Halver.PatersonDepthBridge
 import AKS.Halver.PatersonWitnesses
 import AKS.Halver.PatersonCollapsedWitnesses
 import AKS.Halver.PatersonTail
+import AKS.Halver.PatersonFull
 import AKS.Halver.PatersonSimultaneous
 import AKS.Halver.PatersonJointTail
 import AKS.Separator.PatersonInjective
@@ -50,6 +51,7 @@ import AKS.Separator.PatersonCertificate
 import AKS.Separator.PatersonGood
 import AKS.Paterson.BagParams
 import AKS.Paterson.Rounding
+import AKS.Paterson.LatticeRounding
 import AKS.Paterson.RankTransfer
 import AKS.Paterson.GoodRouting
 import AKS.Paterson.Interior
@@ -65,6 +67,8 @@ import AKS.Konig.ContractedBipartite
 import AKS.Konig.Matching
 import AKS.Separator.Defs
 import AKS.Separator.Family
+import AKS.Separator.Provider
+import AKS.Separator.PatersonProvider
 import AKS.Separator.FromHalverDefs
 import AKS.Separator.FromHalver
 import AKS.Separator.General
@@ -113,3 +117,5 @@ import AKS.Seiferas
 import AKS.Bounds.Upper
 import AKS.Bounds.Asymptotic
 import AKS.Bounds.Axioms
+import AKS.Bounds.Paterson
+import AKS.Bounds.PatersonAxioms

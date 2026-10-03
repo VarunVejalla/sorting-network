@@ -264,12 +264,12 @@ theorem parent_stranger_eq1_le (p : Params) (k : ℕ) (hk : 10 ≤ k)
         fun i ↦ orderEmbOfFin_mem _ rfl _
       let γₑ := effectiveGamma p.γ (capacity p k t parent.l) n_local
       have hγₑ_pos := effectiveGamma_pos p.hγ_pos (capacity_pos p k t parent.l) n_local
-      set sep_local := separatorNet γₑ p.ε hγₑ_pos p.hε_pos (parent_regs.card / 2)
+      set sep_local := p.separators.net γₑ hγₑ_pos (parent_regs.card / 2)
         with hsep_local_def
       -- (1/2, ε)-separator via halver → separator bridge
       have hsep_half : IsSeparator sep_local (1/2 : ℝ) ↑p.ε :=
         halver_isSeparator_half _ _ (by exact_mod_cast p.hε_pos.le)
-          (separatorNet_isHalver γₑ p.ε hγₑ_pos p.hε_pos (parent_regs.card / 2))
+          (p.separators.isHalver γₑ hγₑ_pos (parent_regs.card / 2))
       -- perm_t1 = sep_local.exec u' on local coordinates
       have hexec_stage : perm_t1 = (stage p (stages p k t).value t).net.exec perm_t := by
         show (do let pl' ← stages p k t; stage p pl' t).net.exec perm₀ = _
