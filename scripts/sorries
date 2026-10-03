@@ -87,8 +87,8 @@ def main() -> None:
     any_hit = False
 
     for filepath in lean_files:
-        relpath = os.path.relpath(filepath, root)
-        with open(filepath) as f:
+        relpath = os.path.relpath(filepath, root).replace(os.sep, "/")
+        with open(filepath, encoding="utf-8") as f:
             lines = f.readlines()
 
         file_hits = []

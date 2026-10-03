@@ -3,6 +3,7 @@
 
   Imports all modules. For the main results, see:
   • `AKS/Seiferas.lean` — Seiferas (2009) separator-based O(n log n) sorting networks
+  • `AKS/Bounds/Asymptotic.lean` — improved local-project minimum-depth limsup bound
 -/
 
 import AKS.Sort.Defs
@@ -26,6 +27,35 @@ import AKS.Misc.Log
 import AKS.Halver.Defs
 import AKS.Halver.Empty
 import AKS.Halver.Mono
+import AKS.Halver.MatchingCount
+import AKS.Halver.Paterson
+import AKS.Halver.PatersonCorrectness
+import AKS.Halver.PatersonExistence
+import AKS.Halver.PatersonEntropy
+import AKS.Halver.PatersonMonotonicity
+import AKS.Halver.PatersonDepthBridge
+import AKS.Halver.PatersonWitnesses
+import AKS.Halver.PatersonCollapsedWitnesses
+import AKS.Halver.PatersonTail
+import AKS.Halver.PatersonSimultaneous
+import AKS.Halver.PatersonJointTail
+import AKS.Separator.PatersonInjective
+import AKS.Separator.PatersonDefs
+import AKS.Separator.PatersonFamily
+import AKS.Separator.PatersonConstruction
+import AKS.Separator.PatersonNear
+import AKS.Separator.PatersonStep
+import AKS.Separator.PatersonPrefix
+import AKS.Separator.PatersonCertificate
+import AKS.Separator.PatersonGood
+import AKS.Paterson.BagParams
+import AKS.Paterson.Rounding
+import AKS.Paterson.RankTransfer
+import AKS.Paterson.GoodRouting
+import AKS.Paterson.Interior
+import AKS.Separator.PatersonOdd
+import AKS.Separator.PatersonFlip
+import AKS.Separator.PatersonOddFinal
 import AKS.Halver.Tanner
 import AKS.Halver.FromExpander
 import AKS.Konig.Defs
@@ -44,6 +74,9 @@ import AKS.Halver.Quotient
 import AKS.Halver.General
 import AKS.Halver.Axioms
 import AKS.Bags.Params
+import AKS.Bags.PatersonParams
+import AKS.Bags.PatersonNumerics
+import AKS.Halver.PatersonAxioms
 import AKS.Bags.Defs
 import AKS.Bags.Network
 import AKS.Bags.SplitCard
@@ -77,3 +110,6 @@ import AKS.ZigZag.RVWInequality
 import AKS.ZigZag.RVWBound
 import AKS.ZigZag.Expanders
 import AKS.Seiferas
+import AKS.Bounds.Upper
+import AKS.Bounds.Asymptotic
+import AKS.Bounds.Axioms

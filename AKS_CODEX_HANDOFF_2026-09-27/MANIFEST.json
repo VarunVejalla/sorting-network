@@ -1,0 +1,67 @@
+{
+  "package": "AKS_CODEX_HANDOFF_2026-09-27",
+  "created": "2026-09-27",
+  "target_repo": "https://github.com/girving/aks",
+  "notes": [
+    "User already has a local clone of the target repository; repo source is not duplicated here.",
+    "External papers are linked rather than redistributed.",
+    "Prior handoffs contain candidate/unproved constructions; consult PROOF_STATUS_LEDGER.md before using them."
+  ],
+  "files": [
+    {
+      "path": "AVENUE2_FORMULAS.md",
+      "bytes": 4078,
+      "sha256": "4ac6864e19c32cffb11aca298a2e5c9d75995873ff52c9665d96ea8f32d2dfb3"
+    },
+    {
+      "path": "CODEX_PROMPT.md",
+      "bytes": 2701,
+      "sha256": "8644d44b9bbe081433f6e2b45094bc922b30aa0df53e03e893a6135423569285"
+    },
+    {
+      "path": "CONTRIBUTION_PLAN.md",
+      "bytes": 6956,
+      "sha256": "720f033c6bb0b0984bce891b1b2fa6e8600a9817c279f071be92fb49edacaaa0"
+    },
+    {
+      "path": "CURRENT_RESEARCH_STATE.md",
+      "bytes": 13569,
+      "sha256": "fbabde0d6268c62a81f51d9b5753cb15497f97bee9d350a688c0b2f56e1788dd"
+    },
+    {
+      "path": "GIRVING_AKS_REPO_MAP.md",
+      "bytes": 5718,
+      "sha256": "346d72805fcb8805e8fc0cbc284b154e1c610d80a8193c61d23b9404e1057750"
+    },
+    {
+      "path": "PROOF_STATUS_LEDGER.md",
+      "bytes": 3910,
+      "sha256": "6d7dac5e0e944b8020f6ace5410a01bc301f8e719779c35869514587b206ed62"
+    },
+    {
+      "path": "README_START_HERE.md",
+      "bytes": 4027,
+      "sha256": "548a6705d7cb6910af423570606c584d60454f00b8db5ee1c863ad9ba26f0527"
+    },
+    {
+      "path": "REFERENCES_AND_LINKS.md",
+      "bytes": 3780,
+      "sha256": "83548018977dda19cb3ae10a47b2dfaafe063a8da8751a835d1af8d088aa4bc1"
+    },
+    {
+      "path": "prior_handoffs/SORTING_NETWORK_AVENUE2_RECURSIVE_HANDOFF_2026-09-04.md",
+      "bytes": 13461,
+      "sha256": "ffd4151348599a68408e179ec7ea1af5ec1739e2680cc04ac0c93beab4af0d2a"
+    },
+    {
+      "path": "prior_handoffs/SORTING_NETWORK_CONSTANT_HANDOFF_2026-09-04.md",
+      "bytes": 18090,
+      "sha256": "4722d69b6fae24c480bff171033476f0ceb9d3672f329cc0632a7cee10049aa1"
+    },
+    {
+      "path": "prior_handoffs/SORTING_NETWORK_SOURCES_2026-09-04.md",
+      "bytes": 3292,
+      "sha256": "fc4497c46979b701dfa0b6b5541e3e828f80878bca317346c9fa3521e1757d56"
+    }
+  ]
+}

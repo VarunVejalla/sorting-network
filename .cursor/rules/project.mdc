@@ -1,0 +1,6 @@
+---
+description: Shared project guidance for sorting-network research
+alwaysApply: true
+---
+
+Follow the repository's shared instructions in `AGENTS.md`. Keep mathematical status explicit, preserve the handoff archive, and do not treat provisional research leads as proved results.

@@ -49,7 +49,14 @@ ALLOW_MARKER: dict[str, frozenset[str]] = {
     "native_decide": frozenset(),
     "sorry": frozenset(),
     "#exit": frozenset(),
-    "noncomputable": frozenset({"AKS/Graph/", "AKS/Halver/", "AKS/Konig/", "AKS/MGG/", "AKS/Sort/", "AKS/Separator/", "AKS/Misc/", "AKS/ZigZag/"}),
+    "noncomputable": frozenset({"AKS/Graph/", "AKS/Halver/", "AKS/Konig/", "AKS/MGG/", "AKS/Sort/", "AKS/Separator/", "AKS/Misc/", "AKS/ZigZag/",
+                               # Analytic formulas and their numerical bounds;
+                               # the existing Seiferas network remains computable.
+                               "AKS/Bags/PatersonParams.lean",
+                               "AKS/Bags/PatersonNumerics.lean",
+                               # Minimum over sorting networks is a classical
+                               # mathematical quantity; upperNetwork is a def.
+                               "AKS/Bounds/Upper.lean"}),
 }
 
 # ---------------------------------------------------------------------------
@@ -141,7 +148,7 @@ def main() -> None:
         filepath = os.path.join(root, relpath)
         if not os.path.isfile(filepath):
             continue
-        with open(filepath) as f:
+        with open(filepath, encoding="utf-8") as f:
             lines = f.readlines()
         for i, line in enumerate(lines):
             for m in PATTERN.finditer(line):
