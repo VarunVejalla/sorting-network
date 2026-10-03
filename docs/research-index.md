@@ -37,7 +37,7 @@ The original `network` and its old bound remain in `AKS/Seiferas.lean`.
 The previous executable `upperNetwork` with coefficient `102 * 10^62`
 remains in `Bounds/Upper.lean`. The smaller five-level numbers below are local
 bounds and arithmetic certificates; they do not yet establish the refined
-roughly-6100 bound for `D(n)`.
+7000 target for `D(n)`.
 
 ## Proved milestones
 
@@ -79,108 +79,58 @@ large proof or build optional certificate libraries to work on them.
 
 ## Rounded Paterson implementation in progress
 
-The first modular interior preservation theorem is implemented and checked:
-[`Paterson.Bags.interior_step`](../AKS/Paterson/Interior.lean). It derives the
-destination invariant from the old invariant, bag-local comparisons, child
-subset routing, a parent-cohort filtering bound, and a parent first-stranger
-bound. The two parent bounds are explicit hypotheses. This is not yet a
-verified scheduler transition or a global sorting theorem.
+The active candidate uses `A = 19/4`, `mu = 199/10000`, `delta = 1/57`,
+`nu = 707/1000`, minimum capacity `300000`, and rounding allowance `10`.
+[FastParams](../AKS/Paterson/FastParams.lean) checks every interior parameter
+constraint and `(2*A)^2 * nu^13 < 1`.
+The older `roundedParams` and ideal approximately-6100 certificates are
+historical candidate arithmetic; the current budget includes root sorting.
 
-New reusable pieces:
+### Checked concrete components
 
-- [BagParams](../AKS/Paterson/BagParams.lean): rational interior constraints,
-  capacity recurrence, and a working rounded instance with `mu = 199/10000`,
-  `nu = 18/25`, minimum capacity `10^6`, and explicit rounding allowance.
-  `roundedParams_fresh_source` checks that the rank-balance source estimate
-  fits its fresh-error budget, allowing a floor loss of one in the selected
-  cohort and a half-size rounding gain of one.
-- [Rounding](../AKS/Paterson/Rounding.lean): even subtree totals, exact bag
-  subtraction, `b - 8 < actual size < b + 2`, rounded fringe error below one,
-  support slack, and coverage of the `n/32` fringe.
-- [LatticeRounding](../AKS/Paterson/LatticeRounding.lean): an alternative
-  32-lattice subtree recipe, `b - 128 < actual size < b + 32`, support slack,
-  and routing-count identities preserving divisibility by 32. The existing
-  989-depth separator applies directly to these local bag sizes. The actual
-  scheduler still has to prove the rounded subtree and fringe identities.
-- [PatersonGood](../AKS/Separator/PatersonGood.lean): later comparator layers
-  preserve the jointly selected first halver's large-cohort guarantee at
-  every even whole-bag arity. This does not remove the divisibility restriction
-  of the separate small-cohort five-level contract.
-- [RankTransfer](../AKS/Paterson/RankTransfer.lean): both supported separator
-  directions for injective selections of ambient ranks.
-- [GoodRouting](../AKS/Paterson/GoodRouting.lean): both half-complement and
-  middle first-stranger bounds under explicit input-rank balance.
-  The estimate retains residual old strangers after imperfect fringe filtering.
-- [Axiom assertions](../AKS/Bounds/Axioms.lean): the new global bound and
-  modular Paterson endpoints.
+| Component | Files | What is proved |
+| --- | --- | --- |
+| Parallel separator stage | [BagSeparator](../AKS/Paterson/BagSeparator.lean), [Stage](../AKS/Paterson/Stage.lean) | Actual scattered bag networks, depth at most 989, local execution identities, supported old-stranger filtering, and a routed placement for specified fringes. |
+| Fresh-stranger source | [Fresh](../AKS/Paterson/Fresh.lean), [Balance](../AKS/Paterson/Balance.lean) | Actual first-halver execution estimates, finite disjoint-cohort counting, rounded fresh-cost arithmetic, and a capacity-based sufficient condition for rank balance. |
+| Concrete interior preservation | [Transition](../AKS/Paterson/Transition.lean) | `interior_parallel_step` discharges the former abstract separator-filter and first-stranger hypotheses. Actual size, capacity, fringe, parity, and `ChildBalance` hypotheses remain explicit. |
+| Descendant contamination | [Subtree](../AKS/Paterson/Subtree.lean) | Geometric subtree intrusion bound for the new Paterson parameters, conditional on the old invariant and parity emptiness. |
+| Rounded size recipe | [Schedule](../AKS/Paterson/Schedule.lean) | 32-lattice subtree totals, full-bag size bounds, fringe coverage, and routing cardinality identities. These are arithmetic identities; the global allocation is not constructed yet. |
+| Root purity and sort cost | [Root](../AKS/Paterson/Root.lean), [TightDepth](../AKS/Bitonic/TightDepth.lean) | At a sufficiently small root capacity, the invariant implies zero deepest strangers from level six. Given explicit region size bounds, the top region has fewer than `2^33` wires and its scattered bitonic sort costs at most 561. No forest splitting correctness theorem yet. |
+| Arbitrary virtual padding | [Padding](../AKS/Paterson/Padding.lean) | Both directional supported contracts survive restriction with virtual maxima/minima, without additive error. |
+| Concrete partial-bag gadget | [PatersonRefinement](../AKS/Separator/PatersonRefinement.lean), [PatersonPartial](../AKS/Separator/PatersonPartial.lean) | Four refinement levels cost 726; the actual-size first split and two padded half refinements cost 989, retain the large-cohort first contract, and satisfy both directional half refinement estimates. The larger partial-tail error fits the bottom-level arithmetic budget. Whole partial-bag preservation remains open. |
+| Proposed operation counts | [Accounting](../AKS/Paterson/Accounting.lean) | `T(k) = 13*ceil(k/2)` overcomes initial capacity growth. The proposed cost `989*T(k) + 561*k` is at most `7000*k` for `k >= 613`. These are arithmetic theorems, not sorting theorems. |
+| Kernel audit | [Axioms](../AKS/Paterson/Axioms.lean) | Guarded axiom checks on concrete transition, padding, partial gadget, root bounds, and accounting. Only the standard Lean/Mathlib axioms appear. |
 
-Next obligations: derive input balance from actual placements and cold
-storage, either realize the 32-lattice scheduler or finish the all-even-size
-separator, and discharge the two parent hypotheses
-for the scheduler. Root/partial-level rules, root splitting, and global depth
-accounting remain open. The looser working instance above does not certify
-the older conditional `<6100` numerical target.
+### Remaining global obligations
 
-## Completed full-support Paterson route
+1. **Cold storage and allocation.** Construct the complete rounded placement
+   with explicit cold storage, parity, full levels, partial levels, and root
+   flow. Prove its actual cardinalities match `scheduledSubtree` and the
+   routing identities. `Stage.route` alone does not implement this scheduler.
+2. **Rank balance.** Instantiate the checked disjoint-cohort and subtree
+   estimates with the scheduler's actual native intervals and cold-storage
+   deficits to obtain `ChildBalance` at every interior transition.
+3. **Partial-level invariant.** Combine the actual first split with the two
+   padded refinement estimates into whole-bag filtering, then prove the
+   boundary transition where no descendants contribute.
+4. **Root/forest transition.** Prove the sorted top region can be split into
+   independent smaller trees while retaining the required invariant and
+   storage constraints. Deep rank purity alone does not prove this.
+5. **Termination and final sorting.** Build the recursive network, establish
+   sortedness, and justify its actual stage and root-sort counts. Include
+   startup, terminal cleanup, and all extra costs in the accounting.
+6. **Minimum depth and limsup.** Apply the existing restriction and asymptotic
+   infrastructure to the completed family, with all boundary costs covered.
 
-There is also a route that does not require completing Paterson's refined bag
-argument. The proved `exists_paterson_halver_all_arities` permits `alpha = 1`.
-At full support its two-sided contract matches the ordinary halver interface,
-after a rank/count conversion. Such halvers could replace the enormous-degree
-MGG halvers while retaining the current Seiferas parameters and invariant.
+The candidate coefficient is `989*(13/2) + 561 = 6989.5`. This is a
+**conditional construction budget**, not a theorem about `D(n)` or its limsup.
+Even the proved eventual inequality in `Accounting.lean` bounds only the
+proposed operation count. The best complete sorting bound remains `10^6`.
 
-The refactor is now implemented: `separatorNet` and its correctness/depth
-theorems accept a supplied halver family; [BagSeparators](../AKS/Separator/Provider.lean)
-bundles networks at effective fringe fractions and a uniform depth budget;
-`Params.separators` supplies the provider to the scheduler. The existing MGG
-construction remains the default and its computable network still builds.
-The Paterson provider uses full-support matching networks with a certified
-entropy bound. Noncomputable selection suffices for the minimum-depth theorem.
-
-This route sacrifices the level-dependent depth advantage behind the 989
-budget. It gives the completed million bound above. The refined `<6100`
-target requires the additional work below.
-
-## Remaining path to the refined Paterson bound
-
-1. **Rounded local separator.** Specify and assemble the five-level network
-   for the local sizes actually used by the bag scheduler. Prove the exact
-   rounded fringes and supported-cohort bounds. The two odd-block lemmas provide
-   ingredients, but merely composing them does not preserve the existing
-   989-depth budget automatically.
-2. **Bag transition and invariant.** Define the scheduler and prove capacity,
-   higher-order stranger decay, and fresh first-order stranger control, using
-   the small-cohort and large-cohort contracts where appropriate. Include cold
-   storage, partial levels, root transitions, and integer rounding. The current
-   Seiferas `Params` cannot be instantiated with these Paterson choices:
-   `patersonNu_fails_current_hC3` records one concrete obstruction. The adjusted
-   fringe parameter also needs an actual rounded implementation.
-3. **Sorting and finishing.** Prove that the invariant implies rank-pure small
-   subproblems and that cleanup sorts. Reuse generic network, scattering,
-   monotonicity, restriction, and depth lemmas where their hypotheses match.
-4. **Asymptotic stage accounting.** Prove a bound of the form
-   `T(k) <= (123/20) * k + O(1)` with `k = log_2 N`, rather than rounding the
-   stage coefficient itself to 7. With the 989 local budget, that rounding
-   would cost 6923 instead of the candidate coefficient 6082.35.
-5. **All n and limsup.** Combine sorting, stage depth, and boundary costs to
-   obtain `D(n) <= C * log_2 n + o(log n)`. Proving this first on powers of two
-   is enough if the existing wire-restriction theorem is used correctly:
-   `ceil(log_2 n) = log_2 n + O(1)`. This does not remove the need to handle
-   odd *local bag* sizes.
-
-The verified arithmetic `989 * (123/20) = 6082.35 < 6100` motivates a completion
-target. It is conditional on the missing global proof and its actual cost
-accounting. For the limsup objective, finite small sizes and constant boundary
-costs do not alter `C`; any nonconstant extra work must be bounded explicitly.
-
-The minimum-depth and limsup infrastructure is now in `Bounds/Upper.lean` and
-`Bounds/Asymptotic.lean`. A completed refined family can reuse that infrastructure.
-
-For the refined track, the next mathematical task should be the rounded
-separator interface consumed by one precise bag transition. Validate that
-interface before building the entire scheduler, so the existing local proof
-and the global invariant agree. The full-support milestone is now complete;
-the active next task is the tighter rounded scheduler.
+The next proof should implement cold storage and global allocation, while
+finishing the whole partial-bag contract in parallel with that mathematical
+work. The old Seiferas parameter interface cannot simply be instantiated with
+these parameters; `patersonNu_fails_current_hC3` records an obstruction.
 
 ## Build and audit
 
@@ -194,7 +144,9 @@ lake build AKS.Halver.PatersonJointTail
 lake build AKS.Separator.PatersonCertificate
 lake build AKS.Separator.PatersonOddFinal
 lake build AKS.Halver.PatersonAxioms
-lake build AKS.Paterson.Interior
+lake build AKS.Paterson.Transition
+lake build AKS.Separator.PatersonPartial
+lake build AKS.Paterson.Axioms
 lake build AKS.Paterson.GoodRouting
 lake build AKS.Bounds.Axioms
 lake build AKS.Bounds.PatersonAxioms

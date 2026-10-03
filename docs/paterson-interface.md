@@ -1,3 +1,10 @@
+> Current status: the concrete interior transition and padded partial-bag
+> gadget are now checked. The active rounded parameters use `nu = 707/1000`,
+> minimum capacity `300000`, and a conditional coefficient `6989.5` including
+> root sorting. See [the research index](research-index.md) for exact endpoints
+> and remaining global obligations. Earlier parameter and milestone discussions
+> below record the development history; they do not establish a 7000 sorting bound.
+
 # Paterson construction: interface audit
 
 For the current local file map, verified milestones, and the path to a limsup

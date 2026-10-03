@@ -52,8 +52,10 @@ improvement over published mathematical bounds.
 The refined Paterson bag construction is **not yet a complete sorting theorem**.
 Verified components include restricted-halver existence, a five-level separator
 of depth at most 989 for arities divisible by 32, local stranger estimates,
-conditional interior invariant preservation, and lattice rounding and routing
-identities.
+concrete interior invariant preservation under explicit size and rank-balance
+hypotheses, padded partial-bag gadgets, and lattice rounding and routing identities.
+The current candidate budget is `989 * 6.5 + 561 = 6989.5` per logarithmic
+input level; its global construction and operation counts remain unproved.
 
 The main remaining steps are:
 
