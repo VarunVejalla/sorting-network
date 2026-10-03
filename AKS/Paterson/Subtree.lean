@@ -20,11 +20,11 @@ theorem subtree_intrusion (p : Params) (k : ℕ) (root : ℚ) (hr : 0 ≤ root)
     (pl : Placement k)
     (perm : Fin (2 ^ k) → Fin (2 ^ k))
     (t : ℕ)
-    (hempty : ∀ c : Bag k, (t + c.l) % 2 ≠ 0 → pl.regs c = ∅)
+    (b : Bag k)
+    (hempty : ∀ c : Bag k, b.l ≤ c.l → (t + c.l) % 2 ≠ 0 → pl.regs c = ∅)
     (ih : ∀ (b : Bag k) (j : ℕ), 1 ≤ j →
       (b.strangers j perm (pl.regs b) : ℚ) ≤
       p.mu * p.delta ^ (j - 1) * capacity p root t b.l)
-    (b : Bag k)
     (hparity : (t + b.l) % 2 ≠ 0) :
     (((subregs pl b).filter
         (fun r ↦ ¬b.Native r perm)).card : ℚ) ≤
@@ -63,10 +63,10 @@ theorem subtree_intrusion (p : Params) (k : ℕ) (root : ℚ) (hr : 0 ≤ root)
           rw [mul_pow]; ring
 
   -- Helper: wrong-parity bags have empty regs
-  have parity_empty : ∀ l, (t + l) % 2 ≠ 0 → ∀ (c : Bag k), c.l = l →
+  have parity_empty : ∀ l, b.l ≤ l → (t + l) % 2 ≠ 0 → ∀ (c : Bag k), c.l = l →
       (pl.regs c).card = 0 := by
-    intro l hpar c hcl
-    rw [hempty c (hcl ▸ hpar), card_empty]
+    intro l hbl hpar c hcl
+    rw [hempty c (hcl ▸ hbl) (hcl ▸ hpar), card_empty]
 
   -- Abbreviations
   set eA := p.delta * p.A
@@ -116,7 +116,7 @@ theorem subtree_intrusion (p : Params) (k : ℕ) (root : ℚ) (hr : 0 ≤ root)
   by_cases hck : cur.l < k
   · -- Case 2: cur.l < k → decompose
     -- regs(cur) empty by wrong parity
-    have hregs_empty : (pl.regs cur).card = 0 := parity_empty cur.l hpar cur rfl
+    have hregs_empty : (pl.regs cur).card = 0 := parity_empty cur.l hle hpar cur rfl
     have hregs_filter : ((pl.regs cur).filter (fun r ↦ ¬b.Native r perm)).card = 0 := by
       rw [← Nat.le_zero, ← hregs_empty]; exact Finset.card_filter_le _ _
     -- Children
@@ -214,7 +214,7 @@ theorem subtree_intrusion (p : Params) (k : ℕ) (root : ℚ) (hr : 0 ≤ root)
   · -- Case 1: cur.l ≥ k → subregs = regs, empty by parity
     have hcur_leaf : ¬cur.l < k := hck
     rw [subregs, dif_neg hcur_leaf]
-    have hregs_empty : (pl.regs cur).card = 0 := parity_empty cur.l hpar cur rfl
+    have hregs_empty : (pl.regs cur).card = 0 := parity_empty cur.l hle hpar cur rfl
     have hfilt0 : ((pl.regs cur).filter (fun r ↦ ¬b.Native r perm)).card = 0 := by
       rw [← Nat.le_zero, ← hregs_empty]; exact Finset.card_filter_le _ _
     simp only [hfilt0, Nat.cast_zero]

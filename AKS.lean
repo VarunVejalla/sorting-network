@@ -134,3 +134,7 @@ import AKS.Paterson.Padding
 import AKS.Paterson.Axioms
 import AKS.Separator.PatersonRefinement
 import AKS.Separator.PatersonPartial
+
+import AKS.Paterson.AllocationInitial
+import AKS.Paterson.PartialBoundary
+import AKS.Paterson.StorageAxioms

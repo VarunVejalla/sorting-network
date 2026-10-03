@@ -59,7 +59,10 @@ input level; its global construction and operation counts remain unproved.
 
 The main remaining steps are:
 
-- Construct the rounded bag scheduler, including cold storage and root transitions.
+- Assemble comparison-stage invariant preservation for the implemented rounded
+  allocation scheduler. Cold storage, one-tree allocation counts, and actual
+  full/partial rank-cohort budgets are checked.
+- Prove root transitions and the wire ordering required for final sorted outputs.
 - Connect its actual placements to the global stranger invariant and discharge
   the conditional interior hypotheses.
 - Prove final sorting, stage counts, cleanup costs, and the resulting depth bound.

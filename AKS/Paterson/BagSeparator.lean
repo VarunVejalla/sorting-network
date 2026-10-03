@@ -108,16 +108,19 @@ theorem bagSeparator_depth_le {k : ℕ} (regs : Finset (Fin (2 ^ k))) :
 
 /-- Supported old strangers are filtered in the actual middle output.
 `hview` is an execution equality, rather than a stranger-bound assumption. -/
-theorem bagSeparator_filters {k : ℕ} (regs : Finset (Fin (2 ^ k)))
-    (hdvd : 32 ∣ regs.card) (f : ℕ) (hf : regs.card / 32 ≤ f)
+theorem bagNetwork_filters {k : ℕ} (regs : Finset (Fin (2 ^ k)))
+    (heven : 2 ∣ regs.card) (net : ComparatorNetwork regs.card)
+    {fringe : ℕ} {support err : ℝ}
+    (hsmall : IsSupportedSeparator net fringe support err)
+    (f : ℕ) (hf : fringe ≤ f)
     (hhalf : f ≤ regs.card / 2)
     (w w' : Fin (2 ^ k) → Fin (2 ^ k)) (hw : Function.Injective w)
     (hview : ∀ i, w' (regs.orderEmbOfFin rfl i) =
-      (separatorNetwork regs.card).exec (w ∘ regs.orderEmbOfFin rfl) i)
+      net.exec (w ∘ regs.orderEmbOfFin rfl) i)
     (b : Bag k) (j : ℕ) (hj : 1 ≤ j)
-    (hs : (b.strangers j w regs : ℝ) ≤ (patersonMu : ℝ) * regs.card) :
+    (hs : (b.strangers j w regs : ℝ) ≤ support * regs.card) :
     (b.strangers j w' ((split regs f).toLeft ∪ (split regs f).toRight) : ℝ) ≤
-      (patersonTailError : ℝ) * b.strangers j w regs := by
+      err * b.strangers j w regs := by
   let anc := b.ancestor (j - 1)
   have hstrange (v : Fin (2 ^ k) → Fin (2 ^ k)) (r : Fin (2 ^ k)) :
       b.Strange j r v ↔ (v r).val < anc.lo ∨ anc.hi ≤ (v r).val := by
@@ -138,7 +141,6 @@ theorem bagSeparator_filters {k : ℕ} (regs : Finset (Fin (2 ^ k)))
   have hmiddle : (split regs f).toLeft ∪ (split regs f).toRight =
       (univ.filter (fun i : Fin regs.card ↦ f ≤ i.val ∧ i.val < regs.card - f)).image
         (regs.orderEmbOfFin rfl) := by
-    have heven : 2 ∣ regs.card := dvd_trans (by norm_num) hdvd
     have hc : 2 * (regs.card / 2) = regs.card := Nat.mul_div_cancel' heven
     simp only [split, ← image_union]
     congr 1
@@ -148,8 +150,8 @@ theorem bagSeparator_filters {k : ℕ} (regs : Finset (Fin (2 ^ k)))
   have houtput : b.strangers j w'
       ((split regs f).toLeft ∪ (split regs f).toRight) =
       (univ.filter (fun i : Fin regs.card ↦ f ≤ i.val ∧ i.val < regs.card - f ∧
-        (((separatorNetwork regs.card).exec (w ∘ regs.orderEmbOfFin rfl) i).val < anc.lo ∨
-          anc.hi ≤ ((separatorNetwork regs.card).exec
+        ((net.exec (w ∘ regs.orderEmbOfFin rfl) i).val < anc.lo ∨
+          anc.hi ≤ (net.exec
             (w ∘ regs.orderEmbOfFin rfl) i).val))).card := by
     unfold Bag.strangers
     rw [hmiddle, filter_image_card, filter_filter]
@@ -161,9 +163,22 @@ theorem bagSeparator_filters {k : ℕ} (regs : Finset (Fin (2 ^ k)))
   rw [hcount] at hs
   rw [houtput, hcount]
   exact supported_injective_interval
-    (supported_separator_mono_fringe (separatorNetwork_certificate_of_dvd32 _ hdvd).1 hf)
+    (supported_separator_mono_fringe hsmall hf)
     (w ∘ regs.orderEmbOfFin rfl) (hw.comp (regs.orderEmbOfFin rfl).injective)
     anc.lo anc.hi anc.lo_lt_hi.le hs
+
+theorem bagSeparator_filters {k : ℕ} (regs : Finset (Fin (2 ^ k)))
+    (hdvd : 32 ∣ regs.card) (f : ℕ) (hf : regs.card / 32 ≤ f)
+    (hhalf : f ≤ regs.card / 2)
+    (w w' : Fin (2 ^ k) → Fin (2 ^ k)) (hw : Function.Injective w)
+    (hview : ∀ i, w' (regs.orderEmbOfFin rfl i) =
+      (separatorNetwork regs.card).exec (w ∘ regs.orderEmbOfFin rfl) i)
+    (b : Bag k) (j : ℕ) (hj : 1 ≤ j)
+    (hs : (b.strangers j w regs : ℝ) ≤ (patersonMu : ℝ) * regs.card) :
+    (b.strangers j w' ((split regs f).toLeft ∪ (split regs f).toRight) : ℝ) ≤
+      (patersonTailError : ℝ) * b.strangers j w regs :=
+  bagNetwork_filters regs (dvd_trans (by norm_num) hdvd) (separatorNetwork regs.card)
+    (separatorNetwork_certificate_of_dvd32 _ hdvd).1 f hf hhalf w w' hw hview b j hj hs
 
 end Bags
 end Paterson
