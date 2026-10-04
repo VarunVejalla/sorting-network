@@ -4,8 +4,9 @@ public import AKS.Paterson.FastParams
 
 /-! # Exact integer accounting for the proposed forest budget
 
-This is arithmetic for an ideal shrinking schedule. It does not assert that
-the unfinished forest construction sorts or meets these operation counts.
+This module isolates arithmetic for the shrinking schedule. The actual
+forest depth and full sorting theorem are checked in `PatersonForestDepth`
+and `PatersonForestSorts`; the final correction adds coefficient one.
 -/
 
 @[expose] public section

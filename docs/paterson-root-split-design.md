@@ -1,8 +1,11 @@
 # Root splitting: proposed completion argument
 
-Status: research design, **not a formal sorting theorem**. The one-tree mixed
-stage and repeated comparison run are now kernel checked. The following is the
-mathematical argument being developed for the remaining forest transition.
+Status: **formalized**. The actual rebuild and child invariant are checked in
+`RootRebuildInvariant` and `ChildInvariant`; the terminating forest and final
+rank correction establish full sorting in `PatersonForestSorts`. The final
+bound is `limsup D(n)/log_2 n <= 6990.5`, with endpoints in
+[PatersonTight](../AKS/Bounds/PatersonTight.lean). The argument below records
+the design that guided these proofs.
 
 ## Rebuild the upper allocation after sorting
 
@@ -49,21 +52,21 @@ with an extra power of `delta`, cover higher-order strangers. Deep bags retain
 their old bounds. Deep wrong-half counts are zero at the root threshold;
 this supplies exact rank separation between the two new trees.
 
-Outstanding formal obligations include the global deep-error sum, prefix-count
-discrepancy, the sorted-bin estimate, the rebuilt ownership/cardinality proof,
-and translation of rank intervals into the two smaller trees.
+The global deep-error sum, prefix discrepancy, sorted-bin estimate, rebuilt
+ownership/cardinality proof, and child rank translation are all checked.
 
 ## Final physical wire order
 
 The independent subtrees can occupy noncontiguous wire sets. Their exact final
 sorts give a fixed permutation of global ranks, determined by the allocation
-and independent of the original input. A proposed correction network sorts
+and independent of the original input. The checked correction network sorts
 that known permutation in at most `log_2 N` rounds: match misplaced ranks across
 the two physical halves, then recurse independently in the halves. Each match
 compares an inverted pair, so an ordinary comparator performs the required
-swap. This lemma and its use in the final network still need formal proof.
+swap. `exists_known_permutation_correction` formalizes this lemma, and
+`correctedForest_sorts` uses it in the final sorting network.
 
-If successful, this adds coefficient 1: `989*6.5 + 561 + 1 = 6990.5`.
-Terminal exact sorting and rounding contribute a bounded additive term, which
-must be included in the eventual 7000 statement. No claim about `D(n)` follows
-until the forest, termination, correction, and complete accounting are proved.
+This adds coefficient 1: `989*6.5 + 561 + 1 = 6990.5`.
+Terminal exact sorting and startup contribute the checked additive allowance:
+`2*depth <= 13981*k + 13979`. Restriction to arbitrary arities and removal of
+the additive allowance give the minimum-depth and limsup endpoints.

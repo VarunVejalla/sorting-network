@@ -1,9 +1,8 @@
-> Current status: the concrete interior transition and padded partial-bag
-> gadget are now checked. The active rounded parameters use `nu = 707/1000`,
-> minimum capacity `300000`, and a conditional coefficient `6989.5` including
-> root sorting. See [the research index](research-index.md) for exact endpoints
-> and remaining global obligations. Earlier parameter and milestone discussions
-> below record the development history; they do not establish a 7000 sorting bound.
+> Current status: the rounded forest, root rebuild, child invariants and final
+> correction are formalized. The complete bounds are `D(n) <= 6991*clog_2(n)`
+> and `limsup D(n)/log_2(n) <= 6990.5`; eventually `D(n) <= 7000*log_2(n)`.
+> See [the research index](research-index.md) for current endpoints.
+> Earlier parameter discussions below record the development history.
 
 # Paterson construction: interface audit
 
@@ -11,9 +10,9 @@ For the current local file map, verified milestones, and the path to a limsup
 bound, start with [the research index](research-index.md). This document gives
 the detailed interface and source audit.
 
-Status: the restricted-halver theorem, its uniform probability estimate, a shared depth-263 first-level primitive, the injective local-input bridge, a supported-range separator interface, and a concrete five-level network of depth at most 989 are formalized in Lean. The network's supported-range separator property is proved when its arity is divisible by 32. The refined Paterson bag construction's top-level sorting theorem remains unfinished.
+Status: the restricted-halver theorem, its uniform probability estimate, a shared depth-263 first-level primitive, the injective local-input bridge, a supported-range separator interface, and a concrete five-level network of depth at most 989 are formalized in Lean. The network's supported-range separator property is proved when its arity is divisible by 32. The refined Paterson bag construction's top-level sorting theorem is now checked in `PatersonForestSorts`, with bounds in `Bounds/PatersonTight`.
 
-A separate complete route now proves `D(n) <= 10^6 * Nat.clog 2 n` and the corresponding limsup bound, using full-support Paterson halvers with the existing Seiferas bag scheduler (`AKS/Bounds/Paterson.lean`). For the tighter construction, `AKS/Paterson/LatticeRounding.lean` proves rounding, routing counts, and a local separator certificate for bags whose sizes are multiples of 32. Connecting these to an actual scheduler and its global invariant remains necessary; arbitrary-size separator correctness is another possible route.
+A separate complete route now proves `D(n) <= 10^6 * Nat.clog 2 n` and the corresponding limsup bound, using full-support Paterson halvers with the existing Seiferas bag scheduler (`AKS/Bounds/Paterson.lean`). For the tighter construction, `AKS/Paterson/LatticeRounding.lean` proves rounding, routing counts, and a local separator certificate for bags whose sizes are multiples of 32. The rounded scheduler, root rebuild, forest termination, final correction and global invariant are now checked; arbitrary-size separator correctness is not required by this construction.
 
 ## Formal proof components
 

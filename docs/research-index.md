@@ -10,34 +10,22 @@ The active target is a smaller upper bound on
 sorting-network depth. A constant for natural logarithms is the base-two constant
 divided by `ln 2`.
 
-The best complete bound currently formalized in this repository is
-[`SortingDepth.minimum_depth_le_million`](../AKS/Bounds/Paterson.lean):
+The best complete endpoints are in
+[Bounds/PatersonTight](../AKS/Bounds/PatersonTight.lean):
 
 ```text
-SortingDepth.minimum n <= 10^6 * Nat.clog 2 n.
+minimum_depth_le_6991: D(n) <= 6991 * Nat.clog 2 n (every n).
+minimum_depth_double_le: 2*D(n) <= 13981 * Nat.clog 2 n + 13979.
+limsup_minimum_div_logb_le_6990_5: limsup D(n)/log_2 n <= 13981/2.
+eventually_minimum_depth_le_7000_logb: eventually D(n) <= 7000 * log_2 n.
 ```
 
-`SortingDepth.minimum` defines `D(n)` as the minimum over sorting networks.
-[`SortingDepth.limsup_minimum_div_logb_le_million`](../AKS/Bounds/Paterson.lean)
-formally derives `limsup D(n)/log_2 n <= 10^6`, accounting for the ceiling
-logarithm. This combines the proved full-support Paterson halver with the
-prefix-doubling separator and the established Seiferas bag scheduler. It is
-a complete first Paterson-based bound, not the refined Paterson bag theorem
-or an improvement over published sorting bounds. The matching family and
-network are selected classically; this is an existence bound, not an
-executable search algorithm.
-
-The coefficient certificate is `999189 = 14 * 71370 + 9 < 10^6`.
-Parameters: `A = 397/50`, `gamma = 1/63`, `epsilon = 89/5000`,
-`nu = 8203/10000`. The underlying full-support halver has error `89/35000`
-and depth at most 5490. Every finite-size and cleanup contribution in the
-million bound is covered by the complete existing scheduler proof.
-
-The original `network` and its old bound remain in `AKS/Seiferas.lean`.
-The previous executable `upperNetwork` with coefficient `102 * 10^62`
-remains in `Bounds/Upper.lean`. The smaller five-level numbers below are local
-bounds and arithmetic certificates; they do not yet establish the refined
-7000 target for `D(n)`.
+`minimum_depth_le_7000_logb` gives the explicit sufficient condition
+`n >= 2` and `log_2 n >= 1472`. The networks are selected classically.
+All correctness and depth proofs are kernel checked. The older complete
+million-coefficient theorem remains in [Bounds/Paterson](../AKS/Bounds/Paterson.lean).
+The inherited executable networks remain available. This is an improvement to
+this repository's formal bound, not to the best published sorting bound.
 
 ## Proved milestones
 
@@ -77,7 +65,7 @@ large proof or build optional certificate libraries to work on them.
 | Scalar parameters and numerical certificates | `Bags/PatersonParams.lean`, `Bags/PatersonNumerics.lean` |
 | Axiom assertions | `Halver/PatersonAxioms.lean` |
 
-## Rounded Paterson implementation in progress
+## Completed rounded Paterson implementation
 
 The active candidate uses `A = 19/4`, `mu = 199/10000`, `delta = 1/57`,
 `nu = 707/1000`, minimum capacity `300000`, and rounding allowance `10`.
@@ -129,25 +117,25 @@ Root split groundwork is also checked:
 - [PrefixDiscrepancy](../AKS/Paterson/PrefixDiscrepancy.lean): generic remaining
   prefix discrepancy and sorted-bin wrong-rank bounds.
 
-Remaining obligations:
+### Completed global proof chain
 
-The actual root-region prefix discrepancy is checked in
-[CoarsePrefixCount](../AKS/Paterson/CoarsePrefixCount.lean), including exact
-global prefix counts and available deep capacity.
+| Obligation | Checked endpoint |
+| --- | --- |
+| Exact sorted-bin coordinates and errors | [RootPrefixCoordinates](../AKS/Paterson/RootPrefixCoordinates.lean), [RootSortedBins](../AKS/Paterson/RootSortedBins.lean) |
+| Actual root rebuild, cardinalities and stranger budgets | `allocatedRebuild_preserves` in [RootRebuildInvariant](../AKS/Paterson/RootRebuildInvariant.lean) |
+| Independent halves, actual child allocation and invariant | `scheduledChild_allocation`, `scheduledChild_invariant` in [ChildInvariant](../AKS/Paterson/ChildInvariant.lean) |
+| Phase windows, fuel and well-founded recursion | [ForestPhase](../AKS/Paterson/ForestPhase.lean), [PatersonForest](../AKS/Separator/PatersonForest.lean) |
+| Actual recursive network depth | `forestNetwork_depth_le` in [PatersonForestDepth](../AKS/Separator/PatersonForestDepth.lean) |
+| Input-independent final rank arrangement | `preliminaryNetwork_independent` in [PatersonForestRanks](../AKS/Separator/PatersonForestRanks.lean) |
+| Fixed permutation correction in depth k | `exists_known_permutation_correction` in [KnownPermutation](../AKS/Sort/KnownPermutation.lean) |
+| Full sorting correctness and doubled depth bound | `correctedForest_sorts`, `correctedForest_depth_double` in [PatersonForestSorts](../AKS/Separator/PatersonForestSorts.lean) |
+| All-n minimum depth and limsup | [PatersonTight](../AKS/Bounds/PatersonTight.lean) |
+| Complete theorem axiom audit | [PatersonTightAxioms](../AKS/Bounds/PatersonTightAxioms.lean) |
 
-1. Construct the root region's rebuilt
-   placement and the two child trees, proving both allocation and stranger invariants.
-2. Construct the recursive forest network, prove termination and final sorting,
-   and establish wire ordering or include a proved correction network.
-3. Bound all actual stage, root-sort, terminal-sort, and correction costs.
-4. Derive the minimum-depth and limsup endpoints.
-
-The candidate `989*(13/2) + 561 = 6989.5` remains a conditional budget.
-The proposed wire correction would add one per logarithmic level; its correctness
-and depth still need proofs. The best complete sorting bound remains `10^6`.
-See [the root split design](paterson-root-split-design.md) for the unfinished
-construction plan. [ForestAxioms](../AKS/Paterson/ForestAxioms.lean) audits the
-new checked endpoints.
+The final coefficient is `989*(13/2) + 561 + 1 = 6990.5`. The doubled
+finite-size budget is `13981*k + 13979`. All global obligations needed for
+the 7000 target are discharged; reducing the coefficient further is new work.
+The older proposed-count arithmetic above is retained as historical context.
 
 ## Build and audit
 
@@ -172,6 +160,7 @@ lake build AKS.Paterson.CoarsePrefixCount
 lake build AKS.Paterson.ForestAxioms
 lake build AKS.Bounds.Axioms
 lake build AKS.Bounds.PatersonAxioms
+lake build AKS.Bounds.PatersonTightAxioms
 
 # Full core, including the existing sorting theorem and local research.
 lake build AKS
@@ -187,7 +176,8 @@ The new endpoint axiom assertions permit only `propext`, `Classical.choice`,
 and `Quot.sound`. Source audits found no `sorry`, `#exit`,
 or declared `axiom` in the protected files. The `Random/` native-evaluation
 path is separate from the AKS and Paterson proofs. The audit now reads UTF-8 on
-Windows and permits the classical minimum-depth definition in the exact
+Windows and permits the selected refined network in `Bounds/PatersonTight.lean`,
+the classical minimum-depth definition in the exact
 `Bounds/Upper.lean` file and selected Paterson network in `Bounds/Paterson.lean`,
 alongside the two named analytic Paterson files in `Bags/`. Both `network`
 and `SortingDepth.upperNetwork` remain computable definitions.
@@ -201,7 +191,7 @@ and `SortingDepth.upperNetwork` remain computable definitions.
 - [September handoff entry point](../AKS_CODEX_HANDOFF_2026-09-27/README_START_HERE.md)
   and [historical proof ledger](../AKS_CODEX_HANDOFF_2026-09-27/PROOF_STATUS_LEDGER.md):
   preserved background. Their claim that Paterson is not formalized predates
-  the current local partial formalization; the final sorting result is still open.
+  the completed rounded forest formalization and its final sorting theorem.
 - [Current research state from the handoff](../AKS_CODEX_HANDOFF_2026-09-27/CURRENT_RESEARCH_STATE.md):
   Avenue 2 and `GoodSplitter` ideas remain research leads; candidate constants
   from older handoffs are not proved.

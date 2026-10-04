@@ -140,3 +140,4 @@ import AKS.Paterson.PartialBoundary
 import AKS.Paterson.StorageAxioms
 
 import AKS.Paterson.ForestAxioms
+import AKS.Bounds.PatersonTightAxioms

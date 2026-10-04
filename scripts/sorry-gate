@@ -60,6 +60,8 @@ ALLOW_MARKER: dict[str, frozenset[str]] = {
                                # The Paterson existential matching family is
                                # selected by choice; its bound is kernel proved.
                                "AKS/Bounds/Paterson.lean",
+                               # Complete refined forest, selected by choice.
+                               "AKS/Bounds/PatersonTight.lean",
                                # Refined Paterson stages reuse the same
                                # existentially selected separator networks.
                                "AKS/Paterson/BagSeparator.lean",

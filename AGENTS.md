@@ -33,9 +33,10 @@ sorting bound; trace correctness and depth through the global scheduler.
 ## Repository map
 
 - `AKS/`: Lean sorting-network, expander, halver, separator, and Seiferas bag-tree formalization.
-- `AKS/Bounds/Paterson.lean`: complete Paterson-halver bound with coefficient `10^6`.
+- `AKS/Bounds/PatersonTight.lean`: complete rounded Paterson bound, all-n coefficient `6991` and limsup coefficient `6990.5`.
+- `AKS/Bounds/Paterson.lean`: previous complete Paterson-halver bound with coefficient `10^6`.
 - `AKS/Seiferas.lean`: inherited executable MGG-based network and bound.
-- `AKS/Paterson/`: the tighter rounded bag proof in progress; do not conflate it with the completed halver-based bound.
+- `AKS/Paterson/`: the completed rounded bag proof and its allocation, root rebuild, and child invariants.
 - `docs/`: mathematical notes and design documents.
 - `Random/`, `rust/`, `scripts/`: certificate, experimental, and maintenance code; inspect their local documentation before running expensive workflows.
 - `AKS_CODEX_HANDOFF_2026-09-27/`: preserved research handoff and status ledger.
