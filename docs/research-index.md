@@ -27,6 +27,19 @@ million-coefficient theorem remains in [Bounds/Paterson](../AKS/Bounds/Paterson.
 The inherited executable networks remain available. This is an improvement to
 this repository's formal bound, not to the best published sorting bound.
 
+## Lower-bound endpoint
+
+The independent Kahale formalization proves
+`liminf D(n)/log_2 n >= 1/(1-log_2(phi))`, approximately `3.270559454`,
+with `phi = (1+sqrt(5))/2`. It includes the actual comparator execution,
+greedy depth scheduling, and analytic limit. The finite inequality is
+`n * fib(D(n)+1) <= 2^(D(n)+1) * (D(n)+1)^2`.
+
+Entry point: `lake build AKS.Kahale`. See
+[the detailed proof map](kahale-lower-bound.md) and
+[the asymptotic endpoints](../AKS/Bounds/KahaleAsymptotic.lean).
+This reproduces the published lower bound; stronger constants remain research.
+
 ## Proved milestones
 
 | Component | Endpoint and source | Precise scope |

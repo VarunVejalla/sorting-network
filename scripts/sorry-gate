@@ -62,6 +62,9 @@ ALLOW_MARKER: dict[str, frozenset[str]] = {
                                "AKS/Bounds/Paterson.lean",
                                # Complete refined forest, selected by choice.
                                "AKS/Bounds/PatersonTight.lean",
+                               # Exact analytic lower-bound constant; all
+                               # certificate and scheduling definitions compute.
+                               "AKS/Kahale/FibonacciBound.lean",
                                # Refined Paterson stages reuse the same
                                # existentially selected separator networks.
                                "AKS/Paterson/BagSeparator.lean",

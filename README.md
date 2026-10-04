@@ -9,7 +9,7 @@ $$
 \limsup_{n\to\infty}\frac{D(n)}{\log_2 n}.
 $$
 
-The current focus is improving the upper bound through Paterson's construction.
+The project includes upper-bound constructions and a formalized Kahale lower bound.
 The project builds on [Geoffrey Irving's AKS formalization](https://github.com/girving/aks)
 in [Lean 4](https://lean-lang.org/) with
 [Mathlib](https://github.com/leanprover-community/mathlib4).
@@ -42,6 +42,20 @@ SortingDepth.limsup_minimum_div_logb_le_6990_5
 SortingDepth.minimum_depth_le_7000_logb
 SortingDepth.eventually_minimum_depth_le_7000_logb
 ```
+
+## Verified lower bound
+
+Lean also proves
+
+$$
+\liminf_{n\to\infty}\frac{D(n)}{\log_2 n}
+\ge \frac{1}{1-\log_2((1+\sqrt5)/2)} \approx 3.270559454.
+$$
+
+This reproduces the published Kahale et al. bound. The proof includes all
+combinatorial ingredients and the connection to the repository's network depth.
+See [the lower-bound proof map](docs/kahale-lower-bound.md). Build it separately
+with `lake build AKS.Kahale`.
 
 ## Completed rounded Paterson construction
 
