@@ -97,6 +97,11 @@ it does not claim a build of the concurrent Chvátal work.
 
 ## Improving the lower bound
 
+[The method-barrier analysis](kahale-method-barrier.md) now exhibits populations
+compatible with all current binomial constraints at the existing exponential
+rate. Integral histogram rounding preserves the necessary prefix counts.
+This narrows the next target to positional or certificate compatibility.
+
 The Fibonacci step already extracts the full `3.270559454...` coefficient from
 these particular binomial constraints. Reducing the polynomial factor improves
 the finite error, but does not improve the leading coefficient.

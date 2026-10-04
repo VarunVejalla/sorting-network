@@ -1,4 +1,5 @@
 import AKS.Kahale.Axioms
+import AKS.Kahale.MethodBarrier
 
 /-! Entry point for the complete Kahale sorting-network depth lower bound.
 
