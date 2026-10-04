@@ -182,6 +182,67 @@ the classical minimum-depth definition in the exact
 alongside the two named analytic Paterson files in `Bags/`. Both `network`
 and `SortingDepth.upperNetwork` remain computable definitions.
 
+## Current research directions (2026-10-03, unverified unless noted)
+
+- Paterson tuning is exhausted in-family. A full-floor grid search over
+  `(A,μ,δ,δᵢ,ν,mincap)` encoding every known floor (bag parameters, lattice
+  fringe, cohort corners, rebuild lock, `νA ≥ 1`, ceiling margins) found 775
+  fully-feasible points, none with stage ratio `m ≤ 12`; the checked-in
+  parameters are the in-family optimum at `6990.5`. Scripts
+  (`scripts/paterson_search.py`, `scripts/paterson_fullfloor_search.py`) are
+  untracked experiment tooling, not proof. Earlier sub-6990 search hits
+  (`6463`, `6894.5`) were retracted as infeasible mirages missing hidden
+  floors; the `tune-6463` branch was deleted and `main` rebuilt green.
+- Chvátal 1830 track (Phase 0 + Phase 1 §3 kernel-checked). Reference
+  `docs/dcs-tr-294.pdf` (untracked; Rutgers DCS-TR-294). [Chvatal/DepthSkeleton](../AKS/Chvatal/DepthSkeleton.lean)
+  proves the §7 depth accounting (`totalDepth_eq`: `6320 + (3d-21)·3660 + 903`
+  at `d = clog₂ N - 66`) and the §7 numeric checks (4.1), (4.3), (4.4),
+  (4.5), (7.1), (7.2), `δF ≤ 1/25`, driven by one sharp bound `ln 2 < 0.7`
+  from the checked-in dyadic enclosure. [Chvatal/SkeletonAxioms](../AKS/Chvatal/SkeletonAxioms.lean)
+  audits the axiom footprint (standard axioms only). Phase 1 §3 scaffolding
+  is kernel-checked: [Chvatal/Tree](../AKS/Chvatal/Tree.lean) (`br`-ary bags,
+  Native/Strange), [Chvatal/Scheduler](../AKS/Chvatal/Scheduler.lean)
+  (capacity / `LevelSchedule` / allocation), and
+  [Chvatal/SchedulerLemmas](../AKS/Chvatal/SchedulerLemmas.lean) (Lemma 3.1
+  under the global mass identity; Lemma 3.2 under an explicit snap hypothesis).
+  [Chvatal/OutsiderInvariant](../AKS/Chvatal/OutsiderInvariant.lean) states
+  proposition `P`, separator-quality hypotheses (4.1)–(4.5), and Lemma 4.5
+  purity.   [Chvatal/SeparatorContract](../AKS/Chvatal/SeparatorContract.lean)
+  packages `StageCounts` / `StageModel` and the Lemma 4.3–4.4 source
+  interfaces. [Chvatal/OutsiderLemmas](../AKS/Chvatal/OutsiderLemmas.lean)
+  gives the algebraic cores of Lemmas 4.1–4.4 under those hypotheses
+  (kernel-checked).   [Chvatal/OutsiderInduction](../AKS/Chvatal/OutsiderInduction.lean)
+  closes the §4 inductive algebra: `OutsiderBoundLe` at `t` + `SeparatorConds`
+  + `StageModel` ⇒ `OutsiderBoundLe` at `t+1`, with trajectory induction and
+  purity under a strict capacity envelope (kernel-checked).
+  [Chvatal/StageDynamics](../AKS/Chvatal/StageDynamics.lean) discharges
+  `StageModel` from a thinner combinatorial `StageDynamics` contract (Lemma
+  4.2 parts, source splits, fringe/child routing; kernel-checked via
+  `stageModel_of_dynamics` / `outsiderBound_step_of_dynamics`).
+  [Chvatal/PlacementStep](../AKS/Chvatal/PlacementStep.lean) fills the
+  stranger source-split from a concrete parent-send ∪ children-send Finset
+  cover and assembles `StageDynamics` from `StageRouting` (kernel-checked).
+  [Chvatal/RoutingFromP](../AKS/Chvatal/RoutingFromP.lean) discharges
+  parent-outsider, intrusion, and fringe bounds from `OutsiderBoundLe` +
+  `LocalSeparatorQuality`. [Chvatal/StageKernel](../AKS/Chvatal/StageKernel.lean)
+  collapses sibling mass to its Lemma 4.2 closed form and closes the §4
+  inductive chain under a minimal `StageKernel`
+  (`outsiderBound_step_of_kernel` / `outsiderBound_induction_of_kernel`;
+  kernel-checked). [Chvatal/ChildSend](../AKS/Chvatal/ChildSend.lean) covers
+  `fromChildren` by the concrete send-up `fromChildren ∩ child.regs`
+  (`childSendCover_of_support`). Order-0 size bounds discharge from schedule
+  card (`|sendUp| ≤ |regs|/Q`) plus fair density / perm-mono
+  (`childSendSize_of_card_fair`) then `P`; order-`r` (`r+1 ≤ d`) from `P` +
+  bridge (`StageKernel.ofChildSend`; kernel-checked); top order `r = d`
+  remains a one-line residual. Remaining kernel obligations: schedule slack,
+  Lemma 4.1 count identities, bad-send/fringe Finset routing, level-0,
+  schedule card / fair-density / perm-bridge from the placement networks, and
+  concrete separators. Remaining Phase 1: discharge those from the scheduler /
+  placement networks, and Lemma 3.2 snap-from-envelope. Then Phase 2 (§5–6
+  scramble existence, Thm 5.1), Phase 3 (§7 instantiation +
+  `D(N) ≤ 1830·lg N − 58657` endpoints). The (4.2) numeric assembly remains
+  deferred to the separator/outsider proofs.
+
 ## Documents and history
 
 - [Paterson interface audit](paterson-interface.md): detailed local theorem

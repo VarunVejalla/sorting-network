@@ -141,3 +141,16 @@ import AKS.Paterson.StorageAxioms
 
 import AKS.Paterson.ForestAxioms
 import AKS.Bounds.PatersonTightAxioms
+import AKS.Chvatal.DepthSkeleton
+import AKS.Chvatal.Tree
+import AKS.Chvatal.Scheduler
+import AKS.Chvatal.SchedulerLemmas
+import AKS.Chvatal.OutsiderInvariant
+import AKS.Chvatal.SeparatorContract
+import AKS.Chvatal.OutsiderLemmas
+import AKS.Chvatal.OutsiderInduction
+import AKS.Chvatal.StageDynamics
+import AKS.Chvatal.PlacementStep
+import AKS.Chvatal.RoutingFromP
+import AKS.Chvatal.StageKernel
+import AKS.Chvatal.ChildSend
