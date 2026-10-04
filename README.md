@@ -57,15 +57,19 @@ hypotheses, padded partial-bag gadgets, and lattice rounding and routing identit
 The current candidate budget is `989 * 6.5 + 561 = 6989.5` per logarithmic
 input level; its global construction and operation counts remain unproved.
 
+The implemented mixed full/partial comparison stage now preserves the complete
+stranger invariant. The actual repeated network has depth at most `989*t`
+while the root capacity remains in its allowed window. Root split groundwork
+includes the actual upper-region size, exact deep-subtree counts, global-half
+purity, and sorted-bin error estimates.
+
 The main remaining steps are:
 
-- Assemble comparison-stage invariant preservation for the implemented rounded
-  allocation scheduler. Cold storage, one-tree allocation counts, and actual
-  full/partial rank-cohort budgets are checked.
-- Prove root transitions and the wire ordering required for final sorted outputs.
-- Connect its actual placements to the global stranger invariant and discharge
-  the conditional interior hypotheses.
-- Prove final sorting, stage counts, cleanup costs, and the resulting depth bound.
+- Construct the root rebuild and split into independent smaller trees, preserving
+  allocation and stranger invariants.
+- Prove forest termination, final sorting, and the required wire ordering or correction.
+- Account for every comparison, root sort, terminal sort, and correction, then
+  derive the minimum-depth and limsup bounds.
 
 The local depth-989 separator alone does not establish the tighter global bound.
 Published arguments guide the formalization; paper results are not assumed as

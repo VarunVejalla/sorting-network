@@ -98,41 +98,56 @@ historical candidate arithmetic; the current budget includes root sorting.
 | Explicit cold storage and one-tree allocation | [ColdStorage](../AKS/Paterson/ColdStorage.lean), [ColdAllocation](../AKS/Paterson/ColdAllocation.lean), [AllocationSchedule](../AKS/Paterson/AllocationSchedule.lean), [AllocationPreservation](../AKS/Paterson/AllocationPreservation.lean), [AllocationInitial](../AKS/Paterson/AllocationInitial.lean) | Computable ownership including cold storage, centered initialization and feeds, actual routing, and `allocationRun_invariant`. Every bag and cold-storage cardinality is checked while the root capacity stays above the threshold. This is positional allocation, not sorting correctness. |
 | Storage-aware comparison and routing | [StoredStage](../AKS/Paterson/StoredStage.lean), [StoredRouting](../AKS/Paterson/StoredRouting.lean), [StoredSizes](../AKS/Paterson/StoredSizes.lean) | Parallel execution for arbitrary bag-local networks, depth bounds, unchanged cold inputs, nonroot register flow, root returns, and actual output cardinalities. |
 | Actual full-bag rank balance | [AllocatedSubtree](../AKS/Paterson/AllocatedSubtree.lean), [RankCohorts](../AKS/Paterson/RankCohorts.lean), [AllocationBounds](../AKS/Paterson/AllocationBounds.lean), [AllocatedBalance](../AKS/Paterson/AllocatedBalance.lean) | Actual subtree totals and parent/sibling conservation, native rank counts, and `allocated_full_cohort_balance` from the old stranger invariant. Coherent rounding cancels in the sibling deficit. |
-| Actual partial-bag rank budgets | [PartialBoundary](../AKS/Paterson/PartialBoundary.lean), [AllocatedPartialBalance](../AKS/Paterson/AllocatedPartialBalance.lean) | Available cohort counts, actual half-size upper bounds, `allocated_partial_fresh_budget`, and separator support when the outgoing middle is nonempty. These estimates still need assembly into the network's boundary transition. |
+| Actual partial-bag rank budgets | [PartialBoundary](../AKS/Paterson/PartialBoundary.lean), [AllocatedPartialBalance](../AKS/Paterson/AllocatedPartialBalance.lean) | Available cohort counts, actual half-size upper bounds, `allocated_partial_fresh_budget`, and separator support when the outgoing middle is nonempty. These estimates are now assembled by `ScheduledPartialTransition`. |
 | Root purity and sort cost | [Root](../AKS/Paterson/Root.lean), [TightDepth](../AKS/Bitonic/TightDepth.lean) | At a sufficiently small root capacity, the invariant implies zero deepest strangers from level six. Given explicit region size bounds, the top region has fewer than `2^33` wires and its scattered bitonic sort costs at most 561. No forest splitting correctness theorem yet. |
 | Arbitrary virtual padding | [Padding](../AKS/Paterson/Padding.lean) | Both directional supported contracts survive restriction with virtual maxima/minima, without additive error. |
-| Concrete partial-bag gadget | [PatersonRefinement](../AKS/Separator/PatersonRefinement.lean), [PatersonPartial](../AKS/Separator/PatersonPartial.lean), [PatersonHalfCounting](../AKS/Separator/PatersonHalfCounting.lean), [PatersonPartialCertificate](../AKS/Separator/PatersonPartialCertificate.lean) | Four refinement levels cost 726; the actual-size first split and padded half refinements cost 989. `partialNetwork_supported` proves both whole-network directional supported contracts with explicit actual-size and virtual-size support budgets. The first split retains its large-cohort guarantee. Whole boundary invariant preservation remains open. |
+| Concrete partial-bag gadget | [PatersonRefinement](../AKS/Separator/PatersonRefinement.lean), [PatersonPartial](../AKS/Separator/PatersonPartial.lean), [PatersonHalfCounting](../AKS/Separator/PatersonHalfCounting.lean), [PatersonPartialCertificate](../AKS/Separator/PatersonPartialCertificate.lean) | Four refinement levels cost 726; the actual-size first split and padded half refinements cost 989. `partialNetwork_supported` proves both whole-network directional supported contracts with explicit actual-size and virtual-size support budgets. The first split retains its large-cohort guarantee. The mixed boundary invariant is checked in `ScheduledInvariant`. |
 | Proposed operation counts | [Accounting](../AKS/Paterson/Accounting.lean) | `T(k) = 13*ceil(k/2)` overcomes initial capacity growth. The proposed cost `989*T(k) + 561*k` is at most `7000*k` for `k >= 613`. These are arithmetic theorems, not sorting theorems. |
 | Kernel audit | [Axioms](../AKS/Paterson/Axioms.lean), [StorageAxioms](../AKS/Paterson/StorageAxioms.lean) | Guarded axiom checks on transition, padding, partial certificates, allocation runs, actual rank balance, root bounds, and accounting. Only `propext`, `Classical.choice`, and `Quot.sound` appear. |
 
 ### Remaining global obligations
 
-1. **Comparison-stage invariant.** Select the full or padded partial network
-   at each actual allocated bag, then assemble the checked filtering, rank
-   balance, and fresh-error estimates into stranger-invariant preservation.
-   Handle the root, inactive levels, and empty outgoing middles explicitly.
-   One-tree allocation and both rank-cohort cases are now checked; the
-   recursively assembled sorting network is not yet constructed.
-2. **Root/forest transition and wire order.** Prove the sorted top region can be split into
-   independent smaller trees while retaining the required invariant and
-   storage constraints. Prove the register ordering needed for final sorted
-   outputs. Centered initialization and feeds do not themselves prove that
-   ordering invariant. Deep rank purity alone does not prove the transition.
-3. **Termination and final sorting.** Build the recursive network, establish
-   sortedness, and justify its actual stage and root-sort counts. Include
-   startup, terminal cleanup, and all extra costs in the accounting.
-4. **Minimum depth and limsup.** Apply the existing restriction and asymptotic
-   infrastructure to the completed family, with all boundary costs covered.
+The comparison-stage obligation is now closed: `scheduledCompare_preserves`
+in [ScheduledInvariant](../AKS/Paterson/ScheduledInvariant.lean) handles full,
+partial, root, inactive, and empty-middle cases. The selected local networks and
+actual stage have depth at most 989.
+[PatersonRun](../AKS/Separator/PatersonRun.lean) constructs the repeated network
+and proves its invariant and depth at most `989*t` within the root window.
 
-The candidate coefficient is `989*(13/2) + 561 = 6989.5`. This is a
-**conditional construction budget**, not a theorem about `D(n)` or its limsup.
-Even the proved eventual inequality in `Accounting.lean` bounds only the
-proposed operation count. The best complete sorting bound remains `10^6`.
+Root split groundwork is also checked:
 
-The next proof should assemble the full and partial comparison-stage invariant
-for the implemented allocation schedule, followed by root splitting and wire
-ordering. The old Seiferas parameter interface cannot simply be instantiated with
-these parameters; `patersonNu_fails_current_hC3` records an obstruction.
+- [RootAllocationBudget](../AKS/Paterson/RootAllocationBudget.lean): the actual
+  upper region has fewer than `2^33` registers in the root split window.
+- [UpperRegionCounts](../AKS/Paterson/UpperRegionCounts.lean) and
+  [DescendantRegisters](../AKS/Paterson/DescendantRegisters.lean): the upper
+  and deep regions partition all registers, with upper size `N - 64*T6`.
+- [DeepErrors](../AKS/Paterson/DeepErrors.lean),
+  [DeepPurity](../AKS/Paterson/DeepPurity.lean), and
+  [DeepPrefixAgreement](../AKS/Paterson/DeepPrefixAgreement.lean): global deep
+  error bounds, exact half purity, and actual/assigned prefix agreement outside errors.
+- [DeepPrefix](../AKS/Paterson/DeepPrefix.lean): exact assigned deep prefix counts.
+- [PrefixDiscrepancy](../AKS/Paterson/PrefixDiscrepancy.lean): generic remaining
+  prefix discrepancy and sorted-bin wrong-rank bounds.
+
+Remaining obligations:
+
+The actual root-region prefix discrepancy is checked in
+[CoarsePrefixCount](../AKS/Paterson/CoarsePrefixCount.lean), including exact
+global prefix counts and available deep capacity.
+
+1. Construct the root region's rebuilt
+   placement and the two child trees, proving both allocation and stranger invariants.
+2. Construct the recursive forest network, prove termination and final sorting,
+   and establish wire ordering or include a proved correction network.
+3. Bound all actual stage, root-sort, terminal-sort, and correction costs.
+4. Derive the minimum-depth and limsup endpoints.
+
+The candidate `989*(13/2) + 561 = 6989.5` remains a conditional budget.
+The proposed wire correction would add one per logarithmic level; its correctness
+and depth still need proofs. The best complete sorting bound remains `10^6`.
+See [the root split design](paterson-root-split-design.md) for the unfinished
+construction plan. [ForestAxioms](../AKS/Paterson/ForestAxioms.lean) audits the
+new checked endpoints.
 
 ## Build and audit
 
@@ -152,6 +167,9 @@ lake build AKS.Paterson.Axioms
 lake build AKS.Paterson.GoodRouting
 lake build AKS.Paterson.AllocatedPartialBalance
 lake build AKS.Paterson.StorageAxioms
+lake build AKS.Separator.PatersonRun
+lake build AKS.Paterson.CoarsePrefixCount
+lake build AKS.Paterson.ForestAxioms
 lake build AKS.Bounds.Axioms
 lake build AKS.Bounds.PatersonAxioms
 
