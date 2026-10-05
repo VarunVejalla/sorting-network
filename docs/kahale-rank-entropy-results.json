@@ -24,6 +24,13 @@
           0,
           1
         ],
+        "entropy_loss_range_for_same_certificate_pairs": [
+          1.0,
+          1.0
+        ],
+        "forced_comparison_mass": "0",
+        "ambiguous_comparison_mass": "1",
+        "weighted_squared_orientation_imbalance": "0",
         "before_rank_fiber_histogram": {
           "1": 6
         },
@@ -60,6 +67,13 @@
           1,
           2
         ],
+        "entropy_loss_range_for_same_certificate_pairs": [
+          0.9182958340544893,
+          0.9182958340544893
+        ],
+        "forced_comparison_mass": "0",
+        "ambiguous_comparison_mass": "1",
+        "weighted_squared_orientation_imbalance": "1/9",
         "before_rank_fiber_histogram": {
           "2": 1,
           "4": 1,
@@ -161,6 +175,13 @@
           0,
           1
         ],
+        "entropy_loss_range_for_same_certificate_pairs": [
+          0.6887218755408671,
+          1.0
+        ],
+        "forced_comparison_mass": "0",
+        "ambiguous_comparison_mass": "1",
+        "weighted_squared_orientation_imbalance": "0",
         "before_rank_fiber_histogram": {
           "12": 2,
           "0": 22
@@ -210,6 +231,13 @@
           1,
           2
         ],
+        "entropy_loss_range_for_same_certificate_pairs": [
+          0.6500224216483539,
+          1.0
+        ],
+        "forced_comparison_mass": "0",
+        "ambiguous_comparison_mass": "1",
+        "weighted_squared_orientation_imbalance": "0",
         "before_rank_fiber_histogram": {
           "12": 2,
           "0": 22
@@ -259,6 +287,13 @@
           2,
           3
         ],
+        "entropy_loss_range_for_same_certificate_pairs": [
+          0.6887218755408671,
+          1.0
+        ],
+        "forced_comparison_mass": "0",
+        "ambiguous_comparison_mass": "1",
+        "weighted_squared_orientation_imbalance": "0",
         "before_rank_fiber_histogram": {
           "12": 2,
           "0": 22
@@ -375,6 +410,13 @@
           0,
           1
         ],
+        "entropy_loss_range_for_same_certificate_pairs": [
+          0.5999999999999996,
+          1.0000000000000009
+        ],
+        "forced_comparison_mass": "0",
+        "ambiguous_comparison_mass": "1",
+        "weighted_squared_orientation_imbalance": "0",
         "before_rank_fiber_histogram": {
           "12": 10,
           "0": 110
@@ -436,6 +478,13 @@
           1,
           2
         ],
+        "entropy_loss_range_for_same_certificate_pairs": [
+          0.39001345298901224,
+          1.0
+        ],
+        "forced_comparison_mass": "0",
+        "ambiguous_comparison_mass": "1",
+        "weighted_squared_orientation_imbalance": "0",
         "before_rank_fiber_histogram": {
           "36": 2,
           "24": 2,
@@ -499,6 +548,13 @@
           2,
           3
         ],
+        "entropy_loss_range_for_same_certificate_pairs": [
+          0.39001345298901224,
+          1.0
+        ],
+        "forced_comparison_mass": "0",
+        "ambiguous_comparison_mass": "1",
+        "weighted_squared_orientation_imbalance": "0",
         "before_rank_fiber_histogram": {
           "48": 2,
           "0": 116,
@@ -562,6 +618,13 @@
           3,
           4
         ],
+        "entropy_loss_range_for_same_certificate_pairs": [
+          0.5509775004326931,
+          0.9709505944546688
+        ],
+        "forced_comparison_mass": "0",
+        "ambiguous_comparison_mass": "1",
+        "weighted_squared_orientation_imbalance": "1/25",
         "before_rank_fiber_histogram": {
           "36": 2,
           "24": 2,

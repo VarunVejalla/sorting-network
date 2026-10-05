@@ -2,6 +2,11 @@
 
 ## Research target and status
 
+The [proof plan](kahale-proof-plan.md) now gives the loss decomposition,
+coefficient conversion, proof obligations, and stop conditions. Comparator
+trace reconstruction and the two-predecessor lemma have been implemented as
+the first general foundation.
+
 The user has set **4** as the desired asymptotic lower-bound coefficient for
 `D(n)/log_2 n`. We are treating it as a target, not an established bound or an
 evidence-based prediction. The proved coefficient remains `3.270559...`.

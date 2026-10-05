@@ -10,6 +10,7 @@ from collections import Counter
 import itertools
 import json
 import math
+from fractions import Fraction
 
 from kahale_joint_potential import minimum_sizes, parallel_layers
 
@@ -48,7 +49,7 @@ def probe(n):
     def entropy(counts):
         return math.log2(total) - sum(c * math.log2(c) for c in counts if c) / total
     entropies = [entropy(counts) for counts in distributions]
-    cache, records = {}, {}
+    cache, records, ranges = {}, {}, {}
     def stats(f):
         if f not in cache:
             cache[f] = minimum_sizes(f, n)
@@ -63,6 +64,11 @@ def probe(n):
         for action, (i, j) in enumerate(gates):
             signature = (stats(state[i]), stats(state[j]))
             loss = entropies[source] - entropies[edges[source][action]]
+            if signature not in ranges:
+                ranges[signature] = [loss, loss]
+            else:
+                ranges[signature][0] = min(ranges[signature][0], loss)
+                ranges[signature][1] = max(ranges[signature][1], loss)
             prev = records.get(signature)
             if prev is None or loss > prev[0] + 1e-12:
                 records[signature] = (loss, source, action)
@@ -73,9 +79,20 @@ def probe(n):
             continue
         (loss, source, action), sig = max(choices)
         dest = edges[source][action]
+        groups = {}
+        for p, count in enumerate(distributions[source]):
+            if count:
+                groups.setdefault(transports[action][p], []).append(count)
+        ambiguous = sum(sum(group) for group in groups.values() if len(group) == 2)
+        imbalance = sum((Fraction((group[0] - group[1]) ** 2, sum(group))
+                         for group in groups.values() if len(group) == 2), Fraction(0)) / total
         equal_zero.append({"zero_minimum": k, "largest_entropy_loss": loss,
             "independent_sorted_maxima_prediction": k / (2 * k - 1),
             "input_certificate_pairs": sig, "prefix": path(source), "comparator": gates[action],
+            "entropy_loss_range_for_same_certificate_pairs": ranges[sig],
+            "forced_comparison_mass": str(Fraction(total - ambiguous, total)),
+            "ambiguous_comparison_mass": str(Fraction(ambiguous, total)),
+            "weighted_squared_orientation_imbalance": str(imbalance),
             "before_rank_fiber_histogram": dict(Counter(distributions[source])),
             "after_rank_fiber_histogram": dict(Counter(distributions[dest]))})
     late_layer = None
