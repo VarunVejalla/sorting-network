@@ -1,0 +1,218 @@
+{
+  "wires": 5,
+  "reachable_rank_distributions": 7101,
+  "instances": {
+    "inside": 284040,
+    "outside": 284040,
+    "crossing": 852120
+  },
+  "largest_whole_coupling_changes": {
+    "inside": {
+      "change": 1.7763568394002505e-15,
+      "prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          4
+        ]
+      ],
+      "gate": [
+        1,
+        3
+      ],
+      "subset": [
+        1,
+        3
+      ],
+      "whole_before": -1.7763568394002505e-15,
+      "whole_after": 0.0,
+      "gate_gain": 0.7937845842708366
+    },
+    "outside": {
+      "change": 1.7763568394002505e-15,
+      "prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          4
+        ]
+      ],
+      "gate": [
+        1,
+        3
+      ],
+      "subset": [
+        2,
+        4
+      ],
+      "whole_before": -1.7763568394002505e-15,
+      "whole_after": 0.0,
+      "gate_gain": 0.7937845842708366
+    },
+    "crossing": {
+      "change": 0.32451124978365486,
+      "prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "gate": [
+        3,
+        4
+      ],
+      "subset": [
+        1,
+        3
+      ],
+      "whole_before": -4.440892098500626e-16,
+      "whole_after": 0.3245112497836544,
+      "gate_gain": 0.600000000000001
+    }
+  },
+  "coupling_creation_at_one_bit_gain": {
+    "any_prefix": {
+      "change": 0.2507563592936144,
+      "prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ]
+      ],
+      "gate": [
+        3,
+        4
+      ],
+      "subset": [
+        1,
+        4
+      ],
+      "whole_before": 0.03225114056215439,
+      "whole_after": 0.2830074998557688,
+      "gate_gain": 1.0,
+      "exact_count_certificate": "Every output has two equal-weight predecessors"
+    },
+    "all_wires_touched": {
+      "change": 0.0008610516320977091,
+      "prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "gate": [
+        1,
+        3
+      ],
+      "subset": [
+        1,
+        2
+      ],
+      "whole_before": 0.0008610516320959327,
+      "whole_after": 0.0017221032641936418,
+      "gate_gain": 0.9999999999999996,
+      "exact_count_certificate": "Every output has two equal-weight predecessors"
+    }
+  },
+  "single_outside_increase": {
+    "increase": 0.275488750216347,
+    "prefix": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        2,
+        4
+      ]
+    ],
+    "gate": [
+      3,
+      4
+    ],
+    "subset": [
+      0,
+      2
+    ],
+    "observed_wire": 3,
+    "single_before": 0.04902249956730742,
+    "single_after": 0.3245112497836544,
+    "whole_before": 0.3245112497836531,
+    "whole_after": 0.3245112497836544
+  },
+  "status": "Exhaustive integer rank counts; numerical entropy; no new coefficient"
+}

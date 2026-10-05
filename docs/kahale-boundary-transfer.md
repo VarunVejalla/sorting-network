@@ -2,9 +2,13 @@
 
 ## Status
 
+The [transfer and charging update](kahale-transfer-charging.md) now proves
+the boundary identity and entropy monotonicity in Lean, and identifies where
+whole-block coupling can be created.
+
 The asymptotic coefficient remains `3.270559...`. The target preferably exceeds
 4. This investigation supplies a kernel-checked single-gate information identity,
-a derived boundary-transfer identity, and finite challenges to a new bank.
+a kernel-checked boundary-transfer identity, and finite challenges to a new bank.
 It does **not** prove a stronger depth lower bound.
 
 ## The missing boundary term
@@ -32,8 +36,9 @@ delta H(P_A | R_A)
 This is the exact boundary-transfer identity. The conditional mutual
 information term describes information that the entering/leaving rank carries
 about the other wires' order. It cannot be discarded as an insertion-position
-cost. The identity is derived mathematically; Lean currently checks its
-reconstruction foundations, not the Shannon chain-rule calculation.
+cost. `BoundaryTransfer.boundary_transfer_identity` now proves the identity
+with the finite-entropy definitions; `ComparatorTransfer` specializes it to
+comparator execution.
 
 The [finite calculation](kahale-boundary-information-results.json) checks the
 identity on 64 instances from the prior four-transition obstruction, with
@@ -74,9 +79,10 @@ H(f) = log_2(N) - (1/N)*sum_(x in source) log_2(|fiber_f(f(x))|).
 Thus prefix outputs retain their actual multiplicities. The proof uses
 invariance under equal fiber partitions and the checked reconstruction maps.
 It does not assume uniform rank images. The Shannon interpretation of this
-formula follows by grouping equal output fibers; nonnegativity, conditional
-subadditivity, and the binary entropy upper bound have not yet been proved
-for these definitions. The kernel theorem proves the displayed identity,
+formula follows by grouping equal output fibers. Entropy monotonicity and
+conditional-entropy nonnegativity are now proved; conditional mutual-information
+nonnegativity, conditional subadditivity, and the binary entropy upper bound
+remain open for these definitions. The kernel theorem proves the displayed identity,
 not the still-missing bounds on its terms.
 
 ## A joint bank with zero endpoints
@@ -167,8 +173,8 @@ reused, rather than inserting a conjecture into a sorting theorem.
 
 ## Next proof obligations
 
-1. Formalize the boundary-transfer chain identity and the entropy inequalities
-   using the new finite-entropy definitions. The single-gate identity is done.
+1. Formalize the remaining conditional-information inequalities. Both transfer
+   identities, entropy monotonicity, and conditional-entropy nonnegativity are done.
 2. For `I(P_A;Y_B|R_A)`, classify comparator positions in `A`, `B`, or outside
    both. Track changes in rank sets as well as relative orders.
 3. Determine whether the transfer terms close under these joint statistics

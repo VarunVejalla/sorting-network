@@ -11,6 +11,9 @@ The
 accounting modules, relative-order candidate, and finite challenge results.
 The [joint boundary-transfer investigation](kahale-boundary-transfer.md)
 now identifies the exact conditional-information term and its proof obligations.
+The [transfer and charging update](kahale-transfer-charging.md) completes that
+identity in Lean and records a whole-block localization lead and a failed
+own-comparison-loss charge.
 
 The most useful next mathematical object is the **weighted rank-image swap
 graph**: which prefix rank states remain possible, which swapped partners
