@@ -2,6 +2,10 @@
 
 ## Status and target
 
+The [joint boundary-transfer investigation](kahale-boundary-transfer.md)
+derives the missing conditional-information term, checks its reconstruction
+foundations, and challenges a bank retaining that dependence.
+
 The proved lower-bound coefficient is still `3.270559...` for base-two logs.
 The target is now **above 4**, if a structural inequality supports it. Nothing
 in the current investigation proves an increased coefficient.

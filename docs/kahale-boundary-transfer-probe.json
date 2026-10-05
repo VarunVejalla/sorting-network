@@ -1,0 +1,1367 @@
+{
+  "wires": 6,
+  "transitions": [
+    {
+      "prefix": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          0,
+          3
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "gain": 1.2000000000000002,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": -0.6461261643995715,
+          "charge_fraction": -0.2153753881331905,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": -0.6227545218073942,
+          "charge_fraction": -0.20758484060246474,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          0,
+          3
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          5
+        ]
+      ],
+      "gain": 1.6918295834054495,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": -1.6827513243103562,
+          "charge_fraction": -0.5609171081034521,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": -1.672794484232484,
+          "charge_fraction": -0.557598161410828,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          2
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "gain": 1.2000000000000002,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": -0.6461261643995715,
+          "charge_fraction": -0.2153753881331905,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": -0.6227545218073942,
+          "charge_fraction": -0.20758484060246474,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          1,
+          5
+        ]
+      ],
+      "gain": 1.6918295834054495,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": -1.6827513243103562,
+          "charge_fraction": -0.5609171081034521,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": -1.672794484232484,
+          "charge_fraction": -0.557598161410828,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          0,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "gain": 1.2000000000000002,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": -0.6461261643995715,
+          "charge_fraction": -0.2153753881331905,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": -0.6227545218073942,
+          "charge_fraction": -0.20758484060246474,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          0,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "gain": 1.6918295834054495,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": -1.6827513243103562,
+          "charge_fraction": -0.5609171081034521,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": -1.672794484232484,
+          "charge_fraction": -0.557598161410828,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          2
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "gain": 1.2000000000000002,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": -0.6461261643995715,
+          "charge_fraction": -0.2153753881331905,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": -0.6227545218073942,
+          "charge_fraction": -0.20758484060246474,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          1,
+          5
+        ]
+      ],
+      "gain": 1.6918295834054495,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": -1.6827513243103562,
+          "charge_fraction": -0.5609171081034521,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": -1.672794484232484,
+          "charge_fraction": -0.557598161410828,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          1,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "gain": 1.2000000000000002,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": -0.6461261643995715,
+          "charge_fraction": -0.2153753881331905,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": -0.6227545218073942,
+          "charge_fraction": -0.20758484060246474,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          1,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "gain": 1.6918295834054495,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": -1.6827513243103562,
+          "charge_fraction": -0.5609171081034521,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": -1.672794484232484,
+          "charge_fraction": -0.557598161410828,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          3,
+          4
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          0,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "gain": 1.804514263658909,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": 3.0562227934186597,
+          "charge_fraction": 1.0187409311395532,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": 2.8196427978997263,
+          "charge_fraction": 0.9398809326332421,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          3,
+          4
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          0,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "gain": 2.137847596992242,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": 1.2986391009872351,
+          "charge_fraction": 0.43287970032907835,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": 1.3804301853636374,
+          "charge_fraction": 0.46014339512121244,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          3,
+          4
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ]
+      ],
+      "gain": 1.804514263658909,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": 3.0562227934186597,
+          "charge_fraction": 1.0187409311395532,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": 2.8196427978997263,
+          "charge_fraction": 0.9398809326332421,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          3,
+          4
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "gain": 2.137847596992242,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": 1.2986391009872351,
+          "charge_fraction": 0.43287970032907835,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": 1.3804301853636374,
+          "charge_fraction": 0.46014339512121244,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          3,
+          4
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          0,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "gain": 1.804514263658909,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": 3.0562227934186597,
+          "charge_fraction": 1.0187409311395532,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": 2.8196427978997263,
+          "charge_fraction": 0.9398809326332421,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          3,
+          4
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          0,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "gain": 2.137847596992242,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": 1.2986391009872351,
+          "charge_fraction": 0.43287970032907835,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": 1.3804301853636374,
+          "charge_fraction": 0.46014339512121244,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          3,
+          4
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "gain": 1.804514263658909,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": 3.0562227934186597,
+          "charge_fraction": 1.0187409311395532,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": 2.8196427978997263,
+          "charge_fraction": 0.9398809326332421,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          3,
+          4
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "gain": 2.137847596992242,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": 1.2986391009872351,
+          "charge_fraction": 0.43287970032907835,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": 1.3804301853636374,
+          "charge_fraction": 0.46014339512121244,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          3,
+          4
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          1,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ]
+      ],
+      "gain": 1.804514263658909,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": 3.0562227934186597,
+          "charge_fraction": 1.0187409311395532,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": 2.8196427978997263,
+          "charge_fraction": 0.9398809326332421,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          3,
+          4
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          1,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "gain": 2.137847596992242,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": 1.2986391009872351,
+          "charge_fraction": 0.43287970032907835,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": 1.3804301853636374,
+          "charge_fraction": 0.46014339512121244,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ]
+      ],
+      "gain": 1.666666666666666,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": -1.0750717582087734,
+          "charge_fraction": -0.3583572527362578,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": -2.2082847294439834,
+          "charge_fraction": -0.7360949098146611,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "gain": 2.666666666666667,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": -1.3378534173419894,
+          "charge_fraction": -0.4459511391139965,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": -2.960892594754686,
+          "charge_fraction": -0.9869641982515619,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "gain": 1.91829583405449,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": -0.41791210695590664,
+          "charge_fraction": -0.1393040356519689,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": -0.6481588888051277,
+          "charge_fraction": -0.2160529629350426,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "gain": 2.918295834054491,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": -1.0722036625227656,
+          "charge_fraction": -0.35740122084092185,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": -1.680273724648179,
+          "charge_fraction": -0.5600912415493929,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "gain": 1.1987084225518556,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": -0.3804643546567137,
+          "charge_fraction": -0.1268214515522379,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": -0.47545913214621205,
+          "charge_fraction": -0.1584863773820707,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          0,
+          5
+        ]
+      ],
+      "gain": 1.6511292063472993,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": -1.3789235303934193,
+          "charge_fraction": -0.4596411767978064,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": -1.4383110869271323,
+          "charge_fraction": -0.4794370289757108,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "layer": [
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "gain": 1.4637800999411663,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": 0.30341033722325506,
+          "charge_fraction": 0.10113677907441836,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": 0.19456647973590346,
+          "charge_fraction": 0.06485549324530115,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    },
+    {
+      "prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "layer": [
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          0,
+          5
+        ]
+      ],
+      "gain": 1.91620088373661,
+      "charges": [
+        {
+          "bank": "single_outside",
+          "charge": -0.6950488385134506,
+          "charge_fraction": -0.23168294617115018,
+          "fitted_five_wire_fraction": 0.5394762370962988
+        },
+        {
+          "bank": "outside_block",
+          "charge": -0.7682854750450168,
+          "charge_fraction": -0.2560951583483389,
+          "fitted_five_wire_fraction": 0.5394762370962982
+        }
+      ]
+    }
+  ],
+  "distinct_snapshots": 32,
+  "maximum_charge_fractions": {
+    "single_outside": 1.0187409311395532,
+    "outside_block": 0.9398809326332421
+  },
+  "status": "Exact rank counts; numerical fixed-coefficient probe; not exhaustive"
+}

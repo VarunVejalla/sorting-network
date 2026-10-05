@@ -9,6 +9,8 @@ candidate, not an established route to 4.
 The
 [modular layer-bank investigation](kahale-layer-bank.md) records the new
 accounting modules, relative-order candidate, and finite challenge results.
+The [joint boundary-transfer investigation](kahale-boundary-transfer.md)
+now identifies the exact conditional-information term and its proof obligations.
 
 The most useful next mathematical object is the **weighted rank-image swap
 graph**: which prefix rank states remain possible, which swapped partners

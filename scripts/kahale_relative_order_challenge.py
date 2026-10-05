@@ -11,15 +11,28 @@ from scipy.optimize import linprog
 from kahale_joint_potential import parallel_layers
 from kahale_layer_bank import catalogue, entropy
 from kahale_relative_order_bank import features
+from kahale_boundary_information import joint_features, joint_block_features, boundary_block_scales
 
 
-def probe(n, endpoint_cap):
+def probe(n, endpoint_cap, joint_boundary=False, joint_blocks=False):
     ranks, rank_index, states, index, parents = catalogue(n)
     total = factorial(n)
     banks, uniform, fixed, entropies = [], [], [], []
+    feature_names = [str(k) for k in range(2, n)]
+    if joint_boundary:
+        feature_names += [f"boundary_{k}" for k in range(2, n - 1)]
+    if joint_blocks:
+        feature_names += [f"boundary_{k}_{size}" for k, size in boundary_block_scales(n)]
+    feature_count = len(feature_names)
     for counts in states:
         distribution = Counter({p: q for p, q in zip(ranks, counts) if q})
-        banks.append([row["centered_bank"] for row in features(distribution, n)])
+        values = [row["centered_bank"] for row in features(distribution, n)]
+        if joint_boundary:
+            values += [row["boundary_bank"] for row in joint_features(distribution, n)
+                       if row["subset_size"] < n - 1]
+        if joint_blocks:
+            values += [row["boundary_bank"] for row in joint_block_features(distribution, n)]
+        banks.append(values)
         entropies.append(entropy(counts))
         marginals = [[0] * n for _ in range(n)]
         for p, q in distribution.items():
@@ -52,17 +65,20 @@ def probe(n, endpoint_cap):
             edges.append((source, action, dest))
     # Keep boundary credit fixed at an O(n) cost; never infer an asymptotic
     # coefficient from the resulting fit on one finite size.
-    constraints.append([0] * (n - 2) + [1, 1, 0])
-    rhs.append(endpoint_cap)
-    fit = linprog([0] * n + [1], A_ub=constraints, b_ub=rhs,
-                  bounds=[(None, None)] * (n - 2) + [(0, None)] * 3, method="highs")
+    if endpoint_cap is not None:
+        constraints.append([0] * feature_count + [1, 1, 0])
+        rhs.append(endpoint_cap)
+    fit = linprog([0] * (feature_count + 2) + [1], A_ub=constraints, b_ub=rhs,
+                  bounds=[(None, None)] * feature_count + [(0, None)] * 3, method="highs")
     result = {"wires": n, "reachable_rank_distributions": len(states), "layers": len(layers),
               "boundary_credit_cap_per_wire": endpoint_cap, "fit_status": fit.message,
+              "joint_boundary_features": joint_boundary, "feature_names": feature_names,
+              "joint_block_features": joint_blocks,
               "scope": "Exhaustive finite counts; numerical entropies and LP; no universal claim"}
     if fit.success:
-        weights = fit.x[:n - 2]
-        kappa, lam, rate = map(float, fit.x[n - 2:])
-        result.update(scale_weights={str(k): float(w) for k, w in zip(range(2, n), weights)},
+        weights = fit.x[:feature_count]
+        kappa, lam, rate = map(float, fit.x[feature_count:])
+        result.update(scale_weights={k: float(w) for k, w in zip(feature_names, weights)},
                       kappa=kappa, lambda_=lam, worst_charge_fraction=rate)
         def path(source):
             result = []
@@ -82,17 +98,18 @@ def probe(n, endpoint_cap):
             "uniform_before": uniform[source], "uniform_after": uniform[dest],
             "fixed_before": fixed[source], "fixed_after": fixed[dest]}
             for charge, source, action, dest in sorted(critical, reverse=True)[:5]]
-        dual = [-float(q) for q in fit.ineqlin.marginals[:-1]]
+        edge_marginals = fit.ineqlin.marginals[:len(edges)]
+        dual = [-float(q) for q in edge_marginals]
         active = [(q, edge) for q, edge in zip(dual, edges) if q > 1e-8]
         result["numerical_dual_obstruction"] = {
             "weighted_capacity": sum(dual) * (n // 2),
             "weighted_gain": sum(q * (entropies[s] - entropies[d])
                                  for q, (s, _, d) in zip(dual, edges)),
             "relative_bank_drift": [sum(q * (banks[d][k] - banks[s][k])
-                for q, (s, _, d) in zip(dual, edges)) for k in range(n - 2)],
+                for q, (s, _, d) in zip(dual, edges)) for k in range(feature_count)],
             "uniform_drift": sum(q * (uniform[d] - uniform[s]) for q, (s, _, d) in zip(dual, edges)),
             "fixed_drift": sum(q * (fixed[d] - fixed[s]) for q, (s, _, d) in zip(dual, edges)),
-            "endpoint_cap_multiplier": -float(fit.ineqlin.marginals[-1]),
+            "endpoint_cap_multiplier": -float(fit.ineqlin.marginals[-1]) if endpoint_cap is not None else 0.0,
             "support_size": len(active),
             "transitions": [{"weight": q, "prefix": path(s), "layer": layers[a],
                 "gain": entropies[s] - entropies[d],
@@ -107,9 +124,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--wires", type=int, choices=(3, 4, 5), default=5)
     parser.add_argument("--endpoint-cap", type=float, default=2)
+    parser.add_argument("--joint-boundary", action="store_true")
+    parser.add_argument("--joint-blocks", action="store_true")
+    parser.add_argument("--unbounded-boundary", action="store_true")
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
-    result = probe(args.wires, args.endpoint_cap)
+    result = probe(args.wires, None if args.unbounded_boundary else args.endpoint_cap,
+                   args.joint_boundary, args.joint_blocks)
     with open(args.output, "w", encoding="utf-8") as handle:
         json.dump(result, handle, indent=2)
         handle.write("\n")

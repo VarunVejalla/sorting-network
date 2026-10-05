@@ -1,0 +1,562 @@
+{
+  "wires": 5,
+  "initial": [
+    {
+      "subset_size": 2,
+      "boundary_bank": 0.0,
+      "maximum_term": 0.0
+    },
+    {
+      "subset_size": 3,
+      "boundary_bank": 0.0,
+      "maximum_term": 0.0
+    },
+    {
+      "subset_size": 4,
+      "boundary_bank": 0.0,
+      "maximum_term": 0.0
+    }
+  ],
+  "final": [
+    {
+      "subset_size": 2,
+      "boundary_bank": 0.0,
+      "maximum_term": 0.0
+    },
+    {
+      "subset_size": 3,
+      "boundary_bank": 0.0,
+      "maximum_term": 0.0
+    },
+    {
+      "subset_size": 4,
+      "boundary_bank": 0.0,
+      "maximum_term": 0.0
+    }
+  ],
+  "dual_transitions": [
+    {
+      "weight": 0.16716325406462706,
+      "prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ]
+      ],
+      "before": [
+        {
+          "subset_size": 2,
+          "boundary_bank": 0.17669558500659965,
+          "maximum_term": 0.2830074998557688
+        },
+        {
+          "subset_size": 3,
+          "boundary_bank": 0.18838464935981256,
+          "maximum_term": 0.33333333333333304
+        },
+        {
+          "subset_size": 4,
+          "boundary_bank": 0.0,
+          "maximum_term": 0.0
+        }
+      ],
+      "after": [
+        {
+          "subset_size": 2,
+          "boundary_bank": 5.551115123125783e-16,
+          "maximum_term": 4.440892098500626e-16
+        },
+        {
+          "subset_size": 3,
+          "boundary_bank": 5.921189464667502e-16,
+          "maximum_term": 4.440892098500626e-16
+        },
+        {
+          "subset_size": 4,
+          "boundary_bank": 3.3306690738754696e-16,
+          "maximum_term": 4.440892098500626e-16
+        }
+      ],
+      "changes": [
+        {
+          "subset_size": 2,
+          "change": -0.1766955850065991
+        },
+        {
+          "subset_size": 3,
+          "change": -0.18838464935981197
+        },
+        {
+          "subset_size": 4,
+          "change": 3.3306690738754696e-16
+        }
+      ]
+    },
+    {
+      "weight": 0.13171624089664005,
+      "prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "before": [
+        {
+          "subset_size": 2,
+          "boundary_bank": 0.0326816663782045,
+          "maximum_term": 0.06536333275640827
+        },
+        {
+          "subset_size": 3,
+          "boundary_bank": 0.038128610774572344,
+          "maximum_term": 0.08170416594551089
+        },
+        {
+          "subset_size": 4,
+          "boundary_bank": 0.0,
+          "maximum_term": 0.0
+        }
+      ],
+      "after": [
+        {
+          "subset_size": 2,
+          "boundary_bank": 0.0,
+          "maximum_term": 0.0
+        },
+        {
+          "subset_size": 3,
+          "boundary_bank": 0.0,
+          "maximum_term": 0.0
+        },
+        {
+          "subset_size": 4,
+          "boundary_bank": 0.0,
+          "maximum_term": 0.0
+        }
+      ],
+      "changes": [
+        {
+          "subset_size": 2,
+          "change": -0.0326816663782045
+        },
+        {
+          "subset_size": 3,
+          "change": -0.038128610774572344
+        },
+        {
+          "subset_size": 4,
+          "change": 0.0
+        }
+      ]
+    },
+    {
+      "weight": 0.008595845267069913,
+      "prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "before": [
+        {
+          "subset_size": 2,
+          "boundary_bank": 0.03749306632545021,
+          "maximum_term": 0.09804499913461351
+        },
+        {
+          "subset_size": 3,
+          "boundary_bank": 0.04090966694048204,
+          "maximum_term": 0.09804499913461351
+        },
+        {
+          "subset_size": 4,
+          "boundary_bank": 3.3306690738754696e-16,
+          "maximum_term": 4.440892098500626e-16
+        }
+      ],
+      "after": [
+        {
+          "subset_size": 2,
+          "boundary_bank": 0.0022425755469472897,
+          "maximum_term": 0.007403392114696317
+        },
+        {
+          "subset_size": 3,
+          "boundary_bank": 0.0020173537223291405,
+          "maximum_term": 0.007403392114696317
+        },
+        {
+          "subset_size": 4,
+          "boundary_bank": 0.0,
+          "maximum_term": 0.0
+        }
+      ],
+      "changes": [
+        {
+          "subset_size": 2,
+          "change": -0.03525049077850292
+        },
+        {
+          "subset_size": 3,
+          "change": -0.038892313218152896
+        },
+        {
+          "subset_size": 4,
+          "change": -3.3306690738754696e-16
+        }
+      ]
+    },
+    {
+      "weight": 0.192524659771663,
+      "prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "layer": [
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "before": [
+        {
+          "subset_size": 2,
+          "boundary_bank": 0.009263129728691144,
+          "maximum_term": 0.02169519728616942
+        },
+        {
+          "subset_size": 3,
+          "boundary_bank": 0.009899727696445204,
+          "maximum_term": 0.02169519728616942
+        },
+        {
+          "subset_size": 4,
+          "boundary_bank": -1.1102230246251565e-16,
+          "maximum_term": 4.440892098500626e-16
+        }
+      ],
+      "after": [
+        {
+          "subset_size": 2,
+          "boundary_bank": 0.0022425755469472897,
+          "maximum_term": 0.007403392114696317
+        },
+        {
+          "subset_size": 3,
+          "boundary_bank": 0.0020173537223291405,
+          "maximum_term": 0.007403392114696317
+        },
+        {
+          "subset_size": 4,
+          "boundary_bank": 0.0,
+          "maximum_term": 0.0
+        }
+      ],
+      "changes": [
+        {
+          "subset_size": 2,
+          "change": -0.007020554181743854
+        },
+        {
+          "subset_size": 3,
+          "change": -0.007882373974116064
+        },
+        {
+          "subset_size": 4,
+          "change": 1.1102230246251565e-16
+        }
+      ]
+    }
+  ],
+  "old_dual_drift": [
+    {
+      "subset_size": 2,
+      "weighted_change": -0.035496352779700285
+    },
+    {
+      "subset_size": 3,
+      "weighted_change": -0.038365011958709096
+    },
+    {
+      "subset_size": 4,
+      "weighted_change": 7.418808746932176e-17
+    }
+  ],
+  "transfer_identity": {
+    "instances": 64,
+    "maximum_absolute_residual": 1.7763568394002505e-15,
+    "largest_information_changes": [
+      {
+        "gate": [
+          0,
+          2
+        ],
+        "rest": [
+          1,
+          3,
+          4
+        ],
+        "moving": 0,
+        "relative_entropy_change": -0.34215541688301343,
+        "insertion_entropy_change": -0.6754887502163465,
+        "boundary_information_change": -0.33333333333333304,
+        "identity_residual": 0.0,
+        "single_gate_information": {
+          "gain": 0.666666666666667,
+          "orientation_entropy_given_missing_pair": 1.0,
+          "relative_order_coupling": 0.33333333333333304,
+          "identity_residual": 0.0
+        }
+      },
+      {
+        "gate": [
+          0,
+          2
+        ],
+        "rest": [
+          1,
+          3,
+          4
+        ],
+        "moving": 2,
+        "relative_entropy_change": 0.4578445831169864,
+        "insertion_entropy_change": 0.12451124978365335,
+        "boundary_information_change": -0.33333333333333304,
+        "identity_residual": 0.0
+      },
+      {
+        "gate": [
+          0,
+          2
+        ],
+        "rest": [
+          1,
+          3
+        ],
+        "moving": 0,
+        "relative_entropy_change": -0.22097301610302278,
+        "insertion_entropy_change": -0.5039805159587911,
+        "boundary_information_change": -0.28300749985576834,
+        "identity_residual": 0.0
+      },
+      {
+        "gate": [
+          0,
+          2
+        ],
+        "rest": [
+          1,
+          3
+        ],
+        "moving": 2,
+        "relative_entropy_change": 0.6973228179514672,
+        "insertion_entropy_change": 0.4143153180956989,
+        "boundary_information_change": -0.28300749985576834,
+        "identity_residual": 0.0
+      },
+      {
+        "gate": [
+          0,
+          2
+        ],
+        "rest": [
+          1,
+          4
+        ],
+        "moving": 0,
+        "relative_entropy_change": -0.3395961540894916,
+        "insertion_entropy_change": -0.4347545864986029,
+        "boundary_information_change": -0.09515843240911037,
+        "identity_residual": 8.881784197001252e-16
+      },
+      {
+        "gate": [
+          2,
+          4
+        ],
+        "rest": [
+          0,
+          1,
+          3
+        ],
+        "moving": 2,
+        "relative_entropy_change": 0.0474130025082804,
+        "insertion_entropy_change": -0.04773092211916019,
+        "boundary_information_change": -0.09514392462744059,
+        "identity_residual": 0.0,
+        "single_gate_information": {
+          "gain": 0.7161341998316928,
+          "orientation_entropy_given_missing_pair": 0.8112781244591334,
+          "relative_order_coupling": 0.09514392462744059,
+          "identity_residual": 0.0
+        }
+      },
+      {
+        "gate": [
+          2,
+          4
+        ],
+        "rest": [
+          0,
+          1,
+          3
+        ],
+        "moving": 4,
+        "relative_entropy_change": -0.39162295004803926,
+        "insertion_entropy_change": -0.48676687467547985,
+        "boundary_information_change": -0.09514392462744059,
+        "identity_residual": 0.0
+      },
+      {
+        "gate": [
+          2,
+          4
+        ],
+        "rest": [
+          0,
+          1
+        ],
+        "moving": 4,
+        "relative_entropy_change": 0.08277263533191714,
+        "insertion_entropy_change": 0.0,
+        "boundary_information_change": -0.08277263533191714,
+        "identity_residual": 0.0
+      }
+    ]
+  },
+  "single_gate_information_identity": [
+    {
+      "gain": 0.666666666666667,
+      "orientation_entropy_given_missing_pair": 1.0,
+      "relative_order_coupling": 0.33333333333333304,
+      "identity_residual": 0.0
+    },
+    {
+      "gain": 0.9999999999999996,
+      "orientation_entropy_given_missing_pair": 1.0,
+      "relative_order_coupling": 8.881784197001252e-16,
+      "identity_residual": 4.440892098500626e-16
+    },
+    {
+      "gain": 0.9182958340544891,
+      "orientation_entropy_given_missing_pair": 1.0,
+      "relative_order_coupling": 0.08170416594551089,
+      "identity_residual": 0.0
+    },
+    {
+      "gain": 1.0,
+      "orientation_entropy_given_missing_pair": 1.0,
+      "relative_order_coupling": 0.0,
+      "identity_residual": 0.0
+    },
+    {
+      "gain": 0.4825742227201615,
+      "orientation_entropy_given_missing_pair": 0.4854752972273344,
+      "relative_order_coupling": 0.0029010745071729183,
+      "identity_residual": 0.0
+    },
+    {
+      "gain": 0.7161341998316928,
+      "orientation_entropy_given_missing_pair": 0.8112781244591334,
+      "relative_order_coupling": 0.09514392462744059,
+      "identity_residual": 0.0
+    },
+    {
+      "gain": 0.48440229918798217,
+      "orientation_entropy_given_missing_pair": 0.4854752972273344,
+      "relative_order_coupling": 0.0010729980393526795,
+      "identity_residual": 4.440892098500626e-16
+    },
+    {
+      "gain": 0.9793778007531828,
+      "orientation_entropy_given_missing_pair": 1.0,
+      "relative_order_coupling": 0.020622199246817186,
+      "identity_residual": 0.0
+    }
+  ],
+  "status": "Exact projection counts; numerical entropy; no improved coefficient"
+}
