@@ -81,9 +81,7 @@ structure StageRouting (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
   hIntrusion0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
     intrusion0 b hb ≤ ip.epsB * capacity p d (b.l - 1) t
   hSlack0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
-    slack0 b hb ≤
-      (p.A * p.nu * (p.br : Rat) - 2 * p.A * p.nu +
-        1 / (2 * p.A ^ 2 * (p.br : Rat) ^ 2)) * capacity p d (b.l - 1) t
+    slack0 b hb ≤ slackCoeff p * capacity p d (b.l - 1) t
   /-- Order-0 outsiders in the parent-send Finset are covered by Lemma 4.2 parts. -/
   hFromParent0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
     ((b.strangers 1 perm' (step.fromParent b hb) (br_ge_one p) : Rat)) ≤

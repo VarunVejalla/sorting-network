@@ -141,6 +141,22 @@ theorem lemma41_of_counts_lt (p : ScheduleParams) (ip : InvariantParams)
 
 /-! **Lemma 4.2** -/
 
+/-- Interior identity: `(k-1)Δ₂ - π/2 = slackCoeff · c` with
+    `Δ₂ = ν c / (A k²)` and `π = (A ν k - 1) c / Q`. -/
+theorem slackCoeff_of_delta2_pi (p : ScheduleParams) (c : Rat) :
+    let Q := capacityRatio p
+    let delta2 := p.nu / (p.A * (p.br : Rat) ^ 2) * c
+    let pi := (p.A * p.nu * (p.br : Rat) - 1) / Q * c
+    ((p.br : Rat) - 1) * delta2 - pi / 2 = slackCoeff p * c := by
+  intro Q delta2 pi
+  have hQ : Q = p.A ^ 2 * (p.br : Rat) ^ 2 := rfl
+  have hA : p.A ≠ 0 := ne_of_gt p.A_pos
+  have hk : (p.br : Rat) ≠ 0 := ne_of_gt p.br_cast_pos
+  unfold slackCoeff
+  simp only [hQ, delta2, pi]
+  field_simp [hA, hk]
+  ring
+
 theorem cond42_coeff_form (p : ScheduleParams) (ip : InvariantParams) :
     Cond42 p ip ↔
       lemma42_coeff p ip / (p.A * p.nu) +
@@ -153,9 +169,7 @@ theorem lemma42_of_parts (p : ScheduleParams) (ip : InvariantParams)
     (hout : outsiders ≤ ip.mu * c)
     (hsib : sibMass ≤ ((p.br : Rat) - 1) * ip.mu * siblingFactor p ip * c)
     (hintrusion : intrusion ≤ ip.epsB * c)
-    (hslack : slack ≤
-      (p.A * p.nu * (p.br : Rat) - 2 * p.A * p.nu +
-        1 / (2 * p.A ^ 2 * (p.br : Rat) ^ 2)) * c) :
+    (hslack : slack ≤ slackCoeff p * c) :
     outsiders + sibMass + intrusion + slack ≤ lemma42_coeff p ip * c := by
   simp only [lemma42_coeff]
   linarith [hout, hsib, hintrusion, hslack]

@@ -51,9 +51,7 @@ structure StageDynamics (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
   hIntrusion0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
     intrusion0 b hb ≤ ip.epsB * capacity p d (b.l - 1) t
   hSlack0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
-    slack0 b hb ≤
-      (p.A * p.nu * (p.br : Rat) - 2 * p.A * p.nu +
-        1 / (2 * p.A ^ 2 * (p.br : Rat) ^ 2)) * capacity p d (b.l - 1) t
+    slack0 b hb ≤ slackCoeff p * capacity p d (b.l - 1) t
   hFromParent0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
     fromParent0 b hb ≤
       parentOut0 b hb + sibMass0 b hb + intrusion0 b hb + slack0 b hb

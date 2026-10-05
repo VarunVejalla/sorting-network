@@ -13,6 +13,7 @@ module
 -/
 
 public import AKS.Chvatal.StageKernel
+public import AKS.Chvatal.SendSchedule
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Tactic.Linarith
@@ -155,6 +156,38 @@ structure ChildSendCard (p : ScheduleParams) (d : Nat)
       (j : Fin p.br),
     ((cover.sendUp b hb hbd j).card : Rat) ≤
       ((pl.regs (b.child j.val j.isLt hbd)).card : Rat) / capacityRatio p
+
+/-- Capacity-normalized send-up budget: `|sendUp| ≤ c/Q` and `c ≤ |regs|`. -/
+structure ChildSendCapBudget (p : ScheduleParams) (d : Nat) (t : Nat)
+    (pl pl' : Placement p.br d) (step : PlacementStep p d pl pl')
+    (cover : ChildSendCover p d pl pl' step) where
+  hSend : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l) (hbd : b.l < d)
+      (j : Fin p.br),
+    ((cover.sendUp b hb hbd j).card : Rat) ≤
+      sendUpBudget p d (b.l + 1) t
+  hRegs : ∀ (b : KBag p.br d) (_hb : 1 ≤ b.l) (hbd : b.l < d)
+      (j : Fin p.br),
+    capacity p d (b.l + 1) t ≤
+      ((pl.regs (b.child j.val j.isLt hbd)).card : Rat)
+
+/-- Capacity budget discharges the `|sendUp| ≤ |regs|/Q` card bound. -/
+def childSendCard_of_capBudget (p : ScheduleParams) (d : Nat) (t : Nat)
+    (pl pl' : Placement p.br d) (step : PlacementStep p d pl pl')
+    (cover : ChildSendCover p d pl pl' step)
+    (bud : ChildSendCapBudget p d t pl pl' step cover) :
+    ChildSendCard p d pl pl' step cover where
+  hCardFrac := fun b hb hbd j => by
+    have hs := bud.hSend b hb hbd j
+    have hr := bud.hRegs b hb hbd j
+    have hQ := (capacityRatio_pos p).le
+    have hchild : (b.child j.val j.isLt hbd).l = b.l + 1 := rfl
+    have hs' : ((cover.sendUp b hb hbd j).card : Rat) ≤
+        capacity p d (b.l + 1) t / capacityRatio p := by
+      simpa [sendUpBudget, hchild] using hs
+    calc ((cover.sendUp b hb hbd j).card : Rat)
+        ≤ capacity p d (b.l + 1) t / capacityRatio p := hs'
+      _ ≤ ((pl.regs (b.child j.val j.isLt hbd)).card : Rat) / capacityRatio p :=
+          div_le_div_of_nonneg_right hr hQ
 
 /-- Fair send-up density under the pre-stage permutation, plus a one-step
     stranger mono bound from `perm` to `perm'` on the send-up. -/
@@ -429,6 +462,37 @@ structure ChildSendBridge (p : ScheduleParams) (d : Nat)
       (((b.child j.val j.isLt hbd).strangers ord perm
           (pl.regs (b.child j.val j.isLt hbd)) (br_ge_one p) : Rat))
 
+/-- Same-permutation send-up: bridge collapses to `strangers_mono` on the
+    subset `sendUp ⊆ child.regs`. -/
+def childSendBridge_of_same_perm (p : ScheduleParams) (d : Nat)
+    (pl pl' : Placement p.br d) (step : PlacementStep p d pl pl')
+    (perm : Fin (p.br ^ d) → Fin (p.br ^ d))
+    (cover : ChildSendCover p d pl pl' step) :
+    ChildSendBridge p d pl pl' step perm perm cover where
+  hLe := fun b hb hbd j ord => by
+    have hbr := br_ge_one p
+    have hsub := cover.hsubset b hb hbd j
+    exact_mod_cast
+      ((b.child j.val j.isLt hbd).strangers_mono ord perm hsub hbr)
+
+/-- Same-permutation fair package: density remains an obligation; perm-mono is
+    reflexive. -/
+def childSendFair_of_same_perm (p : ScheduleParams) (d : Nat)
+    (pl pl' : Placement p.br d) (step : PlacementStep p d pl pl')
+    (perm : Fin (p.br ^ d) → Fin (p.br ^ d))
+    (cover : ChildSendCover p d pl pl' step)
+    (hSame : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l) (hbd : b.l < d)
+        (j : Fin p.br),
+      (((b.child j.val j.isLt hbd).strangers 2 perm
+          (cover.sendUp b hb hbd j) (br_ge_one p) : Rat)) *
+          ((pl.regs (b.child j.val j.isLt hbd)).card : Rat) ≤
+        (((b.child j.val j.isLt hbd).strangers 2 perm
+            (pl.regs (b.child j.val j.isLt hbd)) (br_ge_one p) : Rat)) *
+          ((cover.sendUp b hb hbd j).card : Rat)) :
+    ChildSendFair p d pl pl' step perm perm cover where
+  hSame := hSame
+  hPermLe := fun _b _hb _hbd _j => le_rfl
+
 /-- Scale `k · μ · δ^{r+1} · A² · c` into the StageKernel children-send form. -/
 theorem childrenR_scale (p : ScheduleParams) (ip : InvariantParams)
     (c : Rat) (r : Nat) (hr1 : 1 ≤ r) :
@@ -568,9 +632,7 @@ structure StageKernelWithChildren (p : ScheduleParams) (ip : InvariantParams)
     (parentSep b hb).a ≤ capacity p d (b.l - 1) t
   slack0 : ∀ (b : KBag p.br d), 1 ≤ b.l → Rat
   hSlack0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
-    slack0 b hb ≤
-      (p.A * p.nu * (p.br : Rat) - 2 * p.A * p.nu +
-        1 / (2 * p.A ^ 2 * (p.br : Rat) ^ 2)) * capacity p d (b.l - 1) t
+    slack0 b hb ≤ slackCoeff p * capacity p d (b.l - 1) t
   hBadSend0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
     ((b.strangers 1 perm' (step.fromParent b hb) (br_ge_one p) : Rat)) ≤
       parentOutMass p d pl perm b hb +

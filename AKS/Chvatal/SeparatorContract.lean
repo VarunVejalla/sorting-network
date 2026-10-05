@@ -72,8 +72,7 @@ def StageCounts.BadBound (p : ScheduleParams) (ip : InvariantParams)
 /-- Paper Lemma 4.2 coefficient of `c(i,t)`. -/
 def lemma42_coeff (p : ScheduleParams) (ip : InvariantParams) : Rat :=
   ip.mu + ((p.br : Rat) - 1) * ip.mu * siblingFactor p ip +
-    p.A * p.nu * (p.br : Rat) - 2 * p.A * p.nu +
-    1 / (2 * p.A ^ 2 * (p.br : Rat) ^ 2) + ip.epsB
+    slackCoeff p + ip.epsB
 
 /-- Sources of order-0 outsiders at a child after one stage. -/
 structure Lemma43Sources where

@@ -247,14 +247,17 @@ and `SortingDepth.upperNetwork` remain computable definitions.
   card (`|sendUp| ≤ |regs|/Q`) plus fair density / perm-mono
   (`childSendSize_of_card_fair`) then `P`; order-`r` (`r+1 ≤ d`) from `P` +
   bridge (`StageKernel.ofChildSend`; kernel-checked); top order `r = d`
-  remains a one-line residual. Remaining kernel obligations: schedule slack,
-  Lemma 4.1 count identities, bad-send/fringe Finset routing, level-0,
-  schedule card / fair-density / perm-bridge from the placement networks, and
-  concrete separators. Remaining Phase 1: discharge those from the scheduler /
-  placement networks, and Lemma 3.2 snap-from-envelope. Then Phase 2 (§5–6
-  scramble existence, Thm 5.1), Phase 3 (§7 instantiation +
-  `D(N) ≤ 1830·lg N − 58657` endpoints). The (4.2) numeric assembly remains
-  deferred to the separator/outsider proofs.
+  remains a one-line residual. Further discharges (kernel-checked):
+  [SendSchedule](../AKS/Chvatal/SendSchedule.lean) (`sendUpBudget = c/Q`),
+  [StageCountsFill](../AKS/Chvatal/StageCountsFill.lean) (algebraic Lemma 4.1
+  bundle), `childSendCard_of_capBudget`, same-perm bridge/fair fillers,
+  `slackBound`, [Params](../AKS/Chvatal/Params.lean) §7 `(4.1)/(4.3)–(4.5)`,
+  [Bound1830](../AKS/Chvatal/Bound1830.lean) child-send trajectory induction +
+  depth accounting.   `slackCoeff` corrected to `(Aνk−2Aν+1)/(2A²k²)` (OCR fraction fix); §7
+  `SeparatorConds` (4.1)–(4.5) kernel-checked at `params7`. Remaining before
+  a sorting theorem: placement Finsets (support/card/fair/bad-send/fringe/
+  level-0), Lemma 3.2 snap-from-envelope, Phase 2 Thm 5.1 separators, and
+  Phase 3 purity ⇒ sorted + `D(N) ≤ 1830·lg N − 58657`.
 
 ## Documents and history
 

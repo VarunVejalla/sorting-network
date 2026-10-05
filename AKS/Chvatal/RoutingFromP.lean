@@ -47,9 +47,7 @@ structure StageRoutingResidue (p : ScheduleParams) (ip : InvariantParams)
     sibMass0 b hb ≤
       ((p.br : Rat) - 1) * ip.mu * siblingFactor p ip * capacity p d (b.l - 1) t
   hSlack0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
-    slack0 b hb ≤
-      (p.A * p.nu * (p.br : Rat) - 2 * p.A * p.nu +
-        1 / (2 * p.A ^ 2 * (p.br : Rat) ^ 2)) * capacity p d (b.l - 1) t
+    slack0 b hb ≤ slackCoeff p * capacity p d (b.l - 1) t
   /-- Order-0 bad keys in the parent-send Finset are covered by Lemma 4.2 parts
       (parent outsiders + sibling mass + intrusion + slack). -/
   hBadSend0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),

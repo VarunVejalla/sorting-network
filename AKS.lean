@@ -153,4 +153,8 @@ import AKS.Chvatal.StageDynamics
 import AKS.Chvatal.PlacementStep
 import AKS.Chvatal.RoutingFromP
 import AKS.Chvatal.StageKernel
+import AKS.Chvatal.SendSchedule
+import AKS.Chvatal.StageCountsFill
 import AKS.Chvatal.ChildSend
+import AKS.Chvatal.Params
+import AKS.Chvatal.Bound1830

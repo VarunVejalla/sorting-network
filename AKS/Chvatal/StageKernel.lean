@@ -33,6 +33,18 @@ theorem sibMassBound_le (p : ScheduleParams) (ip : InvariantParams) (d t : Nat)
       ((p.br : Rat) - 1) * ip.mu * siblingFactor p ip * capacity p d (b.l - 1) t :=
   le_rfl
 
+/-! **Schedule slack** -/
+
+/-- Exact schedule-slack used by Lemma 4.2 / `hSlack0`: `slackCoeff · c`. -/
+def slackBound (p : ScheduleParams) (d t : Nat)
+    (b : KBag p.br d) (_hb : 1 ≤ b.l) : Rat :=
+  slackCoeff p * capacity p d (b.l - 1) t
+
+theorem slackBound_le (p : ScheduleParams) (d t : Nat)
+    (b : KBag p.br d) (hb : 1 ≤ b.l) :
+    slackBound p d t b hb ≤ slackCoeff p * capacity p d (b.l - 1) t :=
+  le_rfl
+
 /-! **Stage kernel** -/
 
 /-- Irreducible hypotheses for one stage after discharging parent-outsider /
@@ -56,9 +68,7 @@ structure StageKernel (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
     (parentSep b hb).a ≤ capacity p d (b.l - 1) t
   slack0 : ∀ (b : KBag p.br d), 1 ≤ b.l → Rat
   hSlack0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
-    slack0 b hb ≤
-      (p.A * p.nu * (p.br : Rat) - 2 * p.A * p.nu +
-        1 / (2 * p.A ^ 2 * (p.br : Rat) ^ 2)) * capacity p d (b.l - 1) t
+    slack0 b hb ≤ slackCoeff p * capacity p d (b.l - 1) t
   /-- Order-0 bad keys in the parent-send Finset ≤ parent outsiders + sibling
       budget + intrusion + slack. -/
   hBadSend0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),

@@ -67,6 +67,15 @@ def siblingFactor (p : ScheduleParams) (ip : InvariantParams) : Rat :=
   ip.delta * (p.br : Rat) * p.A ^ 2 /
     (1 - ip.delta ^ 2 * (p.br : Rat) ^ 2 * p.A ^ 2)
 
+/-- Lemma 4.2 residual from `(k-1)Δ₂ - π/2`, as a coefficient of `c`:
+    `(A ν k - 2 A ν + 1) / (2 A² k²)`.
+
+    (The paper's displayed form places this whole fraction after `(k-1)Δ₁`;
+    OCR of the notes can look like an unscaled `Aνk - 2Aν` sum.) -/
+def slackCoeff (p : ScheduleParams) : Rat :=
+  (p.A * p.nu * (p.br : Rat) - 2 * p.A * p.nu + 1) /
+    (2 * p.A ^ 2 * (p.br : Rat) ^ 2)
+
 /-- §4 (4.1): exceptional root separator quality `ε* ≤ μ/k`. -/
 def Cond41 (p : ScheduleParams) (ip : InvariantParams) : Prop :=
   ip.epsStar ≤ ip.mu / (p.br : Rat)
@@ -74,8 +83,7 @@ def Cond41 (p : ScheduleParams) (ip : InvariantParams) : Prop :=
 /-- §4 (4.2): first-outsider budget through one stage (paper displayed form). -/
 def Cond42 (p : ScheduleParams) (ip : InvariantParams) : Prop :=
   (ip.mu + (p.br - 1 : Rat) * ip.mu * siblingFactor p ip +
-      p.A * p.nu * (p.br : Rat) - 2 * p.A * p.nu + 1 /
-        (2 * p.A ^ 2 * (p.br : Rat) ^ 2) + ip.epsB) /
+      slackCoeff p + ip.epsB) /
       (p.A * p.nu) +
     ip.mu * ip.delta / (p.A * (p.br : Rat) * p.nu) ≤ ip.mu
 
