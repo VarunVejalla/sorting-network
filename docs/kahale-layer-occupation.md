@@ -218,6 +218,13 @@ has been established. The concrete next challenge is whether equal-height
 layers can also recycle this degree-resolved reserve without a sustained
 loss; this should be tested before another proof scaffold is built.
 
+**Follow-up:** the [degree-recycling investigation](kahale-degree-recycling.md)
+finds an arbitrary-size equal-height median comparison that clears every
+nonconstant degree on the central slice. It also gives a neighboring-weight
+suffix obstruction and an exact shared-baseline routing-group formulation.
+The universal local degree charge fails; conditional certificate compatibility
+across weights is the remaining target.
+
 ## Reproduction
 
 ```text

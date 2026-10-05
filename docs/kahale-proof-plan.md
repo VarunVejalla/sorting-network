@@ -20,6 +20,16 @@ four-wire sorter. A single efficient initial layer can create a reserve
 approaching one quarter of the full collision budget. A sustained rate loss
 needs finer information about input sets or certificate scales.
 
+The [degree-recycling challenge](kahale-degree-recycling.md) now rules out
+the corresponding universal local spectral-degree charge: equal-height
+medians of two sorted odd blocks clear every nonconstant degree on the
+central slice. The mirror layer completes that slice but leaves an adjacent
+weight requiring `ceil(log_2 m)` more layers. The revised target retains
+baseline routing groups jointly with certificates valid at that same
+baseline. A logarithmic-depth OR/AND prefix shows why global minimum
+certificate height cannot bound those groups. No improved coefficient or
+general quantitative compatibility inequality is proved.
+
 The [joint hierarchy-layer investigation](kahale-hierarchy-layer.md) identifies
 two barriers: joint histories collapse to the finest scale, and rank-update
 dependence can be leading order in a fully efficient layer. The remaining

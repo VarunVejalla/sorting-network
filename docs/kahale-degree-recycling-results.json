@@ -1,0 +1,699 @@
+{
+  "method": "Integer Johnson-Laplacian moments and rational spectral projectors",
+  "probes": [
+    {
+      "block_size": 3,
+      "wires": 6,
+      "middle_weight": 3,
+      "slice_inputs": 20,
+      "block_prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "block_prefix_depth": 3,
+      "paired_block_layer_depth": 3,
+      "median_gate": [
+        1,
+        4
+      ],
+      "median_gate_input_scalar_heights": [
+        1,
+        1
+      ],
+      "paired_median_nonconstant_variance": "1/2",
+      "killed_faces": 36,
+      "killed_faces_per_slice_input": "9/5",
+      "paired_median_reserve_before": "240",
+      "paired_median_reserve_after": "0",
+      "spectrum": [
+        {
+          "degree": 0,
+          "eigenvalue": 0,
+          "one_wire_variance_fraction": "1/4",
+          "approximate_variance": 0.25,
+          "pair_after_nonconstant_variance": null
+        },
+        {
+          "degree": 1,
+          "eigenvalue": 6,
+          "one_wire_variance_fraction": "1/5",
+          "approximate_variance": 0.2,
+          "pair_after_nonconstant_variance": "0"
+        },
+        {
+          "degree": 2,
+          "eigenvalue": 10,
+          "one_wire_variance_fraction": "0",
+          "approximate_variance": 0.0,
+          "pair_after_nonconstant_variance": "0"
+        },
+        {
+          "degree": 3,
+          "eigenvalue": 12,
+          "one_wire_variance_fraction": "1/20",
+          "approximate_variance": 0.05,
+          "pair_after_nonconstant_variance": "0"
+        }
+      ],
+      "mirror_matching_sorts_entire_central_slice": true,
+      "mirror_matching_neighboring_weight_failure": {
+        "input_mask": 3,
+        "weight": 2,
+        "output": [
+          0,
+          0,
+          0,
+          1,
+          1,
+          0
+        ]
+      },
+      "scope": "Actual prefixes; median gate removes all nonconstant degrees at equal heights. The prefixes are not depth-efficient witnesses."
+    },
+    {
+      "block_size": 5,
+      "wires": 10,
+      "middle_weight": 5,
+      "slice_inputs": 252,
+      "block_prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "block_prefix_depth": 10,
+      "paired_block_layer_depth": 10,
+      "median_gate": [
+        2,
+        7
+      ],
+      "median_gate_input_scalar_heights": [
+        2,
+        2
+      ],
+      "paired_median_nonconstant_variance": "1/2",
+      "killed_faces": 900,
+      "killed_faces_per_slice_input": "25/7",
+      "paired_median_reserve_before": "136080",
+      "paired_median_reserve_after": "0",
+      "spectrum": [
+        {
+          "degree": 0,
+          "eigenvalue": 0,
+          "one_wire_variance_fraction": "1/4",
+          "approximate_variance": 0.25,
+          "pair_after_nonconstant_variance": null
+        },
+        {
+          "degree": 1,
+          "eigenvalue": 10,
+          "one_wire_variance_fraction": "9/49",
+          "approximate_variance": 0.1836734693877551,
+          "pair_after_nonconstant_variance": "0"
+        },
+        {
+          "degree": 2,
+          "eigenvalue": 18,
+          "one_wire_variance_fraction": "0",
+          "approximate_variance": 0.0,
+          "pair_after_nonconstant_variance": "0"
+        },
+        {
+          "degree": 3,
+          "eigenvalue": 24,
+          "one_wire_variance_fraction": "25/588",
+          "approximate_variance": 0.04251700680272109,
+          "pair_after_nonconstant_variance": "0"
+        },
+        {
+          "degree": 4,
+          "eigenvalue": 28,
+          "one_wire_variance_fraction": "0",
+          "approximate_variance": 0.0,
+          "pair_after_nonconstant_variance": "0"
+        },
+        {
+          "degree": 5,
+          "eigenvalue": 30,
+          "one_wire_variance_fraction": "1/42",
+          "approximate_variance": 0.023809523809523808,
+          "pair_after_nonconstant_variance": "0"
+        }
+      ],
+      "mirror_matching_sorts_entire_central_slice": true,
+      "mirror_matching_neighboring_weight_failure": {
+        "input_mask": 15,
+        "weight": 4,
+        "output": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          1,
+          1,
+          0
+        ]
+      },
+      "scope": "Actual prefixes; median gate removes all nonconstant degrees at equal heights. The prefixes are not depth-efficient witnesses."
+    },
+    {
+      "block_size": 7,
+      "wires": 14,
+      "middle_weight": 7,
+      "slice_inputs": 3432,
+      "block_prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "block_prefix_depth": 21,
+      "paired_block_layer_depth": 21,
+      "median_gate": [
+        3,
+        10
+      ],
+      "median_gate_input_scalar_heights": [
+        3,
+        3
+      ],
+      "paired_median_nonconstant_variance": "1/2",
+      "killed_faces": 19600,
+      "killed_faces_per_slice_input": "2450/429",
+      "paired_median_reserve_before": "52084032",
+      "paired_median_reserve_after": "0",
+      "spectrum": [
+        {
+          "degree": 0,
+          "eigenvalue": 0,
+          "one_wire_variance_fraction": "1/4",
+          "approximate_variance": 0.25,
+          "pair_after_nonconstant_variance": null
+        },
+        {
+          "degree": 1,
+          "eigenvalue": 14,
+          "one_wire_variance_fraction": "2500/14157",
+          "approximate_variance": 0.17659108568199477,
+          "pair_after_nonconstant_variance": "0"
+        },
+        {
+          "degree": 2,
+          "eigenvalue": 26,
+          "one_wire_variance_fraction": "0",
+          "approximate_variance": 0.0,
+          "pair_after_nonconstant_variance": "0"
+        },
+        {
+          "degree": 3,
+          "eigenvalue": 36,
+          "one_wire_variance_fraction": "175/4719",
+          "approximate_variance": 0.037084127993218904,
+          "pair_after_nonconstant_variance": "0"
+        },
+        {
+          "degree": 4,
+          "eigenvalue": 44,
+          "one_wire_variance_fraction": "0",
+          "approximate_variance": 0.0,
+          "pair_after_nonconstant_variance": "0"
+        },
+        {
+          "degree": 5,
+          "eigenvalue": 50,
+          "one_wire_variance_fraction": "28/1287",
+          "approximate_variance": 0.021756021756021756,
+          "pair_after_nonconstant_variance": "0"
+        },
+        {
+          "degree": 6,
+          "eigenvalue": 54,
+          "one_wire_variance_fraction": "0",
+          "approximate_variance": 0.0,
+          "pair_after_nonconstant_variance": "0"
+        },
+        {
+          "degree": 7,
+          "eigenvalue": 56,
+          "one_wire_variance_fraction": "25/1716",
+          "approximate_variance": 0.014568764568764568,
+          "pair_after_nonconstant_variance": "0"
+        }
+      ],
+      "mirror_matching_sorts_entire_central_slice": true,
+      "mirror_matching_neighboring_weight_failure": {
+        "input_mask": 63,
+        "weight": 6,
+        "output": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          0
+        ]
+      },
+      "scope": "Actual prefixes; median gate removes all nonconstant degrees at equal heights. The prefixes are not depth-efficient witnesses."
+    }
+  ],
+  "quotient_probes": [
+    {
+      "block_size": 3,
+      "wires": 6,
+      "quotient_states": 4,
+      "highest_degree": 3,
+      "highest_degree_variance_fraction": "1/20",
+      "variance_degree_ge_three": "1/20",
+      "reserve_share_degree_ge_half_block": "1",
+      "approximate_high_degree_reserve_share": 1.0,
+      "all_nonconstant_degrees_removed_by_median_gate": true,
+      "neighbor_weight_zero_locations": [
+        3,
+        4,
+        5
+      ],
+      "required_neighbor_slice_suffix_depth": 2,
+      "method": "Exact weighted block-count quotient; no input enumeration or floating eigensolver"
+    },
+    {
+      "block_size": 5,
+      "wires": 10,
+      "quotient_states": 6,
+      "highest_degree": 5,
+      "highest_degree_variance_fraction": "1/42",
+      "variance_degree_ge_three": "13/196",
+      "reserve_share_degree_ge_half_block": "1",
+      "approximate_high_degree_reserve_share": 1.0,
+      "all_nonconstant_degrees_removed_by_median_gate": true,
+      "neighbor_weight_zero_locations": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "required_neighbor_slice_suffix_depth": 3,
+      "method": "Exact weighted block-count quotient; no input enumeration or floating eigensolver"
+    },
+    {
+      "block_size": 7,
+      "wires": 14,
+      "quotient_states": 8,
+      "highest_degree": 7,
+      "highest_degree_variance_fraction": "25/1716",
+      "variance_degree_ge_three": "4157/56628",
+      "reserve_share_degree_ge_half_block": "171/271",
+      "approximate_high_degree_reserve_share": 0.6309963099630996,
+      "all_nonconstant_degrees_removed_by_median_gate": true,
+      "neighbor_weight_zero_locations": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "required_neighbor_slice_suffix_depth": 3,
+      "method": "Exact weighted block-count quotient; no input enumeration or floating eigensolver"
+    },
+    {
+      "block_size": 15,
+      "wires": 30,
+      "quotient_states": 16,
+      "highest_degree": 15,
+      "highest_degree_variance_fraction": "20449/4308820",
+      "variance_degree_ge_three": "13250437261/160051118900",
+      "reserve_share_degree_ge_half_block": "228193637/444666025",
+      "approximate_high_degree_reserve_share": 0.5131798342362676,
+      "all_nonconstant_degrees_removed_by_median_gate": true,
+      "neighbor_weight_zero_locations": [
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "required_neighbor_slice_suffix_depth": 4,
+      "method": "Exact weighted block-count quotient; no input enumeration or floating eigensolver"
+    },
+    {
+      "block_size": 31,
+      "wires": 62,
+      "quotient_states": 32,
+      "highest_degree": 31,
+      "highest_degree_variance_fraction": "290990772675/180119331755132",
+      "variance_degree_ge_three": "11563790488837631442152149/132963006852111897063968596",
+      "reserve_share_degree_ge_half_block": "2922994770335525779/6477542037382256927",
+      "approximate_high_degree_reserve_share": 0.4512506060889701,
+      "all_nonconstant_degrees_removed_by_median_gate": true,
+      "neighbor_weight_zero_locations": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61
+      ],
+      "required_neighbor_slice_suffix_depth": 5,
+      "method": "Exact weighted block-count quotient; no input enumeration or floating eigensolver"
+    },
+    {
+      "block_size": 63,
+      "wires": 126,
+      "quotient_states": 64,
+      "highest_degree": 63,
+      "highest_degree_variance_fraction": "67793154655142617074227749/120873946267400162972854894500",
+      "variance_degree_ge_three": "2599041741396779761356994790176177684389774561377496101/29221021772508683581293942250333503460064927505212260500",
+      "reserve_share_degree_ge_half_block": "347674665225679650349797755702598589789901/841340369618386644701432678212988105891553",
+      "approximate_high_degree_reserve_share": 0.4132390145303228,
+      "all_nonconstant_degrees_removed_by_median_gate": true,
+      "neighbor_weight_zero_locations": [
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122,
+        123,
+        124,
+        125
+      ],
+      "required_neighbor_slice_suffix_depth": 6,
+      "method": "Exact weighted block-count quotient; no input enumeration or floating eigensolver"
+    }
+  ],
+  "conditional_height_probes": [
+    {
+      "wires": 5,
+      "layer_depth": 3,
+      "baseline_one_positions": [
+        4
+      ],
+      "output_wire": 3,
+      "output_scalar_height": 0,
+      "routed_addition_group_size": 4,
+      "global_minimum_zero_certificate_size": 1,
+      "baseline_conditional_minimum_zero_certificate_size": 4,
+      "target_function": "AND(OR(first block), last input)",
+      "scope": "Actual logarithmic-depth prefix; certificate sizes follow directly from the displayed function"
+    },
+    {
+      "wires": 9,
+      "layer_depth": 4,
+      "baseline_one_positions": [
+        8
+      ],
+      "output_wire": 7,
+      "output_scalar_height": 0,
+      "routed_addition_group_size": 8,
+      "global_minimum_zero_certificate_size": 1,
+      "baseline_conditional_minimum_zero_certificate_size": 8,
+      "target_function": "AND(OR(first block), last input)",
+      "scope": "Actual logarithmic-depth prefix; certificate sizes follow directly from the displayed function"
+    },
+    {
+      "wires": 17,
+      "layer_depth": 5,
+      "baseline_one_positions": [
+        16
+      ],
+      "output_wire": 15,
+      "output_scalar_height": 0,
+      "routed_addition_group_size": 16,
+      "global_minimum_zero_certificate_size": 1,
+      "baseline_conditional_minimum_zero_certificate_size": 16,
+      "target_function": "AND(OR(first block), last input)",
+      "scope": "Actual logarithmic-depth prefix; certificate sizes follow directly from the displayed function"
+    },
+    {
+      "wires": 33,
+      "layer_depth": 6,
+      "baseline_one_positions": [
+        32
+      ],
+      "output_wire": 31,
+      "output_scalar_height": 0,
+      "routed_addition_group_size": 32,
+      "global_minimum_zero_certificate_size": 1,
+      "baseline_conditional_minimum_zero_certificate_size": 32,
+      "target_function": "AND(OR(first block), last input)",
+      "scope": "Actual logarithmic-depth prefix; certificate sizes follow directly from the displayed function"
+    },
+    {
+      "wires": 65,
+      "layer_depth": 7,
+      "baseline_one_positions": [
+        64
+      ],
+      "output_wire": 63,
+      "output_scalar_height": 0,
+      "routed_addition_group_size": 64,
+      "global_minimum_zero_certificate_size": 1,
+      "baseline_conditional_minimum_zero_certificate_size": 64,
+      "target_function": "AND(OR(first block), last input)",
+      "scope": "Actual logarithmic-depth prefix; certificate sizes follow directly from the displayed function"
+    },
+    {
+      "wires": 129,
+      "layer_depth": 8,
+      "baseline_one_positions": [
+        128
+      ],
+      "output_wire": 127,
+      "output_scalar_height": 0,
+      "routed_addition_group_size": 128,
+      "global_minimum_zero_certificate_size": 1,
+      "baseline_conditional_minimum_zero_certificate_size": 128,
+      "target_function": "AND(OR(first block), last input)",
+      "scope": "Actual logarithmic-depth prefix; certificate sizes follow directly from the displayed function"
+    }
+  ],
+  "status": "Exact finite experiments and an elementary general construction; no improved lower bound"
+}

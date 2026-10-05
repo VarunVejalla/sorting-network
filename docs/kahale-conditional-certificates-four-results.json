@@ -1,0 +1,34 @@
+{
+  "wires": 4,
+  "reachable_states": 261,
+  "complete": true,
+  "layer_queries": 2349,
+  "maximum_layer_ratio": "51/40",
+  "exceeds_five_fourths": true,
+  "witness": {
+    "prefix": [
+      [
+        0,
+        1
+      ],
+      [
+        2,
+        3
+      ]
+    ],
+    "layer": [
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        3
+      ]
+    ],
+    "before_sum_over_all_inputs": 80,
+    "after_sum_over_all_inputs": 102,
+    "ratio": "51/40"
+  },
+  "status": "Exact finite certificate minimization; no universal growth bound"
+}
