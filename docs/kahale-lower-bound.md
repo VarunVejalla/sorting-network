@@ -101,6 +101,10 @@ it does not claim a build of the concurrent Chvátal work.
 compatible with all current binomial constraints at the existing exponential
 rate. Integral histogram rounding preserves the necessary prefix counts.
 This narrows the next target to positional or certificate compatibility.
+The [positional follow-up](kahale-positional-barrier.md) supplies an explicit
+schedule satisfying the zero-height boundary requirements too. It can still
+fail sorting, so actual certificate families and multiple threshold requirements
+are the next target.
 
 The Fibonacci step already extracts the full `3.270559454...` coefficient from
 these particular binomial constraints. Reducing the polynomial factor improves

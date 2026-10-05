@@ -189,6 +189,14 @@ Lean theorems in this module. No sorting-network existence is claimed.
 
 ## 6. The next useful obstruction
 
+**Update:** [the positional construction](kahale-positional-barrier.md) closes
+the positional gap for the zero-height condition considered here. Splitting
+contiguous equal-height blocks across their halves preserves a sorted height
+profile and realizes all required boundary positions. The discussion below
+records the question that led to that construction; positional obstruction for
+this particular condition is now ruled out. Actual threshold-certificate
+requirements remain a research target.
+
 The next question is whether a single schedule can put its low-height wires in
 the **required boundary region at every critical prefix**, while maintaining
 compatibility of their actual certificates. Integral histogram counts alone
