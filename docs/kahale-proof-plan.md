@@ -225,10 +225,15 @@ lemmas are kernel checked separately. No higher coefficient is claimed.
 
 ## Recommended immediate work
 
-Prove the exact rank-fiber merge identity next, then use weighted swap closure
+The exact rank-fiber merge identity is now proved in
+`AKS/Kahale/RankFiberMerge.lean`. Use weighted swap closure
 to formulate one falsifiable charging lemma with a fully specified exception
 budget. Investigate that lemma on analytic block families before expanding
 the formal entropy library or tuning potential weights.
+
+The [sorted-block calculation and charging conjecture](kahale-swap-charging.md)
+show why the bank must account for collective swaps: a parallel layer can
+gain more information than the sum of its initial single-gate gains.
 
 ## Verification and reproduction
 

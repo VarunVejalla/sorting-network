@@ -1,0 +1,452 @@
+{
+  "status": "Exact counts; numerical entropy; no asymptotic improvement proved",
+  "families": [
+    {
+      "block_size": 1,
+      "interleavings": 2,
+      "single_gate": [
+        {
+          "rank": 1,
+          "gain": 1.0,
+          "predicted_gain": "1",
+          "fiber_size_histogram": {
+            "2": 1
+          }
+        }
+      ],
+      "parallel_layer_gain": 1.0,
+      "predicted_layer_gain": "1",
+      "sum_initial_single_gate_gains": 1.0,
+      "layer_fiber_size_histogram": {
+        "2": 1
+      }
+    },
+    {
+      "block_size": 2,
+      "interleavings": 6,
+      "single_gate": [
+        {
+          "rank": 1,
+          "gain": 0.6666666666666666,
+          "predicted_gain": "2/3",
+          "fiber_size_histogram": {
+            "1": 2,
+            "2": 2
+          }
+        },
+        {
+          "rank": 2,
+          "gain": 0.6666666666666666,
+          "predicted_gain": "2/3",
+          "fiber_size_histogram": {
+            "1": 2,
+            "2": 2
+          }
+        }
+      ],
+      "parallel_layer_gain": 1.6666666666666667,
+      "predicted_layer_gain": "5/3",
+      "sum_initial_single_gate_gains": 1.3333333333333333,
+      "layer_fiber_size_histogram": {
+        "2": 1,
+        "4": 1
+      }
+    },
+    {
+      "block_size": 3,
+      "interleavings": 20,
+      "single_gate": [
+        {
+          "rank": 1,
+          "gain": 0.6,
+          "predicted_gain": "3/5",
+          "fiber_size_histogram": {
+            "1": 8,
+            "2": 6
+          }
+        },
+        {
+          "rank": 2,
+          "gain": 0.4,
+          "predicted_gain": "2/5",
+          "fiber_size_histogram": {
+            "1": 12,
+            "2": 4
+          }
+        },
+        {
+          "rank": 3,
+          "gain": 0.6,
+          "predicted_gain": "3/5",
+          "fiber_size_histogram": {
+            "1": 8,
+            "2": 6
+          }
+        }
+      ],
+      "parallel_layer_gain": 2.2,
+      "predicted_layer_gain": "11/5",
+      "sum_initial_single_gate_gains": 1.6,
+      "layer_fiber_size_histogram": {
+        "2": 2,
+        "4": 2,
+        "8": 1
+      }
+    },
+    {
+      "block_size": 4,
+      "interleavings": 70,
+      "single_gate": [
+        {
+          "rank": 1,
+          "gain": 0.5714285714285714,
+          "predicted_gain": "4/7",
+          "fiber_size_histogram": {
+            "1": 30,
+            "2": 20
+          }
+        },
+        {
+          "rank": 2,
+          "gain": 0.34285714285714286,
+          "predicted_gain": "12/35",
+          "fiber_size_histogram": {
+            "1": 46,
+            "2": 12
+          }
+        },
+        {
+          "rank": 3,
+          "gain": 0.34285714285714286,
+          "predicted_gain": "12/35",
+          "fiber_size_histogram": {
+            "1": 46,
+            "2": 12
+          }
+        },
+        {
+          "rank": 4,
+          "gain": 0.5714285714285714,
+          "predicted_gain": "4/7",
+          "fiber_size_histogram": {
+            "1": 30,
+            "2": 20
+          }
+        }
+      ],
+      "parallel_layer_gain": 2.657142857142857,
+      "predicted_layer_gain": "93/35",
+      "sum_initial_single_gate_gains": 1.8285714285714285,
+      "layer_fiber_size_histogram": {
+        "2": 5,
+        "4": 5,
+        "8": 3,
+        "16": 1
+      }
+    },
+    {
+      "block_size": 5,
+      "interleavings": 252,
+      "single_gate": [
+        {
+          "rank": 1,
+          "gain": 0.5555555555555556,
+          "predicted_gain": "5/9",
+          "fiber_size_histogram": {
+            "1": 112,
+            "2": 70
+          }
+        },
+        {
+          "rank": 2,
+          "gain": 0.31746031746031744,
+          "predicted_gain": "20/63",
+          "fiber_size_histogram": {
+            "1": 172,
+            "2": 40
+          }
+        },
+        {
+          "rank": 3,
+          "gain": 0.2857142857142857,
+          "predicted_gain": "2/7",
+          "fiber_size_histogram": {
+            "1": 180,
+            "2": 36
+          }
+        },
+        {
+          "rank": 4,
+          "gain": 0.31746031746031744,
+          "predicted_gain": "20/63",
+          "fiber_size_histogram": {
+            "1": 172,
+            "2": 40
+          }
+        },
+        {
+          "rank": 5,
+          "gain": 0.5555555555555556,
+          "predicted_gain": "5/9",
+          "fiber_size_histogram": {
+            "1": 112,
+            "2": 70
+          }
+        }
+      ],
+      "parallel_layer_gain": 3.0634920634920637,
+      "predicted_layer_gain": "193/63",
+      "sum_initial_single_gate_gains": 2.0317460317460316,
+      "layer_fiber_size_histogram": {
+        "2": 14,
+        "4": 14,
+        "8": 9,
+        "16": 4,
+        "32": 1
+      }
+    },
+    {
+      "block_size": 6,
+      "interleavings": 924,
+      "single_gate": [
+        {
+          "rank": 1,
+          "gain": 0.5454545454545454,
+          "predicted_gain": "6/11",
+          "fiber_size_histogram": {
+            "1": 420,
+            "2": 252
+          }
+        },
+        {
+          "rank": 2,
+          "gain": 0.30303030303030304,
+          "predicted_gain": "10/33",
+          "fiber_size_histogram": {
+            "1": 644,
+            "2": 140
+          }
+        },
+        {
+          "rank": 3,
+          "gain": 0.2597402597402597,
+          "predicted_gain": "20/77",
+          "fiber_size_histogram": {
+            "1": 684,
+            "2": 120
+          }
+        },
+        {
+          "rank": 4,
+          "gain": 0.2597402597402597,
+          "predicted_gain": "20/77",
+          "fiber_size_histogram": {
+            "1": 684,
+            "2": 120
+          }
+        },
+        {
+          "rank": 5,
+          "gain": 0.30303030303030304,
+          "predicted_gain": "10/33",
+          "fiber_size_histogram": {
+            "1": 644,
+            "2": 140
+          }
+        },
+        {
+          "rank": 6,
+          "gain": 0.5454545454545454,
+          "predicted_gain": "6/11",
+          "fiber_size_histogram": {
+            "1": 420,
+            "2": 252
+          }
+        }
+      ],
+      "parallel_layer_gain": 3.432900432900433,
+      "predicted_layer_gain": "793/231",
+      "sum_initial_single_gate_gains": 2.2164502164502164,
+      "layer_fiber_size_histogram": {
+        "2": 42,
+        "4": 42,
+        "8": 28,
+        "16": 14,
+        "32": 5,
+        "64": 1
+      }
+    },
+    {
+      "block_size": 7,
+      "interleavings": 3432,
+      "single_gate": [
+        {
+          "rank": 1,
+          "gain": 0.5384615384615384,
+          "predicted_gain": "7/13",
+          "fiber_size_histogram": {
+            "1": 1584,
+            "2": 924
+          }
+        },
+        {
+          "rank": 2,
+          "gain": 0.2937062937062937,
+          "predicted_gain": "42/143",
+          "fiber_size_histogram": {
+            "1": 2424,
+            "2": 504
+          }
+        },
+        {
+          "rank": 3,
+          "gain": 0.24475524475524477,
+          "predicted_gain": "35/143",
+          "fiber_size_histogram": {
+            "1": 2592,
+            "2": 420
+          }
+        },
+        {
+          "rank": 4,
+          "gain": 0.2331002331002331,
+          "predicted_gain": "100/429",
+          "fiber_size_histogram": {
+            "1": 2632,
+            "2": 400
+          }
+        },
+        {
+          "rank": 5,
+          "gain": 0.24475524475524477,
+          "predicted_gain": "35/143",
+          "fiber_size_histogram": {
+            "1": 2592,
+            "2": 420
+          }
+        },
+        {
+          "rank": 6,
+          "gain": 0.2937062937062937,
+          "predicted_gain": "42/143",
+          "fiber_size_histogram": {
+            "1": 2424,
+            "2": 504
+          }
+        },
+        {
+          "rank": 7,
+          "gain": 0.5384615384615384,
+          "predicted_gain": "7/13",
+          "fiber_size_histogram": {
+            "1": 1584,
+            "2": 924
+          }
+        }
+      ],
+      "parallel_layer_gain": 3.773892773892774,
+      "predicted_layer_gain": "1619/429",
+      "sum_initial_single_gate_gains": 2.386946386946387,
+      "layer_fiber_size_histogram": {
+        "2": 132,
+        "4": 132,
+        "8": 90,
+        "16": 48,
+        "32": 20,
+        "64": 6,
+        "128": 1
+      }
+    },
+    {
+      "block_size": 8,
+      "interleavings": 12870,
+      "single_gate": [
+        {
+          "rank": 1,
+          "gain": 0.5333333333333333,
+          "predicted_gain": "8/15",
+          "fiber_size_histogram": {
+            "1": 6006,
+            "2": 3432
+          }
+        },
+        {
+          "rank": 2,
+          "gain": 0.28717948717948716,
+          "predicted_gain": "56/195",
+          "fiber_size_histogram": {
+            "1": 9174,
+            "2": 1848
+          }
+        },
+        {
+          "rank": 3,
+          "gain": 0.23496503496503496,
+          "predicted_gain": "168/715",
+          "fiber_size_histogram": {
+            "1": 9846,
+            "2": 1512
+          }
+        },
+        {
+          "rank": 4,
+          "gain": 0.21756021756021757,
+          "predicted_gain": "280/1287",
+          "fiber_size_histogram": {
+            "1": 10070,
+            "2": 1400
+          }
+        },
+        {
+          "rank": 5,
+          "gain": 0.21756021756021757,
+          "predicted_gain": "280/1287",
+          "fiber_size_histogram": {
+            "1": 10070,
+            "2": 1400
+          }
+        },
+        {
+          "rank": 6,
+          "gain": 0.23496503496503496,
+          "predicted_gain": "168/715",
+          "fiber_size_histogram": {
+            "1": 9846,
+            "2": 1512
+          }
+        },
+        {
+          "rank": 7,
+          "gain": 0.28717948717948716,
+          "predicted_gain": "56/195",
+          "fiber_size_histogram": {
+            "1": 9174,
+            "2": 1848
+          }
+        },
+        {
+          "rank": 8,
+          "gain": 0.5333333333333333,
+          "predicted_gain": "8/15",
+          "fiber_size_histogram": {
+            "1": 6006,
+            "2": 3432
+          }
+        }
+      ],
+      "parallel_layer_gain": 4.092152292152292,
+      "predicted_layer_gain": "26333/6435",
+      "sum_initial_single_gate_gains": 2.546076146076146,
+      "layer_fiber_size_histogram": {
+        "2": 429,
+        "4": 429,
+        "8": 297,
+        "16": 165,
+        "32": 75,
+        "64": 27,
+        "128": 7,
+        "256": 1
+      }
+    }
+  ]
+}
