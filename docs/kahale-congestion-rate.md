@@ -171,9 +171,11 @@ The full-cover lemma shows why independently summing slice reachability
 constraints can lose crucial information. It does not prove that every
 possible coalition-based argument fails.
 
-I would pursue that compatibility statement before increasing numerical search
-budgets or predicting a coefficient. Until it exists, `3.3` is a concrete
-proof target, not a claimed improvement or an evidence-based forecast.
+The user has subsequently set **4** as the research target. The
+[rank-information follow-up](kahale-target-four.md) formulates an amortized
+certificate/information bank with controlled endpoints and rules out two
+pointwise entropy penalties. Its central inequality remains unproved; neither
+`3.3` nor `4` is a claimed improvement or an evidence-based forecast.
 
 ## Reproduction
 
