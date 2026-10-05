@@ -1,0 +1,35 @@
+[
+  {
+    "depth": 40,
+    "wires": 161,
+    "remaining_layers": 5,
+    "zero_count": 88,
+    "timeout_ms": 15000,
+    "solver_result": "unknown",
+    "z3_version": "4.13.4",
+    "scope": "symbolic finite search; solver UNSAT is not a kernel proof",
+    "reason_unknown": "timeout"
+  },
+  {
+    "depth": 40,
+    "wires": 161,
+    "remaining_layers": 6,
+    "zero_count": 88,
+    "timeout_ms": 15000,
+    "solver_result": "unknown",
+    "z3_version": "4.13.4",
+    "scope": "symbolic finite search; solver UNSAT is not a kernel proof",
+    "reason_unknown": "timeout"
+  },
+  {
+    "depth": 40,
+    "wires": 161,
+    "remaining_layers": 7,
+    "zero_count": 88,
+    "timeout_ms": 15000,
+    "solver_result": "unknown",
+    "z3_version": "4.13.4",
+    "scope": "symbolic finite search; solver UNSAT is not a kernel proof",
+    "reason_unknown": "timeout"
+  }
+]

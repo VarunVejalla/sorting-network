@@ -158,6 +158,12 @@ condition or the routing formulation.
 
 ## Next proof obligation
 
+The [asymptotic follow-up](kahale-congestion-rate.md) quantifies the exponential
+gain needed for a coefficient above `3.270559...`, proves a complete-cover
+limitation of Hall capacity, and identifies coherent rank routing across
+threshold slices as missing information. Longer-suffix symbolic searches timed
+out; they neither prove nor exclude congestion at that scale.
+
 The useful next question is whether **many rank slices at many cuts** must
 create a quantitative capacity loss, rather than whether one schedule has a
 late Hall deficit. A possible formulation counts how many prefix zero sets
