@@ -152,6 +152,12 @@ python -B scripts/kahale_joint_potential.py
 
 ## Next target: cross-family overlap
 
+The [suffix-dependent potential experiment](kahale-suffix-potential.md) now
+evaluates a Bellman potential on exhaustive three-, four-, and five-wire
+catalogues. Pairwise exact union costs remove a remaining-depth information
+loss observed for per-wire statistics on five wires. No asymptotic improvement
+is established.
+
 **Update:** [the shared-universe coupling](kahale-union-coupling.md) supplies
 a universal constraint on the two union costs at an active comparator:
 their sum is at most `n+2`. Its rank-crossing and certificate-witness arguments

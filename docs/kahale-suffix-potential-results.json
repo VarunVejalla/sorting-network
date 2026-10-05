@@ -1,0 +1,483 @@
+[
+  {
+    "wires": 3,
+    "complete": true,
+    "actual_states": 11,
+    "rank_statistic_signatures": 7,
+    "exact_initial_depth": 3,
+    "quotient_initial_depth": 3,
+    "width_filtered_initial_depth": 3,
+    "viable_signature_counts_by_suffix_depth": [
+      1,
+      3,
+      6,
+      7
+    ],
+    "largest_quotient_depth_underestimate": 0,
+    "numerical_relaxations": [
+      {
+        "union_coupling": false,
+        "suffix_width": false,
+        "initial_depth": 3,
+        "viable_counts": [
+          1,
+          3,
+          6,
+          7
+        ]
+      },
+      {
+        "union_coupling": false,
+        "suffix_width": true,
+        "initial_depth": 3,
+        "viable_counts": [
+          1,
+          3,
+          6,
+          7
+        ]
+      },
+      {
+        "union_coupling": true,
+        "suffix_width": false,
+        "initial_depth": 3,
+        "viable_counts": [
+          1,
+          3,
+          6,
+          7
+        ]
+      },
+      {
+        "union_coupling": true,
+        "suffix_width": true,
+        "initial_depth": 3,
+        "viable_counts": [
+          1,
+          3,
+          6,
+          7
+        ]
+      }
+    ],
+    "pairwise_union_enrichment": {
+      "signatures": 7,
+      "initial_depth": 3,
+      "largest_remaining_depth_underestimate": 0
+    },
+    "gap_witness": {
+      "functions": [
+        128,
+        232,
+        254
+      ],
+      "signature": [
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "prefix_layers": [
+        [
+          [
+            1,
+            2
+          ]
+        ],
+        [
+          [
+            0,
+            1
+          ]
+        ],
+        [
+          [
+            1,
+            2
+          ]
+        ]
+      ],
+      "actual_remaining_depth": 0,
+      "relaxed_remaining_depth": 0,
+      "fast_representative_functions": [
+        128,
+        232,
+        254
+      ],
+      "fast_representative_prefix": [
+        [
+          [
+            1,
+            2
+          ]
+        ],
+        [
+          [
+            0,
+            1
+          ]
+        ],
+        [
+          [
+            1,
+            2
+          ]
+        ]
+      ],
+      "fast_representative_depth": 0,
+      "distinguishing_union_cost": null
+    },
+    "scope": "exhaustive finite computation; no asymptotic or Lean claim"
+  },
+  {
+    "wires": 4,
+    "complete": true,
+    "actual_states": 261,
+    "rank_statistic_signatures": 43,
+    "exact_initial_depth": 3,
+    "quotient_initial_depth": 3,
+    "width_filtered_initial_depth": 3,
+    "viable_signature_counts_by_suffix_depth": [
+      1,
+      5,
+      26,
+      43
+    ],
+    "largest_quotient_depth_underestimate": 0,
+    "numerical_relaxations": [
+      {
+        "union_coupling": false,
+        "suffix_width": false,
+        "initial_depth": 3,
+        "viable_counts": [
+          1,
+          5,
+          26,
+          43
+        ]
+      },
+      {
+        "union_coupling": false,
+        "suffix_width": true,
+        "initial_depth": 3,
+        "viable_counts": [
+          1,
+          5,
+          26,
+          43
+        ]
+      },
+      {
+        "union_coupling": true,
+        "suffix_width": false,
+        "initial_depth": 3,
+        "viable_counts": [
+          1,
+          5,
+          26,
+          43
+        ]
+      },
+      {
+        "union_coupling": true,
+        "suffix_width": true,
+        "initial_depth": 3,
+        "viable_counts": [
+          1,
+          5,
+          26,
+          43
+        ]
+      }
+    ],
+    "pairwise_union_enrichment": {
+      "signatures": 44,
+      "initial_depth": 3,
+      "largest_remaining_depth_underestimate": 0
+    },
+    "gap_witness": {
+      "functions": [
+        40960,
+        51328,
+        65276,
+        65514
+      ],
+      "signature": [
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "prefix_layers": [
+        [
+          [
+            0,
+            3
+          ]
+        ],
+        [
+          [
+            0,
+            2
+          ]
+        ],
+        [
+          [
+            1,
+            2
+          ]
+        ],
+        [
+          [
+            1,
+            3
+          ]
+        ]
+      ],
+      "actual_remaining_depth": 1,
+      "relaxed_remaining_depth": 1,
+      "fast_representative_functions": [
+        34944,
+        57344,
+        65262,
+        65528
+      ],
+      "fast_representative_prefix": [
+        [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      ],
+      "fast_representative_depth": 1,
+      "distinguishing_union_cost": null
+    },
+    "scope": "exhaustive finite computation; no asymptotic or Lean claim"
+  },
+  {
+    "wires": 5,
+    "complete": true,
+    "actual_states": 43337,
+    "rank_statistic_signatures": 506,
+    "exact_initial_depth": 5,
+    "quotient_initial_depth": 5,
+    "width_filtered_initial_depth": 5,
+    "viable_signature_counts_by_suffix_depth": [
+      1,
+      8,
+      153,
+      455,
+      505,
+      506
+    ],
+    "largest_quotient_depth_underestimate": 1,
+    "numerical_relaxations": [
+      {
+        "union_coupling": false,
+        "suffix_width": false,
+        "initial_depth": 5,
+        "viable_counts": [
+          1,
+          12,
+          182,
+          455,
+          505,
+          506
+        ]
+      },
+      {
+        "union_coupling": false,
+        "suffix_width": true,
+        "initial_depth": 5,
+        "viable_counts": [
+          1,
+          8,
+          172,
+          455,
+          505,
+          506
+        ]
+      },
+      {
+        "union_coupling": true,
+        "suffix_width": false,
+        "initial_depth": 5,
+        "viable_counts": [
+          1,
+          8,
+          169,
+          455,
+          505,
+          506
+        ]
+      },
+      {
+        "union_coupling": true,
+        "suffix_width": true,
+        "initial_depth": 5,
+        "viable_counts": [
+          1,
+          8,
+          169,
+          455,
+          505,
+          506
+        ]
+      }
+    ],
+    "pairwise_union_enrichment": {
+      "signatures": 581,
+      "initial_depth": 5,
+      "largest_remaining_depth_underestimate": 0
+    },
+    "gap_witness": {
+      "functions": [
+        2852126720,
+        3233857728,
+        4238932992,
+        4294879912,
+        4294967294
+      ],
+      "signature": [
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          5,
+          1
+        ]
+      ],
+      "prefix_layers": [
+        [
+          [
+            0,
+            4
+          ]
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        [
+          [
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            3,
+            4
+          ]
+        ]
+      ],
+      "actual_remaining_depth": 3,
+      "relaxed_remaining_depth": 2,
+      "fast_representative_functions": [
+        2852126720,
+        3233857728,
+        4244438184,
+        4289374720,
+        4294967294
+      ],
+      "fast_representative_prefix": [
+        [
+          [
+            3,
+            4
+          ]
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ]
+      ],
+      "fast_representative_depth": 2,
+      "distinguishing_union_cost": {
+        "wires": [
+          0,
+          2
+        ],
+        "slow_state_costs": [
+          2,
+          4
+        ],
+        "fast_state_costs": [
+          3,
+          4
+        ]
+      }
+    },
+    "scope": "exhaustive finite computation; no asymptotic or Lean claim"
+  }
+]
