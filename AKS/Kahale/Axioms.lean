@@ -1,5 +1,8 @@
 import AKS.Bounds.KahaleAsymptotic
 import AKS.Kahale.CertificateCompatibility
+import AKS.Kahale.JointPotential
+import AKS.Kahale.UnionCoupling
+import AKS.Kahale.ActiveWidth
 
 /-! Kernel dependency checks for the Kahale lower bound. -/
 
@@ -28,3 +31,16 @@ import AKS.Kahale.CertificateCompatibility
 #guard_msgs in #print axioms Kahale.sorts_iff_certificates_intersect
 /-- info: 'Kahale.sorts_iff_certificate_card_bounds' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in #print axioms Kahale.sorts_iff_certificate_card_bounds
+
+/-- info: 'Kahale.joint_product_scalar_bound' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms Kahale.joint_product_scalar_bound
+/-- info: 'Kahale.identical_joint_statistics_different_updates' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms Kahale.identical_joint_statistics_different_updates
+/-- info: 'Kahale.joint_product_factor_two_attained' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms Kahale.joint_product_factor_two_attained
+/-- info: 'Kahale.active_comparator_union_cost_coupling' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms Kahale.active_comparator_union_cost_coupling
+/-- info: 'Kahale.active_final_comparator_adjacent' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms Kahale.active_final_comparator_adjacent
+/-- info: 'Kahale.active_comparator_width_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms Kahale.active_comparator_width_le

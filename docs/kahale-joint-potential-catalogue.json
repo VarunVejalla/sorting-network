@@ -1,0 +1,213 @@
+{
+  "wires": 4,
+  "reachable_states": 261,
+  "exhausted_reachable_states": true,
+  "explored_layer_bound": 16,
+  "input_statistic_signatures": 45,
+  "nonclosed_summary_witness": {
+    "input_statistics": [
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        1
+      ]
+    ],
+    "first": {
+      "prefix": [
+        [
+          [
+            2,
+            3
+          ]
+        ]
+      ],
+      "comparator": [
+        2,
+        3
+      ],
+      "input_functions": [
+        61440,
+        65520
+      ],
+      "output_statistics": [
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ]
+      ]
+    },
+    "second": {
+      "prefix": [
+        [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      ],
+      "comparator": [
+        0,
+        3
+      ],
+      "input_functions": [
+        34952,
+        65520
+      ],
+      "output_statistics": [
+        [
+          1,
+          3
+        ],
+        [
+          3,
+          1
+        ]
+      ]
+    }
+  },
+  "nonclosed_summary_nonredundant_witness": {
+    "input_statistics": [
+      [
+        2,
+        1
+      ],
+      [
+        2,
+        1
+      ]
+    ],
+    "first": {
+      "prefix": [
+        [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      ],
+      "comparator": [
+        1,
+        3
+      ],
+      "input_functions": [
+        61166,
+        65520
+      ],
+      "output_statistics": [
+        [
+          2,
+          2
+        ],
+        [
+          4,
+          1
+        ]
+      ]
+    },
+    "second": {
+      "prefix": [
+        [
+          [
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            1,
+            2
+          ]
+        ]
+      ],
+      "comparator": [
+        2,
+        3
+      ],
+      "input_functions": [
+        64716,
+        65520
+      ],
+      "output_statistics": [
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          1
+        ]
+      ]
+    }
+  },
+  "largest_nonredundant_union_cost_sum": 6,
+  "largest_product_ratio": "2",
+  "product_ratio_witness": {
+    "prefix": [],
+    "comparator": [
+      2,
+      3
+    ],
+    "input_functions": [
+      61680,
+      65280
+    ],
+    "output_statistics": [
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        1
+      ]
+    ]
+  },
+  "monomial_samples": [
+    {
+      "p": 1,
+      "q": 1,
+      "forced_uniform_factor": 2.0,
+      "largest_possible_leading_coefficient": 2.0
+    },
+    {
+      "p": 0.5,
+      "q": 0.5,
+      "forced_uniform_factor": 1.4142135623730951,
+      "largest_possible_leading_coefficient": 1.9999999999999996
+    },
+    {
+      "p": 1,
+      "q": 2,
+      "forced_uniform_factor": 3.0,
+      "largest_possible_leading_coefficient": 1.8927892607143724
+    },
+    {
+      "p": 2,
+      "q": 1,
+      "forced_uniform_factor": 3.0,
+      "largest_possible_leading_coefficient": 1.8927892607143724
+    },
+    {
+      "p": 0.5,
+      "q": 2,
+      "forced_uniform_factor": 2.7071067811865475,
+      "largest_possible_leading_coefficient": 1.740036106399777
+    }
+  ],
+  "scope": "exact finite enumeration; universal inequalities need separate proofs"
+}

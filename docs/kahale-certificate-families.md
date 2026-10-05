@@ -116,6 +116,12 @@ after other fixed inputs are removed. No SAT optimality claims are involved.
 
 ## Next quantitative target
 
+**Follow-up:** [the joint-potential analysis](kahale-joint-potential.md) rules
+out the elementary uniform monomial potential class as a route beyond the
+existing coefficient. [The shared-universe coupling](kahale-union-coupling.md)
+provides a kernel-checked relation between the two union costs at an active
+comparator, with their sum at most `n+2`.
+
 Study the joint evolution of a zero family’s smallest set and its transversal
 number, or a tractable statistic that retains enough of this relation.
 At the sorted endpoint these are respectively `i+1` and `n-i` on every wire.
