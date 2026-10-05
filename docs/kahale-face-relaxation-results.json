@@ -1,0 +1,105 @@
+{
+  "wires": 5,
+  "seed": 0,
+  "requested_steps": 30000,
+  "steps_examined": 30000,
+  "distinct_relaxed_states": 2042,
+  "four_wire_dominance_maps": 297,
+  "dominance_relaxation_counterexample": null,
+  "directed_comparator_counterexample": {
+    "first_map": [
+      0,
+      1,
+      1,
+      5,
+      1,
+      5,
+      5,
+      13,
+      1,
+      5,
+      5,
+      13,
+      9,
+      13,
+      13,
+      15
+    ],
+    "second_map": [
+      0,
+      2,
+      2,
+      6,
+      2,
+      6,
+      6,
+      14,
+      2,
+      6,
+      6,
+      14,
+      10,
+      14,
+      14,
+      15
+    ],
+    "gate": [
+      0,
+      2
+    ],
+    "base_weight": 1,
+    "pair": [
+      0,
+      3
+    ],
+    "first_next_count": 4,
+    "second_next_count": 0,
+    "prefixes_min_endpoint_first": [
+      [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          2,
+          0
+        ]
+      ],
+      [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          2,
+          1
+        ]
+      ]
+    ]
+  },
+  "status": "Exact finite relaxation probe; directed gates are outside the Lean Comparator type"
+}

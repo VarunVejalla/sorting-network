@@ -1,0 +1,14 @@
+{
+  "wires": 5,
+  "states": 43337,
+  "catalogue_complete": true,
+  "bfs_limit": 200000,
+  "random_walks": 0,
+  "random_seed": 0,
+  "equal_matrix_pairs_examined": 39231,
+  "signature_classes_visited": 4106,
+  "individual_context_counterexample": null,
+  "matrix_transition_counterexample": null,
+  "destination_policy": "Compute every queried transition, including uncatalogued destinations",
+  "status": "Finite exact integer computation; no universal closure theorem or improved bound"
+}

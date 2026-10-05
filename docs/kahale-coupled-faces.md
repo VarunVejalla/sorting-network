@@ -203,6 +203,13 @@ nontrivial depth-rate inequality to improve the coefficient.
 
 ## Next mathematical work
 
+**Transport update:** [the exact context-dependent law](kahale-face-transport.md)
+is now checked in Lean under an explicit local admissibility hypothesis.
+The strengthened five- and six-wire probes found no discrepancy even in
+individual context counts. An explicit reverse-oriented comparator example
+shows that closure fails in the broader monotone, weight-preserving model;
+it does not settle closure for this repository's ordered comparators.
+
 1. Establish a general transition law for the matrix, or produce a genuine
    nonclosure witness and identify the missing shared context.
 2. Find a scale-independent inequality linking realizable pair transport to

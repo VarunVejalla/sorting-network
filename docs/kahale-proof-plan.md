@@ -4,9 +4,12 @@
 
 **Current research direction:** [coupled Boolean faces](kahale-coupled-faces.md).
 The exact two-discrepancy model, irreversible collision accounting, and a
-sufficient full sorting criterion are checked in Lean. Matrix transition
-consistency has encouraging finite evidence, but the general transport law
-and the quantitative depth-rate loss remain open. Further entropy accounting
+sufficient full sorting criterion are checked in Lean. The
+[context-dependent matrix transport law](kahale-face-transport.md) is now
+checked under an explicit local face-shape hypothesis. Matrix-only closure
+has stronger finite evidence for ordered comparators, but fails when
+orientation is unrestricted. Ordered closure and the quantitative depth-rate
+loss remain open. Further entropy accounting
 is secondary until a new realizability constraint supplies that loss.
 
 The [joint hierarchy-layer investigation](kahale-hierarchy-layer.md) identifies
