@@ -1,4 +1,5 @@
 import AKS.Bounds.KahaleAsymptotic
+import AKS.Kahale.CertificateCompatibility
 
 /-! Kernel dependency checks for the Kahale lower bound. -/
 
@@ -18,3 +19,12 @@ import AKS.Bounds.KahaleAsymptotic
 #guard_msgs in #print axioms SortingDepth.liminf_minimum_div_logb_ge_kahale
 /-- info: 'SortingDepth.eventually_minimum_depth_ge_kahale_logb' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in #print axioms SortingDepth.eventually_minimum_depth_ge_kahale_logb
+
+/-- info: 'Kahale.zero_certificate_max_append' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms Kahale.zero_certificate_max_append
+/-- info: 'Kahale.one_certificate_iff_hits_zero_family' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms Kahale.one_certificate_iff_hits_zero_family
+/-- info: 'Kahale.sorts_iff_certificates_intersect' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms Kahale.sorts_iff_certificates_intersect
+/-- info: 'Kahale.sorts_iff_certificate_card_bounds' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms Kahale.sorts_iff_certificate_card_bounds

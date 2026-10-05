@@ -105,6 +105,9 @@ The [positional follow-up](kahale-positional-barrier.md) supplies an explicit
 schedule satisfying the zero-height boundary requirements too. It can still
 fail sorting, so actual certificate families and multiple threshold requirements
 are the next target.
+[The certificate-family follow-up](kahale-certificate-families.md) now provides
+explicit small certificates and kernel-checked intersection and cardinality
+characterizations of sorting. It does not yet improve the asymptotic coefficient.
 
 The Fibonacci step already extracts the full `3.270559454...` coefficient from
 these particular binomial constraints. Reducing the polynomial factor improves

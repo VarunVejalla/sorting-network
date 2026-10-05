@@ -118,6 +118,10 @@ bound or sorting upper bound is claimed.
 
 ## What to investigate next
 
+**Follow-up:** [the certificate-family investigation](kahale-certificate-families.md)
+extracts disjoint size-77 zero and size-65 one certificates for the central
+inversion and formalizes the family-level sorting condition.
+
 Counting heights, integrality, and these zero-certificate boundary positions
 all admit the existing exponential rate. A stronger argument must impose
 additional constraints.
