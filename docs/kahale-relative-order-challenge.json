@@ -1,0 +1,440 @@
+{
+  "wires": 5,
+  "reachable_rank_distributions": 7101,
+  "layers": 25,
+  "boundary_credit_cap_per_wire": 2,
+  "fit_status": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+  "scope": "Exhaustive finite counts; numerical entropies and LP; no universal claim",
+  "scale_weights": {
+    "2": 8.934673374380136,
+    "3": -13.81360138291023,
+    "4": 6.014015328886236
+  },
+  "kappa": 0.11309022668585778,
+  "lambda_": 0.7520575537544287,
+  "worst_charge_fraction": 0.8233938174726803,
+  "worst_transitions": [
+    {
+      "prefix": [
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "charge": 1.6467876349453607,
+      "gain": 1.463780099941165,
+      "relative_banks_before": [
+        0.4200630988114431,
+        0.47692467744382894,
+        0.3140862126488453
+      ],
+      "relative_banks_after": [
+        0.31211551879906985,
+        0.3661999255936754,
+        0.25056397992768176
+      ],
+      "uniform_before": 0,
+      "uniform_after": 0,
+      "fixed_before": 0,
+      "fixed_after": 0
+    },
+    {
+      "prefix": [
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ]
+      ],
+      "charge": 1.6467876349453607,
+      "gain": 1.463780099941165,
+      "relative_banks_before": [
+        0.4200630988114431,
+        0.47692467744382894,
+        0.3140862126488453
+      ],
+      "relative_banks_after": [
+        0.31211551879906985,
+        0.3661999255936754,
+        0.25056397992768176
+      ],
+      "uniform_before": 0,
+      "uniform_after": 0,
+      "fixed_before": 0,
+      "fixed_after": 0
+    },
+    {
+      "prefix": [
+        [
+          2,
+          3
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "charge": 1.6467876349453607,
+      "gain": 1.463780099941165,
+      "relative_banks_before": [
+        0.4200630988114431,
+        0.47692467744382894,
+        0.3140862126488453
+      ],
+      "relative_banks_after": [
+        0.31211551879906985,
+        0.3661999255936754,
+        0.25056397992768176
+      ],
+      "uniform_before": 0,
+      "uniform_after": 0,
+      "fixed_before": 0,
+      "fixed_after": 0
+    },
+    {
+      "prefix": [
+        [
+          2,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ]
+      ],
+      "charge": 1.6467876349453607,
+      "gain": 1.463780099941165,
+      "relative_banks_before": [
+        0.4200630988114431,
+        0.47692467744382894,
+        0.3140862126488453
+      ],
+      "relative_banks_after": [
+        0.31211551879906985,
+        0.3661999255936754,
+        0.25056397992768176
+      ],
+      "uniform_before": 0,
+      "uniform_after": 0,
+      "fixed_before": 0,
+      "fixed_after": 0
+    },
+    {
+      "prefix": [
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          2
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "charge": 1.6467876349453607,
+      "gain": 1.463780099941165,
+      "relative_banks_before": [
+        0.4200630988114431,
+        0.47692467744382894,
+        0.3140862126488453
+      ],
+      "relative_banks_after": [
+        0.31211551879906985,
+        0.3661999255936754,
+        0.25056397992768176
+      ],
+      "uniform_before": 0,
+      "uniform_after": 0,
+      "fixed_before": 0,
+      "fixed_after": 0
+    }
+  ],
+  "numerical_dual_obstruction": {
+    "weighted_capacity": 1.0,
+    "weighted_gain": 0.82339381747268,
+    "relative_bank_drift": [
+      1.452830911130576e-17,
+      1.734723475976807e-18,
+      4.336808689942018e-19
+    ],
+    "uniform_drift": 0.0,
+    "fixed_drift": 0.0,
+    "endpoint_cap_multiplier": 0.0,
+    "support_size": 4,
+    "transitions": [
+      {
+        "weight": 0.16716325406462706,
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "layer": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "gain": 1.6666666666666665,
+        "relative_bank_change": [
+          0.12457780456248957,
+          0.07150417199765213,
+          -0.024145415010238702
+        ],
+        "uniform_change": 0,
+        "fixed_change": 0
+      },
+      {
+        "weight": 0.13171624089664005,
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "layer": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "gain": 1.9182958340544891,
+        "relative_bank_change": [
+          0.0056586724878184835,
+          0.08018159776366329,
+          0.13061656767961516
+        ],
+        "uniform_change": 0,
+        "fixed_change": 0
+      },
+      {
+        "weight": 0.008595845267069913,
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            4
+          ]
+        ],
+        "layer": [
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "gain": 1.1987084225518543,
+        "relative_bank_change": [
+          -0.09162556141096223,
+          -0.13923511899090224,
+          -0.10918075860962873
+        ],
+        "uniform_change": 0,
+        "fixed_change": 0
+      },
+      {
+        "weight": 0.192524659771663,
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "layer": [
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "gain": 1.463780099941165,
+        "relative_bank_change": [
+          -0.10794758001237326,
+          -0.11072475185015351,
+          -0.06352223272116353
+        ],
+        "uniform_change": 0,
+        "fixed_change": 0
+      }
+    ],
+    "status": "Floating-point dual certificate; not a kernel-checked obstruction"
+  }
+}

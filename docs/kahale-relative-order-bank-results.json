@@ -1,0 +1,590 @@
+[
+  {
+    "wires": 3,
+    "initial": [
+      {
+        "subset_size": 2,
+        "completion": 0.0,
+        "alpha": 0.5802792108518124,
+        "centered_bank": 0.0
+      }
+    ],
+    "final": [
+      {
+        "subset_size": 2,
+        "completion": 1.5,
+        "alpha": 0.5802792108518124,
+        "centered_bank": 0.0
+      }
+    ],
+    "transitions": [
+      {
+        "witness": "unchanged",
+        "prefix": [
+          [
+            0,
+            1
+          ]
+        ],
+        "layer": [
+          [
+            0,
+            1
+          ]
+        ],
+        "gain": 0.0,
+        "before": [
+          {
+            "subset_size": 2,
+            "completion": 0.8333333333333334,
+            "alpha": 0.5802792108518124,
+            "centered_bank": 0.2530541224815209
+          }
+        ],
+        "after": [
+          {
+            "subset_size": 2,
+            "completion": 0.8333333333333334,
+            "alpha": 0.5802792108518124,
+            "centered_bank": 0.2530541224815209
+          }
+        ],
+        "bank_changes": [
+          {
+            "subset_size": 2,
+            "change": 0.0
+          }
+        ]
+      }
+    ],
+    "scope": "Exact rank counts; numerical entropy; no charging theorem"
+  },
+  {
+    "wires": 4,
+    "initial": [
+      {
+        "subset_size": 2,
+        "completion": 0.0,
+        "alpha": 0.4362085839710631,
+        "centered_bank": 0.0
+      },
+      {
+        "subset_size": 3,
+        "completion": 0.0,
+        "alpha": 0.7517218880385824,
+        "centered_bank": 0.0
+      }
+    ],
+    "final": [
+      {
+        "subset_size": 2,
+        "completion": 2.0,
+        "alpha": 0.4362085839710631,
+        "centered_bank": 2.220446049250313e-16
+      },
+      {
+        "subset_size": 3,
+        "completion": 3.446616667628208,
+        "alpha": 0.7517218880385824,
+        "centered_bank": 0.0
+      }
+    ],
+    "transitions": [
+      {
+        "witness": "unchanged",
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ]
+        ],
+        "layer": [
+          [
+            2,
+            3
+          ]
+        ],
+        "gain": 0.959147917027245,
+        "before": [
+          {
+            "subset_size": 2,
+            "completion": 1.0862818614005252,
+            "alpha": 0.4362085839710631,
+            "centered_bank": 0.14116326279655522
+          },
+          {
+            "subset_size": 3,
+            "completion": 1.7267999176772366,
+            "alpha": 0.7517218880385824,
+            "centered_bank": 0.0980691602603081
+          }
+        ],
+        "after": [
+          {
+            "subset_size": 2,
+            "completion": 1.5772421958646217,
+            "alpha": 0.4362085839710631,
+            "centered_bank": 0.21373504255540232
+          },
+          {
+            "subset_size": 3,
+            "completion": 2.537476224483748,
+            "alpha": 0.7517218880385824,
+            "centered_bank": 0.18773298397082527
+          }
+        ],
+        "bank_changes": [
+          {
+            "subset_size": 2,
+            "change": 0.0725717797588471
+          },
+          {
+            "subset_size": 3,
+            "change": 0.08966382371051718
+          }
+        ]
+      },
+      {
+        "witness": "decrease",
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "layer": [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "gain": 0.6666666666666665,
+        "before": [
+          {
+            "subset_size": 2,
+            "completion": 1.1111111111111112,
+            "alpha": 0.4362085839710631,
+            "centered_bank": 0.23869394316898496
+          },
+          {
+            "subset_size": 3,
+            "completion": 1.945530556036326,
+            "alpha": 0.7517218880385824,
+            "centered_bank": 0.44208677995916124
+          }
+        ],
+        "after": [
+          {
+            "subset_size": 2,
+            "completion": 1.3333333333333335,
+            "alpha": 0.4362085839710631,
+            "centered_bank": 0.17011044274383202
+          },
+          {
+            "subset_size": 3,
+            "completion": 2.222222222222222,
+            "alpha": 0.7517218880385824,
+            "centered_bank": 0.2176305207860021
+          }
+        ],
+        "bank_changes": [
+          {
+            "subset_size": 2,
+            "change": -0.06858350042515293
+          },
+          {
+            "subset_size": 3,
+            "change": -0.22445625917315914
+          }
+        ]
+      },
+      {
+        "witness": "increase",
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "layer": [
+          [
+            1,
+            2
+          ]
+        ],
+        "gain": 0.5747164126866471,
+        "before": [
+          {
+            "subset_size": 2,
+            "completion": 1.384234972248911,
+            "alpha": 0.4362085839710631,
+            "centered_bank": 0.3389742422850821
+          },
+          {
+            "subset_size": 3,
+            "completion": 2.1055630294383403,
+            "alpha": 0.7517218880385824,
+            "centered_bank": 0.30425650248306035
+          }
+        ],
+        "after": [
+          {
+            "subset_size": 2,
+            "completion": 1.4591479170272446,
+            "alpha": 0.4362085839710631,
+            "centered_bank": 0.16319095450044419
+          },
+          {
+            "subset_size": 3,
+            "completion": 2.376313549768092,
+            "alpha": 0.7517218880385824,
+            "centered_bank": 0.14298011598124472
+          }
+        ],
+        "bank_changes": [
+          {
+            "subset_size": 2,
+            "change": -0.17578328778463792
+          },
+          {
+            "subset_size": 3,
+            "change": -0.16127638650181564
+          }
+        ]
+      }
+    ],
+    "scope": "Exact rank counts; numerical entropy; no charging theorem"
+  },
+  {
+    "wires": 5,
+    "initial": [
+      {
+        "subset_size": 2,
+        "completion": 0.0,
+        "alpha": 0.3619573765348953,
+        "centered_bank": 0.0
+      },
+      {
+        "subset_size": 3,
+        "completion": 0.0,
+        "alpha": 0.6237641634680748,
+        "centered_bank": 0.0
+      },
+      {
+        "subset_size": 4,
+        "completion": 0.0,
+        "alpha": 0.8297804991359513,
+        "centered_bank": 0.0
+      }
+    ],
+    "final": [
+      {
+        "subset_size": 2,
+        "completion": 2.5,
+        "alpha": 0.3619573765348953,
+        "centered_bank": 0.0
+      },
+      {
+        "subset_size": 3,
+        "completion": 4.308270834535261,
+        "alpha": 0.6237641634680748,
+        "centered_bank": 0.0
+      },
+      {
+        "subset_size": 4,
+        "completion": 5.731203125901445,
+        "alpha": 0.8297804991359513,
+        "centered_bank": 0.0
+      }
+    ],
+    "transitions": [
+      {
+        "witness": "unchanged",
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            0,
+            2
+          ]
+        ],
+        "layer": [
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "gain": 1.2364527976600286,
+        "before": [
+          {
+            "subset_size": 2,
+            "completion": 1.6880871967101703,
+            "alpha": 0.3619573765348953,
+            "centered_bank": 0.3033480686315666
+          },
+          {
+            "subset_size": 3,
+            "completion": 2.702322158081753,
+            "alpha": 0.6237641634680748,
+            "centered_bank": 0.31598967850541904
+          },
+          {
+            "subset_size": 4,
+            "completion": 3.3638944317186095,
+            "alpha": 0.8297804991359513,
+            "centered_bank": 0.18940594395775578
+          }
+        ],
+        "after": [
+          {
+            "subset_size": 2,
+            "completion": 2.1229513953198333,
+            "alpha": 0.3619573765348953,
+            "centered_bank": 0.2906690563909742
+          },
+          {
+            "subset_size": 3,
+            "completion": 3.499971514600032,
+            "alpha": 0.6237641634680748,
+            "centered_bank": 0.3423840900235291
+          },
+          {
+            "subset_size": 4,
+            "completion": 4.434617467301372,
+            "alpha": 0.8297804991359513,
+            "centered_bank": 0.2341445599401366
+          }
+        ],
+        "bank_changes": [
+          {
+            "subset_size": 2,
+            "change": -0.012679012240592424
+          },
+          {
+            "subset_size": 3,
+            "change": 0.02639441151811006
+          },
+          {
+            "subset_size": 4,
+            "change": 0.044738615982380825
+          }
+        ]
+      },
+      {
+        "witness": "decrease",
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "layer": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "gain": 1.9182958340544891,
+        "before": [
+          {
+            "subset_size": 2,
+            "completion": 1.3999999999999995,
+            "alpha": 0.3619573765348953,
+            "centered_bank": 0.43478032924027854
+          },
+          {
+            "subset_size": 3,
+            "completion": 2.1560362903419588,
+            "alpha": 0.6237641634680748,
+            "centered_bank": 0.4926651877604258
+          },
+          {
+            "subset_size": 4,
+            "completion": 2.533333333333333,
+            "alpha": 0.8297804991359513,
+            "centered_bank": 0.3205853356374626
+          }
+        ],
+        "after": [
+          {
+            "subset_size": 2,
+            "completion": 2.0999999999999996,
+            "alpha": 0.3619573765348953,
+            "centered_bank": 0.440439001728097
+          },
+          {
+            "subset_size": 3,
+            "completion": 3.4327820843189136,
+            "alpha": 0.6237641634680748,
+            "centered_bank": 0.5728467855240891
+          },
+          {
+            "subset_size": 4,
+            "completion": 4.255714375685098,
+            "alpha": 0.8297804991359513,
+            "centered_bank": 0.45120190331707777
+          }
+        ],
+        "bank_changes": [
+          {
+            "subset_size": 2,
+            "change": 0.0056586724878184835
+          },
+          {
+            "subset_size": 3,
+            "change": 0.08018159776366329
+          },
+          {
+            "subset_size": 4,
+            "change": 0.13061656767961516
+          }
+        ]
+      },
+      {
+        "witness": "increase",
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            4
+          ]
+        ],
+        "layer": [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        "gain": 1.8937845842708363,
+        "before": [
+          {
+            "subset_size": 2,
+            "completion": 1.1179049749223924,
+            "alpha": 0.3619573765348953,
+            "centered_bank": 0.18888104181616094
+          },
+          {
+            "subset_size": 3,
+            "completion": 1.7784363032669068,
+            "alpha": 0.6237641634680748,
+            "centered_bank": 0.1774416170321811
+          },
+          {
+            "subset_size": 4,
+            "completion": 2.233490371841059,
+            "alpha": 0.8297804991359513,
+            "centered_bank": 0.10372042405878368
+          }
+        ],
+        "after": [
+          {
+            "subset_size": 2,
+            "completion": 1.8786311756931662,
+            "alpha": 0.3619573765348953,
+            "centered_bank": 0.2641379427420354
+          },
+          {
+            "subset_size": 3,
+            "completion": 3.195422502315811,
+            "alpha": 0.6237641634680748,
+            "centered_bank": 0.41315285908465116
+          },
+          {
+            "subset_size": 4,
+            "completion": 4.071689615711351,
+            "alpha": 0.8297804991359513,
+            "centered_bank": 0.3704941503368513
+          }
+        ],
+        "bank_changes": [
+          {
+            "subset_size": 2,
+            "change": 0.07525690092587445
+          },
+          {
+            "subset_size": 3,
+            "change": 0.23571124205247007
+          },
+          {
+            "subset_size": 4,
+            "change": 0.2667737262780676
+          }
+        ]
+      }
+    ],
+    "scope": "Exact rank counts; numerical entropy; no charging theorem"
+  }
+]

@@ -2,9 +2,13 @@
 
 ## Decision
 
-Keep **4** as the research target, but aim first for a universal inequality
+Seek a coefficient **above 4**, but aim first for a universal inequality
 that yields *any* coefficient above `3.270559...`. The proposed bank is a
 candidate, not an established route to 4.
+
+The
+[modular layer-bank investigation](kahale-layer-bank.md) records the new
+accounting modules, relative-order candidate, and finite challenge results.
 
 The most useful next mathematical object is the **weighted rank-image swap
 graph**: which prefix rank states remain possible, which swapped partners

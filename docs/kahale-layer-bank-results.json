@@ -1,0 +1,1416 @@
+[
+  {
+    "wires": 3,
+    "reachable_rank_distributions": 9,
+    "layers": 3,
+    "bank": "B=-beta*max_layer conditional_TC",
+    "initial_Q": 0.0,
+    "sorted_Q": 0.0,
+    "maximum_Q": 0.0,
+    "fit_status": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "beta": 0.0,
+    "worst_charge_fraction": 1.0,
+    "coefficient_if_universal": 2.0,
+    "worst_transitions": [
+      {
+        "prefix": [],
+        "layer": [
+          [
+            0,
+            2
+          ]
+        ],
+        "charge": 1.0,
+        "Q_before": 0.0,
+        "Q_after": 0.0,
+        "destination": 2,
+        "gain": 1.0,
+        "marginal_entropy": 1.0,
+        "conditional_total_correlation": 0.0
+      },
+      {
+        "prefix": [],
+        "layer": [
+          [
+            0,
+            1
+          ]
+        ],
+        "charge": 1.0,
+        "Q_before": 0.0,
+        "Q_after": 0.0,
+        "destination": 1,
+        "gain": 1.0,
+        "marginal_entropy": 1.0,
+        "conditional_total_correlation": 0.0
+      },
+      {
+        "prefix": [],
+        "layer": [
+          [
+            1,
+            2
+          ]
+        ],
+        "charge": 1.0,
+        "Q_before": 0.0,
+        "Q_after": 0.0,
+        "destination": 3,
+        "gain": 1.0,
+        "marginal_entropy": 1.0,
+        "conditional_total_correlation": 0.0
+      },
+      {
+        "prefix": [
+          [
+            1,
+            2
+          ],
+          [
+            0,
+            2
+          ]
+        ],
+        "layer": [
+          [
+            0,
+            1
+          ]
+        ],
+        "charge": 0.9182958340544893,
+        "Q_before": 0.0,
+        "Q_after": 0.0,
+        "destination": 8,
+        "gain": 0.9182958340544893,
+        "marginal_entropy": 0.9182958340544893,
+        "conditional_total_correlation": 0.0
+      },
+      {
+        "prefix": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "layer": [
+          [
+            1,
+            2
+          ]
+        ],
+        "charge": 0.9182958340544893,
+        "Q_before": 0.0,
+        "Q_after": 0.0,
+        "destination": 8,
+        "gain": 0.9182958340544893,
+        "marginal_entropy": 0.9182958340544893,
+        "conditional_total_correlation": 0.0
+      }
+    ],
+    "scope": "Exhaustive small distributions; numerical LP; no universal bound",
+    "boundary_bank_fit": {
+      "bank": "B=kappa*uniform_wires-lambda*fixed_wires-beta*Q",
+      "beta": 0.0,
+      "kappa": 0.5,
+      "lambda": 0.45914791702724467,
+      "endpoint_cost_per_wire": 0.9591479170272447,
+      "worst_charge_fraction": 0.0,
+      "worst_transitions": [
+        {
+          "prefix": [
+            [
+              0,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              2
+            ]
+          ],
+          "layer": [
+            [
+              0,
+              2
+            ]
+          ],
+          "charge": 0.0,
+          "uniform_before": 0,
+          "uniform_after": 0,
+          "fixed_before": 3,
+          "fixed_after": 3,
+          "Q_before": 0.0,
+          "Q_after": 0.0,
+          "destination": 8,
+          "gain": 0.0,
+          "marginal_entropy": 0.0,
+          "conditional_total_correlation": 0.0
+        },
+        {
+          "prefix": [
+            [
+              0,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              2
+            ]
+          ],
+          "layer": [
+            [
+              0,
+              1
+            ]
+          ],
+          "charge": 0.0,
+          "uniform_before": 0,
+          "uniform_after": 0,
+          "fixed_before": 3,
+          "fixed_after": 3,
+          "Q_before": 0.0,
+          "Q_after": 0.0,
+          "destination": 8,
+          "gain": 0.0,
+          "marginal_entropy": 0.0,
+          "conditional_total_correlation": 0.0
+        },
+        {
+          "prefix": [
+            [
+              0,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              2
+            ]
+          ],
+          "layer": [
+            [
+              1,
+              2
+            ]
+          ],
+          "charge": 0.0,
+          "uniform_before": 0,
+          "uniform_after": 0,
+          "fixed_before": 3,
+          "fixed_after": 3,
+          "Q_before": 0.0,
+          "Q_after": 0.0,
+          "destination": 8,
+          "gain": 0.0,
+          "marginal_entropy": 0.0,
+          "conditional_total_correlation": 0.0
+        },
+        {
+          "prefix": [
+            [
+              1,
+              2
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "layer": [
+            [
+              0,
+              2
+            ]
+          ],
+          "charge": 0.0,
+          "uniform_before": 0,
+          "uniform_after": 0,
+          "fixed_before": 1,
+          "fixed_after": 1,
+          "Q_before": 0.0,
+          "Q_after": 0.0,
+          "destination": 7,
+          "gain": 0.0,
+          "marginal_entropy": 0.0,
+          "conditional_total_correlation": 0.0
+        },
+        {
+          "prefix": [
+            [
+              1,
+              2
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "layer": [
+            [
+              0,
+              1
+            ]
+          ],
+          "charge": 0.0,
+          "uniform_before": 0,
+          "uniform_after": 0,
+          "fixed_before": 1,
+          "fixed_after": 3,
+          "Q_before": 0.0,
+          "Q_after": 0.0,
+          "destination": 8,
+          "gain": 0.9182958340544893,
+          "marginal_entropy": 0.9182958340544893,
+          "conditional_total_correlation": 0.0
+        }
+      ]
+    },
+    "signed_boundary_bank_fit": {
+      "beta": 0.0,
+      "kappa": 0.5,
+      "lambda": 0.45914791702724467,
+      "endpoint_cost_per_wire": 0.9591479170272447,
+      "worst_charge_fraction": 0.0,
+      "scope": "Allows either sign of beta; still only a finite numerical fit"
+    },
+    "boundary_unchanged_witnesses": {
+      "unchanged": {
+        "prefix": [
+          [
+            0,
+            1
+          ]
+        ],
+        "layer": [
+          [
+            0,
+            1
+          ]
+        ],
+        "Q_change": 0.0,
+        "Q_before": 0.0,
+        "Q_after": 0.0,
+        "uniform_wires": 1,
+        "fixed_wires": 0,
+        "destination": 1,
+        "gain": 0.0,
+        "marginal_entropy": 0.0,
+        "conditional_total_correlation": 0.0
+      }
+    }
+  },
+  {
+    "wires": 4,
+    "reachable_rank_distributions": 119,
+    "layers": 9,
+    "bank": "B=-beta*max_layer conditional_TC",
+    "initial_Q": 2.220446049250313e-16,
+    "sorted_Q": 0.0,
+    "maximum_Q": 0.3333333333333335,
+    "fit_status": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "beta": 0.1968597201155964,
+    "worst_charge_fraction": 0.9671900466474005,
+    "coefficient_if_universal": 2.0678459284529027,
+    "worst_transitions": [
+      {
+        "prefix": [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "layer": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "charge": 1.934380093294801,
+        "Q_before": 0.08170416594551044,
+        "Q_after": 0.0,
+        "destination": 117,
+        "gain": 1.9182958340544896,
+        "marginal_entropy": 2.0,
+        "conditional_total_correlation": 0.08170416594551044
+      },
+      {
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "layer": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "charge": 1.934380093294801,
+        "Q_before": 0.08170416594551044,
+        "Q_after": 0.0,
+        "destination": 117,
+        "gain": 1.9182958340544896,
+        "marginal_entropy": 2.0,
+        "conditional_total_correlation": 0.08170416594551044
+      },
+      {
+        "prefix": [],
+        "layer": [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "charge": 1.934380093294801,
+        "Q_before": 2.220446049250313e-16,
+        "Q_after": 0.33333333333333326,
+        "destination": 18,
+        "gain": 1.9999999999999998,
+        "marginal_entropy": 2.0,
+        "conditional_total_correlation": 2.220446049250313e-16
+      },
+      {
+        "prefix": [],
+        "layer": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "charge": 1.934380093294801,
+        "Q_before": 2.220446049250313e-16,
+        "Q_after": 0.33333333333333326,
+        "destination": 14,
+        "gain": 1.9999999999999998,
+        "marginal_entropy": 2.0,
+        "conditional_total_correlation": 2.220446049250313e-16
+      },
+      {
+        "prefix": [],
+        "layer": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "charge": 1.934380093294801,
+        "Q_before": 2.220446049250313e-16,
+        "Q_after": 0.3333333333333335,
+        "destination": 11,
+        "gain": 1.9999999999999998,
+        "marginal_entropy": 2.0,
+        "conditional_total_correlation": 2.220446049250313e-16
+      }
+    ],
+    "scope": "Exhaustive small distributions; numerical LP; no universal bound",
+    "boundary_bank_fit": {
+      "bank": "B=kappa*uniform_wires-lambda*fixed_wires-beta*Q",
+      "beta": 0.0,
+      "kappa": 0.26021302074318875,
+      "lambda": 0.35375937481971087,
+      "endpoint_cost_per_wire": 0.6139723955628996,
+      "worst_charge_fraction": 0.4795739585136224,
+      "worst_transitions": [
+        {
+          "prefix": [
+            [
+              2,
+              3
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              0,
+              3
+            ]
+          ],
+          "layer": [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          "charge": 0.9591479170272448,
+          "uniform_before": 0,
+          "uniform_after": 0,
+          "fixed_before": 1,
+          "fixed_after": 1,
+          "Q_before": 0.0,
+          "Q_after": 0.0,
+          "destination": 87,
+          "gain": 0.9591479170272448,
+          "marginal_entropy": 0.9591479170272448,
+          "conditional_total_correlation": 0.0
+        },
+        {
+          "prefix": [
+            [
+              2,
+              3
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              0,
+              3
+            ]
+          ],
+          "layer": [
+            [
+              0,
+              1
+            ]
+          ],
+          "charge": 0.9591479170272448,
+          "uniform_before": 0,
+          "uniform_after": 0,
+          "fixed_before": 1,
+          "fixed_after": 1,
+          "Q_before": 0.0,
+          "Q_after": 0.0,
+          "destination": 87,
+          "gain": 0.9591479170272448,
+          "marginal_entropy": 0.9591479170272448,
+          "conditional_total_correlation": 0.0
+        },
+        {
+          "prefix": [
+            [
+              2,
+              3
+            ],
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              3
+            ]
+          ],
+          "layer": [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          "charge": 0.9591479170272448,
+          "uniform_before": 0,
+          "uniform_after": 0,
+          "fixed_before": 1,
+          "fixed_after": 1,
+          "Q_before": 0.0,
+          "Q_after": 0.0,
+          "destination": 87,
+          "gain": 0.9591479170272448,
+          "marginal_entropy": 0.9591479170272448,
+          "conditional_total_correlation": 0.0
+        },
+        {
+          "prefix": [
+            [
+              2,
+              3
+            ],
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              3
+            ]
+          ],
+          "layer": [
+            [
+              0,
+              1
+            ]
+          ],
+          "charge": 0.9591479170272448,
+          "uniform_before": 0,
+          "uniform_after": 0,
+          "fixed_before": 1,
+          "fixed_after": 1,
+          "Q_before": 0.0,
+          "Q_after": 0.0,
+          "destination": 87,
+          "gain": 0.9591479170272448,
+          "marginal_entropy": 0.9591479170272448,
+          "conditional_total_correlation": 0.0
+        },
+        {
+          "prefix": [
+            [
+              1,
+              2
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              0,
+              3
+            ]
+          ],
+          "layer": [
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              3
+            ]
+          ],
+          "charge": 0.9591479170272448,
+          "uniform_before": 0,
+          "uniform_after": 0,
+          "fixed_before": 1,
+          "fixed_after": 1,
+          "Q_before": 0.0,
+          "Q_after": 0.0,
+          "destination": 95,
+          "gain": 0.9591479170272448,
+          "marginal_entropy": 0.9591479170272448,
+          "conditional_total_correlation": 0.0
+        }
+      ]
+    },
+    "signed_boundary_bank_fit": {
+      "beta": 0.0,
+      "kappa": 0.26021302074318875,
+      "lambda": 0.35375937481971087,
+      "endpoint_cost_per_wire": 0.6139723955628996,
+      "worst_charge_fraction": 0.4795739585136224,
+      "scope": "Allows either sign of beta; still only a finite numerical fit"
+    },
+    "boundary_unchanged_witnesses": {
+      "unchanged": {
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ]
+        ],
+        "layer": [
+          [
+            2,
+            3
+          ]
+        ],
+        "Q_change": 0.0,
+        "Q_before": 0.0,
+        "Q_after": 0.0,
+        "uniform_wires": 0,
+        "fixed_wires": 1,
+        "destination": 68,
+        "gain": 0.9591479170272448,
+        "marginal_entropy": 0.9591479170272448,
+        "conditional_total_correlation": 0.0
+      },
+      "decrease": {
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "layer": [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "Q_change": -0.25162916738782304,
+        "Q_before": 0.3333333333333335,
+        "Q_after": 0.08170416594551044,
+        "uniform_wires": 0,
+        "fixed_wires": 0,
+        "destination": 86,
+        "gain": 0.6666666666666666,
+        "marginal_entropy": 0.6666666666666666,
+        "conditional_total_correlation": 0.0
+      },
+      "increase": {
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "layer": [
+          [
+            1,
+            2
+          ]
+        ],
+        "Q_change": 0.006398156983803194,
+        "Q_before": 0.0021526290802427184,
+        "Q_after": 0.008550786064045912,
+        "uniform_wires": 0,
+        "fixed_wires": 0,
+        "destination": 71,
+        "gain": 0.5747164126866465,
+        "marginal_entropy": 0.5747164126866465,
+        "conditional_total_correlation": 0.0
+      }
+    },
+    "two_witness_lower_bound_on_charge_fraction": 0.28849822545001563
+  },
+  {
+    "wires": 5,
+    "reachable_rank_distributions": 7101,
+    "layers": 25,
+    "bank": "B=-beta*max_layer conditional_TC",
+    "initial_Q": 2.886579864025407e-15,
+    "sorted_Q": 0.0,
+    "maximum_Q": 0.33333333333333326,
+    "fit_status": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "beta": 0.0871482166359937,
+    "worst_charge_fraction": 0.9854752972273344,
+    "coefficient_if_universal": 2.0294775583183693,
+    "worst_transitions": [
+      {
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            1,
+            4
+          ]
+        ],
+        "layer": [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        "charge": 1.9709505944546688,
+        "Q_before": 0.0,
+        "Q_after": 0.0,
+        "destination": 7100,
+        "gain": 1.9709505944546688,
+        "marginal_entropy": 1.9709505944546688,
+        "conditional_total_correlation": 0.0
+      },
+      {
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        "layer": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "charge": 1.9709505944546688,
+        "Q_before": 0.0,
+        "Q_after": 0.0,
+        "destination": 7100,
+        "gain": 1.9709505944546688,
+        "marginal_entropy": 1.9709505944546688,
+        "conditional_total_correlation": 0.0
+      },
+      {
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        "layer": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "charge": 1.9709505944546688,
+        "Q_before": 0.0,
+        "Q_after": 0.0,
+        "destination": 7100,
+        "gain": 1.9709505944546688,
+        "marginal_entropy": 1.9709505944546688,
+        "conditional_total_correlation": 0.0
+      },
+      {
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "layer": [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        "charge": 1.9709505944546688,
+        "Q_before": 0.0,
+        "Q_after": 0.0,
+        "destination": 7100,
+        "gain": 1.9709505944546688,
+        "marginal_entropy": 1.9709505944546688,
+        "conditional_total_correlation": 0.0
+      },
+      {
+        "prefix": [],
+        "layer": [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "charge": 1.9709505944546688,
+        "Q_before": 2.886579864025407e-15,
+        "Q_after": 0.33333333333333326,
+        "destination": 39,
+        "gain": 1.9999999999999998,
+        "marginal_entropy": 2.0000000000000027,
+        "conditional_total_correlation": 2.886579864025407e-15
+      }
+    ],
+    "scope": "Exhaustive small distributions; numerical LP; no universal bound",
+    "boundary_bank_fit": {
+      "bank": "B=kappa*uniform_wires-lambda*fixed_wires-beta*Q",
+      "beta": 0.0,
+      "kappa": 0.0204260414863775,
+      "lambda": 0.013163690100044756,
+      "endpoint_cost_per_wire": 0.033589731586422256,
+      "worst_charge_fraction": 0.9591479170272449,
+      "worst_transitions": [
+        {
+          "prefix": [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              4
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              2,
+              4
+            ],
+            [
+              1,
+              4
+            ]
+          ],
+          "layer": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ],
+          "charge": 1.9182958340544898,
+          "uniform_before": 0,
+          "uniform_after": 0,
+          "fixed_before": 1,
+          "fixed_after": 5,
+          "Q_before": 0.0,
+          "Q_after": 0.0,
+          "destination": 7100,
+          "gain": 1.9709505944546688,
+          "marginal_entropy": 1.9709505944546688,
+          "conditional_total_correlation": 0.0
+        },
+        {
+          "prefix": [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              0,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              2,
+              4
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ],
+          "layer": [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          "charge": 1.9182958340544898,
+          "uniform_before": 0,
+          "uniform_after": 0,
+          "fixed_before": 1,
+          "fixed_after": 5,
+          "Q_before": 0.0,
+          "Q_after": 0.0,
+          "destination": 7100,
+          "gain": 1.9709505944546688,
+          "marginal_entropy": 1.9709505944546688,
+          "conditional_total_correlation": 0.0
+        },
+        {
+          "prefix": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              1,
+              4
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              0,
+              3
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              4
+            ]
+          ],
+          "layer": [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          "charge": 1.9182958340544898,
+          "uniform_before": 0,
+          "uniform_after": 0,
+          "fixed_before": 1,
+          "fixed_after": 5,
+          "Q_before": 0.0,
+          "Q_after": 0.0,
+          "destination": 7100,
+          "gain": 1.9709505944546688,
+          "marginal_entropy": 1.9709505944546688,
+          "conditional_total_correlation": 0.0
+        },
+        {
+          "prefix": [
+            [
+              0,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              0,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          "layer": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ],
+          "charge": 1.9182958340544898,
+          "uniform_before": 0,
+          "uniform_after": 0,
+          "fixed_before": 1,
+          "fixed_after": 5,
+          "Q_before": 0.0,
+          "Q_after": 0.0,
+          "destination": 7100,
+          "gain": 1.9709505944546688,
+          "marginal_entropy": 1.9709505944546688,
+          "conditional_total_correlation": 0.0
+        },
+        {
+          "prefix": [
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              2,
+              4
+            ]
+          ],
+          "layer": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ],
+          "charge": 1.9182958340544898,
+          "uniform_before": 1,
+          "uniform_after": 1,
+          "fixed_before": 0,
+          "fixed_after": 0,
+          "Q_before": 0.08170416594551,
+          "Q_after": 0.0,
+          "destination": 2370,
+          "gain": 1.9182958340544898,
+          "marginal_entropy": 1.9999999999999998,
+          "conditional_total_correlation": 0.08170416594551
+        }
+      ]
+    },
+    "signed_boundary_bank_fit": {
+      "beta": -0.06343740151579311,
+      "kappa": 0.027008266607843168,
+      "lambda": 0.014459465095194357,
+      "endpoint_cost_per_wire": 0.041467731703037525,
+      "worst_charge_fraction": 0.9565563670369457,
+      "scope": "Allows either sign of beta; still only a finite numerical fit"
+    },
+    "boundary_unchanged_witnesses": {
+      "unchanged": {
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            0,
+            2
+          ]
+        ],
+        "layer": [
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "Q_change": 0.0,
+        "Q_before": 0.0016982111614236572,
+        "Q_after": 0.0016982111614236572,
+        "uniform_wires": 0,
+        "fixed_wires": 1,
+        "destination": 5215,
+        "gain": 1.2364527976600286,
+        "marginal_entropy": 1.2381510088214522,
+        "conditional_total_correlation": 0.0016982111614236572
+      },
+      "decrease": {
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "layer": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "Q_change": -0.08170416594551,
+        "Q_before": 0.08170416594551,
+        "Q_after": 0.0,
+        "uniform_wires": 1,
+        "fixed_wires": 0,
+        "destination": 1437,
+        "gain": 1.9182958340544898,
+        "marginal_entropy": 1.9999999999999998,
+        "conditional_total_correlation": 0.08170416594551
+      },
+      "increase": {
+        "prefix": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            4
+          ]
+        ],
+        "layer": [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        "Q_change": 0.3046806669444575,
+        "Q_before": 0.019830582839195587,
+        "Q_after": 0.3245112497836531,
+        "uniform_wires": 0,
+        "fixed_wires": 1,
+        "destination": 2678,
+        "gain": 1.8937845842708363,
+        "marginal_entropy": 1.8937845842708367,
+        "conditional_total_correlation": 4.440892098500626e-16
+      }
+    },
+    "two_witness_lower_bound_on_charge_fraction": 0.9565563670369458
+  }
+]
