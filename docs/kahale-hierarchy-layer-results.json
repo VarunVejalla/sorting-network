@@ -1,0 +1,762 @@
+{
+  "wires": 5,
+  "blocks": [
+    [
+      0,
+      1
+    ],
+    [
+      2,
+      3,
+      4
+    ]
+  ],
+  "states": 7101,
+  "layers": 25,
+  "instances": 177525,
+  "maximum_identity_roundoff": 1.7763568394002505e-15,
+  "maximum_conditional_loss_minus_internal_gate_count": 8.881784197001252e-16,
+  "pure_crossing_reconstruction_roundoff": 0.0,
+  "joint_innovation_exceeds_crossing_slots": {
+    "value": 0.6411426593363112,
+    "prefix": [],
+    "layer": [
+      [
+        1,
+        2
+      ]
+    ],
+    "gain": 1.0,
+    "joint_innovation": 1.6411426593363112,
+    "residual": 0.9438198413848431,
+    "conditional_internal_loss": 0.0,
+    "internal_gates": 0,
+    "single_minus_joint_innovation": 0.0,
+    "rank_update_conditional_total_correlation": 0.0,
+    "hidden_gate_assignment_entropy": 0.0,
+    "orientation_conditional_total_correlation": 0.0,
+    "exact_full_slot_gain_certificate": true,
+    "hierarchy_level_slots": [
+      1,
+      0,
+      0
+    ],
+    "hierarchy_level_information": [
+      1.0,
+      0.0,
+      0.0
+    ]
+  },
+  "maximum_conditional_internal_loss": {
+    "value": 2.0,
+    "prefix": [],
+    "layer": [
+      [
+        0,
+        1
+      ],
+      [
+        3,
+        4
+      ]
+    ],
+    "gain": 2.0,
+    "joint_innovation": 0.0,
+    "residual": 0.0,
+    "conditional_internal_loss": 2.0,
+    "internal_gates": 2,
+    "single_minus_joint_innovation": 0.0,
+    "rank_update_conditional_total_correlation": 0.0,
+    "hidden_gate_assignment_entropy": 0.0,
+    "orientation_conditional_total_correlation": 0.0,
+    "exact_full_slot_gain_certificate": true,
+    "hierarchy_level_slots": [
+      0,
+      1,
+      1
+    ],
+    "hierarchy_level_information": [
+      0.0,
+      1.0,
+      1.0
+    ]
+  },
+  "maximum_parallel_dependence_saving": {
+    "value": 2.3424459932465695,
+    "prefix": [
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ]
+    ],
+    "layer": [
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        3
+      ]
+    ],
+    "gain": 1.4631741656970139,
+    "joint_innovation": 0.6000000000000001,
+    "residual": 1.577463029959656,
+    "conditional_internal_loss": 0.0,
+    "internal_gates": 0,
+    "single_minus_joint_innovation": 2.3424459932465695,
+    "rank_update_conditional_total_correlation": 1.2618945343002537,
+    "hidden_gate_assignment_entropy": 1.0805514589463159,
+    "orientation_conditional_total_correlation": 0.0040262486697688615,
+    "exact_full_slot_gain_certificate": false,
+    "hierarchy_level_slots": [
+      2,
+      0,
+      0
+    ],
+    "hierarchy_level_information": [
+      1.4631741656970139,
+      0.0,
+      0.0
+    ]
+  },
+  "maximum_layer_gain": {
+    "value": 2.0,
+    "prefix": [],
+    "layer": [
+      [
+        1,
+        2
+      ],
+      [
+        3,
+        4
+      ]
+    ],
+    "gain": 2.0,
+    "joint_innovation": 1.6411426593363112,
+    "residual": 0.9438198413848431,
+    "conditional_internal_loss": 1.0,
+    "internal_gates": 1,
+    "single_minus_joint_innovation": 0.0,
+    "rank_update_conditional_total_correlation": 0.0,
+    "hidden_gate_assignment_entropy": 0.0,
+    "orientation_conditional_total_correlation": 0.0,
+    "exact_full_slot_gain_certificate": true,
+    "hierarchy_level_slots": [
+      1,
+      0,
+      1
+    ],
+    "hierarchy_level_information": [
+      1.0,
+      0.0,
+      1.0
+    ]
+  },
+  "rank_update_saving_at_exact_full_slot_gain": {
+    "value": 1.6558190680235816,
+    "prefix": [],
+    "layer": [
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        3
+      ]
+    ],
+    "gain": 2.0,
+    "joint_innovation": 1.6264662506490408,
+    "residual": 0.8754887502163484,
+    "conditional_internal_loss": 0.0,
+    "internal_gates": 0,
+    "single_minus_joint_innovation": 1.6558190680235816,
+    "rank_update_conditional_total_correlation": 0.7391524013569155,
+    "hidden_gate_assignment_entropy": 0.9166666666666661,
+    "orientation_conditional_total_correlation": 0.0,
+    "exact_full_slot_gain_certificate": true,
+    "hierarchy_level_slots": [
+      2,
+      0,
+      0
+    ],
+    "hierarchy_level_information": [
+      2.0,
+      0.0,
+      0.0
+    ]
+  },
+  "maximum_orientation_dependence": {
+    "value": 0.3333333333333326,
+    "prefix": [
+      [
+        1,
+        3
+      ],
+      [
+        2,
+        4
+      ]
+    ],
+    "layer": [
+      [
+        1,
+        2
+      ],
+      [
+        3,
+        4
+      ]
+    ],
+    "gain": 1.6666666666666665,
+    "joint_innovation": 0.561825099075778,
+    "residual": 0.6591479170272452,
+    "conditional_internal_loss": 0.666666666666667,
+    "internal_gates": 1,
+    "single_minus_joint_innovation": 0.0,
+    "rank_update_conditional_total_correlation": 0.0,
+    "hidden_gate_assignment_entropy": 0.0,
+    "orientation_conditional_total_correlation": 0.3333333333333326,
+    "exact_full_slot_gain_certificate": false,
+    "hierarchy_level_slots": [
+      1,
+      0,
+      1
+    ],
+    "hierarchy_level_information": [
+      0.9999999999999996,
+      0.0,
+      0.666666666666667
+    ]
+  },
+  "fine_blocks": [
+    [
+      0
+    ],
+    [
+      1
+    ],
+    [
+      2
+    ],
+    [
+      3,
+      4
+    ]
+  ],
+  "hierarchy_group_orientation_identity_roundoff": 0.0,
+  "maximum_hierarchy_level_information_minus_slots": 8.881784197001252e-16,
+  "minimum_hierarchy_level_information": 0.0,
+  "status": "Exact integer distributions; numerical entropy; no new coefficient",
+  "hierarchy_endpoint_scaling": [
+    {
+      "wires": 8,
+      "levels": [
+        {
+          "block_sizes": [
+            8
+          ],
+          "initial_partition_entropy": 0.0,
+          "increment_over_parent": 0.0
+        },
+        {
+          "block_sizes": [
+            4,
+            4
+          ],
+          "initial_partition_entropy": 6.129283016944967,
+          "increment_over_parent": 6.129283016944967
+        },
+        {
+          "block_sizes": [
+            2,
+            2,
+            2,
+            2
+          ],
+          "initial_partition_entropy": 11.29920801838728,
+          "increment_over_parent": 5.169925001442312
+        },
+        {
+          "block_sizes": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "initial_partition_entropy": 15.29920801838728,
+          "increment_over_parent": 4.0
+        }
+      ]
+    },
+    {
+      "wires": 32,
+      "levels": [
+        {
+          "block_sizes": [
+            32
+          ],
+          "initial_partition_entropy": 0.0,
+          "increment_over_parent": 0.0
+        },
+        {
+          "block_sizes": [
+            16,
+            16
+          ],
+          "initial_partition_entropy": 29.162982712595053,
+          "increment_over_parent": 29.162982712595053
+        },
+        {
+          "block_sizes": [
+            8,
+            8,
+            8,
+            8
+          ],
+          "initial_partition_entropy": 56.46643157881118,
+          "increment_over_parent": 27.30344886621613
+        },
+        {
+          "block_sizes": [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "initial_partition_entropy": 80.98356364659105,
+          "increment_over_parent": 24.51713206777987
+        },
+        {
+          "block_sizes": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "initial_partition_entropy": 101.6632636523603,
+          "increment_over_parent": 20.67970000576925
+        },
+        {
+          "block_sizes": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "initial_partition_entropy": 117.6632636523603,
+          "increment_over_parent": 16.0
+        }
+      ]
+    },
+    {
+      "wires": 128,
+      "levels": [
+        {
+          "block_sizes": [
+            128
+          ],
+          "initial_partition_entropy": 0.0,
+          "increment_over_parent": 0.0
+        },
+        {
+          "block_sizes": [
+            64,
+            64
+          ],
+          "initial_partition_entropy": 124.17143420017374,
+          "increment_over_parent": 124.17143420017374
+        },
+        {
+          "block_sizes": [
+            32,
+            32,
+            32,
+            32
+          ],
+          "initial_partition_entropy": 245.50866747418064,
+          "increment_over_parent": 121.3372332740069
+        },
+        {
+          "block_sizes": [
+            16,
+            16,
+            16,
+            16,
+            16,
+            16,
+            16,
+            16
+          ],
+          "initial_partition_entropy": 362.16059832456085,
+          "increment_over_parent": 116.65193085038021
+        },
+        {
+          "block_sizes": [
+            8,
+            8,
+            8,
+            8,
+            8,
+            8,
+            8,
+            8,
+            8,
+            8,
+            8,
+            8,
+            8,
+            8,
+            8,
+            8
+          ],
+          "initial_partition_entropy": 471.37439378942537,
+          "increment_over_parent": 109.21379546486452
+        },
+        {
+          "block_sizes": [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "initial_partition_entropy": 569.4429220605448,
+          "increment_over_parent": 98.06852827111942
+        },
+        {
+          "block_sizes": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "initial_partition_entropy": 652.1617220836218,
+          "increment_over_parent": 82.71880002307705
+        },
+        {
+          "block_sizes": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "initial_partition_entropy": 716.1617220836218,
+          "increment_over_parent": 64.0
+        }
+      ]
+    }
+  ],
+  "fully_efficient_matching_obstruction": [
+    {
+      "wires": 16,
+      "crossing_comparisons": 8,
+      "exact_joint_gain": 8,
+      "single_innovation_sum_lower_bound": 24.0,
+      "joint_partition_innovation_upper_bound": 16,
+      "single_minus_joint_lower_bound": 8.0,
+      "orientation_conditional_total_correlation": 0
+    },
+    {
+      "wires": 32,
+      "crossing_comparisons": 16,
+      "exact_joint_gain": 16,
+      "single_innovation_sum_lower_bound": 64.0,
+      "joint_partition_innovation_upper_bound": 32,
+      "single_minus_joint_lower_bound": 32.0,
+      "orientation_conditional_total_correlation": 0
+    },
+    {
+      "wires": 64,
+      "crossing_comparisons": 32,
+      "exact_joint_gain": 32,
+      "single_innovation_sum_lower_bound": 160.0,
+      "joint_partition_innovation_upper_bound": 64,
+      "single_minus_joint_lower_bound": 96.0,
+      "orientation_conditional_total_correlation": 0
+    },
+    {
+      "wires": 128,
+      "crossing_comparisons": 64,
+      "exact_joint_gain": 64,
+      "single_innovation_sum_lower_bound": 384.0,
+      "joint_partition_innovation_upper_bound": 128,
+      "single_minus_joint_lower_bound": 256.0,
+      "orientation_conditional_total_correlation": 0
+    },
+    {
+      "wires": 256,
+      "crossing_comparisons": 128,
+      "exact_joint_gain": 128,
+      "single_innovation_sum_lower_bound": 896.0,
+      "joint_partition_innovation_upper_bound": 256,
+      "single_minus_joint_lower_bound": 640.0,
+      "orientation_conditional_total_correlation": 0
+    }
+  ]
+}

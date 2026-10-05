@@ -2,6 +2,11 @@
 
 ## Decision
 
+The [joint hierarchy-layer investigation](kahale-hierarchy-layer.md) identifies
+two barriers: joint histories collapse to the finest scale, and rank-update
+dependence can be leading order in a fully efficient layer. The remaining
+target is a cumulative conditional orientation deficit across successive layers.
+
 The [two-block transition and history investigation](kahale-rankset-transition.md)
 adds checked signed identities and a fresh-innovation budget. Static linear
 rank-set/order/coupling combinations are redundant; the next structural target

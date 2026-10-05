@@ -2,6 +2,10 @@
 
 ## Status
 
+The subsequent [joint hierarchy-layer investigation](kahale-hierarchy-layer.md)
+derives the group-orientation ledger and records scalable obstructions to
+charging rank-update dependence as comparison loss.
+
 The proved base-two lower-bound coefficient remains `3.270559...`.
 New Lean modules prove crossing reconstruction, a signed rank-set transition
 identity, the sum of two boundary-transfer identities, and a budget for fresh
