@@ -1,0 +1,21 @@
+{
+  "wires": 7,
+  "reachable_boolean_states": 81316,
+  "catalogue_complete": false,
+  "bfs_limit": 10000,
+  "random_walks": 5000,
+  "random_walk_length": 40,
+  "random_seed": 0,
+  "faces": 672,
+  "closure_counterexamples": {},
+  "signature_classes_visited_before_witness": {
+    "False": 74944,
+    "True": 75775
+  },
+  "input_relabeling_diagnostic": {
+    "same_matrix_pairs_checked": 1000,
+    "equivalent_under_input_relabeling": 1000,
+    "first_non_equivalent_pair": null
+  },
+  "status": "Exact Boolean executions and integer face counts; no asymptotic bound"
+}

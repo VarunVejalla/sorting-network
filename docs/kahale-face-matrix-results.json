@@ -1,0 +1,58 @@
+{
+  "wires": 5,
+  "reachable_boolean_states": 43337,
+  "catalogue_complete": true,
+  "bfs_limit": 200000,
+  "random_walks": 0,
+  "random_walk_length": 40,
+  "random_seed": 0,
+  "faces": 80,
+  "closure_counterexamples": {},
+  "signature_classes_visited_before_witness": {
+    "False": 4106,
+    "True": 5555
+  },
+  "input_relabeling_diagnostic": {
+    "same_matrix_pairs_checked": 221,
+    "equivalent_under_input_relabeling": 220,
+    "first_non_equivalent_pair": {
+      "first_prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          4
+        ]
+      ],
+      "second_prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          0,
+          3
+        ]
+      ]
+    }
+  },
+  "status": "Exact Boolean executions and integer face counts; no asymptotic bound"
+}
