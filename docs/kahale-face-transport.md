@@ -142,6 +142,12 @@ problem. Any eventual lower bound must force a loss over a number of
 layers proportional to `log_2 n`, rather than just require a terminal
 repair. No such loss has been established here.
 
+The [next layer investigation](kahale-layer-occupation.md) gives a concrete
+occupation/coalescence budget, but also records actual ordered-prefix
+counterexamples to charging its reserve spending to scalar height loss.
+The remaining issue is a sustained loss, not the availability of a scalar
+layer accounting identity.
+
 ## Reproduction
 
 ```text

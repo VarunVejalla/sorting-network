@@ -12,6 +12,14 @@ orientation is unrestricted. Ordered closure and the quantitative depth-rate
 loss remain open. Further entropy accounting
 is secondary until a new realizability constraint supplies that loss.
 
+The [occupation-layer investigation](kahale-layer-occupation.md) derives a
+spectral coalescence budget and checks the actual Boolean polarization
+identity in Lean. It also disproves the proposed universal local charge
+from reserve spending to scalar height inefficiency, using an equal-height
+four-wire sorter. A single efficient initial layer can create a reserve
+approaching one quarter of the full collision budget. A sustained rate loss
+needs finer information about input sets or certificate scales.
+
 The [joint hierarchy-layer investigation](kahale-hierarchy-layer.md) identifies
 two barriers: joint histories collapse to the finest scale, and rank-update
 dependence can be leading order in a fully efficient layer. The remaining
