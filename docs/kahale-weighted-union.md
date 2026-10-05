@@ -168,6 +168,11 @@ The existing lower-bound proof was not strengthened by these lemmas.
 
 ## Reproduction and next question
 
+The [global rank-congestion follow-up](kahale-rank-congestion.md) now
+formalizes a coalition capacity condition and exhibits a 12-wire obstruction
+missed by every proper subcoalition of that witness. This moves the investigation
+to simultaneous rank requirements; no improved coefficient is established.
+
 ```sh
 python -B scripts/kahale_weighted_union.py --wires 3 4 5 --sample-six 20000 --output docs/kahale-weighted-union-results.json
 ```

@@ -4,6 +4,7 @@ import AKS.Kahale.JointPotential
 import AKS.Kahale.UnionCoupling
 import AKS.Kahale.ActiveWidth
 import AKS.Kahale.PairUnionRecurrence
+import AKS.Kahale.RankCongestion
 
 /-! Kernel dependency checks for the Kahale lower bound. -/
 
@@ -54,3 +55,10 @@ import AKS.Kahale.PairUnionRecurrence
 #guard_msgs in #print axioms Kahale.max_zero_certificate_pair_cover
 /-- info: 'Kahale.min_one_certificate_pair_cover' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in #print axioms Kahale.min_one_certificate_pair_cover
+
+/-- info: 'Kahale.rank_cover_hall' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms Kahale.rank_cover_hall
+/-- info: 'Kahale.sorted_suffix_zero_hall' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms Kahale.sorted_suffix_zero_hall
+/-- info: 'Kahale.sorted_suffix_certificate_hall' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms Kahale.sorted_suffix_certificate_hall
