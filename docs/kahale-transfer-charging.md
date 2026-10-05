@@ -2,6 +2,10 @@
 
 ## Status
 
+The [two-block transition update](kahale-rankset-transition.md) derives the
+signed innovation/residual ledger, proves a fresh-history budget, and identifies
+redundancy among static linear block potentials.
+
 The base-two lower-bound coefficient remains `3.270559...`. The goal preferably
 exceeds 4. This tranche completes the exact boundary-transfer formalization,
 adds entropy monotonicity, and identifies a structural restriction on coupling

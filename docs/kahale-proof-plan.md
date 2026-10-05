@@ -2,6 +2,11 @@
 
 ## Decision
 
+The [two-block transition and history investigation](kahale-rankset-transition.md)
+adds checked signed identities and a fresh-innovation budget. Static linear
+rank-set/order/coupling combinations are redundant; the next structural target
+is a joint layer inequality that accounts for history and recycling.
+
 Seek a coefficient **above 4**, but aim first for a universal inequality
 that yields *any* coefficient above `3.270559...`. The proposed bank is a
 candidate, not an established route to 4.

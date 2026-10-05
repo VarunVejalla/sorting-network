@@ -1,0 +1,180 @@
+{
+  "wires": 5,
+  "states": 7101,
+  "crossing_instances": 178848,
+  "maximum_identity_roundoff": 1.3322676295501878e-15,
+  "minimum_residual": -1.7763568394002505e-15,
+  "maximum_innovation": {
+    "prefix": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        2,
+        4
+      ]
+    ],
+    "gate": [
+      1,
+      2
+    ],
+    "block": [
+      0,
+      2
+    ],
+    "gain": 0.2295739585136225,
+    "innovation": 2.2973228179514673,
+    "residual": 0.0003126065610370432,
+    "rank_entropy_change": 2.067436252876808
+  },
+  "maximum_residual": {
+    "prefix": [
+      [
+        0,
+        1
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        0,
+        4
+      ],
+      [
+        2,
+        4
+      ]
+    ],
+    "gate": [
+      1,
+      2
+    ],
+    "block": [
+      0,
+      1
+    ],
+    "gain": 0.228491765742445,
+    "innovation": 0.0,
+    "residual": 2.498929563690936,
+    "rank_entropy_change": -2.7274213294333807
+  },
+  "innovation_at_exact_zero_gain": null,
+  "maximum_cumulative_averaged_innovation_to_sort": 5.254855028870739,
+  "initial_averaged_rank_entropy": 3.3219280948873626,
+  "whole_input_entropy": 6.906890595608519,
+  "fresh_history_innovation_on_maximizing_path": 2.6968241336014325,
+  "fresh_history_innovation_upper_bound": 3.584962500721156,
+  "maximizing_sequential_path": [
+    [
+      1,
+      2
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      0,
+      1
+    ]
+  ],
+  "status": "Exact integer distributions; numerical entropy; no new coefficient",
+  "uniform_first_crossing_scaling": [
+    {
+      "wires": 4,
+      "block_size": 2,
+      "innovation": 1.3018796874098555,
+      "innovation_lower_bound": 1.0,
+      "rank_entropy_change": -0.396240625180289,
+      "gain": 1,
+      "residual": 0.6981203125901445
+    },
+    {
+      "wires": 6,
+      "block_size": 3,
+      "innovation": 1.9729516521947068,
+      "innovation_lower_bound": 1.584962500721156,
+      "rank_entropy_change": -0.22402169705289765,
+      "gain": 1,
+      "residual": 1.1969733492476045
+    },
+    {
+      "wires": 8,
+      "block_size": 4,
+      "innovation": 2.423593877097919,
+      "innovation_lower_bound": 2.0,
+      "rank_entropy_change": -0.15281224580416097,
+      "gain": 1,
+      "residual": 1.57640612290208
+    },
+    {
+      "wires": 12,
+      "block_size": 6,
+      "innovation": 3.0384096836883465,
+      "innovation_lower_bound": 2.584962500721156,
+      "rank_entropy_change": -0.09310563406563155,
+      "gain": 1,
+      "residual": 2.131515317753978
+    },
+    {
+      "wires": 16,
+      "block_size": 8,
+      "innovation": 3.466470587752059,
+      "innovation_lower_bound": 3.0,
+      "rank_entropy_change": -0.06705882449568712,
+      "gain": 1,
+      "residual": 2.5335294122477463
+    },
+    {
+      "wires": 20,
+      "block_size": 10,
+      "innovation": 3.7957142747790984,
+      "innovation_lower_bound": 3.321928094887362,
+      "rank_entropy_change": -0.052427640219271154,
+      "gain": 1,
+      "residual": 2.8481419149983696
+    }
+  ]
+}
