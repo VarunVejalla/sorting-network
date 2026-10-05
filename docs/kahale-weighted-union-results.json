@@ -1,0 +1,263 @@
+[
+  {
+    "wires": 3,
+    "states": 11,
+    "pair_matrix_signatures": 7,
+    "distinct_measured_transition_summaries": 21,
+    "exact_initial_depth": 3,
+    "nonclosed_pair_matrix_witness": null,
+    "largest_unweighted_closure_slack": 0,
+    "suffix_potential_maxima": [
+      {
+        "weight": "inverse_distance",
+        "remaining_layers_before_gate": 1,
+        "actual_multiplier": "26/25",
+        "closed_upper_multiplier": "26/25"
+      },
+      {
+        "weight": "inverse_distance",
+        "remaining_layers_before_gate": 2,
+        "actual_multiplier": "25/23",
+        "closed_upper_multiplier": "25/23"
+      },
+      {
+        "weight": "inverse_distance",
+        "remaining_layers_before_gate": 3,
+        "actual_multiplier": "6/5",
+        "closed_upper_multiplier": "6/5"
+      },
+      {
+        "weight": "suffix_capped_distance",
+        "remaining_layers_before_gate": 1,
+        "actual_multiplier": "13/15",
+        "closed_upper_multiplier": "13/15"
+      },
+      {
+        "weight": "suffix_capped_distance",
+        "remaining_layers_before_gate": 2,
+        "actual_multiplier": "15/14",
+        "closed_upper_multiplier": "15/14"
+      },
+      {
+        "weight": "suffix_capped_distance",
+        "remaining_layers_before_gate": 3,
+        "actual_multiplier": "7/6",
+        "closed_upper_multiplier": "7/6"
+      },
+      {
+        "weight": "uniform",
+        "remaining_layers_before_gate": 1,
+        "actual_multiplier": "16/15",
+        "closed_upper_multiplier": "16/15"
+      },
+      {
+        "weight": "uniform",
+        "remaining_layers_before_gate": 2,
+        "actual_multiplier": "15/14",
+        "closed_upper_multiplier": "15/14"
+      },
+      {
+        "weight": "uniform",
+        "remaining_layers_before_gate": 3,
+        "actual_multiplier": "7/6",
+        "closed_upper_multiplier": "7/6"
+      }
+    ],
+    "scope": "exact finite computation; maxima use a finite completion oracle, not universal constants"
+  },
+  {
+    "wires": 4,
+    "states": 261,
+    "pair_matrix_signatures": 44,
+    "distinct_measured_transition_summaries": 396,
+    "exact_initial_depth": 3,
+    "nonclosed_pair_matrix_witness": null,
+    "largest_unweighted_closure_slack": 4,
+    "suffix_potential_maxima": [
+      {
+        "weight": "inverse_distance",
+        "remaining_layers_before_gate": 1,
+        "actual_multiplier": "83/78",
+        "closed_upper_multiplier": "89/78"
+      },
+      {
+        "weight": "inverse_distance",
+        "remaining_layers_before_gate": 2,
+        "actual_multiplier": "40/33",
+        "closed_upper_multiplier": "40/33"
+      },
+      {
+        "weight": "inverse_distance",
+        "remaining_layers_before_gate": 3,
+        "actual_multiplier": "18/13",
+        "closed_upper_multiplier": "18/13"
+      },
+      {
+        "weight": "inverse_distance",
+        "remaining_layers_before_gate": 4,
+        "actual_multiplier": "18/13",
+        "closed_upper_multiplier": "18/13"
+      },
+      {
+        "weight": "suffix_capped_distance",
+        "remaining_layers_before_gate": 1,
+        "actual_multiplier": "83/102",
+        "closed_upper_multiplier": "89/102"
+      },
+      {
+        "weight": "suffix_capped_distance",
+        "remaining_layers_before_gate": 2,
+        "actual_multiplier": "53/48",
+        "closed_upper_multiplier": "53/48"
+      },
+      {
+        "weight": "suffix_capped_distance",
+        "remaining_layers_before_gate": 3,
+        "actual_multiplier": "4/3",
+        "closed_upper_multiplier": "4/3"
+      },
+      {
+        "weight": "suffix_capped_distance",
+        "remaining_layers_before_gate": 4,
+        "actual_multiplier": "4/3",
+        "closed_upper_multiplier": "4/3"
+      },
+      {
+        "weight": "uniform",
+        "remaining_layers_before_gate": 1,
+        "actual_multiplier": "10/9",
+        "closed_upper_multiplier": "7/6"
+      },
+      {
+        "weight": "uniform",
+        "remaining_layers_before_gate": 2,
+        "actual_multiplier": "19/16",
+        "closed_upper_multiplier": "19/16"
+      },
+      {
+        "weight": "uniform",
+        "remaining_layers_before_gate": 3,
+        "actual_multiplier": "4/3",
+        "closed_upper_multiplier": "4/3"
+      },
+      {
+        "weight": "uniform",
+        "remaining_layers_before_gate": 4,
+        "actual_multiplier": "4/3",
+        "closed_upper_multiplier": "4/3"
+      }
+    ],
+    "scope": "exact finite computation; maxima use a finite completion oracle, not universal constants"
+  },
+  {
+    "wires": 5,
+    "states": 43337,
+    "pair_matrix_signatures": 581,
+    "distinct_measured_transition_summaries": 14525,
+    "exact_initial_depth": 5,
+    "nonclosed_pair_matrix_witness": null,
+    "largest_unweighted_closure_slack": 9,
+    "suffix_potential_maxima": [
+      {
+        "weight": "inverse_distance",
+        "remaining_layers_before_gate": 1,
+        "actual_multiplier": "582/553",
+        "closed_upper_multiplier": "622/553"
+      },
+      {
+        "weight": "inverse_distance",
+        "remaining_layers_before_gate": 2,
+        "actual_multiplier": "553/479",
+        "closed_upper_multiplier": "292/241"
+      },
+      {
+        "weight": "inverse_distance",
+        "remaining_layers_before_gate": 3,
+        "actual_multiplier": "262/213",
+        "closed_upper_multiplier": "543/425"
+      },
+      {
+        "weight": "inverse_distance",
+        "remaining_layers_before_gate": 4,
+        "actual_multiplier": "452/343",
+        "closed_upper_multiplier": "4/3"
+      },
+      {
+        "weight": "inverse_distance",
+        "remaining_layers_before_gate": 5,
+        "actual_multiplier": "59/44",
+        "closed_upper_multiplier": "59/44"
+      },
+      {
+        "weight": "suffix_capped_distance",
+        "remaining_layers_before_gate": 1,
+        "actual_multiplier": "291/385",
+        "closed_upper_multiplier": "311/385"
+      },
+      {
+        "weight": "suffix_capped_distance",
+        "remaining_layers_before_gate": 2,
+        "actual_multiplier": "77/78",
+        "closed_upper_multiplier": "407/390"
+      },
+      {
+        "weight": "suffix_capped_distance",
+        "remaining_layers_before_gate": 3,
+        "actual_multiplier": "68/57",
+        "closed_upper_multiplier": "36/29"
+      },
+      {
+        "weight": "suffix_capped_distance",
+        "remaining_layers_before_gate": 4,
+        "actual_multiplier": "57/46",
+        "closed_upper_multiplier": "33/26"
+      },
+      {
+        "weight": "suffix_capped_distance",
+        "remaining_layers_before_gate": 5,
+        "actual_multiplier": "13/10",
+        "closed_upper_multiplier": "13/10"
+      },
+      {
+        "weight": "uniform",
+        "remaining_layers_before_gate": 1,
+        "actual_multiplier": "40/37",
+        "closed_upper_multiplier": "85/74"
+      },
+      {
+        "weight": "uniform",
+        "remaining_layers_before_gate": 2,
+        "actual_multiplier": "74/65",
+        "closed_upper_multiplier": "6/5"
+      },
+      {
+        "weight": "uniform",
+        "remaining_layers_before_gate": 3,
+        "actual_multiplier": "68/57",
+        "closed_upper_multiplier": "36/29"
+      },
+      {
+        "weight": "uniform",
+        "remaining_layers_before_gate": 4,
+        "actual_multiplier": "57/46",
+        "closed_upper_multiplier": "33/26"
+      },
+      {
+        "weight": "uniform",
+        "remaining_layers_before_gate": 5,
+        "actual_multiplier": "13/10",
+        "closed_upper_multiplier": "13/10"
+      }
+    ],
+    "scope": "exact finite computation; maxima use a finite completion oracle, not universal constants"
+  },
+  {
+    "wires": 6,
+    "sampling": true,
+    "seed": 20261004,
+    "prefixes_examined": 20000,
+    "nonclosed_pair_matrix_witness": null,
+    "sampled_pair_matrix_signatures": 11420,
+    "scope": "seeded finite sampling; absence of counterexamples proves nothing general"
+  }
+]

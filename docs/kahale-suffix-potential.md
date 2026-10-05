@@ -115,6 +115,11 @@ at arbitrary arity or determine their own next-step updates.
 
 ## Next mathematical obligation
 
+The [weighted union-cost follow-up](kahale-weighted-union.md) supplies a
+closed upper recurrence via pair-plus-single certificate covers, and evaluates
+three spatial weight choices. Closure as an upper bound is possible; making
+it sharp enough for a stronger depth coefficient remains open.
+
 Seek an analytic bound on this suffix potential using the pairwise union-cost
 matrix, rather than only the upper bound `n+2`. In particular, identify a
 quantity that charges repeated reconvergence over many layers and whose

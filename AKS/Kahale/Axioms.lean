@@ -3,6 +3,7 @@ import AKS.Kahale.CertificateCompatibility
 import AKS.Kahale.JointPotential
 import AKS.Kahale.UnionCoupling
 import AKS.Kahale.ActiveWidth
+import AKS.Kahale.PairUnionRecurrence
 
 /-! Kernel dependency checks for the Kahale lower bound. -/
 
@@ -44,3 +45,12 @@ import AKS.Kahale.ActiveWidth
 #guard_msgs in #print axioms Kahale.active_final_comparator_adjacent
 /-- info: 'Kahale.active_comparator_width_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in #print axioms Kahale.active_comparator_width_le
+
+/-- info: 'Kahale.triple_zero_certificate_cover' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms Kahale.triple_zero_certificate_cover
+/-- info: 'Kahale.triple_one_certificate_cover' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms Kahale.triple_one_certificate_cover
+/-- info: 'Kahale.max_zero_certificate_pair_cover' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms Kahale.max_zero_certificate_pair_cover
+/-- info: 'Kahale.min_one_certificate_pair_cover' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms Kahale.min_one_certificate_pair_cover
