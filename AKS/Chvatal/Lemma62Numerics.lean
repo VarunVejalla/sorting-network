@@ -72,19 +72,19 @@ theorem xval_le_three_tenths {n : ℕ} {f j : ℝ} (P : Lemma62Params n f j)
     have : j = u * f * N := by rw [hu]; field_simp
     conv_lhs => rw [this]
     rw [Real.log_mul (by positivity) (by positivity), Real.log_mul (by positivity) (by positivity)]
-  have hu_le : u ≤ 128 / 4095 := by
+  have hu_le : u ≤ 1 / 31 := by
     rw [hu, div_le_iff₀ (by positivity)]
     nlinarith [P.hjf, mul_pos hf hN]
   have h2lo := Real.log_two_gt_d9
   have h2hi := Real.log_two_lt_d9
-  have hL : Real.log u ≤ -3.4654 := by
-    have h1' : Real.log u ≤ Real.log (128 / 4095) := Real.log_le_log hu_pos hu_le
-    have h2' : Real.log (128 / 4095 : ℝ) = -(5 * Real.log 2) + Real.log (4096 / 4095) := by
-      rw [show (128 / 4095 : ℝ) = (1 / 32) * (4096 / 4095) by norm_num,
+  have hL : Real.log u ≤ -3.43 := by
+    have h1' : Real.log u ≤ Real.log (1 / 31) := Real.log_le_log hu_pos hu_le
+    have h2' : Real.log (1 / 31 : ℝ) = -(5 * Real.log 2) + Real.log (32 / 31) := by
+      rw [show (1 / 31 : ℝ) = (1 / 32) * (32 / 31) by norm_num,
         Real.log_mul (by norm_num) (by norm_num), one_div, Real.log_inv,
         show (32 : ℝ) = 2 ^ 5 by norm_num, Real.log_pow]
       push_cast; ring
-    have h3' := Real.log_le_sub_one_of_pos (show (0 : ℝ) < 4096 / 4095 by norm_num)
+    have h3' := Real.log_le_sub_one_of_pos (show (0 : ℝ) < 32 / 31 by norm_num)
     linarith
   -- size of the f-dependent coefficients
   set a : ℝ := 2 / (eps * f) with ha
@@ -132,8 +132,8 @@ theorem xval_le_three_tenths {n : ℕ} {f j : ℝ} (P : Lemma62Params n f j)
     linarith
   -- assemble
   have hcoef : 0.99 ≤ 1 - a - b := by linarith
-  have hcw : (1 - a - b) * Real.log u ≤ 0.99 * (-3.4654) := by
-    have e1 : (1 - a - b) * Real.log u ≤ (1 - a - b) * (-3.4654) :=
+  have hcw : (1 - a - b) * Real.log u ≤ 0.99 * (-3.43) := by
+    have e1 : (1 - a - b) * Real.log u ≤ (1 - a - b) * (-3.43) :=
       mul_le_mul_of_nonneg_left hL (by linarith)
     linarith only [e1, hcoef]
   have hab : a * Real.log (f + 2) ≤ a * Real.log f + a * b :=

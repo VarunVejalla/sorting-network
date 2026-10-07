@@ -57,7 +57,7 @@ structure Lemma62Params (n : ℕ) (f j : ℝ) : Prop where
   hn : 16 ≤ n
   hf : 17 * 10 ^ 9 ≤ f
   hj : 0 < j
-  hjf : j ≤ 128 / 4095 * f * n
+  hjf : j ≤ f * n / 31
 
 lemma log_e_div (N x : ℝ) (hN : 0 < N) (hx : 0 < x) :
     Real.log (Real.exp 1 * N / x) = 1 + Real.log N - Real.log x := by
@@ -173,8 +173,8 @@ lemma bpt_le_N {n : ℕ} {f j : ℝ} (P : Lemma62Params n f j) : bpt f j ≤ n :
   have hep := eps_pos
   unfold bpt
   rw [div_le_iff₀ hf]
-  have h1 : eps * j ≤ eps * (128 / 4095 * f * n) := mul_le_mul_of_nonneg_left P.hjf hep.le
-  have h2 : eps * (128 / 4095 * f * n) ≤ 1 / (8 * 10 ^ 7) * (128 / 4095 * f * n) :=
+  have h1 : eps * j ≤ eps * (f * n / 31) := mul_le_mul_of_nonneg_left P.hjf hep.le
+  have h2 : eps * (f * n / 31) ≤ 1 / (8 * 10 ^ 7) * (f * n / 31) :=
     mul_le_mul_of_nonneg_right he (by positivity)
   nlinarith [mul_pos hf hN]
 
