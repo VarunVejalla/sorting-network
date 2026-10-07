@@ -39,7 +39,7 @@ theorem ComparatorNetwork.exec_exists_preimage {n : ℕ} {α : Type*} [LinearOrd
   | nil => exact ⟨k, rfl⟩
   | cons c cs ih =>
     simp only [List.foldl_cons]
-    obtain ⟨j, hj⟩ := ih (c.apply v) k
+    obtain ⟨j, hj⟩ := ih (c.apply v)
     obtain ⟨i, hi⟩ := Comparator.apply_exists_preimage c v j
     refine ⟨i, ?_⟩
     rw [hj, hi]
