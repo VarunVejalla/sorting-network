@@ -23,11 +23,11 @@ namespace Chvatal
 open Finset
 
 /-- Rank of a key in the sorted order of `K`. -/
-def rankIn (K : Finset ℕ) (κ : ℕ) : ℕ := (K.filter (· < κ)).card
+def rankNat (K : Finset ℕ) (κ : ℕ) : ℕ := (K.filter (· < κ)).card
 
-theorem rankIn_lt_of_lt {K : Finset ℕ} {κ κ' : ℕ} (hκ : κ ∈ K) (h : κ < κ') :
-    rankIn K κ < rankIn K κ' := by
-  unfold rankIn
+theorem rankNat_lt_of_lt {K : Finset ℕ} {κ κ' : ℕ} (hκ : κ ∈ K) (h : κ < κ') :
+    rankNat K κ < rankNat K κ' := by
+  unfold rankNat
   apply Finset.card_lt_card
   rw [Finset.ssubset_iff_of_subset]
   · exact ⟨κ, by simp [hκ, h], by simp⟩
@@ -35,17 +35,17 @@ theorem rankIn_lt_of_lt {K : Finset ℕ} {κ κ' : ℕ} (hκ : κ ∈ K) (h : κ
     simp only [Finset.mem_filter] at hx ⊢
     exact ⟨hx.1, lt_trans hx.2 h⟩
 
-theorem rankIn_injOn (K : Finset ℕ) : Set.InjOn (rankIn K) (K : Set ℕ) := by
+theorem rankNat_injOn (K : Finset ℕ) : Set.InjOn (rankNat K) (K : Set ℕ) := by
   intro x hx y hy hxy
   rcases lt_trichotomy x y with h | h | h
-  · exact absurd hxy (ne_of_lt (rankIn_lt_of_lt hx h))
+  · exact absurd hxy (ne_of_lt (rankNat_lt_of_lt hx h))
   · exact h
-  · exact absurd hxy.symm (ne_of_lt (rankIn_lt_of_lt hy h))
+  · exact absurd hxy.symm (ne_of_lt (rankNat_lt_of_lt hy h))
 
 /-- Keys below `lo` have rank below `L`. -/
-theorem rankIn_lt_of_lt_lo {K : Finset ℕ} {κ lo : ℕ} (hκ : κ ∈ K) (h : κ < lo) :
-    rankIn K κ < (K.filter (· < lo)).card := by
-  unfold rankIn
+theorem rankNat_lt_of_lt_lo {K : Finset ℕ} {κ lo : ℕ} (hκ : κ ∈ K) (h : κ < lo) :
+    rankNat K κ < (K.filter (· < lo)).card := by
+  unfold rankNat
   apply Finset.card_lt_card
   rw [Finset.ssubset_iff_of_subset]
   · exact ⟨κ, by simp [hκ, h], by simp⟩
@@ -59,11 +59,11 @@ theorem card_lt_add_card_ge (K : Finset ℕ) (hi : ℕ) :
   simpa [not_lt] using this
 
 /-- Keys at least `hi` have rank at least `a - R`. -/
-theorem le_rankIn_of_hi_le {K : Finset ℕ} {κ hi : ℕ} (h : hi ≤ κ) :
-    K.card - (K.filter (hi ≤ ·)).card ≤ rankIn K κ := by
+theorem le_rankNat_of_hi_le {K : Finset ℕ} {κ hi : ℕ} (h : hi ≤ κ) :
+    K.card - (K.filter (hi ≤ ·)).card ≤ rankNat K κ := by
   have h1 := card_lt_add_card_ge K hi
-  have h2 : (K.filter (· < hi)).card ≤ rankIn K κ := by
-    unfold rankIn
+  have h2 : (K.filter (· < hi)).card ≤ rankNat K κ := by
+    unfold rankNat
     apply Finset.card_le_card
     intro x hx
     simp only [Finset.mem_filter] at hx ⊢
@@ -72,29 +72,29 @@ theorem le_rankIn_of_hi_le {K : Finset ℕ} {κ hi : ℕ} (h : hi ≤ κ) :
 
 /-- W-A: the sorted window contains few keys outside the address interval. -/
 theorem sorted_window_wrong_le (K : Finset ℕ) (s τ lo hi : ℕ) (hsτ : s + τ ≤ K.card) :
-    (K.filter fun κ => s ≤ rankIn K κ ∧ rankIn K κ < s + τ ∧ ¬ (lo ≤ κ ∧ κ < hi)).card ≤
+    (K.filter fun κ => s ≤ rankNat K κ ∧ rankNat K κ < s + τ ∧ ¬ (lo ≤ κ ∧ κ < hi)).card ≤
       ((K.filter (· < lo)).card - s) +
         ((K.filter (hi ≤ ·)).card - (K.card - s - τ)) := by
   set L := (K.filter (· < lo)).card with hL
   set R := (K.filter (hi ≤ ·)).card with hR
   have hRa : R ≤ K.card := Finset.card_le_card (Finset.filter_subset _ _)
   let t : Finset ℕ := Finset.Ico s (min L (s + τ)) ∪ Finset.Ico (max (K.card - R) s) (s + τ)
-  have hsub : (K.filter fun κ => s ≤ rankIn K κ ∧ rankIn K κ < s + τ ∧
+  have hsub : (K.filter fun κ => s ≤ rankNat K κ ∧ rankNat K κ < s + τ ∧
       ¬ (lo ≤ κ ∧ κ < hi)).card ≤ t.card := by
-    apply Finset.card_le_card_of_injOn (rankIn K)
+    apply Finset.card_le_card_of_injOn (rankNat K)
     · intro κ hκ
       simp only [Finset.coe_filter, Set.mem_setOf_eq] at hκ
       obtain ⟨hmem, h1, h2, h3⟩ := hκ
       simp only [Finset.mem_coe, t, Finset.mem_union, Finset.mem_Ico, lt_min_iff, max_le_iff]
       by_cases hlo : κ < lo
       · left
-        exact ⟨h1, rankIn_lt_of_lt_lo hmem hlo, h2⟩
+        exact ⟨h1, rankNat_lt_of_lt_lo hmem hlo, h2⟩
       · have hhi : hi ≤ κ := by
           by_contra hh
           exact h3 ⟨by omega, by omega⟩
         right
-        exact ⟨⟨le_rankIn_of_hi_le hhi, h1⟩, h2⟩
-    · exact (rankIn_injOn K).mono (by intro x hx; simp only [Finset.coe_filter] at hx; exact hx.1)
+        exact ⟨⟨le_rankNat_of_hi_le hhi, h1⟩, h2⟩
+    · exact (rankNat_injOn K).mono (by intro x hx; simp only [Finset.coe_filter] at hx; exact hx.1)
   have hcard : t.card ≤ (L - s) + (R - (K.card - s - τ)) := by
     refine le_trans (Finset.card_union_le _ _) ?_
     simp only [Nat.card_Ico]
@@ -106,26 +106,26 @@ keys. -/
 theorem intruder_decomposition (K : Finset ℕ) (pos : ℕ → ℕ) (s τ : ℕ) (Q : ℕ → Prop)
     [DecidablePred Q] :
     (K.filter fun κ => s ≤ pos κ ∧ pos κ < s + τ ∧ ¬ Q κ).card ≤
-      (K.filter fun κ => s ≤ rankIn K κ ∧ rankIn K κ < s + τ ∧ ¬ Q κ).card +
+      (K.filter fun κ => s ≤ rankNat K κ ∧ rankNat K κ < s + τ ∧ ¬ Q κ).card +
       (K.filter fun κ => s ≤ pos κ ∧ pos κ < s + τ ∧
-        ¬ (s ≤ rankIn K κ ∧ rankIn K κ < s + τ)).card ∧
+        ¬ (s ≤ rankNat K κ ∧ rankNat K κ < s + τ)).card ∧
     (K.filter fun κ => s ≤ pos κ ∧ pos κ < s + τ ∧
-        ¬ (s ≤ rankIn K κ ∧ rankIn K κ < s + τ)).card ≤
-      (K.filter fun κ => s + τ ≤ rankIn K κ ∧ pos κ < s + τ).card +
-      (K.filter fun κ => rankIn K κ < s ∧ s ≤ pos κ).card := by
+        ¬ (s ≤ rankNat K κ ∧ rankNat K κ < s + τ)).card ≤
+      (K.filter fun κ => s + τ ≤ rankNat K κ ∧ pos κ < s + τ).card +
+      (K.filter fun κ => rankNat K κ < s ∧ s ≤ pos κ).card := by
   constructor
   · refine le_trans (Finset.card_le_card ?_) (Finset.card_union_le _ _)
     intro κ hκ
     simp only [Finset.mem_filter, Finset.mem_union] at hκ ⊢
     obtain ⟨hm, h1, h2, h3⟩ := hκ
-    by_cases h : s ≤ rankIn K κ ∧ rankIn K κ < s + τ
+    by_cases h : s ≤ rankNat K κ ∧ rankNat K κ < s + τ
     · left; exact ⟨hm, h.1, h.2, h3⟩
     · right; exact ⟨hm, h1, h2, h⟩
   · refine le_trans (Finset.card_le_card ?_) (Finset.card_union_le _ _)
     intro κ hκ
     simp only [Finset.mem_filter, Finset.mem_union] at hκ ⊢
     obtain ⟨hm, h1, h2, h3⟩ := hκ
-    by_cases h : s + τ ≤ rankIn K κ
+    by_cases h : s + τ ≤ rankNat K κ
     · left; exact ⟨hm, h, h2⟩
     · right
       refine ⟨hm, ?_, h1⟩
@@ -180,7 +180,7 @@ theorem window_wrong_le (K : Finset ℕ) (k π τ S Ulo j : ℕ) (hj : j < k)
     (hM : ∀ j' < k, ((K.filter fun κ => Ulo + j'*S ≤ κ ∧ κ < Ulo + (j'+1)*S).card : ℝ) ≤ τ + ρ)
     (hpos : (π : ℝ) / 2 ≤ (K.filter (· < Ulo)).card + (K.filter (Ulo + k*S ≤ ·)).card +
       ((k : ℝ) - 1) * ρ) :
-    ((K.filter fun κ => π/2 + j*τ ≤ rankIn K κ ∧ rankIn K κ < π/2 + (j+1)*τ ∧
+    ((K.filter fun κ => π/2 + j*τ ≤ rankNat K κ ∧ rankNat K κ < π/2 + (j+1)*τ ∧
         ¬ (Ulo + j*S ≤ κ ∧ κ < Ulo + (j+1)*S)).card : ℝ) ≤
       (K.filter (· < Ulo)).card + (K.filter (Ulo + k*S ≤ ·)).card +
         ((k : ℝ) - 1) * ρ - π / 2 := by
@@ -224,7 +224,7 @@ theorem window_wrong_le (K : Finset ℕ) (k π τ S Ulo j : ℕ) (hj : j < k)
     · rw [Nat.cast_sub (by omega)]
       push_cast
       exact le_max_of_le_right (by linarith)
-  have hWr : ((K.filter fun κ => p + j*τ ≤ rankIn K κ ∧ rankIn K κ < p + (j+1)*τ ∧
+  have hWr : ((K.filter fun κ => p + j*τ ≤ rankNat K κ ∧ rankNat K κ < p + (j+1)*τ ∧
         ¬ (Ulo + j*S ≤ κ ∧ κ < Ulo + (j+1)*S)).card : ℝ) ≤
       (((L - (p + j*τ) : ℕ)) : ℝ) + (((R - (p + m*τ) : ℕ)) : ℝ) := by
     exact_mod_cast hW
