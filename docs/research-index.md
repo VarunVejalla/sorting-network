@@ -597,6 +597,14 @@ parallel-final depth.
 
 ## Documents and history
 
+- [Sorting-depth limit and repair-interface investigation](sorter-repair-barrier.md)
+  (2026-10-07): checked prefix-locality, dependency, and cut lemmas; a derived
+  obstruction to staged local-module amplification with vanishing repair
+  overhead; finite lifted-prefix probes. `Bounds/DyadicLimit` proves full
+  convergence **conditional on** a uniform additive composition defect.
+  The defect is unproved; existence of the limit and improved coefficients
+  are not claimed. See the note's verification and status map.
+
 - [Paterson interface audit](paterson-interface.md): detailed local theorem
   contracts, corrected parameter arithmetic, and remaining mathematical issues.
 - [Local Paterson paper](paterson.pdf): primary mathematical source for this
