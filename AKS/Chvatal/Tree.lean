@@ -209,6 +209,43 @@ theorem KBag.native_root (r : Fin (br ^ d))
   simp only [KBag.Native, KBag.root, nativeBagIdx, bagSize_zero]
   exact Nat.div_eq_of_lt (perm r).isLt
 
+/-- Climbing at least `b.l` levels reaches the unique root. -/
+theorem KBag.ancestor_eq_root (b : KBag br d) (j : Nat) (hbr : 1 ≤ br)
+    (hj : b.l ≤ j) : b.ancestor j hbr = KBag.root br d := by
+  apply KBag.ext
+  · show b.l - j = 0; omega
+  · show b.x / br ^ j = 0
+    have hx : b.x < br ^ b.l := b.hx
+    have hpow : br ^ b.l ≤ br ^ j := Nat.pow_le_pow_right hbr hj
+    exact Nat.div_eq_of_lt (lt_of_lt_of_le hx hpow)
+
+/-- Order-`j` strangers vanish once `j` exceeds the bag level (everyone is
+    native to the root ancestor). -/
+theorem KBag.strangers_eq_zero_of_lt_order (b : KBag br d) (j : Nat)
+    (perm : Fin (br ^ d) → Fin (br ^ d)) (S : Finset (Fin (br ^ d)))
+    (hbr : 1 ≤ br) (hj : 1 ≤ j) (hlt : b.l < j) :
+    b.strangers j perm S hbr = 0 := by
+  classical
+  simp only [KBag.strangers]
+  apply card_eq_zero.mpr
+  apply eq_empty_iff_forall_notMem.mpr
+  intro r hr
+  have hP : b.Strange j r perm hbr := (mem_filter.mp hr).2
+  have hns : ¬ (b.ancestor (j - 1) hbr).Native r perm := by
+    simp only [KBag.Strange, show j ≠ 0 by omega, false_or] at hP
+    exact hP
+  have hanc : b.ancestor (j - 1) hbr = KBag.root br d :=
+    ancestor_eq_root b (j - 1) hbr (by omega)
+  exact hns (by simpa [hanc] using native_root (br := br) (d := d) r perm)
+
+/-- Maximum order `d+1` strangers are always empty. -/
+theorem KBag.strangers_succ_d_eq_zero (b : KBag br d)
+    (perm : Fin (br ^ d) → Fin (br ^ d)) (S : Finset (Fin (br ^ d)))
+    (hbr : 1 ≤ br) :
+    b.strangers (d + 1) perm S hbr = 0 :=
+  strangers_eq_zero_of_lt_order b (d + 1) perm S hbr (by omega)
+    (Nat.lt_succ_of_le b.hl)
+
 /-! **Tree structure** -/
 
 theorem KBag.child_parent (b : KBag br d) (j : ℕ) (hj : j < br)

@@ -25,13 +25,57 @@ namespace Chvatal
 /-- §7: ordinary separator rounds for `N = 64^d`. Meaningful for `d ≥ 7`. -/
 def ordinaryRounds (d : ℕ) : ℕ := 3 * d - 21
 
+/-- §7 paper depth for the root separator stage. -/
+def rootSeparatorPaperDepth : ℕ := 6320
+
+/-- §7 paper depth for one ordinary separator round. -/
+def ordinaryStagePaperDepth : ℕ := 3660
+
+/-- §7 paper depth for the final sorter layer. -/
+def finalSorterPaperDepth : ℕ := 903
+
 /-- §7: root separator (6320) + ordinary rounds (3660 each) + final sorters (903). -/
-def totalDepth (d : ℕ) : ℕ := 6320 + ordinaryRounds d * 3660 + 903
+def totalDepth (d : ℕ) : ℕ :=
+  rootSeparatorPaperDepth + ordinaryRounds d * ordinaryStagePaperDepth + finalSorterPaperDepth
+
+/-- Largest `d` with `bitonicDepthBudget (6·d) ≤ totalDepth d`.
+    Full-wire Batcher on `64^d` meets the §7 total budget exactly on `7 ≤ d ≤ 603`;
+    past this range Batcher is too deep for the padded 1830 form. -/
+def batcherFitsTotalDepthMax : ℕ := 603
+
+/-- Per-stage depth budgets matching §7 paper accounting. -/
+structure StageDepthBudget (d : ℕ) where
+  rootSepDepth : ℕ
+  ordinaryStageDepth : ℕ
+  finalSorterDepth : ℕ
+  hroot : rootSepDepth ≤ rootSeparatorPaperDepth
+  hord : ordinaryStageDepth ≤ ordinaryStagePaperDepth
+  hfinal : finalSorterDepth ≤ finalSorterPaperDepth
+
+/-- §7 paper budgets at equality (6320, 3660, 903). -/
+def StageDepthBudget.ofPaper (d : ℕ) : StageDepthBudget d where
+  rootSepDepth := rootSeparatorPaperDepth
+  ordinaryStageDepth := ordinaryStagePaperDepth
+  finalSorterDepth := finalSorterPaperDepth
+  hroot := le_rfl
+  hord := le_rfl
+  hfinal := le_rfl
+
+theorem StageDepthBudget.depth_sum_le (d : ℕ) (B : StageDepthBudget d) :
+    B.rootSepDepth + ordinaryRounds d * B.ordinaryStageDepth + B.finalSorterDepth ≤
+      totalDepth d := by
+  unfold totalDepth rootSeparatorPaperDepth ordinaryStagePaperDepth finalSorterPaperDepth
+  have hmid :
+      ordinaryRounds d * B.ordinaryStageDepth ≤
+        ordinaryRounds d * ordinaryStagePaperDepth :=
+    Nat.mul_le_mul_left _ B.hord
+  exact add_le_add (add_le_add B.hroot hmid) B.hfinal
 
 /-- §7 closed form. At `d = 7` there are zero ordinary rounds. -/
 theorem totalDepth_eq (d : ℕ) (hd : 7 ≤ d) :
     totalDepth d = 10980 * d - 69637 := by
-  unfold totalDepth ordinaryRounds
+  unfold totalDepth ordinaryRounds rootSeparatorPaperDepth ordinaryStagePaperDepth
+    finalSorterPaperDepth
   omega
 
 theorem totalDepth_real (d : ℕ) (hd : 7 ≤ d) :

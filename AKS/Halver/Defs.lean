@@ -297,12 +297,12 @@ lemma IsEpsilonSorted.exists_witness {n : ℕ} {v : Fin n → Bool} {ε : ℝ}
       ((Finset.univ.filter (fun i ↦ v i ≠ w i)).card : ℝ) ≤ ε * n :=
   h
 
-/-- Monotone Boolean sequences have the pattern 0* 1* (zeros then ones) -/
-lemma Monotone.bool_pattern {n : ℕ} (w : Fin n → Bool) (hw : Monotone w) :
-    ∃ k : ℕ, (∀ i : Fin n, (i : ℕ) < k → w i = false) ∧
-             (∀ i : Fin n, k ≤ (i : ℕ) → w i = true) := by
-  -- k = number of false values = size of the downward-closed false set
-  use (Finset.univ.filter (fun i : Fin n ↦ w i = false)).card
+/-- The false-set cardinality is a `0*1*` witness for a monotone Boolean sequence. -/
+lemma Monotone.bool_pattern_at_card {n : ℕ} (w : Fin n → Bool) (hw : Monotone w) :
+    let k := (Finset.univ.filter (fun i : Fin n ↦ w i = false)).card
+    (∀ i : Fin n, (i : ℕ) < k → w i = false) ∧
+      (∀ i : Fin n, k ≤ (i : ℕ) → w i = true) := by
+  dsimp only
   set k := (Finset.univ.filter (fun i : Fin n ↦ w i = false)).card
   constructor
   · -- For i.val < k: w i = false
@@ -356,6 +356,13 @@ lemma Monotone.bool_pattern {n : ℕ} (w : Fin n → Bool) (hw : Monotone w) :
     -- Card of Iic = i + 1 ≤ card of false set = k
     have := Finset.card_le_card h_sub
     rw [Fin.card_Iic] at this; omega
+
+/-- Monotone Boolean sequences have the pattern 0* 1* (zeros then ones) -/
+lemma Monotone.bool_pattern {n : ℕ} (w : Fin n → Bool) (hw : Monotone w) :
+    ∃ k : ℕ, (∀ i : Fin n, (i : ℕ) < k → w i = false) ∧
+      (∀ i : Fin n, k ≤ (i : ℕ) → w i = true) := by
+  refine ⟨(Finset.univ.filter (fun i : Fin n ↦ w i = false)).card, ?_⟩
+  exact Monotone.bool_pattern_at_card w hw
 
 /-- Relaxation: if ε₁ ≤ ε₂, then ε₁-sorted implies ε₂-sorted -/
 lemma IsEpsilonSorted.mono {n : ℕ} {v : Fin n → Bool} {ε₁ ε₂ : ℝ}

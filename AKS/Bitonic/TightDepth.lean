@@ -20,6 +20,18 @@ theorem bitonicDepthBudget_double (k : ℕ) :
   | zero => simp [bitonicDepthBudget]
   | succ k ih => simp only [bitonicDepthBudget]; nlinarith
 
+/-- Batcher's triangular depth budget: `∑_{i=1}^p i = p(p+1)/2`. -/
+theorem bitonicDepthBudget_eq (k : ℕ) :
+    bitonicDepthBudget k = k * (k + 1) / 2 := by
+  calc bitonicDepthBudget k
+      = (2 * bitonicDepthBudget k) / 2 :=
+        (Nat.mul_div_cancel_left (bitonicDepthBudget k) (by decide : 0 < 2)).symm
+    _ = (k * (k + 1)) / 2 := by rw [bitonicDepthBudget_double k]
+
+/-- §7 final sorter: `42·43/2 = 903` comparator layers for `2^42` wires. -/
+theorem bitonicDepthBudget_42 : bitonicDepthBudget 42 = 903 := by
+  rw [bitonicDepthBudget_eq 42]
+
 theorem bitonicDepthBudget_mono : Monotone bitonicDepthBudget := by
   apply monotone_nat_of_le_succ
   intro k
@@ -116,3 +128,15 @@ theorem bitonicNetwork_depth_le_561 {n : ℕ} (hn : n ≤ 2 ^ 33) :
       _ = 33 := by decide +kernel
   exact (bitonicNetwork_depth_le_budget n).trans
     ((bitonicDepthBudget_mono hk).trans (by decide +kernel))
+
+/-- Batcher bitonic sort on `2^42` wires (§7 final sorter) has depth `≤ 903`. -/
+theorem bitonicSort_42_depth_le_903 : (bitonicSort 42).depth ≤ 903 := by
+  calc (bitonicSort 42).depth
+      ≤ bitonicDepthBudget 42 := bitonicSort_depth_le_budget 42
+    _ = 903 := bitonicDepthBudget_42
+
+theorem bitonicNetwork_2pow42_depth_le_903 :
+    (bitonicNetwork (2 ^ 42)).depth ≤ 903 := by
+  calc (bitonicNetwork (2 ^ 42)).depth
+      ≤ bitonicDepthBudget (Nat.clog 2 (2 ^ 42)) := bitonicNetwork_depth_le_budget (2 ^ 42)
+    _ = 903 := by rw [show Nat.clog 2 (2 ^ 42) = 42 from by decide +kernel, bitonicDepthBudget_42]

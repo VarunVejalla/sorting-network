@@ -150,6 +150,16 @@ theorem ComparatorNetwork.exec_append {n : ℕ} {α : Type*} [LinearOrder α]
     net₂.exec (net₁.exec v) := by
   simp [ComparatorNetwork.exec, List.foldl_append]
 
+/-- Relabel wire indices by a permutation (output at `w` reads input at `π w`). -/
+def permuteWireValues {n : ℕ} (π : Equiv.Perm (Fin n)) {α : Type*} (v : Fin n → α) :
+    Fin n → α :=
+  fun w ↦ v (π w)
+
+theorem permuteWireValues_one {n : ℕ} {α : Type*} (v : Fin n → α) :
+    permuteWireValues (1 : Equiv.Perm (Fin n)) v = v := by
+  funext w
+  simp [permuteWireValues]
+
 /-- Folding comparators that don't touch position `j` leaves `v j` unchanged. -/
 theorem foldl_comparators_outside {n : ℕ} {α : Type*} [LinearOrder α]
     (cs : List (Comparator n)) (v : Fin n → α) (j : Fin n)

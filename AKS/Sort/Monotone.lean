@@ -13,6 +13,7 @@ module
 -/
 
 public import AKS.Sort.Defs
+public import AKS.Sort.Depth
 
 @[expose] public section
 
@@ -176,5 +177,56 @@ theorem ComparatorNetwork.exec_eq_of_monotone {n : ℕ} {α : Type*} [LinearOrde
 def ComparatorNetwork.Sorts {n : ℕ} (net : ComparatorNetwork n) : Prop :=
   ∀ (α : Type*) [LinearOrder α] (v : Fin n → α),
     Monotone (net.exec v)
+
+/-- Sequential composition: if each stage sorts, the appended network sorts. -/
+theorem ComparatorNetwork.sorts_append {n : ℕ} (net₁ net₂ : ComparatorNetwork n)
+    (_h₁ : ComparatorNetwork.Sorts.{0} net₁) (h₂ : ComparatorNetwork.Sorts.{0} net₂) :
+    ComparatorNetwork.Sorts.{0} (net₁.append net₂) := by
+  intro α inst v
+  simp [ComparatorNetwork.append, ComparatorNetwork.exec_append]
+  exact @h₂ α inst (net₁.exec v)
+
+/-- Execution of `net.appendRepeated k` applies `net.exec` `k` times. -/
+theorem ComparatorNetwork.exec_appendRepeated {n : ℕ} (k : ℕ)
+    (net : ComparatorNetwork n) {α : Type*} [LinearOrder α] (v : Fin n → α) :
+    (net.appendRepeated k).exec v =
+      (List.replicate k ()).foldl (fun acc _ => net.exec acc) v := by
+  induction k generalizing v with
+  | zero =>
+    simp [ComparatorNetwork.appendRepeated, ComparatorNetwork.exec, List.foldl]
+  | succ k ih =>
+    simp only [ComparatorNetwork.appendRepeated, ComparatorNetwork.append,
+      ComparatorNetwork.exec_append, List.replicate, List.foldl_cons, List.foldl]
+    rw [ih (net.exec v)]
+
+/-- If `net` sorts, repeating it `k` times maps monotone inputs to monotone outputs. -/
+theorem ComparatorNetwork.sorts_appendRepeated {n : ℕ} (k : ℕ) (net : ComparatorNetwork n)
+    (h : ComparatorNetwork.Sorts.{0} net) {α : Type} [inst : LinearOrder α] (v : Fin n → α)
+    (hv : Monotone v) :
+    Monotone ((net.appendRepeated k).exec v) := by
+  rw [ComparatorNetwork.exec_appendRepeated]
+  induction k generalizing v with
+  | zero =>
+    simp [List.foldl]
+    exact hv
+  | succ k ih =>
+    simp only [List.replicate, List.foldl_cons, List.foldl]
+    exact ih (net.exec v) (@h α inst v)
+
+/-- Repeating a sorting network `k ≥ 1` times still sorts (the `k = 0` empty network does not). -/
+theorem ComparatorNetwork.sorts_appendRepeated_of_pos {n : ℕ} (k : ℕ) (hk : 0 < k)
+    (net : ComparatorNetwork n) (h : ComparatorNetwork.Sorts.{0} net) :
+    ComparatorNetwork.Sorts.{0} (net.appendRepeated k) := by
+  induction k, hk using Nat.le_induction with
+  | base =>
+    have heq : net.appendRepeated 1 = net := by
+      ext
+      simp [ComparatorNetwork.appendRepeated, ComparatorNetwork.appendRepeated_zero,
+        ComparatorNetwork.append]
+    rw [heq]
+    exact h
+  | succ k _ ih =>
+    simp only [ComparatorNetwork.appendRepeated]
+    exact ComparatorNetwork.sorts_append net _ h ih
 
 end

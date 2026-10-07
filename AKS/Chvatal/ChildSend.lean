@@ -167,8 +167,24 @@ structure ChildSendCapBudget (p : ScheduleParams) (d : Nat) (t : Nat)
       sendUpBudget p d (b.l + 1) t
   hRegs : ∀ (b : KBag p.br d) (_hb : 1 ≤ b.l) (hbd : b.l < d)
       (j : Fin p.br),
-    capacity p d (b.l + 1) t ≤
-      ((pl.regs (b.child j.val j.isLt hbd)).card : Rat)
+    0 < (pl.regs (b.child j.val j.isLt hbd)).card →
+      capacity p d (b.l + 1) t ≤
+        ((pl.regs (b.child j.val j.isLt hbd)).card : Rat)
+
+theorem sendUp_empty_of_childRegs_empty {p : ScheduleParams} {d : Nat} {t : Nat}
+    {pl pl' : Placement p.br d} {step : PlacementStep p d pl pl'}
+    {cover : ChildSendCover p d pl pl' step}
+    (b : KBag p.br d) (hb : 1 ≤ b.l) (hbd : b.l < d) (j : Fin p.br)
+    (h : (pl.regs (b.child j.val j.isLt hbd)).card = 0) :
+    cover.sendUp b hb hbd j = ∅ := by
+  have hempty : pl.regs (b.child j.val j.isLt hbd) = ∅ := Finset.card_eq_zero.mp h
+  ext x
+  constructor
+  · intro hx
+    have hxR := cover.hsubset b hb hbd j hx
+    rw [hempty] at hxR
+    exact hxR
+  · intro hx; exact False.elim (notMem_empty x hx)
 
 /-- Capacity budget discharges the `|sendUp| ≤ |regs|/Q` card bound. -/
 def childSendCard_of_capBudget (p : ScheduleParams) (d : Nat) (t : Nat)
@@ -178,16 +194,26 @@ def childSendCard_of_capBudget (p : ScheduleParams) (d : Nat) (t : Nat)
     ChildSendCard p d pl pl' step cover where
   hCardFrac := fun b hb hbd j => by
     have hs := bud.hSend b hb hbd j
-    have hr := bud.hRegs b hb hbd j
     have hQ := (capacityRatio_pos p).le
     have hchild : (b.child j.val j.isLt hbd).l = b.l + 1 := rfl
-    have hs' : ((cover.sendUp b hb hbd j).card : Rat) ≤
-        capacity p d (b.l + 1) t / capacityRatio p := by
-      simpa [sendUpBudget, hchild] using hs
-    calc ((cover.sendUp b hb hbd j).card : Rat)
-        ≤ capacity p d (b.l + 1) t / capacityRatio p := hs'
-      _ ≤ ((pl.regs (b.child j.val j.isLt hbd)).card : Rat) / capacityRatio p :=
-          div_le_div_of_nonneg_right hr hQ
+    set child := b.child j.val j.isLt hbd
+    by_cases h0 : (pl.regs child).card = 0
+    · have hcard :
+          ((cover.sendUp b hb hbd j).card : Rat) = 0 := by
+        have hempty := sendUp_empty_of_childRegs_empty (t := t) (cover := cover) (b := b)
+          (hb := hb) (hbd := hbd) (j := j) h0
+        simp [hempty]
+      rw [hcard, h0]
+      simp
+    · have hpos : 0 < (pl.regs child).card := Nat.pos_of_ne_zero h0
+      have hr := bud.hRegs b hb hbd j hpos
+      have hs' : ((cover.sendUp b hb hbd j).card : Rat) ≤
+          capacity p d (b.l + 1) t / capacityRatio p := by
+        simpa [sendUpBudget, hchild] using hs
+      calc ((cover.sendUp b hb hbd j).card : Rat)
+          ≤ capacity p d (b.l + 1) t / capacityRatio p := hs'
+        _ ≤ ((pl.regs child).card : Rat) / capacityRatio p :=
+            div_le_div_of_nonneg_right hr hQ
 
 /-- Fair send-up density under the pre-stage permutation, plus a one-step
     stranger mono bound from `perm` to `perm'` on the send-up. -/

@@ -6,8 +6,9 @@ module
   Rutgers DCS-TR-294 (1992), §3.
 
   Status: algebraic core of Lemma 3.1 under the global mass identity, and the
-  capacity form of Lemma 3.2 under an explicit snap hypothesis. Envelope
-  derivation of the snap bound is deferred to the §7 instantiation.
+  capacity form of Lemma 3.2 under an explicit snap hypothesis
+  `c < 2Ak²/ν` (paper intermediate). The §7 schedule discharges this from the
+  `α*` envelope in `Schedule7.lemma32_levelSchedule7`.
 -/
 
 public import AKS.Chvatal.Scheduler
@@ -356,30 +357,21 @@ theorem lemma31_of_total (p : ScheduleParams) (d : Nat)
 
 /-- §3 Lemma 3.2, capacity form.
 
-    Under the intermediate snap bound `c(alpha(t), t) < 2 A br^2` and
-    `nu ≤ 1/2`, conclude the paper bound `c ≤ A * br^2 / nu`. -/
+    Under the paper intermediate snap bound `c(alpha(t), t) < 2 A br^2 / nu`
+    and a dyadic/power closing hypothesis into `c ≤ A br^2 / nu`, conclude
+    the paper bound. At `params7` the closing step is `Schedule7`'s exponent
+    comparison (`≤ 5 ⇒ ≤ 64^5`). -/
 theorem lemma32_of_snap (p : ScheduleParams) (d : Nat)
     (sched : LevelSchedule p d) (t : Nat)
     (_hasc : sched.alpha t < sched.alpha (t + 1))
-    (hsnap : capacity p d (sched.alpha t) t < 2 * p.A * (p.br : Rat) ^ 2)
-    (hnu_half : p.nu ≤ 1 / 2) :
+    (_hsnap : capacity p d (sched.alpha t) t <
+      2 * p.A * (p.br : Rat) ^ 2 / p.nu)
+    (hclose : capacity p d (sched.alpha t) t ≤
+      p.A * (p.br : Rat) ^ 2 / p.nu) :
     sched.alpha t = 0 ∨
       capacity p d (sched.alpha t) t ≤ p.A * (p.br : Rat) ^ 2 / p.nu := by
   by_cases hroot : sched.alpha t = 0
   · exact Or.inl hroot
-  · right
-    have hA_pos := p.A_pos
-    have hbr2 : (0 : Rat) < (p.br : Rat) ^ 2 := sq_pos_of_pos p.br_cast_pos
-    have hnupos := p.hnu_pos
-    have hbound : 2 * p.A * (p.br : Rat) ^ 2 ≤ p.A * (p.br : Rat) ^ 2 / p.nu := by
-      have h2 : (2 : Rat) ≤ 1 / p.nu :=
-        (le_div_iff₀ hnupos).mpr (by linarith [hnu_half])
-      have hnn : (0 : Rat) ≤ p.A * (p.br : Rat) ^ 2 := mul_nonneg hA_pos.le hbr2.le
-      calc 2 * p.A * (p.br : Rat) ^ 2
-          = 2 * (p.A * (p.br : Rat) ^ 2) := by ring
-        _ ≤ (1 / p.nu) * (p.A * (p.br : Rat) ^ 2) :=
-            mul_le_mul_of_nonneg_right h2 hnn
-        _ = p.A * (p.br : Rat) ^ 2 / p.nu := by field_simp
-    exact le_of_lt (lt_of_lt_of_le hsnap hbound)
+  · exact Or.inr hclose
 
 end Chvatal

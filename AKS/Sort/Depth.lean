@@ -307,6 +307,11 @@ lemma foldl_depth_pointwise_shift {n : ℕ} (cs : List (Comparator n))
       have hi := hwt c.i; have hj := hwt c.j
       omega
 
+/-- Concatenate two comparator networks (sequential composition). -/
+def ComparatorNetwork.append {n : ℕ} (net₁ net₂ : ComparatorNetwork n) :
+    ComparatorNetwork n :=
+  ⟨net₁.comparators ++ net₂.comparators⟩
+
 /-- **Depth of concatenated networks.** The depth of `net₁ ++ net₂` is at most
     `net₁.depth + net₂.depth`: the second network starts where the first left off. -/
 theorem depth_append {n : ℕ} (net₁ net₂ : ComparatorNetwork n) :
@@ -325,6 +330,47 @@ theorem depth_append {n : ℕ} (net₁ net₂ : ComparatorNetwork n) :
     (le_refl _)).2
   rw [Prod.mk.eta] at h
   exact h
+
+theorem ComparatorNetwork.depth_append_le {n : ℕ}
+    (net₁ net₂ : ComparatorNetwork n) :
+    (net₁.append net₂).depth ≤ net₁.depth + net₂.depth := by
+  simp only [append]
+  exact depth_append net₁ net₂
+
+/-- Depth of three sequentially composed networks is at most the sum of depths. -/
+theorem ComparatorNetwork.depth_append3 {n : ℕ}
+    (net₁ net₂ net₃ : ComparatorNetwork n) :
+    (net₁.append net₂ |>.append net₃).depth ≤
+      net₁.depth + net₂.depth + net₃.depth := by
+  calc
+    (net₁.append net₂ |>.append net₃).depth
+        ≤ (net₁.append net₂).depth + net₃.depth := depth_append_le _ _
+    _ ≤ net₁.depth + net₂.depth + net₃.depth := by
+      exact add_le_add (depth_append_le net₁ net₂) le_rfl
+
+/-- Repeat a network `k` times in sequence. -/
+def ComparatorNetwork.appendRepeated {n : ℕ} (k : ℕ) (net : ComparatorNetwork n) :
+    ComparatorNetwork n :=
+  match k with
+  | 0 => ⟨[]⟩
+  | k + 1 => net.append (net.appendRepeated k)
+
+@[simp] theorem ComparatorNetwork.appendRepeated_zero {n : ℕ}
+    (net : ComparatorNetwork n) :
+    net.appendRepeated 0 = ⟨[]⟩ := rfl
+
+theorem ComparatorNetwork.depth_appendRepeated {n : ℕ} (k : ℕ)
+    (net : ComparatorNetwork n) {d : ℕ} (hd : net.depth ≤ d) :
+    (net.appendRepeated k).depth ≤ k * d := by
+  induction k with
+  | zero => simp [appendRepeated, ComparatorNetwork.depth]
+  | succ k ih =>
+    simp only [appendRepeated]
+    calc
+      (net.append (net.appendRepeated k)).depth
+          ≤ net.depth + (net.appendRepeated k).depth := depth_append_le _ _
+      _ ≤ d + k * d := add_le_add hd ih
+      _ = (k + 1) * d := by ring
 
 
 /-! **Depth of Shifted/Embedded Networks** -/
