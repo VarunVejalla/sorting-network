@@ -558,7 +558,8 @@ constant `58657` matches the paper's Theorem 1.1 (`N ≥ 2^78`).
 | A8 | `Theorem51Params g` for every geometry: **✔** ([GeneralParams](../AKS/Chvatal/GeneralParams.lean)): `epsF_floor_general`, `four_e_div_le`, `epsB_general` (`m ≥ 2^59`), `epsB_root_general` (`m ≥ 2^79`), `theorem51Params_general`, `ExistsScrambleSeparator_ordinary/_root` | ✔ |
 | A9 | Scaling a template into `m ∈ (2^59, 2^60]` with `f > 1.7e10`, even ([GeometryScale](../AKS/Chvatal/GeometryScale.lean)) | ✔ |
 | A10 | The four paper templates (§5) satisfy `m' < 2^37`, `f0 ≥ 4095` (needs the flow table B1) | open `[delegate]` |
-| A11 | Bags with ≤ 2^64 wires use a plain `m`-sorter | open, easy `[delegate]` |
+| A11 | Small bags (≤ `2^64` wires): node network `bitonicNetwork a`; it sorts fully so the separator guarantees are trivial. Needs the node-separator interface (B7) | open `[me]` |
+| A13 | **Two-sided Property B/F.** Lean's semantic B/F count only the largest keys; a block can be polluted from both sides. Choose `σ` with B, F for both `σ` and its flip `r ↦ m−1−r` (failure fractions `2·(0.01+0.44) = 0.90 < 1`) and prove flip-symmetry of `semanticExec` | open `[me]` |
 | A12 | Root separator (`m = 2^79`, root `ε_B`) for general `n`: **✔** `ExistsScrambleSeparator_root` | ✔ |
 
 ### B. The actual network (paper §3, §4)
@@ -570,9 +571,12 @@ constant `58657` matches the paper's Theorem 1.1 (`N ≥ 2^78`).
 | M2′ | **Resolved (2026-10-07).** Paper (4.2) ends with `μδAk/ν` (author-confirmed; (4.5) matches Lean). Lean's `Cond42` had `μδ/(Akν)`, assuming a fair-density send-up. Fixed: `Cond42`, `cond42_coeff_form`, `cond42_scaled`, `lemma43_of_sources` and the order-0 children bound in `StageKernel`/`PlacementStep`/`RoutingFromP`/`StageDynamics`/`SeparatorContract` now use the worst case `μ δ k A² c(l−1,t)`; the old fair-density derivation (`fromChildren0_of_cover`) is weakened to it. `cond42_params7` and the paper-ordinary version still hold (exact check: `LHS/μ = 0.960` at `ε_B = 1.25e-8`). Consequence: the real network only has to supply `fromChildren ⊆ ⋃ child registers` (children part) and the parent-side Property B/F bounds (B7) — no goods-first rule or `c/Q` send budget | ✔ |
 | B3 | Wire sets over time: **✔** ([WireFlow](../AKS/Chvatal/WireFlow.lean)). `wireSets F t` from any `FlowSizes F` (sorted-order splitting: first/last `up/2` positions go up, middle cut into 64 blocks), with `wireSets_card`, `wireSets_disjoint`, `wireSets_complete`, `wirePlacement`, and the destination characterisation `mem_wireSets_succ` | ✔ |
 | B4 | Wire sets need not be contiguous at `t_f`: use generalized comparators and **✔ `Untangle.untangle`** ([Untangle](../AKS/Sort/Untangle.lean): a generalized network sorting into any fixed output order τ yields a standard network of equal greedy depth that sorts; supersedes the depth-`k` `KnownPermutation` correction). Remaining: generalized-network versions of the stage nets (embedding packs along arbitrary bijections) | partly ✔ `[me]` |
-| B5 | Stage network: separator on each node's wires, varying sizes (extends `StagePackEmbed`) | open `[me]` |
-| B6 | Execution-defined placement (`pl t` = where each key sits after `t` stages; `perm` = input rank map) | open, core `[me]` |
-| B7 | One-stage semantics: Property B/F on the real output give the `fromParent` Finset bounds (paper Lemma 4.2's counting; `LocalSeparatorQuality` is currently abstract numbers) | open, core `[me]` |
+| B5a | `physicalPackNet`: standard network realizing the sort–scramble–sort pack on a node's wires (second column sort relabeled through the scramble); `physicalPackNet_exec` (= semantic output ∘ `wirePerm`), row-region counts agree, depth `≤ 2·bitonicDepthBudget` ([PhysicalPack](../AKS/Chvatal/PhysicalPack.lean)) | ✔ |
+| B5b | `stageNet`: heterogeneous node networks on sorted wire lists, `stageNet_exec_inside`, `stageNet_outside`, `stageNet_depth_le` ([StageNet](../AKS/Chvatal/StageNet.lean)) | ✔ |
+| B5c | Assembly: `nodeNet` per node (physical pack with scaled-template geometry and `σ` from `ExistsScrambleSeparator_*`, or `bitonicNetwork` for small bags); the full network `stages 0..t_f−1 ++ final sorters`; depth `≤ totalDepth d` | open `[me]` |
+| B6 | Execution-defined placement: for an input `v` (perm), the keys on each node's wires after `t` stages; `perm` = `v`; `fromParent`/`fromChildren` = keys on the down/up wire blocks | open, core `[me]` |
+| B7a | Lemma 4.2's sorted-window counting: in the sorted order of a node's keys those addressed below child `j` form a contiguous run, so a block of the sorted order has few keys not addressed below child `j` | open, core `[me]` |
+| B7b | Property B/F (two-sided, A13) on the real output give `hBadSend0` and `hFringeSend`; children part from `fromChildren ⊆ ⋃ child regs` + P at the children | open, core, main research risk `[me]` |
 | B8 | Induction to `t_f`, with the exceptional root separator `ε_*` at `t = 0` | open `[me]` |
 
 ### C. Assembly
