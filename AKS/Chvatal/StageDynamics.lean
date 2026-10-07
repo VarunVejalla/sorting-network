@@ -57,7 +57,7 @@ structure StageDynamics (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
       parentOut0 b hb + sibMass0 b hb + intrusion0 b hb + slack0 b hb
   hFromChildren0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
     fromChildren0 b hb ≤
-      ip.mu * ip.delta / (p.br : Rat) * capacity p d (b.l - 1) t
+      ip.mu * ip.delta * (p.br : Rat) * p.A ^ 2 * capacity p d (b.l - 1) t
   hStrangers0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
     ((b.strangers 1 perm' (pl'.regs b) (br_ge_one p) : Rat)) ≤
       fromParent0 b hb + fromChildren0 b hb

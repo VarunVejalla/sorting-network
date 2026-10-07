@@ -65,7 +65,7 @@ structure StageRoutingResidue (p : ScheduleParams) (ip : InvariantParams)
           (pl.regs (b.parent (br_ge_one p))) (br_ge_one p) : Rat)
   hFromChildren0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
     ((b.strangers 1 perm' (step.fromChildren b hb) (br_ge_one p) : Rat)) ≤
-      ip.mu * ip.delta / (p.br : Rat) * capacity p d (b.l - 1) t
+      ip.mu * ip.delta * (p.br : Rat) * p.A ^ 2 * capacity p d (b.l - 1) t
   hFromChildrenR : ∀ (b : KBag p.br d) (r : Nat)
       (_hr1 : 1 ≤ r) (_hrd : r ≤ d) (hb : 1 ≤ b.l),
     ((b.strangers (r + 1) perm' (step.fromChildren b hb) (br_ge_one p) : Rat)) ≤

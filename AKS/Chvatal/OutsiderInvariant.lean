@@ -80,12 +80,15 @@ def slackCoeff (p : ScheduleParams) : Rat :=
 def Cond41 (p : ScheduleParams) (ip : InvariantParams) : Prop :=
   ip.epsStar ≤ ip.mu / (p.br : Rat)
 
-/-- §4 (4.2): first-outsider budget through one stage (paper displayed form). -/
+/-- §4 (4.2): first-outsider budget through one stage (paper displayed form). The last term
+    `μ δ A k / ν` is the worst-case count of order-1 outsiders arriving from the `k` children
+    (corrected 2026-10-07: an earlier transcription had `μ δ / (A k ν)`, which assumed a
+    fair-density send-up the real network does not provide). -/
 def Cond42 (p : ScheduleParams) (ip : InvariantParams) : Prop :=
   (ip.mu + (p.br - 1 : Rat) * ip.mu * siblingFactor p ip +
       slackCoeff p + ip.epsB) /
       (p.A * p.nu) +
-    ip.mu * ip.delta / (p.A * (p.br : Rat) * p.nu) ≤ ip.mu
+    ip.mu * ip.delta * p.A * (p.br : Rat) / p.nu ≤ ip.mu
 
 /-- §4 (4.3): `μ ≤ ν/(A k²)`. -/
 def Cond43 (p : ScheduleParams) (ip : InvariantParams) : Prop :=

@@ -414,8 +414,23 @@ theorem fromChildren0_of_cover (p : ScheduleParams) (ip : InvariantParams)
     (bud : ChildSendBudget0 p ip d t pl pl' step perm' cover)
     (b : KBag p.br d) (hb : 1 ≤ b.l) :
     ((b.strangers 1 perm' (step.fromChildren b hb) (br_ge_one p) : Rat)) ≤
-      ip.mu * ip.delta / (p.br : Rat) * capacity p d (b.l - 1) t := by
+      ip.mu * ip.delta * (p.br : Rat) * p.A ^ 2 * capacity p d (b.l - 1) t := by
   have hbr := br_ge_one p
+  have hmd : 0 ≤ ip.mu * ip.delta := mul_nonneg ip.mu_nonneg ip.delta_nonneg
+  have hcpos := (capacity_pos p d (b.l - 1) t).le
+  have hk1 : (1 : Rat) ≤ (p.br : Rat) := by exact_mod_cast hbr
+  have hA2 : (1 : Rat) ≤ p.A ^ 2 := one_le_pow₀ p.hA.le
+  have hweak : ip.mu * ip.delta / (p.br : Rat) * capacity p d (b.l - 1) t ≤
+      ip.mu * ip.delta * (p.br : Rat) * p.A ^ 2 * capacity p d (b.l - 1) t := by
+    have h1 : 1 / (p.br : Rat) ≤ (p.br : Rat) * p.A ^ 2 := by
+      have : 1 / (p.br : Rat) ≤ 1 := by
+        rw [div_le_one (by positivity)]; exact hk1
+      exact this.trans (one_le_mul_of_one_le_of_one_le hk1 hA2)
+    calc ip.mu * ip.delta / (p.br : Rat) * capacity p d (b.l - 1) t
+        = (ip.mu * ip.delta * capacity p d (b.l - 1) t) * (1 / (p.br : Rat)) := by ring
+      _ ≤ (ip.mu * ip.delta * capacity p d (b.l - 1) t) * ((p.br : Rat) * p.A ^ 2) :=
+          mul_le_mul_of_nonneg_left h1 (mul_nonneg hmd hcpos)
+      _ = ip.mu * ip.delta * (p.br : Rat) * p.A ^ 2 * capacity p d (b.l - 1) t := by ring
   by_cases hbd : b.l < d
   · have hmono :=
       b.strangers_mono 1 perm' (cover.hcover b hb hbd) hbr
@@ -466,12 +481,13 @@ theorem fromChildren0_of_cover (p : ScheduleParams) (ip : InvariantParams)
             (ip.mu * ip.delta / (p.br : Rat) ^ 2 *
               capacity p d (b.l - 1) t) := hcard
       _ = ip.mu * ip.delta / (p.br : Rat) * capacity p d (b.l - 1) t := hscale
+      _ ≤ ip.mu * ip.delta * (p.br : Rat) * p.A ^ 2 * capacity p d (b.l - 1) t := hweak
   · have hleaf : b.l = d := Nat.le_antisymm b.hl (Nat.not_lt.mp hbd)
     have hemp := cover.hempty b hb hleaf
     rw [hemp, KBag.strangers_empty, Nat.cast_zero]
     exact mul_nonneg
-      (div_nonneg (mul_nonneg ip.mu_nonneg ip.delta_nonneg) p.br_cast_pos.le)
-      (capacity_pos p d (b.l - 1) t).le
+      (mul_nonneg (mul_nonneg hmd p.br_cast_pos.le) (sq_nonneg p.A))
+      hcpos
 
 /-! **Order-`r` from P** -/
 

@@ -119,7 +119,7 @@ structure StageModel (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
       lemma42_coeff p ip * capacity p d (b.l - 1) t
   order0_child : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
     (order0 b hb).fromChildren ≤
-      ip.mu * ip.delta / (p.br : Rat) * capacity p d (b.l - 1) t
+      ip.mu * ip.delta * (p.br : Rat) * p.A ^ 2 * capacity p d (b.l - 1) t
   /-- Order-`r` (`r ≥ 1`) source split. -/
   orderR : ∀ (b : KBag p.br d) (r : Nat), 1 ≤ r → r ≤ d → 1 ≤ b.l →
     Lemma44Sources

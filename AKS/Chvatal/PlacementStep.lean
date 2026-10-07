@@ -89,7 +89,7 @@ structure StageRouting (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
   /-- Order-0 outsiders in the children-send Finset. -/
   hFromChildren0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
     ((b.strangers 1 perm' (step.fromChildren b hb) (br_ge_one p) : Rat)) ≤
-      ip.mu * ip.delta / (p.br : Rat) * capacity p d (b.l - 1) t
+      ip.mu * ip.delta * (p.br : Rat) * p.A ^ 2 * capacity p d (b.l - 1) t
   /-- Order-`r` outsiders in the parent-send Finset (fringe filter). -/
   hFromParentR : ∀ (b : KBag p.br d) (r : Nat)
       (_hr1 : 1 ≤ r) (_hrd : r ≤ d) (hb : 1 ≤ b.l),

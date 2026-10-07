@@ -160,7 +160,7 @@ theorem slackCoeff_of_delta2_pi (p : ScheduleParams) (c : Rat) :
 theorem cond42_coeff_form (p : ScheduleParams) (ip : InvariantParams) :
     Cond42 p ip ↔
       lemma42_coeff p ip / (p.A * p.nu) +
-          ip.mu * ip.delta / (p.A * (p.br : Rat) * p.nu) ≤ ip.mu := by
+          ip.mu * ip.delta * p.A * (p.br : Rat) / p.nu ≤ ip.mu := by
   simp only [Cond42, lemma42_coeff]
 
 /-- Lemma 4.2 algebraic assembly: outsider mass, sibling mass, intrusion, slack. -/
@@ -183,10 +183,10 @@ theorem capacity_child_stage (p : ScheduleParams) (d i t : Nat) :
   ring
 
 /-- Scale Cond (4.2) by nonnegative capacity `c`:
-    `lemma42_coeff·c + (μδ/k)·c ≤ μ·A·ν·c`. -/
+    `lemma42_coeff·c + (μ δ k A²)·c ≤ μ·A·ν·c`. -/
 theorem cond42_scaled (p : ScheduleParams) (ip : InvariantParams)
     (c : Rat) (hc : 0 ≤ c) (h42 : Cond42 p ip) :
-    lemma42_coeff p ip * c + ip.mu * ip.delta / (p.br : Rat) * c ≤
+    lemma42_coeff p ip * c + ip.mu * ip.delta * (p.br : Rat) * p.A ^ 2 * c ≤
       ip.mu * (p.A * p.nu * c) := by
   have h42' := (cond42_coeff_form p ip).mp h42
   have hAnu : (0 : Rat) < p.A * p.nu := mul_pos p.A_pos p.hnu_pos
@@ -198,17 +198,10 @@ theorem cond42_scaled (p : ScheduleParams) (ip : InvariantParams)
     calc lemma42_coeff p ip / (p.A * p.nu) * (p.A * p.nu * c)
         = (lemma42_coeff p ip / (p.A * p.nu) * (p.A * p.nu)) * c := by ring
       _ = lemma42_coeff p ip * c := by rw [div_mul_cancel₀ _ (ne_of_gt hAnu)]
-  have hb : ip.mu * ip.delta / (p.A * (p.br : Rat) * p.nu) * (p.A * p.nu * c) =
-      ip.mu * ip.delta / (p.br : Rat) * c := by
-    have hden : p.A * (p.br : Rat) * p.nu ≠ 0 := by
-      exact mul_ne_zero (mul_ne_zero (ne_of_gt p.A_pos) hbr) (ne_of_gt p.hnu_pos)
-    calc ip.mu * ip.delta / (p.A * (p.br : Rat) * p.nu) * (p.A * p.nu * c)
-        = ip.mu * ip.delta * ((p.A * p.nu) / (p.A * (p.br : Rat) * p.nu)) * c := by ring
-      _ = ip.mu * ip.delta * (1 / (p.br : Rat)) * c := by
-          have : (p.A * p.nu) / (p.A * (p.br : Rat) * p.nu) = 1 / (p.br : Rat) := by
-            field_simp [ne_of_gt p.A_pos, hbr, ne_of_gt p.hnu_pos]
-          rw [this]
-      _ = ip.mu * ip.delta / (p.br : Rat) * c := by ring
+  have hb : ip.mu * ip.delta * p.A * (p.br : Rat) / p.nu * (p.A * p.nu * c) =
+      ip.mu * ip.delta * (p.br : Rat) * p.A ^ 2 * c := by
+    have hnu : p.nu ≠ 0 := ne_of_gt p.hnu_pos
+    field_simp [hnu]
   rw [ha, hb] at hmul
   exact hmul
 
@@ -217,7 +210,7 @@ theorem lemma43_of_sources (p : ScheduleParams) (ip : InvariantParams)
     (c : Rat) (hc : 0 < c)
     (src : Lemma43Sources)
     (hparent : src.fromParent ≤ lemma42_coeff p ip * c)
-    (hchild : src.fromChildren ≤ ip.mu * ip.delta / (p.br : Rat) * c)
+    (hchild : src.fromChildren ≤ ip.mu * ip.delta * (p.br : Rat) * p.A ^ 2 * c)
     (h42 : Cond42 p ip) :
     src.total ≤ ip.mu * (p.A * p.nu * c) := by
   have hbound := cond42_scaled p ip c (le_of_lt hc) h42
