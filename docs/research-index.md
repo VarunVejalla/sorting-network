@@ -551,9 +551,9 @@ constant `58657` matches the paper's Theorem 1.1 (`N ≥ 2^78`).
 | A1 | Property B for general `n` (existence theorems already general; discharge `DecodeMatrixClassObligation m n ε_B` for general `(m,n)`) | open, small `[me]` |
 | A2 | Claim (ii): tops counting + binomial estimates ([Lemma62TopsCount](../AKS/Chvatal/Lemma62TopsCount.lean), [Lemma62TopsAnalytic](../AKS/Chvatal/Lemma62TopsAnalytic.lean)) | ✔ |
 | A3 | Two-sided geometric tail sum ([GeomTail](../AKS/Chvatal/GeomTail.lean)) | ✔ |
-| A4 | Per-`s` tail: **✔** `p(s) ≤ C(n,s)(e j s/(nT))^T` for the top `m − f/2` rows ([Lemma62Tail](../AKS/Chvatal/Lemma62Tail.lean), via a per-row exponential moment + Markov; needs `T ≥ j s/n`). **Open:** discrete ratio bounds `g(s) ≤ e^-5 g(s+1)` (`s < a`) and `g(s+1) ≤ e^-5 g(s)` (`s > a`) for `g(s) = C(n,s)(e j s/(n T(s)))^{T(s)}`, `T(s) = f s/2 + ε_F j`, `a = ⌊2 ε_F j / f⌋`, plus the endpoint `s ≥ n−1` | partly ✔ `[me]` |
+| A4 | Per-`s` tail and ratio bounds: **✔** `p(s) ≤ C(n,s)(e j s/(nT))^T` ([Lemma62Tail](../AKS/Chvatal/Lemma62Tail.lean)); `key_right`, `ratio_left/right`, `gfun_sum_le_G1` (`Σ_{s≤n} g(s) ≤ (1+e^-5)/(1-e^-5) G1(b)`) and `pbound_le_gfun` ([Lemma62Ratio](../AKS/Chvatal/Lemma62Ratio.lean)), for `n ≥ 16`, `f ≥ 1.7e10`, `j ≤ (128/4095) f n`; integrality of `ε_F j` and evenness of `f` not needed | ✔ |
 | A5 | Event-E bound `(1+e^-5)/(1-e^-5)·(…)^{ε_F j}` per monotone matrix (A3 + A4) | open `[me]` |
-| A6 | Rigorous `x < 0.32` for all `j` (float check: worst case 0.22 at `f=1.7e10, n=16, j=δ_F f n`; `ln x` increasing in `j`, `n` cancels there) | open `[me]` |
+| A6 | Rigorous `x ≤ 1/4 ≤ 3/10` for all `j` (`xval_le_three_tenths`, [Lemma62Numerics](../AKS/Chvatal/Lemma62Numerics.lean); `n` cancels via `u = j/(fn)`) | ✔ |
 | A7 | Assembly: F fails with probability `< 0.49`; B and F exist for all `m ≥ 100, n ≥ 16, f ≥ 10` (semantic-F bridge for general `n`: the `δ_F n < 1` shortcut stops at `n ≈ 32`) | open `[me]` |
 | A8 | `ε_F` floor and `4e/f ≤ ε_F` for `f ≥ 1.7e10` (floor `1.02e-8` vs `1.25e-8`; monotone in `f`) | open `[me]` |
 | A9 | Scaling a template into `m ∈ (2^59, 2^60]` with `f > 1.7e10`, even ([GeometryScale](../AKS/Chvatal/GeometryScale.lean)) | ✔ |
