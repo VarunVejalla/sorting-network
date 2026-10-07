@@ -131,4 +131,47 @@ theorem scaled_m_eq : ∀ f0 b0 k r m' : ℕ, m' = 2*f0 + k*b0 → 2^r*m' = 2*(2
   rw [hm_eq]
   ring
 
+/-- Ratio form of `scaled_fringe_big`, covering every §5 template: `f0 · 2^37 ≥ 4095 · m'`
+    holds for `f0 = 4095, m' ≤ 2^37` (interior and bottom templates) and for
+    `f0 = 32, m' = 2^30` (the rising-top template, where `32 · 2^37 = 4096 · 2^30`). -/
+theorem scaled_fringe_big_ratio (f0 m' r : ℕ) (hm' : 0 < m') (hmle : m' ≤ 2 ^ 37)
+    (hratio : 4095 * m' ≤ f0 * 2 ^ 37) (hr : 2 ^ 59 < 2 ^ r * m') :
+    17000000000 < 2 ^ r * f0 ∧ Even (2 ^ r * f0) := by
+  have h22 : 2 ^ 22 < 2 ^ r := by
+    by_contra hc
+    push_neg at hc
+    have : 2 ^ r * m' ≤ 2 ^ 22 * 2 ^ 37 := Nat.mul_le_mul hc hmle
+    have h59 : (2 : ℕ) ^ 22 * 2 ^ 37 = 2 ^ 59 := by norm_num
+    omega
+  have hr1 : 1 ≤ r := by
+    by_contra hc
+    have : r = 0 := by omega
+    subst this
+    norm_num at h22
+  refine ⟨?_, ?_⟩
+  · have h1 : 4095 * (2 ^ r * m') ≤ 2 ^ r * f0 * 2 ^ 37 := by
+      calc 4095 * (2 ^ r * m') = 2 ^ r * (4095 * m') := by ring
+        _ ≤ 2 ^ r * (f0 * 2 ^ 37) := Nat.mul_le_mul_left _ hratio
+        _ = 2 ^ r * f0 * 2 ^ 37 := by ring
+    have h2 : 4095 * 2 ^ 59 < 2 ^ r * f0 * 2 ^ 37 :=
+      lt_of_lt_of_le (Nat.mul_lt_mul_of_pos_left hr (by norm_num)) h1
+    have h3 : 4095 * 2 ^ 22 * 2 ^ 37 < 2 ^ r * f0 * 2 ^ 37 := by
+      have : 4095 * 2 ^ 22 * 2 ^ 37 = 4095 * 2 ^ 59 := by norm_num
+      omega
+    have h4 := Nat.lt_of_mul_lt_mul_right h3
+    have h5 : (17000000000 : ℕ) < 4095 * 2 ^ 22 := by norm_num
+    omega
+  · have : Even (2 ^ r) := (Nat.even_pow.mpr ⟨by decide, by omega⟩)
+    exact this.mul_right _
+
+/-- Interior/bottom templates (`f0 = 4095`, `0 < m' ≤ 2^37`). -/
+theorem scaled_fringe_interior (m' r : ℕ) (hm' : 0 < m') (hmle : m' ≤ 2 ^ 37)
+    (hr : 2 ^ 59 < 2 ^ r * m') : 17000000000 < 2 ^ r * 4095 ∧ Even (2 ^ r * 4095) :=
+  scaled_fringe_big_ratio 4095 m' r hm' hmle (Nat.mul_le_mul_left _ hmle) hr
+
+/-- Rising-top template (`f0 = k/2 = 32`, `m' = 2^30 = A k² / ν`). -/
+theorem scaled_fringe_top_rise (r : ℕ) (hr : 2 ^ 59 < 2 ^ r * 2 ^ 30) :
+    17000000000 < 2 ^ r * 32 ∧ Even (2 ^ r * 32) :=
+  scaled_fringe_big_ratio 32 (2 ^ 30) r (by norm_num) (by norm_num) (by norm_num) hr
+
 end Chvatal
