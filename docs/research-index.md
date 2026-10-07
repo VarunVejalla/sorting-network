@@ -527,6 +527,68 @@ and `SortingDepth.upperNetwork` remain computable definitions.
   remains hypothesis-dependent).
 
 
+## Chvátal 1830: modular remaining-work ledger (2026-10-06)
+
+Reference: `docs/dcs-tr-294.pdf` (text extraction is garbled; decode `/NN` tokens as
+ASCII, low codes are cmmi Greek: 11 α, 14 δ, 15 ε, 22 ν, 25 π, 27 σ, 31 τ, 33 ω).
+**Rule: follow the paper's proof structure.** Kernel-checked = ✔. `[me]` needs
+careful analysis; `[delegate]` is mechanical once statements are fixed. Delegated
+(Haiku) output has repeatedly contained `sorry`s or `rfl` tautologies reported as
+success: always rebuild, `grep sorry`, and `#print axioms` before trusting it.
+
+**Audit of the abstract model vs. the paper.** The `Placement`/`perm` model is
+faithful if a Lean "register" is a *key* identified by its initial index, `perm` is
+its address (the input rank map), and the placement is data-dependent; then
+`perms (t+1) = perms t` is correct. The paper's wire sets of nodes are
+input-independent (wires stay put, keys move). The final 2^42 blocks are made
+contiguous by one global relabeling of the wires (inputs are arbitrary). The
+constant `58657` matches the paper's Theorem 1.1 (`N ≥ 2^78`).
+
+### A. Separators for every bag size (paper §5–6)
+
+| # | Piece | Status |
+| --- | --- | --- |
+| A1 | Property B for general `n` (existence theorems already general; discharge `DecodeMatrixClassObligation m n ε_B` for general `(m,n)`) | open, small `[me]` |
+| A2 | Claim (ii): tops counting + binomial estimates ([Lemma62TopsCount](../AKS/Chvatal/Lemma62TopsCount.lean), [Lemma62TopsAnalytic](../AKS/Chvatal/Lemma62TopsAnalytic.lean)) | ✔ |
+| A3 | Two-sided geometric tail sum ([GeomTail](../AKS/Chvatal/GeomTail.lean)) | ✔ |
+| A4 | Per-`s` tail `p(s) ≤ g(s)` from Lemma 6.3 and log-derivative bounds (`g` rises then falls at rate `e^-5`) | open `[me]` |
+| A5 | Event-E bound `(1+e^-5)/(1-e^-5)·(…)^{ε_F j}` per monotone matrix (A3 + A4) | open `[me]` |
+| A6 | Rigorous `x < 0.32` for all `j` (float check: worst case 0.22 at `f=1.7e10, n=16, j=δ_F f n`; `ln x` increasing in `j`, `n` cancels there) | open `[me]` |
+| A7 | Assembly: F fails with probability `< 0.49`; B and F exist for all `m ≥ 100, n ≥ 16, f ≥ 10` (semantic-F bridge for general `n`: the `δ_F n < 1` shortcut stops at `n ≈ 32`) | open `[me]` |
+| A8 | `ε_F` floor and `4e/f ≤ ε_F` for `f ≥ 1.7e10` (floor `1.02e-8` vs `1.25e-8`; monotone in `f`) | open `[me]` |
+| A9 | Scaling a template into `m ∈ (2^59, 2^60]` with `f > 1.7e10`, even ([GeometryScale](../AKS/Chvatal/GeometryScale.lean)) | ✔ |
+| A10 | The four paper templates (§5) satisfy `m' < 2^37`, `f0 ≥ 4095` (needs the flow table B1) | open `[delegate]` |
+| A11 | Bags with ≤ 2^64 wires use a plain `m`-sorter | open, easy `[delegate]` |
+| A12 | Root separator (`m = 2^79`, root `ε_B`) for general `n` | open `[me]` |
+
+### B. The actual network (paper §3, §4)
+
+| # | Piece | Status |
+| --- | --- | --- |
+| B1 | Integer flow table `a(i,t)`, `π` (to parent), `τ` (to each child) for every top/bottom/interior case. The Lean scheduler is rational only. Verified exactly in Python for `d = 14, 15, 20, 30`: all integers and even; `a = π + kτ` and `a(i,t+1) = τ(i-1,t) + kπ(i+1,t)` hold for `2 ≤ t < t_f` | in progress ([FlowTable](../AKS/Chvatal/FlowTable.lean)) |
+| B2 | Conservation identities and integrality/evenness at `k=64, A=4096, ν=1/64` | open `[me]`+`[delegate]` |
+| B3 | Fixed wire sets per node over time (partitions with the prescribed sizes) | open `[me]` |
+| B4 | Global wire relabeling so level-ρ wire sets at `t_f` are contiguous | open `[me]` |
+| B5 | Stage network: separator on each node's wires, varying sizes (extends `StagePackEmbed`) | open `[me]` |
+| B6 | Execution-defined placement (`pl t` = where each key sits after `t` stages; `perm` = input rank map) | open, core `[me]` |
+| B7 | One-stage semantics: Property B/F on the real output give the `fromParent` Finset bounds (paper Lemma 4.2's counting; `LocalSeparatorQuality` is currently abstract numbers) | open, core `[me]` |
+| B8 | Induction to `t_f`, with the exceptional root separator `ε_*` at `t = 0` | open `[me]` |
+
+### C. Assembly
+
+| # | Piece | Status |
+| --- | --- | --- |
+| C1 | Monotone parallel final on block-separated / rank-pure input ([FinalPurity](../AKS/Chvatal/FinalPurity.lean)) | ✔ |
+| C2 | Zero order-2 strangers at `t_f` ⇒ rank-pure level-(d−7) blocks | open `[me]` |
+| C3 | Assemble `Sorting1830Obligation` and `Sorts` for the real network | open `[me]` |
+| C4 | From `64^d` to all `n`, and the `d > 603` limsup | conditional versions exist; routine |
+
+Critical path: `A4 → A5 → A6/A8 → A7 → A12` and `B1 → B2 → B3 → B4 → B5` are
+independent; `B6 → B7 → B8 → C2 → C3 → C4` needs both. The two real research risks
+are B7 (Property B/F ⇒ send bounds) and B6 (placement from execution).
+Already done: depth accounting, abstract scheduler/outsider induction, pack depths,
+parallel-final depth.
+
 ## Documents and history
 
 - [Paterson interface audit](paterson-interface.md): detailed local theorem
