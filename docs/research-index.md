@@ -551,7 +551,7 @@ constant `58657` matches the paper's Theorem 1.1 (`N ≥ 2^78`).
 | A1 | Property B for general `n` (existence theorems already general; discharge `DecodeMatrixClassObligation m n ε_B` for general `(m,n)`) | open, small `[me]` |
 | A2 | Claim (ii): tops counting + binomial estimates ([Lemma62TopsCount](../AKS/Chvatal/Lemma62TopsCount.lean), [Lemma62TopsAnalytic](../AKS/Chvatal/Lemma62TopsAnalytic.lean)) | ✔ |
 | A3 | Two-sided geometric tail sum ([GeomTail](../AKS/Chvatal/GeomTail.lean)) | ✔ |
-| A4 | Per-`s` tail `p(s) ≤ g(s)` from Lemma 6.3 and log-derivative bounds (`g` rises then falls at rate `e^-5`) | open `[me]` |
+| A4 | Per-`s` tail: **✔** `p(s) ≤ C(n,s)(e j s/(nT))^T` for the top `m − f/2` rows ([Lemma62Tail](../AKS/Chvatal/Lemma62Tail.lean), via a per-row exponential moment + Markov; needs `T ≥ j s/n`). **Open:** discrete ratio bounds `g(s) ≤ e^-5 g(s+1)` (`s < a`) and `g(s+1) ≤ e^-5 g(s)` (`s > a`) for `g(s) = C(n,s)(e j s/(n T(s)))^{T(s)}`, `T(s) = f s/2 + ε_F j`, `a = ⌊2 ε_F j / f⌋`, plus the endpoint `s ≥ n−1` | partly ✔ `[me]` |
 | A5 | Event-E bound `(1+e^-5)/(1-e^-5)·(…)^{ε_F j}` per monotone matrix (A3 + A4) | open `[me]` |
 | A6 | Rigorous `x < 0.32` for all `j` (float check: worst case 0.22 at `f=1.7e10, n=16, j=δ_F f n`; `ln x` increasing in `j`, `n` cancels there) | open `[me]` |
 | A7 | Assembly: F fails with probability `< 0.49`; B and F exist for all `m ≥ 100, n ≥ 16, f ≥ 10` (semantic-F bridge for general `n`: the `δ_F n < 1` shortcut stops at `n ≈ 32`) | open `[me]` |
@@ -565,8 +565,8 @@ constant `58657` matches the paper's Theorem 1.1 (`N ≥ 2^78`).
 
 | # | Piece | Status |
 | --- | --- | --- |
-| B1 | Integer flow table `a(i,t)`, `π` (to parent), `τ` (to each child) for every top/bottom/interior case. The Lean scheduler is rational only. Verified exactly in Python for `d = 14, 15, 20, 30`: all integers and even; `a = π + kτ` and `a(i,t+1) = τ(i-1,t) + kπ(i+1,t)` hold for `2 ≤ t < t_f` | in progress ([FlowTable](../AKS/Chvatal/FlowTable.lean)) |
-| B2 | Conservation identities and integrality/evenness at `k=64, A=4096, ν=1/64` | open `[me]`+`[delegate]` |
+| B1 | Integer flow table `flowUp`/`flowDown` over the rational scheduler, with the send identity `a = π + kτ` (`allocation_eq_flowUp_add_flowDown`, [FlowTable](../AKS/Chvatal/FlowTable.lean)); table confirmed against the paper by the author (pp. 7–9) and by exact Python checks for `d = 14, 15, 20, 30` | ✔ |
+| B2 | Cross-time conservation `a(i,t+1) = τ(i-1,t) + kπ(i+1,t)` (`flow_conservation`), generic in the schedule given `α s < ω s` for `2 ≤ s < t_f`, `α t_f = ω t_f`, and the meeting identity `c(α t_f, t_f) = N/k^{α t_f}`. **Still open:** discharge those three hypotheses for `levelSchedule7`; integrality and evenness of `a`, `π`, `τ` at `k=64, A=4096, ν=1/64`; the `t = 0, 1` steps | partly ✔ `[me]`+`[delegate]` |
 | B3 | Fixed wire sets per node over time (partitions with the prescribed sizes) | open `[me]` |
 | B4 | Global wire relabeling so level-ρ wire sets at `t_f` are contiguous | open `[me]` |
 | B5 | Stage network: separator on each node's wires, varying sizes (extends `StagePackEmbed`) | open `[me]` |
