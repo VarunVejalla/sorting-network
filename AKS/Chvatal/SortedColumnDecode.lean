@@ -882,7 +882,7 @@ private theorem sum_scrambledColSum_eq_sum_colSum {m n : Nat} (c : MonotoneColum
           refine Finset.sum_congr rfl fun r _ => hrow r
     _ = ∑ j : Fin n, (c j).val := (sum_colSum_eq_sum_rowOnes c).symm
 
-private theorem sum_topJ_colSums_eq_j {m n : Nat} (hn : 0 < n)
+theorem sum_topJ_colSums_eq_j {m n : Nat} (hn : 0 < n)
     (colSort : ColumnSortNetwork m n) (hcol : IdealColumnSort m n hn colSort)
     (v : Equiv.Perm (Fin (m * n))) (j : Nat) (hjpos : 0 < j) (hjmn : j ≤ m * n) :
     ∑ col : Fin n,
