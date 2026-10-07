@@ -58,11 +58,12 @@ theorem flow_conservation_params7 (d : Nat) (hd : 7 ≤ d) (t : Nat) (ht2 : 2 �
     simpa [levelSchedule7, params7] using this
 
 theorem flow_send_params7 (d : Nat) (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t)
-    (ht : t + 1 < tf7 d) (i : Nat) :
+    (ht : t + 1 ≤ tf7 d) (i : Nat) :
     allocation params7 d (levelSchedule7 d hd) i t =
       flowUp params7 d (levelSchedule7 d hd) i t +
         (params7.br : Rat) * flowDown params7 d (levelSchedule7 d hd) i t :=
   allocation_eq_flowUp_add_flowDown params7 d (levelSchedule7 d hd)
-    (fun s hs hlt => alpha7_lt_omega7 d hd s hs hlt) t ht2 ht i
+    (fun s hs hlt => alpha7_lt_omega7 d hd s hs hlt)
+    (alpha7_tf_eq_omega7_tf d hd) t ht2 ht i
 
 end Chvatal

@@ -50,7 +50,8 @@ def flowDown (p : ScheduleParams) (d : Nat) (sched : LevelSchedule p d) (i t : N
 theorem allocation_eq_flowUp_add_flowDown (p : ScheduleParams) (d : Nat)
     (sched : LevelSchedule p d)
     (hlt : ∀ s, 2 ≤ s → s < sched.tf → sched.alpha s < sched.omega s)
-    (t : Nat) (ht2 : 2 ≤ t) (ht : t + 1 < sched.tf) (i : Nat) :
+    (hend : sched.alpha sched.tf = sched.omega sched.tf)
+    (t : Nat) (ht2 : 2 ≤ t) (ht : t + 1 ≤ sched.tf) (i : Nat) :
     allocation p d sched i t =
       flowUp p d sched i t + (p.br : Rat) * flowDown p d sched i t := by
   by_cases hactive : t ≤ sched.tf ∧ sched.alpha t ≤ i ∧ i ≤ sched.omega t ∧ i % 2 = t % 2
@@ -83,8 +84,18 @@ theorem allocation_eq_flowUp_add_flowDown (p : ScheduleParams) (d : Nat)
         have h3 := sched.omega_parity t hactive.1
         omega
       have hα1 : sched.alpha (t + 1) < sched.omega t + 1 := by
-        have := hlt (t + 1) (by omega) ht
-        omega
+        by_cases hfin : t + 1 = sched.tf
+        · -- at the meeting time the bottom cannot descend: `α(t+1) = ω(t+1) = ω t + 1`
+          -- but `α(t+1) ≤ α t + 1 ≤ ω t - 1`
+          exfalso
+          have hm := hend
+          rw [← hfin] at hm
+          have h4 := sched.alpha_parity t hactive.1
+          have h5 := sched.alpha_step t ht
+          have h6 := hlt t ht2 (by omega)
+          omega
+        · have := hlt (t + 1) (by omega) (lt_of_le_of_ne ht hfin)
+          omega
       have hact1 : t + 1 ≤ sched.tf ∧ sched.alpha (t + 1) ≤ sched.omega t + 1 ∧
           sched.omega t + 1 ≤ sched.omega (t + 1) ∧ (sched.omega t + 1) % 2 = (t + 1) % 2 := by
         have h3 := sched.omega_parity t hactive.1
