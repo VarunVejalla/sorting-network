@@ -17,6 +17,7 @@ module
 
 public import AKS.Chvatal.StageNet
 public import AKS.Chvatal.OutsiderInvariant
+public import AKS.Chvatal.OutsiderInduction
 public import AKS.Chvatal.SchedulerLemmas
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 public import Mathlib.Algebra.Field.GeomSum
@@ -200,7 +201,7 @@ variable (p : ScheduleParams) (ip : InvariantParams) (d : ℕ) (sched : LevelSch
 most `∑_h k^h · min(μ δ^h c(w.l+h,t), a(w.l+h))`. -/
 theorem subtree_bad_le (pl : Placement p.br d) (a : ℕ → ℕ)
     (hcard : ∀ b : KBag p.br d, (pl.regs b).card = a b.l)
-    (hP : OutsiderBound p ip d sched t pl id) (w : KBag p.br d) :
+    (hP : OutsiderBoundLe p ip d sched t pl id) (w : KBag p.br d) :
     (((subtreeKeys p.br d pl (br_ge_one p) w).filter fun κ => ¬ w.Native κ id).card : ℚ) ≤
       ∑ h ∈ Finset.range (d - w.l + 1), (p.br : ℚ) ^ h *
         min (ip.mu * ip.delta ^ h * capacity p d (w.l + h) t) (a (w.l + h) : ℚ) := by
@@ -241,7 +242,7 @@ theorem subtree_bad_le (pl : Placement p.br d) (a : ℕ → ℕ)
 theorem subtree_bad_le_parity (pl : Placement p.br d) (a : ℕ → ℕ)
     (hcard : ∀ b : KBag p.br d, (pl.regs b).card = a b.l)
     (hpar : ∀ l, l % 2 ≠ t % 2 → a l = 0)
-    (hP : OutsiderBound p ip d sched t pl id) (w : KBag p.br d) :
+    (hP : OutsiderBoundLe p ip d sched t pl id) (w : KBag p.br d) :
     (((subtreeKeys p.br d pl (br_ge_one p) w).filter fun κ => ¬ w.Native κ id).card : ℚ) ≤
       ∑ h ∈ (Finset.range (d - w.l + 1)).filter (fun h => (w.l + h) % 2 = t % 2),
         (p.br : ℚ) ^ h * (ip.mu * ip.delta ^ h * capacity p d (w.l + h) t) := by
@@ -391,7 +392,7 @@ under invariant `P` for the actual placement and the Lemma 3.1 wire count below 
 theorem keys_below_child_le (pl : Placement p.br d) (a : ℕ → ℕ)
     (hcard : ∀ b : KBag p.br d, (pl.regs b).card = a b.l)
     (hpar : ∀ l, l % 2 ≠ t % 2 → a l = 0)
-    (hP : OutsiderBound p ip d sched t pl id)
+    (hP : OutsiderBoundLe p ip d sched t pl id)
     (hδ : ip.delta ^ 2 * (p.br : ℚ) ^ 2 * p.A ^ 2 < 1)
     (u : KBag p.br d) (hul : u.l < d) (j : Fin p.br)
     (hwires : (∑ l ∈ Finset.Ioc u.l d, (p.br : ℚ) ^ (l - u.l - 1) * (a l : ℚ)) =
