@@ -183,3 +183,4 @@ import AKS.Chvatal.BatcherAssembly
 import AKS.Chvatal.StageAssembly
 import AKS.Bounds.Chvatal1830Batcher
 import AKS.Bounds.Chvatal1830Axioms
+import AKS.Bounds.Chvatal1830Final

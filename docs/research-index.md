@@ -585,13 +585,13 @@ constant `58657` matches the paper's Theorem 1.1 (`N ≥ 2^78`).
 | # | Piece | Status |
 | --- | --- | --- |
 | C1 | Monotone parallel final on block-separated / rank-pure input ([FinalPurity](../AKS/Chvatal/FinalPurity.lean)) | ✔ |
-| C2 | Rank-pure blocks at `t_f`. At `t_f` only level `d−6` is occupied (`flowA7 l t_f = 0` for `l ≠ d−6`, `flowA7 (d−6) t_f = 64^6`). `realNets_purity` says every level-`(d−6)` bag's keys lie in its parent's address interval (`2^42` keys); the 64 children of a level-`(d−7)` node `x` hold `64·64^6 = 64^7` keys in an interval of size `64^7`, so the union `Wblock x` of their wire sets carries **exactly** the keys of `x`'s interval (cardinality + injectivity). Lemmas: occupancy at `t_f`; `Wblock x` partition `univ`; `X v t_f '' Wblock x = interval x` | open `[me]`/`[delegate]` |
-| C3a | The full network `G`: `stages 0..t_f−1` (`stageNet (wireSets F t) (realNets t)`) followed by the final layer `stageNet` over the blocks `Wblock x` with `bitonicNetwork (2^42)`; `X v t = (stages up to t).exec v` (concatenation lemma) | open `[delegate]` |
-| C3b | Final layer correctness: block `x` is sorted into wire order, so the key of rank `r` ends on the `k`-th smallest wire of `Wblock x` (`r = 2^42·x + k`); hence `G.exec v ∘ τ.symm = id` for permutations `v`, where `τ w = 2^42·x + (rank of w in Wblock x)` is a permutation of `Fin (64^d)` | open `[me]` |
-| C3c | From permutations to all inputs (every input is `g ∘ p` with `p` a permutation and `g` monotone; `exec_comp_monotone`), then `Untangle.untangle` (G is a standard network, embedded as a generalized one): a standard network of equal depth that sorts, `Sorts.{0}` | open `[delegate]` |
-| C3d | Depth: `depth G ≤ 6320 + (t_f−1)·3660 + 903 = totalDepth d` (`depth_append_le`, `realNets_depth_le`, `bitonicNetwork` depth 903 on `2^42`); matches `StageDepthBudget.ofPaper` | open `[delegate]` |
-| C3e | Final theorem: for every `d ≥ 14` a sorting network on `64^d` wires of depth `≤ totalDepth d` (`≤ 1830·lg N − 58657` form), discharging `PaperDepthShellSortResidual`/`Limsup1830Residual`, then `limsup D(n)/log₂ n ≤ 1830` via `limsup_minimum_div_logb_le_1830_of_batcher_and_residual` | open `[me]` |
-| C4 | From `64^d` to all `n`, and the `d > 603` limsup | conditional versions exist; routine |
+| C2 | Rank-pure blocks at `t_f`: `finalS`, `finalS_card/disjoint/cover`, `finalS_image(_real)` — the keys on a level-`(d−7)` block's wires are exactly its address interval ([RealBlocks](../AKS/Chvatal/RealBlocks.lean)) | ✔ |
+| C3a | Full network: `stagesNet` (`stagesNet_exec = X`), `finalLayer` ([RealNetwork](../AKS/Chvatal/RealNetwork.lean)) | ✔ |
+| C3b | Final layer sorts into a fixed output order and untangles: `final_layer_sorts` ([FinalSorts](../AKS/Chvatal/FinalSorts.lean)) | ✔ |
+| C3c | Permutations ⇒ all inputs (`exists_sorting_perm`) and `Untangle.untangle`, inside `final_layer_sorts` | ✔ |
+| C3d | Depth `≤ totalDepth d` (`fullNet_depth_le`; reproved inline in `chvatal_sorter_exists`) | ✔ |
+| C3e | `Chvatal.chvatal_sorter_exists`: for every `d ≥ 14` a sorting network on `64^d` wires of depth `≤ totalDepth d` ([RealSorter](../AKS/Chvatal/RealSorter.lean)); `SortingDepth.limsup_minimum_div_logb_le_1830` (unconditional, [Chvatal1830Final](../AKS/Bounds/Chvatal1830Final.lean)). Axioms: propext, Classical.choice, Quot.sound only | ✔ |
+| C4 | From `64^d` to all `n`: handled by the existing limsup machinery (`limsup_minimum_div_logb_le_1830_of_batcher_and_residual`) with `Limsup1830Residual` now proved. A pointwise `D(n) ≤ 1830 lg n − 58657` for all large `n` (not just limsup) still needs the `clog`-restriction argument for `d > 603`, as in the Batcher range | partly ✔ |
 
 Critical path: `A4 → A5 → A6/A8 → A7 → A12` and `B1 → B2 → B3 → B4 → B5` are
 independent; `B6 → B7 → B8 → C2 → C3 → C4` needs both. The two real research risks
