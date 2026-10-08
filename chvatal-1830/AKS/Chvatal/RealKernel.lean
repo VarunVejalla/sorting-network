@@ -89,17 +89,5 @@ noncomputable def realStageKernel {d : ℕ} (hd : 7 ≤ d)
     push_cast
     positivity
 
-/-- One real stage preserves the outsider bound. -/
-theorem realStep {d : ℕ} (hd : 7 ≤ d)
-    (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
-    (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (ht : t + 1 ≤ tf7 d)
-    (hP : OutsiderBoundLe params7 invariantReal d (levelSchedule7 d hd) t
-      (execPlacement (flowSizes7 d hd) nets v t (by omega)) id)
-    (hBad : BadSendField hd nets v t (by omega))
-    (hFringe : FringeSendField hd nets v t (by omega)) :
-    OutsiderBoundLe params7 invariantReal d (levelSchedule7 d hd) (t + 1)
-      (execPlacement (flowSizes7 d hd) nets v (t + 1) ht) id :=
-  outsiderBound_step_of_kernel params7 invariantReal d (levelSchedule7 d hd) t _ _ id id
-    separatorConds_real hP (realStageKernel hd nets v t ht hP hBad hFringe)
 
 end Chvatal

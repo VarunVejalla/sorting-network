@@ -118,10 +118,6 @@ theorem scaled_fringe_big : ∀ f0 m' r : ℕ, 4095 ≤ f0 → 0 < m' → m' < 2
 
 /-! **Ratios are preserved under uniform scaling** -/
 
-/-- Scaling numerator and denominator by the same factor 2^r preserves the ratio in ℚ. -/
-theorem scaled_ratio : ∀ f0 m' r : ℕ, 0 < m' → (2^r*f0 : ℚ) / (2^r*m') = (f0 : ℚ) / m' := by
-  intro f0 m' r hm'_pos
-  field_simp [Nat.cast_pos.mpr hm'_pos]
 
 /-! **Dimension equation under scaling** -/
 
@@ -164,14 +160,6 @@ theorem scaled_fringe_big_ratio (f0 m' r : ℕ) (hm' : 0 < m') (hmle : m' ≤ 2 
   · have : Even (2 ^ r) := (Nat.even_pow.mpr ⟨by decide, by omega⟩)
     exact this.mul_right _
 
-/-- Interior/bottom templates (`f0 = 4095`, `0 < m' ≤ 2^37`). -/
-theorem scaled_fringe_interior (m' r : ℕ) (hm' : 0 < m') (hmle : m' ≤ 2 ^ 37)
-    (hr : 2 ^ 59 < 2 ^ r * m') : 17000000000 < 2 ^ r * 4095 ∧ Even (2 ^ r * 4095) :=
-  scaled_fringe_big_ratio 4095 m' r hm' hmle (Nat.mul_le_mul_left _ hmle) hr
 
-/-- Rising-top template (`f0 = k/2 = 32`, `m' = 2^30 = A k² / ν`). -/
-theorem scaled_fringe_top_rise (r : ℕ) (hr : 2 ^ 59 < 2 ^ r * 2 ^ 30) :
-    17000000000 < 2 ^ r * 32 ∧ Even (2 ^ r * 32) :=
-  scaled_fringe_big_ratio 32 (2 ^ 30) r (by norm_num) (by norm_num) (by norm_num) hr
 
 end Chvatal

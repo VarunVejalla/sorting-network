@@ -108,36 +108,6 @@ theorem sorted_window_wrong_le (K : Finset ℕ) (s τ lo hi : ℕ) (hsτ : s + �
     omega
   exact le_trans hsub hcard
 
-/-- W-B: intruders in the physical window are intruders of the sorted window, or displaced
-keys. -/
-theorem intruder_decomposition (K : Finset ℕ) (pos : ℕ → ℕ) (s τ : ℕ) (Q : ℕ → Prop)
-    [DecidablePred Q] :
-    (K.filter fun κ => s ≤ pos κ ∧ pos κ < s + τ ∧ ¬ Q κ).card ≤
-      (K.filter fun κ => s ≤ rankN K κ ∧ rankN K κ < s + τ ∧ ¬ Q κ).card +
-      (K.filter fun κ => s ≤ pos κ ∧ pos κ < s + τ ∧
-        ¬ (s ≤ rankN K κ ∧ rankN K κ < s + τ)).card ∧
-    (K.filter fun κ => s ≤ pos κ ∧ pos κ < s + τ ∧
-        ¬ (s ≤ rankN K κ ∧ rankN K κ < s + τ)).card ≤
-      (K.filter fun κ => s + τ ≤ rankN K κ ∧ pos κ < s + τ).card +
-      (K.filter fun κ => rankN K κ < s ∧ s ≤ pos κ).card := by
-  constructor
-  · refine le_trans (Finset.card_le_card ?_) (Finset.card_union_le _ _)
-    intro κ hκ
-    simp only [Finset.mem_filter, Finset.mem_union] at hκ ⊢
-    obtain ⟨hm, h1, h2, h3⟩ := hκ
-    by_cases h : s ≤ rankN K κ ∧ rankN K κ < s + τ
-    · left; exact ⟨hm, h.1, h.2, h3⟩
-    · right; exact ⟨hm, h1, h2, h⟩
-  · refine le_trans (Finset.card_le_card ?_) (Finset.card_union_le _ _)
-    intro κ hκ
-    simp only [Finset.mem_filter, Finset.mem_union] at hκ ⊢
-    obtain ⟨hm, h1, h2, h3⟩ := hκ
-    by_cases h : s + τ ≤ rankN K κ
-    · left; exact ⟨hm, h, h2⟩
-    · right
-      refine ⟨hm, ?_, h1⟩
-      by_contra hh
-      exact h3 ⟨by omega, by omega⟩
 
 /-! ### Counting keys below the child intervals -/
 

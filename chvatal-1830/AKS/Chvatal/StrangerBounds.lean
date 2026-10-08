@@ -13,7 +13,6 @@ module
 
 public import AKS.Chvatal.ChildSend
 public import AKS.Chvatal.OutsiderInduction
-public import AKS.Chvatal.BlockWindow
 
 @[expose] public section
 

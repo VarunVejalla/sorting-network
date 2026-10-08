@@ -33,16 +33,8 @@ namespace Chvatal
 def castNet {n n' : ℕ} (h : n = n') (net : ComparatorNetwork n) : ComparatorNetwork n' := by
   subst h; exact net
 
-theorem castNet_rfl {n : ℕ} (net : ComparatorNetwork n) : castNet rfl net = net := rfl
 
-theorem exec_castNet {n n' : ℕ} (h : n = n') (net : ComparatorNetwork n) {α : Type*}
-    [LinearOrder α] (v : Fin n' → α) (c : Fin n) :
-    (castNet h net).exec v (Fin.cast h c) = net.exec (fun i => v (Fin.cast h i)) c := by
-  subst h; rfl
 
-theorem depth_castNet {n n' : ℕ} (h : n = n') (net : ComparatorNetwork n) :
-    (castNet h net).depth = net.depth := by
-  subst h; rfl
 
 /-! ## 2. Sorting networks meet `NodeSpec` -/
 

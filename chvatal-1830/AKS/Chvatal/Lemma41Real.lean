@@ -377,14 +377,6 @@ theorem keys_below_child_le_pow (pl : Placement p.br d) (u : KBag p.br d) (hul :
   rw [Finset.mem_filter] at hκ ⊢
   exact ⟨Finset.mem_univ _, hκ.2⟩
 
-/-- **L6.** If `u` has no occupied descendants, the keys of `u` addressed below `w` number at most
-`k^(d-u.l-1)` (this is just L1; the emptiness hypothesis is not needed). -/
-theorem keys_below_child_le_bottom (pl : Placement p.br d) (a : ℕ → ℕ)
-    (_hcard : ∀ b : KBag p.br d, (pl.regs b).card = a b.l) (u : KBag p.br d) (hul : u.l < d)
-    (_hempty : ∀ l, u.l < l → a l = 0) (j : Fin p.br) :
-    ((pl.regs u).filter fun κ => (u.child j.val j.isLt hul).Native κ id).card ≤
-      p.br ^ (d - u.l - 1) :=
-  keys_below_child_le_pow p d pl u hul j
 
 /-- **L5 (Lemma 4.1, real).**  A node `u` on an occupied level (`u.l % 2 = t % 2`) holds at most
 `c/k + μ · siblingFactor · c` keys addressed below any one child `w`, where `c = c(u.l, t)`,

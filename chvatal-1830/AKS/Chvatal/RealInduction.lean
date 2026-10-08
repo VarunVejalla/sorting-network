@@ -55,30 +55,6 @@ theorem paperRootEpsB_le_epsStar :
 
 variable {d : ℕ}
 
-/-- **B8.0.** At `t = 0` all keys sit at the root, which has no strangers of any order. -/
-theorem P_zero (hd : 7 ≤ d)
-    (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
-    (v : Equiv.Perm (Fin (64 ^ d))) :
-    OutsiderBoundLe params7 invariantReal d (levelSchedule7 d hd) 0
-      (execPlacement (flowSizes7 d hd) nets v 0 (Nat.zero_le _)) id := by
-  show ∀ (b : KBag 64 d) (r : ℕ), r ≤ d →
-    (((b.strangers (r + 1) id
-      ((execPlacement (flowSizes7 d hd) nets v 0 (Nat.zero_le _)).regs b)
-      (by norm_num : 1 ≤ 64) : ℕ) : ℚ)) ≤
-      invariantReal.mu * invariantReal.delta ^ r * capacity params7 d b.l 0
-  intro b r _
-  by_cases hb : b = KBag.root 64 d
-  · subst hb
-    have h0 := KBag.strangers_eq_zero_of_lt_order (KBag.root 64 d) (r + 1) id
-      ((execPlacement (flowSizes7 d hd) nets v 0 (Nat.zero_le _)).regs (KBag.root 64 d))
-      (by norm_num : 1 ≤ 64) (by omega) (by show 0 < r + 1; omega)
-    rw [h0]
-    simpa using outsider_rhs_nonneg d r 0 0
-  · have hE : (execPlacement (flowSizes7 d hd) nets v 0 (Nat.zero_le _)).regs b = ∅ := by
-      show (wireSets (flowSizes7 d hd) 0 b).image _ = ∅
-      rw [wireSets_zero_of_ne _ hb]; simp
-    rw [hE, KBag.strangers_empty]
-    simpa using outsider_rhs_nonneg d r b.l 0
 
 set_option linter.constructorNameAsVariable false in
 /-- **B8.1.** The root step (Lemma 4.3, root case, exceptional separator). -/

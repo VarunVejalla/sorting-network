@@ -159,26 +159,7 @@ noncomputable def theorem51Params_general (g : ScrambleGeometry) (hf : 17 * 10 ^
   hepsF_ge_4e := four_e_div_le hf
   hepsF_ge_lemma62 := epsF_floor_general hf
 
-/-- `Theorem51Params` for every root geometry (`m ≥ 2^79`). -/
-noncomputable def theorem51Params_root_general (g : ScrambleGeometry) (hf : 17 * 10 ^ 9 ≤ g.f)
-    (hm : 2 ^ 79 ≤ g.m) : Theorem51Params g where
-  epsB := paperRootEpsB
-  deltaF := 128 / 4095
-  epsF := eps
-  hepsB_pos := by unfold paperRootEpsB; positivity
-  hepsB_lb := epsB_root_general hm
-  hdeltaF_pos := delta_pos
-  hdeltaF := delta_le
-  hepsF_pos := eps_pos
-  hepsF_ge_4e := four_e_div_le hf
-  hepsF_ge_lemma62 := epsF_floor_general hf
 
-theorem ExistsScrambleSeparator_ordinary (g : ScrambleGeometry) (hf : 17 * 10 ^ 9 ≤ g.f)
-    (hm : 2 ^ 59 ≤ g.m) : ExistsScrambleSeparator g (theorem51Params_general g hf hm) :=
-  ExistsScrambleSeparator_general hf (le_refl _) (le_refl _)
 
-theorem ExistsScrambleSeparator_root (g : ScrambleGeometry) (hf : 17 * 10 ^ 9 ≤ g.f)
-    (hm : 2 ^ 79 ≤ g.m) : ExistsScrambleSeparator g (theorem51Params_root_general g hf hm) :=
-  ExistsScrambleSeparator_general hf (le_refl _) (le_refl _)
 
 end Chvatal

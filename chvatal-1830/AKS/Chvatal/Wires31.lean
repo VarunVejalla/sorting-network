@@ -146,23 +146,6 @@ theorem hwires7 (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t ≤ t
     rw [this] at hsplit
     linarith
 
-/-- At `t = 1`, `i = 1`: nothing lies below level 1 and `c(1,1) = 64^(d-1)`. -/
-theorem hwires7_one (d : ℕ) (hd : 7 ≤ d) :
-    (∑ l ∈ Finset.Ioc 1 d, (64 : ℚ) ^ (l - 1 - 1) * (flowA7 d hd l 1 : ℚ)) =
-      ((64 : ℚ) ^ d / 64 ^ 1 - capacity params7 d 1 1) / 64 := by
-  have hz : ∀ l ∈ Finset.Ioc 1 d, (64 : ℚ) ^ (l - 1 - 1) * (flowA7 d hd l 1 : ℚ) = 0 := by
-    intro l hl
-    have : flowA7 d hd l 1 = 0 := by
-      unfold flowA7
-      rw [if_neg (by omega), if_pos rfl, if_neg (by have := (Finset.mem_Ioc.mp hl).1; omega)]
-    rw [this]; simp
-  rw [sum_eq_zero hz]
-  have hc : capacity params7 d 1 1 = 64 ^ d / 64 := by
-    unfold capacity params7
-    simp only [Nat.cast_pow]
-    push_cast
-    field_simp
-  rw [hc]; ring
 
 /-- `hwires` in exactly the shape consumed by `keys_below_child_le` (`p = params7`). -/
 theorem hwires7_real (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t ≤ tf7 d) (i : ℕ)
@@ -255,13 +238,6 @@ theorem tau_bot_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t 
 theorem slackCoeff7_nonneg : 0 ≤ slackCoeff params7 := by
   unfold slackCoeff; norm_num [params7]
 
-/-- Descending top: `ρ = μ·sib·c`, `π = 0`. -/
-theorem slack_top_desc (ip : InvariantParams) (c : ℚ) (hc : 0 ≤ c) :
-    (((params7.br : ℕ) : ℚ) - 1) * (ip.mu * siblingFactor params7 ip * c) - 0 / 2 ≤
-      (((params7.br : ℕ) : ℚ) - 1) * (ip.mu * siblingFactor params7 ip * c) +
-        slackCoeff params7 * c := by
-  have := mul_nonneg slackCoeff7_nonneg hc
-  linarith
 
 /-- Rising top: `ρ = Δ₂ + μ·sib·c`, `π = ν c/(A k)`. -/
 theorem slack_top_rise (ip : InvariantParams) (c : ℚ) (hc : 0 ≤ c) :
@@ -291,21 +267,5 @@ theorem slack_mid (ip : InvariantParams) (c : ℚ) :
   rw [params7_br]
   linarith
 
-/-- Descending bottom: `ρ = Δ₂`, `π = (A ν k - 1) c / Q`. -/
-theorem slack_bot_desc (ip : InvariantParams) (c : ℚ) (hm : 0 ≤ ip.mu * siblingFactor params7 ip * c) :
-    (((params7.br : ℕ) : ℚ) - 1) * delta2_7 c -
-        ((params7.A * params7.nu * 64 - 1) * c / capacityRatio params7) / 2 ≤
-      (((params7.br : ℕ) : ℚ) - 1) * (ip.mu * siblingFactor params7 ip * c) +
-        slackCoeff params7 * c := by
-  have h := slackCoeff_of_delta2_pi params7 c
-  simp only at h
-  have e : (params7.A * params7.nu * 64 - 1) * c / capacityRatio params7 =
-      (params7.A * params7.nu * ((params7.br : ℕ) : ℚ) - 1) / capacityRatio params7 * c := by
-    rw [params7_br]; ring
-  rw [e]
-  unfold delta2_7
-  have hk : (0 : ℚ) ≤ ((params7.br : ℕ) : ℚ) - 1 := by rw [params7_br]; norm_num
-  have := mul_nonneg hk hm
-  linarith
 
 end Chvatal

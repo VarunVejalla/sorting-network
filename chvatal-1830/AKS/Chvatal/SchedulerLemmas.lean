@@ -355,23 +355,5 @@ theorem lemma31_of_total (p : ScheduleParams) (d : Nat)
 
 /-! **Lemma 3.2** -/
 
-/-- §3 Lemma 3.2, capacity form.
-
-    Under the paper intermediate snap bound `c(alpha(t), t) < 2 A br^2 / nu`
-    and a dyadic/power closing hypothesis into `c ≤ A br^2 / nu`, conclude
-    the paper bound. At `params7` the closing step is `Schedule7`'s exponent
-    comparison (`≤ 5 ⇒ ≤ 64^5`). -/
-theorem lemma32_of_snap (p : ScheduleParams) (d : Nat)
-    (sched : LevelSchedule p d) (t : Nat)
-    (_hasc : sched.alpha t < sched.alpha (t + 1))
-    (_hsnap : capacity p d (sched.alpha t) t <
-      2 * p.A * (p.br : Rat) ^ 2 / p.nu)
-    (hclose : capacity p d (sched.alpha t) t ≤
-      p.A * (p.br : Rat) ^ 2 / p.nu) :
-    sched.alpha t = 0 ∨
-      capacity p d (sched.alpha t) t ≤ p.A * (p.br : Rat) ^ 2 / p.nu := by
-  by_cases hroot : sched.alpha t = 0
-  · exact Or.inl hroot
-  · exact Or.inr hclose
 
 end Chvatal

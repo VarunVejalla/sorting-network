@@ -76,19 +76,5 @@ theorem exists_sorting_perm {n : ℕ} {α : Type*} [LinearOrder α]
     · exact le_of_lt h
     · exact le_of_eq h
 
-/-- **Permutation principle**: a comparator network sorts all inputs if
-    it sorts all permutations of `Fin n`.
-
-    Stronger than the zero-one principle when the proof naturally works
-    with rank permutations (e.g., the Seiferas bag-tree argument). -/
-theorem perm_principle {n : ℕ} (net : ComparatorNetwork n) :
-    (∀ σ : Equiv.Perm (Fin n), Monotone (net.exec σ)) → net.Sorts := by
-  intro h α _ v
-  obtain ⟨σ, hg_mono⟩ := exists_sorting_perm v
-  -- v = g ∘ σ where g = v ∘ σ⁻¹ is monotone
-  have hv : v = (v ∘ ⇑σ.symm) ∘ σ := by
-    ext i; simp [Function.comp, Equiv.symm_apply_apply]
-  rw [hv, net.exec_comp_mono hg_mono σ]
-  exact hg_mono.comp (h σ)
 
 end

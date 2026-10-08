@@ -29,18 +29,9 @@ namespace Chvatal
 def tf7 (d : Nat) : Nat := 3 * d - 20
 def meetLevel7 (d : Nat) : Nat := d - 6
 
-theorem meetLevel7_le_d (d : Nat) (_hd : 7 ≤ d) : meetLevel7 d ≤ d := by
-  unfold meetLevel7; omega
 
-theorem meetLevel7_pos (d : Nat) (hd : 7 ≤ d) : 1 ≤ meetLevel7 d := by
-  unfold meetLevel7; omega
 
-theorem tf7_ge_meet (d : Nat) (hd : 7 ≤ d) : meetLevel7 d ≤ tf7 d := by
-  unfold meetLevel7 tf7; omega
 
-theorem ordinaryRounds_eq_tf7 (d : Nat) (_hd : 7 ≤ d) :
-    ordinaryRounds d = tf7 d - 1 := by
-  change 3 * d - 21 = (3 * d - 20) - 1; omega
 
 /-! **Parity rounding** -/
 
@@ -51,8 +42,6 @@ theorem ceilParity_parity (m parity : Nat) :
     ceilParity m parity % 2 = parity % 2 := by
   unfold ceilParity; split_ifs with h <;> [exact h; omega]
 
-theorem ceilParity_ge (m parity : Nat) : m ≤ ceilParity m parity := by
-  unfold ceilParity; split_ifs <;> omega
 
 theorem ceilParity_le_succ (m parity : Nat) : ceilParity m parity ≤ m + 1 := by
   unfold ceilParity; split_ifs <;> omega
@@ -380,43 +369,8 @@ theorem capacity_meet7 (d : Nat) (hd : 7 ≤ d) :
   rw [hexp]
   norm_cast
 
-theorem purityEnvelope_r1 (d : Nat) (hd : 7 ≤ d) :
-    invariant7.mu * invariant7.delta *
-      capacity params7 d (meetLevel7 d) (tf7 d) < 1 := by
-  rw [capacity_meet7 d hd]
-  unfold invariant7
-  norm_num
 
-theorem purityEnvelope7 (d : Nat) (hd : 7 ≤ d) (r : Nat) (hr : 1 ≤ r) :
-    invariant7.mu * invariant7.delta ^ r *
-      capacity params7 d (meetLevel7 d) (tf7 d) < 1 := by
-  have h1 := purityEnvelope_r1 d hd
-  have hδpos := invariant7.hdelta_pos
-  have hδlt := invariant7.hdelta_lt
-  have hle : invariant7.delta ^ r ≤ invariant7.delta := by
-    have hpow : invariant7.delta ^ (r - 1) ≤ 1 :=
-      pow_le_one₀ hδpos.le hδlt.le
-    calc invariant7.delta ^ r
-        = invariant7.delta ^ ((r - 1) + 1) := by rw [Nat.sub_add_cancel hr]
-      _ = invariant7.delta ^ (r - 1) * invariant7.delta := by rw [pow_succ]
-      _ ≤ 1 * invariant7.delta := mul_le_mul_of_nonneg_right hpow hδpos.le
-      _ = invariant7.delta := one_mul _
-  have hc := (capacity_pos params7 d (meetLevel7 d) (tf7 d)).le
-  have hμ := invariant7.hmu_pos.le
-  calc invariant7.mu * invariant7.delta ^ r *
-          capacity params7 d (meetLevel7 d) (tf7 d)
-      ≤ invariant7.mu * invariant7.delta *
-          capacity params7 d (meetLevel7 d) (tf7 d) :=
-        mul_le_mul_of_nonneg_right
-          (mul_le_mul_of_nonneg_left hle hμ) hc
-    _ < 1 := h1
 
-theorem purityEnvelope7_sched (d : Nat) (hd : 7 ≤ d) (r : Nat) (hr : 1 ≤ r) :
-    invariant7.mu * invariant7.delta ^ r *
-      capacity params7 d ((levelSchedule7 d hd).alpha ((levelSchedule7 d hd).tf))
-        ((levelSchedule7 d hd).tf) < 1 := by
-  rw [levelSchedule7_alpha_tf d hd]
-  simpa [levelSchedule7] using purityEnvelope7 d hd r hr
 
 /-! **Lemma 3.2 from the envelope** -/
 

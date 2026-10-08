@@ -12,7 +12,6 @@ public import AKS.Chvatal.ExecPlacement
 public import AKS.Chvatal.StageNet
 public import AKS.Chvatal.RealNets
 public import AKS.Chvatal.DepthSkeleton
-public import AKS.Chvatal.ParallelFinalDepth
 public import AKS.Bitonic.TightDepth
 public import AKS.Sort.Depth
 
@@ -71,33 +70,5 @@ theorem finalLayer_depth_le {d : ℕ} (S : KBag 64 d → Finset (Fin (64 ^ d)))
     refine (bitonicNetwork_depth_le_budget 0).trans ?_
     simp [bitonicDepthBudget]
   · rw [h]; exact bitonicNetwork_2pow42_depth_le_903
-
-/-- The full real network: all `tf7 d` stages, then the final layer. -/
-noncomputable def realFullNet (d : ℕ) (hd : 7 ≤ d)
-    (S : KBag 64 d → Finset (Fin (64 ^ d))) : ComparatorNetwork (64 ^ d) :=
-  (stagesNet (flowSizes7 d hd) (realNets d hd) (tf7 d)).append (finalLayer S)
-
-theorem fullNet_depth_le {d : ℕ} (hd14 : 14 ≤ d)
-    (S : KBag 64 d → Finset (Fin (64 ^ d)))
-    (hdisj : ∀ b b', b ≠ b' → Disjoint (S b) (S b'))
-    (hcard : ∀ b, (S b).card = 0 ∨ (S b).card = 2 ^ 42) :
-    ((stagesNet (flowSizes7 d (by omega)) (realNets d (by omega)) (tf7 d)).append
-      (finalLayer S)).depth ≤ totalDepth d := by
-  have hst := stagesNet_depth_le (flowSizes7 d (by omega)) (realNets d (by omega))
-    depthBound (tf7 d) (Nat.le_succ _)
-    (fun t ht b n => realNets_depth_le (by omega) hd14 t ht b n)
-  have hsum : ∑ t ∈ Finset.range (tf7 d), depthBound t = 6320 + (3 * d - 21) * 3660 := by
-    have : tf7 d = (3 * d - 21) + 1 := by unfold tf7; omega
-    rw [this, Finset.sum_range_succ']
-    have h2 : ∀ i ∈ Finset.range (3 * d - 21), depthBound (i + 1) = 3660 := by
-      intro i _; simp [depthBound]
-    rw [Finset.sum_congr rfl h2]
-    simp [depthBound]
-    ring
-  refine (ComparatorNetwork.depth_append_le _ _).trans ?_
-  have hf := finalLayer_depth_le S hdisj hcard
-  unfold totalDepth ordinaryRounds rootSeparatorPaperDepth ordinaryStagePaperDepth
-    finalSorterPaperDepth
-  omega
 
 end Chvatal

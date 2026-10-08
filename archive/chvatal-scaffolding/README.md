@@ -17,3 +17,5 @@ module names unchanged) because some may be useful later.
 * `Bounds/Chvatal1830Batcher.lean`, `Chvatal1830Axioms.lean`, `Chvatal1830Final.lean` — the old
   finite-range Batcher endpoint, its axiom checks, and the first (main-repo) version of the final
   theorems; the standalone package contains the minimal replacement.
+* `Chvatal/BlockWindow.lean`, `ParallelFinalDepth.lean`, `Sort/ParallelScatterFlat.lean` — pruned from
+  `chvatal-1830` (no declaration in them is used by the final theorems).
