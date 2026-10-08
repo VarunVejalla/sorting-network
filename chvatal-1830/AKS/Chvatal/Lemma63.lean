@@ -42,136 +42,13 @@ theorem onesInColumns_eq_sum_rowHit {m n : Nat}
     onesInColumns c σ S = ∑ r : Fin m, rowHit c S r (σ r) := by
   simp [onesInColumns, rowHit, scrambledRowOnes]
 
-theorem rowHit_le {m n : Nat} (c : MonotoneColumnSums m n)
-    (S : Finset (Fin n)) (r : Fin m) (π : Equiv.Perm (Fin n)) :
-    rowHit c S r π ≤ S.card :=
-  Finset.card_le_card Finset.inter_subset_right
 
 /-! ## Fiber counts -/
 
-def permFiberEquiv {n : Nat} (a b1 b2 : Fin n) (τ : Equiv.Perm (Fin n))
-    (hτ : τ b1 = b2) :
-    {π : Equiv.Perm (Fin n) // π a = b1} ≃
-      {π : Equiv.Perm (Fin n) // π a = b2} where
-  toFun := fun ⟨π, hπ⟩ => ⟨π.trans τ, by simp [hπ, hτ]⟩
-  invFun := fun ⟨π, hπ⟩ => ⟨π.trans τ.symm, by simp [← hτ, hπ]⟩
-  left_inv := by intro ⟨π, _⟩; ext x; simp
-  right_inv := by intro ⟨π, _⟩; ext x; simp
 
-theorem card_perm_apply_eq {n : Nat} (a b : Fin n) :
-    (Finset.univ.filter fun π : Equiv.Perm (Fin n) => π a = b).card * n =
-      Fintype.card (Equiv.Perm (Fin n)) := by
-  classical
-  have hfiber (b1 b2 : Fin n) :
-      (Finset.univ.filter fun π : Equiv.Perm (Fin n) => π a = b1).card =
-        (Finset.univ.filter fun π : Equiv.Perm (Fin n) => π a = b2).card := by
-    obtain ⟨τ, hτ⟩ : ∃ τ : Equiv.Perm (Fin n), τ b1 = b2 :=
-      ⟨Equiv.swap b1 b2, Equiv.swap_apply_left _ _⟩
-    simpa [Fintype.card_subtype] using
-      Fintype.card_congr (permFiberEquiv a b1 b2 τ hτ)
-  have hdisj (b1 b2 : Fin n) (hne : b1 ≠ b2) :
-      Disjoint
-        (Finset.univ.filter fun π : Equiv.Perm (Fin n) => π a = b1)
-        (Finset.univ.filter fun π : Equiv.Perm (Fin n) => π a = b2) := by
-    refine Finset.disjoint_left.2 fun π h1 h2 => ?_
-    exact hne ((Finset.mem_filter.mp h1).2.symm.trans (Finset.mem_filter.mp h2).2)
-  have hcover :
-      (Finset.univ.biUnion fun b' : Fin n =>
-        Finset.univ.filter fun π : Equiv.Perm (Fin n) => π a = b') =
-        (Finset.univ : Finset (Equiv.Perm (Fin n))) := by
-    ext π; simp
-  have hsum :
-      ∑ b' : Fin n,
-          (Finset.univ.filter fun π : Equiv.Perm (Fin n) => π a = b').card =
-        Fintype.card (Equiv.Perm (Fin n)) := by
-    rw [← Finset.card_biUnion (fun b1 _ b2 _ h => hdisj b1 b2 h), hcover,
-      Finset.card_univ]
-  simp_rw [hfiber _ b] at hsum
-  simpa [Finset.sum_const, nsmul_eq_mul, mul_comm, Fintype.card_fin] using hsum
 
-theorem card_perm_hit {n : Nat} (A : Finset (Fin n)) (j : Fin n) :
-    (Finset.univ.filter fun π : Equiv.Perm (Fin n) => j ∈ A.image π).card * n =
-      A.card * Fintype.card (Equiv.Perm (Fin n)) := by
-  classical
-  have hEq :
-      (Finset.univ.filter fun π : Equiv.Perm (Fin n) => j ∈ A.image π) =
-        A.biUnion fun a => Finset.univ.filter fun π => π a = j := by
-    ext π; simp [Finset.mem_image]
-  rw [hEq]
-  have hdisj : ∀ a1 ∈ A, ∀ a2 ∈ A, a1 ≠ a2 →
-      Disjoint
-        (Finset.univ.filter fun π : Equiv.Perm (Fin n) => π a1 = j)
-        (Finset.univ.filter fun π : Equiv.Perm (Fin n) => π a2 = j) := by
-    intro a1 _ a2 _ hne
-    refine Finset.disjoint_left.2 fun π h1 h2 => ?_
-    have h1' : π a1 = j := (Finset.mem_filter.mp h1).2
-    have h2' : π a2 = j := (Finset.mem_filter.mp h2).2
-    exact hne (π.injective (h1'.trans h2'.symm))
-  rw [Finset.card_biUnion hdisj, Finset.sum_mul]
-  refine (Finset.sum_congr rfl fun a _ => card_perm_apply_eq a j).trans ?_
-  simp [Finset.sum_const]
 
-theorem avg_rowHit {m n : Nat} (hn : 0 < n)
-    (c : MonotoneColumnSums m n) (S : Finset (Fin n)) (r : Fin m) :
-    (∑ π : Equiv.Perm (Fin n), (rowHit c S r π : ℝ)) /
-        Fintype.card (Equiv.Perm (Fin n)) =
-      ((monotoneRowOnes c r).card : ℝ) * S.card / n := by
-  classical
-  have htot : (Fintype.card (Equiv.Perm (Fin n)) : ℝ) ≠ 0 := by
-    exact_mod_cast (Fintype.card_ne_zero : Fintype.card (Equiv.Perm (Fin n)) ≠ 0)
-  have hn0 : (n : ℝ) ≠ 0 := by exact_mod_cast hn.ne'
-  have hsum :
-      ∑ π : Equiv.Perm (Fin n), (rowHit c S r π : ℝ) =
-        ∑ j ∈ S,
-          ((Finset.univ.filter fun π : Equiv.Perm (Fin n) =>
-              j ∈ (monotoneRowOnes c r).image π).card : ℝ) := by
-    calc ∑ π : Equiv.Perm (Fin n), (rowHit c S r π : ℝ)
-        = ∑ π : Equiv.Perm (Fin n),
-            ∑ j ∈ S, (if j ∈ (monotoneRowOnes c r).image π then (1 : ℝ) else 0) := by
-              refine Fintype.sum_congr _ _ fun π => ?_
-              simp only [rowHit]
-              rw [Finset.inter_comm, ← Finset.filter_mem_eq_inter, Finset.sum_boole]
-      _ = ∑ j ∈ S, ∑ π : Equiv.Perm (Fin n),
-            (if j ∈ (monotoneRowOnes c r).image π then (1 : ℝ) else 0) :=
-              Finset.sum_comm
-      _ = ∑ j ∈ S,
-            ((Finset.univ.filter fun π : Equiv.Perm (Fin n) =>
-                j ∈ (monotoneRowOnes c r).image π).card : ℝ) := by
-              refine Finset.sum_congr rfl fun j _ => ?_
-              simp [Finset.sum_boole]
-  have hhit (j : Fin n) :
-      ((Finset.univ.filter fun π : Equiv.Perm (Fin n) =>
-          j ∈ (monotoneRowOnes c r).image π).card : ℝ) =
-        ((monotoneRowOnes c r).card : ℝ) *
-          Fintype.card (Equiv.Perm (Fin n)) / n := by
-    have h := congrArg (fun x : ℕ => (x : ℝ))
-      (card_perm_hit (monotoneRowOnes c r) j)
-    push_cast at h
-    field_simp [hn0] at h ⊢
-    linarith
-  rw [hsum]; simp_rw [hhit]
-  simp [Finset.sum_const]
-  field_simp [htot, hn0]
 
-theorem sum_avg_rowHit {m n : Nat} (hn : 0 < n) (hm : 0 < m)
-    (c : MonotoneColumnSums m n) (S : Finset (Fin n)) :
-    let p := (∑ r : Fin m, ((monotoneRowOnes c r).card : ℝ)) / (m * n)
-    ∑ r : Fin m,
-        (∑ π : Equiv.Perm (Fin n), (rowHit c S r π : ℝ)) /
-          Fintype.card (Equiv.Perm (Fin n)) =
-      p * m * S.card := by
-  intro p
-  simp_rw [avg_rowHit hn c S]
-  have hm0 : (m : ℝ) ≠ 0 := by exact_mod_cast hm.ne'
-  have hn0 : (n : ℝ) ≠ 0 := by exact_mod_cast hn.ne'
-  have h :
-      ∑ r : Fin m, ((monotoneRowOnes c r).card : ℝ) * S.card / n =
-        ((∑ r : Fin m, ((monotoneRowOnes c r).card : ℝ)) * S.card) / n := by
-    simp_rw [mul_div_assoc, ← Finset.sum_mul]
-  rw [h]
-  change ((∑ r : Fin m, ((monotoneRowOnes c r).card : ℝ)) * S.card) / n =
-    ((∑ r : Fin m, ((monotoneRowOnes c r).card : ℝ)) / (m * n)) * m * S.card
-  field_simp [hm0, hn0]
 
 /-! ## Containing a fixed image set -/
 
@@ -804,76 +681,10 @@ theorem lemma63ExpBound {m n : Nat} (hm : 0 < m) (hn : 0 < n) : Lemma63ExpBound 
 noncomputable def monotoneOnesDensity {m n : Nat} (c : MonotoneColumnSums m n) : ℝ :=
   (∑ r : Fin m, ((monotoneRowOnes c r).card : ℝ)) / (m * n)
 
-theorem monotoneOnesDensity_mul {m n : Nat} (hm : 0 < m) (hn : 0 < n)
-    (c : MonotoneColumnSums m n) :
-    monotoneOnesDensity c * m =
-      (∑ r : Fin m, ((monotoneRowOnes c r).card : ℝ)) / n := by
-  unfold monotoneOnesDensity
-  have hm0 : (m : ℝ) ≠ 0 := by exact_mod_cast hm.ne'
-  have hn0 : (n : ℝ) ≠ 0 := by exact_mod_cast hn.ne'
-  field_simp [hm0, hn0]
 
-theorem sum_rowOnes_le_m_mul_n {m n : Nat} (c : MonotoneColumnSums m n) :
-    ∑ r : Fin m, (monotoneRowOnes c r).card ≤ m * n := by
-  calc
-    ∑ r : Fin m, (monotoneRowOnes c r).card ≤ ∑ _r : Fin m, n :=
-      Finset.sum_le_sum fun r _ => by
-        simpa [Fintype.card_fin] using (monotoneRowOnes c r).card_le_univ
-    _ = m * n := by simp [Finset.sum_const, Finset.card_univ]
 
-theorem avgRowOnes_le_m {m n : Nat} (_hm : 0 < m) (hn : 0 < n)
-    (c : MonotoneColumnSums m n) :
-    (∑ r : Fin m, ((monotoneRowOnes c r).card : ℝ)) / n ≤ m := by
-  have hn0 : (0 : ℝ) < n := by exact_mod_cast hn
-  rw [div_le_iff₀ hn0]
-  exact_mod_cast sum_rowOnes_le_m_mul_n c
 
-theorem monotoneOnesDensity_le_one_div_m_iff {m n : Nat} (hm : 0 < m) (hn : 0 < n)
-    (c : MonotoneColumnSums m n) :
-    monotoneOnesDensity c ≤ (1 : ℝ) / m ↔
-      (∑ r : Fin m, ((monotoneRowOnes c r).card : ℝ)) / n ≤ 1 := by
-  have hmpos : (0 : ℝ) < m := by exact_mod_cast hm
-  have hmul := monotoneOnesDensity_mul hm hn c
-  constructor
-  · intro h
-    have hle : monotoneOnesDensity c * m ≤ 1 := (le_div_iff₀ hmpos).mp h
-    rw [← hmul]
-    exact hle
-  · intro h
-    have hle : monotoneOnesDensity c * m ≤ 1 := hmul.symm ▸ h
-    exact (le_div_iff₀ hmpos).mpr hle
 
-/-- Same Chernoff bound when every row has exactly `⌊p₀·n⌋` ones (constant density `p₀`). -/
-theorem lemma63ExpBound_atDensity {m n : Nat} (hm : 0 < m) (hn : 0 < n)
-    (p₀ : ℝ) (_hp₀0 : 0 ≤ p₀) (_hp₀1 : p₀ ≤ 1)
-    (rowOnes : Nat)
-    (hrowOnes : (rowOnes : ℝ) = p₀ * n)
-    (hrows : ∀ (c : MonotoneColumnSums m n) (r : Fin m),
-      (monotoneRowOnes c r).card = rowOnes) :
-    ∀ (c : MonotoneColumnSums m n) (S : Finset (Fin n)) (t : ℝ),
-      0 < t →
-      ∀ (bad : Finset (Scramble m n)),
-        (∀ σ ∈ bad, (p₀ + t) * m * S.card ≤ (onesInColumns c σ S : ℝ)) →
-          (bad.card : ℝ) ≤
-            Real.exp (-(2 * t ^ 2 * m * S.card)) *
-              (Fintype.card (Scramble m n) : ℝ) := by
-  intro c S t ht bad hbad
-  have h63 := (lemma63ExpBound hm hn).bound c S t ht bad ?hbad'
-  · exact h63
-  intro σ hσ
-  have hp_eq : monotoneOnesDensity c = p₀ := by
-    unfold monotoneOnesDensity
-    have hn0 : (n : ℝ) ≠ 0 := by exact_mod_cast hn.ne'
-    have hm0 : (m : ℝ) ≠ 0 := by exact_mod_cast hm.ne'
-    have hsum :
-        ∑ r : Fin m, ((monotoneRowOnes c r).card : ℝ) = (m : ℝ) * rowOnes := by
-      have h₁ : ∀ r : Fin m, ((monotoneRowOnes c r).card : ℝ) = rowOnes :=
-        fun r => by exact_mod_cast hrows c r
-      simp_rw [h₁, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-    rw [hsum, hrowOnes]
-    field_simp [hm0, hn0]
-  rw [show ((∑ r : Fin m, ((monotoneRowOnes c r).card : ℝ)) / (m * n)) = p₀ from hp_eq]
-  exact hbad σ hσ
 
 theorem onesInColumns_ge_paper_thresh {m n : Nat} (hm : 0 < m) (_hn : 0 < n)
     (c : MonotoneColumnSums m n) (σ : Scramble m n) (epsB : ℝ) (i : Nat)
@@ -900,24 +711,6 @@ theorem onesInColumns_ge_paper_thresh {m n : Nat} (hm : 0 < m) (_hn : 0 < n)
   rw [hthresh]
   exact_mod_cast hones
 
-theorem not_hasCombinatorialPropertyB_iff {m n : Nat} (σ : Scramble m n) (epsB : ℝ) :
-    ¬ HasCombinatorialPropertyB σ epsB ↔
-      ∃ (c : MonotoneColumnSums m n) (i : Nat),
-        1 ≤ i ∧ i ≤ m ∧
-          (epsB / 2) * (m * n) ≤ (onesAboveBottom c σ i : ℝ) := by
-  classical
-  constructor
-  · intro hnot
-    by_contra hex
-    push_neg at hex
-    have hB : HasCombinatorialPropertyB σ epsB := by
-      intro c i hi1 him
-      exact hex c i hi1 him
-    exact hnot hB
-  · intro h
-    rcases h with ⟨c, i, hi1, him, hge⟩
-    intro hB
-    linarith [hB c i hi1 him, hge]
 
 /-- Paper Lemma 6.1 Hoeffding threshold at level `i` (Chvátal uses `p = i/m`). -/
 structure Lemma63ExpBoundAtLevel (m n i : Nat) : Prop where
@@ -994,29 +787,7 @@ theorem lemma63ExpBoundAtLevel_of_avgRowOnes_le {m n i : Nat} (hm : 0 < m) (hn :
   bound c S t ht bad hbad :=
     lemma63ExpBoundAtLevel_bound_for hm hn c (havg c) S t ht bad hbad
 
-/-- Paper threshold Chernoff when every row has `i·n/m` ones (so density `p = i/m`). -/
-theorem lemma63ExpBoundAtLevel_of_constantRows {m n i : Nat} (hm : 0 < m) (hn : 0 < n)
-    (hi : i ≤ m) (rowOnes : Nat) (hrowOnes : rowOnes * m = i * n)
-    (hrows : ∀ (c : MonotoneColumnSums m n) (r : Fin m),
-      (monotoneRowOnes c r).card = rowOnes) :
-    Lemma63ExpBoundAtLevel m n i where
-  bound := by
-    intro c S t ht bad hbad
-    have hmpos : (0 : ℝ) < m := by exact_mod_cast hm
-    have hnpos : (0 : ℝ) < n := by exact_mod_cast hn
-    have hrowOnesR : (rowOnes : ℝ) = (i : ℝ) / (m : ℝ) * n := by
-      field_simp [hmpos.ne', hnpos.ne']
-      rw [← Nat.cast_mul, hrowOnes, Nat.cast_mul]
-    have hi0 : (0 : ℝ) ≤ (i : ℝ) / (m : ℝ) := by positivity
-    have hi1 : (i : ℝ) / (m : ℝ) ≤ 1 :=
-      (div_le_one hmpos).mpr (by exact_mod_cast hi)
-    exact (lemma63ExpBound_atDensity hm hn ((i : ℝ) / (m : ℝ)) hi0 hi1 rowOnes hrowOnesR hrows)
-      c S t ht bad hbad
 
-/-- Paper level `i = m` Chernoff for every monotone matrix (average row ones always `≤ m`). -/
-theorem lemma63ExpBoundAtLevel_top {m n : Nat} (hm : 0 < m) (hn : 0 < n) (_hm1 : 1 ≤ m) :
-    Lemma63ExpBoundAtLevel m n m :=
-  lemma63ExpBoundAtLevel_of_avgRowOnes_le hm hn fun c => avgRowOnes_le_m hm hn c
 
 theorem lemma63ExpBoundAtLevel_one_of_avgRowOnes {m n : Nat} (hm : 0 < m) (hn : 0 < n)
     (havg : AvgRowOnesLeOne m n) :
@@ -1097,49 +868,10 @@ theorem Lemma61FailBoundObligation.of_avgRowOnes_le_one {m n : Nat} {epsB : ℝ}
   levelExp1 := lemma63ExpBoundAtLevel_one_of_avgRowOnes hm hn havg
   levelExp := lemma63ExpBoundAtLevel_of_avgRowOnes_le_one hm hn havg
 
-theorem lemma63ExpBoundAtLevel_of_totalColumnOnes_le {m n i : Nat} (hm : 0 < m) (hn : 0 < n)
-    (h :
-      ∀ (c : MonotoneColumnSums m n),
-        totalColumnOnes c ≤ n * i) :
-    Lemma63ExpBoundAtLevel m n i :=
-  lemma63ExpBoundAtLevel_of_avgRowOnes_le hm hn fun c =>
-    avgRowOnes_le_i_of_totalColumnOnes_le hn c (h c)
 
-theorem lemma63ExpBoundAtLevel_one_of_totalColumnOnesLeN {m n : Nat} (hm : 0 < m) (hn : 0 < n)
-    (h : TotalColumnOnesLeN m n) :
-    Lemma63ExpBoundAtLevel m n 1 :=
-  lemma63ExpBoundAtLevel_of_totalColumnOnes_le hm hn fun c => by
-    simpa [Nat.one_mul] using h c
 
-theorem lemma63ExpBoundAtLevel_of_totalColumnOnesLeN {m n : Nat} (hm : 0 < m) (hn : 0 < n)
-    (h : TotalColumnOnesLeN m n) :
-    ∀ (i : Nat), 1 ≤ i → i ≤ m → Lemma63ExpBoundAtLevel m n i := by
-  intro i hi1 _him
-  refine lemma63ExpBoundAtLevel_of_totalColumnOnes_le hm hn fun c => ?_
-  have hiR : (1 : Nat) ≤ i := hi1
-  have hi0 : 0 < i := Nat.lt_of_lt_of_le (by decide : (0 : Nat) < 1) hiR
-  exact Nat.le_trans (h c) (Nat.le_mul_of_pos_right n hi0)
 
-theorem Lemma61FailBoundObligation.of_totalColumnOnesLeN {m n : Nat} {epsB : ℝ}
-    (hm : 0 < m) (hn : 0 < n) (hm1 : 1 ≤ m) (hn1 : 1 ≤ n)
-    (heps : Real.sqrt (2 * (1 + Real.log m) / m) ≤ epsB)
-    (h : TotalColumnOnesLeN m n) :
-    Lemma61FailBoundObligation m n epsB :=
-  Lemma61FailBoundObligation.of_avgRowOnes_le_one hm hn hm1 hn1 heps
-    (AvgRowOnesLeOne.of_totalColumnOnesLeN hn h)
 
-theorem Lemma61FailBoundObligation.of_totalColSumsLeN {m n : Nat} {epsB : ℝ}
-    (hm : 0 < m) (hn : 0 < n) (hm1 : 1 ≤ m) (hn1 : 1 ≤ n)
-    (heps : Real.sqrt (2 * (1 + Real.log m) / m) ≤ epsB)
-    (h : TotalColSumsLeN m n) :
-    Lemma61FailBoundObligation m n epsB :=
-  Lemma61FailBoundObligation.of_totalColumnOnesLeN hm hn hm1 hn1 heps h
 
-theorem DecodeMatrixClassObligation.of_totalColumnOnesLeN {m n : Nat} {epsB : ℝ}
-    (hm : 0 < m) (hn : 0 < n) (hm1 : 1 ≤ m) (hn1 : 1 ≤ n)
-    (heps : Real.sqrt (2 * (1 + Real.log m) / m) ≤ epsB)
-    (_h : TotalColumnOnesLeN m n) :
-    DecodeMatrixClassObligation m n epsB :=
-  DecodeMatrixClassObligation.standard hm hn hm1 hn1 heps
 
 end Chvatal

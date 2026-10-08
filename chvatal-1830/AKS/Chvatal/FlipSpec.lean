@@ -324,17 +324,7 @@ theorem physicalPackNet_flip {m n : ℕ} (hn : 0 < n) (σ : Scramble m n)
 def flipPerm {N : ℕ} (x : Equiv.Perm (Fin N)) : Equiv.Perm (Fin N) :=
   Fin.revPerm * x * Fin.revPerm
 
-theorem flipPerm_apply {N : ℕ} (x : Equiv.Perm (Fin N)) (w : Fin N) :
-    flipPerm x w = Fin.rev (x (Fin.rev w)) := rfl
 
-/-- Perm form of the flip equivariance. -/
-theorem semanticExec_flipPerm {m n : ℕ} (hn : 0 < n) (σ : Scramble m n)
-    (x : Equiv.Perm (Fin (m * n))) :
-    (canonicalSortScrambleSortPack m n hn (flipScramble σ)).semanticExec
-        ((flipPerm x : Equiv.Perm (Fin (m * n))) : Fin (m * n) → Fin (m * n)) =
-      fun w => Fin.rev ((canonicalSortScrambleSortPack m n hn σ).semanticExec
-        (x : Fin (m * n) → Fin (m * n)) (Fin.rev w)) :=
-  semanticExec_flip hn σ x
 
 /-! ## 3. Low-side node guarantee -/
 

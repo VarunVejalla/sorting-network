@@ -26,8 +26,6 @@ open Finset BigOperators
 def Comparator.overlaps {n : ℕ} (c₁ c₂ : Comparator n) : Prop :=
   c₁.i = c₂.i ∨ c₁.i = c₂.j ∨ c₁.j = c₂.i ∨ c₁.j = c₂.j
 
-instance {n : ℕ} (c₁ c₂ : Comparator n) : Decidable (c₁.overlaps c₂) :=
-  inferInstanceAs (Decidable (_ ∨ _ ∨ _ ∨ _))
 
 
 /-! **Network Depth** -/
@@ -56,34 +54,7 @@ def ComparatorNetwork.depth {n : ℕ} (net : ComparatorNetwork n) : ℕ :=
 theorem depth_nil {n : ℕ} : (⟨[]⟩ : ComparatorNetwork n).depth = 0 := by
   simp [ComparatorNetwork.depth]
 
-/-- After processing `cs` starting from `(wt, d)` with `∀ k, wt k ≤ d`,
-    the running max is at most `d + cs.length`. -/
-lemma depth_foldl_le_length {n : ℕ} (cs : List (Comparator n))
-    (wt : Fin n → ℕ) (d : ℕ) (hwt : ∀ k, wt k ≤ d) :
-    (cs.foldl depthStep (wt, d)).2 ≤ d + cs.length := by
-  induction cs generalizing wt d with
-  | nil => simp [List.foldl]
-  | cons c cs ih =>
-    simp only [List.foldl_cons, List.length_cons]
-    have hi := hwt c.i
-    have hj := hwt c.j
-    have hwt' : ∀ k, (depthStep (wt, d) c).1 k ≤ (depthStep (wt, d) c).2 := by
-      intro k; have hk := hwt k
-      simp only [depthStep, Function.update_apply]
-      split_ifs <;> omega
-    have hd' : (depthStep (wt, d) c).2 ≤ d + 1 := by
-      simp only [depthStep]; omega
-    have step := ih ((depthStep (wt, d) c).1) ((depthStep (wt, d) c).2) hwt'
-    rw [Prod.mk.eta] at step
-    omega
 
-/-- Network depth is at most the number of comparators. -/
-theorem depth_le_size {n : ℕ} (net : ComparatorNetwork n) :
-    net.depth ≤ net.size := by
-  unfold ComparatorNetwork.depth ComparatorNetwork.size
-  have h := depth_foldl_le_length net.comparators (fun _ ↦ 0) 0 (fun _ ↦ le_refl 0)
-  simp at h
-  exact h
 
 
 /-! **Parallel Decomposition** -/
@@ -198,47 +169,8 @@ theorem depth_le_of_decomposition {n : ℕ} (net : ComparatorNetwork n)
 
 /-! **Size–Depth Bound** -/
 
-/-- Updating at index `i` and summing: the new sum plus the old value at `i`
-    equals the old sum plus the new value. -/
-lemma sum_update_add {n : ℕ} (f : Fin n → ℕ) (i : Fin n) (v : ℕ) :
-    ∑ k : Fin n, Function.update f i v k + f i = ∑ k : Fin n, f k + v := by
-  have h1 := Finset.add_sum_erase Finset.univ (Function.update f i v) (Finset.mem_univ i)
-  have h2 := Finset.add_sum_erase Finset.univ f (Finset.mem_univ i)
-  rw [Function.update_self] at h1
-  have h3 : ∑ x ∈ Finset.univ.erase i, Function.update f i v x =
-      ∑ x ∈ Finset.univ.erase i, f x :=
-    Finset.sum_congr rfl fun k hk ↦
-      Function.update_of_ne (Finset.ne_of_mem_erase hk) v f
-  omega
 
-/-- A single `depthStep` increases `∑ wt` by at least 2. -/
-lemma depthStep_sum_ge {n : ℕ} (wt : Fin n → ℕ) (dm : ℕ) (c : Comparator n) :
-    ∑ k : Fin n, wt k + 2 ≤ ∑ k : Fin n, (depthStep (wt, dm) c).1 k := by
-  simp only [depthStep]
-  set t := max (wt c.i) (wt c.j) + 1
-  have hne : c.i ≠ c.j := Fin.ne_of_lt c.h
-  have h1 := sum_update_add wt c.i t
-  have h2 := sum_update_add (Function.update wt c.i t) c.j t
-  rw [Function.update_of_ne hne.symm t wt] at h2
-  -- h1: ∑ (update wt i t) + wt i = ∑ wt + t
-  -- h2: ∑ (double update) + wt j = ∑ (update wt i t) + t
-  -- ht: wt i + wt j + 2 ≤ 2 * t
-  have ht : wt c.i + wt c.j + 2 ≤ 2 * t := by simp only [t]; omega
-  omega
 
-/-- Through a full foldl, `∑ wt` increases by at least `2 * cs.length`. -/
-lemma foldl_sum_increase {n : ℕ} (cs : List (Comparator n))
-    (wt : Fin n → ℕ) (dm : ℕ) :
-    ∑ k : Fin n, wt k + 2 * cs.length ≤
-    ∑ k : Fin n, (cs.foldl depthStep (wt, dm)).1 k := by
-  induction cs generalizing wt dm with
-  | nil => simp
-  | cons c cs ih =>
-    simp only [List.foldl_cons, List.length_cons]
-    have h_step := depthStep_sum_ge wt dm c
-    have h_rest := ih (depthStep (wt, dm) c).1 (depthStep (wt, dm) c).2
-    rw [Prod.mk.eta] at h_rest
-    omega
 
 /-- Wire times are bounded by the running max throughout the fold. -/
 lemma wt_le_running_max {n : ℕ} (cs : List (Comparator n))
@@ -260,24 +192,6 @@ lemma wt_le_running_max {n : ℕ} (cs : List (Comparator n))
       · rw [Function.update_of_ne hki t wt]
         exact le_trans hk (le_max_left dm t)
 
-/-- **Size–depth bound**: `2 * size ≤ n * depth` for any comparator network.
-    Each comparator uses 2 of the `n` wires, contributing ≥ 2 to the total
-    wire-time sum. The sum is bounded by `n * depth` since each wire ends
-    at time ≤ depth. -/
-theorem size_le_half_n_mul_depth {n : ℕ} (net : ComparatorNetwork n) :
-    2 * net.size ≤ n * net.depth := by
-  unfold ComparatorNetwork.depth ComparatorNetwork.size
-  have h_sum := foldl_sum_increase net.comparators (fun _ ↦ 0) 0
-  simp only [Finset.sum_const_zero, zero_add] at h_sum
-  have h_wt := wt_le_running_max net.comparators (fun _ ↦ 0) 0 (fun _ ↦ le_refl 0)
-  have h_bound : ∑ k : Fin n, (net.comparators.foldl depthStep (fun _ ↦ 0, 0)).1 k ≤
-      n * (net.comparators.foldl depthStep (fun _ ↦ 0, 0)).2 := by
-    calc ∑ k : Fin n, (net.comparators.foldl depthStep (fun _ ↦ 0, 0)).1 k
-        ≤ ∑ _k : Fin n, (net.comparators.foldl depthStep (fun _ ↦ 0, 0)).2 :=
-          Finset.sum_le_sum fun k _ ↦ h_wt k
-      _ = n * (net.comparators.foldl depthStep (fun _ ↦ 0, 0)).2 := by
-          simp [Finset.sum_const, Finset.card_univ]
-  omega
 
 
 /-! **Depth of Concatenated Networks** -/
@@ -337,40 +251,9 @@ theorem ComparatorNetwork.depth_append_le {n : ℕ}
   simp only [append]
   exact depth_append net₁ net₂
 
-/-- Depth of three sequentially composed networks is at most the sum of depths. -/
-theorem ComparatorNetwork.depth_append3 {n : ℕ}
-    (net₁ net₂ net₃ : ComparatorNetwork n) :
-    (net₁.append net₂ |>.append net₃).depth ≤
-      net₁.depth + net₂.depth + net₃.depth := by
-  calc
-    (net₁.append net₂ |>.append net₃).depth
-        ≤ (net₁.append net₂).depth + net₃.depth := depth_append_le _ _
-    _ ≤ net₁.depth + net₂.depth + net₃.depth := by
-      exact add_le_add (depth_append_le net₁ net₂) le_rfl
 
-/-- Repeat a network `k` times in sequence. -/
-def ComparatorNetwork.appendRepeated {n : ℕ} (k : ℕ) (net : ComparatorNetwork n) :
-    ComparatorNetwork n :=
-  match k with
-  | 0 => ⟨[]⟩
-  | k + 1 => net.append (net.appendRepeated k)
 
-@[simp] theorem ComparatorNetwork.appendRepeated_zero {n : ℕ}
-    (net : ComparatorNetwork n) :
-    net.appendRepeated 0 = ⟨[]⟩ := rfl
 
-theorem ComparatorNetwork.depth_appendRepeated {n : ℕ} (k : ℕ)
-    (net : ComparatorNetwork n) {d : ℕ} (hd : net.depth ≤ d) :
-    (net.appendRepeated k).depth ≤ k * d := by
-  induction k with
-  | zero => simp [appendRepeated, ComparatorNetwork.depth]
-  | succ k ih =>
-    simp only [appendRepeated]
-    calc
-      (net.append (net.appendRepeated k)).depth
-          ≤ net.depth + (net.appendRepeated k).depth := depth_append_le _ _
-      _ ≤ d + k * d := add_le_add hd ih
-      _ = (k + 1) * d := by ring
 
 
 /-! **Depth of Shifted/Embedded Networks** -/

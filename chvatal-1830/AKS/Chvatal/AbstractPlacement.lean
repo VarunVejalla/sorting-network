@@ -204,18 +204,7 @@ structure ChildRegisterCapacityLower (p : ScheduleParams) (d t : Nat)
       capacity p d (b.l + 1) t ≤
         ((pl.regs (b.child j.val j.isLt hbd)).card : Rat)
 
-def PlacementCapacityLower.toChildRegister {p : ScheduleParams} {d t : Nat}
-    {pl : Placement p.br d} (h : PlacementCapacityLower p d t pl) :
-    ChildRegisterCapacityLower p d t pl where
-  hGe := fun b hb hbd j _hpos => h.hGe (b.child j.val j.isLt hbd)
 
-def ChildRegisterCapacityLower.of_emptyChildRegs (p : ScheduleParams) (d t : Nat)
-    (pl : Placement p.br d)
-    (h : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l) (hbd : b.l < d) (j : Fin p.br),
-      (pl.regs (b.child j.val j.isLt hbd)).card = 0) :
-    ChildRegisterCapacityLower p d t pl where
-  hGe := fun b hb hbd j hpos =>
-    absurd hpos (by rw [h b hb hbd j]; exact Nat.not_lt_zero 0)
 
 /-- On the scheduler ladder `α(t) ≤ l < ω(t)`, capacity is below native bag size
     once `3 * l + 2 ≤ t` (params7 native-card exponent comparison). -/
@@ -257,57 +246,11 @@ structure AbstractChildSend (p : ScheduleParams) (d : Nat) (t : Nat)
   hempty : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l), b.l = d →
     step.fromChildren b hb = ∅
 
-def AbstractChildSend.toCover {p : ScheduleParams} {d t : Nat}
-    {pl pl' : Placement p.br d} {step : PlacementStep p d pl pl'}
-    {perm : Fin (p.br ^ d) → Fin (p.br ^ d)}
-    (A : AbstractChildSend p d t pl pl' step perm) :
-    ChildSendCover p d pl pl' step where
-  sendUp := A.sendUp
-  hsubset := A.hsubset
-  hcover := fun b hb hbd => by rw [A.hFrom b hb hbd]
-  hempty := A.hempty
 
-def AbstractChildSend.toSupport {p : ScheduleParams} {d t : Nat}
-    {pl pl' : Placement p.br d} {step : PlacementStep p d pl pl'}
-    {perm : Fin (p.br ^ d) → Fin (p.br ^ d)}
-    (A : AbstractChildSend p d t pl pl' step perm) :
-    ChildSendSupport p d pl pl' step where
-  hsupport := fun b hb hbd => by
-    rw [A.hFrom b hb hbd]
-    intro x hx
-    rcases mem_biUnion.mp hx with ⟨j, hj, hxj⟩
-    exact mem_biUnion.mpr ⟨j, hj, A.hsubset b hb hbd j hxj⟩
-  hempty := A.hempty
 
-def AbstractChildSend.toCapBudget {p : ScheduleParams} {d t : Nat}
-    {pl pl' : Placement p.br d} {step : PlacementStep p d pl pl'}
-    {perm : Fin (p.br ^ d) → Fin (p.br ^ d)}
-    (A : AbstractChildSend p d t pl pl' step perm) :
-    ChildSendCapBudget p d t pl pl' step A.toCover where
-  hSend := A.hSend
-  hRegs := A.hRegs
 
-def AbstractChildSend.toFair {p : ScheduleParams} {d t : Nat}
-    {pl pl' : Placement p.br d} {step : PlacementStep p d pl pl'}
-    {perm : Fin (p.br ^ d) → Fin (p.br ^ d)}
-    (A : AbstractChildSend p d t pl pl' step perm) :
-    ChildSendFair p d pl pl' step perm perm A.toCover :=
-  childSendFair_of_same_perm p d pl pl' step perm A.toCover fun b hb hbd j => by
-    simpa [AbstractChildSend.toCover] using A.hDensity b hb hbd j
 
-def AbstractChildSend.toBridge {p : ScheduleParams} {d t : Nat}
-    {pl pl' : Placement p.br d} {step : PlacementStep p d pl pl'}
-    {perm : Fin (p.br ^ d) → Fin (p.br ^ d)}
-    (A : AbstractChildSend p d t pl pl' step perm) :
-    ChildSendBridge p d pl pl' step perm perm A.toCover :=
-  childSendBridge_of_same_perm p d pl pl' step perm A.toCover
 
-def AbstractChildSend.toCard {p : ScheduleParams} {d t : Nat}
-    {pl pl' : Placement p.br d} {step : PlacementStep p d pl pl'}
-    {perm : Fin (p.br ^ d) → Fin (p.br ^ d)}
-    (A : AbstractChildSend p d t pl pl' step perm) :
-    ChildSendCard p d pl pl' step A.toCover :=
-  childSendCard_of_capBudget p d t pl pl' step A.toCover A.toCapBudget
 
 /-! **Fillers** -/
 
@@ -377,15 +320,6 @@ def AbstractChildSend.ofPreferNon (p : ScheduleParams) (d t : Nat)
 
 /-! **Wire preferNon into a PlacementStep** -/
 
-/-- Distinct child indices yield distinct child bags. -/
-theorem KBag.child_ne {br d : Nat} (b : KBag br d) (hbd : b.l < d)
-    (j1 j2 : Fin br) (hne : j1 ≠ j2) :
-    b.child j1.val j1.isLt hbd ≠ b.child j2.val j2.isLt hbd := by
-  intro heq
-  have hx : (b.child j1.val j1.isLt hbd).x = (b.child j2.val j2.isLt hbd).x :=
-    congrArg KBag.x heq
-  simp only [KBag.child] at hx
-  exact hne (Fin.ext (by omega))
 
 /-- Aggregate prefer-non send-ups used as `fromChildren`. -/
 def preferNonFromChildren (p : ScheduleParams) (d t : Nat)
@@ -445,72 +379,10 @@ def AbstractChildSend.ofPreferNonStep (p : ScheduleParams) (d t : Nat)
 
 /-! **Support cover equals abstract cover** -/
 
-theorem AbstractChildSend.sendUp_eq_inter {p : ScheduleParams} {d t : Nat}
-    {pl pl' : Placement p.br d} {step : PlacementStep p d pl pl'}
-    {perm : Fin (p.br ^ d) → Fin (p.br ^ d)}
-    (A : AbstractChildSend p d t pl pl' step perm)
-    (b : KBag p.br d) (hb : 1 ≤ b.l) (hbd : b.l < d) (j : Fin p.br) :
-    A.sendUp b hb hbd j =
-      step.fromChildren b hb ∩ pl.regs (b.child j.val j.isLt hbd) := by
-  ext x
-  constructor
-  · intro hx
-    refine mem_inter.mpr ⟨?_, A.hsubset b hb hbd j hx⟩
-    rw [A.hFrom b hb hbd]
-    exact mem_biUnion.mpr ⟨j, mem_univ j, hx⟩
-  · intro hx
-    have hxFC := (mem_inter.mp hx).1
-    have hxR := (mem_inter.mp hx).2
-    rw [A.hFrom b hb hbd] at hxFC
-    rcases mem_biUnion.mp hxFC with ⟨j', _, hxj'⟩
-    have hxRj' : x ∈ pl.regs (b.child j'.val j'.isLt hbd) :=
-      A.hsubset b hb hbd j' hxj'
-    have hj : j' = j := by
-      by_contra hne
-      have hbags := KBag.child_ne b hbd j' j hne
-      exact (disjoint_left.mp (pl.disjoint _ _ hbags)) hxRj' hxR
-    subst hj
-    exact hxj'
 
-/-- Support-cover send-up equals the abstract send-up. -/
-theorem AbstractChildSend.sendUp_eq_supportCover {p : ScheduleParams} {d t : Nat}
-    {pl pl' : Placement p.br d} {step : PlacementStep p d pl pl'}
-    {perm : Fin (p.br ^ d) → Fin (p.br ^ d)}
-    (A : AbstractChildSend p d t pl pl' step perm)
-    (b : KBag p.br d) (hb : 1 ≤ b.l) (hbd : b.l < d) (j : Fin p.br) :
-    (childSendCover_of_support p d pl pl' step A.toSupport).sendUp b hb hbd j =
-      A.sendUp b hb hbd j := by
-  simp only [childSendCover_of_support, A.sendUp_eq_inter b hb hbd j]
 
-def AbstractChildSend.toSupportCard {p : ScheduleParams} {d t : Nat}
-    {pl pl' : Placement p.br d} {step : PlacementStep p d pl pl'}
-    {perm : Fin (p.br ^ d) → Fin (p.br ^ d)}
-    (A : AbstractChildSend p d t pl pl' step perm) :
-    ChildSendCard p d pl pl' step
-      (childSendCover_of_support p d pl pl' step A.toSupport) where
-  hCardFrac := fun b hb hbd j => by
-    simpa [A.sendUp_eq_supportCover b hb hbd j, AbstractChildSend.toCover] using
-      A.toCard.hCardFrac b hb hbd j
 
-def AbstractChildSend.toSupportFair {p : ScheduleParams} {d t : Nat}
-    {pl pl' : Placement p.br d} {step : PlacementStep p d pl pl'}
-    {perm : Fin (p.br ^ d) → Fin (p.br ^ d)}
-    (A : AbstractChildSend p d t pl pl' step perm) :
-    ChildSendFair p d pl pl' step perm perm
-      (childSendCover_of_support p d pl pl' step A.toSupport) :=
-  childSendFair_of_same_perm p d pl pl' step perm
-    (childSendCover_of_support p d pl pl' step A.toSupport)
-    fun b hb hbd j => by
-      simpa [A.sendUp_eq_supportCover b hb hbd j] using A.hDensity b hb hbd j
 
-def AbstractChildSend.toSupportBridge {p : ScheduleParams} {d t : Nat}
-    {pl pl' : Placement p.br d} {step : PlacementStep p d pl pl'}
-    {perm : Fin (p.br ^ d) → Fin (p.br ^ d)}
-    (A : AbstractChildSend p d t pl pl' step perm) :
-    ChildSendBridge p d pl pl' step perm perm
-      (childSendCover_of_support p d pl pl' step A.toSupport) :=
-  childSendBridge_of_same_perm p d pl pl' step perm
-    (childSendCover_of_support p d pl pl' step A.toSupport)
 
 /-! **Assemble StageKernelWithChildren children fields** -/
 
@@ -538,118 +410,13 @@ structure AbstractParentResidue (p : ScheduleParams) (ip : InvariantParams)
         ((b.parent (br_ge_one p)).strangers r perm
           (pl.regs (b.parent (br_ge_one p))) (br_ge_one p) : Rat)
 
-theorem hFromChildrenR_top_of_root (p : ScheduleParams) (ip : InvariantParams)
-    (d : Nat) (t : Nat) (pl pl' : Placement p.br d)
-    (step : PlacementStep p d pl pl')
-    (perm' : Fin (p.br ^ d) → Fin (p.br ^ d))
-    (b : KBag p.br d) (hb : 1 ≤ b.l) :
-    ((b.strangers (d + 1) perm' (step.fromChildren b hb) (br_ge_one p) : Rat)) ≤
-      ip.delta ^ 2 * p.A * (p.br : Rat) / p.nu *
-        (ip.mu * ip.delta ^ (d - 1) *
-          (p.A * p.nu * capacity p d (b.l - 1) t)) := by
-  have h0 := KBag.strangers_succ_d_eq_zero b perm' (step.fromChildren b hb)
-    (br_ge_one p)
-  have hRHS :
-      (0 : Rat) ≤
-        ip.delta ^ 2 * p.A * (p.br : Rat) / p.nu *
-          (ip.mu * ip.delta ^ (d - 1) *
-            (p.A * p.nu * capacity p d (b.l - 1) t)) := by
-    have := p.A_pos
-    have := p.hnu_pos
-    have := p.br_cast_pos
-    have := ip.hmu_pos
-    have := ip.hdelta_pos
-    have := capacity_pos p d (b.l - 1) t
-    positivity
-  simpa [h0] using hRHS
 
-theorem level0_of_root (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
-    (t : Nat) (pl' : Placement p.br d)
-    (perm' : Fin (p.br ^ d) → Fin (p.br ^ d))
-    (b : KBag p.br d) (r : Nat) (hb0 : b.l = 0) (_hr : r ≤ d) :
-    ((b.strangers (r + 1) perm' (pl'.regs b) (br_ge_one p) : Rat)) ≤
-      ip.mu * ip.delta ^ r * capacity p d 0 (t + 1) := by
-  have hlt : b.l < r + 1 := by
-    rw [hb0]; omega
-  have h0 := KBag.strangers_eq_zero_of_lt_order b (r + 1) perm' (pl'.regs b)
-    (br_ge_one p) (by omega) hlt
-  have hRHS :
-      (0 : Rat) ≤ ip.mu * ip.delta ^ r * capacity p d 0 (t + 1) := by
-    have := ip.hmu_pos
-    have := ip.hdelta_pos
-    have := capacity_pos p d 0 (t + 1)
-    positivity
-  simpa [h0] using hRHS
 
-/-- Fill `StageKernelWithChildren` from abstract children-send (same perm) plus
-    parent-send residue. Schedule counts, slack, top-order, and level-0 are
-    discharged. -/
-def StageKernelWithChildren.ofAbstractChildSend
-    (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
-    (sched : LevelSchedule p d) (t : Nat)
-    (pl pl' : Placement p.br d)
-    (perm : Fin (p.br ^ d) → Fin (p.br ^ d))
-    (step : PlacementStep p d pl pl')
-    (ht : t + 1 ≤ sched.tf)
-    (A : AbstractChildSend p d t pl pl' step perm)
-    (R : AbstractParentResidue p ip d t pl perm pl' perm step) :
-    StageKernelWithChildren p ip d sched t pl perm pl' perm where
-  ht := ht
-  step := step
-  counts := stageCounts_on_schedule p ip d sched t
-  counts_wires := stageCounts_on_schedule_wires p ip d sched t
-  counts_bad := stageCounts_on_schedule_bad p ip d sched t
-  parentSep := R.parentSep
-  ha_le_cap := R.ha_le_cap
-  slack0 := fun b hb => slackBound p d t b hb
-  hSlack0 := fun b hb => slackBound_le p d t b hb
-  hBadSend0 := R.hBadSend0
-  hFringeSend := R.hFringeSend
-  support := A.toSupport
-  card := A.toSupportCard
-  fair := A.toSupportFair
-  bridge := A.toSupportBridge
-  hFromChildrenR_top := fun b hb =>
-    hFromChildrenR_top_of_root p ip d t pl pl' step perm b hb
-  level0 := fun b r hb0 hr => level0_of_root p ip d t pl' perm b r hb0 hr
 
 /-! **Initial root placement** -/
 
-/-- All wires at the unique root bag. -/
-def rootPlacement (br d : Nat) : Placement br d where
-  regs b := if b = KBag.root br d then univ else ∅
-  disjoint a b hab := by
-    by_cases ha : a = KBag.root br d <;> by_cases hb : b = KBag.root br d
-    · exact absurd (ha.trans hb.symm) hab
-    · simp [ha, hb]
-    · simp [ha, hb]
-    · simp [ha, hb]
-  complete i := ⟨KBag.root br d, by simp⟩
 
-theorem rootPlacement_strangers_eq_zero (br d : Nat) (hbr : 1 ≤ br)
-    (perm : Fin (br ^ d) → Fin (br ^ d))
-    (b : KBag br d) (r : Nat) (_hr : r ≤ d) :
-    b.strangers (r + 1) perm ((rootPlacement br d).regs b) hbr = 0 := by
-  by_cases hb : b = KBag.root br d
-  · subst hb
-    exact KBag.strangers_eq_zero_of_lt_order _ (r + 1) perm _ hbr (by omega)
-      (by simp [KBag.root])
-  · simp only [rootPlacement, if_neg hb, KBag.strangers_empty]
 
-/-- Initial outsider bound: root placement has no strangers. -/
-theorem outsiderBoundLe_rootPlacement (p : ScheduleParams) (ip : InvariantParams)
-    (d : Nat) (sched : LevelSchedule p d)
-    (perm : Fin (p.br ^ d) → Fin (p.br ^ d)) :
-    OutsiderBoundLe p ip d sched 0 (rootPlacement p.br d) perm := by
-  intro b r hr
-  have h0 := rootPlacement_strangers_eq_zero p.br d (br_ge_one p) perm b r hr
-  have hRHS :
-      (0 : Rat) ≤ ip.mu * ip.delta ^ r * capacity p d b.l 0 := by
-    have := ip.hmu_pos
-    have := ip.hdelta_pos
-    have := capacity_pos p d b.l 0
-    positivity
-  simpa [h0] using hRHS
 
 /-! **Residual per-stage data for a preferNon trajectory** -/
 
@@ -688,126 +455,14 @@ def PreferNonStageObligation.step {p : ScheduleParams} {ip : InvariantParams}
     PlacementStep p d pl pl' :=
   placementStep_of_preferNon p d t pl pl' perm O.fromParent O.hregs
 
-def PreferNonStageObligation.childSend {p : ScheduleParams} {ip : InvariantParams}
-    {d t : Nat} {pl pl' : Placement p.br d}
-    {perm : Fin (p.br ^ d) → Fin (p.br ^ d)}
-    (O : PreferNonStageObligation p ip d t pl pl' perm) :
-    AbstractChildSend p d t pl pl' O.step perm :=
-  AbstractChildSend.ofPreferNonStep p d t pl pl' perm O.fromParent O.hregs O.hcap
 
-def PreferNonStageObligation.of_childrenData {p : ScheduleParams} {ip : InvariantParams}
-    {d t : Nat} {pl pl' : Placement p.br d}
-    {perm : Fin (p.br ^ d) → Fin (p.br ^ d)}
-    (C : PreferNonStageChildrenData p d t pl pl' perm)
-    (parent : AbstractParentResidue p ip d t pl perm pl' perm
-      (placementStep_of_preferNon p d t pl pl' perm C.fromParent C.hregs)) :
-    PreferNonStageObligation p ip d t pl pl' perm where
-  fromParent := C.fromParent
-  hregs := C.hregs
-  hcap := C.hcap
-  parent := parent
 
-def PreferNonStageChildrenData.of_obligation {p : ScheduleParams} {ip : InvariantParams}
-    {d t : Nat} {pl pl' : Placement p.br d}
-    {perm : Fin (p.br ^ d) → Fin (p.br ^ d)}
-    (O : PreferNonStageObligation p ip d t pl pl' perm) :
-    PreferNonStageChildrenData p d t pl pl' perm where
-  fromParent := O.fromParent
-  hregs := O.hregs
-  hcap := O.hcap
 
-/-- PreferNon children-send with no parent send-up (only `fromChildren`). -/
-def PreferNonStageChildrenData.fromParent_empty (p : ScheduleParams) (d t : Nat)
-    (pl pl' : Placement p.br d)
-    (perm : Fin (p.br ^ d) → Fin (p.br ^ d))
-    (hregs : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
-      pl'.regs b ⊆ preferNonFromChildren p d t pl perm b hb)
-    (hcap : ChildRegisterCapacityLower p d t pl) :
-    PreferNonStageChildrenData p d t pl pl' perm where
-  fromParent := fun _ _ => ∅
-  hregs := fun b hb => by
-    simpa [empty_union, union_empty] using hregs b hb
-  hcap := hcap
 
-theorem preferNonFromChildren_empty_of_childRegs_empty (p : ScheduleParams) (d t : Nat)
-    (pl : Placement p.br d)
-    (perm : Fin (p.br ^ d) → Fin (p.br ^ d))
-    (b : KBag p.br d) (hb : 1 ≤ b.l)
-    (h : ∀ (hbd : b.l < d) (j : Fin p.br),
-      (pl.regs (b.child j.val j.isLt hbd)).card = 0) :
-    preferNonFromChildren p d t pl perm b hb = ∅ := by
-  by_cases hbd : b.l < d
-  · rw [preferNonFromChildren_eq, dif_pos hbd]
-    apply eq_empty_iff_forall_notMem.mpr
-    intro x hx
-    rcases mem_biUnion.mp hx with ⟨j, _, hxj⟩
-    have h0 := h hbd j
-    have hxR : x ∈ pl.regs (b.child j.val j.isLt hbd) :=
-      preferNon_subset (pl.regs (b.child j.val j.isLt hbd))
-        (fun r => (b.child j.val j.isLt hbd).Strange 2 r perm (br_ge_one p))
-        (sendUpNat p d (b.l + 1) t) hxj
-    have hempty : pl.regs (b.child j.val j.isLt hbd) = ∅ := Finset.card_eq_zero.mp h0
-    exact False.elim (notMem_empty x (hempty ▸ hxR))
-  · rw [preferNonFromChildren_eq, dif_neg hbd]
 
-theorem rootPlacement_childRegs_empty (br d : Nat) (b : KBag br d) (_hb : 1 ≤ b.l)
-    (hbd : b.l < d) (j : Fin br) :
-    (rootPlacement br d).regs (b.child j.val j.isLt hbd) = ∅ := by
-  simp only [rootPlacement]
-  have hne : b.child j.val j.isLt hbd ≠ KBag.root br d := by
-    intro heq
-    have hl := congrArg KBag.l heq
-    simp only [KBag.child, KBag.root] at hl
-    omega
-  simp [hne]
 
-theorem registerCover_rootPlacement_fromParent_empty (p : ScheduleParams) (d t : Nat)
-    (perm : Fin (p.br ^ d) → Fin (p.br ^ d)) :
-    ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
-      (rootPlacement p.br d).regs b ⊆
-        preferNonFromChildren p d t (rootPlacement p.br d) perm b hb := by
-  intro b hb
-  have hregs : (rootPlacement p.br d).regs b = ∅ := by
-    simp only [rootPlacement]
-    have hne : b ≠ KBag.root p.br d := by
-      intro heq
-      have hl := congrArg KBag.l heq
-      simp only [KBag.root] at hl
-      omega
-    simp [hne]
-  by_cases hbd : b.l < d
-  · have hempty := preferNonFromChildren_empty_of_childRegs_empty p d t
-      (rootPlacement p.br d) perm b hb (fun hbd' j => by
-        rw [rootPlacement_childRegs_empty p.br d b hb hbd' j]
-        simp)
-    rw [hregs, hempty]
-  · have hempty : preferNonFromChildren p d t (rootPlacement p.br d) perm b hb = ∅ := by
-      rw [preferNonFromChildren_eq, dif_neg hbd]
-    rw [hregs, hempty]
 
-def PreferNonStageChildrenData.rootStage_fromParent_empty (p : ScheduleParams)
-    (d t : Nat) (perm : Fin (p.br ^ d) → Fin (p.br ^ d)) :
-    PreferNonStageChildrenData p d t (rootPlacement p.br d) (rootPlacement p.br d) perm :=
-  PreferNonStageChildrenData.fromParent_empty p d t (rootPlacement p.br d)
-    (rootPlacement p.br d) perm
-    (registerCover_rootPlacement_fromParent_empty p d t perm)
-    (ChildRegisterCapacityLower.of_emptyChildRegs p d t (rootPlacement p.br d)
-      (fun b hb hbd j => by
-        rw [rootPlacement_childRegs_empty p.br d b hb hbd j]
-        simp))
 
-theorem placementStep_of_preferNon_fromParent_empty (p : ScheduleParams) (d t : Nat)
-    (pl pl' : Placement p.br d)
-    (perm : Fin (p.br ^ d) → Fin (p.br ^ d))
-    (hregs : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
-      pl'.regs b ⊆ preferNonFromChildren p d t pl perm b hb)
-    (hcap : ChildRegisterCapacityLower p d t pl) :
-    placementStep_of_preferNon p d t pl pl' perm
-      (PreferNonStageChildrenData.fromParent_empty p d t pl pl' perm hregs hcap).fromParent
-      (PreferNonStageChildrenData.fromParent_empty p d t pl pl' perm hregs hcap).hregs =
-      placementStep_of_preferNon p d t pl pl' perm
-        (fun _ _ => ∅) (fun b hb => by
-          simpa [empty_union, union_empty] using hregs b hb) := rfl
 
 end Chvatal
 

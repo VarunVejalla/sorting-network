@@ -146,16 +146,5 @@ theorem allocation_inactive (p : ScheduleParams) (d : Nat)
     allocation p d sched i t = 0 := by
   simp only [allocation, if_neg h]
 
-theorem allocation_top (p : ScheduleParams) (d : Nat)
-    (sched : LevelSchedule p d) (t : Nat) (ht : t ≤ sched.tf) :
-    allocation p d sched (sched.alpha t) t =
-      capacity p d (sched.alpha t) t := by
-  have hao := sched.alpha_le_omega t ht
-  have hpar := sched.alpha_parity t ht
-  have hcond :
-      t ≤ sched.tf ∧ sched.alpha t ≤ sched.alpha t ∧
-        sched.alpha t ≤ sched.omega t ∧ sched.alpha t % 2 = t % 2 :=
-    ⟨ht, le_rfl, hao, hpar⟩
-  simp only [allocation, if_pos hcond, ↓reduceIte]
 
 end Chvatal

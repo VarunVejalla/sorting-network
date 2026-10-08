@@ -38,10 +38,6 @@ def finalSorterPaperDepth : ℕ := 903
 def totalDepth (d : ℕ) : ℕ :=
   rootSeparatorPaperDepth + ordinaryRounds d * ordinaryStagePaperDepth + finalSorterPaperDepth
 
-/-- Largest `d` with `bitonicDepthBudget (6·d) ≤ totalDepth d`.
-    Full-wire Batcher on `64^d` meets the §7 total budget exactly on `7 ≤ d ≤ 603`;
-    past this range Batcher is too deep for the padded 1830 form. -/
-def batcherFitsTotalDepthMax : ℕ := 603
 
 /-- Per-stage depth budgets matching §7 paper accounting. -/
 structure StageDepthBudget (d : ℕ) where
@@ -52,24 +48,7 @@ structure StageDepthBudget (d : ℕ) where
   hord : ordinaryStageDepth ≤ ordinaryStagePaperDepth
   hfinal : finalSorterDepth ≤ finalSorterPaperDepth
 
-/-- §7 paper budgets at equality (6320, 3660, 903). -/
-def StageDepthBudget.ofPaper (d : ℕ) : StageDepthBudget d where
-  rootSepDepth := rootSeparatorPaperDepth
-  ordinaryStageDepth := ordinaryStagePaperDepth
-  finalSorterDepth := finalSorterPaperDepth
-  hroot := le_rfl
-  hord := le_rfl
-  hfinal := le_rfl
 
-theorem StageDepthBudget.depth_sum_le (d : ℕ) (B : StageDepthBudget d) :
-    B.rootSepDepth + ordinaryRounds d * B.ordinaryStageDepth + B.finalSorterDepth ≤
-      totalDepth d := by
-  unfold totalDepth rootSeparatorPaperDepth ordinaryStagePaperDepth finalSorterPaperDepth
-  have hmid :
-      ordinaryRounds d * B.ordinaryStageDepth ≤
-        ordinaryRounds d * ordinaryStagePaperDepth :=
-    Nat.mul_le_mul_left _ B.hord
-  exact add_le_add (add_le_add B.hroot hmid) B.hfinal
 
 /-- §7 closed form. At `d = 7` there are zero ordinary rounds. -/
 theorem totalDepth_eq (d : ℕ) (hd : 7 ≤ d) :
@@ -92,16 +71,7 @@ theorem clog64_pow_cast (e : ℕ) : ((64 ^ e : ℕ) : ℝ) = (2 : ℝ) ^ (6 * e)
   rw [h1, h64]
   exact (pow_mul 2 6 e).symm
 
-theorem logb64pow (e : ℕ) : Real.logb 2 ((64 ^ e : ℕ) : ℝ) = 6 * e := by
-  rw [clog64_pow_cast, Real.logb_pow,
-    Real.logb_self_eq_one (show (1 : ℝ) < 2 by norm_num)]
-  push_cast
-  ring
 
-/-- Sharp per-power form: `1830·lg(64^d) - 69637`. -/
-theorem totalDepth_pow_eq (d : ℕ) (hd : 7 ≤ d) :
-    (totalDepth d : ℝ) = 1830 * Real.logb 2 ((64 ^ d : ℕ) : ℝ) - 69637 := by
-  rw [logb64pow, totalDepth_real d hd]
 
 /-- Padding to the next power of 64 costs at most 6 binary logs, giving the
 `-58657` form. Pure arithmetic; no network is constructed. -/

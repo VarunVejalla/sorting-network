@@ -471,68 +471,12 @@ theorem packSemanticIntrusionCountB_eq_onesAboveBottom {m n : Nat} (hn : 0 < n)
         σ i :=
   matrixIntrusionCountB_semantic_eq_onesAboveBottom hn pack hcol hrow v i him
 
-/-- General `m`, `n`: semantic Property B decode (middle stage uses `wirePerm`). -/
-theorem MiddleStageDecodeHyp.of_idealColumnSort_rowScramble {m n : Nat} (hn : 0 < n) :
-    MiddleStageDecodeHyp m n hn where
-  decode := fun σ pack hcol hrow v i _hi1 him => by
-    refine ⟨monotoneColumnSumsOfBool hn
-        (pack.colSort.net.exec fun w => largestKeyThreshold01 (m := m) (n := n) i (v w)), ?_⟩
-    exact le_of_eq (packSemanticIntrusionCountB_eq_onesAboveBottom hn pack hcol hrow v i him)
 
-theorem HasPackSemanticPropertyB.of_combinatorial {m n : Nat} {epsB : ℝ} (hn : 0 < n)
-    {σ : Scramble m n} (pack : SortScrambleSortPack m n hn σ)
-    (hcol : IdealColumnSort m n hn pack.colSort)
-    (hrow : RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble)
-    (hComb : HasCombinatorialPropertyB σ epsB) :
-    HasPackSemanticPropertyB hn pack epsB := by
-  rw [HasPackSemanticPropertyB_iff]
-  intro v i hi1 him
-  rw [packSemanticIntrusionCountB_eq_onesAboveBottom hn pack hcol hrow v i him]
-  exact hComb
-      (monotoneColumnSumsOfBool hn
-        (pack.colSort.net.exec fun w => largestKeyThreshold01 (m := m) (n := n) i (v w)))
-      i hi1 him
 
-theorem HasPackSemanticPropertyB_canonical_of_combinatorial {m n : Nat} {epsB : ℝ} (hn : 0 < n)
-    (σ : Scramble m n) (hComb : HasCombinatorialPropertyB σ epsB) :
-    HasMatrixPropertyB_exec m n hn (canonicalSortScrambleSortPack m n hn σ) epsB :=
-  HasPackSemanticPropertyB.of_combinatorial hn (canonicalSortScrambleSortPack m n hn σ)
-    (idealColumnSort_columnSortNetwork m n hn)
-    (RowScrambleCorrect.rowScrambleNetwork_columnSortNetwork hn σ) hComb
 
-/-- Combinatorial Property B on `σ` ⇒ semantic matrix Property B on the canonical pack. -/
-theorem combinatorialPropertyB_implies_matrixB_exec_canonical {m n : Nat} {epsB : ℝ} (hn : 0 < n)
-    (σ : Scramble m n) (hComb : HasCombinatorialPropertyB σ epsB) :
-    HasMatrixPropertyB_exec m n hn (canonicalSortScrambleSortPack m n hn σ) epsB :=
-  HasPackSemanticPropertyB_canonical_of_combinatorial hn σ hComb
 
-theorem CombinatorialToMatrixObligationB.of_columnSortNetwork_rowScramble {m n : Nat} {epsB : ℝ}
-    (hn : 0 < n)
-    (hcol : ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ),
-      IdealColumnSort m n hn pack.colSort)
-    (hrow : ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ),
-      RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble) :
-    CombinatorialToMatrixObligationB m n hn epsB :=
-  CombinatorialToMatrixObligationB.of_idealColumnSort_rowScrambleCorrect_decodeHyp hn hcol hrow
-    (MiddleStageDecodeHyp.of_idealColumnSort_rowScramble hn)
 
-theorem MatrixBridgeBResidual.of_columnSortNetwork_rowScramble_discharged {m n : Nat} {hn : 0 < n}
-    {epsB : ℝ}
-    (hcol : ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ),
-      IdealColumnSort m n hn pack.colSort)
-    (hrow : ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ),
-      RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble) :
-    MatrixBridgeBResidual m n hn epsB :=
-  MatrixBridgeBResidual.of_columnSortNetwork_rowScramble
-    (MiddleStageDecodeHyp.of_idealColumnSort_rowScramble hn) hcol hrow
 
-/-- When `wirePerm = 1`, semantic execution matches `pack.net` (comparator middle stage). -/
-theorem MiddleStageDecodeHyp.of_idealColumnSort_rowScramble_of_wirePerm_one {m n : Nat}
-    (hn : 0 < n)
-    (hπ : ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ),
-      pack.rowScramble.wirePerm = 1) :
-    MiddleStageDecodeHyp m n hn :=
-  MiddleStageDecodeHyp.of_idealColumnSort_rowScramble hn
 
 /-! **Property F (fringe depth `f`, top-`j` keys)** -/
 
@@ -596,37 +540,9 @@ theorem packSemanticIntrusionCountF_eq_onesAboveBottom {m n f : Nat} (hn : 0 < n
   simpa [SortScrambleSortPack.semanticExec] using
     matrixOnesCountInRegion_pack_eq_onesAboveBottom_f hn hfm pack hcol hrow v j
 
-/-- General `m`, `n`: semantic fringe decode via `(colSum−f)₊` then `onesAboveHalfFringe` on `univ`. -/
-theorem MiddleStageFringeDecodeHyp.of_idealColumnSort_rowScramble {m n f : Nat} {hf : Even f}
-    (hn : 0 < n) (hfm : f ≤ m) {deltaF : ℝ} :
-    MiddleStageFringeDecodeHyp m n f hf hn deltaF where
-  decode := fun σ pack hcol hrow v j _hj _hjδ => by
-    refine
-      ⟨monotoneColumnSumsOfBool hn
-          (pack.colSort.net.exec fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w)),
-        Finset.univ, ?_⟩
-    calc packSemanticIntrusionCountF hn pack v f j
-        = onesAboveBottom
-            (monotoneColumnSumsOfBool hn
-              (pack.colSort.net.exec fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w)))
-            σ f :=
-          packSemanticIntrusionCountF_eq_onesAboveBottom (m := m) (n := n) (f := f) hn hfm
-            (hf := hf) (σ := σ) (pack := pack) hcol hrow v j
-      _ ≤ onesAboveHalfFringe hf
-          (monotoneColumnSumsOfBool hn
-            (pack.colSort.net.exec fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w)))
-          σ (Finset.univ : Finset (Fin n)) :=
-        onesAboveBottom_le_onesAboveHalfFringe_univ hn
-          (monotoneColumnSumsOfBool hn
-            (pack.colSort.net.exec fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w)))
-          σ hfm
 
 /-! **Top-`j` marking counts (Property F closing)** -/
 
-private theorem nat_le_sum_of_sum_eq {ι : Type*} [Fintype ι] {f : ι → Nat} {T : Nat}
-    (hsum : ∑ i : ι, f i = T) (i : ι) : f i ≤ T := by
-  calc f i ≤ ∑ j : ι, f j := Finset.single_le_sum (fun j _ => Nat.zero_le _) (Finset.mem_univ i)
-    _ = T := hsum
 
 private theorem card_topJKeys (N j : Nat) (_hjpos : 0 < j) (hj : j ≤ N) :
     (Finset.univ.filter fun k : Fin N => N - j ≤ k.val).card = j := by
@@ -790,97 +706,11 @@ theorem HasPackSemanticPropertyB_canonical_of_combinatorial_onPipeline {m n : Na
     (idealColumnSort_columnSortNetwork m n hn)
     (RowScrambleCorrect.rowScrambleNetwork_columnSortNetwork hn σ) hComb
 
-theorem totalColumnOnes_decodeColumnSums_atLevel_one_eq {m n : Nat} (hn : 0 < n)
-    (colSort : ColumnSortNetwork m n) (hcol : IdealColumnSort m n hn colSort)
-    (v : Equiv.Perm (Fin (m * n))) (him : 1 ≤ m) :
-    totalColumnOnes
-        (monotoneColumnSumsOfBool hn
-          (colSort.net.exec fun w => largestKeyThreshold01 (m := m) (n := n) 1 (v w))) =
-      n := by
-  simpa [Nat.one_mul] using
-    totalColumnOnes_decodeColumnSums_atLevel_eq hn colSort hcol 1 (by decide) him v
 
-theorem avgRowOnes_decodeColumnSums_atLevel_one_eq {m n : Nat} (hn : 0 < n)
-    (colSort : ColumnSortNetwork m n) (hcol : IdealColumnSort m n hn colSort)
-    (v : Equiv.Perm (Fin (m * n))) (him : 1 ≤ m) :
-    avgRowOnes
-        (monotoneColumnSumsOfBool hn
-          (colSort.net.exec fun w => largestKeyThreshold01 (m := m) (n := n) 1 (v w))) =
-      (1 : ℝ) := by
-  set c := monotoneColumnSumsOfBool hn
-      (colSort.net.exec fun w => largestKeyThreshold01 (m := m) (n := n) 1 (v w))
-  have htotal := totalColumnOnes_decodeColumnSums_atLevel_one_eq hn colSort hcol v him
-  exact avgRowOnes_eq_one_of_totalColumnOnes_eq_n hn c htotal
 
-theorem combinatorialPropertyB_onPipeline_implies_matrixB_exec_canonical {m n : Nat} {epsB : ℝ}
-    (hn : 0 < n) (σ : Scramble m n) (hComb : HasCombinatorialPropertyBOnPipeline σ epsB) :
-    HasMatrixPropertyB_exec m n hn (canonicalSortScrambleSortPack m n hn σ) epsB :=
-  HasPackSemanticPropertyB_canonical_of_combinatorial_onPipeline hn σ hComb
 
-private theorem columnSum_eq_card_rows {m n : Nat} (c : MonotoneColumnSums m n) (j : Fin n) :
-    (c j).val =
-      (Finset.univ.filter fun r : Fin m => j ∈ monotoneRowOnes c r).card := by
-  classical
-  set k := (c j).val
-  by_cases hk0 : k = 0
-  · rw [hk0]
-    have hempty :
-        (Finset.univ.filter fun r : Fin m => j ∈ monotoneRowOnes c r) = ∅ := by
-      ext r
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and, mem_monotoneRowOnes_iff,
-        Finset.notMem_empty, iff_false]
-      intro hle
-      have : r.val < m := r.isLt
-      omega
-    simp [hempty]
-  · have hkm : k ≤ m := Nat.lt_succ_iff.mp (c j).isLt
-    set rMin : Fin m := ⟨m - k, by omega⟩
-    have hfilter :
-        Finset.univ.filter (fun r : Fin m => j ∈ monotoneRowOnes c r) =
-          Finset.univ.filter fun r' : Fin m => rMin ≤ r' := by
-      ext r
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and, mem_monotoneRowOnes_iff]
-      rw [Fin.mk_le_mk]
-      omega
-    rw [hfilter, card_filter_row_ge rMin]
-    have hrMin : rMin.val = m - k := rfl
-    calc k = m - (m - k) := (Nat.sub_sub_self hkm).symm
-      _ = m - rMin.val := by rw [hrMin]
 
-private theorem sum_colSum_eq_sum_rowOnes {m n : Nat} (c : MonotoneColumnSums m n) :
-    ∑ j : Fin n, (c j).val = ∑ r : Fin m, (monotoneRowOnes c r).card := by
-  classical
-  calc ∑ j : Fin n, (c j).val
-      = ∑ j : Fin n,
-          (Finset.univ.filter fun r : Fin m => j ∈ monotoneRowOnes c r).card := by
-          refine Finset.sum_congr rfl fun j _ => columnSum_eq_card_rows c j
-    _ = ∑ j : Fin n, ∑ r : Fin m, if j ∈ monotoneRowOnes c r then 1 else 0 := by
-          refine Finset.sum_congr rfl fun j _ => ?_
-          rw [Finset.card_filter]
-    _ = ∑ r : Fin m, ∑ j : Fin n, if j ∈ monotoneRowOnes c r then 1 else 0 := Finset.sum_comm
-    _ = ∑ r : Fin m, (monotoneRowOnes c r).card := by
-          refine Finset.sum_congr rfl fun r _ => ?_
-          rw [← Finset.sum_filter (s := Finset.univ)
-            (p := fun j : Fin n => j ∈ monotoneRowOnes c r) (f := fun _ => (1 : Nat))]
-          simp [Finset.sum_ite, Finset.mem_filter, Finset.mem_univ, true_and]
 
-private theorem sum_scrambledColSum_eq_sum_colSum {m n : Nat} (c : MonotoneColumnSums m n)
-    (σ : Scramble m n) :
-    ∑ j : Fin n, scrambledColSum c σ j = ∑ j : Fin n, (c j).val := by
-  classical
-  have hrow (r : Fin m) :
-      (scrambledRowOnes c σ r).card = (monotoneRowOnes c r).card := by
-    rw [scrambledRowOnes]
-    exact Finset.card_image_of_injective _ (σ r).injective
-  calc ∑ j : Fin n, scrambledColSum c σ j
-      = onesInColumns c σ Finset.univ := (onesInColumns_eq_sum_colSums c σ Finset.univ).symm
-    _ = ∑ r : Fin m, rowHit c Finset.univ r (σ r) := onesInColumns_eq_sum_rowHit c Finset.univ σ
-    _ = ∑ r : Fin m, (scrambledRowOnes c σ r).card := by
-          refine Finset.sum_congr rfl fun r _ => by
-            simp [rowHit, scrambledRowOnes, Finset.inter_univ]
-    _ = ∑ r : Fin m, (monotoneRowOnes c r).card := by
-          refine Finset.sum_congr rfl fun r _ => hrow r
-    _ = ∑ j : Fin n, (c j).val := (sum_colSum_eq_sum_rowOnes c).symm
 
 theorem sum_topJ_colSums_eq_j {m n : Nat} (hn : 0 < n)
     (colSort : ColumnSortNetwork m n) (hcol : IdealColumnSort m n hn colSort)
@@ -902,178 +732,19 @@ theorem sum_topJ_colSums_eq_j {m n : Nat} (hn : 0 < n)
           matrixColumnTrueCount_exec_eq hn col colSort.net colSort.col_local u
     _ = j := by rw [hsum, hj]
 
-theorem scrambledColSum_le_j_of_topJMarking {m n : Nat} (hn : 0 < n)
-    {σ : Scramble m n} (pack : SortScrambleSortPack m n hn σ)
-    (hcol : IdealColumnSort m n hn pack.colSort)
-    (v : Equiv.Perm (Fin (m * n))) (j : Nat) (hjpos : 0 < j) (hjmn : j ≤ m * n) (col : Fin n) :
-    scrambledColSum
-        (monotoneColumnSumsOfBool hn
-          (pack.colSort.net.exec fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w)))
-        σ col ≤ j := by
-  set c := monotoneColumnSumsOfBool hn
-      (pack.colSort.net.exec fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w))
-  have hsum := sum_scrambledColSum_eq_sum_colSum c σ
-  have htotal := sum_topJ_colSums_eq_j hn pack.colSort hcol v j hjpos hjmn
-  rw [← hsum] at htotal
-  exact nat_le_sum_of_sum_eq (ι := Fin n) (f := fun col' => scrambledColSum c σ col') htotal col
 
-/-- Closing F-bridge: decode + `j < f` (from `δ_F·n < 1`) ⇒ semantic `< ε_F·j`. -/
-theorem FringePropertyFClosingHyp.of_idealColumnSort_rowScramble {m n f : Nat} {hf : Even f}
-    (hn : 0 < n) (hfm : f ≤ m) (hfpos : 0 < f) {deltaF epsF : ℝ}
-    (hdeltaFn : (deltaF : ℝ) * (n : ℝ) < 1) (hepsF : 0 < epsF)
-    (hcol : ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ),
-      IdealColumnSort m n hn pack.colSort)
-    (hrow : ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ),
-      RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble) :
-    FringePropertyFClosingHyp m n f hn hf hfm deltaF epsF := by
-  intro σ pack _hComb v j hj hjδ _c _S _hle
-  have hjf := j_lt_f_of_le_deltaF_mul hfpos hdeltaFn hjδ
-  have hjmn : j ≤ m * n :=
-    le_trans (Nat.le_of_lt hjf) (Nat.le_trans hfm (Nat.le_mul_of_pos_right m hn))
-  have heq :=
-    packSemanticIntrusionCountF_eq_onesAboveBottom (m := m) (n := n) (f := f) hn hfm (hf := hf)
-      (σ := σ) (pack := pack) (hcol σ pack) (hrow σ pack) v j
-  set cMark := monotoneColumnSumsOfBool hn
-      (pack.colSort.net.exec fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w))
-  have hzero : onesAboveBottom cMark σ f = 0 :=
-    onesAboveBottom_eq_zero_of_scrambledColSum_lt cMark σ f fun col =>
-      Nat.lt_of_le_of_lt
-        (scrambledColSum_le_j_of_topJMarking hn pack (hcol σ pack) v j hj hjmn col)
-        hjf
-  rw [heq, hzero, Nat.cast_zero]
-  exact mul_pos hepsF (by exact_mod_cast hj)
 
-theorem HasPackSemanticPropertyF.of_combinatorial_and_fringeClose {m n f : Nat} {hf : Even f}
-    (hn : 0 < n) (hfm : f ≤ m) {deltaF epsF : ℝ}
-    (hcol : ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ),
-      IdealColumnSort m n hn pack.colSort)
-    (hrow : ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ),
-      RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble)
-    (hdecode : MiddleStageFringeDecodeHyp m n f hf hn deltaF)
-    (hclose : FringePropertyFClosingHyp m n f hn hf hfm deltaF epsF)
-    {σ : Scramble m n} (pack : SortScrambleSortPack m n hn σ)
-    (hComb : HasCombinatorialPropertyF hf σ deltaF epsF) :
-    HasPackSemanticPropertyF hn pack f hfm deltaF epsF :=
-  (CombinatorialToMatrixObligationF.of_fringeDecodeHyp_and_close (m := m) (n := n) (f := f)
-      (hf := hf) (hfm := hfm) (deltaF := deltaF) (epsF := epsF) hn hcol hrow hdecode hclose).matrixF
-    σ pack hComb
 
-theorem CombinatorialToMatrixObligationF.of_columnSortNetwork_rowScramble {m n f : Nat} {hf : Even f}
-    (hn : 0 < n) (hfm : f ≤ m) (hfpos : 0 < f) {deltaF epsF : ℝ}
-    (hdeltaFn : (deltaF : ℝ) * (n : ℝ) < 1) (hepsF : 0 < epsF)
-    (hcol : ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ),
-      IdealColumnSort m n hn pack.colSort)
-    (hrow : ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ),
-      RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble) :
-    CombinatorialToMatrixObligationF m n f hn hf hfm deltaF epsF :=
-  CombinatorialToMatrixObligationF.of_fringeDecodeHyp_and_close (m := m) (n := n) (f := f)
-    (hf := hf) (hfm := hfm) (deltaF := deltaF) (epsF := epsF) hn hcol hrow
-    (MiddleStageFringeDecodeHyp.of_idealColumnSort_rowScramble (m := m) (n := n) (f := f) (hf := hf)
-      hn hfm (deltaF := deltaF))
-    (FringePropertyFClosingHyp.of_idealColumnSort_rowScramble (m := m) (n := n) (f := f) (hf := hf)
-      hn hfm hfpos (deltaF := deltaF) (epsF := epsF) hdeltaFn hepsF hcol hrow)
 
-theorem MatrixBridgeFResidual.of_columnSortNetwork_rowScramble_discharged {m n f : Nat} {hf : Even f}
-    (hn : 0 < n) (hfm : f ≤ m) (hfpos : 0 < f) {deltaF epsF : ℝ}
-    (hdeltaFn : (deltaF : ℝ) * (n : ℝ) < 1) (hepsF : 0 < epsF)
-    (hcol : ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ),
-      IdealColumnSort m n hn pack.colSort)
-    (hrow : ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ),
-      RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble) :
-    MatrixBridgeFResidual m n f hf hn hfm deltaF epsF where
-  ideal_column_sort := hcol
-  row_scramble_correct := hrow
-  middle_stage_fringe_decode :=
-    MiddleStageFringeDecodeHyp.of_idealColumnSort_rowScramble (m := m) (n := n) (f := f) (hf := hf)
-      hn hfm (deltaF := deltaF)
-  fringe_property_f_close :=
-    FringePropertyFClosingHyp.of_idealColumnSort_rowScramble (m := m) (n := n) (f := f) (hf := hf)
-      hn hfm hfpos (deltaF := deltaF) (epsF := epsF) hdeltaFn hepsF hcol hrow
 
-theorem CombinatorialToMatrixObligation.of_columnSortNetwork_rowScramble {m n f : Nat} {hf : Even f}
-    (hn : 0 < n) (hfm : f ≤ m) (hfpos : 0 < f) {epsB deltaF epsF : ℝ}
-    (hdeltaFn : (deltaF : ℝ) * (n : ℝ) < 1) (hepsF : 0 < epsF)
-    (hcol : ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ),
-      IdealColumnSort m n hn pack.colSort)
-    (hrow : ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ),
-      RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble) :
-    CombinatorialToMatrixObligation m n f hn hf hfm epsB deltaF epsF :=
-  CombinatorialToMatrixObligation.of_split
-    (CombinatorialToMatrixObligationB.of_columnSortNetwork_rowScramble hn hcol hrow)
-    (CombinatorialToMatrixObligationF.of_columnSortNetwork_rowScramble hn hfm hfpos hdeltaFn hepsF hcol
-      hrow)
 
-theorem deltaF_mul_n_lt_one_params7_n16 :
-    (invariant7.deltaF : ℝ) * (16 : ℝ) < 1 := by
-  unfold invariant7
-  norm_num
 
-theorem deltaF_mul_n_lt_one_invariant7 {n : Nat}
-    (hn : (invariant7.deltaF : ℝ) * (n : ℝ) < 1) :
-    (invariant7.deltaF : ℝ) * (n : ℝ) < 1 :=
-  hn
 
-theorem CombinatorialToMatrixObligation.of_columnSortNetwork_rowScramble_all_packs
-    {m n f : Nat} {hf : Even f} (hn : 0 < n) (hfm : f ≤ m) (hfpos : 0 < f)
-    {epsB deltaF epsF : ℝ} (hdeltaFn : (deltaF : ℝ) * (n : ℝ) < 1) (hepsF : 0 < epsF) :
-    CombinatorialToMatrixObligation m n f hn hf hfm epsB deltaF epsF :=
-  CombinatorialToMatrixObligation.of_columnSortNetwork_rowScramble hn hfm hfpos hdeltaFn hepsF
-    (IdealColumnSort.all_packs hn) (RowScrambleCorrect.all_packs_forall hn)
 
-theorem CombinatorialToMatrixObligation.of_params7_m100_n16_bridge {f : Nat} {hf : Even f}
-    (hfm : f ≤ 100) (hfpos : 0 < f) {epsB deltaF epsF : ℝ} (hepsF : 0 < epsF)
-    (hdeltaF : deltaF = invariant7.deltaF) :
-    CombinatorialToMatrixObligation 100 16 f (by norm_num : 0 < 16) hf hfm epsB deltaF epsF := by
-  subst hdeltaF
-  exact CombinatorialToMatrixObligation.of_columnSortNetwork_rowScramble_all_packs
-    (by norm_num : 0 < 16) hfm hfpos deltaF_mul_n_lt_one_params7_n16 hepsF
 
-theorem CombinatorialToMatrixObligation.of_invariant7_geometry_bridge {g : ScrambleGeometry}
-    {f : Nat} {hf : Even f} (hfm : f ≤ g.m) (hfpos : 0 < f) {epsB deltaF epsF : ℝ}
-    (hepsF : 0 < epsF) (hdeltaF : deltaF = invariant7.deltaF)
-    (hdeltaFn : (invariant7.deltaF : ℝ) * (g.n : ℝ) < 1) :
-    CombinatorialToMatrixObligation g.m g.n f (scrambleGeometry_hn g) hf hfm epsB deltaF epsF := by
-  subst hdeltaF
-  exact CombinatorialToMatrixObligation.of_columnSortNetwork_rowScramble_all_packs
-    (scrambleGeometry_hn g) hfm hfpos hdeltaFn hepsF
 
 /-! **Semantic F without combinatorial F** (`δ_F·n < 1` closing ignores `hComb`) -/
 
-/-- Under `δ_F·n < 1`, semantic Property F holds for every pack (no combinatorial F needed). -/
-theorem HasPackSemanticPropertyF.of_idealColumnSort_rowScramble_deltaFn {m n f : Nat}
-    {hf : Even f} (hn : 0 < n) (hfm : f ≤ m) (hfpos : 0 < f) {deltaF epsF : ℝ}
-    (hdeltaFn : (deltaF : ℝ) * (n : ℝ) < 1) (hepsF : 0 < epsF)
-    (hcol : ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ),
-      IdealColumnSort m n hn pack.colSort)
-    (hrow : ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ),
-      RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble)
-    {σ : Scramble m n} (pack : SortScrambleSortPack m n hn σ) :
-    HasPackSemanticPropertyF hn pack f hfm deltaF epsF := by
-  rw [HasPackSemanticPropertyF_iff]
-  intro v j hj hjδ
-  have hjf := j_lt_f_of_le_deltaF_mul hfpos hdeltaFn hjδ
-  have hjmn : j ≤ m * n :=
-    le_trans (Nat.le_of_lt hjf) (Nat.le_trans hfm (Nat.le_mul_of_pos_right m hn))
-  have heq :=
-    packSemanticIntrusionCountF_eq_onesAboveBottom (m := m) (n := n) (f := f) hn hfm (hf := hf)
-      (σ := σ) (pack := pack) (hcol σ pack) (hrow σ pack) v j
-  set cMark := monotoneColumnSumsOfBool hn
-      (pack.colSort.net.exec fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w))
-  have hzero : onesAboveBottom cMark σ f = 0 :=
-    onesAboveBottom_eq_zero_of_scrambledColSum_lt cMark σ f fun col =>
-      Nat.lt_of_le_of_lt
-        (scrambledColSum_le_j_of_topJMarking hn pack (hcol σ pack) v j hj hjmn col)
-        hjf
-  rw [heq, hzero, Nat.cast_zero]
-  exact mul_pos hepsF (by exact_mod_cast hj)
 
-/-- Canonical pack: semantic F from `δ_F·n < 1` alone. -/
-theorem HasPackSemanticPropertyF_canonical_of_deltaFn {m n f : Nat} {hf : Even f}
-    (hn : 0 < n) (hfm : f ≤ m) (hfpos : 0 < f) {deltaF epsF : ℝ}
-    (hdeltaFn : (deltaF : ℝ) * (n : ℝ) < 1) (hepsF : 0 < epsF) (σ : Scramble m n) :
-    HasPackSemanticPropertyF hn (canonicalSortScrambleSortPack m n hn σ) f hfm deltaF epsF :=
-  HasPackSemanticPropertyF.of_idealColumnSort_rowScramble_deltaFn (hf := hf) hn hfm hfpos
-    hdeltaFn hepsF (IdealColumnSort.all_packs hn) (RowScrambleCorrect.all_packs_forall hn)
-    (canonicalSortScrambleSortPack m n hn σ)
 
 end Chvatal

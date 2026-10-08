@@ -148,15 +148,6 @@ theorem physicalPackNet_exec {m n : ℕ} (hn : 0 < n) (σ : Scramble m n)
   rw [hid]
   rfl
 
-/-- `ρ = wirePerm` preserves rows. -/
-theorem physicalPackNet_exec_rowPreserving {m n : ℕ} (hn : 0 < n) (σ : Scramble m n)
-    {α : Type*} [LinearOrder α] (v : Fin (m * n) → α) :
-    ∃ ρ : Equiv.Perm (Fin (m * n)),
-      (∀ w, matrixRow m n hn (ρ w) = matrixRow m n hn w) ∧
-      (physicalPackNet m n hn σ).exec v =
-        ((canonicalSortScrambleSortPack m n hn σ).semanticExec v) ∘ ρ :=
-  ⟨(rowScrambleNetwork m n hn σ).wirePerm,
-    RowScrambleNetwork.wirePerm_matrixRow hn _, physicalPackNet_exec hn σ v⟩
 
 /-- Count form: for every predicate `P` on values and every set of rows `R`, the number of
 wires in rows of `R` whose value satisfies `P` agrees between physical and semantic output. -/
@@ -183,32 +174,6 @@ theorem physicalPackNet_rowRegion_card {m n : ℕ} (hn : 0 < n) (σ : Scramble m
     rw [hρ, RowScrambleNetwork.wirePerm_symm_matrixRow hn, physicalPackNet_exec]
     exact ⟨hw.1, by simpa using hw.2⟩
 
-/-- Multiset form: the multiset of values in rows `R` agrees physical vs semantic. -/
-theorem physicalPackNet_rowRegion_multiset {m n : ℕ} (hn : 0 < n) (σ : Scramble m n)
-    {α : Type*} [LinearOrder α] (v : Fin (m * n) → α) (R : Finset (Fin m)) :
-    ((Finset.univ.filter fun w : Fin (m * n) => matrixRow m n hn w ∈ R).val.map
-        ((physicalPackNet m n hn σ).exec v)) =
-    ((Finset.univ.filter fun w : Fin (m * n) => matrixRow m n hn w ∈ R).val.map
-        ((canonicalSortScrambleSortPack m n hn σ).semanticExec v)) := by
-  set ρ := (rowScrambleNetwork m n hn σ).wirePerm with hρ
-  have hset : (Finset.univ.filter fun w : Fin (m * n) => matrixRow m n hn w ∈ R).map
-      ρ.toEmbedding = Finset.univ.filter fun w : Fin (m * n) => matrixRow m n hn w ∈ R := by
-    ext w
-    simp only [Finset.mem_map, Finset.mem_filter, Finset.mem_univ, true_and,
-      Equiv.coe_toEmbedding]
-    constructor
-    · rintro ⟨a, ha, rfl⟩
-      rw [hρ, RowScrambleNetwork.wirePerm_matrixRow hn]; exact ha
-    · intro hw
-      refine ⟨ρ.symm w, ?_, by simp⟩
-      rw [hρ, RowScrambleNetwork.wirePerm_symm_matrixRow hn]; exact hw
-  have key : ((Finset.univ.filter fun w : Fin (m * n) => matrixRow m n hn w ∈ R).map
-      ρ.toEmbedding).val.map ((canonicalSortScrambleSortPack m n hn σ).semanticExec v) =
-      (Finset.univ.filter fun w : Fin (m * n) => matrixRow m n hn w ∈ R).val.map
-        (((canonicalSortScrambleSortPack m n hn σ).semanticExec v) ∘ ρ) := by
-    simp [Finset.map_val, Multiset.map_map]
-  rw [hset] at key
-  rw [key, physicalPackNet_exec hn σ v]
 
 /-! ## Depth -/
 

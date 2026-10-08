@@ -40,10 +40,6 @@ def slackBound (p : ScheduleParams) (d t : Nat)
     (b : KBag p.br d) (_hb : 1 ≤ b.l) : Rat :=
   slackCoeff p * capacity p d (b.l - 1) t
 
-theorem slackBound_le (p : ScheduleParams) (d t : Nat)
-    (b : KBag p.br d) (hb : 1 ≤ b.l) :
-    slackBound p d t b hb ≤ slackCoeff p * capacity p d (b.l - 1) t :=
-  le_rfl
 
 /-! **Stage kernel** -/
 
@@ -140,24 +136,5 @@ structure KernelTrajectory (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
   kernels : ∀ t, t + 1 ≤ sched.tf →
     StageKernel p ip d sched t (pls t) (perms t) (pls (t + 1)) (perms (t + 1))
 
-theorem outsiderBound_induction_of_kernel (p : ScheduleParams) (ip : InvariantParams)
-    (d : Nat) (sched : LevelSchedule p d)
-    (pls : Nat → Placement p.br d)
-    (perms : Nat → (Fin (p.br ^ d) → Fin (p.br ^ d)))
-    (hconds : SeparatorConds p ip)
-    (traj : KernelTrajectory p ip d sched pls perms)
-    (h0 : OutsiderBoundLe p ip d sched 0 (pls 0) (perms 0)) :
-    OutsiderBoundLe p ip d sched sched.tf (pls sched.tf) (perms sched.tf) := by
-  have step : ∀ t, t ≤ sched.tf →
-      OutsiderBoundLe p ip d sched t (pls t) (perms t) := by
-    intro t ht
-    induction t with
-    | zero => exact h0
-    | succ t ih =>
-      have ht' : t + 1 ≤ sched.tf := ht
-      have ht0 : t ≤ sched.tf := by omega
-      exact outsiderBound_step_of_kernel p ip d sched t (pls t) (pls (t + 1))
-        (perms t) (perms (t + 1)) hconds (ih ht0) (traj.kernels t ht')
-  exact step sched.tf le_rfl
 
 end Chvatal

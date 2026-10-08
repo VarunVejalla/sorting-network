@@ -103,93 +103,10 @@ theorem descFactorial_ratio_le_pow (m b r : ℕ) (hb : b ≤ m) :
       rw [hz, Nat.mul_zero]
       exact Nat.zero_le _
 
-/-- The one-matching probability estimate, with denominators cleared. -/
-theorem card_restricted_permutations_mul_pow_le {A : Type*} [Fintype A]
-    (X Y : Finset A) :
-    Fintype.card {g : Equiv.Perm A // ∀ x ∈ X, g x ∈ Y} *
-        Fintype.card A ^ X.card ≤
-      (Fintype.card A).factorial * Y.card ^ X.card := by
-  classical
-  have hratio := descFactorial_ratio_le_pow (Fintype.card A) Y.card X.card
-    (Finset.card_le_univ Y)
-  have hfactor := Nat.factorial_mul_descFactorial (Finset.card_le_univ X)
-  rw [card_restricted_permutations]
-  calc
-    Y.card.descFactorial X.card * (Fintype.card A - X.card).factorial *
-        Fintype.card A ^ X.card =
-      (Fintype.card A - X.card).factorial *
-        (Fintype.card A ^ X.card * Y.card.descFactorial X.card) := by ring
-    _ ≤ (Fintype.card A - X.card).factorial *
-        (Y.card ^ X.card * (Fintype.card A).descFactorial X.card) :=
-      Nat.mul_le_mul_left _ hratio
-    _ = (Fintype.card A).factorial * Y.card ^ X.card := by
-      rw [mul_left_comm, hfactor]
-      exact Nat.mul_comm _ _
 
-/-- Independent choices of matching layers raise the exact event count to
-the number of layers. -/
-theorem card_restricted_matching_sequences {A : Type*} [Fintype A]
-    (X Y : Finset A) (c : ℕ) :
-    Fintype.card {gs : Fin c → Equiv.Perm A // ∀ i, ∀ x ∈ X, gs i x ∈ Y} =
-      (Y.card.descFactorial X.card * (Fintype.card A - X.card).factorial) ^ c := by
-  classical
-  calc
-    _ = Fintype.card (Fin c → {g : Equiv.Perm A // ∀ x ∈ X, g x ∈ Y}) :=
-      Fintype.card_congr Equiv.subtypePiEquivPi
-    _ = _ := by rw [Fintype.card_fun, Fintype.card_fin, card_restricted_permutations]
 
-/-- Total number of `c`-layer bipartite matching networks on two copies of A. -/
-theorem card_matching_sequences (A : Type*) [Fintype A] (c : ℕ) :
-    Fintype.card (Fin c → Equiv.Perm A) = (Fintype.card A).factorial ^ c := by
-  rw [Fintype.card_fun, Fintype.card_fin, Fintype.card_perm]
 
-/-- For uniformly chosen perfect matchings, the chance that every edge out
-of `X` lands in `Y` is at most `(|Y| / |A|)^|X|`. -/
-theorem restricted_matching_density_le {A : Type*} [Fintype A]
-    (X Y : Finset A) (hm : 0 < Fintype.card A) :
-    (Fintype.card {g : Equiv.Perm A // ∀ x ∈ X, g x ∈ Y} : ℚ) /
-        (Fintype.card A).factorial ≤
-      ((Y.card : ℚ) / Fintype.card A) ^ X.card := by
-  have hmQ : (0 : ℚ) < Fintype.card A := by exact_mod_cast hm
-  have hfQ : (0 : ℚ) < (Fintype.card A).factorial := by
-    exact_mod_cast Nat.factorial_pos (Fintype.card A)
-  rw [div_pow]
-  apply (div_le_div_iff₀ hfQ (pow_pos hmQ _)).mpr
-  have h := card_restricted_permutations_mul_pow_le X Y
-  rw [Nat.mul_comm (Fintype.card A).factorial] at h
-  exact_mod_cast h
 
-/-- The corresponding density bound for `c` independent matching layers.
-This is the per-event estimate in the finite union bound. -/
-theorem restricted_matching_sequence_density_le {A : Type*} [Fintype A]
-    (X Y : Finset A) (c : ℕ) (hm : 0 < Fintype.card A) :
-    (Fintype.card {gs : Fin c → Equiv.Perm A // ∀ i, ∀ x ∈ X, gs i x ∈ Y} : ℚ) /
-        Fintype.card (Fin c → Equiv.Perm A) ≤
-      ((Y.card : ℚ) / Fintype.card A) ^ (X.card * c) := by
-  have h := restricted_matching_density_le X Y hm
-  have hn : (0 : ℚ) ≤
-    (Fintype.card {g : Equiv.Perm A // ∀ x ∈ X, g x ∈ Y} : ℚ) /
-      (Fintype.card A).factorial := div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
-  have hp := pow_le_pow_left₀ hn h c
-  rw [card_restricted_permutations] at hp
-  simpa only [card_restricted_matching_sequences, card_matching_sequences,
-    Nat.cast_pow, div_pow, pow_mul] using hp
 
-/-- Inverting every matching preserves its uniform distribution. Thus the
-same density estimate applies to traps in the opposite orientation. -/
-theorem inverse_matching_sequence_density_le {A : Type*} [Fintype A]
-    (X Y : Finset A) (c : ℕ) (hm : 0 < Fintype.card A) :
-    (Fintype.card {gs : Fin c → Equiv.Perm A //
-      ∀ i, ∀ x ∈ X, (gs i).symm x ∈ Y} : ℚ) /
-        Fintype.card (Fin c → Equiv.Perm A) ≤
-      ((Y.card : ℚ) / Fintype.card A) ^ (X.card * c) := by
-  let e : {gs : Fin c → Equiv.Perm A // ∀ i, ∀ x ∈ X, (gs i).symm x ∈ Y} ≃
-      {gs : Fin c → Equiv.Perm A // ∀ i, ∀ x ∈ X, gs i x ∈ Y} := {
-    toFun := fun gs => ⟨fun i => (gs.val i).symm, gs.property⟩
-    invFun := fun gs => ⟨fun i => (gs.val i).symm, gs.property⟩
-    left_inv := fun _ => rfl
-    right_inv := fun _ => rfl }
-  rw [Fintype.card_congr e]
-  exact restricted_matching_sequence_density_le X Y c hm
 
 end Paterson

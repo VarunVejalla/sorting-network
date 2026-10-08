@@ -166,13 +166,6 @@ theorem avgRowOnes_le_one_iff_totalColumnOnes_le_n {m n : Nat} (hn : 0 < n)
     exact_mod_cast (totalColumnOnes_eq_sum_rowOnes c).symm
   rw [div_le_iff₀ hn0, hcast, one_mul, Nat.cast_le]
 
-theorem avgRowOnes_eq_one_of_totalColumnOnes_eq_n {m n : Nat} (hn : 0 < n)
-    (c : MonotoneColumnSums m n) (h : totalColumnOnes c = n) :
-    avgRowOnes c = (1 : ℝ) := by
-  rw [avgRowOnes_eq]
-  have hsum : (∑ r : Fin m, (monotoneRowOnes c r).card : ℝ) = n := by
-    exact_mod_cast (totalColumnOnes_eq_sum_rowOnes c).symm.trans h
-  rw [hsum, div_self (by exact_mod_cast (ne_of_gt hn))]
 
 /-- Same strength as `AvgRowOnesLeOne` (still false for all monotone matrices when `m > 1`). -/
 def TotalColumnOnesLeN (m n : Nat) : Prop :=
@@ -186,9 +179,6 @@ theorem TotalColumnOnesLeN_iff_avgRowOnesLeOne {m n : Nat} (hn : 0 < n) :
   · intro h c
     exact (avgRowOnes_le_one_iff_totalColumnOnes_le_n hn c).1 (h c)
 
-theorem AvgRowOnesLeOne.of_totalColumnOnesLeN {m n : Nat} (hn : 0 < n)
-    (h : TotalColumnOnesLeN m n) : AvgRowOnesLeOne m n :=
-  (TotalColumnOnesLeN_iff_avgRowOnesLeOne hn).1 h
 
 theorem TotalColumnOnesLeN.of_avgRowOnesLeOne {m n : Nat} (hn : 0 < n)
     (h : AvgRowOnesLeOne m n) : TotalColumnOnesLeN m n :=
@@ -204,13 +194,7 @@ theorem avgRowOnes_le_i_of_totalColumnOnes_le {m n i : Nat} (hn : 0 < n)
   have h' : totalColumnOnes c ≤ i * n := Nat.mul_comm n i ▸ h
   exact_mod_cast h'
 
-/-- Alias for `totalColumnOnes` (paper “sum of column sums”). -/
-abbrev colSumsSum {m n : Nat} (c : MonotoneColumnSums m n) : Nat :=
-  totalColumnOnes c
 
-/-- Alias for `TotalColumnOnesLeN`. -/
-abbrev TotalColSumsLeN (m n : Nat) : Prop :=
-  TotalColumnOnesLeN m n
 
 /-- Pipeline / decode mass class at paper level `i`: `totalColumnOnes c ≤ n·i`
     (sort–scramble decode at level `i` has equality — see `SortedColumnDecode`). -/
@@ -267,18 +251,8 @@ theorem matrixOnesLevel_le_m {m n : Nat} (hn : 0 < n) (c : MonotoneColumnSums m 
     dsimp [TotalColumnOnesLeLevel]
     simpa [Nat.mul_comm] using h)
 
-theorem matrixOnesLevel_pos_of_totalColumnOnes_pos {m n : Nat} (hn : 0 < n)
-    (c : MonotoneColumnSums m n) (h : 0 < totalColumnOnes c) :
-    1 ≤ matrixOnesLevel hn c := by
-  unfold matrixOnesLevel
-  rw [Nat.le_div_iff_mul_le hn]
-  omega
 
-abbrev DecodeMatrixClassAtLevel (m n i : Nat) (c : MonotoneColumnSums m n) : Prop :=
-  TotalColumnOnesLeLevel m n i c
 
-abbrev DecodeMatrixClassLevelOne (m n : Nat) (c : MonotoneColumnSums m n) : Prop :=
-  TotalColumnOnesLeLevel m n 1 c
 
 theorem AvgRowOnesLeOne.sum_div_le_one {m n : Nat} (h : AvgRowOnesLeOne m n)
     (c : MonotoneColumnSums m n) :
@@ -312,16 +286,6 @@ def onesAboveBottom {m n : Nat} (c : MonotoneColumnSums m n)
     (σ : Scramble m n) (i : Nat) : Nat :=
   ∑ j : Fin n, (scrambledColSum c σ j - i)
 
-theorem onesAboveBottom_eq_zero_of_scrambledColSum_lt {m n : Nat}
-    (c : MonotoneColumnSums m n) (σ : Scramble m n) (i : Nat)
-    (h : ∀ col : Fin n, scrambledColSum c σ col < i) :
-    onesAboveBottom c σ i = 0 := by
-  unfold onesAboveBottom
-  rw [Finset.sum_eq_zero]
-  intro col _
-  have hsub : scrambledColSum c σ col - i = 0 :=
-    Nat.sub_eq_zero_of_le (Nat.le_of_lt (h col))
-  simp [hsub]
 
 def HasCombinatorialPropertyB {m n : Nat} (σ : Scramble m n) (epsB : ℝ) : Prop :=
   ∀ (c : MonotoneColumnSums m n) (i : Nat), 1 ≤ i → i ≤ m →
@@ -334,36 +298,10 @@ def HasCombinatorialPropertyBOnPipeline {m n : Nat} (σ : Scramble m n) (epsB : 
     TotalColumnOnesLeLevel m n i c → 1 ≤ i → i ≤ m →
       (onesAboveBottom c σ i : ℝ) < (epsB / 2) * (m * n)
 
-theorem HasCombinatorialPropertyB.imp_onPipeline {m n : Nat} {σ : Scramble m n} {epsB : ℝ}
-    (h : HasCombinatorialPropertyB σ epsB) : HasCombinatorialPropertyBOnPipeline σ epsB :=
-  fun c i _hclass hi1 him => h c i hi1 him
 
-def ExistsCombinatorialPropertyBOnPipeline (m n : Nat) (epsB : ℝ) : Prop :=
-  ∃ σ : Scramble m n, HasCombinatorialPropertyBOnPipeline σ epsB
 
-/-- `onesAboveBottom` is non-increasing in the level `i` (larger excess sets at smaller `i`). -/
-theorem onesAboveBottom_antitone {m n : Nat}
-    (c : MonotoneColumnSums m n) (σ : Scramble m n) {i j : Nat} (hij : i ≤ j) :
-    onesAboveBottom c σ j ≤ onesAboveBottom c σ i := by
-  classical
-  unfold onesAboveBottom
-  refine Finset.sum_le_sum fun col _ => ?_
-  exact Nat.sub_le_sub_left hij (scrambledColSum c σ col)
 
-theorem combinatorialPropertyB_failWitness_level_one {m n : Nat}
-    (σ : Scramble m n) (epsB : ℝ) (hnot : ¬ HasCombinatorialPropertyB σ epsB) :
-    ∃ (c : MonotoneColumnSums m n),
-      (epsB / 2) * (m * n) ≤ (onesAboveBottom c σ 1 : ℝ) := by
-  classical
-  by_contra hall
-  push_neg at hall
-  have hB : HasCombinatorialPropertyB σ epsB := by
-    intro c i hi1 _him
-    exact lt_of_le_of_lt (by exact_mod_cast onesAboveBottom_antitone c σ hi1) (hall c)
-  exact hnot hB
 
-def ExistsCombinatorialPropertyB (m n : Nat) (epsB : ℝ) : Prop :=
-  ∃ σ : Scramble m n, HasCombinatorialPropertyB σ epsB
 
 theorem combinatorialPropertyB_pipeline_failWitness {m n : Nat}
     (σ : Scramble m n) (epsB : ℝ) (hnot : ¬ HasCombinatorialPropertyBOnPipeline σ epsB) :
@@ -391,34 +329,7 @@ structure Lemma61FailBoundOnPipeline (m n : Nat) (epsB : ℝ) : Prop where
         (bad.card : ℝ) ≤
           lemma61_failFactor m n * (Fintype.card (Scramble m n) : ℝ)
 
-theorem exists_combinatorialPropertyB_onPipeline_of_failBound
-    (m n : Nat) (epsB : ℝ)
-    (hm : 100 ≤ m) (hn : 16 ≤ n)
-    (hfactor : lemma61_failFactor m n < 1)
-    (hfail : Lemma61FailBoundOnPipeline m n epsB) :
-    ExistsCombinatorialPropertyBOnPipeline m n epsB := by
-  classical
-  have htotpos : (0 : ℝ) < Fintype.card (Scramble m n) := by
-    exact_mod_cast (Fintype.card_pos : 0 < Fintype.card (Scramble m n))
-  by_contra hnone
-  have hnone' : ∀ σ : Scramble m n, ¬ HasCombinatorialPropertyBOnPipeline σ epsB :=
-    fun σ h => hnone ⟨σ, h⟩
-  have hle := hfail.bound Finset.univ (fun σ _ => hnone' σ)
-  simp only [Finset.card_univ] at hle
-  have h1 : (1 : ℝ) ≤ lemma61_failFactor m n :=
-    (le_of_mul_le_mul_left (by simpa [mul_one, mul_comm] using hle) htotpos)
-  linarith
 
-/-- Only used at paper minima `m = 100`: for large `m`, `m · lemma61_failFactor m n` is not `< 1`. -/
-theorem lemma61_failFactor_pipeline_lt_one_m100 :
-    lemma61_failFactor_pipeline 100 16 < 1 := by
-  unfold lemma61_failFactor_pipeline
-  have hα := lemma61_failFactor_lt_one_hundredth 100 16 (by norm_num) (by norm_num)
-  have h100 : (0 : ℝ) < (100 : ℝ) := by norm_num
-  have hmid : (100 : ℝ) * lemma61_failFactor 100 16 < (100 : ℝ) * (1 / 100 : ℝ) :=
-    mul_lt_mul_of_pos_left hα h100
-  have heq : (100 : ℝ) * (1 / 100 : ℝ) = (1 : ℝ) := by norm_num
-  exact lt_of_lt_of_eq hmid heq
 
 /-! **Algebra** -/
 
@@ -475,14 +386,6 @@ theorem lemma61_exp_bound
             rw [Real.rpow_def_of_pos (by positivity), mul_comm]
   exact hexp_le.trans_eq hrewrite
 
-theorem lemma61_exp_bound_of_params (g : ScrambleGeometry)
-    (P : Theorem51Params g) {s : Nat}
-    (hs1 : 1 ≤ s) (hsn : s ≤ g.n) :
-    Real.exp (-(2 * ((P.epsB / 2) * ((g.n : ℝ) / s)) ^ 2 * g.m * s)) ≤
-      (Real.exp 1 * g.m) ^ (-(g.n : ℝ)) :=
-  lemma61_exp_bound g.m g.n s P.epsB
-    (le_trans (by norm_num : (1 : Nat) ≤ 100) g.hm) hs1 hsn
-    (le_trans (by norm_num : (1 : Nat) ≤ 16) g.hn) P.hepsB_lb
 
 theorem lemma61_union_eq_failFactor (m n : Nat) (hm : 0 < m) :
     ((m + 1 : ℝ) ^ n) * ((2 / (Real.exp 1 * m)) ^ n) =
@@ -577,34 +480,9 @@ structure Lemma61FailBound (m n : Nat) (epsB : ℝ) : Prop where
         (bad.card : ℝ) ≤
           lemma61_failFactor m n * (Fintype.card (Scramble m n) : ℝ)
 
-theorem exists_combinatorialPropertyB_of_failBound
-    (m n : Nat) (epsB : ℝ)
-    (hm : 100 ≤ m) (hn : 16 ≤ n)
-    (hfail : Lemma61FailBound m n epsB) :
-    ExistsCombinatorialPropertyB m n epsB := by
-  classical
-  have hfactor := lemma61_failFactor_lt_one_hundredth m n hm hn
-  have htotpos : (0 : ℝ) < Fintype.card (Scramble m n) := by
-    exact_mod_cast (Fintype.card_pos : 0 < Fintype.card (Scramble m n))
-  by_contra hnone
-  have hnone' : ∀ σ : Scramble m n, ¬ HasCombinatorialPropertyB σ epsB :=
-    fun σ h => hnone ⟨σ, h⟩
-  have hle := hfail.bound Finset.univ (fun σ _ => hnone' σ)
-  simp only [Finset.card_univ] at hle
-  have h1 : (1 : ℝ) ≤ lemma61_failFactor m n :=
-    (le_of_mul_le_mul_left (by simpa [mul_one, mul_comm] using hle) htotpos)
-  linarith
 
-structure Lemma61Obligation (m n : Nat) (epsB : ℝ) where
-  hm : 100 ≤ m
-  hn : 16 ≤ n
   heps : Real.sqrt (2 * (1 + Real.log m) / m) ≤ epsB
-  failBound : Lemma61FailBound m n epsB
 
-theorem ExistsCombinatorialPropertyB_ofObligation
-    {m n : Nat} {epsB : ℝ} (O : Lemma61Obligation m n epsB) :
-    ExistsCombinatorialPropertyB m n epsB :=
-  exists_combinatorialPropertyB_of_failBound m n epsB O.hm O.hn O.failBound
 
 /-! **AvgRowOnesLeOne is false at paper minima** -/
 
@@ -612,29 +490,7 @@ theorem ExistsCombinatorialPropertyB_ofObligation
 def maxColumnMonotone (m n : Nat) : MonotoneColumnSums m n :=
   fun _ => Fin.last m
 
-theorem monotoneRowOnes_maxColumn (m n : Nat) (r : Fin m) (_hn : 0 < n) :
-    (monotoneRowOnes (maxColumnMonotone m n) r).card = n := by
-  classical
-  have hsubset : Finset.univ ⊆ monotoneRowOnes (maxColumnMonotone m n) r := by
-    intro j _
-    simp only [monotoneRowOnes, maxColumnMonotone, Finset.mem_filter, Finset.mem_univ, true_and,
-      Fin.val_last]
-    exact Nat.sub_le m r.val
-  have hcard_le : n ≤ (monotoneRowOnes (maxColumnMonotone m n) r).card := by
-    simpa [Finset.card_univ, Fintype.card_fin] using Finset.card_le_card hsubset
-  have hcard_ge : (monotoneRowOnes (maxColumnMonotone m n) r).card ≤ n := by
-    simpa [Fintype.card_fin] using (monotoneRowOnes (maxColumnMonotone m n) r).card_le_univ
-  omega
 
-theorem avgRowOnes_maxColumn (m n : Nat) (hn : 0 < n) :
-    avgRowOnes (maxColumnMonotone m n) = m := by
-  have hn0 : (n : ℝ) ≠ 0 := by exact_mod_cast hn.ne'
-  rw [avgRowOnes_eq]
-  have hrows : ∀ r : Fin m, ((monotoneRowOnes (maxColumnMonotone m n) r).card : ℝ) = n := by
-    intro r
-    exact_mod_cast monotoneRowOnes_maxColumn m n r hn
-  rw [Finset.sum_congr rfl fun r _ => hrows r]
-  simp [Finset.sum_const, Finset.card_univ, hn0]
 
 theorem totalColumnOnes_maxColumn (m n : Nat) :
     totalColumnOnes (maxColumnMonotone m n) = m * n := by
@@ -653,18 +509,12 @@ theorem not_TotalColumnOnesLeN_of_m_gt_one {m n : Nat} (hm : 1 < m) (hn : 0 < n)
   have hmn : n < m * n := by nlinarith
   omega
 
-theorem not_TotalColumnOnesLeN_100_16 : ¬ TotalColumnOnesLeN 100 16 :=
-  not_TotalColumnOnesLeN_of_m_gt_one (by norm_num : 1 < 100) (by norm_num : 0 < 16)
 
-theorem not_TotalColSumsLeN_100_16 : ¬ TotalColSumsLeN 100 16 :=
-  not_TotalColumnOnesLeN_100_16
 
 theorem not_AvgRowOnesLeOne_of_m_gt_one {m n : Nat} (hm : 1 < m) (hn : 0 < n) :
     ¬ AvgRowOnesLeOne m n := by
   intro h
   exact not_TotalColumnOnesLeN_of_m_gt_one hm hn (TotalColumnOnesLeN.of_avgRowOnesLeOne hn h)
 
-theorem not_AvgRowOnesLeOne_100_16 : ¬ AvgRowOnesLeOne 100 16 :=
-  not_AvgRowOnesLeOne_of_m_gt_one (by norm_num : 1 < 100) (by norm_num : 0 < 16)
 
 end Chvatal

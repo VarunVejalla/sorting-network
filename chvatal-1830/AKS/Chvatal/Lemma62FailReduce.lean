@@ -50,8 +50,6 @@ theorem event_depends_only_on_top {m n f : Nat} (hf : Even f)
   unfold rowHit
   rw [hrow]
 
-theorem aboveHalfFringeRows_eq_topRows (m f : Nat) (hf : Even f) :
-    aboveHalfFringeRows m f hf = topRows m (f / 2) := rfl
 
 theorem onesAboveHalfFringe_eq_onesInRows {m n f : Nat} (hf : Even f)
     (c : MonotoneColumnSums m n) (σ : Scramble m n) (S : Finset (Fin n)) :

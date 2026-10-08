@@ -135,36 +135,6 @@ def OutsiderBound.active (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
 
 /-! **Lemma 4.5 purity** -/
 
-/-- §4 Lemma 4.5 (purity form): if the order-`r` bound at the top level is
-    strictly less than 1, then there are no order-`r` outsiders there.
 
-    Status: this is the cardinality step only; discharging
-    `μ δ^r c(α(tf), tf) ≤ 1` from the §7 envelope is separate. -/
-theorem lemma45_purity (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
-    (sched : LevelSchedule p d) (pl : Placement p.br d)
-    (perm : Fin (p.br ^ d) → Fin (p.br ^ d))
-    (r : Nat) (hr : r ≤ d)
-    (b : KBag p.br d) (hb : b.l = sched.alpha sched.tf)
-    (hP : OutsiderBound p ip d sched sched.tf pl perm)
-    (hcap : ip.mu * ip.delta ^ r * capacity p d (sched.alpha sched.tf) sched.tf ≤ 1) :
-    b.strangers (r + 1) perm (pl.regs b) (br_ge_one p) = 0 := by
-  have hbr := br_ge_one p
-  have hlt := hP b r hr
-  have hbound :
-      (b.strangers (r + 1) perm (pl.regs b) hbr : Rat) < 1 := by
-    calc (b.strangers (r + 1) perm (pl.regs b) hbr : Rat)
-        < ip.mu * ip.delta ^ r * capacity p d b.l sched.tf := hlt
-      _ = ip.mu * ip.delta ^ r * capacity p d (sched.alpha sched.tf) sched.tf := by
-          rw [hb]
-      _ ≤ 1 := hcap
-  have hnat : b.strangers (r + 1) perm (pl.regs b) hbr < 1 := by
-    exact_mod_cast hbound
-  omega
-
-/-- Finite geometric sum used in the Lemma 4.1 envelope:
-    `sum_{j=0}^{J-1} q^j = (q^J - 1) / (q - 1)`. -/
-theorem lemma41_geom_partial (q : Rat) (hq : q ≠ 1) (J : Nat) :
-    ∑ j ∈ Finset.range J, q ^ j = (q ^ J - 1) / (q - 1) :=
-  geom_sum_eq hq J
 
 end Chvatal

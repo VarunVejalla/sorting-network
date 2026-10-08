@@ -171,19 +171,11 @@ theorem nativeBagIdx_div {br d ℓ r : ℕ} (hbr : 1 ≤ br) (h : ℓ + 1 ≤ d)
 
 /-! **Bag API** -/
 
-theorem KBag.size_pos (b : KBag br d) (hbr : 1 ≤ br) : 0 < b.size :=
-  bagSize_pos hbr b.hl
 
-@[simp] theorem KBag.size_root :
-    (KBag.root br d).size = br ^ d :=
-  bagSize_zero br d
 
 theorem KBag.hi_eq_lo_add_size (b : KBag br d) : b.hi = b.lo + b.size := by
   simp [KBag.hi, KBag.lo, Nat.add_mul]
 
-theorem KBag.lo_lt_hi (b : KBag br d) (hbr : 1 ≤ br) : b.lo < b.hi := by
-  simp only [KBag.hi, KBag.lo, Nat.add_mul, Nat.one_mul]
-  exact Nat.lt_add_of_pos_right (b.size_pos hbr)
 
 theorem KBag.native_iff (b : KBag br d) (r : Fin (br ^ d))
     (perm : Fin (br ^ d) → Fin (br ^ d)) (hbr : 1 ≤ br) :
@@ -238,13 +230,6 @@ theorem KBag.strangers_eq_zero_of_lt_order (b : KBag br d) (j : Nat)
     ancestor_eq_root b (j - 1) hbr (by omega)
   exact hns (by simpa [hanc] using native_root (br := br) (d := d) r perm)
 
-/-- Maximum order `d+1` strangers are always empty. -/
-theorem KBag.strangers_succ_d_eq_zero (b : KBag br d)
-    (perm : Fin (br ^ d) → Fin (br ^ d)) (S : Finset (Fin (br ^ d)))
-    (hbr : 1 ≤ br) :
-    b.strangers (d + 1) perm S hbr = 0 :=
-  strangers_eq_zero_of_lt_order b (d + 1) perm S hbr (by omega)
-    (Nat.lt_succ_of_le b.hl)
 
 /-! **Tree structure** -/
 
@@ -321,16 +306,6 @@ theorem KBag.Native.parent {b : KBag br d} {r : Fin (br ^ d)}
 
 /-! **Enumeration** -/
 
-/-- All bags in the height-`d` `br`-ary tree. -/
-def allBags (br d : ℕ) : List (KBag br d) :=
-  ((List.range (d + 1)).attach).flatMap fun ⟨l, hl⟩ ↦
-    let hl' : l ≤ d := by rw [List.mem_range] at hl; omega
-    ((List.range (br ^ l)).attach).map fun ⟨x, hx⟩ ↦
-      ⟨l, x, hl', by rwa [List.mem_range] at hx⟩
 
-theorem KBag.mem_allBags (b : KBag br d) : b ∈ allBags br d := by
-  simp only [allBags, List.mem_flatMap, List.mem_attach, true_and, List.mem_map,
-    List.mem_range, Subtype.exists]
-  exact ⟨b.l, by have := b.hl; omega, b.x, b.hx, by ext <;> rfl⟩
 
 end Chvatal

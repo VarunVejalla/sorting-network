@@ -142,53 +142,8 @@ theorem stageNet_depth_le {d D : ℕ} (S : KBag 64 d → Finset (Fin (64 ^ d)))
     have h := fun i j => orderEmb_disjoint (hS a c hne) i j
     exact ⟨⟨h _ _, h _ _⟩, ⟨h _ _, h _ _⟩⟩
 
-/-- Wires belonging to no node's set are unchanged. -/
-theorem stageNet_outside {d : ℕ} {α : Type*} [LinearOrder α]
-    (S : KBag 64 d → Finset (Fin (64 ^ d)))
-    (nodeNet : (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
-    (v : Fin (64 ^ d) → α) (w : Fin (64 ^ d)) (hw : ∀ b, w ∉ S b) :
-    (stageNet S nodeNet).exec v w = v w := by
-  have hflat := ComparatorNetwork.exec_flatMap (nodeList 64 d)
-    (fun a => (nodeNet a (S a).card).scatterEmbed (64 ^ d) ((S a).orderEmbOfFin rfl)) v
-  change (⟨(nodeList 64 d).flatMap fun a =>
-    ((nodeNet a (S a).card).scatterEmbed (64 ^ d) ((S a).orderEmbOfFin rfl)).comparators⟩ :
-      ComparatorNetwork (64 ^ d)).exec v _ = _
-  rw [hflat]
-  refine ComparatorNetwork.foldl_exec_outside _ _ _ _ ?_
-  intro a _ c hc
-  refine ComparatorNetwork.scatterEmbed_comparators_outside _ _ _ w ?_ c hc
-  rintro ⟨i, hi⟩
-  exact hw a (hi ▸ Finset.orderEmbOfFin_mem (S a) rfl i)
 
-theorem comparator_apply_exists_preimage {n : ℕ} {α : Type*} [LinearOrder α]
-    (c : Comparator n) (v : Fin n → α) (k : Fin n) : ∃ i, c.apply v k = v i := by
-  unfold Comparator.apply
-  by_cases h1 : k = c.i
-  · rcases le_total (v c.i) (v c.j) with h | h
-    · exact ⟨c.i, by simp [h1, min_eq_left h]⟩
-    · exact ⟨c.j, by simp [h1, min_eq_right h]⟩
-  · by_cases h2 : k = c.j
-    · rcases le_total (v c.i) (v c.j) with h | h
-      · exact ⟨c.j, by simp [h2, max_eq_right h, c.h.ne']⟩
-      · exact ⟨c.i, by simp [h2, max_eq_left h, c.h.ne']⟩
-    · exact ⟨k, by simp [h1, h2]⟩
 
-theorem foldl_apply_exists_preimage {n : ℕ} {α : Type*} [LinearOrder α]
-    (cs : List (Comparator n)) (v : Fin n → α) (k : Fin n) :
-    ∃ i, cs.foldl (fun acc c => c.apply acc) v k = v i := by
-  induction cs generalizing v with
-  | nil => exact ⟨k, rfl⟩
-  | cons c cs ih =>
-    obtain ⟨j, hj⟩ := ih (c.apply v)
-    obtain ⟨i, hi⟩ := comparator_apply_exists_preimage c v j
-    exact ⟨i, by simp only [List.foldl_cons]; rw [hj, hi]⟩
 
-/-- Every output value is some input value. -/
-theorem stageNet_exec_exists_preimage {d : ℕ} {α : Type*} [LinearOrder α]
-    (S : KBag 64 d → Finset (Fin (64 ^ d)))
-    (nodeNet : (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
-    (v : Fin (64 ^ d) → α) (k : Fin (64 ^ d)) :
-    ∃ i, (stageNet S nodeNet).exec v k = v i :=
-  foldl_apply_exists_preimage _ v k
 
 end Chvatal

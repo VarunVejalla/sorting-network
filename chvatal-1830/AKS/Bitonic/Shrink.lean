@@ -27,10 +27,5 @@ theorem bitonicNetwork_sorts (n : ℕ) : (bitonicNetwork n).Sorts := by
   unfold bitonicNetwork
   exact restrictWires_sorts _ _ _ (fun v ↦ bitonicSort_sorts _ Bool v)
 
-/-- `bitonicNetwork n` has depth at most `(⌈log₂ n⌉)²`. -/
-theorem bitonicNetwork_depth_le (n : ℕ) :
-    (bitonicNetwork n).depth ≤ (Nat.clog 2 n) ^ 2 := by
-  unfold bitonicNetwork
-  exact (restrictWires_depth_le _ _ _).trans (bitonicSort_depth_le _)
 
 end

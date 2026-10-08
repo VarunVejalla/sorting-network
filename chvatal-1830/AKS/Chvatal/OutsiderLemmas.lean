@@ -29,115 +29,15 @@ open Finset
 
 /-! **Geometric envelope for Lemma 4.1** -/
 
-/-- Common ratio `q = δ² k² A²` of the even-step outsider series. -/
-def lemma41_ratio (p : ScheduleParams) (ip : InvariantParams) : Rat :=
-  ip.delta ^ 2 * (p.br : Rat) ^ 2 * p.A ^ 2
 
-/-- Leading factor `δ k A²` in the sibling envelope. -/
-def lemma41_lead (p : ScheduleParams) (ip : InvariantParams) : Rat :=
-  ip.delta * (p.br : Rat) * p.A ^ 2
 
-theorem siblingFactor_eq (p : ScheduleParams) (ip : InvariantParams) :
-    siblingFactor p ip =
-      lemma41_lead p ip / (1 - lemma41_ratio p ip) := by
-  simp only [siblingFactor, lemma41_lead, lemma41_ratio]
 
-/-- Finite envelope:
-    `lead * sum_{j<J} q^j ≤ lead / (1-q)` when `0 ≤ q < 1` and `lead ≥ 0`. -/
-theorem lemma41_geom_envelope (lead q : Rat) (hlead : 0 ≤ lead)
-    (hq0 : 0 ≤ q) (hq1 : q < 1) (J : Nat) :
-    lead * ∑ j ∈ Finset.range J, q ^ j ≤ lead / (1 - q) := by
-  have hqne : q ≠ 1 := ne_of_lt hq1
-  have hden : 0 < 1 - q := by linarith
-  have hsum := lemma41_geom_partial q hqne J
-  have hpow : 0 ≤ q ^ J := pow_nonneg hq0 _
-  have hnum : 1 - q ^ J ≤ 1 := by linarith
-  have hrew : (q ^ J - 1) / (q - 1) = (1 - q ^ J) / (1 - q) := by
-    have h1 : q - 1 = -(1 - q) := by ring
-    have h2 : q ^ J - 1 = -(1 - q ^ J) := by ring
-    rw [h2, h1, neg_div_neg_eq]
-  rw [hsum, hrew]
-  have hfrac : (1 - q ^ J) / (1 - q) ≤ 1 / (1 - q) :=
-    div_le_div_of_nonneg_right hnum hden.le
-  calc lead * ((1 - q ^ J) / (1 - q))
-      ≤ lead * (1 / (1 - q)) := mul_le_mul_of_nonneg_left hfrac hlead
-    _ = lead / (1 - q) := by ring
 
-/-- Paper series bound: partial sums of `lead * q^j` stay ≤ `siblingFactor`. -/
-theorem lemma41_series_bound (p : ScheduleParams) (ip : InvariantParams)
-    (hq : lemma41_ratio p ip < 1) (J : Nat) :
-    lemma41_lead p ip * ∑ j ∈ Finset.range J, lemma41_ratio p ip ^ j ≤
-      siblingFactor p ip := by
-  have hlead : 0 ≤ lemma41_lead p ip := by
-    unfold lemma41_lead
-    have := ip.hdelta_pos
-    have := p.A_pos
-    have := p.br_cast_pos
-    positivity
-  have hq0 : 0 ≤ lemma41_ratio p ip := by
-    unfold lemma41_ratio
-    have := ip.hdelta_pos
-    have := p.A_pos
-    have := p.br_cast_pos
-    positivity
-  have h := lemma41_geom_envelope (lemma41_lead p ip) (lemma41_ratio p ip)
-    hlead hq0 hq J
-  rwa [siblingFactor_eq]
 
 /-! **Lemma 4.1** -/
 
-theorem parent_addr_simp (p : ScheduleParams) (d i t : Nat)
-    (sc : StageCounts p d i t) (hbr : (p.br : Rat) ≠ 0)
-    (hwires : sc.WiresMassForm p d i t) :
-    sc.addressedBelowChild - sc.wiresBelowChild =
-      capacity p d i t / (p.br : Rat) := by
-  have hadd := sc.addressed_eq
-  have hw : sc.wiresBelowChild =
-      ((p.br : Rat) ^ d / (p.br : Rat) ^ i - capacity p d i t) / (p.br : Rat) :=
-    hwires
-  rw [hadd, hw, pow_succ]
-  field_simp [hbr]
-  ring
 
-/-- Parent-held keys addressed below a child, under wire-mass + bad bound. -/
-theorem lemma41_of_counts (p : ScheduleParams) (ip : InvariantParams)
-    (d i t : Nat) (sc : StageCounts p d i t)
-    (hwires : sc.WiresMassForm p d i t)
-    (hbad : sc.BadBound p ip d i t)
-    (hbr : (p.br : Rat) ≠ 0) :
-    sc.parentAddressedBelowChild ≤
-      (1 / (p.br : Rat) + ip.mu * siblingFactor p ip) * capacity p d i t := by
-  have hbal := sc.parent_balance
-  have hsimp := parent_addr_simp p d i t sc hbr hwires
-  have hbad' : sc.badBelowChild ≤
-      ip.mu * siblingFactor p ip * capacity p d i t := hbad
-  calc sc.parentAddressedBelowChild
-      = sc.addressedBelowChild - sc.wiresBelowChild + sc.badBelowChild := hbal
-    _ = capacity p d i t / (p.br : Rat) + sc.badBelowChild := by rw [hsimp]
-    _ ≤ capacity p d i t / (p.br : Rat) +
-          ip.mu * siblingFactor p ip * capacity p d i t := by
-        linarith [hbad']
-    _ = (1 / (p.br : Rat) + ip.mu * siblingFactor p ip) * capacity p d i t := by
-        ring
 
-/-- Strict form matching the paper's `<`. -/
-theorem lemma41_of_counts_lt (p : ScheduleParams) (ip : InvariantParams)
-    (d i t : Nat) (sc : StageCounts p d i t)
-    (hwires : sc.WiresMassForm p d i t)
-    (hbad : sc.badBelowChild < ip.mu * siblingFactor p ip * capacity p d i t)
-    (hbr : (p.br : Rat) ≠ 0) :
-    sc.parentAddressedBelowChild <
-      (1 / (p.br : Rat) + ip.mu * siblingFactor p ip) * capacity p d i t := by
-  have hbal := sc.parent_balance
-  have hsimp := parent_addr_simp p d i t sc hbr hwires
-  calc sc.parentAddressedBelowChild
-      = sc.addressedBelowChild - sc.wiresBelowChild + sc.badBelowChild := hbal
-    _ = capacity p d i t / (p.br : Rat) + sc.badBelowChild := by rw [hsimp]
-    _ < capacity p d i t / (p.br : Rat) +
-          ip.mu * siblingFactor p ip * capacity p d i t := by
-        linarith [hbad]
-    _ = (1 / (p.br : Rat) + ip.mu * siblingFactor p ip) * capacity p d i t := by
-        ring
 
 /-! **Lemma 4.2** -/
 
@@ -216,21 +116,6 @@ theorem lemma43_of_sources (p : ScheduleParams) (ip : InvariantParams)
   have hbound := cond42_scaled p ip c (le_of_lt hc) h42
   linarith [src.hsplit, hparent, hchild, hbound]
 
-/-- Lemma 4.3 root case: under Cond (4.1) and `c(1,1) = N/k`. -/
-theorem lemma43_root_of_star (p : ScheduleParams) (ip : InvariantParams)
-    (d : Nat) (root : RootSeparatorQuality ip)
-    (h41 : Cond41 p ip)
-    (hcap : capacity p d 1 1 = root.N / (p.br : Rat)) :
-    root.childOutsiders < ip.mu * capacity p d 1 1 := by
-  have h41' : ip.epsStar ≤ ip.mu / (p.br : Rat) := h41
-  have hbr : (0 : Rat) < (p.br : Rat) := p.br_cast_pos
-  calc root.childOutsiders
-      < ip.epsStar * root.N := root.hStar
-    _ ≤ (ip.mu / (p.br : Rat)) * root.N :=
-        mul_le_mul_of_nonneg_right h41' root.hN_pos.le
-    _ = ip.mu * (root.N / (p.br : Rat)) := by
-        field_simp [ne_of_gt hbr]
-    _ = ip.mu * capacity p d 1 1 := by rw [hcap]
 
 /-! **Lemma 4.4** -/
 

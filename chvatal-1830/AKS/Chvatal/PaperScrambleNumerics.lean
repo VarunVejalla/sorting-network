@@ -37,145 +37,27 @@ theorem log_paperRootM : Real.log (paperRootM : ℝ) = 79 * Real.log 2 := by
   rw [paperRootM_cast]
   simpa using Real.log_pow (2 : ℝ) (by norm_num : (0 : ℝ) < 2) 79
 
-private theorem sqrt59_comm :
-    Real.sqrt (1 + Real.log 2 * 59) = Real.sqrt (1 + 59 * Real.log 2) := by
-  congr 1
-  ring
 
-private theorem sqrt79_comm :
-    Real.sqrt (1 + Real.log 2 * 79) = Real.sqrt (1 + 79 * Real.log 2) := by
-  congr 1
-  ring
 
-theorem chernoff_hepsB_paperOrdinaryM_le_paperOrdinaryEpsB :
-    chernoff_hepsB paperOrdinaryM ≤ paperOrdinaryEpsB := by
-  unfold chernoff_hepsB paperOrdinaryEpsB
-  rw [log_paperOrdinaryM, paperOrdinaryM_cast]
-  have h59 : 2 * (1 + 60 * Real.log 2) ≤ 4 * (1 + 59 * Real.log 2) := by
-    linarith [Real.log_pos (by norm_num : (1 : ℝ) < 2)]
-  have hinside :
-      2 * (1 + 60 * Real.log 2) / (2 : ℝ) ^ 60 ≤
-        (Real.sqrt (1 + 59 * Real.log 2) / 2 ^ 29) ^ 2 := by
-    have hrearr :
-        4 * (1 + 59 * Real.log 2) / (2 : ℝ) ^ 60 =
-          (Real.sqrt (1 + 59 * Real.log 2) / 2 ^ 29) ^ 2 := by
-      have h29 : (0 : ℝ) < (2 ^ 29 : ℝ) := by positivity
-      have hsq : (Real.sqrt (1 + 59 * Real.log 2)) ^ 2 = 1 + 59 * Real.log 2 :=
-        Real.sq_sqrt (by positivity)
-      field_simp [h29.ne']
-      ring_nf
-      rw [sqrt59_comm, hsq]
-      ring
-    linarith
-  have hnn : (0 : ℝ) ≤ 2 * (1 + 60 * Real.log 2) / (2 : ℝ) ^ 60 := by positivity
-  have hsqrt := Real.sqrt_le_sqrt hinside
-  have hside : (0 : ℝ) ≤ Real.sqrt (1 + 59 * Real.log 2) / 2 ^ 29 := by positivity
-  rwa [Real.sqrt_sq hside] at hsqrt
 
-theorem chernoff_hepsB_paperRootM_le_paperRootEpsB :
-    chernoff_hepsB paperRootM ≤ paperRootEpsB := by
-  unfold chernoff_hepsB paperRootEpsB
-  rw [log_paperRootM, paperRootM_cast]
-  have hinside :
-      2 * (1 + 79 * Real.log 2) / (2 : ℝ) ^ 79 =
-        (Real.sqrt (1 + 79 * Real.log 2) / 2 ^ 39) ^ 2 := by
-    have h39 : (0 : ℝ) < (2 ^ 39 : ℝ) := by positivity
-    have hsq : (Real.sqrt (1 + 79 * Real.log 2)) ^ 2 = 1 + 79 * Real.log 2 :=
-      Real.sq_sqrt (by positivity)
-    field_simp [h39.ne']
-    ring_nf
-    rw [sqrt79_comm, hsq]
-    ring
-  have hnn : (0 : ℝ) ≤ 2 * (1 + 79 * Real.log 2) / (2 : ℝ) ^ 79 := by positivity
-  have hsqrt := Real.sqrt_le_sqrt (le_of_eq hinside)
-  have hside : (0 : ℝ) ≤ Real.sqrt (1 + 79 * Real.log 2) / 2 ^ 39 := by positivity
-  rwa [Real.sqrt_sq hside] at hsqrt
 
-theorem invariant7_epsB_lt_paperOrdinaryEpsB :
-    (invariant7.epsB : ℝ) < paperOrdinaryEpsB := by
-  unfold paperOrdinaryEpsB invariant7
-  have hsqrt : (1 : ℝ) < Real.sqrt (1 + 59 * Real.log 2) := by
-    rw [Real.lt_sqrt (by norm_num)]
-    linarith [Real.log_pos (by norm_num : (1 : ℝ) < 2)]
-  have h29 : (0 : ℝ) < (2 ^ 29 : ℝ) := by positivity
-  have hmid : (1 / 1000000000000000 : ℝ) < Real.sqrt (1 + 59 * Real.log 2) / 2 ^ 29 :=
-    lt_of_lt_of_le (by norm_num) (div_le_div_of_nonneg_right (le_of_lt hsqrt) h29.le)
-  linarith
 
-theorem chernoff_hepsB_paperOrdinaryM_gt_invariant7_epsB :
-    (invariant7.epsB : ℝ) < chernoff_hepsB paperOrdinaryM := by
-  have hlo : (1 / 1000000000000000 : ℝ) < chernoff_hepsB paperOrdinaryM := by
-    unfold chernoff_hepsB
-    rw [log_paperOrdinaryM, paperOrdinaryM_cast]
-    have hgt : (1 / 1000000000000000 : ℝ) ^ 2 < (2 : ℝ) / (2 : ℝ) ^ 60 := by
-      have hpow : (2 : ℝ) ^ 60 = (1152921504606846976 : ℝ) := by norm_num
-      rw [hpow]
-      norm_num
-    have hlo : (2 : ℝ) < 2 * (1 + 60 * Real.log 2) := by
-      have h1 : (1 : ℝ) < 1 + 60 * Real.log 2 := by
-        linarith [Real.log_pos (by norm_num : (1 : ℝ) < 2)]
-      nlinarith
-    have hstep : (2 : ℝ) / (2 : ℝ) ^ 60 < 2 * (1 + 60 * Real.log 2) / (2 : ℝ) ^ 60 :=
-      div_lt_div_of_pos_right hlo (by positivity)
-    have hinside : (1 / 1000000000000000 : ℝ) ^ 2 <
-        2 * (1 + 60 * Real.log 2) / (2 : ℝ) ^ 60 :=
-      lt_trans hgt hstep
-    exact (Real.lt_sqrt (by norm_num : (0 : ℝ) ≤ 1 / 1000000000000000)).mpr hinside
-  exact lt_of_le_of_lt (le_of_eq (by norm_num [invariant7])) hlo
 
-theorem not_chernoff_hepsB_le_invariant7_at_paperOrdinaryM :
-    ¬ chernoff_hepsB paperOrdinaryM ≤ (invariant7.epsB : ℝ) :=
-  not_le_of_gt chernoff_hepsB_paperOrdinaryM_gt_invariant7_epsB
 
-theorem paperOrdinaryGeometry_f : paperOrdinaryGeometry.f = 2 ^ 58 := rfl
 
-theorem paperOrdinaryGeometry_m : paperOrdinaryGeometry.m = paperOrdinaryM := rfl
 
-theorem paperOrdinaryGeometry_n : paperOrdinaryGeometry.n = 16 := rfl
 
-theorem paperOrdinary_hepsF_ge_4e :
-    (4 * Real.exp 1) / (paperOrdinaryGeometry.f : ℝ) ≤ (invariant7.epsF : ℝ) := by
-  rw [paperOrdinaryGeometry_f]
-  unfold invariant7
-  have h4e : (4 * Real.exp 1) < (11 : ℝ) := by linarith [Real.exp_one_lt_d9]
-  have hpow58 : (80000000 : ℝ) * 11 ≤ (2 ^ 58 : ℝ) := by
-    exact_mod_cast (show (80000000 : ℕ) * 11 ≤ 2 ^ 58 by decide)
-  have hpos : (0 : ℝ) < (2 ^ 58 : ℝ) := by positivity
-  have h11 : (11 : ℝ) / (2 ^ 58) ≤ (1 / 80000000 : ℝ) := by
-    rw [div_le_div_iff₀ hpos (by norm_num : (0 : ℝ) < 80000000)]
-    linarith
-  have hlt : (4 * Real.exp 1) / (2 ^ 58 : ℝ) < (11 : ℝ) / (2 ^ 58) :=
-    div_lt_div_of_pos_right h4e hpos
-  linarith
 
-theorem paperRootGeometry_f : paperRootGeometry.f = 2 ^ 78 := rfl
 
-theorem paperRootGeometry_m : paperRootGeometry.m = paperRootM := rfl
 
-theorem paperRootGeometry_n : paperRootGeometry.n = 16 := rfl
 
-theorem paperRoot_hepsF_ge_4e :
-    (4 * Real.exp 1) / (paperRootGeometry.f : ℝ) ≤ (invariant7.epsF : ℝ) := by
-  rw [paperRootGeometry_f, show (invariant7.epsF : ℝ) = (1 / 80000000 : ℝ) from by
-    unfold invariant7; norm_num]
-  have h4e : (4 * Real.exp 1) < (12 : ℝ) := by linarith [Real.exp_one_lt_d9]
-  have hpow : ((2 ^ 78 : Nat) : ℝ) = (2 : ℝ) ^ 78 := by norm_cast
-  rw [hpow]
-  have hdiv : (4 * Real.exp 1) / ((2 : ℝ) ^ 78) < (12 : ℝ) / ((2 : ℝ) ^ 78) :=
-    div_lt_div_of_pos_right h4e (by positivity)
-  have hsmall : (12 : ℝ) / ((2 : ℝ) ^ 78) < (1 / 80000000 : ℝ) := by
-    rw [← hpow]; norm_num
-  exact le_of_lt (hdiv.trans hsmall)
 
 /-! **Lemma 6.2 `ε_F` floor at `f = 2^58` (large-`f` asymptotics)** -/
 
-private theorem paperOrdinary_f58_sub_two_ge_2p57 : 2 ^ 57 ≤ 2 ^ 58 - 2 := by decide
 
 private theorem paperOrdinary_two_div_f58_le :
     (2 : ℝ) / ((2 ^ 58 - 2 : ℝ)) ≤ (2 : ℝ) / (2 ^ 57) := by norm_num
 
-private theorem paperOrdinary_two_div_2p57_lt :
-    (2 : ℝ) / (2 ^ 57) < (1 / 10 ^ 14 : ℝ) := by norm_num
 
 private theorem paperOrdinary_deltaF_eq : (invariant7.deltaF : ℝ) = (128 / 4095 : ℝ) := by
   unfold invariant7
@@ -333,117 +215,25 @@ structure PaperOrdinaryTheorem51Residual where
 def PaperOrdinaryTheorem51Residual.discharged : PaperOrdinaryTheorem51Residual where
   epsF_lemma62 := paperOrdinary_epsF_lemma62_certificate
 
-noncomputable def theorem51Params_paperOrdinaryGeometry (C : PaperOrdinaryTheorem51Residual) :
-    Theorem51Params paperOrdinaryGeometry :=
-  theorem51Params_paperOrdinary paperOrdinaryGeometry
-    (by
-      rw [paperOrdinaryGeometry_m]
-      exact chernoff_hepsB_paperOrdinaryM_le_paperOrdinaryEpsB)
-    paperOrdinary_hepsF_ge_4e
-    C.epsF_lemma62.bound
 
-theorem theorem51Params_paperOrdinaryGeometry_chernoff :
-    Real.sqrt (2 * (1 + Real.log paperOrdinaryGeometry.m) / paperOrdinaryGeometry.m) ≤
-      paperOrdinaryEpsB := by
-  rw [paperOrdinaryGeometry_m]
-  exact chernoff_hepsB_paperOrdinaryM_le_paperOrdinaryEpsB
 
-noncomputable def theorem51Params_paperOrdinaryGeometry_discharged :
-    Theorem51Params paperOrdinaryGeometry :=
-  theorem51Params_paperOrdinaryGeometry PaperOrdinaryTheorem51Residual.discharged
 
 /-! **Fringe worst-case `ε_F` (Lemma 6.2 Chernoff) at paper ordinary geometry** -/
 
-noncomputable def paperOrdinary_hepsWorst : ℝ :=
-  Real.sqrt
-    ((1 + Real.log (paperOrdinaryM : ℝ)) * 16 * (7 * 2 ^ 57) * 16 / 2)
 
-theorem fringeRowCount_paperOrdinary :
-    fringeRowCount paperOrdinaryM (2 ^ 58) (by decide : Even (2 ^ 58)) = 7 * 2 ^ 57 := by
-  rw [fringeRowCount_eq, show paperOrdinaryM - (2 ^ 58) / 2 = 7 * 2 ^ 57 from by decide]
 
-private theorem paperOrdinary_hepsWorst_inside_gt :
-    (896 : ℝ) * (2 ^ 57 : ℝ) <
-      (1 + Real.log (paperOrdinaryM : ℝ)) * 16 * (7 * 2 ^ 57) * 16 / 2 := by
-  rw [log_paperOrdinaryM]
-  have h1 : (1 : ℝ) < 1 + 60 * Real.log 2 := by
-    linarith [Real.log_pos (by norm_num : (1 : ℝ) < 2)]
-  have hEq :
-      (1 + 60 * Real.log 2) * 16 * (7 * 2 ^ 57) * 16 / 2 =
-        (1 + 60 * Real.log 2) * ((896 : ℝ) * (2 ^ 57 : ℝ)) := by ring
-  rw [hEq]
-  have hpos : (0 : ℝ) < (896 * 2 ^ 57 : ℝ) := by norm_num
-  simpa [one_mul] using mul_lt_mul_of_pos_right h1 hpos
 
-theorem paperOrdinary_hepsWorst_gt_125 : (125 : ℝ) < paperOrdinary_hepsWorst := by
-  unfold paperOrdinary_hepsWorst
-  have hinside := paperOrdinary_hepsWorst_inside_gt
-  have h125 : (125 : ℝ) ^ 2 < (896 : ℝ) * (2 ^ 57 : ℝ) := by
-    have h57 : (2 ^ 57 : ℝ) = (144115188075855872 : ℝ) := by norm_num
-    rw [h57]
-    norm_num
-  have h125' : (125 : ℝ) < Real.sqrt ((896 : ℝ) * (2 ^ 57 : ℝ)) := by
-    rw [Real.lt_sqrt (by norm_num)]
-    exact h125
-  exact h125'.trans (Real.sqrt_lt_sqrt (by positivity) hinside)
 
-theorem paperOrdinary_hepsWorst_gt_ten : (10 : ℝ) < paperOrdinary_hepsWorst := by
-  unfold paperOrdinary_hepsWorst
-  have hinside := paperOrdinary_hepsWorst_inside_gt
-  have h896 : (10 : ℝ) ^ 2 < (896 : ℝ) * (2 ^ 57 : ℝ) := by
-    have h57 : (2 ^ 57 : ℝ) = (144115188075855872 : ℝ) := by norm_num
-    rw [h57]
-    norm_num
-  have h10 : (10 : ℝ) < Real.sqrt ((896 : ℝ) * (2 ^ 57 : ℝ)) := by
-    rw [Real.lt_sqrt (by norm_num)]
-    exact h896
-  exact h10.trans (Real.sqrt_lt_sqrt (by positivity) hinside)
 
-theorem invariant7_epsF_lt_paperOrdinary_hepsWorst :
-    (invariant7.epsF : ℝ) < paperOrdinary_hepsWorst := by
-  have heps : (invariant7.epsF : ℝ) < (1 : ℝ) := by
-    unfold invariant7
-    norm_num
-  linarith [paperOrdinary_hepsWorst_gt_ten]
 
-theorem not_paperOrdinary_hepsWorst_le_invariant7_epsF :
-    ¬ paperOrdinary_hepsWorst ≤ (invariant7.epsF : ℝ) :=
-  not_le_of_gt invariant7_epsF_lt_paperOrdinary_hepsWorst
 
-/-- Numeric scale: fringe worst-case `ε_F` at `(m,f) = (2^60,2^58)` is `≈ 7.4×10^10`, not `1.25×10⁻⁸`. -/
-theorem paperOrdinary_hepsWorst_gt_invariant7_epsF_by_factor :
-    (10 ^ 10 : ℝ) * (invariant7.epsF : ℝ) < paperOrdinary_hepsWorst := by
-  have heps : (invariant7.epsF : ℝ) = (1 / 80000000 : ℝ) := by
-    unfold invariant7
-    norm_num
-  rw [heps, show (10 ^ 10 : ℝ) * (1 / 80000000 : ℝ) = (125 : ℝ) from by norm_num]
-  exact paperOrdinary_hepsWorst_gt_125
 
 /-! **Lemma 6.2 cell union (`hclose`) at paper scale: `jMax ≈ 2^57`, not `≤ 48`. ** -/
 
-theorem paperOrdinary_lemma62_jMax_gt_48 :
-    (48 : ℝ) < (lemma62_jMax (invariant7.deltaF : ℝ) (2 ^ 58) 16 : ℝ) := by
-  have hfloor :
-      lemma62_jMax (invariant7.deltaF : ℝ) (2 ^ 58) 16 =
-        Nat.floor ((128 : ℝ) / 4095 * (2 ^ 62 : ℝ)) := by
-    dsimp [lemma62_jMax, invariant7]
-    norm_num
-  have hgt : (48 : ℝ) < (128 : ℝ) / 4095 * (2 ^ 62 : ℝ) := by norm_num
-  rw [hfloor]
-  have h49 : (49 : ℝ) ≤ (128 : ℝ) / 4095 * (2 ^ 62 : ℝ) := by norm_num
-  have h49' : (49 : ℕ) ≤ Nat.floor ((128 : ℝ) / 4095 * (2 ^ 62 : ℝ)) :=
-    (Nat.le_floor_iff (by positivity)).2 h49
-  exact_mod_cast Nat.lt_of_lt_of_le (by decide : 48 < 49) h49'
 
-/-- Residual: `lemma62_cellUnionFactor ≤ failFactor` is not proved at paper `(m,jMax)`; numerically false. -/
-def PaperOrdinary_hclose_residual : Prop :=
-  lemma62_cellUnionFactor paperOrdinaryM 16
-      (lemma62_jMax (invariant7.deltaF : ℝ) (2 ^ 58) 16) ≤
-    lemma62_failFactor Lemma62InnerBound.thirty.x
 
 /-! **Lemma 6.2 `ε_F` floor at root `f = 2^78`** -/
 
-private theorem paperRoot_f78_sub_two_ge_2p77 : 2 ^ 77 ≤ 2 ^ 78 - 2 := by decide
 
 private theorem paperRoot_two_div_f78_le :
     (2 : ℝ) / ((2 ^ 78 - 2 : ℝ)) ≤ (2 : ℝ) / (2 ^ 77) := by norm_num
@@ -563,23 +353,7 @@ structure PaperRootTheorem51Residual where
 def PaperRootTheorem51Residual.discharged : PaperRootTheorem51Residual where
   epsF_lemma62 := paperRoot_epsF_lemma62_certificate
 
-noncomputable def theorem51Params_paperRootGeometry (C : PaperRootTheorem51Residual) :
-    Theorem51Params paperRootGeometry :=
-  theorem51Params_paperRoot paperRootGeometry
-    (by
-      rw [paperRootGeometry_m]
-      exact chernoff_hepsB_paperRootM_le_paperRootEpsB)
-    paperRoot_hepsF_ge_4e
-    C.epsF_lemma62.bound
 
-theorem theorem51Params_paperRootGeometry_chernoff :
-    Real.sqrt (2 * (1 + Real.log paperRootGeometry.m) / paperRootGeometry.m) ≤
-      paperRootEpsB := by
-  rw [paperRootGeometry_m]
-  exact chernoff_hepsB_paperRootM_le_paperRootEpsB
 
-noncomputable def theorem51Params_paperRootGeometry_discharged :
-    Theorem51Params paperRootGeometry :=
-  theorem51Params_paperRootGeometry PaperRootTheorem51Residual.discharged
 
 end Chvatal

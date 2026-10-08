@@ -20,44 +20,8 @@ def IsBitonic01 {n : Nat} (v : Fin n → Bool) : Prop :=
   ∃ (b : Bool) (lo hi : Nat), lo ≤ hi ∧ hi ≤ n ∧
     (∀ i : Fin n, v i = b ↔ lo ≤ i.val ∧ i.val < hi)
 
-/-- A monotone 0-1 sequence is bitonic (the false block is `[0, t₀)` where `t₀` is
-    the first true position). -/
-theorem monotone_isBitonic01 {n : Nat} {v : Fin n → Bool} (hv : Monotone v) :
-    IsBitonic01 v := by
-  by_cases h_all : ∀ i : Fin n, v i = false
-  · exact ⟨false, 0, n, Nat.zero_le _, Nat.le.refl,
-      fun i ↦ ⟨fun _ ↦ ⟨Nat.zero_le _, i.isLt⟩, fun _ ↦ h_all i⟩⟩
-  · have ⟨t, ht⟩ : ∃ t : Fin n, v t ≠ false := by
-      by_contra hall; exact h_all (fun i ↦ by by_contra hi; exact hall ⟨i, hi⟩)
-    have ht_true : v t = true := by cases hv : v t <;> simp_all
-    have h_up : ∀ i j : Fin n, i ≤ j → v i = true → v j = true :=
-      fun i j hij hi ↦ Bool.eq_true_of_true_le (hi ▸ hv hij)
-    let S := Finset.univ.filter (fun i : Fin n ↦ v i = true)
-    have hS : S.Nonempty := ⟨t, Finset.mem_filter.mpr ⟨Finset.mem_univ _, ht_true⟩⟩
-    let t₀ := S.min' hS
-    have ht₀_true : v t₀ = true := (Finset.mem_filter.mp (Finset.min'_mem S hS)).2
-    have ht₀_min : ∀ i : Fin n, v i = true → t₀ ≤ i :=
-      fun i hi ↦ Finset.min'_le S i (Finset.mem_filter.mpr ⟨Finset.mem_univ _, hi⟩)
-    exact ⟨false, 0, t₀.val, Nat.zero_le _, Nat.le_of_lt t₀.isLt,
-      fun i ↦ ⟨fun hf ↦ ⟨Nat.zero_le _, by
-        by_contra hge
-        have hle : t₀ ≤ i := Fin.le_def.mpr (by omega)
-        exact absurd (h_up t₀ i hle ht₀_true) (by rw [hf]; decide)⟩,
-        fun ⟨_, hi⟩ ↦ by
-          by_contra hne
-          have htrue : v i = true := by cases hv : v i <;> simp_all
-          have hle := ht₀_min i htrue
-          exact absurd hle (not_le.mpr (Fin.lt_def.mpr hi))⟩⟩
 
-/-- All-false is bitonic. -/
-theorem allFalse_isBitonic01 {n : Nat} : IsBitonic01 (fun _ : Fin n ↦ false) :=
-  ⟨false, 0, n, Nat.zero_le _, Nat.le.refl,
-    fun i ↦ ⟨fun _ ↦ ⟨Nat.zero_le _, i.isLt⟩, fun _ ↦ rfl⟩⟩
 
-/-- All-true is bitonic. -/
-theorem allTrue_isBitonic01 {n : Nat} : IsBitonic01 (fun _ : Fin n ↦ true) :=
-  ⟨false, 0, 0, Nat.le.refl, Nat.zero_le n,
-    fun _ ↦ ⟨fun h ↦ Bool.noConfusion h, fun ⟨_, h⟩ ↦ absurd h (by omega)⟩⟩
 
 /-! **Interval Helpers for Compare Layer** -/
 

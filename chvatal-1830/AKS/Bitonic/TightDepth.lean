@@ -109,31 +109,8 @@ theorem bitonicNetwork_depth_le_budget (n : ℕ) :
   unfold bitonicNetwork
   exact (restrictWires_depth_le _ _ _).trans (bitonicSort_depth_le_budget _)
 
-/-- A root region of at most 2^28 wires costs at most 406 rounds to sort.
-The forest proof must still show that its actual regions obey this size. -/
-theorem bitonicNetwork_depth_le_406 {n : ℕ} (hn : n ≤ 2 ^ 28) :
-    (bitonicNetwork n).depth ≤ 406 := by
-  have hk : Nat.clog 2 n ≤ 28 := by
-    calc Nat.clog 2 n ≤ Nat.clog 2 (2 ^ 28) := Nat.clog_mono_right 2 hn
-      _ = 28 := by decide +kernel
-  exact (bitonicNetwork_depth_le_budget n).trans
-    ((bitonicDepthBudget_mono hk).trans (by decide +kernel))
 
-/-- The larger early-splitting region permitted by the fast rounded parameters
-fits the 561-round root-sort budget if it has at most 2^33 registers. -/
-theorem bitonicNetwork_depth_le_561 {n : ℕ} (hn : n ≤ 2 ^ 33) :
-    (bitonicNetwork n).depth ≤ 561 := by
-  have hk : Nat.clog 2 n ≤ 33 := by
-    calc Nat.clog 2 n ≤ Nat.clog 2 (2 ^ 33) := Nat.clog_mono_right 2 hn
-      _ = 33 := by decide +kernel
-  exact (bitonicNetwork_depth_le_budget n).trans
-    ((bitonicDepthBudget_mono hk).trans (by decide +kernel))
 
-/-- Batcher bitonic sort on `2^42` wires (§7 final sorter) has depth `≤ 903`. -/
-theorem bitonicSort_42_depth_le_903 : (bitonicSort 42).depth ≤ 903 := by
-  calc (bitonicSort 42).depth
-      ≤ bitonicDepthBudget 42 := bitonicSort_depth_le_budget 42
-    _ = 903 := bitonicDepthBudget_42
 
 theorem bitonicNetwork_2pow42_depth_le_903 :
     (bitonicNetwork (2 ^ 42)).depth ≤ 903 := by

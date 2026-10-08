@@ -84,7 +84,6 @@ section Exec
 variable (F : FlowSizes d tf) (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
   (v : Equiv.Perm (Fin (64 ^ d)))
 
-theorem X_zero : X F nets v 0 = fun w => v w := rfl
 
 theorem X_succ (t : ℕ) :
     X F nets v (t + 1) = (stageNet (wireSets F t) (nets t)).exec (X F nets v t) := rfl
@@ -158,20 +157,6 @@ theorem execPlacement_succ_regs (t : ℕ) (ht : t < tf) (b : KBag 64 d) (hb : 1 
     · rintro ⟨j, w, hj, rfl⟩; exact ⟨w, ⟨j, hj⟩, rfl⟩
   · simp
 
-/-- E3a (root). -/
-theorem execPlacement_succ_regs_root (t : ℕ) (ht : t < tf) (b : KBag 64 d) (hb : b.l = 0) :
-    (execPlacement F nets v (t + 1) ht).regs b = fromChildrenK F nets v t b := by
-  show (wireSets F (t + 1) b).image (X F nets v (t + 1)) = _
-  rw [wireSets_succ_eq, Finset.image_union]
-  unfold parentPart childPart fromChildrenK
-  rw [if_neg (by omega)]
-  simp only [Finset.image_empty, Finset.empty_union]
-  split_ifs with h
-  · ext k; simp only [Finset.mem_image, Finset.mem_biUnion, Finset.mem_univ, true_and]
-    constructor
-    · rintro ⟨w, ⟨j, hj⟩, rfl⟩; exact ⟨j, w, hj, rfl⟩
-    · rintro ⟨j, w, hj, rfl⟩; exact ⟨w, ⟨j, hj⟩, rfl⟩
-  · simp
 
 /-! **E4: node networks keep keys inside the node** -/
 
@@ -225,13 +210,6 @@ theorem fromChildrenK_of_not_lt (t : ℕ) (b : KBag 64 d) (h : ¬ b.l < d) :
     fromChildrenK F nets v t b = ∅ := by
   unfold fromChildrenK; rw [dif_neg h]
 
-/-- E3b: keys sent down came from the parent's register. -/
-theorem fromParentK_subset (t : ℕ) (ht : t < tf) (b : KBag 64 d) :
-    fromParentK F nets v t b ⊆ (execPlacement F nets v t ht.le).regs b.parent := by
-  unfold fromParentK
-  show _ ⊆ (wireSets F t _).image (X F nets v t)
-  rw [← stage_preserves_node_keys F nets v t ht]
-  exact Finset.image_subset_image downSet_subset
 
 end Exec
 
@@ -269,16 +247,6 @@ theorem mem_blockOf_iff {lo hi : ℕ} {w : Fin n} :
     rw [rankIn_orderEmb]
     exact ⟨Finset.orderEmbOfFin_mem _ rfl _, h1, h2⟩
 
-/-- The block of ranks `[lo, hi)` as the image of the cells `[lo, hi) ∩ [0, card)`. -/
-theorem blockOf_eq_image (lo hi : ℕ) :
-    blockOf s lo hi = ((Finset.univ : Finset (Fin s.card)).filter
-      (fun c => lo ≤ c.val ∧ c.val < hi)).image (s.orderEmbOfFin rfl) := by
-  ext w
-  rw [mem_blockOf_iff]
-  simp only [Finset.mem_image, Finset.mem_filter, Finset.mem_univ, true_and]
-  constructor
-  · rintro ⟨c, h1, h2, rfl⟩; exact ⟨c, ⟨h1, h2⟩, rfl⟩
-  · rintro ⟨c, ⟨h1, h2⟩, rfl⟩; exact ⟨c, h1, h2, rfl⟩
 
 end Dict
 
@@ -313,24 +281,6 @@ theorem mem_image_downSet_iff (t : ℕ) (ht : t < tf) (q : KBag 64 d) (π τ j :
           (fun i => X F nets v t ((wireSets F t q).orderEmbOfFin rfl i)) c :=
   mem_image_blockOf_iff F nets v t ht q _ _ k
 
-/-- Keys sent up: outputs of the node network on the first `π/2` or last `π/2` cells. -/
-theorem mem_image_upSet_iff (t : ℕ) (ht : t < tf) (q : KBag 64 d) (π : ℕ)
-    (k : Fin (64 ^ d)) :
-    k ∈ (upSet (wireSets F t q) π).image (X F nets v (t + 1)) ↔
-      ∃ c : Fin (wireSets F t q).card,
-        (c.val < π / 2 ∨ (wireSets F t q).card - π / 2 ≤ c.val) ∧
-        k = (nets t q (wireSets F t q).card).exec
-          (fun i => X F nets v t ((wireSets F t q).orderEmbOfFin rfl i)) c := by
-  unfold upSet
-  rw [Finset.image_union, Finset.mem_union, mem_image_blockOf_iff F nets v t ht,
-    mem_image_blockOf_iff F nets v t ht]
-  constructor
-  · rintro (⟨c, h1, h2, h3⟩ | ⟨c, h1, h2, h3⟩)
-    · exact ⟨c, Or.inl h2, h3⟩
-    · exact ⟨c, Or.inr h1, h3⟩
-  · rintro ⟨c, h1 | h1, h3⟩
-    · exact Or.inl ⟨c, Nat.zero_le _, h1, h3⟩
-    · exact Or.inr ⟨c, h1, c.isLt, h3⟩
 
 end KeyDict
 

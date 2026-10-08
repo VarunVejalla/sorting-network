@@ -26,9 +26,6 @@ def bitonicCompareLayer (k : Nat) : ComparatorNetwork (2^(k+1)) :=
         j := ⟨i.val + 2^k, by have := i.isLt; rw [Nat.pow_succ]; omega⟩
         h := by simp only [Fin.lt_def]; omega } }
 
-@[simp] theorem bitonicCompareLayer_size (k : Nat) :
-    (bitonicCompareLayer k).size = 2^k := by
-  simp [bitonicCompareLayer, ComparatorNetwork.size, List.length_map, List.length_finRange]
 
 /-! **Wire Reversal (Flip)** -/
 
@@ -41,9 +38,6 @@ def ComparatorNetwork.flip {n : Nat} (net : ComparatorNetwork n) : ComparatorNet
         j := c.i.rev
         h := Fin.rev_lt_rev.mpr c.h } }
 
-@[simp] theorem ComparatorNetwork.flip_size {n : Nat} (net : ComparatorNetwork n) :
-    net.flip.size = net.size := by
-  simp [flip, size, List.length_map]
 
 /-! **Bitonic Merge** -/
 
@@ -72,9 +66,6 @@ def bitonicCrossLayer (k : Nat) : ComparatorNetwork (2^(k+1)) :=
         j := ⟨2^(k+1) - 1 - i.val, by rw [Nat.pow_succ]; omega⟩
         h := by simp only [Fin.lt_def]; have := i.isLt; rw [Nat.pow_succ]; omega } }
 
-@[simp] theorem bitonicCrossLayer_size (k : Nat) :
-    (bitonicCrossLayer k).size = 2^k := by
-  simp [bitonicCrossLayer, ComparatorNetwork.size, List.length_map, List.length_finRange]
 
 /-! **Bitonic Sort** -/
 

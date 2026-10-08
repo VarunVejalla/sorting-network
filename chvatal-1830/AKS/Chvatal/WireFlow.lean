@@ -467,14 +467,7 @@ theorem wireSets_disjoint (F : FlowSizes d tf) {t : ℕ} (ht : t ≤ tf) (b b' :
 theorem wireSets_complete (F : FlowSizes d tf) {t : ℕ} (ht : t ≤ tf) (w : Fin (64 ^ d)) :
     ∃ b : KBag 64 d, w ∈ wireSets F t b := (wireSets_inv F t ht).2.2 w
 
-/-- W5: the wire sets at time `t ≤ tf` form a placement. -/
-def wirePlacement (F : FlowSizes d tf) (t : ℕ) (ht : t ≤ tf) : Placement 64 d where
-  regs := wireSets F t
-  disjoint := wireSets_disjoint F ht
-  complete := wireSets_complete F ht
 
-theorem wirePlacement_card (F : FlowSizes d tf) (t : ℕ) (ht : t ≤ tf) (b : KBag 64 d) :
-    ((wirePlacement F t ht).regs b).card = F.a b.l t := wireSets_card F ht b
 
 end Chvatal
 

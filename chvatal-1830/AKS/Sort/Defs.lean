@@ -62,10 +62,6 @@ def ComparatorNetwork.shiftEmbed {m : ℕ} (net : ComparatorNetwork m)
         h := by show offset + c.i.val < offset + c.j.val
                 have := c.h; simp only [Fin.lt_def] at this; omega } }
 
-theorem ComparatorNetwork.shiftEmbed_size {m : ℕ} (net : ComparatorNetwork m)
-    (n offset : ℕ) (h : offset + m ≤ n) :
-    (net.shiftEmbed n offset h).size = net.size := by
-  simp [shiftEmbed, size, List.length_map]
 
 
 /-! **Injectivity Preservation** -/
@@ -110,37 +106,7 @@ theorem ComparatorNetwork.exec_injective {n : ℕ} {α : Type*} [LinearOrder α]
 
 /-! **Monotone composition** -/
 
-/-- A single comparator commutes with monotone functions: applying a comparator
-    to `g ∘ v` gives `g ∘ (comparator applied to v)` when `g` is monotone.
-    This is because `min(g a, g b) = g(min(a,b))` and `max(g a, g b) = g(max(a,b))`
-    for monotone `g`. -/
-private theorem Comparator.apply_comp_mono {n : ℕ} {α β : Type*} [LinearOrder α] [LinearOrder β]
-    (c : Comparator n) {g : α → β} (hg : Monotone g) (v : Fin n → α) :
-    c.apply (g ∘ v) = g ∘ (c.apply v) := by
-  ext k
-  simp only [Comparator.apply, Function.comp]
-  by_cases hki : k = c.i
-  · subst hki; rw [if_pos rfl, if_pos rfl, hg.map_min]
-  · rw [if_neg hki, if_neg hki]
-    by_cases hkj : k = c.j
-    · subst hkj; rw [if_pos rfl, if_pos rfl, hg.map_max]
-    · rw [if_neg hkj, if_neg hkj]
 
-/-- Monotone functions commute with comparator network execution:
-    `net.exec (g ∘ v) = g ∘ (net.exec v)` when `g` is monotone.
-
-    This generalizes the 0-1 principle: a comparator network operates
-    identically (up to order-preserving relabeling) regardless of the
-    actual values; only the relative order matters. -/
-theorem ComparatorNetwork.exec_comp_mono {n : ℕ} {α β : Type*} [LinearOrder α] [LinearOrder β]
-    (net : ComparatorNetwork n) {g : α → β} (hg : Monotone g) (v : Fin n → α) :
-    net.exec (g ∘ v) = g ∘ (net.exec v) := by
-  unfold ComparatorNetwork.exec
-  induction net.comparators generalizing v with
-  | nil => rfl
-  | cons c cs ih =>
-    simp only [List.foldl_cons]
-    rw [c.apply_comp_mono hg v, ih (c.apply v)]
 
 
 /-- Executing a concatenated comparator list equals sequential execution. -/
@@ -155,10 +121,6 @@ def permuteWireValues {n : ℕ} (π : Equiv.Perm (Fin n)) {α : Type*} (v : Fin 
     Fin n → α :=
   fun w ↦ v (π w)
 
-theorem permuteWireValues_one {n : ℕ} {α : Type*} (v : Fin n → α) :
-    permuteWireValues (1 : Equiv.Perm (Fin n)) v = v := by
-  funext w
-  simp [permuteWireValues]
 
 /-- Folding comparators that don't touch position `j` leaves `v j` unchanged. -/
 theorem foldl_comparators_outside {n : ℕ} {α : Type*} [LinearOrder α]
@@ -260,10 +222,6 @@ def ComparatorNetwork.scatterEmbed {m : ℕ} (net : ComparatorNetwork m)
   comparators := net.comparators.map fun c ↦
     { i := f c.i, j := f c.j, h := f.lt_iff_lt.mpr c.h }
 
-theorem ComparatorNetwork.scatterEmbed_size {m : ℕ} (net : ComparatorNetwork m)
-    (n : ℕ) (f : Fin m ↪o Fin n) :
-    (net.scatterEmbed n f).size = net.size := by
-  simp [scatterEmbed, size, List.length_map]
 
 /-- A scatter-embedded network does not modify positions outside the embedding's range. -/
 theorem ComparatorNetwork.scatterEmbed_exec_outside {m : ℕ} {α : Type*} [LinearOrder α]
@@ -318,15 +276,6 @@ theorem ComparatorNetwork.scatterEmbed_exec_inside {m : ℕ} {α : Type*} [Linea
     exact scattered_comparator_localView f c v
 
 
-/-- Appending a network that doesn't touch position j (second position). -/
-theorem ComparatorNetwork.exec_append_outside' {n : ℕ} {α : Type*} [LinearOrder α]
-    (net₁ net₂ : ComparatorNetwork n) (v : Fin n → α) (j : Fin n)
-    (hj : ∀ c ∈ net₂.comparators, j ≠ c.i ∧ j ≠ c.j) :
-    (⟨net₁.comparators ++ net₂.comparators⟩ : ComparatorNetwork n).exec v j =
-    net₁.exec v j := by
-  rw [exec_append]
-  unfold exec
-  exact foldl_comparators_outside net₂.comparators (net₁.exec v) j hj
 
 /-- Executing a flatMap of comparators from scatter-embedded networks equals
     sequential execution of those networks. -/
@@ -376,10 +325,6 @@ theorem ComparatorNetwork.scatterEmbed_comparators_outside {m : ℕ}
 
 /-! **Complexity Notation** -/
 
-/-- Asymptotic notation for stating complexity bounds. -/
-def IsBigO (f g : ℕ → ℝ) : Prop :=
-  ∃ (C : ℝ) (n₀ : ℕ), C > 0 ∧ ∀ n, n ≥ n₀ → |f n| ≤ C * |g n|
 
-notation f " =O(" g ")" => IsBigO f g
 
 end
