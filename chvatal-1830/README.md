@@ -47,7 +47,7 @@ definitions/numerics), `Misc/Fin.lean`.
 
 **B. The tree network (paper §3–§4).** `Tree` (bags, outsiders), `FlowTable(7)`, `FlowSizes(7)`
 (integer flow table), `Schedule7`, `Scheduler*`, `SendSchedule`, `WireFlow`, `StageNet`,
-`ExecPlacement` (execution-defined placement), `NodeKeys`, `BlockWindow`, `StrangerBounds`,
+`ExecPlacement` (execution-defined placement), `NodeKeys`, `StrangerBounds`,
 `Wires31`, `Lemma41Real`, `BadSendReal`, `FringeSendReal`, `OutsiderInvariant/Lemmas/Induction`,
 `StageKernel`, `StageDynamics`, `PlacementStep`, `RoutingFromP`, `SeparatorContract`,
 `ChildSend`, `StageCountsFill`, `AbstractPlacement`.
@@ -57,7 +57,7 @@ definitions/numerics), `Misc/Fin.lean`.
 `RealInduction` (root step, induction, purity at level `d − 6`), `RealPurity`, `RealBlocks`
 (rank-pure level-`(d − 7)` blocks), `FinalSorts` (final block sorters + untangling to a
 standard network), `RealNetwork` (stage concatenation, depth), `RealSorter`, `DepthSkeleton`
-(`totalDepth`, the padded inequality), `ParallelFinalDepth`.
+(`totalDepth`, the padded inequality).
 
 ## Provenance
 
