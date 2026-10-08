@@ -27,21 +27,26 @@ million-coefficient theorem remains in [Bounds/Paterson](../AKS/Bounds/Paterson.
 The inherited executable networks remain available. This is an improvement to
 this repository's formal bound, not to the best published sorting bound.
 
-**Chvátal-form 1830 endpoint (finite Batcher range, 2026-10-06).**
-[Bounds/Chvatal1830Batcher](../AKS/Bounds/Chvatal1830Batcher.lean) proves
-kernel-checked
+**Chvátal-form 1830 endpoint (complete, 2026-10-07).**
+[Bounds/Chvatal1830Final](../AKS/Bounds/Chvatal1830Final.lean) proves, with only the standard
+axioms (`propext`, `Classical.choice`, `Quot.sound`):
 
 ```text
-minimum_depth_le_1830_logb_of_batcher_range:
-  for 1 < n with 7 ≤ Nat.clog 64 n ≤ 603,
+SortingDepth.minimum_depth_le_1830_logb:  for n ≥ 64^7,
   D(n) ≤ 1830 * log₂ n − 58657
+SortingDepth.limsup_minimum_div_logb_le_1830:
+  limsup D(n)/log₂ n ≤ 1830
 ```
 
-via full-wire Batcher on `64^d` (depth ≤ §7 `totalDepth d`). This is **not**
-the paper scramble schedule and does **not** give unconditional
-`limsup D(n)/log₂ n ≤ 1830` (Batcher exceeds `totalDepth` for every `d > 603`;
-see `Limsup1830Residual` / paper depth-shell `PaperDepthShellSortResidual`).
-See the Chvátal section below for the local proof map.
+For `clog 64 n ≤ 603` the witness is full-wire Batcher
+([Bounds/Chvatal1830Batcher](../AKS/Bounds/Chvatal1830Batcher.lean)); beyond that it is
+Chvátal's network `Chvatal.chvatal_sorter_exists` ([Chvatal/RealSorter](../AKS/Chvatal/RealSorter.lean)):
+a sorting network on `64^d` wires, `d ≥ 14`, of depth `≤ totalDepth d`, built from the
+real stage networks (`RealNets`), the outsider induction (`RealInduction`, `RealKernel`,
+`BadSendField`, `FringeSendField`), purity (`RealPurity`), rank-pure blocks (`RealBlocks`), and the
+final block sorters with untangling (`FinalSorts`, `RealNetwork`). The proof map is in the
+Chvátal section below. Note: the best *complete* upper bound before this was Paterson's
+`6991·⌈log₂ n⌉`; the 1830 form supersedes it asymptotically.
 
 ## Lower-bound endpoint
 
@@ -591,7 +596,7 @@ constant `58657` matches the paper's Theorem 1.1 (`N ≥ 2^78`).
 | C3c | Permutations ⇒ all inputs (`exists_sorting_perm`) and `Untangle.untangle`, inside `final_layer_sorts` | ✔ |
 | C3d | Depth `≤ totalDepth d` (`fullNet_depth_le`; reproved inline in `chvatal_sorter_exists`) | ✔ |
 | C3e | `Chvatal.chvatal_sorter_exists`: for every `d ≥ 14` a sorting network on `64^d` wires of depth `≤ totalDepth d` ([RealSorter](../AKS/Chvatal/RealSorter.lean)); `SortingDepth.limsup_minimum_div_logb_le_1830` (unconditional, [Chvatal1830Final](../AKS/Bounds/Chvatal1830Final.lean)). Axioms: propext, Classical.choice, Quot.sound only | ✔ |
-| C4 | From `64^d` to all `n`: handled by the existing limsup machinery (`limsup_minimum_div_logb_le_1830_of_batcher_and_residual`) with `Limsup1830Residual` now proved. A pointwise `D(n) ≤ 1830 lg n − 58657` for all large `n` (not just limsup) still needs the `clog`-restriction argument for `d > 603`, as in the Batcher range | partly ✔ |
+| C4 | Pointwise bound: `SortingDepth.minimum_depth_le_1830_logb` (`D(n) ≤ 1830·log₂ n − 58657` for every `n ≥ 64^7`; Batcher for `clog 64 n ≤ 603`, `chvatal_sorter_exists` beyond, both restricted to `n` wires) and `eventually_minimum_depth_le_1830_logb` ([Chvatal1830Final](../AKS/Bounds/Chvatal1830Final.lean)) | ✔ |
 
 Critical path: `A4 → A5 → A6/A8 → A7 → A12` and `B1 → B2 → B3 → B4 → B5` are
 independent; `B6 → B7 → B8 → C2 → C3 → C4` needs both. The two real research risks
