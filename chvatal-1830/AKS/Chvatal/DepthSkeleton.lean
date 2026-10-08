@@ -1,6 +1,5 @@
 module
 
-public import AKS.Bags.PatersonNumerics
 public import Mathlib.Analysis.SpecialFunctions.Log.Base
 
 /-! # Chvátal Phase 0: §7 depth arithmetic and parameter checks
