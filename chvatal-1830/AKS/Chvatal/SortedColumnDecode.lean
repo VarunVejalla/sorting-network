@@ -12,10 +12,8 @@ module
   `δ_F · n < 1` (paper §7 loop) and zero above-bottom at level `f`.
 -/
 
-public import AKS.Chvatal.MatrixBridge
 public import AKS.Chvatal.RowScramble
 public import AKS.Halver.Defs
-public import AKS.Misc.Fin
 
 @[expose] public section
 

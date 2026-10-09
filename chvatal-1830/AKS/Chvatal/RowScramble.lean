@@ -2,7 +2,6 @@ module
 /- The row scramble as a fixed wire permutation (Chvátal §5 middle stage; no comparators). -/
 
 public import AKS.Chvatal.MatrixBridge
-public import AKS.Sort.Depth
 public import Mathlib.Data.List.FinRange
 
 @[expose] public section

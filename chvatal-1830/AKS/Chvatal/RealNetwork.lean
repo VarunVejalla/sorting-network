@@ -8,12 +8,7 @@ module
   wire sets `S b`. Generic in `nets` and `S`; depth bound `totalDepth d` for the real nets.
 -/
 
-public import AKS.Chvatal.ExecPlacement
-public import AKS.Chvatal.StageNet
 public import AKS.Chvatal.RealNets
-public import AKS.Chvatal.DepthSkeleton
-public import AKS.Bitonic.TightDepth
-public import AKS.Sort.Depth
 
 @[expose] public section
 

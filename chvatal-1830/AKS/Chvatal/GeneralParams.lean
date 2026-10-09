@@ -4,8 +4,6 @@ module
 `paperOrdinaryEpsB` / `paperRootEpsB` (valid for `m ≥ 2^59` resp. `m ≥ 2^79`). -/
 
 public import AKS.Chvatal.GeneralSeparator
-public import AKS.Chvatal.Lemma62Ratio
-public import AKS.Chvatal.Theorem51Core
 public import Mathlib.Analysis.Complex.ExponentialBounds
 public import Mathlib.Analysis.SpecialFunctions.Log.Basic
 

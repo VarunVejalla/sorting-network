@@ -1,6 +1,5 @@
 module
 
-public import AKS.Chvatal.Scheduler
 public import AKS.Chvatal.Schedule7
 
 @[expose] public section

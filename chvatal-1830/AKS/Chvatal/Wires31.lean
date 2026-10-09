@@ -1,6 +1,5 @@
 module
 
-public import AKS.Chvatal.FlowSizes7
 public import AKS.Chvatal.NodeGeom
 public import AKS.Chvatal.SchedulerLemmas
 public import AKS.Chvatal.OutsiderLemmas

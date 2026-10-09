@@ -1,8 +1,6 @@
 module
 
 public import AKS.Chvatal.Params
-public import AKS.Chvatal.SchedulerLemmas
-public import AKS.Chvatal.DepthSkeleton
 public import Mathlib.Tactic.NormNum
 
 @[expose] public section

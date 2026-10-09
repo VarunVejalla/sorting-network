@@ -12,7 +12,6 @@ module
 -/
 
 public import AKS.Bitonic.Correctness
-public import AKS.Bitonic.Depth
 public import AKS.Sort.Shrink
 
 @[expose] public section

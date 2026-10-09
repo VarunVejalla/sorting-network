@@ -1,7 +1,6 @@
 module
 
 public import AKS.Chvatal.Lemma62FailReduce
-public import AKS.Chvatal.Lemma62Ratio
 public import AKS.Chvatal.Lemma62TopsClosed
 public import AKS.Chvatal.Lemma62Numerics
 

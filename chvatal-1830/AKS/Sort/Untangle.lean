@@ -1,6 +1,5 @@
 module
 
-public import AKS.Sort.Defs
 public import AKS.Sort.Depth
 public import AKS.Sort.Monotone
 

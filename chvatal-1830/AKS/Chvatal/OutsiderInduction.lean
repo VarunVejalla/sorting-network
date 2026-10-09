@@ -2,6 +2,7 @@ module
 -- Chvátal §4 outsider bound `P` (non-strict inductive form)
 
 public import AKS.Chvatal.OutsiderLemmas
+public import AKS.Chvatal.Tree
 
 @[expose] public section
 

@@ -1,7 +1,6 @@
 module
 /- Permutation principle helper: any `v : Fin n → α` is monotone after a permutation. -/
 
-public import AKS.Sort.Monotone
 public import Mathlib.Data.Fin.Tuple.Sort
 
 @[expose] public section

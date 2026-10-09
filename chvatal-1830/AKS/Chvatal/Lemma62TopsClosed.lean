@@ -2,7 +2,6 @@ module
 
 public import AKS.Chvatal.Lemma62Ratio
 public import AKS.Chvatal.Lemma62TopsCount
-public import AKS.Chvatal.Lemma62TopsAnalytic
 
 /-! # Chvátal Lemma 6.2 (ii): closed form for the number of tops, display (6.3)
 

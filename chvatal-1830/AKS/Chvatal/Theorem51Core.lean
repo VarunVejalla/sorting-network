@@ -2,10 +2,6 @@ module
 
 /- Shared Thm 5.1 geometry (`m = 2f + kb`), `ε`-parameters and the Lemma 6.1 closing numeric. -/
 
-public import AKS.Chvatal.DepthSkeleton
-public import AKS.Chvatal.Params
-public import AKS.Sort.Defs
-public import AKS.Sort.Depth
 public import Mathlib.Analysis.Complex.ExponentialBounds
 public import Mathlib.Analysis.SpecialFunctions.Log.Basic
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real

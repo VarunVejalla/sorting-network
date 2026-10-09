@@ -11,6 +11,8 @@ module
 -/
 
 public import AKS.Bitonic.CompareLayer
+public import AKS.Sort.Monotone
+public import AKS.Sort.ZeroOne
 
 @[expose] public section
 

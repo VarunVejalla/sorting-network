@@ -3,10 +3,6 @@ module
 sort, the sort–scramble–sort pack, and the semantic Properties B/F on it. -/
 
 public import AKS.Chvatal.Lemma61
-public import AKS.Chvatal.Lemma62
-public import AKS.Sort.Defs
-public import AKS.Sort.Displaced
-public import AKS.Sort.Monotone
 public import AKS.Bitonic.Shrink
 public import Mathlib.Data.Fintype.BigOperators
 public import Mathlib.Data.List.FinRange

@@ -1,5 +1,6 @@
 module
 public import AKS.Chvatal.FlowSizes7
+public import AKS.Chvatal.Tree
 
 @[expose] public section
 

@@ -13,7 +13,6 @@ module
   make every formula an explicit natural number.
 -/
 
-public import AKS.Chvatal.Tree
 public import AKS.Chvatal.FlowTable
 
 @[expose] public section

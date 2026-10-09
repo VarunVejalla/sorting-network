@@ -13,10 +13,7 @@ module
   `64^d` stage nets live in `StagePackEmbed` / `PackEmbed` (depth shells only).
 -/
 
-public import AKS.Chvatal.ModuleA
 public import AKS.Chvatal.RowScramble
-public import AKS.Chvatal.DepthSkeleton
-public import AKS.Sort.Depth
 public import AKS.Bitonic.TightDepth
 
 @[expose] public section

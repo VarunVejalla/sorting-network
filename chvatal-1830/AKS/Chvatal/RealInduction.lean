@@ -3,7 +3,6 @@ module
 public import AKS.Chvatal.KernelSetup
 public import AKS.Chvatal.BadSendReal
 public import AKS.Chvatal.Lemma41Real
-public import AKS.Chvatal.Schedule7
 
 @[expose] public section
 

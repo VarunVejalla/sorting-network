@@ -1,12 +1,9 @@
 module
 
 public import AKS.Chvatal.KernelSetup
-public import AKS.Chvatal.PackSpec
 public import AKS.Chvatal.FlipSpec
-public import AKS.Chvatal.PhysicalPack
 public import AKS.Chvatal.NodeGeom
 public import AKS.Chvatal.GeneralParams
-public import AKS.Bitonic.TightDepth
 
 @[expose] public section
 

@@ -1,11 +1,8 @@
 module
 
-public import AKS.Chvatal.FlowSizes7
-public import AKS.Chvatal.WireFlow
 public import AKS.Chvatal.NodeSpec
 public import AKS.Chvatal.Theorem51Core
 public import AKS.Chvatal.Lemma62Ratio
-public import AKS.Chvatal.Params
 public import AKS.Chvatal.ExecPlacement
 public import AKS.Chvatal.StageKernel
 

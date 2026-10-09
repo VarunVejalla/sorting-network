@@ -1,6 +1,5 @@
 module
 
-public import AKS.Chvatal.Lemma62
 public import AKS.Chvatal.Lemma62Tail
 public import AKS.Chvatal.Lemma62TopsCount
 

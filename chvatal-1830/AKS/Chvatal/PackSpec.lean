@@ -1,7 +1,6 @@
 module
 public import AKS.Chvatal.PhysicalPack
 public import AKS.Chvatal.NodeSpec
-public import AKS.Chvatal.SortedColumnDecode
 
 /-! # Position-form high-side node guarantee from semantic Properties B and F
 

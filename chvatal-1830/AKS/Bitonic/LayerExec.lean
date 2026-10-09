@@ -6,11 +6,7 @@ module
   (compare + cross), decomposition lemmas, shiftEmbed helpers.
 -/
 
-public import AKS.Bitonic.Defs
 public import AKS.Bitonic.Depth
-public import AKS.Sort.Monotone
-public import AKS.Sort.ZeroOne
-public import AKS.Sort.Depth
 
 @[expose] public section
 

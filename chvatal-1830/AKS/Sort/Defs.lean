@@ -1,13 +1,12 @@
 module
 /- Comparator network definitions: comparators, networks, execution, embeddings. -/
 
-public import AKS.Misc.Fin
-
 public import Mathlib.Data.List.Sort
 public import Mathlib.Data.List.Perm.Basic
 public import Mathlib.Order.BoundedOrder.Basic
 public import Mathlib.Analysis.SpecialFunctions.Log.Basic
 public import Mathlib.Topology.Order.Basic
+
 
 @[expose] public section
 

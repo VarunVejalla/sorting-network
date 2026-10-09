@@ -3,8 +3,6 @@ module
 public import AKS.Chvatal.KernelSetup
 public import AKS.Chvatal.FringeSendReal
 public import AKS.Chvatal.Wires31
-public import AKS.Chvatal.Schedule7
-public import AKS.Chvatal.OutsiderInduction
 
 @[expose] public section
 

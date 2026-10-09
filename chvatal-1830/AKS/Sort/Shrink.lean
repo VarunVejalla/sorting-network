@@ -1,7 +1,6 @@
 module
 /- Restrict a network from `n` to `m ≤ n` wires by keeping the comparators inside `[0, m)`. -/
 
-public import AKS.Sort.Monotone
 public import AKS.Sort.Depth
 public import AKS.Sort.ZeroOne
 

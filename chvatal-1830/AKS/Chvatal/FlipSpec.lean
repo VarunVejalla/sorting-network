@@ -3,6 +3,7 @@ public import AKS.Chvatal.PackSpec
 public import AKS.Chvatal.GeneralSeparator
 public import AKS.Chvatal.ExecPlacement
 public import Mathlib.Data.Fin.Tuple.Sort
+public import AKS.Chvatal.ModuleA
 
 /-! # Two-sided node guarantee: the flipped scramble and flip symmetry
 

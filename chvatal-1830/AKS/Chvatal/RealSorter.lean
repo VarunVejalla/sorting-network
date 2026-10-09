@@ -12,6 +12,7 @@ module
 public import AKS.Chvatal.RealBlocks
 public import AKS.Chvatal.RealNetwork
 public import AKS.Chvatal.FinalSorts
+public import AKS.Chvatal.DepthSkeleton
 
 @[expose] public section
 

@@ -1,9 +1,7 @@
 module
 
 public import AKS.Chvatal.StageNet
-public import AKS.Chvatal.OutsiderInvariant
 public import AKS.Chvatal.OutsiderInduction
-public import AKS.Chvatal.SchedulerLemmas
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 public import Mathlib.Algebra.Field.GeomSum
 public import Mathlib.Tactic.Linarith

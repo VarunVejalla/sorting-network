@@ -9,7 +9,6 @@ module
   sort–scramble–sort pack. This replaces the `δ_F n < 1` shortcut (valid only for `n ≤ 31`).
 -/
 
-public import AKS.Chvatal.ModuleA
 public import AKS.Chvatal.Lemma62FailE
 public import AKS.Chvatal.Lemma62Round
 public import AKS.Chvatal.Lemma62Bridge

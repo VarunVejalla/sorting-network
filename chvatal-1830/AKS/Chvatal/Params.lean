@@ -12,7 +12,6 @@ module
 -/
 
 public import AKS.Chvatal.OutsiderInvariant
-public import AKS.Chvatal.DepthSkeleton
 public import Mathlib.Tactic.NormNum
 public import Mathlib.Tactic.Positivity
 

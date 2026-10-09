@@ -2,7 +2,6 @@ module
 -- Chvátal §4 children-send helpers (Lemmas 4.3-4.4 children terms)
 
 public import AKS.Chvatal.StageKernel
-public import AKS.Chvatal.Scheduler
 public import Mathlib.Tactic.Positivity
 
 @[expose] public section

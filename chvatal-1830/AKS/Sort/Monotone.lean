@@ -2,7 +2,6 @@ module
 /- Comparators and networks commute with monotone maps; the `Sorts` predicate. -/
 
 public import AKS.Sort.Defs
-public import AKS.Sort.Depth
 
 @[expose] public section
 

@@ -1,6 +1,5 @@
 module
 public import AKS.Chvatal.NodeKeys
-public import AKS.Chvatal.Tree
 public import Mathlib.Order.Interval.Finset.Nat
 public import Mathlib.Tactic.Linarith
 

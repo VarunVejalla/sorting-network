@@ -2,7 +2,6 @@ module
 
 public import AKS.Chvatal.ChildSend
 public import AKS.Chvatal.WireFlow
-public import AKS.Chvatal.OutsiderInduction
 
 @[expose] public section
 
