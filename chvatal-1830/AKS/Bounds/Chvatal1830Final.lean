@@ -18,25 +18,19 @@ namespace SortingDepth
 
 open Chvatal Filter
 
-/-- Full-wire bitonic sorting meets the §7 budget `totalDepth d` for `7 ≤ d ≤ 13`. -/
-theorem exists_small_sorter {d : ℕ} (hd7 : 7 ≤ d) (hd13 : d ≤ 13) :
-    ∃ net : ComparatorNetwork (64 ^ d),
-      ComparatorNetwork.Sorts.{0} net ∧ net.depth ≤ totalDepth d := by
-  refine ⟨bitonicNetwork (64 ^ d), bitonicNetwork_sorts _, ?_⟩
-  have hc : Nat.clog 2 (64 ^ d) = 6 * d := by
-    have h64 : (64 : ℕ) = 2 ^ 6 := by decide
-    rw [h64, ← pow_mul]
-    exact Nat.clog_pow 2 (6 * d) (by decide)
-  refine (bitonicNetwork_depth_le_budget _).trans ?_
-  rw [hc]
-  interval_cases d <;> decide +kernel
-
-/-- A sorter on `64^d` wires of depth `≤ totalDepth d`, for every `d ≥ 7`. -/
+/-- A sorter on `64^d` wires of depth `≤ totalDepth d`, for every `d ≥ 7`: full-wire bitonic
+sorting for `d ≤ 13`, Chvátal's network otherwise. -/
 theorem exists_sorter {d : ℕ} (hd : 7 ≤ d) :
     ∃ net : ComparatorNetwork (64 ^ d),
       ComparatorNetwork.Sorts.{0} net ∧ net.depth ≤ totalDepth d := by
   by_cases h : d ≤ 13
-  · exact exists_small_sorter hd h
+  · refine ⟨bitonicNetwork (64 ^ d), bitonicNetwork_sorts _, ?_⟩
+    have hc : Nat.clog 2 (64 ^ d) = 6 * d := by
+      rw [show (64 : ℕ) = 2 ^ 6 by decide, ← pow_mul]
+      exact Nat.clog_pow 2 (6 * d) (by decide)
+    refine (bitonicNetwork_depth_le_budget _).trans ?_
+    rw [hc]
+    interval_cases d <;> decide +kernel
   · exact chvatal_sorter_exists (by omega)
 
 /-- **Pointwise bound.** For every `n ≥ 64^7`, `D(n) ≤ 1830 · log₂ n − 58657`. -/
@@ -56,12 +50,6 @@ theorem minimum_depth_le_1830_logb {n : ℕ} (hn64 : 64 ^ 7 ≤ n) :
   have hm : (minimum n : ℝ) ≤ (net.depth : ℝ) := by exact_mod_cast minimum_le net hs
   have h1 : (net.depth : ℝ) ≤ (totalDepth d : ℝ) := by exact_mod_cast hdep
   exact hm.trans (h1.trans (totalDepth_logb_le hd7 rfl hn))
-
-/-- `D(n) ≤ 1830 · log₂ n − 58657` for all sufficiently large `n`. -/
-theorem eventually_minimum_depth_le_1830_logb :
-    ∀ᶠ n : ℕ in atTop, (minimum n : ℝ) ≤ 1830 * Real.logb 2 (n : ℝ) - 58657 := by
-  filter_upwards [eventually_ge_atTop (64 ^ 7)] with n hn
-  exact minimum_depth_le_1830_logb hn
 
 /-- **`limsup D(n)/log₂ n ≤ 1830`.** -/
 theorem limsup_minimum_div_logb_le_1830 :

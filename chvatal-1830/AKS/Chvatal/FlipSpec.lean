@@ -399,7 +399,7 @@ theorem packSemanticF_of_paperF {m n f : ℕ} (hf : Even f) (hn : 0 < n) (hfm : 
     HasPackSemanticPropertyF hn (canonicalSortScrambleSortPack m n hn σ) f hfm deltaF epsF := by
   have h0 : HasPackSemanticPropertyF hn (canonicalSortScrambleSortPack m n hn σ) f hfm
       (128 / 4095) eps :=
-    HasPackSemanticPropertyF.of_paperF (hf := hf) hn hfm (by norm_num) (by norm_num)
+    HasPackSemanticPropertyF.of_paperF (hf := hf) hn hfm (by norm_num)
       (IdealColumnSort.all_packs hn) (RowScrambleCorrect.all_packs_forall hn)
       (canonicalSortScrambleSortPack m n hn σ)
       (fun c j hc hj hjδ S => hF c j hc hj hjδ S)

@@ -1,19 +1,8 @@
 module
 /-
-  # Chvatal §4 outsider invariant (abstract separator quality)
+  # Chvatal §4 outsider invariant parameters and conditions (4.1)-(4.5)
 
-  Source: V. Chvatal, *Lecture Notes on the New AKS Sorting Network*,
-  Rutgers DCS-TR-294 (1992), §4. Checked in as `docs/dcs-tr-294.pdf`.
-
-  Status: states the invariant `P`, the separator-quality hypotheses (4.1)-(4.5),
-  and the purity conclusion (Lemma 4.5). Algebraic cores of Lemmas 4.1-4.4 live
-  in `OutsiderLemmas.lean` under abstract stage-count / separator hypotheses;
-  Phase 2 supplies concrete `εB`/`εF`/`δF`/`ε*` and stage dynamics.
-
-  Indexing note. Paper "outsider of order `r`" means: not native to the bag's
-  ancestor `r` levels up (order `0` = not native to the bag itself). Our
-  `KBag.Strange` uses Seiferas-style indexing: `Strange (r+1)` is the paper's
-  order-`r` outsider (`Strange 1` = order 0).
+  Source: V. Chvatal, DCS-TR-294 (1992), §4. Paper "outsider of order `r`" is `KBag.Strange (r+1)`.
 -/
 
 public import AKS.Chvatal.Scheduler
@@ -21,6 +10,7 @@ public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 public import Mathlib.Algebra.Field.GeomSum
 public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.Positivity
 public import Mathlib.Tactic.Ring
 
 @[expose] public section
@@ -29,10 +19,7 @@ namespace Chvatal
 
 open Finset
 
-/-! **Invariant parameters** -/
-
-/-- Scalar parameters controlling the §4 outsider bound and separator budgets.
-    Paper §7 defaults: `mu = 2^{-30}`, `delta = 2^{-16}`, etc. -/
+/-- Scalar parameters of the §4 outsider bound (paper §7: `mu = 2^{-30}`, `delta = 2^{-16}`, ...). -/
 structure InvariantParams where
   mu : Rat
   delta : Rat
@@ -59,19 +46,12 @@ theorem delta_nonneg : (0 : Rat) ≤ ip.delta := ip.hdelta_pos.le
 
 end InvariantParams
 
-/-! **Conditions (4.1)-(4.5)** -/
-
-/-- Geometric factor appearing in Lemmas 4.1-4.3:
-    `δ k A² / (1 - δ² k² A²)`. -/
+/-- Geometric factor of Lemmas 4.1-4.3: `δ k A² / (1 - δ² k² A²)`. -/
 def siblingFactor (p : ScheduleParams) (ip : InvariantParams) : Rat :=
   ip.delta * (p.br : Rat) * p.A ^ 2 /
     (1 - ip.delta ^ 2 * (p.br : Rat) ^ 2 * p.A ^ 2)
 
-/-- Lemma 4.2 residual from `(k-1)Δ₂ - π/2`, as a coefficient of `c`:
-    `(A ν k - 2 A ν + 1) / (2 A² k²)`.
-
-    (The paper's displayed form places this whole fraction after `(k-1)Δ₁`;
-    OCR of the notes can look like an unscaled `Aνk - 2Aν` sum.) -/
+/-- Lemma 4.2 residual `(k-1)Δ₂ - π/2` as a coefficient of `c`: `(A ν k - 2 A ν + 1) / (2 A² k²)`. -/
 def slackCoeff (p : ScheduleParams) : Rat :=
   (p.A * p.nu * (p.br : Rat) - 2 * p.A * p.nu + 1) /
     (2 * p.A ^ 2 * (p.br : Rat) ^ 2)
@@ -80,10 +60,8 @@ def slackCoeff (p : ScheduleParams) : Rat :=
 def Cond41 (p : ScheduleParams) (ip : InvariantParams) : Prop :=
   ip.epsStar ≤ ip.mu / (p.br : Rat)
 
-/-- §4 (4.2): first-outsider budget through one stage (paper displayed form). The last term
-    `μ δ A k / ν` is the worst-case count of order-1 outsiders arriving from the `k` children
-    (corrected 2026-10-07: an earlier transcription had `μ δ / (A k ν)`, which assumed a
-    fair-density send-up the real network does not provide). -/
+/-- §4 (4.2): first-outsider budget through one stage. The last term `μ δ A k / ν` counts
+    order-1 outsiders arriving from the `k` children (worst case, no fair density). -/
 def Cond42 (p : ScheduleParams) (ip : InvariantParams) : Prop :=
   (ip.mu + (p.br - 1 : Rat) * ip.mu * siblingFactor p ip +
       slackCoeff p + ip.epsB) /
@@ -99,7 +77,7 @@ def Cond44 (p : ScheduleParams) (ip : InvariantParams) : Prop :=
   ip.mu ≤ (1 / (2 * ip.deltaF)) *
     (p.A * p.nu * (p.br : Rat) - 1) / (p.A ^ 2 * (p.br : Rat) ^ 2)
 
-/-- §4 (4.5): first-stranger / higher-order decay through one stage. -/
+/-- §4 (4.5): higher-order decay through one stage. -/
 def Cond45 (p : ScheduleParams) (ip : InvariantParams) : Prop :=
   ip.epsF / (p.A * p.nu) + ip.delta ^ 2 * p.A * (p.br : Rat) / p.nu ≤
     ip.delta
@@ -108,33 +86,7 @@ def Cond45 (p : ScheduleParams) (ip : InvariantParams) : Prop :=
 def SeparatorConds (p : ScheduleParams) (ip : InvariantParams) : Prop :=
   Cond41 p ip ∧ Cond42 p ip ∧ Cond43 p ip ∧ Cond44 p ip ∧ Cond45 p ip
 
-/-! **Invariant P** -/
-
-/-- Paper proposition `P` at stage `t`, for a single bag placement and rank
-    permutation. Uses paper order `r` via `Strange (r+1)`. -/
 theorem br_ge_one (p : ScheduleParams) : 1 ≤ p.br :=
   le_trans (by omega : 1 ≤ 2) p.hbr
-
-def OutsiderBound (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
-    (_sched : LevelSchedule p d) (t : Nat)
-    (pl : Placement p.br d)
-    (perm : Fin (p.br ^ d) → Fin (p.br ^ d)) : Prop :=
-  ∀ (b : KBag p.br d) (r : Nat), r ≤ d →
-    ((b.strangers (r + 1) perm (pl.regs b) (br_ge_one p) : Rat)) <
-      ip.mu * ip.delta ^ r * capacity p d b.l t
-
-/-- Convenience: `P` restricted to occupied levels `[α(t), ω(t)]`. -/
-def OutsiderBound.active (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
-    (sched : LevelSchedule p d) (t : Nat) (_ht : t ≤ sched.tf)
-    (pl : Placement p.br d)
-    (perm : Fin (p.br ^ d) → Fin (p.br ^ d)) : Prop :=
-  ∀ (b : KBag p.br d) (r : Nat), r ≤ d →
-    sched.alpha t ≤ b.l → b.l ≤ sched.omega t →
-    ((b.strangers (r + 1) perm (pl.regs b) (br_ge_one p) : Rat)) <
-      ip.mu * ip.delta ^ r * capacity p d b.l t
-
-/-! **Lemma 4.5 purity** -/
-
-
 
 end Chvatal

@@ -1,15 +1,10 @@
 module
 
-/-
-# `D(n)`: the minimum depth of a sorting network on `n` wires
-
-Same definition as `AKS/Bounds/Upper.lean` in the main repository (there it sits next to the
-Seiferas-based upper bounds, which this self-contained folder does not need).
--/
-
 public import AKS.Bitonic.Shrink
 
 @[expose] public section
+
+/-! `D(n)`: the minimum depth of a sorting network on `n` wires. -/
 
 namespace SortingDepth
 

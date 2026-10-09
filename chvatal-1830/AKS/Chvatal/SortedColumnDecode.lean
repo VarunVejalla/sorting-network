@@ -678,10 +678,9 @@ theorem totalColumnOnes_decodeColumnSums_atLevel_eq {m n : Nat} (hn : 0 < n)
 theorem totalColumnOnesLeLevel_decodeColumnSums_atLevel {m n : Nat} (hn : 0 < n)
     (colSort : ColumnSortNetwork m n) (hcol : IdealColumnSort m n hn colSort)
     (i : Nat) (hi1 : 1 ≤ i) (him : i ≤ m) (v : Equiv.Perm (Fin (m * n))) :
-    TotalColumnOnesLeLevel m n i
+    totalColumnOnes
         (monotoneColumnSumsOfBool hn
-          (colSort.net.exec fun w => largestKeyThreshold01 (m := m) (n := n) i (v w))) := by
-  dsimp [TotalColumnOnesLeLevel]
+          (colSort.net.exec fun w => largestKeyThreshold01 (m := m) (n := n) i (v w))) ≤ n * i := by
   rw [totalColumnOnes_decodeColumnSums_atLevel_eq hn colSort hcol i hi1 him v]
   exact Nat.le_of_eq (Nat.mul_comm i n)
 

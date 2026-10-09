@@ -1,21 +1,4 @@
 module
-/-
-  # Chvátal Lemma 4.2 for the real network: the order-0 parent-send bound (task H1)
-
-  Source: V. Chvátal, *Lecture Notes on the New AKS Sorting Network*,
-  Rutgers DCS-TR-294 (1992), Lemma 4.2.  For a node `q` with `a = π + 64 τ` keys at time `t`
-  sorted by its node network (`NodeSpec`), the keys sent to child `j` are the outputs on the
-  cell window `[π/2 + jτ, π/2 + (j+1)τ)`.  At most `2·EB` of them have rank outside the window
-  (`NodeSpec.intruder_keys`); the keys of rank inside the window that are not addressed below
-  the child are bounded by the pure sorted-window count, using Lemma 4.1 (`hM`) for `q`.
-
-  Main result: `bad_send0_real`.
-
-  Note on `BW`: `BlockWindow` cannot be imported together with `WireFlow` (both define
-  `Chvatal.rankIn`), so the pure `ℕ`-set window counting of `BlockWindow` is reproduced
-  verbatim in namespace `Chvatal.BW` with `rankIn` renamed to `rankN`.
--/
-
 public import AKS.Chvatal.NodeKeys
 public import AKS.Chvatal.Tree
 public import Mathlib.Order.Interval.Finset.Nat
@@ -23,9 +6,13 @@ public import Mathlib.Tactic.Linarith
 
 @[expose] public section
 
+/-! Chvátal Lemma 4.2 (order 0) for the real network: `bad_send0_real`, the parent-send bound.
+`BW` is a `ℕ`-set window-counting copy (`rankN`) since `WireFlow.rankIn` is for `Fin n`. -/
+
 namespace Chvatal
 
 open Finset
+open scoped Classical
 
 namespace BW
 
@@ -34,31 +21,13 @@ def rankN (K : Finset ℕ) (κ : ℕ) : ℕ := (K.filter (· < κ)).card
 
 theorem rankN_lt_of_lt {K : Finset ℕ} {κ κ' : ℕ} (hκ : κ ∈ K) (h : κ < κ') :
     rankN K κ < rankN K κ' := by
-  unfold rankN
-  apply Finset.card_lt_card
-  rw [Finset.ssubset_iff_of_subset]
-  · exact ⟨κ, by simp [hκ, h], by simp⟩
-  · intro x hx
-    simp only [Finset.mem_filter] at hx ⊢
-    exact ⟨hx.1, lt_trans hx.2 h⟩
+  refine Finset.card_lt_card ((Finset.ssubset_iff_of_subset fun x hx => ?_).2 ⟨κ, ?_, ?_⟩)
+  · simp only [Finset.mem_filter] at hx ⊢
+    exact ⟨hx.1, hx.2.trans h⟩
+  all_goals simp [hκ, h]
 
-theorem rankN_injOn (K : Finset ℕ) : Set.InjOn (rankN K) (K : Set ℕ) := by
-  intro x hx y hy hxy
-  rcases lt_trichotomy x y with h | h | h
-  · exact absurd hxy (ne_of_lt (rankN_lt_of_lt hx h))
-  · exact h
-  · exact absurd hxy.symm (ne_of_lt (rankN_lt_of_lt hy h))
-
-/-- Keys below `lo` have rank below `L`. -/
-theorem rankN_lt_of_lt_lo {K : Finset ℕ} {κ lo : ℕ} (hκ : κ ∈ K) (h : κ < lo) :
-    rankN K κ < (K.filter (· < lo)).card := by
-  unfold rankN
-  apply Finset.card_lt_card
-  rw [Finset.ssubset_iff_of_subset]
-  · exact ⟨κ, by simp [hκ, h], by simp⟩
-  · intro x hx
-    simp only [Finset.mem_filter] at hx ⊢
-    exact ⟨hx.1, lt_trans hx.2 h⟩
+theorem rankN_injOn (K : Finset ℕ) : Set.InjOn (rankN K) (K : Set ℕ) :=
+  StrictMonoOn.injOn fun _ hx _ _ h => rankN_lt_of_lt hx h
 
 theorem card_lt_add_card_ge (K : Finset ℕ) (hi : ℕ) :
     (K.filter (· < hi)).card + (K.filter (hi ≤ ·)).card = K.card := by
@@ -95,7 +64,7 @@ theorem sorted_window_wrong_le (K : Finset ℕ) (s τ lo hi : ℕ) (hsτ : s + �
       simp only [Finset.mem_coe, t, Finset.mem_union, Finset.mem_Ico, lt_min_iff, max_le_iff]
       by_cases hlo : κ < lo
       · left
-        exact ⟨h1, rankN_lt_of_lt_lo hmem hlo, h2⟩
+        exact ⟨h1, rankN_lt_of_lt hmem hlo, h2⟩
       · have hhi : hi ≤ κ := by
           by_contra hh
           exact h3 ⟨by omega, by omega⟩

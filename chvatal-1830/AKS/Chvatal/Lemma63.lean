@@ -579,299 +579,112 @@ theorem avg_exp_onesInColumns_le {m n : Nat} (hm : 0 < m) (hn : 0 < n)
   rw [hsum, hsum_p]
   ring
 
-/-- Paper Lemma 6.3 + (6.1): Hoeffding/Chernoff bound on scramble column-ones. -/
-theorem lemma63ExpBound {m n : Nat} (hm : 0 < m) (hn : 0 < n) : Lemma63ExpBound m n where
-  bound := by
-    intro c S t ht bad hbad
-    classical
-    set p : ℝ := (∑ r : Fin m, ((monotoneRowOnes c r).card : ℝ)) / (m * n)
-    set lam : ℝ := 4 * t
-    have hlam : 0 ≤ lam := mul_nonneg (by norm_num : (0 : ℝ) ≤ 4) ht.le
-    set thresh : ℝ := (p + t) * m * S.card
-    have hmarkov :
-        (bad.card : ℝ) ≤
+theorem lemma63ExpBound {m n : Nat} (hm : 0 < m) (hn : 0 < n) (c : MonotoneColumnSums m n)
+    (S : Finset (Fin n)) (t : ℝ) (ht : 0 < t) (bad : Finset (Scramble m n))
+    (hbad : ∀ σ ∈ bad, ((∑ r : Fin m, ((monotoneRowOnes c r).card : ℝ)) / (m * n) + t) * m *
+      S.card ≤ (onesInColumns c σ S : ℝ)) :
+    (bad.card : ℝ) ≤ Real.exp (-(2 * t ^ 2 * m * S.card)) * (Fintype.card (Scramble m n) : ℝ) := by
+  classical
+  set p : ℝ := (∑ r : Fin m, ((monotoneRowOnes c r).card : ℝ)) / (m * n)
+  set lam : ℝ := 4 * t
+  have hlam : 0 ≤ lam := mul_nonneg (by norm_num : (0 : ℝ) ≤ 4) ht.le
+  set thresh : ℝ := (p + t) * m * S.card
+  have hmarkov :
+      (bad.card : ℝ) ≤
+        Real.exp (-lam * thresh) *
+          ∑ σ : Scramble m n, Real.exp (lam * (onesInColumns c σ S : ℝ)) := by
+    have hone (σ : Scramble m n) (hσ : σ ∈ bad) :
+        (1 : ℝ) ≤
+          Real.exp (lam * ((onesInColumns c σ S : ℝ) - thresh)) := by
+      have hX : thresh ≤ (onesInColumns c σ S : ℝ) := by
+        simpa [thresh, p] using hbad σ hσ
+      exact Real.one_le_exp (mul_nonneg hlam (sub_nonneg.mpr hX))
+    have hsplit (σ : Scramble m n) :
+        Real.exp (lam * ((onesInColumns c σ S : ℝ) - thresh)) =
           Real.exp (-lam * thresh) *
-            ∑ σ : Scramble m n, Real.exp (lam * (onesInColumns c σ S : ℝ)) := by
-      have hone (σ : Scramble m n) (hσ : σ ∈ bad) :
-          (1 : ℝ) ≤
-            Real.exp (lam * ((onesInColumns c σ S : ℝ) - thresh)) := by
-        have hX : thresh ≤ (onesInColumns c σ S : ℝ) := by
-          simpa [thresh, p] using hbad σ hσ
-        exact Real.one_le_exp (mul_nonneg hlam (sub_nonneg.mpr hX))
-      have hsplit (σ : Scramble m n) :
-          Real.exp (lam * ((onesInColumns c σ S : ℝ) - thresh)) =
+            Real.exp (lam * (onesInColumns c σ S : ℝ)) := by
+      have : lam * ((onesInColumns c σ S : ℝ) - thresh) =
+          lam * (onesInColumns c σ S : ℝ) + (-lam * thresh) := by ring
+      rw [this, Real.exp_add, mul_comm]
+    calc (bad.card : ℝ)
+        = ∑ σ ∈ bad, (1 : ℝ) := by simp [Finset.sum_const, nsmul_eq_mul]
+      _ ≤ ∑ σ ∈ bad,
+            Real.exp (lam * ((onesInColumns c σ S : ℝ) - thresh)) :=
+              Finset.sum_le_sum fun σ hσ => hone σ hσ
+      _ ≤ ∑ σ : Scramble m n,
+            Real.exp (lam * ((onesInColumns c σ S : ℝ) - thresh)) :=
+              Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
+                fun _ _ _ => Real.exp_nonneg _
+      _ = ∑ σ : Scramble m n,
             Real.exp (-lam * thresh) *
               Real.exp (lam * (onesInColumns c σ S : ℝ)) := by
-        have : lam * ((onesInColumns c σ S : ℝ) - thresh) =
-            lam * (onesInColumns c σ S : ℝ) + (-lam * thresh) := by ring
-        rw [this, Real.exp_add, mul_comm]
-      calc (bad.card : ℝ)
-          = ∑ σ ∈ bad, (1 : ℝ) := by simp [Finset.sum_const, nsmul_eq_mul]
-        _ ≤ ∑ σ ∈ bad,
-              Real.exp (lam * ((onesInColumns c σ S : ℝ) - thresh)) :=
-                Finset.sum_le_sum fun σ hσ => hone σ hσ
-        _ ≤ ∑ σ : Scramble m n,
-              Real.exp (lam * ((onesInColumns c σ S : ℝ) - thresh)) :=
-                Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
-                  fun _ _ _ => Real.exp_nonneg _
-        _ = ∑ σ : Scramble m n,
-              Real.exp (-lam * thresh) *
-                Real.exp (lam * (onesInColumns c σ S : ℝ)) := by
-                  simp_rw [hsplit]
-        _ = Real.exp (-lam * thresh) *
-              ∑ σ : Scramble m n, Real.exp (lam * (onesInColumns c σ S : ℝ)) := by
-                  rw [← Finset.mul_sum]
-    have hmgf := avg_exp_onesInColumns_le hm hn c S lam hlam
-    have htotpos : (0 : ℝ) < Fintype.card (Scramble m n) := by
-      exact_mod_cast (Fintype.card_pos : 0 < Fintype.card (Scramble m n))
-    have hcombine :
+                simp_rw [hsplit]
+      _ = Real.exp (-lam * thresh) *
+            ∑ σ : Scramble m n, Real.exp (lam * (onesInColumns c σ S : ℝ)) := by
+                rw [← Finset.mul_sum]
+  have hmgf := avg_exp_onesInColumns_le hm hn c S lam hlam
+  have htotpos : (0 : ℝ) < Fintype.card (Scramble m n) := by
+    exact_mod_cast (Fintype.card_pos : 0 < Fintype.card (Scramble m n))
+  have hcombine :
+      Real.exp (-lam * thresh) *
+          ∑ σ : Scramble m n, Real.exp (lam * (onesInColumns c σ S : ℝ)) ≤
+        Real.exp (-(2 * t ^ 2 * m * S.card)) *
+          (Fintype.card (Scramble m n) : ℝ) := by
+    have havg :
+        (∑ σ : Scramble m n, Real.exp (lam * (onesInColumns c σ S : ℝ))) /
+            Fintype.card (Scramble m n) ≤
+          Real.exp (lam * p * m * S.card + m * S.card * lam ^ 2 / 8) := by
+      simpa [p] using hmgf
+    have hsum_le :
+        ∑ σ : Scramble m n, Real.exp (lam * (onesInColumns c σ S : ℝ)) ≤
+          Real.exp (lam * p * m * S.card + m * S.card * lam ^ 2 / 8) *
+            (Fintype.card (Scramble m n) : ℝ) := by
+      have := (div_le_iff₀ htotpos).mp havg
+      linarith
+    have hexp_nonneg : 0 ≤ Real.exp (-lam * thresh) := Real.exp_nonneg _
+    have hstep1 :
         Real.exp (-lam * thresh) *
             ∑ σ : Scramble m n, Real.exp (lam * (onesInColumns c σ S : ℝ)) ≤
-          Real.exp (-(2 * t ^ 2 * m * S.card)) *
-            (Fintype.card (Scramble m n) : ℝ) := by
-      have havg :
-          (∑ σ : Scramble m n, Real.exp (lam * (onesInColumns c σ S : ℝ))) /
-              Fintype.card (Scramble m n) ≤
-            Real.exp (lam * p * m * S.card + m * S.card * lam ^ 2 / 8) := by
-        simpa [p] using hmgf
-      have hsum_le :
-          ∑ σ : Scramble m n, Real.exp (lam * (onesInColumns c σ S : ℝ)) ≤
-            Real.exp (lam * p * m * S.card + m * S.card * lam ^ 2 / 8) *
-              (Fintype.card (Scramble m n) : ℝ) := by
-        have := (div_le_iff₀ htotpos).mp havg
-        linarith
-      have hexp_nonneg : 0 ≤ Real.exp (-lam * thresh) := Real.exp_nonneg _
-      have hstep1 :
           Real.exp (-lam * thresh) *
-              ∑ σ : Scramble m n, Real.exp (lam * (onesInColumns c σ S : ℝ)) ≤
-            Real.exp (-lam * thresh) *
-              (Real.exp (lam * p * m * S.card + m * S.card * lam ^ 2 / 8) *
-                (Fintype.card (Scramble m n) : ℝ)) :=
-        mul_le_mul_of_nonneg_left hsum_le hexp_nonneg
-      have hstep2 :
-          Real.exp (-lam * thresh) *
-              (Real.exp (lam * p * m * S.card + m * S.card * lam ^ 2 / 8) *
-                (Fintype.card (Scramble m n) : ℝ)) =
-            Real.exp (-lam * thresh + lam * p * m * S.card + m * S.card * lam ^ 2 / 8) *
-              (Fintype.card (Scramble m n) : ℝ) := by
-        rw [← mul_assoc, ← Real.exp_add]
-        ring_nf
-      have hstep3 :
-          Real.exp (-lam * thresh + lam * p * m * S.card + m * S.card * lam ^ 2 / 8) =
-            Real.exp (-(2 * t ^ 2 * m * S.card)) := by
-        congr 1
-        -- lam = 4t, thresh = (p+t) m |S|
-        change -(4 * t) * ((p + t) * m * S.card) + (4 * t) * p * m * S.card +
-            m * S.card * (4 * t) ^ 2 / 8 =
-          -(2 * t ^ 2 * m * S.card)
-        ring
-      calc Real.exp (-lam * thresh) *
-              ∑ σ : Scramble m n, Real.exp (lam * (onesInColumns c σ S : ℝ))
-          ≤ Real.exp (-lam * thresh) *
-              (Real.exp (lam * p * m * S.card + m * S.card * lam ^ 2 / 8) *
-                (Fintype.card (Scramble m n) : ℝ)) := hstep1
-        _ = Real.exp (-lam * thresh + lam * p * m * S.card + m * S.card * lam ^ 2 / 8) *
-              (Fintype.card (Scramble m n) : ℝ) := hstep2
-        _ = Real.exp (-(2 * t ^ 2 * m * S.card)) *
-              (Fintype.card (Scramble m n) : ℝ) := by rw [hstep3]
-    exact hmarkov.trans hcombine
-
-/-! ## Paper-threshold Hoeffding (Lemma 6.1 uses `p = i/m`) -/
-
-noncomputable def monotoneOnesDensity {m n : Nat} (c : MonotoneColumnSums m n) : ℝ :=
-  (∑ r : Fin m, ((monotoneRowOnes c r).card : ℝ)) / (m * n)
-
-
-
-
-
-
-theorem onesInColumns_ge_paper_thresh {m n : Nat} (hm : 0 < m) (_hn : 0 < n)
-    (c : MonotoneColumnSums m n) (σ : Scramble m n) (epsB : ℝ) (i : Nat)
-    (hge : (epsB / 2) * (m * n) ≤ (onesAboveBottom c σ i : ℝ)) :
-    let S := excessColumnSet c σ i
-    let s := S.card
-    let t := (epsB / 2) * ((n : ℝ) / s)
-    0 < s →
-      0 < t →
-        ((i : ℝ) / (m : ℝ) + t) * (m : ℝ) * s ≤ (onesInColumns c σ S : ℝ) := by
-  intro S s t hs ht
-  have hones := lemma61_excess_columns epsB c σ i hge
-  have hm0 : (m : ℝ) ≠ 0 := by exact_mod_cast hm.ne'
-  have hs0 : (s : ℝ) ≠ 0 := by exact_mod_cast hs.ne'
-  have hsplit :
-      ((i : ℝ) / (m : ℝ) + t) * (m : ℝ) * s = (i : ℝ) * s + t * m * s := by
-    field_simp [hm0]
-  have htms : t * m * s = (epsB / 2) * (m * n) := by
-    show (epsB / 2) * ((n : ℝ) / s) * m * s = (epsB / 2) * (m * n)
-    field_simp [hs0]
-  have hthresh :
-      ((i : ℝ) / (m : ℝ) + t) * (m : ℝ) * s = (i * s : ℝ) + (epsB / 2) * (m * n) := by
-    rw [hsplit, htms]
-  rw [hthresh]
-  exact_mod_cast hones
-
-
-/-- Paper Lemma 6.1 Hoeffding threshold at level `i` (Chvátal uses `p = i/m`). -/
-structure Lemma63ExpBoundAtLevel (m n i : Nat) : Prop where
-  bound :
-    ∀ (c : MonotoneColumnSums m n) (S : Finset (Fin n)) (t : ℝ),
-      0 < t →
-      ∀ (bad : Finset (Scramble m n)),
-        (∀ σ ∈ bad,
-          ((i : ℝ) / (m : ℝ) + t) * (m : ℝ) * S.card ≤ (onesInColumns c σ S : ℝ)) →
-          (bad.card : ℝ) ≤
-            Real.exp (-(2 * t ^ 2 * m * S.card)) *
-              (Fintype.card (Scramble m n) : ℝ)
-
-/-- Chernoff at level `i` for one monotone matrix with average row ones at most `i`. -/
-theorem lemma63ExpBoundAtLevel_bound_for {m n i : Nat} (hm : 0 < m) (hn : 0 < n)
-    (c : MonotoneColumnSums m n)
-    (havg : (∑ r : Fin m, ((monotoneRowOnes c r).card : ℝ)) / n ≤ (i : ℝ)) :
-    ∀ (S : Finset (Fin n)) (t : ℝ) (ht : 0 < t) (bad : Finset (Scramble m n)),
-      (∀ σ ∈ bad,
-        ((i : ℝ) / (m : ℝ) + t) * (m : ℝ) * S.card ≤ (onesInColumns c σ S : ℝ)) →
-        (bad.card : ℝ) ≤
-          Real.exp (-(2 * t ^ 2 * m * S.card)) *
+            (Real.exp (lam * p * m * S.card + m * S.card * lam ^ 2 / 8) *
+              (Fintype.card (Scramble m n) : ℝ)) :=
+      mul_le_mul_of_nonneg_left hsum_le hexp_nonneg
+    have hstep2 :
+        Real.exp (-lam * thresh) *
+            (Real.exp (lam * p * m * S.card + m * S.card * lam ^ 2 / 8) *
+              (Fintype.card (Scramble m n) : ℝ)) =
+          Real.exp (-lam * thresh + lam * p * m * S.card + m * S.card * lam ^ 2 / 8) *
             (Fintype.card (Scramble m n) : ℝ) := by
-  intro S t ht bad hbad
-  have hpim : monotoneOnesDensity c ≤ (i : ℝ) / (m : ℝ) := by
-    unfold monotoneOnesDensity
-    have hm0 : (0 : ℝ) < (m : ℝ) * n := mul_pos (by exact_mod_cast hm) (by exact_mod_cast hn)
-    rw [div_le_iff₀ hm0]
-    have hn0 : (0 : ℝ) < n := by exact_mod_cast hn
-    have hsum : (∑ r : Fin m, ((monotoneRowOnes c r).card : ℝ)) ≤ (i : ℝ) * n := by
-      rw [← div_le_iff₀ hn0]
-      exact havg
-    calc (∑ r : Fin m, ((monotoneRowOnes c r).card : ℝ))
-        ≤ (i : ℝ) * n := hsum
-      _ = ((i : ℝ) / (m : ℝ)) * ((m : ℝ) * n) := by field_simp [hm.ne']
-  have hthresh :
-      ∀ σ ∈ bad,
-        (monotoneOnesDensity c + t) * m * S.card ≤ (onesInColumns c σ S : ℝ) := by
-    intro σ hσ
-    have hpaper := hbad σ hσ
-    have hle : monotoneOnesDensity c + t ≤ (i : ℝ) / (m : ℝ) + t := by linarith
-    have hnonneg : 0 ≤ (m : ℝ) * S.card := by positivity
-    have hstep :
-        (monotoneOnesDensity c + t) * m * S.card ≤
-          ((i : ℝ) / (m : ℝ) + t) * (m : ℝ) * S.card := by
-      simpa [mul_assoc, mul_comm, mul_left_comm] using
-        mul_le_mul_of_nonneg_right hle hnonneg
-    exact hstep.trans hpaper
-  exact (lemma63ExpBound hm hn).bound c S t ht bad hthresh
+      rw [← mul_assoc, ← Real.exp_add]
+      ring_nf
+    have hstep3 :
+        Real.exp (-lam * thresh + lam * p * m * S.card + m * S.card * lam ^ 2 / 8) =
+          Real.exp (-(2 * t ^ 2 * m * S.card)) := by
+      congr 1
+      -- lam = 4t, thresh = (p+t) m |S|
+      change -(4 * t) * ((p + t) * m * S.card) + (4 * t) * p * m * S.card +
+          m * S.card * (4 * t) ^ 2 / 8 =
+        -(2 * t ^ 2 * m * S.card)
+      ring
+    calc Real.exp (-lam * thresh) *
+            ∑ σ : Scramble m n, Real.exp (lam * (onesInColumns c σ S : ℝ))
+        ≤ Real.exp (-lam * thresh) *
+            (Real.exp (lam * p * m * S.card + m * S.card * lam ^ 2 / 8) *
+              (Fintype.card (Scramble m n) : ℝ)) := hstep1
+      _ = Real.exp (-lam * thresh + lam * p * m * S.card + m * S.card * lam ^ 2 / 8) *
+            (Fintype.card (Scramble m n) : ℝ) := hstep2
+      _ = Real.exp (-(2 * t ^ 2 * m * S.card)) *
+            (Fintype.card (Scramble m n) : ℝ) := by rw [hstep3]
+  exact hmarkov.trans hcombine
 
-/-- Chernoff at level `i` only for matrices in the pipeline mass class at that level. -/
-structure Lemma63ExpBoundAtLevelOn (m n i : Nat) (P : MonotoneColumnSums m n → Prop) : Prop where
-  bound :
-    ∀ (c : MonotoneColumnSums m n), P c →
-      ∀ (S : Finset (Fin n)) (t : ℝ) (ht : 0 < t) (bad : Finset (Scramble m n)),
-        (∀ σ ∈ bad,
-          ((i : ℝ) / (m : ℝ) + t) * (m : ℝ) * S.card ≤ (onesInColumns c σ S : ℝ)) →
-          (bad.card : ℝ) ≤
-            Real.exp (-(2 * t ^ 2 * m * S.card)) *
-              (Fintype.card (Scramble m n) : ℝ)
-
-theorem lemma63ExpBoundAtLevelOn_totalColumnOnesLeLevel {m n i : Nat} (hm : 0 < m) (hn : 0 < n) :
-    Lemma63ExpBoundAtLevelOn m n i (TotalColumnOnesLeLevel m n i) where
-  bound c hc S t ht bad hbad :=
-    lemma63ExpBoundAtLevel_bound_for hm hn c
-      (avgRowOnes_le_i_of_totalColumnOnes_le hn c hc) S t ht bad hbad
-
-/-- Paper Chernoff threshold when average row ones `≤ i` (equivalently `p·m ≤ i`). -/
-theorem lemma63ExpBoundAtLevel_of_avgRowOnes_le {m n i : Nat} (hm : 0 < m) (hn : 0 < n)
-    (havg :
-      ∀ (c : MonotoneColumnSums m n),
-        (∑ r : Fin m, ((monotoneRowOnes c r).card : ℝ)) / n ≤ (i : ℝ)) :
-    Lemma63ExpBoundAtLevel m n i where
-  bound c S t ht bad hbad :=
-    lemma63ExpBoundAtLevel_bound_for hm hn c (havg c) S t ht bad hbad
-
-
-
-theorem lemma63ExpBoundAtLevel_one_of_avgRowOnes {m n : Nat} (hm : 0 < m) (hn : 0 < n)
-    (havg : AvgRowOnesLeOne m n) :
-    Lemma63ExpBoundAtLevel m n 1 :=
-  lemma63ExpBoundAtLevel_of_avgRowOnes_le hm hn fun c =>
-    by exact_mod_cast AvgRowOnesLeOne.sum_div_le_one havg c
-
-/-- When every matrix has average row ones `≤ 1`, paper level `i` Chernoff holds for all `1 ≤ i ≤ m`. -/
-theorem lemma63ExpBoundAtLevel_of_avgRowOnes_le_one {m n : Nat} (hm : 0 < m) (hn : 0 < n)
-    (havg : AvgRowOnesLeOne m n) :
-    ∀ (i : Nat), 1 ≤ i → i ≤ m → Lemma63ExpBoundAtLevel m n i := by
-  intro i hi1 _him
-  refine lemma63ExpBoundAtLevel_of_avgRowOnes_le hm hn fun c => ?_
-  have hiR : (1 : ℝ) ≤ i := by exact_mod_cast hi1
-  exact (AvgRowOnesLeOne.sum_div_le_one havg c).trans hiR
-
-/-- Residual: unrestricted `Lemma63ExpBoundAtLevel` at level `1` for arbitrary monotone `c`
-    (paper `p = i/m` without the avg-row-ones hypothesis). When `AvgRowOnesLeOne m n`
-    holds, use `of_avgRowOnes_le_one` instead. For the sort–scramble pipeline class,
-    use `DecodeMatrixClassObligation` (no global `TotalColumnOnesLeN`). -/
-structure Lemma61FailBoundObligation (m n : Nat) (epsB : ℝ) where
-  hm : 0 < m
-  hn : 0 < n
-  hm1 : 1 ≤ m
-  hn1 : 1 ≤ n
-  heps : Real.sqrt (2 * (1 + Real.log m) / m) ≤ epsB
-  /-- Bottom-level Chernoff (sufficient for the union after `failWitness_level_one`). -/
-  levelExp1 : Lemma63ExpBoundAtLevel m n 1
-  levelExp :
-    ∀ (i : Nat), 1 ≤ i → i ≤ m → Lemma63ExpBoundAtLevel m n i
-
-/-- Chernoff on the true pipeline mass class (`totalColumnOnes c ≤ n·i` at level `i`). -/
+/-- Hypotheses for the pipeline-class Lemma 6.1 union bound. -/
 structure DecodeMatrixClassObligation (m n : Nat) (epsB : ℝ) where
   hm : 0 < m
   hn : 0 < n
-  hm1 : 1 ≤ m
-  hn1 : 1 ≤ n
   heps : Real.sqrt (2 * (1 + Real.log m) / m) ≤ epsB
-  levelExpOn :
-    ∀ (i : Nat), 1 ≤ i → i ≤ m →
-      Lemma63ExpBoundAtLevelOn m n i (TotalColumnOnesLeLevel m n i)
 
-theorem DecodeMatrixClassObligation.epsB_pos {m n : Nat} {epsB : ℝ}
-    (O : DecodeMatrixClassObligation m n epsB) : 0 < epsB := by
-  have hsqrt : 0 < Real.sqrt (2 * (1 + Real.log m) / m) :=
-    Real.sqrt_pos.mpr (by positivity [O.hm1])
-  linarith [O.heps, hsqrt]
-
-/-- Kernel discharge: per-matrix `totalColumnOnes c ≤ n·i` ⇒ Chernoff at level `i`. -/
-def DecodeMatrixClassObligation.standard {m n : Nat} {epsB : ℝ}
-    (hm : 0 < m) (hn : 0 < n) (hm1 : 1 ≤ m) (hn1 : 1 ≤ n)
-    (heps : Real.sqrt (2 * (1 + Real.log m) / m) ≤ epsB) :
-    DecodeMatrixClassObligation m n epsB where
-  hm := hm
-  hn := hn
-  hm1 := hm1
-  hn1 := hn1
-  heps := heps
-  levelExpOn i _hi1 _him :=
-    lemma63ExpBoundAtLevelOn_totalColumnOnesLeLevel hm hn
-
-theorem Lemma61FailBoundObligation.epsB_pos {m n : Nat} {epsB : ℝ}
-    (O : Lemma61FailBoundObligation m n epsB) : 0 < epsB := by
-  have hsqrt : 0 < Real.sqrt (2 * (1 + Real.log m) / m) :=
-    Real.sqrt_pos.mpr (by positivity [O.hm1])
-  linarith [O.heps, hsqrt]
-
-theorem Lemma61FailBoundObligation.of_avgRowOnes_le_one {m n : Nat} {epsB : ℝ}
-    (hm : 0 < m) (hn : 0 < n) (hm1 : 1 ≤ m) (hn1 : 1 ≤ n)
-    (heps : Real.sqrt (2 * (1 + Real.log m) / m) ≤ epsB)
-    (havg : AvgRowOnesLeOne m n) :
-    Lemma61FailBoundObligation m n epsB where
-  hm := hm
-  hn := hn
-  hm1 := hm1
-  hn1 := hn1
-  heps := heps
-  levelExp1 := lemma63ExpBoundAtLevel_one_of_avgRowOnes hm hn havg
-  levelExp := lemma63ExpBoundAtLevel_of_avgRowOnes_le_one hm hn havg
-
-
-
-
-
-
+def DecodeMatrixClassObligation.standard {m n : Nat} {epsB : ℝ} (hm : 0 < m) (hn : 0 < n)
+    (_ : 1 ≤ m) (_ : 1 ≤ n) (heps : Real.sqrt (2 * (1 + Real.log m) / m) ≤ epsB) :
+    DecodeMatrixClassObligation m n epsB := ⟨hm, hn, heps⟩
 
 end Chvatal

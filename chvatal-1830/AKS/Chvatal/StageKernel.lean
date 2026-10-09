@@ -1,51 +1,30 @@
 module
 /-
-  # Chvatal §4 minimal stage kernel
+  # Chvatal §4 stage kernel and one-step preservation of `P`
 
-  Source: V. Chvatal, *Lecture Notes on the New AKS Sorting Network*,
-  Rutgers DCS-TR-294 (1992), §4.
+  Source: V. Chvatal, DCS-TR-294 (1992), §4.
 
-  Status: collapses `StageRoutingResidue` by defining sibling mass as the
-  Lemma 4.2 coefficient `(k-1)·μ·siblingFactor·c`. The remaining kernel is the
-  irreducible combinatorial/schedule interface for one stage: placement cover,
-  separator quality, schedule slack, children-send aggregates, Lemma 4.1 counts,
-  bad-send and fringe routing, and level-0. Under `SeparatorConds` + `P` +
-  `StageKernel`, the outsider bound advances one stage (kernel-checked).
+  `StageKernel` is the combinatorial interface of one stage (placement cover, separator quality,
+  schedule slack, send bounds, level 0); under `SeparatorConds` and `P`, the outsider bound
+  advances one stage.
 -/
 
 public import AKS.Chvatal.RoutingFromP
-public import Mathlib.Tactic.Linarith
 
 @[expose] public section
 
 namespace Chvatal
-
-/-! **Sibling mass (Lemma 4.2)** -/
 
 /-- Paper Lemma 4.2 sibling-contamination budget at the parent capacity. -/
 def sibMassBound (p : ScheduleParams) (ip : InvariantParams) (d t : Nat)
     (b : KBag p.br d) (_hb : 1 ≤ b.l) : Rat :=
   ((p.br : Rat) - 1) * ip.mu * siblingFactor p ip * capacity p d (b.l - 1) t
 
-theorem sibMassBound_le (p : ScheduleParams) (ip : InvariantParams) (d t : Nat)
-    (b : KBag p.br d) (hb : 1 ≤ b.l) :
-    sibMassBound p ip d t b hb ≤
-      ((p.br : Rat) - 1) * ip.mu * siblingFactor p ip * capacity p d (b.l - 1) t :=
-  le_rfl
-
-/-! **Schedule slack** -/
-
-/-- Exact schedule-slack used by Lemma 4.2 / `hSlack0`: `slackCoeff · c`. -/
+/-- Schedule slack used by Lemma 4.2: `slackCoeff · c`. -/
 def slackBound (p : ScheduleParams) (d t : Nat)
     (b : KBag p.br d) (_hb : 1 ≤ b.l) : Rat :=
   slackCoeff p * capacity p d (b.l - 1) t
 
-
-/-! **Stage kernel** -/
-
-/-- Irreducible hypotheses for one stage after discharging parent-outsider /
-    intrusion / fringe algebra from `P` + separator quality, and sibling mass
-    from its closed Lemma 4.2 form. -/
 structure StageKernel (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
     (sched : LevelSchedule p d) (t : Nat)
     (pl : Placement p.br d)
@@ -65,8 +44,8 @@ structure StageKernel (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
   slack0 : ∀ (b : KBag p.br d), 1 ≤ b.l → Rat
   hSlack0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
     slack0 b hb ≤ slackCoeff p * capacity p d (b.l - 1) t
-  /-- Order-0 bad keys in the parent-send Finset ≤ parent outsiders + sibling
-      budget + intrusion + slack. -/
+  /-- Order-0 bad keys in the parent-send Finset ≤ parent outsiders + sibling budget +
+      intrusion + slack. -/
   hBadSend0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
     ((b.strangers 1 perm' (step.fromParent b hb) (br_ge_one p) : Rat)) ≤
       parentOutMass p d pl perm b hb +
@@ -91,32 +70,7 @@ structure StageKernel (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
     ((b.strangers (r + 1) perm' (pl'.regs b) (br_ge_one p) : Rat)) ≤
       ip.mu * ip.delta ^ r * capacity p d 0 (t + 1)
 
-/-- `StageKernel` fills `StageRoutingResidue` (sibling mass = closed bound). -/
-def stageRoutingResidue_of_kernel (p : ScheduleParams) (ip : InvariantParams)
-    (d : Nat) (sched : LevelSchedule p d) (t : Nat)
-    (pl pl' : Placement p.br d)
-    (perm perm' : Fin (p.br ^ d) → Fin (p.br ^ d))
-    (K : StageKernel p ip d sched t pl perm pl' perm') :
-    StageRoutingResidue p ip d sched t pl perm pl' perm' where
-  ht := K.ht
-  step := K.step
-  counts := K.counts
-  counts_wires := K.counts_wires
-  counts_bad := K.counts_bad
-  parentSep := K.parentSep
-  ha_le_cap := K.ha_le_cap
-  sibMass0 := fun b hb => sibMassBound p ip d t b hb
-  slack0 := K.slack0
-  hSibMass0 := fun b hb => sibMassBound_le p ip d t b hb
-  hSlack0 := K.hSlack0
-  hBadSend0 := fun b hb => by
-    simpa [parentOutMass, sibMassBound] using K.hBadSend0 b hb
-  hFringeSend := K.hFringeSend
-  hFromChildren0 := K.hFromChildren0
-  hFromChildrenR := K.hFromChildrenR
-  level0 := K.level0
-
-/-- One-step preservation under the minimal stage kernel. -/
+/-- One-step preservation under the stage kernel: `P(t)` + conds + kernel ⇒ `P(t+1)`. -/
 theorem outsiderBound_step_of_kernel (p : ScheduleParams) (ip : InvariantParams)
     (d : Nat) (sched : LevelSchedule p d) (t : Nat)
     (pl pl' : Placement p.br d)
@@ -124,17 +78,37 @@ theorem outsiderBound_step_of_kernel (p : ScheduleParams) (ip : InvariantParams)
     (hconds : SeparatorConds p ip)
     (hP : OutsiderBoundLe p ip d sched t pl perm)
     (K : StageKernel p ip d sched t pl perm pl' perm') :
-    OutsiderBoundLe p ip d sched (t + 1) pl' perm' :=
-  outsiderBound_step_of_p p ip d sched t pl pl' perm perm' hconds hP
-    (stageRoutingResidue_of_kernel p ip d sched t pl pl' perm perm' K)
-
-/-- Trajectory of kernels yields the final outsider bound. -/
-structure KernelTrajectory (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
-    (sched : LevelSchedule p d)
-    (pls : Nat → Placement p.br d)
-    (perms : Nat → (Fin (p.br ^ d) → Fin (p.br ^ d))) where
-  kernels : ∀ t, t + 1 ≤ sched.tf →
-    StageKernel p ip d sched t (pls t) (perms t) (pls (t + 1)) (perms (t + 1))
-
+    OutsiderBoundLe p ip d sched (t + 1) pl' perm' := by
+  obtain ⟨_, h42, _, _, h45⟩ := hconds
+  intro b r hr
+  by_cases hb0 : b.l = 0
+  · simpa [hb0] using K.level0 b r hb0 hr
+  have hb : 1 ≤ b.l := by omega
+  have hbr := br_ge_one p
+  have hc := (capacity_pos p d (b.l - 1) t).le
+  have hcap : capacity p d b.l (t + 1) = p.A * p.nu * capacity p d (b.l - 1) t := by
+    rw [show b.l = (b.l - 1) + 1 by omega, capacity_succ_level, capacity_succ_stage]
+    simp only [Nat.add_sub_cancel]
+    ring
+  rw [hcap]
+  have hsplit := K.step.strangers_split_le perm' b hb (r + 1)
+  by_cases hr0 : r = 0
+  · subst hr0
+    have hpar : parentOutMass p d pl perm b hb ≤ ip.mu * capacity p d (b.l - 1) t := by
+      simpa [parentOutMass] using hP (b.parent hbr) 0 (Nat.zero_le d)
+    have hint := ((K.parentSep b hb).hIntrusion).trans
+      (mul_le_mul_of_nonneg_left (K.ha_le_cap b hb) ip.hepsB_nonneg)
+    have h := cond42_scaled p ip _ hc h42
+    have h1 := K.hBadSend0 b hb
+    unfold sibMassBound at h1
+    simp only [pow_zero, mul_one]
+    linarith [K.hFromChildren0 b hb, K.hSlack0 b hb]
+  · have hr1 : 1 ≤ r := by omega
+    have hsrc := hP (b.parent hbr) (r - 1) (by omega)
+    rw [Nat.sub_add_cancel hr1, show (b.parent hbr).l = b.l - 1 from rfl] at hsrc
+    have hf := ((K.parentSep b hb).hFringe _).trans
+      (mul_le_mul_of_nonneg_left hsrc ip.hepsF_nonneg)
+    have h := cond45_scaled p ip _ hc r hr1 h45
+    linarith [K.hFringeSend b r hr1 hr hb, K.hFromChildrenR b r hr1 hr hb]
 
 end Chvatal

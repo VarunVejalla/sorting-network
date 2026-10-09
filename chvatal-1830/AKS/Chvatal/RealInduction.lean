@@ -1,22 +1,5 @@
 module
 
-/-
-  # The root step, the induction, and purity for the real network (task B8)
-
-  Source: V. Chvatal, *Lecture Notes on the New AKS Sorting Network*,
-  Rutgers DCS-TR-294 (1992), Lemma 4.3 (root case with the exceptional separator), §4
-  (induction) and §7 (purity at `t_f`).
-
-  For `params7`, `invariantReal`, `sched = levelSchedule7 d hd`, `F = flowSizes7 d hd` and the
-  execution-defined placement `pl t = execPlacement F nets v t _` (with `perm = id`):
-  * `P_zero`: `OutsiderBoundLe … 0` (all keys at the root);
-  * `P_one`: `OutsiderBoundLe … 1` (root step, from `bad_send0_real` at `t = 0`, `q = root`,
-    `EB = ε_*·64^d/2`, and `ε_* ≤ μ/64`);
-  * `P_all`: `OutsiderBoundLe … t` for `1 ≤ t ≤ tf7 d`, from `P_one` and the stage kernels `hK`;
-  * `real_purity`: no order-2 strangers on the level-`d-6` bags at `t = tf7 d`.
-  The stage kernels `hK` and node guarantees `hspecs` are hypotheses.
--/
-
 public import AKS.Chvatal.KernelSetup
 public import AKS.Chvatal.BadSendReal
 public import AKS.Chvatal.Lemma41Real
@@ -24,9 +7,14 @@ public import AKS.Chvatal.Schedule7
 
 @[expose] public section
 
+/-! The root step `P_one` (Lemma 4.3 root case, exceptional separator), the induction `P_all` and
+purity `real_purity` (level `d - 6` at `t = tf7 d`) for the real network (`params7`,
+`invariantReal`, `levelSchedule7`, execution-defined placements with `perm = id`). -/
+
 namespace Chvatal
 
 open Finset
+open scoped Classical
 
 theorem one_le_tf7 {d : ℕ} (hd : 7 ≤ d) : 1 ≤ tf7 d := by unfold tf7; omega
 
@@ -55,9 +43,8 @@ theorem paperRootEpsB_le_epsStar :
 
 variable {d : ℕ}
 
-
 set_option linter.constructorNameAsVariable false in
-/-- **B8.1.** The root step (Lemma 4.3, root case, exceptional separator). -/
+/-- The root step (Lemma 4.3, root case, exceptional separator). -/
 theorem P_one (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (hspecs : RealSpecs hd nets)
@@ -71,120 +58,77 @@ theorem P_one (hd : 7 ≤ d)
       invariantReal.mu * invariantReal.delta ^ r * capacity params7 d b.l 1
   intro b r hr
   have h1 := one_le_tf7 hd
+  have hrhs := outsider_rhs_nonneg d r b.l 1
   by_cases hl : b.l = 1
   swap
-  · have hcard := execPlacement_card (flowSizes7 d hd) nets v 1 h1 b
-    have ha : (flowSizes7 d hd).a b.l 1 = 0 := by
-      show flowA7 d hd b.l 1 = 0
-      unfold flowA7
-      simp [hl]
-    have hE : (execPlacement (flowSizes7 d hd) nets v 1 h1).regs b = ∅ :=
-      Finset.card_eq_zero.mp (hcard.trans ha)
+  · have hE : (execPlacement (flowSizes7 d hd) nets v 1 h1).regs b = ∅ :=
+      Finset.card_eq_zero.mp ((execPlacement_card (flowSizes7 d hd) nets v 1 h1 b).trans (by
+        show flowA7 d hd b.l 1 = 0
+        unfold flowA7
+        simp [hl]))
     rw [hE, KBag.strangers_empty]
-    simpa using outsider_rhs_nonneg d r b.l 1
+    simpa using hrhs
   rcases Nat.eq_zero_or_pos r with hr0 | hr0
   swap
-  · have h0 := KBag.strangers_eq_zero_of_lt_order b (r + 1) id
-      ((execPlacement (flowSizes7 d hd) nets v 1 h1).regs b)
-      (by norm_num : 1 ≤ 64) (by omega) (by omega)
-    rw [h0]
-    simpa using outsider_rhs_nonneg d r b.l 1
+  · rw [KBag.strangers_eq_zero_of_lt_order b (r + 1) id _ (by norm_num : 1 ≤ 64) (by omega) (by omega)]
+    simpa using hrhs
   subst hr0
   -- main case: level-1 bag, order 0
   have hbl : b.l < d := by omega
   have hroot : (KBag.root 64 d).l < d := by show 0 < d; omega
-  have hjx : b.x < 64 := by
-    have := b.hx
-    rw [hl] at this
-    simpa using this
+  have hjx : b.x < 64 := by simpa [hl] using b.hx
   have hbj : b = (KBag.root 64 d).child b.x hjx hroot :=
     KBag.ext (by simp [KBag.child, KBag.root, hl]) (by simp [KBag.child, KBag.root])
   have ht0 : 0 < tf7 d := by omega
-  have hreg := execPlacement_succ_regs (flowSizes7 d hd) nets v 0 ht0 b (by omega)
   have hchE : fromChildrenK (flowSizes7 d hd) nets v 0 b = ∅ := by
     unfold fromChildrenK
     rw [dif_pos hbl]
-    apply Finset.eq_empty_of_forall_notMem
-    intro k hk
+    refine Finset.eq_empty_of_forall_notMem fun k hk => ?_
     simp only [Finset.mem_biUnion, Finset.mem_univ, true_and] at hk
     obtain ⟨j, hj⟩ := hk
-    have hne : b.child j.val j.isLt hbl ≠ KBag.root 64 d := by
-      intro h
-      have := congrArg KBag.l h
-      simp [KBag.child, KBag.root] at this
+    have hne : b.child j.val j.isLt hbl ≠ KBag.root 64 d := fun h => by
+      simpa [KBag.child, KBag.root] using congrArg KBag.l h
     rw [wireSets_zero_of_ne _ hne] at hj
     simp [upSet, blockOf] at hj
   have hregs : (execPlacement (flowSizes7 d hd) nets v 1 h1).regs b =
       fromParentK (flowSizes7 d hd) nets v 0 b := by
     rw [show (execPlacement (flowSizes7 d hd) nets v 1 h1).regs b =
-        (execPlacement (flowSizes7 d hd) nets v (0 + 1) ht0).regs b from rfl, hreg, hchE,
-      Finset.union_empty]
+        (execPlacement (flowSizes7 d hd) nets v (0 + 1) ht0).regs b from rfl,
+      execPlacement_succ_regs (flowSizes7 d hd) nets v 0 ht0 b (by omega), hchE, Finset.union_empty]
   -- apply bad_send0_real at t = 0, q = root
-  have hdown : (flowSizes7 d hd).down 0 0 = 64 ^ (d - 1) := by
-    show flowDown7 d hd 0 0 = _
-    simp [flowDown7]
-  have hup : (flowSizes7 d hd).up 0 0 = 0 := by
-    show flowUp7 d hd 0 0 = _
-    simp [flowUp7]
-  have ha0 : (flowSizes7 d hd).a 0 0 = 64 ^ d := by
-    show flowA7 d hd 0 0 = _
-    simp [flowA7]
-  have hdpos : 0 < (flowSizes7 d hd).down (KBag.root 64 d).l 0 := by
-    show 0 < (flowSizes7 d hd).down 0 0
-    rw [hdown]; positivity
-  have hspec := hspecs 0 (KBag.root 64 d) ht0 hdpos
+  have hdown : (flowSizes7 d hd).down (KBag.root 64 d).l 0 = 64 ^ (d - 1) := by
+    simp [flowSizes7, flowDown7, KBag.root]
+  have hup : (flowSizes7 d hd).up (KBag.root 64 d).l 0 = 0 := by
+    simp [flowSizes7, flowUp7, KBag.root]
+  have ha0 : (flowSizes7 d hd).a (KBag.root 64 d).l 0 = 64 ^ d := by
+    simp [flowSizes7, flowA7, KBag.root]
   have hM : ∀ j' : Fin 64,
       ((((execPlacement (flowSizes7 d hd) nets v 0 ht0.le).regs (KBag.root 64 d)).filter fun κ =>
         ((KBag.root 64 d).child j'.val j'.isLt hroot).Native κ id).card : ℝ) ≤
         ((flowSizes7 d hd).down (KBag.root 64 d).l 0 : ℝ) + 0 := by
     intro j'
-    have hc := native_card (br := 64) (d := d) (by norm_num)
-      ((KBag.root 64 d).child j'.val j'.isLt hroot)
-    have hsub : (((execPlacement (flowSizes7 d hd) nets v 0 ht0.le).regs
-        (KBag.root 64 d)).filter fun κ =>
-          ((KBag.root 64 d).child j'.val j'.isLt hroot).Native κ id) ⊆
-        Finset.univ.filter fun κ : Fin (64 ^ d) =>
-          ((KBag.root 64 d).child j'.val j'.isLt hroot).Native κ id :=
-      Finset.filter_subset_filter _ (Finset.subset_univ _)
-    have hle := Finset.card_le_card hsub
-    rw [hc] at hle
-    have hdn : (flowSizes7 d hd).down (KBag.root 64 d).l 0 = 64 ^ (d - 1) := hdown
-    rw [hdn, add_zero]
-    have : (KBag.child (KBag.root 64 d) j'.val j'.isLt hroot).l = 1 := rfl
-    rw [this] at hle
+    have hle := (Finset.card_le_card (Finset.filter_subset_filter _ (Finset.subset_univ
+      ((execPlacement (flowSizes7 d hd) nets v 0 ht0.le).regs (KBag.root 64 d))))).trans_eq
+      (native_card (br := 64) (d := d) (by norm_num) ((KBag.root 64 d).child j'.val j'.isLt hroot))
+    rw [hdown, add_zero]
     exact_mod_cast hle
-  have hpos : (((flowSizes7 d hd).up (KBag.root 64 d).l 0 : ℕ) : ℝ) / 2 ≤
-      (((KBag.root 64 d).strangers 1 id
-        ((execPlacement (flowSizes7 d hd) nets v 0 ht0.le).regs (KBag.root 64 d)) : ℕ) : ℝ) +
-        63 * 0 := by
-    have : (flowSizes7 d hd).up (KBag.root 64 d).l 0 = 0 := hup
-    rw [this]; simp
-  have hbad := bad_send0_real (flowSizes7 d hd) nets v 0 ht0 (KBag.root 64 d) hroot
-    ⟨b.x, hjx⟩ (specEB 0 ((flowSizes7 d hd).a (KBag.root 64 d).l 0))
-    (specJmax ((flowSizes7 d hd).up (KBag.root 64 d).l 0)) eps 0 le_rfl hspec hM hpos
   have hroot0 : (KBag.root 64 d).strangers 1 id
       ((execPlacement (flowSizes7 d hd) nets v 0 ht0.le).regs (KBag.root 64 d))
         (by norm_num : 1 ≤ 64) = 0 :=
     KBag.strangers_eq_zero_of_lt_order _ 1 id _ (by norm_num : 1 ≤ 64) le_rfl (by
       show 0 < 1; omega)
-  rw [hroot0] at hbad
-  rw [← hbj] at hbad
-  -- numeric finish
-  have hEB : specEB 0 ((flowSizes7 d hd).a (KBag.root 64 d).l 0) =
-      paperRootEpsB * (64 : ℝ) ^ d / 2 := by
-    unfold specEB
-    have : (flowSizes7 d hd).a (KBag.root 64 d).l 0 = 64 ^ d := ha0
-    rw [this]; simp
-  have hup' : (((flowSizes7 d hd).up (KBag.root 64 d).l 0 : ℕ) : ℝ) = 0 := by
-    have : (flowSizes7 d hd).up (KBag.root 64 d).l 0 = 0 := hup
-    rw [this]; simp
-  rw [hEB, hup'] at hbad
+  have hbad := bad_send0_real (flowSizes7 d hd) nets v 0 ht0 (KBag.root 64 d) hroot
+    ⟨b.x, hjx⟩ (specEB 0 ((flowSizes7 d hd).a (KBag.root 64 d).l 0))
+    (specJmax ((flowSizes7 d hd).up (KBag.root 64 d).l 0)) eps 0 le_rfl
+    (hspecs 0 (KBag.root 64 d) ht0 (by rw [hdown]; positivity)) hM
+    (by rw [hup, hroot0]; simp)
+  rw [hroot0, ← hbj, ha0, hup] at hbad
+  have hEB : specEB 0 (64 ^ d) = paperRootEpsB * (64 : ℝ) ^ d / 2 := by simp [specEB]
+  rw [hEB] at hbad
   have hcap : capacity params7 d b.l 1 = (64 : ℚ) ^ (d - 1) := by
     rw [hl]
-    unfold capacity params7
-    simp only []
     obtain ⟨e, rfl⟩ : ∃ e, d = e + 1 := ⟨d - 1, by omega⟩
-    simp only [Nat.add_sub_cancel]
+    simp only [capacity, params7, Nat.add_sub_cancel]
     push_cast
     rw [pow_succ]
     field_simp
@@ -192,36 +136,38 @@ theorem P_one (hd : 7 ≤ d)
   have hpd : (64 : ℝ) ^ d = 64 * 64 ^ (d - 1) := by
     obtain ⟨e, rfl⟩ : ∃ e, d = e + 1 := ⟨d - 1, by omega⟩
     simp [pow_succ]; ring
-  rw [hregs]
-  have key : (((b.strangers 1 id (fromParentK (flowSizes7 d hd) nets v 0 b) : ℕ)) : ℝ) ≤
-      (invariantReal.mu : ℝ) * ((64 : ℝ) ^ (d - 1)) := by
-    have hμ : (invariantReal.epsStar : ℝ) * 64 = (invariantReal.mu : ℝ) := by
-      unfold invariantReal; push_cast; norm_num
-    calc _ ≤ _ := hbad
-      _ = paperRootEpsB * (64 * 64 ^ (d - 1)) := by rw [hpd]; ring
+  have hμ : (invariantReal.epsStar : ℝ) * 64 = (invariantReal.mu : ℝ) := by
+    unfold invariantReal; push_cast; norm_num
+  have hb2 : ((b.strangers 1 id (fromParentK (flowSizes7 d hd) nets v 0 b) : ℕ) : ℝ) ≤
+      paperRootEpsB * (64 : ℝ) ^ d := by
+    push_cast at hbad; refine hbad.trans (le_of_eq ?_); ring
+  have key : ((b.strangers 1 id (fromParentK (flowSizes7 d hd) nets v 0 b) : ℕ) : ℝ) ≤
+      (invariantReal.mu : ℝ) * ((64 : ℝ) ^ (d - 1)) :=
+    calc _ ≤ paperRootEpsB * (64 : ℝ) ^ d := hb2
+      _ = paperRootEpsB * (64 * 64 ^ (d - 1)) := by rw [hpd]
       _ ≤ (invariantReal.epsStar : ℝ) * (64 * 64 ^ (d - 1)) :=
           mul_le_mul_of_nonneg_right hεle (by positivity)
       _ = (invariantReal.mu : ℝ) * ((64 : ℝ) ^ (d - 1)) := by rw [← hμ]; ring
-  have : (((b.strangers (0 + 1) id (fromParentK (flowSizes7 d hd) nets v 0 b) : ℕ)) : ℚ) ≤
-      invariantReal.mu * invariantReal.delta ^ 0 * capacity params7 d b.l 1 := by
-    rw [hcap, pow_zero, mul_one]
-    have : (((b.strangers 1 id (fromParentK (flowSizes7 d hd) nets v 0 b) : ℕ)) : ℝ) ≤
-        (((invariantReal.mu * (64 : ℚ) ^ (d - 1) : ℚ)) : ℝ) := by
-      push_cast; exact key
-    exact_mod_cast this
-  exact this
+  rw [hregs, hcap, pow_zero, mul_one]
+  rw [← Rat.cast_le (K := ℝ)]
+  push_cast
+  exact key
 
-/-- **B8.2.** The induction from `P_one`, using the stage kernels. -/
+/-- The stage kernels of the real network, as supplied to the induction. -/
+abbrev KernelFamily {d : ℕ} (hd : 7 ≤ d)
+    (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
+    (v : Equiv.Perm (Fin (64 ^ d))) : Type :=
+  ∀ t, 1 ≤ t → ∀ (ht : t + 1 ≤ tf7 d),
+    OutsiderBoundLe params7 invariantReal d (levelSchedule7 d hd) t
+      (execPlacement (flowSizes7 d hd) nets v t (by omega)) id →
+    StageKernel params7 invariantReal d (levelSchedule7 d hd) t
+      (execPlacement (flowSizes7 d hd) nets v t (by omega)) id
+      (execPlacement (flowSizes7 d hd) nets v (t + 1) ht) id
+
+/-- The induction from `P_one`, using the stage kernels. -/
 theorem P_all (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
-    (hspecs : RealSpecs hd nets)
-    (v : Equiv.Perm (Fin (64 ^ d)))
-    (hK : ∀ t, 1 ≤ t → ∀ (ht : t + 1 ≤ tf7 d),
-      OutsiderBoundLe params7 invariantReal d (levelSchedule7 d hd) t
-        (execPlacement (flowSizes7 d hd) nets v t (by omega)) id →
-      StageKernel params7 invariantReal d (levelSchedule7 d hd) t
-        (execPlacement (flowSizes7 d hd) nets v t (by omega)) id
-        (execPlacement (flowSizes7 d hd) nets v (t + 1) ht) id) :
+    (hspecs : RealSpecs hd nets) (v : Equiv.Perm (Fin (64 ^ d))) (hK : KernelFamily hd nets v) :
     ∀ t, 1 ≤ t → ∀ (ht : t ≤ tf7 d),
       OutsiderBoundLe params7 invariantReal d (levelSchedule7 d hd) t
         (execPlacement (flowSizes7 d hd) nets v t ht) id := by
@@ -236,34 +182,17 @@ theorem P_all (hd : 7 ≤ d)
       (execPlacement (flowSizes7 d hd) nets v (t + 1) ht) id id separatorConds_real
       (ih ht') (hK t ht1 ht (ih ht'))
 
-/-- **B8.3.** Purity: at `t = tf7 d` no key of a level-`(d-6)` bag is an order-2 stranger.
-(`μ δ 2^36 = 1023/2^36 < 1`; only `7 ≤ d` is needed.) -/
+/-- Purity: at `t = tf7 d` no key of a level-`(d-6)` bag is an order-2 stranger
+(`μ δ 2^36 = 1023/2^36 < 1`; only `7 ≤ d` is needed). -/
 theorem real_purity (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
-    (hspecs : RealSpecs hd nets)
-    (v : Equiv.Perm (Fin (64 ^ d)))
-    (hK : ∀ t, 1 ≤ t → ∀ (ht : t + 1 ≤ tf7 d),
-      OutsiderBoundLe params7 invariantReal d (levelSchedule7 d hd) t
-        (execPlacement (flowSizes7 d hd) nets v t (by omega)) id →
-      StageKernel params7 invariantReal d (levelSchedule7 d hd) t
-        (execPlacement (flowSizes7 d hd) nets v t (by omega)) id
-        (execPlacement (flowSizes7 d hd) nets v (t + 1) ht) id)
+    (hspecs : RealSpecs hd nets) (v : Equiv.Perm (Fin (64 ^ d))) (hK : KernelFamily hd nets v)
     (b : KBag 64 d) (hb : b.l = d - 6) :
     b.strangers 2 id ((execPlacement (flowSizes7 d hd) nets v (tf7 d) le_rfl).regs b)
       (by norm_num : 1 ≤ 64) = 0 := by
   have hP := P_all hd nets hspecs v hK (tf7 d) (one_le_tf7 hd) le_rfl b 1 (by omega)
-  have hcap : capacity params7 d b.l (tf7 d) = (64 : ℚ) ^ 6 := by
-    rw [hb]; exact capacity_meet7 d hd
-  rw [hcap] at hP
-  have hlt : ((b.strangers (1 + 1) id
-      ((execPlacement (flowSizes7 d hd) nets v (tf7 d) le_rfl).regs b)
-      (by norm_num : 1 ≤ 64) : ℕ) : ℚ) < 1 := by
-    refine lt_of_le_of_lt hP ?_
-    unfold invariantReal invariant7
-    norm_num
-  have : b.strangers (1 + 1) id
-      ((execPlacement (flowSizes7 d hd) nets v (tf7 d) le_rfl).regs b)
-      (by norm_num : 1 ≤ 64) < 1 := by exact_mod_cast hlt
-  exact Nat.lt_one_iff.mp this
+  rw [show capacity params7 d b.l (tf7 d) = (64 : ℚ) ^ 6 by rw [hb]; exact capacity_meet7 d hd] at hP
+  have hlt := lt_of_le_of_lt hP (by unfold invariantReal invariant7; norm_num : _ < (1 : ℚ))
+  exact Nat.lt_one_iff.mp (by exact_mod_cast hlt)
 
 end Chvatal

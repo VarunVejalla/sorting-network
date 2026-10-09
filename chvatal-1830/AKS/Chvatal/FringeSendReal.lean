@@ -1,56 +1,20 @@
 module
-/-
-  # Fringe send bound for the real network (task H2)
-
-  Source: V. Chvátal, *Lecture Notes on the New AKS Sorting Network*, Rutgers DCS-TR-294 (1992),
-  Lemma 4.4 (parent part).  The keys a node `q` sends down to child `b` are outputs of the node
-  network on a middle window of cells (`mem_image_downSet_iff`); those outside the address
-  interval of `q.ancestor (r-1)` are counted by Property F (`sent_outside_le`) against the
-  order-`r` outsiders of `q`.
-
-  Main result: `fringe_send_real`.
--/
-
 public import AKS.Chvatal.NodeKeys
 public import AKS.Chvatal.StrangerBounds
 
 @[expose] public section
 
+/-! Fringe send bound for the real network (Chvátal Lemma 4.4, parent part): `fringe_send_real`.
+The keys sent from `q` to a child are node-network outputs on a middle window of cells; those outside
+the address interval of `q.ancestor (r-1)` are counted by Property F (`sent_outside_le`). -/
+
 namespace Chvatal
 
 open Finset
 
-/-! ## Tree facts -/
-
-theorem child_ancestor_eq {d : ℕ} (q : KBag 64 d) (j : ℕ) (hj : j < 64) (hq : q.l < d)
-    (r : ℕ) (hr : 1 ≤ r) :
-    (q.child j hj hq).ancestor r (by omega) = q.ancestor (r - 1) (by omega) := by
-  ext
-  · show q.l + 1 - r = q.l - (r - 1); omega
-  · show (64 * q.x + j) / 64 ^ r = q.x / 64 ^ (r - 1)
-    have h64 : 64 ^ r = 64 * 64 ^ (r - 1) := by
-      rw [← pow_succ']; congr 1; omega
-    rw [h64, ← Nat.div_div_eq_div_mul]
-    congr 1
-    rw [Nat.mul_add_div (by norm_num)]
-    rw [Nat.div_eq_of_lt hj]; simp
-
 theorem native_id_iff {d : ℕ} (A : KBag 64 d) (κ : Fin (64 ^ d)) :
     A.Native κ id ↔ A.lo ≤ (κ : ℕ) ∧ (κ : ℕ) < A.hi := by
-  have hs : 0 < bagSize 64 d A.l := bagSize_pos (by norm_num) A.hl
-  unfold KBag.Native nativeBagIdx KBag.lo KBag.hi KBag.size
-  simp only [id]
-  have h1 : A.x ≤ (κ : ℕ) / bagSize 64 d A.l ↔ A.x * bagSize 64 d A.l ≤ (κ : ℕ) :=
-    Nat.le_div_iff_mul_le hs
-  have h2 : (κ : ℕ) / bagSize 64 d A.l < A.x + 1 ↔ (κ : ℕ) < (A.x + 1) * bagSize 64 d A.l :=
-    Nat.div_lt_iff_lt_mul hs
-  constructor
-  · intro h; exact ⟨h1.1 (le_of_eq h.symm), h2.1 (by omega)⟩
-  · rintro ⟨a, b⟩; have := h1.2 a; have := h2.2 b; omega
-
-theorem lo_le_hi {d : ℕ} (A : KBag 64 d) : A.lo ≤ A.hi := by
-  unfold KBag.lo KBag.hi
-  exact Nat.mul_le_mul_right _ (Nat.le_succ _)
+  simpa using KBag.native_iff A κ id (by norm_num)
 
 theorem strangers_eq_filter {d : ℕ} (q : KBag 64 d) (r : ℕ) (hr : 1 ≤ r)
     (S : Finset (Fin (64 ^ d))) :
@@ -58,37 +22,16 @@ theorem strangers_eq_filter {d : ℕ} (q : KBag 64 d) (r : ℕ) (hr : 1 ≤ r)
       ¬ ((q.ancestor (r - 1)).lo ≤ (κ : ℕ) ∧ (κ : ℕ) < (q.ancestor (r - 1)).hi)).card := by
   unfold KBag.strangers
   congr 1
-  apply Finset.filter_congr
-  intro κ _
-  unfold KBag.Strange
-  rw [native_id_iff]
-  constructor
-  · rintro (h | h); · omega
-    · exact h
-  · intro h; exact Or.inr h
+  refine Finset.filter_congr fun κ _ => ?_
+  simp [KBag.Strange, native_id_iff, Nat.one_le_iff_ne_zero.1 hr]
 
 theorem strangers_split {N : ℕ} (K : Finset (Fin N)) (Ilo Ihi : ℕ) (h : Ilo ≤ Ihi) :
     (K.filter fun κ : Fin N => ¬ (Ilo ≤ (κ : ℕ) ∧ (κ : ℕ) < Ihi)).card =
       (K.filter fun κ : Fin N => Ihi ≤ (κ : ℕ)).card +
         (K.filter fun κ : Fin N => (κ : ℕ) < Ilo).card := by
-  rw [← Finset.card_union_of_disjoint]
-  · congr 1
-    ext κ
-    simp only [Finset.mem_filter, Finset.mem_union]
-    constructor
-    · rintro ⟨hk, hn⟩
-      by_cases h1 : Ihi ≤ (κ : ℕ)
-      · exact Or.inl ⟨hk, h1⟩
-      · exact Or.inr ⟨hk, by omega⟩
-    · rintro (⟨hk, h1⟩ | ⟨hk, h1⟩)
-      · exact ⟨hk, by omega⟩
-      · exact ⟨hk, by omega⟩
-  · rw [Finset.disjoint_left]
-    intro κ h1 h2
-    simp only [Finset.mem_filter] at h1 h2
-    omega
-
-/-! ## Cells and keys -/
+  rw [Finset.filter_congr (q := fun κ : Fin N => Ihi ≤ (κ : ℕ) ∨ (κ : ℕ) < Ilo)
+    (fun κ _ => by omega), Finset.filter_or,
+    Finset.card_union_of_disjoint (Finset.disjoint_filter.2 fun κ _ h1 h2 => by omega)]
 
 /-- The cell carrying key `κ` (junk `0` if none). -/
 noncomputable def cellOf {a N : ℕ} (y : Fin a → Fin N) (κ : Fin N) : ℕ :=
@@ -120,19 +63,9 @@ theorem filter_image_cellOf {a N : ℕ} {y : Fin a → Fin N} (hy : Function.Inj
       exact ⟨⟨c, rfl⟩, by rwa [cellOf_apply hy]⟩
   rw [this, Finset.card_image_of_injective _ hy]
 
-
-/-! ## Lemma 4.4, parent part, for the real network -/
-
 section Real
 
 variable {d tf : ℕ}
-
-theorem parent_child_eq (q : KBag 64 d) (j : ℕ) (hj : j < 64) (hq : q.l < d) :
-    (q.child j hj hq).parent (by omega) = q := by
-  ext
-  · show q.l + 1 - 1 = q.l; omega
-  · show (64 * q.x + j) / 64 = q.x
-    rw [Nat.mul_add_div (by norm_num), Nat.div_eq_of_lt hj]; simp
 
 /-- **Lemma 4.4 (parent part), real network.**  The order-`(r+1)` outsiders among the keys
 sent from `q` to its child `b = q.child j` at stage `t` number at most `εF` times the order-`r`
@@ -182,22 +115,23 @@ theorem fringe_send_real (F : FlowSizes d tf)
   rw [hK] at hJ ⊢
   set b := q.child j.val j.isLt hq with hb
   set A := q.ancestor (r - 1) with hA
+  have hbs : b.strangers (r + 1) id (fromParentK F nets v t b) =
+      q.strangers r id (fromParentK F nets v t b) := by
+    rw [← KBag.strangers_parent_eq b r hr (by show 1 ≤ q.l + 1; omega) id _ (by norm_num),
+      hb, KBag.child_parent q _ _ _ (by norm_num)]
   -- the sent keys
   have hfp : fromParentK F nets v t b = (downSet s π τ j.val).image (X F nets v (t + 1)) := by
     unfold fromParentK
-    have hp : b.parent (by omega) = q := parent_child_eq q j.val j.isLt hq
+    have hp : b.parent (by omega) = q := KBag.child_parent q _ _ _ (by norm_num)
     have hl : b.l - 1 = q.l := by show q.l + 1 - 1 = q.l; omega
     have hx : b.x % 64 = j.val := by
       show (64 * q.x + j.val) % 64 = j.val
       rw [Nat.mul_add_mod]; exact Nat.mod_eq_of_lt j.isLt
     rw [hp, hl, hx]
   -- strangers of b
-  have hbA : b.ancestor (r + 1 - 1) (by omega) = A := by
-    rw [Nat.add_sub_cancel]; exact child_ancestor_eq q j.val j.isLt hq r hr |>.trans (by rw [hA])
-  have hbs := strangers_eq_filter b (r + 1) (by omega) (fromParentK F nets v t b)
-  rw [hbA] at hbs
+  have hbs' := strangers_eq_filter q r hr (fromParentK F nets v t b)
   have hqs := strangers_eq_filter q r hr (keySet xr)
-  have hsplit := strangers_split (keySet xr) A.lo A.hi (lo_le_hi A)
+  have hsplit := strangers_split (keySet xr) A.lo A.hi (Nat.mul_le_mul_right _ (Nat.le_succ _))
   -- positions
   set pos := cellOf y with hpos
   have hsub : (fromParentK F nets v t b).filter
@@ -220,7 +154,7 @@ theorem fringe_send_real (F : FlowSizes d tf)
       (((keySet xr).filter fun κ : Fin (64 ^ d) =>
           π / 2 ≤ pos κ ∧ pos κ < (keySet xr).card - π / 2).filter
         fun κ : Fin (64 ^ d) => ¬ (A.lo ≤ (κ : ℕ) ∧ (κ : ℕ) < A.hi)).card := by
-    rw [hbs]; exact Finset.card_le_card hsub
+    rw [hbs, hbs']; exact Finset.card_le_card hsub
   have hHhi : ((keySet xr).filter fun κ : Fin (64 ^ d) => A.hi ≤ (κ : ℕ)).card ≤ Jmax := by
     rw [hqs, hsplit] at hJ; omega
   have hHlo : ((keySet xr).filter fun κ : Fin (64 ^ d) => (κ : ℕ) < A.lo).card ≤ Jmax := by

@@ -1,21 +1,13 @@
 module
 
-/-
-  # Real-network stage kernel (KA)
-
-  Source: V. Chvatal, *Lecture Notes on the New AKS Sorting Network*,
-  Rutgers DCS-TR-294 (1992), §4.
-
-  Assembles `StageKernel params7 invariantReal` for the execution-defined placements from the
-  two routing fields `BadSendField` / `FringeSendField` and the outsider bound `P` at stage `t`,
-  and derives the one-step outsider bound `realStep`.
--/
-
 public import AKS.Chvatal.KernelSetup
 public import AKS.Chvatal.StrangerBounds
 public import AKS.Chvatal.StageCountsFill
 
 @[expose] public section
+
+/-! The real-network stage kernel: `StageKernel params7 invariantReal` for the execution-defined
+placements from `BadSendField` / `FringeSendField` and the outsider bound `P` at stage `t`. -/
 
 namespace Chvatal
 
@@ -60,12 +52,8 @@ noncomputable def realStageKernel {d : ℕ} (hd : 7 ≤ d)
   ha_le_cap b hb := le_refl _
   slack0 b hb := slackBound params7 d t b hb
   hSlack0 b hb := le_refl _
-  hBadSend0 b hb := by
-    have h := hBad b hb
-    simpa [realParentSep, realPlacementStep] using h
-  hFringeSend b r hr1 hrd hb := by
-    have h := hFringe b r hr1 hrd hb
-    simpa [realParentSep, realPlacementStep] using h
+  hBadSend0 b hb := by simpa [realParentSep, realPlacementStep] using hBad b hb
+  hFringeSend b r hr1 hrd hb := by simpa [realParentSep, realPlacementStep] using hFringe b r hr1 hrd hb
   hFromChildren0 b hb :=
     hFromChildren0_of_subset params7 invariantReal d (levelSchedule7 d hd) t _ hP b hb
       (fromChildrenK (flowSizes7 d hd) nets v t b)
@@ -84,10 +72,9 @@ noncomputable def realStageKernel {d : ℕ} (hd : 7 ≤ d)
         (by omega)
     rw [h0]
     have := capacity_pos params7 d 0 (t + 1)
-    have hm : (0 : ℚ) < invariantReal.mu := invariantReal.hmu_pos
-    have hdl : (0 : ℚ) < invariantReal.delta := invariantReal.hdelta_pos
+    have hm := invariantReal.hmu_pos
+    have hdl := invariantReal.hdelta_pos
     push_cast
     positivity
-
 
 end Chvatal

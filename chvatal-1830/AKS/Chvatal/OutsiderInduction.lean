@@ -1,28 +1,17 @@
 module
 /-
-  # Chvatal §4 inductive preservation of the outsider bound
+  # Chvatal §4 outsider bound `P` (non-strict inductive form)
 
-  Source: V. Chvatal, *Lecture Notes on the New AKS Sorting Network*,
-  Rutgers DCS-TR-294 (1992), §4.
-
-  Status: proves `OutsiderBoundLe` at `t` + `SeparatorConds` + `StageModel`
-  implies `OutsiderBoundLe` at `t+1`, and purity when the top capacity envelope
-  is `< 1`. The `StageModel` fields package combinatorial stage-dynamics facts
-  (wire counts, separator routing, source splits); discharging them from an
-  executable scheduler is deferred.
+  Source: V. Chvatal, DCS-TR-294 (1992), §4.
 -/
 
 public import AKS.Chvatal.OutsiderLemmas
-public import Mathlib.Tactic.Linarith
 
 @[expose] public section
 
 namespace Chvatal
 
-/-! **Non-strict outsider bound (inductive form)** -/
-
-/-- Non-strict form of proposition `P`, used for induction. Paper's strict
-    `<` is recovered for purity when the envelope itself is `< 1`. -/
+/-- Non-strict form of proposition `P` at stage `t`, for a placement and rank permutation. -/
 def OutsiderBoundLe (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
     (_sched : LevelSchedule p d) (t : Nat)
     (pl : Placement p.br d)
@@ -30,92 +19,5 @@ def OutsiderBoundLe (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
   ∀ (b : KBag p.br d) (r : Nat), r ≤ d →
     ((b.strangers (r + 1) perm (pl.regs b) (br_ge_one p) : Rat)) ≤
       ip.mu * ip.delta ^ r * capacity p d b.l t
-
-
-/-! **One-step preservation** -/
-
-/-- Order-0 step for non-root bags. -/
-theorem outsiderBound_step_order0 (p : ScheduleParams) (ip : InvariantParams)
-    (d : Nat) (sched : LevelSchedule p d) (t : Nat)
-    (pl pl' : Placement p.br d)
-    (perm perm' : Fin (p.br ^ d) → Fin (p.br ^ d))
-    (hconds : SeparatorConds p ip)
-    (M : StageModel p ip d sched t pl perm pl' perm')
-    (b : KBag p.br d) (hb : 1 ≤ b.l) :
-    ((b.strangers 1 perm' (pl'.regs b) (br_ge_one p) : Rat)) ≤
-      ip.mu * capacity p d b.l (t + 1) := by
-  obtain ⟨_, h42, _, _, _⟩ := hconds
-  have hc : 0 < capacity p d (b.l - 1) t := M.hcap_pos b hb
-  have hbound := lemma43_of_sources p ip (capacity p d (b.l - 1) t) hc
-    (M.order0 b hb) (M.order0_parent b hb) (M.order0_child b hb) h42
-  have hcap : capacity p d b.l (t + 1) =
-      p.A * p.nu * capacity p d (b.l - 1) t := by
-    rw [show b.l = (b.l - 1) + 1 by omega]
-    exact capacity_child_stage p d (b.l - 1) t
-  calc ((b.strangers 1 perm' (pl'.regs b) (br_ge_one p) : Rat))
-      ≤ (M.order0 b hb).total := M.order0_total b hb
-    _ ≤ ip.mu * (p.A * p.nu * capacity p d (b.l - 1) t) := hbound
-    _ = ip.mu * capacity p d b.l (t + 1) := by rw [hcap]
-
-/-- Order-`r` step (`r ≥ 1`) for non-root bags. -/
-theorem outsiderBound_step_orderr (p : ScheduleParams) (ip : InvariantParams)
-    (d : Nat) (sched : LevelSchedule p d) (t : Nat)
-    (pl pl' : Placement p.br d)
-    (perm perm' : Fin (p.br ^ d) → Fin (p.br ^ d))
-    (hconds : SeparatorConds p ip)
-    (M : StageModel p ip d sched t pl perm pl' perm')
-    (b : KBag p.br d) (hb : 1 ≤ b.l)
-    (r : Nat) (hr1 : 1 ≤ r) (hrd : r ≤ d) :
-    ((b.strangers (r + 1) perm' (pl'.regs b) (br_ge_one p) : Rat)) ≤
-      ip.mu * ip.delta ^ r * capacity p d b.l (t + 1) := by
-  obtain ⟨_, _, _, _, h45⟩ := hconds
-  have hc : 0 < capacity p d (b.l - 1) t := M.hcap_pos b hb
-  have hbound := lemma44_of_sources p ip (capacity p d (b.l - 1) t) hc r hr1
-    (M.orderR b r hr1 hrd hb) (M.orderR_parent b r hr1 hrd hb)
-    (M.orderR_child b r hr1 hrd hb) h45
-  have hcap : capacity p d b.l (t + 1) =
-      p.A * p.nu * capacity p d (b.l - 1) t := by
-    rw [show b.l = (b.l - 1) + 1 by omega]
-    exact capacity_child_stage p d (b.l - 1) t
-  calc ((b.strangers (r + 1) perm' (pl'.regs b) (br_ge_one p) : Rat))
-      ≤ (M.orderR b r hr1 hrd hb).total := M.orderR_total b r hr1 hrd hb
-    _ ≤ ip.mu * ip.delta ^ r *
-          (p.A * p.nu * capacity p d (b.l - 1) t) := hbound
-    _ = ip.mu * ip.delta ^ r * capacity p d b.l (t + 1) := by rw [hcap]
-
-/-- Full one-step preservation of `OutsiderBoundLe`. -/
-theorem outsiderBound_step (p : ScheduleParams) (ip : InvariantParams)
-    (d : Nat) (sched : LevelSchedule p d) (t : Nat)
-    (pl pl' : Placement p.br d)
-    (perm perm' : Fin (p.br ^ d) → Fin (p.br ^ d))
-    (hconds : SeparatorConds p ip)
-    (M : StageModel p ip d sched t pl perm pl' perm')
-    (_hP : OutsiderBoundLe p ip d sched t pl perm) :
-    OutsiderBoundLe p ip d sched (t + 1) pl' perm' := by
-  intro b r hr
-  by_cases hb0 : b.l = 0
-  · simpa [hb0] using M.level0 b r hb0 hr
-  · have hb : 1 ≤ b.l := by omega
-    by_cases hr0 : r = 0
-    · subst hr0
-      have h := outsiderBound_step_order0 p ip d sched t pl pl' perm perm'
-        hconds M b hb
-      simpa [pow_zero, mul_one] using h
-    · have hr1 : 1 ≤ r := by omega
-      exact outsiderBound_step_orderr p ip d sched t pl pl' perm perm'
-        hconds M b hb r hr1 hr
-
-/-! **Induction and purity** -/
-
-/-- A trajectory of stage models across `0 … tf-1`. -/
-structure StageTrajectory (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
-    (sched : LevelSchedule p d)
-    (pls : Nat → Placement p.br d)
-    (perms : Nat → (Fin (p.br ^ d) → Fin (p.br ^ d))) where
-  models : ∀ t, t + 1 ≤ sched.tf →
-    StageModel p ip d sched t (pls t) (perms t) (pls (t + 1)) (perms (t + 1))
-
-
-
 
 end Chvatal
