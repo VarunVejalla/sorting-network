@@ -140,16 +140,7 @@ theorem bagSize_pos {br d l : ℕ} (hbr : 1 ≤ br) (_h : l ≤ d) :
   unfold bagSize
   exact Nat.pow_pos (Nat.succ_le_iff.mp hbr)
 
-theorem bagSize_succ_mul {br d ℓ : ℕ} (_hbr : 1 ≤ br) (h : ℓ + 1 ≤ d) :
-    bagSize br d (ℓ + 1) * br = bagSize br d ℓ := by
-  simp only [bagSize]
-  have h1 : d - (ℓ + 1) + 1 = d - ℓ := by omega
-  rw [← pow_succ, h1]
 
-theorem nativeBagIdx_div {br d ℓ r : ℕ} (hbr : 1 ≤ br) (h : ℓ + 1 ≤ d) :
-    nativeBagIdx br d (ℓ + 1) r / br = nativeBagIdx br d ℓ r := by
-  simp only [nativeBagIdx]
-  rw [Nat.div_div_eq_div_mul, bagSize_succ_mul hbr h]
 
 theorem KBag.hi_eq_lo_add_size (b : KBag br d) : b.hi = b.lo + b.size := by
   simp [KBag.hi, KBag.lo, Nat.add_mul]
@@ -240,14 +231,4 @@ theorem KBag.strangers_parent_eq (b : KBag br d) (j : ℕ) (hj : 1 ≤ j)
   simp only [KBag.strangers, KBag.Strange, heq, show j ≠ 0 by omega, show j + 1 ≠ 0 by omega,
     false_or, Nat.add_sub_cancel]
 
-/-- If `r` is native to `b`, then it is native to `b.parent`. -/
-theorem KBag.Native.parent {b : KBag br d} {r : Fin (br ^ d)}
-    {perm : Fin (br ^ d) → Fin (br ^ d)} (h : b.Native r perm)
-    (hl : 1 ≤ b.l) (hbr : 1 ≤ br) :
-    (b.parent hbr).Native r perm := by
-  simp only [KBag.Native, KBag.parent] at *
-  show nativeBagIdx br d (b.l - 1) (perm r).val = b.x / br
-  have hlk : (b.l - 1) + 1 ≤ d := by have := b.hl; omega
-  have hbl : (b.l - 1) + 1 = b.l := by omega
-  rw [← nativeBagIdx_div hbr hlk, hbl, h]
 end Chvatal

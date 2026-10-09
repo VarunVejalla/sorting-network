@@ -1,6 +1,6 @@
 # Sorting-network research index
 
-Local review: 2026-10-06. This index describes the checked-out sources, including
+Local review: 2026-10-09. This index describes the checked-out sources, including
 the local Paterson work, rather than just the upstream clone or September handoff.
 
 ## Objective and current result
@@ -10,7 +10,7 @@ The active target is a smaller upper bound on
 sorting-network depth. A constant for natural logarithms is the base-two constant
 divided by `ln 2`.
 
-The best complete endpoints are in
+The completed all-input-size Paterson endpoints are in
 [Bounds/PatersonTight](../AKS/Bounds/PatersonTight.lean):
 
 ```text
@@ -42,7 +42,9 @@ SortingDepth.limsup_minimum_div_logb_le_1830:
 `7 ≤ ⌈log₆₄ n⌉ ≤ 13` and Chvátal's network `Chvatal.chvatal_sorter_exists` beyond (depth
 `≤ totalDepth d = 6320 + (3d−21)·3660 + 903` on `64^d` wires, `d ≥ 14`), restricted to `n` wires. It
 follows DCS-TR-294 (`dcs-tr-294.pdf`). The Chvátal code is no longer part of the main `AKS`
-library; its shared basics (`Sort`, `Bitonic`, `Halver`, `Bags`) are copied into the folder. Before
+library; its shared basics (`Sort`, `Bitonic`, `Halver`, `Misc`) are copied into the folder.
+The repaired simplification passed its full build and headline axiom guards on 2026-10-08;
+see [BUILD_STATUS](../chvatal-1830/BUILD_STATUS.md). Before
 this, the best complete upper bound was Paterson's `6991·⌈log₂ n⌉` (above).
 
 ## Lower-bound endpoint

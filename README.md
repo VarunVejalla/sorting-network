@@ -14,34 +14,48 @@ The project builds on [Geoffrey Irving's AKS formalization](https://github.com/g
 in [Lean 4](https://lean-lang.org/) with
 [Mathlib](https://github.com/leanprover-community/mathlib4).
 
-## Current verified result
+## Current verified upper bound
 
-For every natural number `n`, Lean proves
+The strongest completed upper bound is the Chvátal construction in the separate
+[chvatal-1830 package](chvatal-1830/README.md). Lean proves
 
 ```text
-D(n) <= 6991 * Nat.clog 2 n.
-2 * D(n) <= 13981 * Nat.clog 2 n + 13979.
+D(n) <= 1830 * log_2 n - 58657   for n >= 64^7 = 2^42.
+limsup D(n)/log_2 n <= 1830.
 ```
 
-For `n >= 1`, `Nat.clog 2 n` is `ceil(log_2 n)`; the statements also cover
-`n = 0`. The sharper asymptotic result is
-
-$$
-\limsup_{n\to\infty}\frac{D(n)}{\log_2 n}\le 6990.5.
-$$
-
-Lean also proves `D(n) <= 7000 * log_2 n` for all sufficiently large `n`.
-An explicit sufficient condition is `n >= 2` and `log_2 n >= 1472`.
-
-The endpoints in [AKS/Bounds/PatersonTight.lean](AKS/Bounds/PatersonTight.lean) are:
+The theorem endpoints are
 
 ```lean
-SortingDepth.minimum_depth_le_6991
-SortingDepth.minimum_depth_double_le
-SortingDepth.limsup_minimum_div_logb_le_6990_5
-SortingDepth.minimum_depth_le_7000_logb
-SortingDepth.eventually_minimum_depth_le_7000_logb
+SortingDepth.minimum_depth_le_1830_logb
+SortingDepth.limsup_minimum_div_logb_le_1830
 ```
+
+See [Chvatal1830Final.lean](chvatal-1830/AKS/Bounds/Chvatal1830Final.lean).
+The proof includes the separators, tree scheduler, actual comparator execution,
+rank invariants, final block sorting, and the global depth calculation. It follows
+Chvátal's *Lecture Notes on the New AKS Sorting Network*, DCS-TR-294 (1992).
+Published arguments are formalized; paper results are not assumed as axioms.
+
+The verified pruning checkpoint passed the full package build and both
+headline axiom guards on 2026-10-09. See
+[the verification record](chvatal-1830/BUILD_STATUS.md).
+This reproduces a published construction; it is not a new published-record bound.
+
+### Bound for every input size
+
+The completed rounded Paterson construction remains available in the main package:
+
+```text
+D(n) <= 6991 * Nat.clog 2 n                  (every natural n).
+2 * D(n) <= 13981 * Nat.clog 2 n + 13979.
+limsup D(n)/log_2 n <= 6990.5.
+```
+
+For `n >= 1`, `Nat.clog 2 n` is `ceil(log_2 n)`; the finite statements also cover
+`n = 0`. See [PatersonTight.lean](AKS/Bounds/PatersonTight.lean).
+The older million-coefficient proof is retained in
+[Paterson.lean](AKS/Bounds/Paterson.lean).
 
 ## Verified lower bound
 
@@ -57,7 +71,7 @@ combinatorial ingredients and the connection to the repository's network depth.
 See [the lower-bound proof map](docs/kahale-lower-bound.md). Build it separately
 with `lake build AKS.Kahale`.
 
-## Completed rounded Paterson construction
+## Paterson construction details
 
 The proof uses the depth-989 five-level separator and a rounded bag allocation
 with `A = 19/4`, `mu = 199/10000`, `delta = 1/57`, and `nu = 707/1000`.
@@ -115,14 +129,25 @@ lake build AKS
 Use `lake build AKS` for the main formalization. The default `lake build` also
 includes optional certificate targets that can download multi-gigabyte data.
 
-The complete `AKS` build passed at the current mathematical milestone. The
-source audits found no `sorry`, declared axioms, or `native_decide` in `AKS/`.
+Build the strongest upper bound separately:
+
+```sh
+cd chvatal-1830
+lake build
+lake build AKS.Bounds.Chvatal1830Axioms
+```
+
+The main package and the Chvátal package have separate build roots and retain
+identical `AKS` module names. Building the main package does not check Chvátal.
+The latest verification above concerns the Chvátal package; earlier main-package
+verification is recorded in the research notes.
 
 ## Proof trust and reproducibility
 
 The main results depend only on Lean's standard `propext`, `Classical.choice`,
-and `Quot.sound` axioms. Guarded axiom checks for the new bound are in
-[AKS/Bounds/PatersonTightAxioms.lean](AKS/Bounds/PatersonTightAxioms.lean).
+and `Quot.sound` axioms. Guarded axiom checks are in
+[Chvatal1830Axioms.lean](chvatal-1830/AKS/Bounds/Chvatal1830Axioms.lean) and
+[PatersonTightAxioms.lean](AKS/Bounds/PatersonTightAxioms.lean).
 The main proof does not require the optional expander certificate data.
 
 The optional `Random/` certificate path has a separate trust boundary involving
@@ -141,7 +166,8 @@ index take precedence over historical handoff status reports.
 The inherited AKS, MGG, and Seiferas formalization is credited to the
 [upstream project](https://github.com/girving/aks). Local work extends it with
 Paterson halver proofs, explicit minimum-depth and asymptotic bounds, and the
-completed rounded bag construction.
+completed rounded bag construction, the Chvátal 1830 construction, and the Kahale
+lower-bound formalization.
 
 Principal mathematical sources:
 
@@ -150,6 +176,9 @@ Principal mathematical sources:
 - Paterson (1990), *Improved sorting networks with O(log N) depth*.
 - Margulis (1973) and Gabber, Galil (1981), explicit expander constructions.
 - Batcher (1968), *Sorting networks and their applications*.
+- Chvátal (1992), *Lecture Notes on the New AKS Sorting Network*, DCS-TR-294.
+- Kahale et al. (1995), the sorting-network depth lower bound; see
+  [the formalization notes](docs/kahale-lower-bound.md).
 
 Source discussions and proof-specific references are in the Lean modules and
 [docs/](docs/). This repository retains the upstream [Apache 2.0 license](LICENSE).

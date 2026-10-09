@@ -386,11 +386,6 @@ theorem RowScrambleNetwork.wirePerm_matrixRow {m n : Nat} (hn : 0 < n) {σ : Scr
   rw [hw, rs.perm_on_matrixWire (matrixRow m n hn w) (matrixCol m n hn w)]
   simp [matrixWire_row_col]
 
-/-- Sort columns, apply row scrambles, sort columns again (paper §5 separator shape). -/
-def sortScrambleSortNetwork (m n : Nat) (σ : Scramble m n)
-    (colSort : ColumnSortNetwork m n) (rowScramble : RowScrambleNetwork m n σ) :
-    ComparatorNetwork (m * n) :=
-  ⟨colSort.net.comparators ++ rowScramble.net.comparators ++ colSort.net.comparators⟩
 
 /-- Key at or above the largest-`i·n` block (Chvátal matrix Property B threshold). -/
 abbrev isAmongLargestKeysBlock {m n : Nat} (i : Nat) (key : Fin (m * n)) : Prop :=
@@ -457,10 +452,6 @@ def SortScrambleSortPack.colSort {m n : Nat} {hn : 0 < n} {σ : Scramble m n}
     (_pack : SortScrambleSortPack m n hn σ) : ColumnSortNetwork m n :=
   columnSortNetwork m n hn
 
-/-- Canonical sort–scramble–sort comparator network for a pack. -/
-def SortScrambleSortPack.net {m n : Nat} {hn : 0 < n} {σ : Scramble m n}
-    (p : SortScrambleSortPack m n hn σ) : ComparatorNetwork (m * n) :=
-  sortScrambleSortNetwork m n σ p.colSort p.rowScramble
 
 /-- Semantic middle stage: column sort then wire relabeling. -/
 def sortScrambleMiddleExec {m n : Nat} {σ : Scramble m n}

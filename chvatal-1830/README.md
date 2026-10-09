@@ -25,32 +25,41 @@ lake build
 ```
 
 The package shares the Mathlib checkout of the enclosing repository (`packagesDir := "../.lake/packages"`).
-Its own modules were verified to build with `lake build` (3025 jobs), which includes
-`AKS/Bounds/Chvatal1830Axioms.lean`: `#guard_msgs` checks that both headline theorems depend only on
-`propext`, `Classical.choice`, `Quot.sound`. A first build compiles the ~100 modules (about 30k lines).
+The promoted pruning checkpoint passed `lake build` (3009 jobs) and the explicit
+`AKS.Bounds.Chvatal1830Axioms` target (3008 jobs) on 2026-10-09. Both headline
+modules freshly compiled; their guarded axiom checks allow only `propext`,
+`Classical.choice`, and `Quot.sound`. See [BUILD_STATUS.md](BUILD_STATUS.md).
+
+The package contains **88 Lean files, 834 source declarations, and 13,872 physical
+lines**, including comments and whitespace. See
+[the source inventory](../docs/chvatal-proof-inventory.md) for the breakdown and
+further consolidation opportunities. The converged declaration graph contains 1,060 compiled declarations
+(943 reachable, 117 unreachable) and 8,603 distinct dependency
+edges. Generated helpers make this declaration count larger than the written
+source count. The deletion loop removed 20 written declarations and 136 lines;
+remaining candidates require proof changes rather than straightforward deletion.
 
 ## Layout
 
 `AKS/` holds the modules (names kept identical to the main repository). Besides `Chvatal/`, it contains
 only the shared basics the proof needs: `Sort/` (comparator networks, depth, 0-1 and permutation
-principles, untangling), `Bitonic/` (Batcher sorter and its depth), `Halver/` and `Bags/` (a few
-definitions/numerics), `Misc/Fin.lean`.
+principles, untangling), `Bitonic/` (Batcher sorter and its depth), `Halver/` (two shared modules), `Bounds/` (the minimum-depth definition,
+headline results, and guards), and `Misc/Fin.lean`.
 
 ### Proof map (`AKS/Chvatal/`)
 
-**A. Separators (paper §5–§6).** `Params`, `Theorem51(Core)`, `GeneralParams`, `GeneralSeparator`,
-`Lemma61`, `Lemma62*` (Chernoff, tops counting, tails, ratios, failure reduction, rounding),
-`Lemma63`, `PropertyBF`, `RowScramble`, `MatrixBridge`, `SortedColumnDecode`, `ModuleA*`,
-`PaperScrambleNumerics`, `PhysicalPack` (the physical sort–scramble–sort network),
+**A. Separators (paper §5–§6).** `Params`, `Theorem51Core`, `GeneralParams`, `GeneralSeparator`,
+`Lemma61`, `Lemma62*` (tops counting, tails, ratios, failure reduction, rounding),
+`Lemma63`, `RowScramble`, `MatrixBridge`, `SortedColumnDecode`, `ModuleA`, `PhysicalPack` (the physical sort–scramble–sort network),
 `PackSpec`, `FlipSpec`, `NodeSpec` (two-sided node guarantee), `NodeGeom` (geometry per node type),
 `SeparatorDepth`.
 
 **B. The tree network (paper §3–§4).** `Tree` (bags, outsiders), `FlowTable(7)`, `FlowSizes(7)`
-(integer flow table), `Schedule7`, `Scheduler*`, `SendSchedule`, `WireFlow`, `StageNet`,
+(integer flow table), `Schedule7`, `Scheduler*`, `WireFlow`, `StageNet`,
 `ExecPlacement` (execution-defined placement), `NodeKeys`, `StrangerBounds`,
 `Wires31`, `Lemma41Real`, `BadSendReal`, `FringeSendReal`, `OutsiderInvariant/Lemmas/Induction`,
-`StageKernel`, `StageDynamics`, `PlacementStep`, `RoutingFromP`, `SeparatorContract`,
-`ChildSend`, `StageCountsFill`, `AbstractPlacement`.
+`StageKernel`, `RoutingFromP`, `SeparatorContract`,
+`ChildSend`, `StageCountsFill`.
 
 **C. Assembly (paper §7).** `KernelSetup` (the invariant parameters `invariantReal`),
 `BadSendField`, `FringeSendField`, `RealKernel`, `RealNets` (per-node networks, `RealSpecs`),

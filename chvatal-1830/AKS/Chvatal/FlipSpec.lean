@@ -34,21 +34,6 @@ theorem card_filter_flip {m n : ℕ} (P : Scramble m n → Prop) [DecidablePred 
       (Finset.univ.filter fun σ : Scramble m n => ¬ P σ).card :=
   Finset.card_equiv (Function.Involutive.toPerm flipScramble flipScramble_flipScramble) (by simp)
 
-open Classical in
-/-- Pigeonhole: if fewer than half of all scrambles fail `P`, some `σ` has `P σ` and `P (flip σ)`. -/
-theorem exists_and_flip {m n : ℕ} (P : Scramble m n → Prop)
-    (h : 2 * (Finset.univ.filter fun σ : Scramble m n => ¬ P σ).card < Fintype.card (Scramble m n)) :
-    ∃ σ, P σ ∧ P (flipScramble σ) := by
-  by_contra hno
-  push_neg at hno
-  have hcover : (Finset.univ : Finset (Scramble m n)) ⊆
-      (Finset.univ.filter fun σ => ¬ P σ) ∪ Finset.univ.filter fun σ => ¬ P (flipScramble σ) := by
-    intro σ _
-    by_cases h1 : P σ <;> simp_all
-  have := (Finset.card_le_card hcover).trans (Finset.card_union_le _ _)
-  rw [card_filter_flip P] at this
-  simp only [Finset.card_univ] at this
-  omega
 
 open Classical in
 /-- Two-sided Properties B (pipeline) and F: `σ` and its flip both satisfy them. -/

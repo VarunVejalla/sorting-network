@@ -18,12 +18,6 @@ lemma card_filter_val_ge (n thresh : ℕ) (h : thresh ≤ n) :
   · obtain rfl := le_antisymm h (not_lt.1 ht)
     simp
 
-/-- Strict inequality from `≤` and `≠` for `Fin`. -/
-lemma Fin.lt_of_le_of_ne {n : ℕ} {a b : Fin n} (h1 : a ≤ b) (h2 : a ≠ b) : a < b :=
-  _root_.lt_of_le_of_ne h1 h2
 
-/-- The rank of an element: the number of strictly smaller elements. -/
-def rank {α : Type*} [Fintype α] [LinearOrder α] (a : α) : ℕ :=
-  (Finset.univ.filter (· < a)).card
 
 end

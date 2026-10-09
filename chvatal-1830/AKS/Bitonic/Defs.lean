@@ -29,14 +29,6 @@ def bitonicCompareLayer (k : Nat) : ComparatorNetwork (2^(k+1)) :=
 
 /-! **Wire Reversal (Flip)** -/
 
-/-- Reverse the wire order of a comparator network via `Fin.rev`.
-    Maps each comparator `(i, j)` to `(j.rev, i.rev)`, preserving the
-    `i < j` invariant since `i < j ↔ j.rev < i.rev`. -/
-def ComparatorNetwork.flip {n : Nat} (net : ComparatorNetwork n) : ComparatorNetwork n :=
-  { comparators := net.comparators.map fun c ↦
-      { i := c.j.rev
-        j := c.i.rev
-        h := Fin.rev_lt_rev.mpr c.h } }
 
 
 /-! **Bitonic Merge** -/
