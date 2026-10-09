@@ -11,10 +11,6 @@ public import AKS.Chvatal.StageKernel
 
 @[expose] public section
 
-/-! Shared setup for the real-network stage kernel: `RealSpecs` (every node that sends wires down
-runs a network meeting the Theorem 5.1 guarantee `NodeSpec` with `EB = ε_B a/2`, `Jmax = ⌊δ_F π/2⌋`,
-`ε_F = 1/(8·10^7)`), the invariant parameters `invariantReal`, and the two routing fields. -/
-
 namespace Chvatal
 
 /-- Intrusion budget `EB`: `ε_B·a/2`, with the root's exceptional `ε_*` at `t = 0`. -/
@@ -92,7 +88,7 @@ theorem fromParentK_eq_empty {d : ℕ} (hd : 7 ≤ d)
   rw [h0]
   exact Finset.filter_false_of_mem fun w _ h => by omega
 
-/-- Field shape of `StageKernel.hBadSend0` for the real network (`t ≥ 1` handled by callers). -/
+/-- BadSendField property definition. -/
 def BadSendField {d : ℕ} (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (ht : t ≤ tf7 d) : Prop :=
@@ -103,7 +99,7 @@ def BadSendField {d : ℕ} (hd : 7 ≤ d)
         invariantReal.epsB * capacity params7 d (b.l - 1) t +
         slackBound params7 d t b hb
 
-/-- Field shape of `StageKernel.hFringeSend` (with `fringeSent src := ε_F·src`). -/
+/-- FringeSendField property definition. -/
 def FringeSendField {d : ℕ} (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (ht : t ≤ tf7 d) : Prop :=

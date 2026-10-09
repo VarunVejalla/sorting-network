@@ -5,14 +5,11 @@ public import AKS.Chvatal.FlowSizes7
 
 @[expose] public section
 
-/-! Node geometry (B5c/A10, DCS-TR-294 §5/§7): every node that sends wires down and holds more
-than `2^64` wires runs the separator on an `m × n` matrix with `2^59 < m ≤ 2^60`; `nodeGeom_of_template`
-scales a template into this range and each node type of the `flowSizes7` schedule has one. -/
-
 namespace Chvatal
 
-/-- Geometry of the separator at a node with `a` wires, sending `up` wires to the parent
-and `down` wires to each child. -/
+/-! Node geometry: every node with >2^64 wires runs separator on m×n matrix with 2^59 < m ≤ 2^60. -/
+
+/-- Geometry of a separator node with `a` wires, `up` to parent, `down` to each child. -/
 structure NodeGeom (a up down : ℕ) where
   m : ℕ
   n : ℕ
@@ -26,8 +23,6 @@ structure NodeGeom (a up down : ℕ) where
   hm2 : m ≤ 2 ^ 60
   hn : 16 ≤ n
   hf : f = 0 ∨ (17 * 10 ^ 9 ≤ f ∧ Even f)
-
-/-! ## G1: generic scaling -/
 
 theorem nodeGeom_of_template (s m' f0 b0 : ℕ) (hm' : m' = 2 * f0 + 64 * b0)
     (hm'le : m' ≤ 2 ^ 37) (hm'pos : 0 < m') (hf0 : f0 = 0 ∨ 4095 * m' ≤ f0 * 2 ^ 37)
@@ -61,9 +56,6 @@ theorem nodeGeom_of_template (s m' f0 b0 : ℕ) (hm' : m' = 2 * f0 + 64 * b0)
       obtain ⟨h1, h2⟩ := scaled_fringe_big_ratio f0 m' r hm'pos hm'le h hr1
       exact ⟨by omega, h2⟩
 
-
-/-! ## G2: explicit sizes per node type (§7 schedule, `2 ≤ t < tf7 d`) -/
-
 theorem p64 (n : ℕ) : (64 : ℕ) ^ n = 2 ^ (6 * n) := by
   rw [show (64 : ℕ) = 2 ^ 6 by norm_num, ← pow_mul]
 
@@ -89,7 +81,6 @@ theorem nodeGeom_rise {a up down : ℕ} (f : ℕ) (ha : a = 64 ^ (6 + f))
   · rw [hu, p64, show 6 * (1 + f) = 6 * f + 6 by ring]; ring
   · rw [hdn, p64, show 6 * (1 + f) = 6 * f + 6 by ring]; norm_num; ring
 
-/-- Descending bottom node. -/
 theorem val_bot_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t < tf7 d) (i : ℕ)
     (hact : t ≤ tf7 d ∧ alpha7 d t ≤ i ∧ i ≤ omega7 d t ∧ i % 2 = t % 2)
     (hα : i ≠ alpha7 d t) (hω : i = omega7 d t) (hs : omega7 d t < omega7 d (t + 1)) :
@@ -152,15 +143,13 @@ theorem val_bot_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t 
       rw [pow_add, pow_add]; field_simp
     exact_mod_cast h2
 
-/-! ## G2: the node geometry for each node type -/
-
-/-- (T0) the root at `t = 0`. -/
+/-- (T0) Root at `t = 0`. -/
 theorem nodeGeom_T0 (d : ℕ) (hd : 7 ≤ d) (hbig : 2 ^ 64 < flowA7 d hd 0 0) :
     Nonempty (NodeGeom (flowA7 d hd 0 0) (flowUp7 d hd 0 0) (flowDown7 d hd 0 0)) := by
   obtain ⟨e, rfl⟩ : ∃ e, d = e + 1 := ⟨d - 1, by omega⟩
   exact nodeGeom_top e (by simp [flowA7]) (by simp [flowUp7]) (by simp [flowDown7]) hbig
 
-/-- (T1, `t = 1`) the level-1 node at `t = 1`. -/
+/-- (T1) Level-1 node at `t = 1`. -/
 theorem nodeGeom_T1_one (d : ℕ) (hd : 7 ≤ d) (hbig : 2 ^ 64 < flowA7 d hd 1 1) :
     Nonempty (NodeGeom (flowA7 d hd 1 1) (flowUp7 d hd 1 1) (flowDown7 d hd 1 1)) := by
   obtain ⟨e, rfl⟩ : ∃ e, d = e + 7 := ⟨d - 7, by omega⟩
@@ -170,7 +159,7 @@ theorem nodeGeom_T1_one (d : ℕ) (hd : 7 ≤ d) (hbig : 2 ^ 64 < flowA7 d hd 1 
   · simp [flowDown7]; rw [show (64 : ℕ) ^ (e + 5) = 64 ^ (1 + e) * 64 ^ 4 by ring]
     rw [show e + 1 = 1 + e by omega, ← Nat.mul_sub_one]; ring_nf
 
-/-- (T1', `t ≥ 2`) a descending top node: `a = c`, `up = 0`, `down = c/64`. -/
+/-- (T1') Descending top node (`t ≥ 2`): `up = 0`, `down = c/64`. -/
 theorem nodeGeom_T1_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t < tf7 d) (i : ℕ)
     (hact : t ≤ tf7 d ∧ alpha7 d t ≤ i ∧ i ≤ omega7 d t ∧ i % 2 = t % 2)
     (hα : i = alpha7 d t) (hs : alpha7 d t < alpha7 d (t + 1))
@@ -198,7 +187,7 @@ theorem nodeGeom_T1_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht 
   · rw [hu]; simp
   · rw [hdn]; simp [p64]
 
-/-- (T1, `t ≥ 2`) a rising top node: `a = c`, `up/2 = c/2^25`, `down = c(2^24-1)/2^30`. -/
+/-- (T1) Rising top node (`t ≥ 2`): `up/2 = c/2^25`. -/
 theorem nodeGeom_T1_rise (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t < tf7 d) (i : ℕ)
     (hact : t ≤ tf7 d ∧ alpha7 d t ≤ i ∧ i ≤ omega7 d t ∧ i % 2 = t % 2)
     (hα : i = alpha7 d t) (hs : alpha7 d (t + 1) < alpha7 d t)
@@ -230,7 +219,7 @@ theorem nodeGeom_T1_rise (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht 
   · rw [hu, p64, show 6 * (1 + f) = 6 * f + 6 by ring]; ring
   · rw [hdn, p64, show 6 * (1 + f) = 6 * f + 6 by ring]; norm_num; ring
 
-/-- (T2) an interior node: `a = c - c/2^36`, `up/2 = 4095 c/2^37`, `down = c(2^24-1)/2^30`. -/
+/-- (T2) Interior node: `a = c - c/2^36`. -/
 theorem nodeGeom_T2 (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t < tf7 d) (i : ℕ)
     (hact : t ≤ tf7 d ∧ alpha7 d t ≤ i ∧ i ≤ omega7 d t ∧ i % 2 = t % 2)
     (hα : i ≠ alpha7 d t) (hω : i ≠ omega7 d t)
@@ -266,8 +255,7 @@ theorem nodeGeom_T2 (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t <
   · rw [hu]; simp only [p64]; ring
   · rw [hdn]; simp only [p64]; ring
 
-/-- (T3) a descending bottom node: `up` as interior, `a = 64^(d-l) - c/2^36`,
-`down = 64^(d-l-1) - 64^(e-5)`; `down > 0` is needed (it fails exactly when `down = 0`). -/
+/-- (T3) Descending bottom node. -/
 theorem nodeGeom_T3 (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t < tf7 d) (i : ℕ)
     (hact : t ≤ tf7 d ∧ alpha7 d t ≤ i ∧ i ≤ omega7 d t ∧ i % 2 = t % 2)
     (hα : i ≠ alpha7 d t) (hω : i = omega7 d t) (hs : omega7 d t < omega7 d (t + 1))
@@ -314,8 +302,7 @@ theorem nodeGeom_T3 (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t <
     norm_num
     ring
 
-/-- **B5c geometry (A10).** Every node of the §7 schedule that sends wires down and holds more
-than `2^64` wires carries a separator geometry. -/
+/-- **B5c (A10):** Every node with >2^64 wires and down>0 carries separator geometry. -/
 theorem nodeGeom_exists (d : ℕ) (hd : 7 ≤ d) (l t : ℕ) (hdown : 0 < flowDown7 d hd l t)
     (hbig : 2 ^ 64 < flowA7 d hd l t) (ht : t < tf7 d) :
     Nonempty (NodeGeom (flowA7 d hd l t) (flowUp7 d hd l t) (flowDown7 d hd l t)) := by

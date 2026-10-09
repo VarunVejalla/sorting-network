@@ -1,20 +1,5 @@
 module
 
-/-
-  # Node networks of the real tree network, and `RealSpecs` (A11 + B5c core)
-
-  * `castNet`: transport a comparator network along `n = n'`.
-  * `NodeSpec_of_sorts`: a fully sorting network meets `NodeSpec` (small bags, A11).
-  * `packNodeSpec`: `NodeSpec` for `physicalPackNet` from the two-sided semantic Properties B/F.
-  * `nodeGood_exists`: every node with `down > 0` has a network that meets `NodeSpec` with the
-    `specEB`/`specJmax` budgets and has depth `≤ 3660` (`≤ 6320` at the root `t = 0`).
-    Cases: small bag (`a ≤ 2^64`) `bitonicNetwork a`; root `t = 0` the `m = 2^79` pack with
-    `ε_*`; ordinary node the pack of its `NodeGeom` with a two-sided scramble.
-  * `realNets`: the node network family (`Classical.choose`d from `nodeGood_exists`'s predicate,
-    empty where `down = 0`), `realNets_specs : RealSpecs _ (realNets d hd)` and
-    `realNets_depth_le`.
--/
-
 public import AKS.Chvatal.KernelSetup
 public import AKS.Chvatal.PackSpec
 public import AKS.Chvatal.FlipSpec
@@ -27,16 +12,9 @@ public import AKS.Bitonic.TightDepth
 
 namespace Chvatal
 
-/-! ## 1. Casting networks -/
-
-/-- Transport a comparator network along `n = n'`. -/
 def castNet {n n' : ℕ} (h : n = n') (net : ComparatorNetwork n) : ComparatorNetwork n' := by
   subst h; exact net
 
-
-
-
-/-! ## 2. Sorting networks meet `NodeSpec` -/
 
 theorem exec_eq_self_of_sorts {a : ℕ} (net : ComparatorNetwork a) (hs : ComparatorNetwork.Sorts.{0} net)
     (x : Equiv.Perm (Fin a)) (c : Fin a) : net.exec (x : Fin a → Fin a) c = c := by
@@ -105,8 +83,6 @@ theorem NodeSpec_of_sorts {a : ℕ} (π τ : ℕ) (net : ComparatorNetwork a) (h
     have : (0 : ℝ) < j := by exact_mod_cast hj
     simpa using mul_pos hε this
 
-/-! ## 3. `NodeSpec` of a physical pack from two-sided semantic Properties B/F -/
-
 theorem hasPackSemanticPropertyF_zero {m n : ℕ} (hn : 0 < n) {σ : Scramble m n}
     (pack : SortScrambleSortPack m n hn σ) (hfm : 0 ≤ m) (deltaF epsF : ℝ) :
     HasPackSemanticPropertyF hn pack 0 hfm deltaF epsF := by
@@ -154,8 +130,6 @@ theorem packNodeSpec {m n f b : ℕ} (hn : 0 < n) (σ : Scramble m n)
   · intro x j hj hjJ hja
     exact hL.2 x j hj (hconv j hjJ)
 
-/-! ## 4. Depth bounds -/
-
 theorem pack_depth_le (m n : ℕ) (hn : 0 < n) (σ : Scramble m n) (k : ℕ) (hm : m ≤ 2 ^ k) :
     (physicalPackNet m n hn σ).depth ≤ k * (k + 1) := by
   refine (physicalPackNet_depth_le_budget m n hn σ).trans ?_
@@ -175,9 +149,7 @@ theorem bitonic_depth_le_small (a : ℕ) (h : a ≤ 2 ^ 64) : (bitonicNetwork a)
   have : bitonicDepthBudget 64 = 2080 := by rw [bitonicDepthBudget_eq]
   omega
 
-/-! ## 5. Existence of a good node network -/
-
-/-- Depth budget of a node network: `2·(79·80/2)` at the root, `2·(60·61/2)` elsewhere. -/
+/-- Depth budget of a node network. -/
 def depthBound (t : ℕ) : ℕ := if t = 0 then 6320 else 3660
 
 /-- The node network `net` of a node with `a` wires (`up` to the parent, `down` to each child)
@@ -274,10 +246,7 @@ theorem nodeGood_exists (d : ℕ) (hd : 7 ≤ d) (hd14 : 14 ≤ d) (t l : ℕ) (
     obtain ⟨G⟩ := nodeGeom_exists d hd l t hdown hbig ht
     exact nodeGood_geom t _ _ _ (by omega) G
 
-/-! ## 6. The node network family -/
-
 open scoped Classical in
-/-- The chosen good network of node `(l, t)` (empty if none exists). -/
 noncomputable def nodeNetOf (d : ℕ) (hd : 7 ≤ d) (t l : ℕ) :
     ComparatorNetwork ((flowSizes7 d hd).a l t) :=
   if hex : ∃ net : ComparatorNetwork ((flowSizes7 d hd).a l t),
@@ -285,9 +254,7 @@ noncomputable def nodeNetOf (d : ℕ) (hd : 7 ≤ d) (t l : ℕ) :
         ((flowSizes7 d hd).down l t) net then hex.choose else ⟨[]⟩
 
 open scoped Classical in
-/-- The real tree network's node networks: at a node with `down > 0` and `n` equal to its actual
-size, the chosen good network (small bag: `bitonicNetwork`; root: the `2^79`-row pack; ordinary:
-the pack of its `NodeGeom` with a two-sided scramble); empty elsewhere. -/
+/-- Real tree node networks (empty where down = 0). -/
 noncomputable def realNets (d : ℕ) (hd : 7 ≤ d) :
     ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n :=
   fun t b n =>

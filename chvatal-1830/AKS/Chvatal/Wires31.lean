@@ -1,8 +1,5 @@
 module
 
-/- Scalar facts about the §7 sizes for the real Lemmas 4.1/4.2: total mass, parity, Lemma 3.1
-   (`hwires7`), per-node-type `τ`/`π`/`Δ₂` identities and the slack inequality. -/
-
 public import AKS.Chvatal.FlowSizes7
 public import AKS.Chvatal.NodeGeom
 public import AKS.Chvatal.SchedulerLemmas
@@ -132,7 +129,7 @@ theorem hwires7 (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t ≤ t
     rw [this] at hsplit
     linarith
 
-/-- `hwires` in exactly the shape consumed by `keys_below_child_le` (`p = params7`). -/
+/-- `hwires` lemma for use in keys_below_child_le. -/
 theorem hwires7_real (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t ≤ tf7 d) (i : ℕ)
     (hα : alpha7 d t ≤ i) (hω : i < omega7 d t) (hpar : i % 2 = t % 2) :
     (∑ l ∈ Finset.Ioc i d, ((params7.br : ℕ) : ℚ) ^ (l - i - 1) *
@@ -142,13 +139,12 @@ theorem hwires7_real (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t 
   rw [params7_br]
   exact hwires7 d hd t ht2 ht i hα hω hpar
 
-/-- `Δ₂ = ν c / (A k²)` at `params7`. -/
 def delta2_7 (c : ℚ) : ℚ := params7.nu / (params7.A * ((params7.br : ℕ) : ℚ) ^ 2) * c
 
 theorem delta2_7_eq (c : ℚ) : delta2_7 c = c / 2 ^ 30 := by
   unfold delta2_7; norm_num [params7]; ring
 
-/-- Descending top node: `π = 0`, `τ = c/64`. -/
+/-- Descending top node. -/
 theorem tau_top_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t < tf7 d) (i : ℕ)
     (hact : t ≤ tf7 d ∧ alpha7 d t ≤ i ∧ i ≤ omega7 d t ∧ i % 2 = t % 2)
     (hα : i = alpha7 d t) (hs : alpha7 d t < alpha7 d (t + 1)) :
@@ -161,7 +157,7 @@ theorem tau_top_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t 
   · rw [cast_flowDown7 d hd i t ht2 ht,
       flowDown_top_desc params7 d (levelSchedule7 d hd) hact hα hs, params7_br]
 
-/-- Rising top node: `π = ν c/(A k)`, `τ = c/64 - Δ₂`. -/
+/-- Rising top node. -/
 theorem tau_top_rise (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t < tf7 d) (i : ℕ)
     (hact : t ≤ tf7 d ∧ alpha7 d t ≤ i ∧ i ≤ omega7 d t ∧ i % 2 = t % 2)
     (hα : i = alpha7 d t) (hs : alpha7 d (t + 1) < alpha7 d t) :
@@ -180,7 +176,7 @@ theorem tau_top_rise (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t 
     simp only [params7]; push_cast
     field_simp
 
-/-- Interior node: `π = (A ν k - 1) c / Q`, `τ = c/64 - Δ₂`. -/
+/-- Interior node. -/
 theorem tau_mid (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t < tf7 d) (i : ℕ)
     (hact : t ≤ tf7 d ∧ alpha7 d t ≤ i ∧ i ≤ omega7 d t ∧ i % 2 = t % 2)
     (hα : i ≠ alpha7 d t) (hω : i ≠ omega7 d t) :
@@ -196,7 +192,7 @@ theorem tau_mid (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t < tf7
     simp only [params7]; push_cast
     field_simp
 
-/-- Descending bottom node: `π = (A ν k - 1) c / Q`, `τ + Δ₂ = 64^(d-i-1)`. -/
+/-- Descending bottom node. -/
 theorem tau_bot_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t < tf7 d) (i : ℕ)
     (hact : t ≤ tf7 d ∧ alpha7 d t ≤ i ∧ i ≤ omega7 d t ∧ i % 2 = t % 2)
     (hα : i ≠ alpha7 d t) (hω : i = omega7 d t) (hs : omega7 d t < omega7 d (t + 1)) :
@@ -218,7 +214,7 @@ theorem tau_bot_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t 
 theorem slackCoeff7_nonneg : 0 ≤ slackCoeff params7 := by
   unfold slackCoeff; norm_num [params7]
 
-/-- Rising top: `ρ = Δ₂ + μ·sib·c`, `π = ν c/(A k)`. -/
+/-- Rising top node slack inequality. -/
 theorem slack_top_rise (ip : InvariantParams) (c : ℚ) (hc : 0 ≤ c) :
     (((params7.br : ℕ) : ℚ) - 1) * (delta2_7 c + ip.mu * siblingFactor params7 ip * c) -
         (params7.nu * c / (params7.A * 64)) / 2 ≤
@@ -229,7 +225,7 @@ theorem slack_top_rise (ip : InvariantParams) (c : ℚ) (hc : 0 ≤ c) :
   norm_num [params7]
   linarith
 
-/-- Interior: `ρ = Δ₂ + μ·sib·c`, `π = (A ν k - 1) c / Q` (equality). -/
+/-- Interior node slack equality. -/
 theorem slack_mid (ip : InvariantParams) (c : ℚ) :
     (((params7.br : ℕ) : ℚ) - 1) * (delta2_7 c + ip.mu * siblingFactor params7 ip * c) -
         ((params7.A * params7.nu * 64 - 1) * c / capacityRatio params7) / 2 =

@@ -7,8 +7,6 @@ public import Mathlib.Analysis.Complex.ExponentialBounds
 
 @[expose] public section
 
-/-! The real-network `BadSendField` (Chvátal, Lemma 4.2 order 0 and §7): `badSendField_real`. -/
-
 namespace Chvatal
 
 open Finset
@@ -94,8 +92,7 @@ def BadSendAt {d : ℕ} (hd : 7 ≤ d)
       invariantReal.epsB * capacity params7 d (b.l - 1) t +
       slackBound params7 d t b hb
 
-/-- Node shapes (`π = 0`; rising top; interior/bottom-desc) reduce `BadSendAt` to a Lemma 4.1
-bound `hM` with the matching `ρ`; uses `bad_send0_real`. -/
+/-- Node shapes reduce `BadSendAt` to a Lemma 4.1 bound with matching `ρ`. -/
 theorem badSend_shape {d : ℕ} (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (hspecs : RealSpecs hd nets) (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (ht1 : 1 ≤ t)
@@ -172,7 +169,7 @@ theorem badSend_shape {d : ℕ} (hd : 7 ≤ d)
     (br_ge_one params7) : ℕ) : ℝ)) + _ + _ + _
   linarith
 
-/-- Lemma 4.1 (`keys_below_child_le`) for an occupied node `q` with `α ≤ q.l < ω`, `t ≥ 2`. -/
+/-- Lemma 4.1 for occupied node. -/
 theorem hM_keys {d : ℕ} (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (ht2 : 2 ≤ t) (htt : t ≤ tf7 d)
@@ -190,7 +187,7 @@ theorem hM_keys {d : ℕ} (hd : 7 ≤ d)
     delta_sq_lt_one q hq j' (hwires7_real d hd t ht2 htt q.l hα hω hpar) hpar
   rwa [params7_br] at h
 
-/-- The trivial Lemma 4.1 bound `k^(d-l-1)`. -/
+/-- Trivial Lemma 4.1 bound. -/
 theorem hM_pow {d : ℕ} (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (htt : t ≤ tf7 d)
@@ -200,7 +197,7 @@ theorem hM_pow {d : ℕ} (hd : 7 ≤ d)
   have h := keys_below_child_le_pow params7 d (execPlacement (flowSizes7 d hd) nets v t htt) q hq j'
   exact_mod_cast h
 
-/-- At `t = 1` the level-1 node has the rising-top sizes, with `τ + Δ₂ = 64^(d-2)`. -/
+/-- At `t = 1` level-1 node has rising-top sizes. -/
 theorem t1_vals (d : ℕ) (hd : 7 ≤ d) :
     ((flowUp7 d hd 1 1 : ℕ) : ℚ) =
         params7.nu * capacity params7 d 1 1 / (params7.A * 64) ∧
@@ -218,7 +215,7 @@ theorem t1_vals (d : ℕ) (hd : 7 ≤ d) :
   push_cast
   constructor <;> ring
 
-/-- **`BadSendField` for the real network** (Lemma 4.2, order 0, §7 schedule). -/
+/-- **BadSendField for real network** (Lemma 4.2, order 0). -/
 theorem badSendField_real {d : ℕ} (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (hspecs : RealSpecs hd nets) (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (ht1 : 1 ≤ t)

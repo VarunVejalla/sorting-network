@@ -1,5 +1,5 @@
 module
-public import AKS.Chvatal.FlowSizes
+public import AKS.Chvatal.FlowSizes7
 
 @[expose] public section
 

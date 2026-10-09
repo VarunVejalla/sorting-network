@@ -8,11 +8,6 @@ public import AKS.Chvatal.OutsiderInduction
 
 @[expose] public section
 
-/-! The fringe-send field of the real stage kernel (Chvátal Lemma 4.4 parent part, condition (4.4)):
-`fringeSendField_real`.  `fringe_send_real` needs `strangers r q ≤ Jmax = ⌊δ_F π/2⌋`: for nodes with
-`π > 0` this follows from the invariant `strangers r ≤ μ c` and (4.4); at descending top nodes
-(`π = 0`) the capacity is `≤ 2^30`, so `μ c < 1` and there are no outsiders. -/
-
 namespace Chvatal
 
 open Finset
@@ -28,7 +23,7 @@ theorem jmax_of_le (n π : ℕ) (c : ℚ)
   push_cast at h4
   exact h4
 
-/-- Interior / bottom-descending / top-rising nodes: `π ≥ (Aνk−1)c/Q` gives `μ c ≤ ½ δ_F π`. -/
+/-- Nodes with high π: upper bound on mu times capacity. -/
 theorem mu_le_of_up_lower (c : ℚ) (hc : 0 ≤ c) (π : ℕ)
     (hπ : 4095 * c / 68719476736 ≤ (π : ℚ)) :
     invariantReal.mu * c ≤ (1 / 2) * (128 / 4095 : ℚ) * (π : ℚ) := by
@@ -61,8 +56,7 @@ theorem up_rise_ge (c : ℚ) (hc : 0 ≤ c) :
     4095 * c / 68719476736 ≤ params7.nu * c / (params7.A * 64) := by
   norm_num [params7]; linarith
 
-/-- For `t ≥ 2`: a node that sends wires down is either a descending top node, or has
-`π ≥ (Aνk−1)c/Q`. -/
+/-- Nodes sending wires down have either low up or high capacity. -/
 theorem up_lower_or_top_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t < tf7 d)
     (i : ℕ) (hdown : 0 < flowDown7 d hd i t) :
     (i = alpha7 d t ∧ alpha7 d t < alpha7 d (t + 1)) ∨
@@ -98,7 +92,7 @@ theorem up_lower_or_top_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) 
     · rw [(tau_mid d hd t ht2 ht i hact' hi hω).1]
       exact up_mid_ge _
 
-/-- At `t = 1` only the level-1 node sends wires down, with `π = 64^(d-5)`, `c = 64^(d-1)`. -/
+/-- At `t = 1`: only level-1 node sends wires down. -/
 theorem up_lower_one (d : ℕ) (hd : 7 ≤ d) (i : ℕ) (hdown : 0 < flowDown7 d hd i 1) :
     4095 * capacity params7 d i 1 / 68719476736 ≤ (flowUp7 d hd i 1 : ℚ) := by
   obtain rfl : i = 1 := by
@@ -113,8 +107,7 @@ theorem up_lower_one (d : ℕ) (hd : 7 ≤ d) (i : ℕ) (hdown : 0 < flowDown7 d
   have : (0 : ℚ) ≤ 64 ^ (e + 2) := by positivity
   norm_num; nlinarith
 
-/-- Descending top nodes have no outsiders of any order `r ≥ 1`: either the node is the root,
-or its capacity is `≤ 2^30` so `μ c < 1`. -/
+/-- Descending top nodes have no outsiders. -/
 theorem top_desc_no_strangers {d : ℕ} (hd : 7 ≤ d) (t : ℕ) (pl : Placement params7.br d)
     (hP : OutsiderBoundLe params7 invariantReal d (levelSchedule7 d hd) t pl id)
     (q : KBag 64 d) (r : ℕ) (hr1 : 1 ≤ r) (hrd : r ≤ d)
@@ -133,7 +126,7 @@ theorem top_desc_no_strangers {d : ℕ} (hd : 7 ≤ d) (t : ℕ) (pl : Placement
   have : ((q.strangers r id (pl.regs q) (br_ge_one params7) : ℕ) : ℚ) < 1 := by linarith
   exact_mod_cast Nat.lt_one_iff.mp (by exact_mod_cast this)
 
-/-- The `Jmax` hypothesis of `fringe_send_real`, for every node that sends wires down. -/
+/-- `Jmax` hypothesis for nodes sending wires down. -/
 theorem jmax_ok {d : ℕ} (hd : 7 ≤ d) (t : ℕ) (ht1 : 1 ≤ t) (ht : t < tf7 d)
     (pl : Placement params7.br d)
     (hP : OutsiderBoundLe params7 invariantReal d (levelSchedule7 d hd) t pl id)
@@ -153,7 +146,7 @@ theorem jmax_ok {d : ℕ} (hd : 7 ≤ d) (t : ℕ) (ht1 : 1 ≤ t) (ht : t < tf7
     · rw [top_desc_no_strangers hd t pl hP q r hr1 hrd hq hs]; exact Nat.zero_le _
     · exact key h
 
-/-- **Fringe send field of the real stage kernel** (Chvátal, Lemma 4.4 parent part). -/
+/-- **Fringe send field** (Chvátal, Lemma 4.4 parent). -/
 theorem fringeSendField_real {d : ℕ} (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (hspecs : RealSpecs hd nets) (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (ht1 : 1 ≤ t)

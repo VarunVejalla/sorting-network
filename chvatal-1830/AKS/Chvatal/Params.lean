@@ -64,10 +64,4 @@ def invariant7 : InvariantParams where
 
 
 
-
-
-
-
-
-
 end Chvatal
