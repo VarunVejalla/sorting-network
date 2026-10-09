@@ -2,7 +2,6 @@ module
 
 public import AKS.Chvatal.KernelSetup
 public import AKS.Chvatal.StrangerBounds
-public import AKS.Chvatal.StageCountsFill
 
 @[expose] public section
 
@@ -23,16 +22,6 @@ noncomputable def realPlacementStep {d : ℕ} (hd : 7 ≤ d)
     rw [execPlacement_succ_regs (flowSizes7 d hd) nets v t ht b hb]
     exact Finset.Subset.refl _
 
-/-- Real local separator quality at the paper budgets. -/
-noncomputable def realParentSep (d t : ℕ) (b : KBag 64 d) : LocalSeparatorQuality invariantReal where
-  a := capacity params7 d (b.l - 1) t
-  ha_pos := capacity_pos _ _ _ _
-  ha_le := fun _ => True
-  intrusion := invariantReal.epsB * capacity params7 d (b.l - 1) t
-  hIntrusion := le_refl _
-  fringeSent := fun src => invariantReal.epsF * src
-  hFringe := fun _ => le_refl _
-
 noncomputable def realStageKernel {d : ℕ} (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (ht : t + 1 ≤ tf7 d)
@@ -45,15 +34,8 @@ noncomputable def realStageKernel {d : ℕ} (hd : 7 ≤ d)
       (execPlacement (flowSizes7 d hd) nets v (t + 1) ht) id where
   ht := ht
   step := realPlacementStep hd nets v t ht
-  counts := stageCounts_on_schedule params7 invariantReal d (levelSchedule7 d hd) t
-  counts_wires := stageCounts_on_schedule_wires params7 invariantReal d (levelSchedule7 d hd) t
-  counts_bad := stageCounts_on_schedule_bad params7 invariantReal d (levelSchedule7 d hd) t
-  parentSep b _ := realParentSep d t b
-  ha_le_cap b hb := le_refl _
-  slack0 b hb := slackBound params7 d t b hb
-  hSlack0 b hb := le_refl _
-  hBadSend0 b hb := by simpa [realParentSep, realPlacementStep] using hBad b hb
-  hFringeSend b r hr1 hrd hb := by simpa [realParentSep, realPlacementStep] using hFringe b r hr1 hrd hb
+  hBadSend0 b hb := hBad b hb
+  hFringeSend b r hr1 hrd hb := hFringe b r hr1 hrd hb
   hFromChildren0 b hb :=
     hFromChildren0_of_subset params7 invariantReal d (levelSchedule7 d hd) t _ hP b hb
       (fromChildrenK (flowSizes7 d hd) nets v t b)

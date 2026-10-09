@@ -24,28 +24,17 @@ structure StageKernel (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
     (perm' : Fin (p.br ^ d) → Fin (p.br ^ d)) where
   ht : t + 1 ≤ sched.tf
   step : PlacementStep p d pl pl'
-  counts : ∀ i, sched.alpha t ≤ i → i < sched.omega t → StageCounts p d i t
-  counts_wires : ∀ i (ha : sched.alpha t ≤ i) (ho : i < sched.omega t),
-    (counts i ha ho).WiresMassForm p d i t
-  counts_bad : ∀ i (ha : sched.alpha t ≤ i) (ho : i < sched.omega t),
-    (counts i ha ho).BadBound p ip d i t
-  parentSep : ∀ (b : KBag p.br d), 1 ≤ b.l → LocalSeparatorQuality ip
-  ha_le_cap : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
-    (parentSep b hb).a ≤ capacity p d (b.l - 1) t
-  slack0 : ∀ (b : KBag p.br d), 1 ≤ b.l → Rat
-  hSlack0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
-    slack0 b hb ≤ slackCoeff p * capacity p d (b.l - 1) t
   /-- Order-0 bad keys in the parent-send Finset ≤ parent outsiders + sibling budget +
       intrusion + slack. -/
   hBadSend0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
     ((b.strangers 1 perm' (step.fromParent b hb) (br_ge_one p) : Rat)) ≤
       parentOutMass p d pl perm b hb +
-        sibMassBound p ip d t b hb +
-        (parentSep b hb).intrusion + slack0 b hb
+        sibMassBound p ip d t b hb + ip.epsB * capacity p d (b.l - 1) t +
+        slackBound p d t b hb
   hFringeSend : ∀ (b : KBag p.br d) (r : Nat)
       (_hr1 : 1 ≤ r) (_hrd : r ≤ d) (hb : 1 ≤ b.l),
     ((b.strangers (r + 1) perm' (step.fromParent b hb) (br_ge_one p) : Rat)) ≤
-      (parentSep b hb).fringeSent
+      ip.epsF *
         ((b.parent (br_ge_one p)).strangers r perm
           (pl.regs (b.parent (br_ge_one p))) (br_ge_one p) : Rat)
   hFromChildren0 : ∀ (b : KBag p.br d) (hb : 1 ≤ b.l),
@@ -86,18 +75,16 @@ theorem outsiderBound_step_of_kernel (p : ScheduleParams) (ip : InvariantParams)
   · subst hr0
     have hpar : parentOutMass p d pl perm b hb ≤ ip.mu * capacity p d (b.l - 1) t := by
       simpa [parentOutMass] using hP (b.parent hbr) 0 (Nat.zero_le d)
-    have hint := ((K.parentSep b hb).hIntrusion).trans
-      (mul_le_mul_of_nonneg_left (K.ha_le_cap b hb) ip.hepsB_nonneg)
     have h := cond42_scaled p ip _ hc h42
     have h1 := K.hBadSend0 b hb
     unfold sibMassBound at h1
+    unfold slackBound at h1
     simp only [pow_zero, mul_one]
-    linarith [K.hFromChildren0 b hb, K.hSlack0 b hb]
+    linarith [K.hFromChildren0 b hb]
   · have hr1 : 1 ≤ r := by omega
     have hsrc := hP (b.parent hbr) (r - 1) (by omega)
     rw [Nat.sub_add_cancel hr1, show (b.parent hbr).l = b.l - 1 from rfl] at hsrc
-    have hf := ((K.parentSep b hb).hFringe _).trans
-      (mul_le_mul_of_nonneg_left hsrc ip.hepsF_nonneg)
+    have hf := mul_le_mul_of_nonneg_left hsrc ip.hepsF_nonneg
     have h := cond45_scaled p ip _ hc r hr1 h45
     linarith [K.hFringeSend b r hr1 hr hb, K.hFromChildrenR b r hr1 hr hb]
 

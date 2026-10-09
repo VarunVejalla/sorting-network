@@ -1,7 +1,7 @@
 module
 -- Chvátal §4 Lemmas 4.2-4.4: algebraic cores
 
-public import AKS.Chvatal.SeparatorContract
+public import AKS.Chvatal.OutsiderInvariant
 
 @[expose] public section
 
