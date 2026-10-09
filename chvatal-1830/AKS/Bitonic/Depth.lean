@@ -78,7 +78,7 @@ lemma shiftEmbed_wires_range {m : Nat} (net : ComparatorNetwork m)
     (c : Comparator n) (hc : c ∈ (net.shiftEmbed n offset h).comparators) :
     offset ≤ c.i.val ∧ c.i.val < offset + m ∧
     offset ≤ c.j.val ∧ c.j.val < offset + m := by
-  simp only [ComparatorNetwork.shiftEmbed, List.mem_map] at hc
+  simp only [ComparatorNetwork.shiftEmbed, ComparatorNetwork.scatterEmbed, List.mem_map] at hc
   obtain ⟨c₀, _, rfl⟩ := hc
   refine ⟨?_, ?_, ?_, ?_⟩
   · show offset ≤ offset + c₀.i.val; omega

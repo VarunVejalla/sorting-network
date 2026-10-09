@@ -99,10 +99,7 @@ theorem round_event {m n f : ℕ} (hf : Even f) (hfm : f ≤ m) (hfbig : 17 * 10
     have : (j' : ℝ) ≤ m * n := by nlinarith
     exact_mod_cast this
   have hparams : Lemma62Params n (f : ℝ) (j' : ℝ) := ⟨hn, hfR, hjR.trans_le hjj', hj'f⟩
-  have hf2 : ((f / 2 : ℕ) : ℝ) = (f : ℝ) / 2 := by
-    obtain ⟨k, hk⟩ := hf
-    subst hk
-    push_cast [show (k + k) / 2 = k by omega]; ring
+  have hf2 := cast_half_of_even hf
   unfold fringeColumnEventBad at hbad
   rw [← hf2] at hbad
   have hlt : f / 2 * S.card < onesAboveHalfFringe hf c σ S := by

@@ -1,13 +1,6 @@
 module
-/-
-  # Chvatal §4 stage kernel and one-step preservation of `P`
-
-  Source: V. Chvatal, DCS-TR-294 (1992), §4.
-
-  `StageKernel` is the combinatorial interface of one stage (placement cover, separator quality,
-  schedule slack, send bounds, level 0); under `SeparatorConds` and `P`, the outsider bound
-  advances one stage.
--/
+-- Chvátal §4: `StageKernel` is the one-stage combinatorial interface; under `SeparatorConds` and `P`
+-- the outsider bound advances one stage.
 
 public import AKS.Chvatal.RoutingFromP
 
@@ -26,10 +19,8 @@ def slackBound (p : ScheduleParams) (d t : Nat)
   slackCoeff p * capacity p d (b.l - 1) t
 
 structure StageKernel (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
-    (sched : LevelSchedule p d) (t : Nat)
-    (pl : Placement p.br d)
-    (perm : Fin (p.br ^ d) → Fin (p.br ^ d))
-    (pl' : Placement p.br d)
+    (sched : LevelSchedule p d) (t : Nat) (pl : Placement p.br d)
+    (perm : Fin (p.br ^ d) → Fin (p.br ^ d)) (pl' : Placement p.br d)
     (perm' : Fin (p.br ^ d) → Fin (p.br ^ d)) where
   ht : t + 1 ≤ sched.tf
   step : PlacementStep p d pl pl'
@@ -72,8 +63,7 @@ structure StageKernel (p : ScheduleParams) (ip : InvariantParams) (d : Nat)
 
 /-- One-step preservation under the stage kernel: `P(t)` + conds + kernel ⇒ `P(t+1)`. -/
 theorem outsiderBound_step_of_kernel (p : ScheduleParams) (ip : InvariantParams)
-    (d : Nat) (sched : LevelSchedule p d) (t : Nat)
-    (pl pl' : Placement p.br d)
+    (d : Nat) (sched : LevelSchedule p d) (t : Nat) (pl pl' : Placement p.br d)
     (perm perm' : Fin (p.br ^ d) → Fin (p.br ^ d))
     (hconds : SeparatorConds p ip)
     (hP : OutsiderBoundLe p ip d sched t pl perm)

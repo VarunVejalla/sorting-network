@@ -1,9 +1,5 @@
 module
-/-
-  # Chvatal Lemma 4.1 count bundle (algebraic fill)
-
-  Source: V. Chvatal, DCS-TR-294 (1992), §4 Lemma 4.1.
--/
+-- Chvátal Lemma 4.1 count bundle (algebraic fill)
 
 public import AKS.Chvatal.OutsiderLemmas
 

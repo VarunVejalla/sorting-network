@@ -1,6 +1,6 @@
 module
 
-public import AKS.Chvatal.Lemma63
+public import AKS.Chvatal.Lemma62
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Analysis.SpecialFunctions.Log.Basic
 
@@ -134,10 +134,6 @@ noncomputable def tailBadSet {m n : Nat} (c : MonotoneColumnSums m n) (R : Finse
   classical
   exact Finset.univ.filter fun σ =>
     ∃ S ∈ (Finset.univ : Finset (Fin n)).powersetCard s, T ≤ (onesInRows c σ R S : ℝ)
-
-/-- The rows strictly above the bottom `h` rows (the "top `m - h` rows"). -/
-def topRows (m h : Nat) : Finset (Fin m) :=
-  Finset.univ.filter fun r => r.val < m - h
 
 /-- **S2** (union bound over the `C(n,s)` column sets, top rows): for `j = totalColumnOnes c ≥ 1`,
 `h = f/2` and `T ≥ j s / n`: `p(s) ≤ C(n,s) (e j s / (n T))^T`. -/

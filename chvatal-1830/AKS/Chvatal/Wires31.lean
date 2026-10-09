@@ -1,15 +1,7 @@
 module
 
-/-
-  # Scalar facts about the §7 sizes needed by the real Lemmas 4.1/4.2 (H3)
-
-  * `total_mass`: `∑ 64^l a(l,t) = 64^d` for any `FlowSizes`;
-  * `hpar7`: only levels with `l ≡ t (mod 2)` are occupied;
-  * `hwires7`: Lemma 3.1 in the form used by `keys_below_child_le`
-    (`∑_{l>i} 64^(l-i-1) a_l = (64^d/64^i - c(i,t))/64`, for `α t ≤ i < ω t`);
-  * per-node-type identities between `τ`, `π`, `Δ₂ = ν c/(A k²)` and `c`, and the slack inequality
-    used for Lemma 4.2.
--/
+/- Scalar facts about the §7 sizes for the real Lemmas 4.1/4.2: total mass, parity, Lemma 3.1
+   (`hwires7`), per-node-type `τ`/`π`/`Δ₂` identities and the slack inequality. -/
 
 public import AKS.Chvatal.FlowSizes7
 public import AKS.Chvatal.NodeGeom
@@ -21,8 +13,6 @@ public import AKS.Chvatal.OutsiderLemmas
 namespace Chvatal
 
 open Finset
-
-/-! ## (a) total mass -/
 
 theorem total_mass {d tf : ℕ} (F : FlowSizes d tf) :
     ∀ t, t ≤ tf → (∑ l ∈ range (d + 1), 64 ^ l * F.a l t) = 64 ^ d := by
@@ -68,8 +58,6 @@ theorem total_mass {d tf : ℕ} (F : FlowSizes d tf) :
       simp
     rw [h1, h2]; ring
 
-/-! ## (b) parity -/
-
 theorem hpar7 (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht1 : 1 ≤ t) (ht : t ≤ tf7 d) :
     ∀ l, l % 2 ≠ t % 2 → (flowSizes7 d hd).a l t = 0 := by
   intro l hl
@@ -84,8 +72,6 @@ theorem hpar7 (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht1 : 1 ≤ t) (ht : t ≤ tf7
       show ¬(t ≤ tf7 d ∧ alpha7 d t ≤ l ∧ l ≤ omega7 d t ∧ l % 2 = t % 2)
       omega)] at hc
     exact_mod_cast hc
-
-/-! ## (c) Lemma 3.1 for `flowSizes7` -/
 
 theorem params7_br : ((params7.br : ℕ) : ℚ) = 64 := by norm_num [params7]
 
@@ -146,7 +132,6 @@ theorem hwires7 (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t ≤ t
     rw [this] at hsplit
     linarith
 
-
 /-- `hwires` in exactly the shape consumed by `keys_below_child_le` (`p = params7`). -/
 theorem hwires7_real (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t ≤ tf7 d) (i : ℕ)
     (hα : alpha7 d t ≤ i) (hω : i < omega7 d t) (hpar : i % 2 = t % 2) :
@@ -156,9 +141,6 @@ theorem hwires7_real (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t 
         ((params7.br : ℕ) : ℚ) := by
   rw [params7_br]
   exact hwires7 d hd t ht2 ht i hα hω hpar
-
-
-/-! ## (d) `τ`, `π`, `Δ₂` per node type -/
 
 /-- `Δ₂ = ν c / (A k²)` at `params7`. -/
 def delta2_7 (c : ℚ) : ℚ := params7.nu / (params7.A * ((params7.br : ℕ) : ℚ) ^ 2) * c
@@ -233,11 +215,8 @@ theorem tau_bot_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t 
     rw [pow_add, pow_add]
     ring
 
-/-! ## (e) the slack inequality -/
-
 theorem slackCoeff7_nonneg : 0 ≤ slackCoeff params7 := by
   unfold slackCoeff; norm_num [params7]
-
 
 /-- Rising top: `ρ = Δ₂ + μ·sib·c`, `π = ν c/(A k)`. -/
 theorem slack_top_rise (ip : InvariantParams) (c : ℚ) (hc : 0 ≤ c) :
@@ -266,6 +245,5 @@ theorem slack_mid (ip : InvariantParams) (c : ℚ) :
   unfold delta2_7
   rw [params7_br]
   linarith
-
 
 end Chvatal

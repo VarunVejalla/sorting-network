@@ -1,12 +1,9 @@
 module
-/-
-  # Chvatal §4 children-send helpers
-
-  Source: V. Chvatal, DCS-TR-294 (1992), §4 (Lemmas 4.3-4.4 children terms).
--/
+-- Chvátal §4 children-send helpers (Lemmas 4.3-4.4 children terms)
 
 public import AKS.Chvatal.StageKernel
-public import AKS.Chvatal.SendSchedule
+public import AKS.Chvatal.Scheduler
+public import Mathlib.Tactic.Positivity
 
 @[expose] public section
 
@@ -15,10 +12,8 @@ namespace Chvatal
 open Finset
 
 /-- Stranger count on a `biUnion` is at most the sum of the counts. -/
-theorem strangers_biUnion_le (p : ScheduleParams) (d : Nat)
-    (b : KBag p.br d) (j : Nat)
-    (perm : Fin (p.br ^ d) → Fin (p.br ^ d))
-    (f : Fin p.br → Finset (Fin (p.br ^ d))) :
+theorem strangers_biUnion_le (p : ScheduleParams) (d : Nat) (b : KBag p.br d) (j : Nat)
+    (perm : Fin (p.br ^ d) → Fin (p.br ^ d)) (f : Fin p.br → Finset (Fin (p.br ^ d))) :
     (b.strangers j perm ((univ : Finset (Fin p.br)).biUnion f) (br_ge_one p) : Nat) ≤
       ∑ i : Fin p.br, b.strangers j perm (f i) (br_ge_one p) := by
   classical
@@ -26,12 +21,9 @@ theorem strangers_biUnion_le (p : ScheduleParams) (d : Nat)
   exact card_biUnion_le
 
 /-- On any set, order-`j` outsiders at a parent equal order-`(j+1)` at a child. -/
-theorem strangers_child_eq (p : ScheduleParams) (d : Nat)
-    (b : KBag p.br d) (hbd : b.l < d) (j : Nat) (hj : 1 ≤ j)
-    (childIdx : Fin p.br)
-    (perm : Fin (p.br ^ d) → Fin (p.br ^ d))
-    (S : Finset (Fin (p.br ^ d)))
-    (hbr : 1 ≤ p.br := br_ge_one p) :
+theorem strangers_child_eq (p : ScheduleParams) (d : Nat) (b : KBag p.br d) (hbd : b.l < d)
+    (j : Nat) (hj : 1 ≤ j) (childIdx : Fin p.br) (perm : Fin (p.br ^ d) → Fin (p.br ^ d))
+    (S : Finset (Fin (p.br ^ d))) (hbr : 1 ≤ p.br := br_ge_one p) :
     b.strangers j perm S hbr =
       (b.child childIdx.val childIdx.isLt hbd).strangers (j + 1) perm S hbr := by
   have h := KBag.strangers_parent_eq (b.child childIdx.val childIdx.isLt hbd) j hj

@@ -33,7 +33,7 @@ theorem flowA7_tf (l : ℕ) :
       have := alpha7_parity d (tf7 d)
       rw [alpha7_tf d hd] at this
       simpa [meetLevel7] using this
-    rw [ha, ho]
+    simp only [Active, ha, ho]
     by_cases hl : l = d - 6
     · subst hl
       have hc' : capacity params7 d (d - 6) (tf7 d) = ((64 ^ 6 : ℕ) : ℚ) := by

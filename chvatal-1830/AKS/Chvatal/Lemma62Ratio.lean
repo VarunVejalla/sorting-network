@@ -20,31 +20,26 @@ two-sided sum `∑_{s=1}^n g(s) ≤ (1+e^-5)/(1-e^-5)·G1(b)` and `C(n,s)(e j s/
 
 namespace Chvatal
 
-/-- `ε_F = 1/(8·10^7)`. -/
 noncomputable def eps : ℝ := 1 / (8 * 10 ^ 7)
 
 lemma eps_pos : 0 < eps := by unfold eps; positivity
 
-/-- `b = 2 ε j / f`. -/
 noncomputable def bpt (f j : ℝ) : ℝ := 2 * (eps * j) / f
 
-/-- `G1(s) = (e n/s)^s (e s/(ε n))^{ε j}`. -/
+/-- `G1(s) = (e n/s)^s (e s/(ε n))^{ε j}` and `G2(s) = (e n/s)^s (2 e j/(f n))^{f s/2}`
+(majorants of the per-`s` tail), with logarithms `L1`, `L2`. -/
 noncomputable def G1 (N j x : ℝ) : ℝ :=
   (Real.exp 1 * N / x) ^ x * (Real.exp 1 * x / (eps * N)) ^ (eps * j)
 
-/-- `G2(s) = (e n/s)^s (2 e j/(f n))^{f s/2}`. -/
 noncomputable def G2 (N f j x : ℝ) : ℝ :=
   (Real.exp 1 * N / x) ^ x * (2 * Real.exp 1 * j / (f * N)) ^ (f * x / 2)
 
-/-- `ln G1`. -/
 noncomputable def L1 (N j x : ℝ) : ℝ :=
   x * (1 + Real.log N - Real.log x) + eps * j * (1 + Real.log x - Real.log eps - Real.log N)
 
-/-- `ln G2`. -/
 noncomputable def L2 (N f j x : ℝ) : ℝ :=
   x * (1 + Real.log N - Real.log x) + f * x / 2 * Real.log (2 * Real.exp 1 * j / (f * N))
 
-/-- Parameter range of Lemma 6.2 (claim (i)). -/
 structure Lemma62Params (n : ℕ) (f j : ℝ) : Prop where
   hn : 16 ≤ n
   hf : 17 * 10 ^ 9 ≤ f
@@ -54,9 +49,8 @@ structure Lemma62Params (n : ℕ) (f j : ℝ) : Prop where
 lemma Lemma62Params.f_pos {n : ℕ} {f j : ℝ} (P : Lemma62Params n f j) : 0 < f :=
   lt_of_lt_of_le (by norm_num) P.hf
 
-lemma Lemma62Params.N_pos {n : ℕ} {f j : ℝ} (P : Lemma62Params n f j) : (0 : ℝ) < n := by
-  have := P.hn
-  exact_mod_cast (by omega : 0 < n)
+lemma Lemma62Params.N_pos {n : ℕ} {f j : ℝ} (P : Lemma62Params n f j) : (0 : ℝ) < n :=
+  Nat.cast_pos.2 (by have := P.hn; omega)
 
 lemma G1_eq_exp (N j x : ℝ) (hN : 0 < N) (hx : 0 < x) : G1 N j x = Real.exp (L1 N j x) := by
   have := eps_pos
@@ -81,8 +75,7 @@ lemma G2_eq_exp (N f j x : ℝ) (hN : 0 < N) (hx : 0 < x) (hf : 0 < f) (hj : 0 <
 
 lemma G1_nonneg (N j x : ℝ) (hN : 0 ≤ N) (hx : 0 ≤ x) : 0 ≤ G1 N j x := by
   have := eps_pos
-  unfold G1
-  positivity
+  unfold G1; positivity
 
 lemma hasDerivAt_xlog (A x : ℝ) (hx : 0 < x) :
     HasDerivAt (fun t => t * (A - Real.log t)) (A - 1 - Real.log x) x := by
@@ -92,7 +85,6 @@ lemma hasDerivAt_xlog (A x : ℝ) (hx : 0 < x) :
   field_simp
   ring
 
-/-- Monotonicity from a derivative sign on the open interval. -/
 lemma le_of_deriv_nonneg_aux {F F' : ℝ → ℝ} {a x y : ℝ}
     (hd : ∀ t, a < t → HasDerivAt F (F' t) t) (hx : a < x) (hxy : x ≤ y)
     (hpos : ∀ t, x < t → t < y → 0 ≤ F' t) : F x ≤ F y := by
@@ -229,7 +221,6 @@ lemma G2_step {n : ℕ} {f j : ℝ} (P : Lemma62Params n f j) {x y : ℝ}
       linarith
   linarith
 
-/-- `G1(b) = G2(b)` at the breakpoint `b = 2εj/f`. -/
 lemma G1_bpt_eq_G2_bpt {n : ℕ} {f j : ℝ} (P : Lemma62Params n f j) :
     G1 n j (bpt f j) = G2 n f j (bpt f j) := by
   have hf := P.f_pos
@@ -257,7 +248,7 @@ lemma gfun_nonneg {n : ℕ} {f j : ℝ} (P : Lemma62Params n f j) (s : ℕ) : 0 
   split_ifs <;> positivity
 
 lemma exp_neg5_pos_lt : 0 < Real.exp (-5) ∧ Real.exp (-5) < 1 :=
-  ⟨Real.exp_pos _, by rw [← Real.exp_zero]; exact Real.exp_lt_exp.mpr (by norm_num)⟩
+  ⟨Real.exp_pos _, by simp⟩
 
 /-- `∑_{s=1}^n g(s) ≤ (1+e^-5)/(1-e^-5) · G1(b)`. -/
 theorem gfun_sum_le_G1 {n : ℕ} {f j : ℝ} (P : Lemma62Params n f j) :

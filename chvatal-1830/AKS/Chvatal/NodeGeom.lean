@@ -72,6 +72,23 @@ theorem omega7_bounds (d t : ℕ) (ht2 : 2 ≤ t) : t + 2 ≤ 3 * omega7 d t ∧
   unfold ceilParity omegaStarLower
   split_ifs <;> omega
 
+theorem nodeGeom_top {a up down : ℕ} (g : ℕ) (ha : a = 64 ^ (g + 1)) (hu : up = 0)
+    (hdn : down = 64 ^ g) (hbig : 2 ^ 64 < a) : Nonempty (NodeGeom a up down) := by
+  refine nodeGeom_of_template (6 * g) 64 0 1 (by norm_num) (by norm_num) (by norm_num)
+    (Or.inl rfl) _ _ _ ?_ ?_ ?_ hbig
+  · rw [ha, pow_succ, p64]
+  · rw [hu]; simp
+  · rw [hdn]; simp [p64]
+
+theorem nodeGeom_rise {a up down : ℕ} (f : ℕ) (ha : a = 64 ^ (6 + f))
+    (hu : up = 2 * (32 * 64 ^ (1 + f))) (hdn : down = 16777215 * 64 ^ (1 + f))
+    (hbig : 2 ^ 64 < a) : Nonempty (NodeGeom a up down) := by
+  refine nodeGeom_of_template (6 * f + 6) (2 ^ 30) 32 (2 ^ 24 - 1) (by norm_num) (by norm_num)
+    (by norm_num) (Or.inr (by norm_num)) _ _ _ ?_ ?_ ?_ hbig
+  · rw [ha, p64, show 6 * (6 + f) = 6 * f + 6 + 30 by ring, pow_add]
+  · rw [hu, p64, show 6 * (1 + f) = 6 * f + 6 by ring]; ring
+  · rw [hdn, p64, show 6 * (1 + f) = 6 * f + 6 by ring]; norm_num; ring
+
 /-- Descending bottom node. -/
 theorem val_bot_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t < tf7 d) (i : ℕ)
     (hact : t ≤ tf7 d ∧ alpha7 d t ≤ i ∧ i ≤ omega7 d t ∧ i % 2 = t % 2)
@@ -140,33 +157,18 @@ theorem val_bot_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t 
 /-- (T0) the root at `t = 0`. -/
 theorem nodeGeom_T0 (d : ℕ) (hd : 7 ≤ d) (hbig : 2 ^ 64 < flowA7 d hd 0 0) :
     Nonempty (NodeGeom (flowA7 d hd 0 0) (flowUp7 d hd 0 0) (flowDown7 d hd 0 0)) := by
-  obtain ⟨e, he⟩ : ∃ e, d = e + 1 := ⟨d - 1, by omega⟩
-  have ha : flowA7 d hd 0 0 = 64 ^ d := by simp [flowA7]
-  have hu : flowUp7 d hd 0 0 = 0 := by simp [flowUp7]
-  have hdn : flowDown7 d hd 0 0 = 64 ^ (d - 1) := by simp [flowDown7]
-  refine nodeGeom_of_template (6 * e) 64 0 1 (by norm_num) (by norm_num) (by norm_num)
-    (Or.inl rfl) _ _ _ ?_ ?_ ?_ hbig
-  · rw [ha, he, pow_succ, p64]
-  · rw [hu]; simp
-  · rw [hdn, he]; simp [p64]
+  obtain ⟨e, rfl⟩ : ∃ e, d = e + 1 := ⟨d - 1, by omega⟩
+  exact nodeGeom_top e (by simp [flowA7]) (by simp [flowUp7]) (by simp [flowDown7]) hbig
 
 /-- (T1, `t = 1`) the level-1 node at `t = 1`. -/
 theorem nodeGeom_T1_one (d : ℕ) (hd : 7 ≤ d) (hbig : 2 ^ 64 < flowA7 d hd 1 1) :
     Nonempty (NodeGeom (flowA7 d hd 1 1) (flowUp7 d hd 1 1) (flowDown7 d hd 1 1)) := by
-  obtain ⟨e, he⟩ : ∃ e, d = e + 7 := ⟨d - 7, by omega⟩
-  have ha : flowA7 d hd 1 1 = 64 ^ (e + 6) := by
-    simp [flowA7, he]
-  have hu : flowUp7 d hd 1 1 = 64 ^ (e + 2) := by simp [flowUp7, he]
-  have hdn : flowDown7 d hd 1 1 = 64 ^ (e + 5) - 64 ^ (e + 1) := by simp [flowDown7, he]
-  refine nodeGeom_of_template (6 * e + 6) (2 ^ 30) 32 (2 ^ 24 - 1) (by norm_num) (by norm_num)
-    (by norm_num) (Or.inr (by norm_num)) _ _ _ ?_ ?_ ?_ hbig
-  · rw [ha, p64, show 6 * (e + 6) = 6 * e + 6 + 30 by ring, pow_add]
-  · rw [hu, p64]; rw [show 6 * (e + 2) = 6 * e + 6 + 6 by ring]; ring
-  · rw [hdn]
-    apply Nat.sub_eq_of_eq_add
-    simp only [p64]
-    norm_num
-    ring
+  obtain ⟨e, rfl⟩ : ∃ e, d = e + 7 := ⟨d - 7, by omega⟩
+  refine nodeGeom_rise e ?_ ?_ ?_ hbig
+  · simp [flowA7, add_comm]
+  · simp [flowUp7]; ring
+  · simp [flowDown7]; rw [show (64 : ℕ) ^ (e + 5) = 64 ^ (1 + e) * 64 ^ 4 by ring]
+    rw [show e + 1 = 1 + e by omega, ← Nat.mul_sub_one]; ring_nf
 
 /-- (T1', `t ≥ 2`) a descending top node: `a = c`, `up = 0`, `down = c/64`. -/
 theorem nodeGeom_T1_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t < tf7 d) (i : ℕ)

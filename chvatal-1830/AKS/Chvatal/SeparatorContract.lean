@@ -1,9 +1,5 @@
 module
-/-
-  # Chvatal §4 separator quality and Lemma 4.1 count interface
-
-  Source: V. Chvatal, DCS-TR-294 (1992), §4-§5.
--/
+-- Chvátal §4 separator quality and Lemma 4.1 count interface
 
 public import AKS.Chvatal.OutsiderInvariant
 

@@ -20,21 +20,6 @@ public import AKS.Chvatal.FlowTable7
 
 namespace Chvatal
 
-theorem capacity_params7 (d i t e : ℕ) (h : d + 2 * i = t + 2 + e) :
-    capacity params7 d i t = ((64 ^ e : ℕ) : ℚ) := by
-  have h1 : capacity params7 d i t = (64 : ℚ) ^ (d + 2 * i) / 64 ^ (t + 2) := by
-    unfold capacity params7
-    simp only [Nat.cast_pow]
-    push_cast
-    rw [pow_add, pow_mul]
-    field_simp
-    rw [one_div, inv_pow, pow_add]
-    field_simp
-    ring
-  rw [h1, h, pow_add]
-  push_cast
-  field_simp
-
 theorem capacityRatio_params7 : capacityRatio params7 = (64 : ℚ) ^ 6 := by
   unfold capacityRatio params7; norm_num
 

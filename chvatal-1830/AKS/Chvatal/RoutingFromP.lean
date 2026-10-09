@@ -1,9 +1,5 @@
 module
-/-
-  # Chvatal §4 placement step
-
-  Source: V. Chvatal, DCS-TR-294 (1992), §4.
--/
+-- Chvátal §4 placement step
 
 public import AKS.Chvatal.OutsiderInduction
 
@@ -32,10 +28,8 @@ theorem PlacementStep.strangers_split_le {p : ScheduleParams} {d : Nat}
     (b.strangers_union_le j perm' _ _ (br_ge_one p))
 
 /-- Parent order-0 outsider mass at time `t`. -/
-def parentOutMass (p : ScheduleParams) (d : Nat)
-    (pl : Placement p.br d)
-    (perm : Fin (p.br ^ d) → Fin (p.br ^ d))
-    (b : KBag p.br d) (_hb : 1 ≤ b.l) : Rat :=
+def parentOutMass (p : ScheduleParams) (d : Nat) (pl : Placement p.br d)
+    (perm : Fin (p.br ^ d) → Fin (p.br ^ d)) (b : KBag p.br d) (_hb : 1 ≤ b.l) : Rat :=
   ((b.parent (br_ge_one p)).strangers 1 perm
     (pl.regs (b.parent (br_ge_one p))) (br_ge_one p) : Rat)
 

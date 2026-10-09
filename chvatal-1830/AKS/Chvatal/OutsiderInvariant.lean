@@ -1,9 +1,5 @@
 module
-/-
-  # Chvatal §4 outsider invariant parameters and conditions (4.1)-(4.5)
-
-  Source: V. Chvatal, DCS-TR-294 (1992), §4. Paper "outsider of order `r`" is `KBag.Strange (r+1)`.
--/
+-- Chvátal §4 outsider invariant parameters and conditions (4.1)-(4.5); "outsider of order `r`" is `KBag.Strange (r+1)`.
 
 public import AKS.Chvatal.Scheduler
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
@@ -17,9 +13,7 @@ public import Mathlib.Tactic.Ring
 
 namespace Chvatal
 
-open Finset
-
-/-- Scalar parameters of the §4 outsider bound (paper §7: `mu = 2^{-30}`, `delta = 2^{-16}`, ...). -/
+/-- Scalar parameters of the §4 outsider bound. -/
 structure InvariantParams where
   mu : Rat
   delta : Rat
@@ -36,22 +30,17 @@ structure InvariantParams where
   hdeltaF_lt : deltaF < 1
   hepsStar_nonneg : 0 ≤ epsStar
 
-namespace InvariantParams
+theorem InvariantParams.mu_nonneg (ip : InvariantParams) : (0 : Rat) ≤ ip.mu := ip.hmu_pos.le
 
-variable (ip : InvariantParams)
-
-theorem mu_nonneg : (0 : Rat) ≤ ip.mu := ip.hmu_pos.le
-
-theorem delta_nonneg : (0 : Rat) ≤ ip.delta := ip.hdelta_pos.le
-
-end InvariantParams
+theorem InvariantParams.delta_nonneg (ip : InvariantParams) : (0 : Rat) ≤ ip.delta :=
+  ip.hdelta_pos.le
 
 /-- Geometric factor of Lemmas 4.1-4.3: `δ k A² / (1 - δ² k² A²)`. -/
 def siblingFactor (p : ScheduleParams) (ip : InvariantParams) : Rat :=
   ip.delta * (p.br : Rat) * p.A ^ 2 /
     (1 - ip.delta ^ 2 * (p.br : Rat) ^ 2 * p.A ^ 2)
 
-/-- Lemma 4.2 residual `(k-1)Δ₂ - π/2` as a coefficient of `c`: `(A ν k - 2 A ν + 1) / (2 A² k²)`. -/
+/-- Lemma 4.2 residual `(k-1)Δ₂ - π/2` as a coefficient of `c`. -/
 def slackCoeff (p : ScheduleParams) : Rat :=
   (p.A * p.nu * (p.br : Rat) - 2 * p.A * p.nu + 1) /
     (2 * p.A ^ 2 * (p.br : Rat) ^ 2)
@@ -60,8 +49,7 @@ def slackCoeff (p : ScheduleParams) : Rat :=
 def Cond41 (p : ScheduleParams) (ip : InvariantParams) : Prop :=
   ip.epsStar ≤ ip.mu / (p.br : Rat)
 
-/-- §4 (4.2): first-outsider budget through one stage. The last term `μ δ A k / ν` counts
-    order-1 outsiders arriving from the `k` children (worst case, no fair density). -/
+/-- §4 (4.2): first-outsider budget through one stage. -/
 def Cond42 (p : ScheduleParams) (ip : InvariantParams) : Prop :=
   (ip.mu + (p.br - 1 : Rat) * ip.mu * siblingFactor p ip +
       slackCoeff p + ip.epsB) /

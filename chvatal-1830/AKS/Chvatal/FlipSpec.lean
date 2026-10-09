@@ -1,29 +1,19 @@
 module
-/-
-  # Two-sided node guarantee: the flipped scramble and flip symmetry (A13)
-
-  A node's separator guarantee must be two-sided: the block `B_j` can be polluted by keys
-  that are too large AND too small. Lean's semantic Properties B/F count only the largest
-  keys. The smallest-key statements follow by symmetry: reversing key order and cell order
-  (row-major `cellRev w = m·n-1-w`) turns the scramble `σ` into the flipped scramble
-  `flipScramble σ` (row `r` is row `m-1-r` of `σ` conjugated by the column reversal).
-
-  Contents: `flipScramble` (involution), flip equivariance of the semantic and physical
-  executions (needs only that the column sorter sorts and permutes each column),
-  `packSpec_low` (low-side `NodeSpec` parts), and two-sided existence of scrambles
-  by pigeonhole.
--/
-
 public import AKS.Chvatal.PackSpec
 public import AKS.Chvatal.GeneralSeparator
 public import AKS.Chvatal.ExecPlacement
 public import Mathlib.Data.Fin.Tuple.Sort
 
+/-! # Two-sided node guarantee: the flipped scramble and flip symmetry
+
+Reversing key order and cell order turns the scramble `σ` into `flipScramble σ`; the smallest-key
+statements follow from the largest-key ones by this symmetry. Contents: `flipScramble`, flip
+equivariance of the semantic and physical executions, `packSpec_low`, and two-sided existence of
+scrambles by pigeonhole. -/
+
 @[expose] public section
 
 namespace Chvatal
-
-/-! ## 1. The flipped scramble -/
 
 /-- Flipped scramble: row `r` is row `m-1-r` of `σ`, conjugated by column reversal. -/
 def flipScramble {m n : ℕ} (σ : Scramble m n) : Scramble m n :=
@@ -38,30 +28,27 @@ theorem flipScramble_flipScramble {m n : ℕ} (σ : Scramble m n) :
   ext j
   simp [flipScramble_apply]
 
-/-- `flipScramble` as a bijection of `Scramble m n`. -/
-def flipScrambleEquiv (m n : ℕ) : Scramble m n ≃ Scramble m n where
-  toFun := flipScramble
-  invFun := flipScramble
-  left_inv := flipScramble_flipScramble
-  right_inv := flipScramble_flipScramble
-
-theorem flipScramble_injective {m n : ℕ} : Function.Injective (flipScramble (m := m) (n := n)) :=
-  (flipScrambleEquiv m n).injective
-
 /-- The flip preserves the cardinality of any failure set. -/
 theorem card_filter_flip {m n : ℕ} (P : Scramble m n → Prop) [DecidablePred P] :
     (Finset.univ.filter fun σ : Scramble m n => ¬ P (flipScramble σ)).card =
-      (Finset.univ.filter fun σ : Scramble m n => ¬ P σ).card := by
-  refine Finset.card_bij (fun σ _ => flipScramble σ) ?_ ?_ ?_
-  · intro σ hσ
-    simpa using hσ
-  · intro a _ b _ h
-    exact flipScramble_injective h
-  · intro τ hτ
-    refine ⟨flipScramble τ, ?_, flipScramble_flipScramble τ⟩
-    simpa [flipScramble_flipScramble] using hτ
+      (Finset.univ.filter fun σ : Scramble m n => ¬ P σ).card :=
+  Finset.card_equiv (Function.Involutive.toPerm flipScramble flipScramble_flipScramble) (by simp)
 
-/-! ## 4. Two-sided existence (combinatorial) -/
+open Classical in
+/-- Pigeonhole: if fewer than half of all scrambles fail `P`, some `σ` has `P σ` and `P (flip σ)`. -/
+theorem exists_and_flip {m n : ℕ} (P : Scramble m n → Prop)
+    (h : 2 * (Finset.univ.filter fun σ : Scramble m n => ¬ P σ).card < Fintype.card (Scramble m n)) :
+    ∃ σ, P σ ∧ P (flipScramble σ) := by
+  by_contra hno
+  push_neg at hno
+  have hcover : (Finset.univ : Finset (Scramble m n)) ⊆
+      (Finset.univ.filter fun σ => ¬ P σ) ∪ Finset.univ.filter fun σ => ¬ P (flipScramble σ) := by
+    intro σ _
+    by_cases h1 : P σ <;> simp_all
+  have := (Finset.card_le_card hcover).trans (Finset.card_union_le _ _)
+  rw [card_filter_flip P] at this
+  simp only [Finset.card_univ] at this
+  omega
 
 open Classical in
 /-- Two-sided Properties B (pipeline) and F: `σ` and its flip both satisfy them. -/
@@ -323,8 +310,6 @@ theorem physicalPackNet_flip {m n : ℕ} (hn : 0 < n) (σ : Scramble m n)
 /-- The flip of a permutation of keys (a permutation again). -/
 def flipPerm {N : ℕ} (x : Equiv.Perm (Fin N)) : Equiv.Perm (Fin N) :=
   Fin.revPerm * x * Fin.revPerm
-
-
 
 /-! ## 3. Low-side node guarantee -/
 

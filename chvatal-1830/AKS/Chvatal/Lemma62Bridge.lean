@@ -27,7 +27,7 @@ theorem onesAboveHalfFringe_eq_sum_aboveBottomRows {m n f : Nat} (hf : Even f)
   simp_rw [h1]
   rw [Finset.sum_comm]
   refine Finset.sum_congr rfl fun col _ => ?_
-  unfold scrambledColSumInAboveBottomRows aboveHalfFringeRows
+  unfold scrambledColSumInAboveBottomRows topRows
   rw [Finset.card_filter, Finset.sum_filter, ← Finset.sum_filter, ← Finset.card_filter,
     Finset.sum_boole]
   congr 1
@@ -75,10 +75,7 @@ theorem HasPackSemanticPropertyF.of_paperF {m n f : ℕ} {hf : Even f} (hn : 0 <
     · rfl
     · omega
   have hkey := onesAboveHalfFringe_ge_sum_excess hf hfm cMark σ S
-  have hf2 : ((f / 2 : ℕ) : ℝ) = (f : ℝ) / 2 := by
-    obtain ⟨k, hk⟩ := hf
-    subst hk
-    push_cast [show (k + k) / 2 = k by omega]; ring
+  have hf2 := cast_half_of_even hf
   have hfe : f = 2 * (f / 2) := by obtain ⟨k, hk⟩ := hf; omega
   have hsum2 : ∑ col ∈ S, (scrambledColSum cMark σ col - f / 2) =
       onesAboveBottom cMark σ f + (f / 2) * S.card := by

@@ -1,10 +1,5 @@
 module
-/-
-  # Comparator Network Definitions
-
-  Core definitions for comparator networks: comparators, networks, execution,
-  embedding, injectivity preservation, and asymptotic notation.
--/
+/- Comparator network definitions: comparators, networks, execution, embeddings. -/
 
 public import AKS.Misc.Fin
 
@@ -16,11 +11,7 @@ public import Mathlib.Topology.Order.Basic
 
 @[expose] public section
 
-
 open Finset BigOperators
-
-
-/-! **Comparator Networks** -/
 
 /-- A comparator on `n` wires swaps positions `i` and `j` if out of order. -/
 structure Comparator (n : ℕ) where
@@ -40,58 +31,40 @@ def Comparator.apply {n : ℕ} {α : Type*} [LinearOrder α]
 @[ext] structure ComparatorNetwork (n : ℕ) where
   comparators : List (Comparator n)
 
-/-- The size of a network is the total number of comparators. -/
-def ComparatorNetwork.size {n : ℕ} (net : ComparatorNetwork n) : ℕ :=
-  net.comparators.length
-
 /-- Execute an entire comparator network on an input vector. -/
 def ComparatorNetwork.exec {n : ℕ} {α : Type*} [LinearOrder α]
     (net : ComparatorNetwork n) (v : Fin n → α) : Fin n → α :=
   net.comparators.foldl (fun acc c ↦ c.apply acc) v
 
+/-- When `w(c.i) ≤ w(c.j)`, the comparator is the identity. -/
+lemma Comparator.apply_eq_of_le {n : ℕ} {α : Type*} [LinearOrder α]
+    (c : Comparator n) (w : Fin n → α) (h : w c.i ≤ w c.j) :
+    c.apply w = w := by
+  ext pos; unfold Comparator.apply
+  split_ifs with h1 h2
+  · rw [h1, min_eq_left h]
+  · rw [h2, max_eq_right h]
+  · rfl
 
-/-! **Comparator Network Embedding** -/
+/-- When `w(c.j) < w(c.i)`, the comparator swaps positions `i` and `j`. -/
+lemma Comparator.apply_eq_swap {n : ℕ} {α : Type*} [LinearOrder α]
+    (c : Comparator n) (w : Fin n → α) (h : w c.j < w c.i) (pos : Fin n) :
+    c.apply w pos = w (Equiv.swap c.i c.j pos) := by
+  unfold Comparator.apply
+  split_ifs with h1 h2
+  · rw [h1, min_eq_right h.le, Equiv.swap_apply_left]
+  · rw [h2, max_eq_left h.le, Equiv.swap_apply_right]
+  · rw [Equiv.swap_apply_of_ne_of_ne h1 h2]
 
-/-- Shift all comparator indices by `offset` and embed into a larger network.
-    Maps each comparator `(i, j)` to `(offset + i, offset + j)`. -/
-def ComparatorNetwork.shiftEmbed {m : ℕ} (net : ComparatorNetwork m)
-    (n offset : ℕ) (h : offset + m ≤ n) : ComparatorNetwork n :=
-  { comparators := net.comparators.map fun c ↦
-      { i := ⟨offset + c.i.val, by omega⟩
-        j := ⟨offset + c.j.val, by omega⟩
-        h := by show offset + c.i.val < offset + c.j.val
-                have := c.h; simp only [Fin.lt_def] at this; omega } }
-
-
-
-/-! **Injectivity Preservation** -/
-
-/-- A single comparator preserves injectivity: either no swap (identity)
-    or a transposition, both of which compose injectively. -/
+/-- A single comparator preserves injectivity. -/
 theorem Comparator.apply_injective {n : ℕ} {α : Type*} [LinearOrder α]
     (c : Comparator n) {v : Fin n → α} (hv : Function.Injective v) :
     Function.Injective (c.apply v) := by
   by_cases h : v c.i ≤ v c.j
-  · -- No swap: c.apply v = v
-    suffices heq : c.apply v = v by rw [heq]; exact hv
-    ext k; unfold Comparator.apply
-    by_cases hki : k = c.i
-    · subst hki; rw [if_pos rfl, min_eq_left h]
-    · rw [if_neg hki]
-      by_cases hkj : k = c.j
-      · subst hkj; rw [if_pos rfl, max_eq_right h]
-      · rw [if_neg hkj]
-  · -- Swap: c.apply v = v ∘ Equiv.swap c.i c.j
-    push_neg at h
-    suffices heq : c.apply v = v ∘ ⇑(Equiv.swap c.i c.j) by
-      rw [heq]; exact hv.comp (Equiv.injective _)
-    ext k; unfold Comparator.apply; simp only [Function.comp]
-    by_cases hki : k = c.i
-    · subst hki; rw [if_pos rfl, min_eq_right h.le, Equiv.swap_apply_left]
-    · rw [if_neg hki]
-      by_cases hkj : k = c.j
-      · subst hkj; rw [if_pos rfl, max_eq_left h.le, Equiv.swap_apply_right]
-      · rw [if_neg hkj, Equiv.swap_apply_of_ne_of_ne hki hkj]
+  · rwa [c.apply_eq_of_le v h]
+  · rw [show c.apply v = v ∘ Equiv.swap c.i c.j from
+      funext (c.apply_eq_swap v (not_le.1 h))]
+    exact hv.comp (Equiv.injective _)
 
 /-- Executing a comparator network preserves injectivity. -/
 theorem ComparatorNetwork.exec_injective {n : ℕ} {α : Type*} [LinearOrder α]
@@ -100,14 +73,7 @@ theorem ComparatorNetwork.exec_injective {n : ℕ} {α : Type*} [LinearOrder α]
   unfold ComparatorNetwork.exec
   induction net.comparators generalizing v with
   | nil => exact hv
-  | cons c cs ih =>
-    simp only [List.foldl_cons]
-    exact ih (c.apply_injective hv)
-
-/-! **Monotone composition** -/
-
-
-
+  | cons c cs ih => exact ih (c.apply_injective hv)
 
 /-- Executing a concatenated comparator list equals sequential execution. -/
 theorem ComparatorNetwork.exec_append {n : ℕ} {α : Type*} [LinearOrder α]
@@ -121,8 +87,7 @@ def permuteWireValues {n : ℕ} (π : Equiv.Perm (Fin n)) {α : Type*} (v : Fin 
     Fin n → α :=
   fun w ↦ v (π w)
 
-
-/-- Folding comparators that don't touch position `j` leaves `v j` unchanged. -/
+/-- Folding comparators that do not touch position `j` leaves `v j` unchanged. -/
 theorem foldl_comparators_outside {n : ℕ} {α : Type*} [LinearOrder α]
     (cs : List (Comparator n)) (v : Fin n → α) (j : Fin n)
     (hj : ∀ c ∈ cs, j ≠ c.i ∧ j ≠ c.j) :
@@ -130,98 +95,16 @@ theorem foldl_comparators_outside {n : ℕ} {α : Type*} [LinearOrder α]
   induction cs generalizing v with
   | nil => rfl
   | cons c cs ih =>
-    simp only [List.foldl_cons]
     have ⟨hji, hjj⟩ := hj c (.head cs)
-    have hstep : c.apply v j = v j := by
-      unfold Comparator.apply; rw [if_neg hji, if_neg hjj]
-    rw [ih (c.apply v) (fun c' hc' => hj c' (.tail c hc')), hstep]
+    simp only [List.foldl_cons]
+    rw [ih _ fun c' hc' => hj c' (.tail c hc')]
+    simp [Comparator.apply, hji, hjj]
 
-/-- A shifted+embedded network does not modify positions outside its range. -/
-theorem ComparatorNetwork.shiftEmbed_exec_outside {m : ℕ} {α : Type*} [LinearOrder α]
-    (net : ComparatorNetwork m) (n offset : ℕ) (h : offset + m ≤ n)
-    (v : Fin n → α) (j : Fin n) (hj : j.val < offset ∨ offset + m ≤ j.val) :
-    (net.shiftEmbed n offset h).exec v j = v j := by
-  unfold shiftEmbed exec
-  apply foldl_comparators_outside
-  intro c' hc'
-  simp only [List.mem_map] at hc'
-  obtain ⟨c, _, rfl⟩ := hc'
-  exact ⟨by intro heq; have := congr_arg Fin.val heq; dsimp at this; omega,
-         by intro heq; have := congr_arg Fin.val heq; dsimp at this; omega⟩
-
-
-/-- A shifted comparator acts on positions within the range exactly as the original
-    comparator on the local view `fun j ↦ v ⟨offset + j, _⟩`. -/
-private theorem shifted_comparator_localView {m n : ℕ} {α : Type*} [LinearOrder α]
-    {offset : ℕ} (h : offset + m ≤ n) (c : Comparator m) (v : Fin n → α) :
-    let c' : Comparator n :=
-      ⟨⟨offset + c.i.val, by have := c.i.isLt; omega⟩,
-       ⟨offset + c.j.val, by have := c.j.isLt; omega⟩,
-       by show offset + c.i.val < offset + c.j.val
-          have := c.h; simp only [Fin.lt_def] at this; omega⟩
-    (fun (j : Fin m) ↦ c'.apply v ⟨offset + j.val, by have := j.isLt; omega⟩) =
-    c.apply (fun j ↦ v ⟨offset + j.val, by have := j.isLt; omega⟩) := by
-  intro c'
-  funext j
-  simp only [Comparator.apply]
-  by_cases hji : j = c.i
-  · -- j = c.i: both sides give min
-    have h_eq_i : (⟨offset + j.val, by have := j.isLt; omega⟩ : Fin n) = c'.i := by
-      ext; dsimp [c']; rw [hji]
-    rw [if_pos h_eq_i, if_pos hji]
-  · have hne_i : (⟨offset + j.val, by have := j.isLt; omega⟩ : Fin n) ≠ c'.i := by
-      intro heq; apply hji; ext
-      have := congr_arg Fin.val heq; dsimp [c'] at this; omega
-    rw [if_neg hne_i, if_neg hji]
-    by_cases hjj : j = c.j
-    · -- j = c.j: both sides give max
-      have h_eq_j : (⟨offset + j.val, by have := j.isLt; omega⟩ : Fin n) = c'.j := by
-        ext; dsimp [c']; rw [hjj]
-      rw [if_pos h_eq_j, if_pos hjj]
-    · have hne_j : (⟨offset + j.val, by have := j.isLt; omega⟩ : Fin n) ≠ c'.j := by
-        intro heq; apply hjj; ext
-        have := congr_arg Fin.val heq; dsimp [c'] at this; omega
-      rw [if_neg hne_j, if_neg hjj]
-
-/-- A shifted+embedded network acts on positions within its range `[offset, offset+m)`
-    exactly as the original network on the local view. -/
-theorem ComparatorNetwork.shiftEmbed_exec_inside {m : ℕ} {α : Type*} [LinearOrder α]
-    (net : ComparatorNetwork m) (n offset : ℕ) (h : offset + m ≤ n)
-    (v : Fin n → α) (i : Fin m) :
-    (net.shiftEmbed n offset h).exec v ⟨offset + i.val, by have := i.isLt; omega⟩ =
-    net.exec (fun (j : Fin m) ↦ v ⟨offset + j.val, by have := j.isLt; omega⟩) i := by
-  -- Prove the stronger function-level statement by induction
-  suffices hfun : ∀ (cs : List (Comparator m)) (v : Fin n → α),
-      (fun (j : Fin m) ↦
-        (cs.map fun c ↦ (⟨⟨offset + c.i.val, by have := c.i.isLt; omega⟩,
-          ⟨offset + c.j.val, by have := c.j.isLt; omega⟩,
-          by show offset + c.i.val < offset + c.j.val
-             have := c.h; simp only [Fin.lt_def] at this; omega⟩ : Comparator n)).foldl
-        (fun acc c ↦ c.apply acc) v ⟨offset + j.val, by have := j.isLt; omega⟩) =
-      cs.foldl (fun acc c ↦ c.apply acc)
-        (fun j ↦ v ⟨offset + j.val, by have := j.isLt; omega⟩) from
-    show _ = _ from congr_fun (hfun net.comparators v) i
-  intro cs
-  induction cs with
-  | nil => intro v; rfl
-  | cons c cs ih =>
-    intro v
-    simp only [List.map_cons, List.foldl_cons]
-    rw [ih]
-    congr 1
-    exact shifted_comparator_localView h c v
-
-
-/-! **Scatter Embedding** -/
-
-/-- Embed a network on `m` wires into `n` wires via an order embedding.
-    Maps comparator `(i, j)` to `(f(i), f(j))`. Generalizes `shiftEmbed`
-    to non-contiguous wire positions. -/
+/-- Embed a network on `m` wires into `n` wires via an order embedding. -/
 def ComparatorNetwork.scatterEmbed {m : ℕ} (net : ComparatorNetwork m)
     (n : ℕ) (f : Fin m ↪o Fin n) : ComparatorNetwork n where
   comparators := net.comparators.map fun c ↦
     { i := f c.i, j := f c.j, h := f.lt_iff_lt.mpr c.h }
-
 
 /-- A scatter-embedded network does not modify positions outside the embedding's range. -/
 theorem ComparatorNetwork.scatterEmbed_exec_outside {m : ℕ} {α : Type*} [LinearOrder α]
@@ -235,26 +118,7 @@ theorem ComparatorNetwork.scatterEmbed_exec_outside {m : ℕ} {α : Type*} [Line
   obtain ⟨c, _, rfl⟩ := hc'
   exact ⟨fun heq ↦ hj ⟨c.i, heq.symm⟩, fun heq ↦ hj ⟨c.j, heq.symm⟩⟩
 
-/-- A scatter-embedded comparator acts on positions within the embedding's range exactly
-    as the original comparator on the local view `v ∘ f`. -/
-private theorem scattered_comparator_localView {m n : ℕ} {α : Type*} [LinearOrder α]
-    (f : Fin m ↪o Fin n) (c : Comparator m) (v : Fin n → α) :
-    let c' : Comparator n := ⟨f c.i, f c.j, f.lt_iff_lt.mpr c.h⟩
-    (fun (j : Fin m) ↦ c'.apply v (f j)) = c.apply (v ∘ f) := by
-  intro c'
-  funext j
-  simp only [Comparator.apply, Function.comp]
-  by_cases hji : j = c.i
-  · subst hji; rw [if_pos rfl, if_pos rfl]
-  · have hne_i : f j ≠ f c.i := fun h ↦ hji (f.injective h)
-    rw [if_neg hne_i, if_neg hji]
-    by_cases hjj : j = c.j
-    · subst hjj; rw [if_pos rfl, if_pos rfl]
-    · have hne_j : f j ≠ f c.j := fun h ↦ hjj (f.injective h)
-      rw [if_neg hne_j, if_neg hjj]
-
-/-- A scatter-embedded network acts on positions within its range `f(i)`
-    exactly as the original network on the local view `v ∘ f`. -/
+/-- A scatter-embedded network acts on positions `f i` exactly as the original on `v ∘ f`. -/
 theorem ComparatorNetwork.scatterEmbed_exec_inside {m : ℕ} {α : Type*} [LinearOrder α]
     (net : ComparatorNetwork m) (n : ℕ) (f : Fin m ↪o Fin n)
     (v : Fin n → α) (i : Fin m) :
@@ -264,7 +128,7 @@ theorem ComparatorNetwork.scatterEmbed_exec_inside {m : ℕ} {α : Type*} [Linea
         (cs.map fun c ↦ (⟨f c.i, f c.j, f.lt_iff_lt.mpr c.h⟩ : Comparator n)).foldl
         (fun acc c ↦ c.apply acc) v (f j)) =
       cs.foldl (fun acc c ↦ c.apply acc) (v ∘ f) from
-    show _ = _ from congr_fun (hfun net.comparators v) i
+    congr_fun (hfun net.comparators v) i
   intro cs
   induction cs with
   | nil => intro v; rfl
@@ -273,12 +137,42 @@ theorem ComparatorNetwork.scatterEmbed_exec_inside {m : ℕ} {α : Type*} [Linea
     simp only [List.map_cons, List.foldl_cons]
     rw [ih]
     congr 1
-    exact scattered_comparator_localView f c v
+    funext j
+    simp only [Comparator.apply, Function.comp, f.injective.eq_iff]
 
+/-- The order embedding `j ↦ offset + j`. -/
+def shiftEmb {m n : ℕ} (offset : ℕ) (h : offset + m ≤ n) : Fin m ↪o Fin n :=
+  OrderEmbedding.ofStrictMono (fun j ↦ ⟨offset + j.val, by have := j.isLt; omega⟩)
+    fun a b hab ↦ by
+      change offset + a.val < offset + b.val
+      have : a.val < b.val := hab
+      omega
 
+/-- Shift all comparator indices by `offset` and embed into a larger network. -/
+def ComparatorNetwork.shiftEmbed {m : ℕ} (net : ComparatorNetwork m)
+    (n offset : ℕ) (h : offset + m ≤ n) : ComparatorNetwork n :=
+  net.scatterEmbed n (shiftEmb offset h)
 
-/-- Executing a flatMap of comparators from scatter-embedded networks equals
-    sequential execution of those networks. -/
+/-- A shifted+embedded network does not modify positions outside its range. -/
+theorem ComparatorNetwork.shiftEmbed_exec_outside {m : ℕ} {α : Type*} [LinearOrder α]
+    (net : ComparatorNetwork m) (n offset : ℕ) (h : offset + m ≤ n)
+    (v : Fin n → α) (j : Fin n) (hj : j.val < offset ∨ offset + m ≤ j.val) :
+    (net.shiftEmbed n offset h).exec v j = v j := by
+  apply scatterEmbed_exec_outside
+  rintro ⟨i, rfl⟩
+  have := i.isLt
+  simp only [shiftEmb, OrderEmbedding.coe_ofStrictMono] at hj
+  omega
+
+/-- A shifted+embedded network acts on `[offset, offset+m)` as the original on the local view. -/
+theorem ComparatorNetwork.shiftEmbed_exec_inside {m : ℕ} {α : Type*} [LinearOrder α]
+    (net : ComparatorNetwork m) (n offset : ℕ) (h : offset + m ≤ n)
+    (v : Fin n → α) (i : Fin m) :
+    (net.shiftEmbed n offset h).exec v ⟨offset + i.val, by have := i.isLt; omega⟩ =
+    net.exec (fun (j : Fin m) ↦ v ⟨offset + j.val, by have := j.isLt; omega⟩) i :=
+  scatterEmbed_exec_inside net n (shiftEmb offset h) v i
+
+/-- Executing a flatMap of networks equals sequential execution. -/
 theorem ComparatorNetwork.exec_flatMap {n : ℕ} {α : Type*} [LinearOrder α]
     {ι : Type*} (xs : List ι) (f : ι → ComparatorNetwork n) (v : Fin n → α) :
     (⟨xs.flatMap fun i ↦ (f i).comparators⟩ : ComparatorNetwork n).exec v =
@@ -290,7 +184,7 @@ theorem ComparatorNetwork.exec_flatMap {n : ℕ} {α : Type*} [LinearOrder α]
     rw [← ih]
     exact exec_append (f x) ⟨xs.flatMap fun i ↦ (f i).comparators⟩ v
 
-/-- Folding execution of networks that don't touch j leaves j unchanged. -/
+/-- Folding execution of networks that do not touch j leaves j unchanged. -/
 theorem ComparatorNetwork.foldl_exec_outside {n : ℕ} {α : Type*} [LinearOrder α]
     {ι : Type*} (xs : List ι) (f : ι → ComparatorNetwork n) (v : Fin n → α)
     (j : Fin n) (hj : ∀ a ∈ xs, ∀ c ∈ (f a).comparators, j ≠ c.i ∧ j ≠ c.j) :
@@ -299,19 +193,15 @@ theorem ComparatorNetwork.foldl_exec_outside {n : ℕ} {α : Type*} [LinearOrder
   | nil => rfl
   | cons x xs ih =>
     simp only [List.foldl_cons]
-    have hxs : ∀ a ∈ xs, ∀ c ∈ (f a).comparators, j ≠ c.i ∧ j ≠ c.j :=
-      fun a ha ↦ hj a (List.mem_cons_of_mem x ha)
-    rw [ih _ hxs]
-    unfold exec
+    rw [ih _ fun a ha ↦ hj a (List.mem_cons_of_mem x ha)]
     exact foldl_comparators_outside (f x).comparators v j (hj x List.mem_cons_self)
 
-/-- Folding execution of networks that don't touch any position in S preserves all values in S. -/
+/-- Folding execution of networks that do not touch any position in S preserves S. -/
 theorem ComparatorNetwork.foldl_exec_outside_set {n : ℕ} {α : Type*} [LinearOrder α]
     {ι : Type*} (xs : List ι) (f : ι → ComparatorNetwork n) (v : Fin n → α)
     (S : Finset (Fin n)) (hS : ∀ a ∈ xs, ∀ s ∈ S, ∀ c ∈ (f a).comparators, s ≠ c.i ∧ s ≠ c.j) :
-    ∀ s ∈ S, xs.foldl (fun v' a ↦ (f a).exec v') v s = v s := by
-  intro s hs
-  exact foldl_exec_outside xs f v s (fun a ha c hc ↦ hS a ha s hs c hc)
+    ∀ s ∈ S, xs.foldl (fun v' a ↦ (f a).exec v') v s = v s :=
+  fun s hs ↦ foldl_exec_outside xs f v s fun a ha c hc ↦ hS a ha s hs c hc
 
 /-- A scatter-embedded network's comparators don't touch positions outside the range. -/
 theorem ComparatorNetwork.scatterEmbed_comparators_outside {m : ℕ}
@@ -322,9 +212,5 @@ theorem ComparatorNetwork.scatterEmbed_comparators_outside {m : ℕ}
   simp only [scatterEmbed, List.mem_map] at hc
   obtain ⟨c', _, rfl⟩ := hc
   exact ⟨fun heq ↦ hj ⟨c'.i, heq.symm⟩, fun heq ↦ hj ⟨c'.j, heq.symm⟩⟩
-
-/-! **Complexity Notation** -/
-
-
 
 end

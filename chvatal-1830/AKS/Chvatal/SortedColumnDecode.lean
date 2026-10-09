@@ -690,7 +690,7 @@ theorem HasPackSemanticPropertyB.of_combinatorial_onPipeline {m n : Nat} {epsB :
     (hrow : RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble)
     (hComb : HasCombinatorialPropertyBOnPipeline σ epsB) :
     HasPackSemanticPropertyB hn pack epsB := by
-  rw [HasPackSemanticPropertyB_iff]
+  unfold HasPackSemanticPropertyB
   intro v i hi1 him
   set c := monotoneColumnSumsOfBool hn
       (pack.colSort.net.exec fun w => largestKeyThreshold01 (m := m) (n := n) i (v w))

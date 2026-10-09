@@ -8,13 +8,13 @@ public import AKS.Chvatal.Lemma63
 
 namespace Chvatal
 
-/-- Rows strictly above the bottom `f/2` block (paper Lemma 6.2). -/
-def aboveHalfFringeRows (m f : Nat) (_hf : Even f) : Finset (Fin m) :=
-  Finset.univ.filter fun r => r.val < m - f / 2
+/-- The rows strictly above the bottom `h` rows (the "top `m - h` rows"). -/
+def topRows (m h : Nat) : Finset (Fin m) :=
+  Finset.univ.filter fun r => r.val < m - h
 
 def onesAboveHalfFringe {m n f : Nat} (hf : Even f)
     (c : MonotoneColumnSums m n) (σ : Scramble m n) (S : Finset (Fin n)) : Nat :=
-  ∑ r ∈ aboveHalfFringeRows m f hf, rowHit c S r (σ r)
+  ∑ r ∈ topRows m (f / 2), rowHit c S r (σ r)
 
 /-- Paper event `E` at `(c,j,S)` for a fixed scramble (Lemma 6.2). -/
 def fringeColumnEventBad {m n f : Nat} (hf : Even f) (_deltaF epsF : ℝ)
@@ -22,8 +22,8 @@ def fringeColumnEventBad {m n f : Nat} (hf : Even f) (_deltaF epsF : ℝ)
     Prop :=
   (f / 2 : ℝ) * S.card + epsF * j ≤ (onesAboveHalfFringe hf c σ S : ℝ)
 
-theorem finset_card (n : Nat) :
-    Fintype.card (Finset (Fin n)) = 2 ^ n := by
-  simp
+theorem cast_half_of_even {f : ℕ} (hf : Even f) : ((f / 2 : ℕ) : ℝ) = (f : ℝ) / 2 := by
+  obtain ⟨k, rfl⟩ := hf
+  push_cast [show (k + k) / 2 = k by omega]; ring
 
 end Chvatal

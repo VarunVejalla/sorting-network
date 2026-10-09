@@ -4,20 +4,10 @@ public import AKS.Sort.Defs
 public import AKS.Sort.Depth
 public import AKS.Sort.Monotone
 
-/-!
-# Untangling generalized comparator networks (Knuth TAOCP 5.3.4, exercise 16)
-
-A *generalized* comparator `GenComparator` on wires `a ≠ b` sends the minimum to
-wire `a` and the maximum to wire `b`, with no requirement `a < b`.  A generalized
-network that sorts into the output order given by a permutation `τ` (wire `τ.symm r`
-carries the output of rank `r`) can be converted into a standard
-`ComparatorNetwork` that sorts and has the same (greedy critical-path) depth.
-
-Construction: `untangleAux` walks the comparator list maintaining a wire
-permutation `p`, with invariant `G-state = (S-state) ∘ p`.  A comparator `(a, b)` becomes
-the standard comparator on `{p a, p b}`; if `p b < p a` the permutation is updated by
-`swap a b`.  The same invariant holds for the wire-time vectors, so depths agree.
--/
+/-! Untangling generalized comparator networks (Knuth TAOCP 5.3.4, ex. 16): a generalized
+network sorting into the output order `τ` converts to a standard sorting network of the same
+greedy depth.  `untangleAux` walks the list with a wire permutation `p` (invariant
+`G-state = S-state ∘ p`); the same invariant holds for wire times. -/
 
 @[expose] public section
 
@@ -161,22 +151,18 @@ theorem untangle {n : ℕ} (G : GenNetwork n) (τ : Equiv.Perm (Fin n))
       Monotone (fun r : Fin n => G.exec v (τ.symm r))) :
     ∃ S : ComparatorNetwork n, S.depth = G.depth ∧ ComparatorNetwork.Sorts.{0} S := by
   refine ⟨untangleNet G, untangle_depth G, ?_⟩
-  set p := untanglePerm G with hp
-  -- p ∘ τ.symm is the identity
+  set p := untanglePerm G
   have hmono : Monotone (fun r : Fin n => p (τ.symm r)) := by
-    have h := hG (Fin n) (id : Fin n → Fin n)
-    have e : (fun r : Fin n => G.exec (id : Fin n → Fin n) (τ.symm r)) =
-        fun r => p (τ.symm r) := by
-      funext r
-      rw [untangle_exec, ComparatorNetwork.exec_eq_of_monotone _ monotone_id]
-      rfl
-    rwa [e] at h
+    have h := hG (Fin n) id
+    convert h using 2 with r
+    rw [untangle_exec, ComparatorNetwork.exec_eq_of_monotone _ monotone_id]
+    rfl
   have hid : ∀ r, p (τ.symm r) = r := by
     have hs : StrictMono (fun r : Fin n => p (τ.symm r)) :=
       hmono.strictMono_of_injective (p.injective.comp τ.symm.injective)
     have hr : Set.range (fun r : Fin n => p (τ.symm r)) = Set.range (id : Fin n → Fin n) := by
       have h1 : Function.Surjective (fun r : Fin n => p (τ.symm r)) :=
-        (p.surjective.comp τ.symm.surjective)
+        p.surjective.comp τ.symm.surjective
       rw [h1.range_eq, Function.Surjective.range_eq Function.surjective_id]
     exact fun r => congrFun ((hs.range_inj strictMono_id).1 hr) r
   intro α _ v

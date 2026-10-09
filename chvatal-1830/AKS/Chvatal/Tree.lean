@@ -1,14 +1,6 @@
 module
-/-
-  # Chvátal k-ary bag tree
-
-  Source: V. Chvátal, *Lecture Notes on the New AKS Sorting Network*,
-  Rutgers DCS-TR-294 (1992), §2–3. Checked in as `docs/dcs-tr-294.pdf`.
-
-  Status: structural API only. Mirrors `AKS/Bags/Defs.lean` for branching
-  factor `br` (paper `k`) and height `d` with `N = br^d` wires. No network
-  construction, capacity schedule, or outsider invariant lives here.
--/
+/- Chvátal k-ary bag tree (DCS-TR-294 §2–3): structural API for branching factor `br` and
+   height `d`, i.e. `N = br^d` wires. -/
 
 public import AKS.Sort.Defs
 
@@ -18,15 +10,11 @@ namespace Chvatal
 
 open Finset
 
-/-! **Native intervals** -/
-
 /-- Size of each bag's native interval at level `l`: `br^(d - l)`. -/
 def bagSize (br d l : ℕ) : ℕ := br ^ (d - l)
 
 /-- Native bag index of sorted rank `r` at level `l`. -/
 def nativeBagIdx (br d l : ℕ) (r : ℕ) : ℕ := r / bagSize br d l
-
-/-! **Bags** -/
 
 /-- A bag in the complete `br`-ary tree of height `d` on `br^d` wires. -/
 @[ext]
@@ -78,15 +66,11 @@ def KBag.lo (b : KBag br d) : ℕ := b.x * b.size
 /-- Exclusive upper bound of the native rank interval. -/
 def KBag.hi (b : KBag br d) : ℕ := (b.x + 1) * b.size
 
-/-! **Placement** -/
-
 /-- Assignment of registers to bags on `br^d` wires. -/
 structure Placement (br d : ℕ) where
   regs : KBag br d → Finset (Fin (br ^ d))
   disjoint : ∀ (a b : KBag br d), a ≠ b → Disjoint (regs a) (regs b)
   complete : ∀ (i : Fin (br ^ d)), ∃ (b : KBag br d), i ∈ regs b
-
-/-! **Ancestry, nativeness, outsiders** -/
 
 /-- Ancestor `j` levels up. -/
 def KBag.ancestor (b : KBag br d) (j : ℕ) (hbr : 1 ≤ br := by omega) : KBag br d :=
@@ -148,8 +132,6 @@ theorem KBag.strangers_union_le (b : KBag br d) (j : ℕ)
     b.strangers j perm ∅ hbr = 0 := by
   simp [KBag.strangers]
 
-/-! **Basic size lemmas** -/
-
 @[simp] theorem bagSize_zero (br d : ℕ) : bagSize br d 0 = br ^ d := by
   simp [bagSize]
 
@@ -169,13 +151,8 @@ theorem nativeBagIdx_div {br d ℓ r : ℕ} (hbr : 1 ≤ br) (h : ℓ + 1 ≤ d)
   simp only [nativeBagIdx]
   rw [Nat.div_div_eq_div_mul, bagSize_succ_mul hbr h]
 
-/-! **Bag API** -/
-
-
-
 theorem KBag.hi_eq_lo_add_size (b : KBag br d) : b.hi = b.lo + b.size := by
   simp [KBag.hi, KBag.lo, Nat.add_mul]
-
 
 theorem KBag.native_iff (b : KBag br d) (r : Fin (br ^ d))
     (perm : Fin (br ^ d) → Fin (br ^ d)) (hbr : 1 ≤ br) :
@@ -230,9 +207,6 @@ theorem KBag.strangers_eq_zero_of_lt_order (b : KBag br d) (j : Nat)
     ancestor_eq_root b (j - 1) hbr (by omega)
   exact hns (by simpa [hanc] using native_root (br := br) (d := d) r perm)
 
-
-/-! **Tree structure** -/
-
 theorem KBag.child_parent (b : KBag br d) (j : ℕ) (hj : j < br)
     (h : b.l < d) (hbr : 1 ≤ br) :
     ((b.child j hj h).parent hbr) = b := by
@@ -258,40 +232,13 @@ theorem KBag.strangers_parent_eq (b : KBag br d) (j : ℕ) (hj : 1 ≤ j)
     (_hl : 1 ≤ b.l) (perm : Fin (br ^ d) → Fin (br ^ d))
     (S : Finset (Fin (br ^ d))) (hbr : 1 ≤ br) :
     (b.parent hbr).strangers j perm S hbr = b.strangers (j + 1) perm S hbr := by
-  simp only [KBag.strangers]
-  congr 1; ext r
-  simp only [Finset.mem_filter]
-  constructor
-  · intro ⟨hmem, hns⟩
-    refine ⟨hmem, ?_⟩
-    show b.Strange (j + 1) r perm hbr
-    simp only [KBag.Strange, show j + 1 ≠ 0 by omega, false_or,
-      show j + 1 - 1 = j by omega]
-    have hns' : ¬((b.parent hbr).ancestor (j - 1) hbr).Native r perm := by
-      simp only [KBag.Strange, show j ≠ 0 by omega, false_or] at hns
-      exact hns
-    have heq : (b.parent hbr).ancestor (j - 1) hbr = b.ancestor j hbr := by
-      ext
-      · show b.l - 1 - (j - 1) = b.l - j; omega
-      · show (b.x / br) / br ^ (j - 1) = b.x / br ^ j
-        rw [Nat.div_div_eq_div_mul, Nat.mul_comm, ← pow_succ,
-          Nat.sub_add_cancel hj]
-    rwa [← heq]
-  · intro ⟨hmem, hns⟩
-    refine ⟨hmem, ?_⟩
-    show (b.parent hbr).Strange j r perm hbr
-    simp only [KBag.Strange, show j ≠ 0 by omega, false_or]
-    have hns' : ¬(b.ancestor j hbr).Native r perm := by
-      simp only [KBag.Strange, show j + 1 ≠ 0 by omega, false_or,
-        show j + 1 - 1 = j by omega] at hns
-      exact hns
-    have heq : (b.parent hbr).ancestor (j - 1) hbr = b.ancestor j hbr := by
-      ext
-      · show b.l - 1 - (j - 1) = b.l - j; omega
-      · show (b.x / br) / br ^ (j - 1) = b.x / br ^ j
-        rw [Nat.div_div_eq_div_mul, Nat.mul_comm, ← pow_succ,
-          Nat.sub_add_cancel hj]
-    rwa [heq]
+  have heq : (b.parent hbr).ancestor (j - 1) hbr = b.ancestor j hbr := by
+    ext
+    · show b.l - 1 - (j - 1) = b.l - j; omega
+    · show (b.x / br) / br ^ (j - 1) = b.x / br ^ j
+      rw [Nat.div_div_eq_div_mul, Nat.mul_comm, ← pow_succ, Nat.sub_add_cancel hj]
+  simp only [KBag.strangers, KBag.Strange, heq, show j ≠ 0 by omega, show j + 1 ≠ 0 by omega,
+    false_or, Nat.add_sub_cancel]
 
 /-- If `r` is native to `b`, then it is native to `b.parent`. -/
 theorem KBag.Native.parent {b : KBag br d} {r : Fin (br ^ d)}
@@ -303,9 +250,4 @@ theorem KBag.Native.parent {b : KBag br d} {r : Fin (br ^ d)}
   have hlk : (b.l - 1) + 1 ≤ d := by have := b.hl; omega
   have hbl : (b.l - 1) + 1 = b.l := by omega
   rw [← nativeBagIdx_div hbr hlk, hbl, h]
-
-/-! **Enumeration** -/
-
-
-
 end Chvatal

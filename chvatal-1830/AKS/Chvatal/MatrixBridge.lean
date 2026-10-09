@@ -1,66 +1,6 @@
 module
-/-
-  # Combinatorial → matrix Properties B/F bridge (Chvátal §5–§6)
-
-  Paper pipeline: sort columns → row-wise scramble → sort columns again.
-  Lemma 6.1 / 6.2 give combinatorial Property B/F for some scramble `σ`;
-  Theorem 5.1 requires matrix `HasMatrixPropertyB` / `HasMatrixPropertyF` on
-  the executable network.
-
-  **Kernel-checked here:** wire layout, column-sort and sort–scramble–sort network
-  skeleton, combined combinatorial B∧F existence from Module A fail fractions,
-  and wiring `ModuleACombinatorialObligation` + `CombinatorialToMatrixObligation`
-  into `Theorem51Obligation` / `ExistsScrambleSeparator`.
-
-  **Kernel-checked progress (bridge infrastructure):** matrix row/column coordinates,
-  `matrixIntrusionCountB`/`F` aligned with `HasMatrixPropertyB`/`F`, column- and
-  row-local comparator stability, `SortScrambleSortPack` exec decomposition, and
-  combinatorial wire counts (`scrambledOnesInAboveBottomRows`) for the middle stage.
-
-  **Kernel-checked (counting):** per-column and row-sum scrambled-one counts above the
-  bottom block; `onesAboveBottom` is termwise bounded by `scrambledColSumInAboveBottomRows`
-  and hence by `scrambledOnesInAboveBottomRowsSum`; wire-level
-  `scrambledOnesInAboveBottomRows = scrambledOnesInAboveBottomRowsSum` via `matrixWire`
-  bijection on row–column pairs.
-
-  **Kernel-checked (layout / column sort):** `matrixWire` inverse coordinates,
-  column-local `bitonicNetwork` embeddings per column, and `IdealColumnSort` for
-  `columnSortNetwork`.
-
-  **Kernel-checked (middle stage):** `RowScrambleCorrect` / `ImplementsScramble`, monotone
-  `0–1` inputs from `MonotoneColumnSums`, middle-network exec, threshold keys at level `i`,
-  and `middleMonotoneOneCountAboveBottom = scrambledOnesInAboveBottomRows` under a correct
-  row scramble. `matrixIntrusionCountB_eq_matrixOnesCountAboveBottom` rewrites intrusion as
-  an above-bottom threshold count; `monotoneColumnSumsAtLevel` packages first-sort column sums.
-
-  **Kernel-checked (marking, wire-index keys):** under `KeysAreWireIndices` and
-  `IdealColumnSort`, rank marking agrees with key threshold
-  (`firstSortMarking_agreesThreshold_of_keysAreWireIndices`) and first-sort column sums
-  match `monotoneMatrixBool` at every cell (`firstSortLargestKeyMark01_eq_monotoneMatrixBool_of_idealColumnSort_and_keys`, all `m`).
-
-  **Kernel-checked (middle marking):** `MiddleStageMarkingToMiddleCountHyp.of_firstSortMarking`
-  (ideal column sort + first-sort marking/threshold agreement + row scramble correctness);
-  per-input marking from `KeysAreWireIndices` + `IdealColumnSort`.
-
-  **Kernel-checked (B decode):** `MiddleStageDecodeHyp.of_idealColumnSort_rowScramble`,
-  `HasPackSemanticPropertyB.of_combinatorial`, and canonical-pack
-  `HasPackSemanticPropertyB_canonical_of_combinatorial` in `AKS.Chvatal.SortedColumnDecode`
-  (semantic middle stage with `wirePerm`; column-sum route). Full
-  `CombinatorialToMatrixObligationB.of_columnSortNetwork_rowScramble` needs per-pack
-  `IdealColumnSort` + `RowScrambleCorrect` (discharged for `columnSortNetwork` /
-  `rowScrambleNetwork` on the canonical pack only).
-
-  **Comparator vs semantic:** `pack.net` ignores `wirePerm`; matrix B/F for Thm 5.1 use
-  `HasPackSemanticPropertyB`/`F` on `SortScrambleSortPack.semanticExec`. When `wirePerm = 1`,
-  `pack.net.exec` agrees with `semanticExec` (`SortScrambleSortPack.exec_eq_of_wirePerm_one`).
-
-  **Kernel-checked (F closing, 2026-10-05):** `FringePropertyFClosingHyp.of_idealColumnSort_rowScramble`
-  in `SortedColumnDecode` (top-`j` column totals + `j < f` from `δ_F·n < 1`, not a literal
-  combinatorial-Chernoff step); `CombinatorialToMatrixObligationF.of_columnSortNetwork_rowScramble`
-  and full `CombinatorialToMatrixObligation.of_columnSortNetwork_rowScramble` (B + F) under
-  universal `IdealColumnSort` + `RowScrambleCorrect`, `0 < f`, `0 < epsF`, and `δ_F·n < 1`
-  (`deltaF_mul_n_lt_one_params7_n16` for §7 + `n = 16`).
--/
+/- Combinatorial → matrix Properties B/F bridge (Chvátal §5–§6): matrix wire layout, column
+sort, the sort–scramble–sort pack, and the semantic Properties B/F on it. -/
 
 public import AKS.Chvatal.Lemma61
 public import AKS.Chvatal.Lemma62
@@ -71,6 +11,7 @@ public import AKS.Bitonic.Shrink
 public import Mathlib.Data.Fintype.BigOperators
 public import Mathlib.Data.List.FinRange
 public import Mathlib.Order.Hom.Basic
+public import AKS.Misc.Fin
 
 @[expose] public section
 
@@ -92,7 +33,6 @@ def matrixWire (m n : Nat) (r : Fin m) (j : Fin n) : Fin (m * n) :=
 
 theorem matrixWire_row (m n : Nat) (r : Fin m) (j : Fin n) :
     (matrixWire m n r j).val = r.val * n + j.val := rfl
-
 
 /-! **Matrix coordinates** (inverse to `matrixWire` when `0 < m`, `0 < n`) -/
 
@@ -126,7 +66,6 @@ theorem matrixWire_row_col {m n : Nat} (hn : 0 < n) (r : Fin m) (j : Fin n) :
     simp only [matrixCol_val, matrixWire_row]
     rw [Nat.mul_add_mod_self_right, Nat.mod_eq_of_lt j.isLt]
 
-
 /-- Wires belonging to column `j`. -/
 def columnWires (m n : Nat) (hn : 0 < n) (j : Fin n) : Finset (Fin (m * n)) :=
   Finset.univ.filter fun w => matrixCol m n hn w = j
@@ -135,13 +74,9 @@ theorem mem_columnWires {m n : Nat} (hn : 0 < n) (j : Fin n) (w : Fin (m * n)) :
     w ∈ columnWires m n hn j ↔ matrixCol m n hn w = j := by
   simp [columnWires, Finset.mem_filter, Finset.mem_univ, true_and]
 
-
-
-
 theorem matrixWire_mem_columnWires {m n : Nat} (hn : 0 < n) (r : Fin m) (j : Fin n) :
     matrixWire m n r j ∈ columnWires m n hn j := by
   simpa [mem_columnWires] using (matrixWire_row_col hn r j).2
-
 
 theorem matrixWire_matrixRow_col {m n : Nat} (hn : 0 < n) (w : Fin (m * n)) :
     matrixWire m n (matrixRow m n hn w) (matrixCol m n hn w) = w := by
@@ -161,7 +96,6 @@ theorem matrixWire_row_lt_iff {m n : Nat} (hn : 0 < n) (j : Fin n) {r s : Fin m}
     have hmul : r.val * n < s.val * n := (Nat.mul_lt_mul_right hn).2 hrs
     exact Fin.mk_lt_mk.mpr (Nat.add_lt_add_iff_right.mpr hmul)
 
-
 theorem matrixWire_injective {m n : Nat} (hn : 0 < n) {r r' : Fin m} {j j' : Fin n}
     (h : matrixWire m n r j = matrixWire m n r' j') : r = r' ∧ j = j' := by
   have hrow := congrArg (matrixRow m n hn) h
@@ -170,10 +104,6 @@ theorem matrixWire_injective {m n : Nat} (hn : 0 < n) {r r' : Fin m} {j j' : Fin
   exact ⟨hrow, hcol⟩
 
 /-! **Matrix intrusion counts (Theorem 5.1 §6)** -/
-
-
-
-
 
 /-! **Column sort and sort–scramble–sort network** -/
 
@@ -237,7 +167,6 @@ def columnSortNetwork (m n : Nat) (hn : 0 < n) : ColumnSortNetwork m n where
     obtain ⟨r, k, hi, hk⟩ := columnSortColumnNet_scatter_wire (m := m) (n := n) hn j c hc'
     exact ⟨j, r, k, hi, hk⟩
 
-
 private theorem columnSortColumnNet_exec_outside_column {m n : Nat} (hn : 0 < n)
     {j j' : Fin n} (hne : j' ≠ j) {α : Type*} [LinearOrder α]
     (v : Fin (m * n) → α) (w : Fin (m * n)) (hw : w ∈ columnWires m n hn j) :
@@ -247,7 +176,6 @@ private theorem columnSortColumnNet_exec_outside_column {m n : Nat} (hn : 0 < n)
   intro c hc
   exact columnSortColumnNet_comparator_not_in_other_column (hn := hn) (j := j) (j' := j')
     hne.symm c hc hw
-
 
 private theorem columnSortColumnNet_exec_preserves_mem_column {m n : Nat} (hn : 0 < n)
     (j : Fin n) {β : Type*} [LinearOrder β] (v : Fin (m * n) → β) (w : Fin (m * n))
@@ -381,7 +309,6 @@ theorem IdealColumnSort.exec_columnMonotoneInput {m n : Nat} (hn : 0 < n)
     ColumnMonotoneInput m n hn (colSort.net.exec v) :=
   fun j r s hrs => (hcol j v) hrs
 
-
 private theorem columnLocal_comparator_input_le {m n : Nat} (hn : 0 < n)
     (c : Comparator (m * n))
     (hloc : ∃ j r s, c.i = matrixWire m n r j ∧ c.j = matrixWire m n s j)
@@ -428,27 +355,18 @@ theorem ColumnMonotoneInput.eq_of_matrixWire_eq {m n : Nat} (hn : 0 < n)
   rw [← matrixWire_matrixRow_col hn w]
   exact h (matrixRow m n hn w) (matrixCol m n hn w)
 
-/-- A comparator network that only compares wires within a single row. -/
-def RowLocalNetwork (m n : Nat) (net : ComparatorNetwork (m * n)) : Prop :=
-  ∀ c ∈ net.comparators,
-    ∃ r j k, c.i = matrixWire m n r j ∧ c.j = matrixWire m n r k
-
-/-- Row-wise scramble stage for fixed `σ` (comparators may only touch one row at a time). -/
+/-- Row-wise scramble stage for fixed `σ`: a wire relabeling `wirePerm` realising `σ` row by row
+(the paper's middle stage; no comparators are needed). -/
 structure RowScrambleNetwork (m n : Nat) (σ : Scramble m n) where
   net : ComparatorNetwork (m * n)
   wirePerm : Equiv.Perm (Fin (m * n))
   perm_on_matrixWire :
     ∀ (r : Fin m) (j : Fin n),
       wirePerm (matrixWire m n r j) = matrixWire m n r (σ r j)
-  row_local : RowLocalNetwork m n net
-  /-- Chvátal §5 middle stage here is wire relabeling; row-local comparators are optional future work. -/
   comparators_eq_nil : net.comparators = []
 
-/-- Apply row scramble: optional row-local comparators after fixed wire relabeling `wirePerm`.
-
-`permuteWireValues` reads `v (π w)`; with `π = wirePerm.symm` and
-`wirePerm (matrixWire r j) = matrixWire r (σ r j)`, the value at column `j` comes from
-column `(σ r).symm j`, so ones at `S` move to `S.image (σ r)`. -/
+/-- Apply a row scramble: `permuteWireValues` reads `v (π w)`, so with `π = wirePerm.symm` the ones
+at `S` in a row move to `S.image (σ r)`. -/
 def RowScrambleNetwork.wiredExec {m n : Nat} {σ : Scramble m n}
     (rowScramble : RowScrambleNetwork m n σ) {α : Type*} [LinearOrder α]
     (v : Fin (m * n) → α) : Fin (m * n) → α :=
@@ -474,26 +392,13 @@ def sortScrambleSortNetwork (m n : Nat) (σ : Scramble m n)
     ComparatorNetwork (m * n) :=
   ⟨colSort.net.comparators ++ rowScramble.net.comparators ++ colSort.net.comparators⟩
 
-
-/-! **Threshold `0–1` keys and monotone matrix inputs** -/
-
 /-- Key at or above the largest-`i·n` block (Chvátal matrix Property B threshold). -/
-def isAmongLargestKeysBlock {m n : Nat} (i : Nat) (key : Fin (m * n)) : Prop :=
+abbrev isAmongLargestKeysBlock {m n : Nat} (i : Nat) (key : Fin (m * n)) : Prop :=
   m * n - i * n ≤ key.val
-
-instance isAmongLargestKeysBlock_decidable {m n : Nat} (i : Nat) (key : Fin (m * n)) :
-    Decidable (isAmongLargestKeysBlock i key) :=
-  inferInstanceAs (Decidable (m * n - i * n ≤ key.val))
-
-/-- `0–1` marking of wires whose input key lies in the largest `i·n` block. -/
-def largestKeyBlock01 {m n : Nat} (v : Fin (m * n) → Fin (m * n)) (i : Nat)
-    (w : Fin (m * n)) : Bool :=
-  decide (isAmongLargestKeysBlock i (v w))
 
 /-- Threshold marking for largest-`i·n` keys at a wire. -/
 def largestKeyThreshold01 {m n : Nat} (i : Nat) (key : Fin (m * n)) : Bool :=
   decide (isAmongLargestKeysBlock i key)
-
 
 /-- Monotone `0–1` matrix from column sums `c` (ones in bottom `(c j)` rows of column `j`). -/
 def monotoneMatrixBool {m n : Nat} (hn : 0 < n) (c : MonotoneColumnSums m n)
@@ -517,154 +422,51 @@ theorem ColumnMonotoneInput_monotoneMatrixBool {m n : Nat} (hn : 0 < n)
     simp [hr, hs]
   · by_cases hs : j ∈ monotoneRowOnes c s <;> simp [hr, hs]
 
-/-- Per-column count of largest-`i·n` keys after an (ideal) column sort. -/
-def columnSumLargestKeysAtLevel {m n : Nat} (hn : 0 < n) (colSort : ColumnSortNetwork m n)
-    (v : Fin (m * n) → Fin (m * n)) (i : Nat) (j : Fin n) : Nat :=
-  (Finset.univ.filter fun r : Fin m =>
-      largestKeyBlock01 v i (colSort.net.exec v (matrixWire m n r j))).card
-
-/-- Monotone column-sum encoding from threshold keys at level `i` after first column sort. -/
-def monotoneColumnSumsAtLevel {m n : Nat} (hn : 0 < n) (colSort : ColumnSortNetwork m n)
-    (v : Fin (m * n) → Fin (m * n)) (i : Nat) : MonotoneColumnSums m n :=
-  fun j =>
-    ⟨columnSumLargestKeysAtLevel hn colSort v i j,
-      by
-        classical
-        unfold columnSumLargestKeysAtLevel
-        have hle :
-            (Finset.univ.filter fun r : Fin m =>
-                largestKeyBlock01 v i (colSort.net.exec v (matrixWire m n r j))).card ≤ m := by
-          calc
-            _ ≤ Finset.univ.card := Finset.card_le_card (Finset.filter_subset _ _)
-            _ = m := by simp
-        omega⟩
-
-/-! **Middle stage: scrambled `0–1` matrix on wires** -/
-
-
-
-
-
-
-
-
-
 /-- Per-column count of scrambled ones in rows strictly above the bottom `i` block. -/
 def scrambledColSumInAboveBottomRows {m n : Nat} (c : MonotoneColumnSums m n)
     (σ : Scramble m n) (i : Nat) (j : Fin n) : Nat :=
   (Finset.univ.filter fun r : Fin m =>
       r.val < m - i ∧ j ∈ scrambledRowOnes c σ r).card
 
-
-theorem finset_card_rows_in_bottom_block_le {m i : Nat} (him : i ≤ m)
-    (s : Finset (Fin m))
-    (hsub : s ⊆ Finset.univ.filter fun r : Fin m => m - i ≤ r.val) :
-    s.card ≤ i := by
-  classical
-  set g : Fin m → Nat := fun r => r.val - (m - i)
-  have hinj : Set.InjOn g s := by
-    intro r₁ hr₁ r₂ hr₂ heq
-    apply Fin.ext
-    have h₁ := (Finset.mem_filter.mp (hsub hr₁)).2
-    have h₂ := (Finset.mem_filter.mp (hsub hr₂)).2
-    simp [g] at heq
-    omega
-  have hsubset : s.image g ⊆ Finset.range i := by
-    intro x hx
-    obtain ⟨r, hr, rfl⟩ := Finset.mem_image.mp hx
-    have hge := (Finset.mem_filter.mp (hsub hr)).2
-    have hrLt : r.val < m := r.isLt
-    have heq : (m - i) + (r.val - (m - i)) = r.val := Nat.add_sub_of_le hge
-    have hm_eq : m = (m - i) + i := (Nat.sub_add_cancel him).symm
-    have hlt : r.val < (m - i) + i := hm_eq ▸ hrLt
-    have hlt' : r.val - (m - i) < i := Nat.lt_of_add_lt_add_left (by rwa [← heq] at hlt)
-    exact Finset.mem_range.mpr hlt'
-  calc
-    s.card = (s.image g).card := (Finset.card_image_of_injOn hinj).symm
-    _ ≤ (Finset.range i).card := Finset.card_le_card hsubset
-    _ = i := by simp
-
 theorem onesAboveBottom_le_scrambledColSumInAboveBottomRows {m n : Nat}
     (c : MonotoneColumnSums m n) (σ : Scramble m n) (i : Nat) (j : Fin n) (him : i ≤ m) :
     scrambledColSum c σ j - i ≤ scrambledColSumInAboveBottomRows c σ i j := by
   classical
-  set s := scrambledColSum c σ j
-  set above := scrambledColSumInAboveBottomRows c σ i j
-  set bottom :=
-    (Finset.univ.filter fun r : Fin m => m - i ≤ r.val ∧ j ∈ scrambledRowOnes c σ r)
-  by_cases hi : s < i
-  · have h0 : s - i = 0 := Nat.sub_eq_zero_of_le (le_of_lt hi)
-    rw [h0]
-    exact Nat.zero_le above
-  · have hbottom : s = above + bottom.card := by
-      dsimp only [s, above, bottom, scrambledColSum, scrambledColSumInAboveBottomRows]
-      rw [← Finset.card_filter]
-      have hsplit :
-          (Finset.univ.filter fun r : Fin m => j ∈ scrambledRowOnes c σ r) =
-            (Finset.univ.filter fun r : Fin m =>
-                r.val < m - i ∧ j ∈ scrambledRowOnes c σ r) ∪ bottom := by
-        ext r
-        simp only [bottom, Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union]
-        constructor
-        · intro hj
-          rcases Nat.lt_or_ge r.val (m - i) with hr | hr
-          · exact Or.inl ⟨hr, hj⟩
-          · exact Or.inr ⟨hr, hj⟩
-        · rintro (⟨hr, hj⟩ | ⟨hr, hj⟩) <;> exact hj
-      have hdisj :
-          Disjoint
-            (Finset.univ.filter fun r : Fin m =>
-              r.val < m - i ∧ j ∈ scrambledRowOnes c σ r)
-            bottom := by
-        refine Finset.disjoint_filter.mpr fun r _ h₁ h₂ => ?_
-        have := lt_of_lt_of_le h₁.1 h₂.1
-        exact Nat.lt_irrefl _ this
-      rw [hsplit, Finset.card_union_of_disjoint hdisj]
-    have hbottom_le_i : bottom.card ≤ i := by
-      dsimp [bottom]
-      refine finset_card_rows_in_bottom_block_le (m := m) (i := i) him bottom ?_
-      intro r hr
-      exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, (Finset.mem_filter.mp hr).2.1⟩
-    have hs' : s - i ≤ above := by
-      rw [hbottom]
-      omega
-    exact hs'
+  have hbot : (Finset.univ.filter fun r : Fin m => m - i ≤ r.val).card = i := by
+    rw [card_filter_val_ge m (m - i) (by omega)]; omega
+  have hT : (Finset.univ.filter fun r : Fin m => j ∈ scrambledRowOnes c σ r) ⊆
+      (Finset.univ.filter fun r : Fin m => r.val < m - i ∧ j ∈ scrambledRowOnes c σ r) ∪
+        Finset.univ.filter fun r : Fin m => m - i ≤ r.val := by
+    intro r hr
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union] at hr ⊢
+    rcases lt_or_ge r.val (m - i) with h | h
+    exacts [Or.inl ⟨h, hr⟩, Or.inr h]
+  have h := (Finset.card_le_card hT).trans (Finset.card_union_le _ _)
+  have hs : scrambledColSum c σ j =
+      (Finset.univ.filter fun r : Fin m => j ∈ scrambledRowOnes c σ r).card := by
+    unfold scrambledColSum
+    rw [Finset.card_filter]
+  unfold scrambledColSumInAboveBottomRows
+  omega
 
-
-
-
-
-
-
-
-
-
-
-
-/-! **Matrix bridge obligation (residual core)** -/
-
-/-- Per-scramble row stage bundled with the sort–scramble–sort separator for that `σ`. -/
+/-- The sort–scramble–sort pack: the first/last column sorter is always `columnSortNetwork`. -/
 structure SortScrambleSortPack (m n : Nat) (hn : 0 < n) (σ : Scramble m n) where
   rowScramble : RowScrambleNetwork m n σ
 
-/-- Always the embedded column sorter (Chvátal §5 first/last column sort). -/
 def SortScrambleSortPack.colSort {m n : Nat} {hn : 0 < n} {σ : Scramble m n}
     (_pack : SortScrambleSortPack m n hn σ) : ColumnSortNetwork m n :=
   columnSortNetwork m n hn
 
-/-- Canonical sort–scramble–sort network for a pack (no separate stored `net`). -/
+/-- Canonical sort–scramble–sort comparator network for a pack. -/
 def SortScrambleSortPack.net {m n : Nat} {hn : 0 < n} {σ : Scramble m n}
     (p : SortScrambleSortPack m n hn σ) : ComparatorNetwork (m * n) :=
   sortScrambleSortNetwork m n σ p.colSort p.rowScramble
 
-
-
-/-- Semantic middle stage: column sort then wire relabeling / row-local comparators. -/
+/-- Semantic middle stage: column sort then wire relabeling. -/
 def sortScrambleMiddleExec {m n : Nat} {σ : Scramble m n}
     (colSort : ColumnSortNetwork m n) (rowScramble : RowScrambleNetwork m n σ)
     {α : Type*} [LinearOrder α] (v : Fin (m * n) → α) : Fin (m * n) → α :=
   rowScramble.wiredExec (colSort.net.exec v)
-
 
 def SortScrambleSortPack.middleExec {m n : Nat} {hn : 0 < n} {σ : Scramble m n}
     (p : SortScrambleSortPack m n hn σ) {α : Type*} [LinearOrder α]
@@ -676,13 +478,11 @@ theorem SortScrambleSortPack.middle_exec_eq {m n : Nat} {hn : 0 < n} {σ : Scram
     (v : Fin (m * n) → α) :
     p.middleExec v = p.rowScramble.wiredExec (p.colSort.net.exec v) := rfl
 
-
 /-- Final column sort after wire relabeling in the middle stage (Chvátal §5 semantics). -/
 def SortScrambleSortPack.semanticExec {m n : Nat} {hn : 0 < n} {σ : Scramble m n}
     (pack : SortScrambleSortPack m n hn σ) {α : Type*} [LinearOrder α]
     (v : Fin (m * n) → α) : Fin (m * n) → α :=
   pack.colSort.net.exec (pack.middleExec v)
-
 
 /-- Row scramble implements combinatorial `σ` on monotone `0–1` inputs after column sort. -/
 structure RowScrambleCorrect (m n : Nat) (hn : 0 < n) (σ : Scramble m n)
@@ -693,28 +493,19 @@ structure RowScrambleCorrect (m n : Nat) (hn : 0 < n) (σ : Scramble m n)
           (matrixWire m n r j) = true ↔
         j ∈ scrambledRowOnes c σ r
 
-
-
-/-- Count of `true` wires in the same above-bottom row region (no network applied). -/
+/-- Count of `true` wires in the above-bottom row region (no network applied). -/
 def matrixOnesCountInRegion {m n : Nat} (hn : 0 < n) (v : Fin (m * n) → Bool) (i : Nat) : Nat :=
   (Finset.univ.filter fun w : Fin (m * n) =>
       (matrixRow m n hn w).val < m - i ∧ v w = true).card
 
-
-
 theorem RowScrambleNetwork.wirePerm_symm_matrixRow {m n : Nat} (hn : 0 < n) {σ : Scramble m n}
     (rs : RowScrambleNetwork m n σ) (w : Fin (m * n)) :
     matrixRow m n hn (rs.wirePerm.symm w) = matrixRow m n hn w := by
-  -- `wirePerm` preserves rows, so its inverse does too.
-  have h := RowScrambleNetwork.wirePerm_matrixRow hn rs (rs.wirePerm.symm w)
-  rw [Equiv.apply_symm_apply] at h
-  exact h.symm
-
+  simpa using (rs.wirePerm_matrixRow hn (rs.wirePerm.symm w)).symm
 
 /-- Top-`j` key threshold (Property F uses largest `j` keys, not `j·n`). -/
 def largestKeyThresholdJ01 {m n : Nat} (j : Nat) (key : Fin (m * n)) : Bool :=
   decide (m * n - j ≤ key.val)
-
 
 /-- Property B intrusion for the semantic separator (wire relabeling in the middle stage). -/
 def packSemanticIntrusionCountB {m n : Nat} (hn : 0 < n) {σ : Scramble m n}
@@ -740,207 +531,14 @@ def HasPackSemanticPropertyF {m n : Nat} (hn : 0 < n) {σ : Scramble m n}
   ∀ (v : Equiv.Perm (Fin (m * n))) (j : Nat), 0 < j → (j : ℝ) ≤ deltaF * (f * n) →
     (packSemanticIntrusionCountF hn pack v f j : ℝ) < epsF * j
 
-theorem HasPackSemanticPropertyB_iff {m n : Nat} (hn : 0 < n) {σ : Scramble m n}
-    (pack : SortScrambleSortPack m n hn σ) (epsB : ℝ) :
-    HasPackSemanticPropertyB hn pack epsB ↔
-      ∀ (v : Equiv.Perm (Fin (m * n))) (i : Nat), 1 ≤ i → i ≤ m →
-        (packSemanticIntrusionCountB hn pack v i : ℝ) < (epsB / 2) * (m * n) := by
-  rfl
-
-theorem HasPackSemanticPropertyF_iff {m n : Nat} (hn : 0 < n) {σ : Scramble m n}
-    (pack : SortScrambleSortPack m n hn σ) (f : Nat) (hfm : f ≤ m) (deltaF epsF : ℝ) :
-    HasPackSemanticPropertyF hn pack f hfm deltaF epsF ↔
-      ∀ (v : Equiv.Perm (Fin (m * n))) (j : Nat), 0 < j → (j : ℝ) ≤ deltaF * (f * n) →
-        (packSemanticIntrusionCountF hn pack v f j : ℝ) < epsF * j := by
-  rfl
-
 /-- Alias: matrix Property B on `pack.semanticExec` (not on `pack.net`, which ignores `wirePerm`). -/
 abbrev HasMatrixPropertyB_exec (m n : Nat) (hn : 0 < n) {σ : Scramble m n}
     (pack : SortScrambleSortPack m n hn σ) (epsB : ℝ) :=
   HasPackSemanticPropertyB hn pack epsB
 
-
-/-! **Theorem 5.1 witness (semantic B/F on sort–scramble–sort pack)** -/
-
-/-- Semantic separator for Thm 5.1: Properties B/F on `SortScrambleSortPack.semanticExec`
-    (column sort → wired middle / `wirePerm` → column sort). Depth is the comparator skeleton
-    `pack.net` (middle comparators may be empty while relabeling still affects semantics). -/
-structure SemanticSeparator (g : ScrambleGeometry) (P : Theorem51Params g) where
-  σ : Scramble g.m g.n
-  pack : SortScrambleSortPack g.m g.n (scrambleGeometry_hn g) σ
-  hB : HasPackSemanticPropertyB (scrambleGeometry_hn g) pack P.epsB
-  hF : HasPackSemanticPropertyF (scrambleGeometry_hn g) pack g.f
-    (by have := g.hshape; omega) P.deltaF P.epsF
-
-def SemanticSeparator.net {g : ScrambleGeometry} {P : Theorem51Params g}
-    (s : SemanticSeparator g P) : ComparatorNetwork (g.m * g.n) :=
-  SortScrambleSortPack.net s.pack
-
-def SemanticSeparator.depth {g : ScrambleGeometry} {P : Theorem51Params g}
-    (s : SemanticSeparator g P) : Nat :=
-  s.net.depth
-
-/-- Thm 5.1 witness: semantic B/F plus executable `pack.net` for depth accounting. -/
-structure ScrambleSeparatorWitness (g : ScrambleGeometry) (P : Theorem51Params g)
-    extends SemanticSeparator g P
-
-/-- Executable comparator network (depth accounting); semantic B/F refer to `pack`. -/
-def ScrambleSeparatorWitness.net {g : ScrambleGeometry} {P : Theorem51Params g}
-    (w : ScrambleSeparatorWitness g P) : ComparatorNetwork (g.m * g.n) :=
-  SortScrambleSortPack.net w.pack
-
-
-
-
-
-
-
-
-
-
-
-/-- Residual decode: permutation inputs → some `c` with pack-network intrusion
-    bounded by `onesAboveBottom` (Chvátal §6 rank/threshold step). -/
-structure MiddleStageDecodeHyp (m n : Nat) (hn : 0 < n) where
-  decode :
-    ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ)
-      (hcol : IdealColumnSort m n hn pack.colSort)
-      (_hrow : RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble)
-      (v : Equiv.Perm (Fin (m * n))),
-      ∀ i, 1 ≤ i → i ≤ m →
-        ∃ (c : MonotoneColumnSums m n),
-          packSemanticIntrusionCountB hn pack v i ≤ onesAboveBottom c σ i
-
-
-
-/-- Per-input link: matrix Property B intrusion is bounded by combinatorial `onesAboveBottom`. -/
-structure MiddleStageToMatrixB (m n : Nat) (hn : 0 < n) where
-  decode :
-    ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ)
-      (_hcol : IdealColumnSort m n hn pack.colSort)
-      (v : Equiv.Perm (Fin (m * n))),
-      ∀ i, 1 ≤ i → i ≤ m →
-        ∃ (c : MonotoneColumnSums m n),
-          packSemanticIntrusionCountB hn pack v i ≤ onesAboveBottom c σ i
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/-- Residual F decode: top-`j` fringe intrusion → combinatorial `onesAboveHalfFringe` witness.
-    Discharged in `SortedColumnDecode` under ideal column sort + row scramble; the closing
-    step `FringePropertyFClosingHyp` remains open (unlike B). -/
-structure MiddleStageFringeDecodeHyp (m n f : Nat) (hf : Even f) (hn : 0 < n) (deltaF : ℝ)
-    where
-  decode :
-    ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ)
-      (hcol : IdealColumnSort m n hn pack.colSort)
-      (hrow : RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble)
-      (v : Equiv.Perm (Fin (m * n))) (j : Nat) (_hj : 0 < j)
-      (_hjδ : (j : ℝ) ≤ deltaF * (f * n)),
-      ∃ (c : MonotoneColumnSums m n) (S : Finset (Fin n)),
-        packSemanticIntrusionCountF hn pack v f j ≤ onesAboveHalfFringe hf c σ S
-
-
-structure MiddleStageToMatrixF (m n f : Nat) (hf : Even f) (hn : 0 < n) (deltaF epsF : ℝ) where
-  decode :
-    ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ)
-      (hcol : IdealColumnSort m n hn pack.colSort)
-      (hrow : RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble)
-      (v : Equiv.Perm (Fin (m * n))) (j : Nat) (hj : 0 < j)
-      (hjδ : (j : ℝ) ≤ deltaF * (f * n)),
-      ∃ (c : MonotoneColumnSums m n) (S : Finset (Fin n)),
-        packSemanticIntrusionCountF hn pack v f j ≤ onesAboveHalfFringe hf c σ S
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/-! **Threshold marking, intrusion count, and decode residuals** -/
-
-
-
-
-
-
-
-
-
-
-/-! **Rank-wire vs key-threshold marking (Chvátal §6 decode sub-step)** -/
-
-/-- Standard matrix labeling: wire `w` initially holds key `w` (rank equals wire index). -/
-def KeysAreWireIndices {m n : Nat} (v : Equiv.Perm (Fin (m * n))) : Prop :=
-  ∀ w : Fin (m * n), v w = w
-
-theorem KeysAreWireIndices.one {m n : Nat} : KeysAreWireIndices (1 : Equiv.Perm (Fin (m * n))) := by
-  intro w
-  simp
-
-
-
-
 theorem mem_monotoneRowOnes_iff {m n : Nat} (c : MonotoneColumnSums m n) (r : Fin m)
     (j : Fin n) : j ∈ monotoneRowOnes c r ↔ (m - r.val) ≤ (c j).val := by
   simp [monotoneRowOnes, Finset.mem_filter, Finset.mem_univ, true_and]
-
-/-- After ideal column sort and wire-index keys, largest-key marking at `(r,j)` matches the
-    monotone `0–1` cell from `monotoneColumnSumsAtLevel`. -/
-theorem card_filter_row_ge {m : Nat} (rMin : Fin m) :
-    (Finset.univ.filter fun r' : Fin m => rMin ≤ r').card = m - rMin.val := by
-  classical
-  let e : { r' : Fin m // rMin ≤ r' } ≃ Fin (m - rMin.val) :=
-    { toFun := fun r => ⟨r.1.val - rMin.val, by have := r.2; have := r.1.isLt; omega⟩
-      invFun := fun i : Fin (m - rMin.val) =>
-        let r' : Fin m := ⟨rMin.val + i.val, by have := i.isLt; have := rMin.isLt; omega⟩
-        have hr : rMin ≤ r' := Fin.mk_le_mk.mpr (Nat.le_add_right rMin.val i.val)
-        ⟨r', hr⟩
-      left_inv := by
-        intro r
-        ext
-        simp
-        omega
-      right_inv := by
-        intro i
-        ext
-        simp }
-  calc
-    (Finset.univ.filter fun r' : Fin m => rMin ≤ r').card
-        = Fintype.card { r' : Fin m // rMin ≤ r' } := by rw [Fintype.card_subtype]
-    _ = Fintype.card (Fin (m - rMin.val)) := Fintype.card_congr e
-    _ = m - rMin.val := Fintype.card_fin (m - rMin.val)
-
-
-
-
-
-
-
-/-! **Theorem 5.1 from combinatorics + bridge** -/
-
-
-
-
-
-
 
 theorem scrambleGeometry_f_le_m (g : ScrambleGeometry) : g.f ≤ g.m := by
   have := g.hshape

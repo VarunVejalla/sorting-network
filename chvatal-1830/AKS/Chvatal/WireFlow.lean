@@ -35,8 +35,7 @@ theorem mem_blockOf : w ∈ blockOf s lo hi ↔ w ∈ s ∧ lo ≤ rankIn s w �
 
 theorem blockOf_subset : blockOf s lo hi ⊆ s := Finset.filter_subset _ _
 
-theorem upSet_subset : upSet s π ⊆ s :=
-  Finset.union_subset blockOf_subset blockOf_subset
+theorem upSet_subset : upSet s π ⊆ s := Finset.union_subset blockOf_subset blockOf_subset
 
 theorem downSet_subset : downSet s π τ j ⊆ s := blockOf_subset
 
@@ -51,7 +50,6 @@ theorem rankIn_lt_rankIn (hw : w ∈ s) (h : w < w') : rankIn s w < rankIn s w' 
 theorem rankIn_injOn : Set.InjOn (rankIn s) s :=
   StrictMonoOn.injOn fun _ hx _ _ h => rankIn_lt_rankIn hx h
 
-/-- W1. A block of ranks `[lo, hi)` of `s` has exactly `hi - lo` elements. -/
 theorem blockOf_card (hh : hi ≤ s.card) : (blockOf s lo hi).card = hi - lo := by
   have himg : s.image (rankIn s) = Finset.range s.card := Finset.eq_of_subset_of_card_le
     (by simp only [Finset.subset_iff, Finset.mem_image, Finset.mem_range]
@@ -75,14 +73,12 @@ theorem disjoint_blockOf (h : hi ≤ lo') :
   have := mem_blockOf.1 h2
   omega
 
-/-- W2 (size of the fringes). -/
 theorem upSet_card (hπ : 2 ∣ π) (hc : π ≤ s.card) : (upSet s π).card = π := by
   unfold upSet
   rw [Finset.card_union_of_disjoint (disjoint_blockOf (by omega)),
     blockOf_card (by omega), blockOf_card (by omega)]
   omega
 
-/-- W2 (size of a middle block). -/
 theorem downSet_card (hs : s.card = π + 64 * τ) (hj : j < 64) : (downSet s π τ j).card = τ := by
   have : (j + 1) * τ ≤ 64 * τ := Nat.mul_le_mul_right _ hj
   unfold downSet
@@ -101,7 +97,6 @@ theorem disjoint_downSet (hj : j < j') :
   have : (j + 1) * τ ≤ j' * τ := Nat.mul_le_mul_right _ hj
   exact disjoint_blockOf (by omega)
 
-/-- W2 (covering): every wire of `s` is in the fringes or in some middle block. -/
 theorem cover (hs : s.card = π + 64 * τ) (hπ : 2 ∣ π) (hw : w ∈ s) :
     w ∈ upSet s π ∨ ∃ j, j < 64 ∧ w ∈ downSet s π τ j := by
   have hr := rankIn_lt_card hw
@@ -144,7 +139,6 @@ def wireSets (F : FlowSizes d tf) : ℕ → KBag 64 d → Finset (Fin (64 ^ d))
 
 theorem wireSets_succ_eq (F : FlowSizes d tf) (t : ℕ) (b : KBag 64 d) :
     wireSets F (t + 1) b = parentPart F (wireSets F t) t b ∪ childPart F (wireSets F t) t b := rfl
-
 theorem KBag.parent_l (b : KBag 64 d) : b.parent.l = b.l - 1 := rfl
 
 theorem KBag.child_l (b : KBag 64 d) (j : ℕ) (hj : j < 64) (h : b.l < d) :
@@ -164,7 +158,6 @@ theorem KBag.child_inj (b : KBag 64 d) (j j' : ℕ) (hj : j < 64) (hj' : j' < 64
 theorem KBag.parent_child' (q : KBag 64 d) (j : ℕ) (hj : j < 64) (h : q.l < d) :
     (q.child j hj h).parent = q := KBag.child_parent q j hj h (by omega)
 
-/-- W3: where a wire at time `t+1` came from. -/
 theorem mem_wireSets_succ (F : FlowSizes d tf) (t : ℕ) (b : KBag 64 d) (w : Fin (64 ^ d)) :
     w ∈ wireSets F (t + 1) b ↔
       ∃ q : KBag 64 d, w ∈ wireSets F t q ∧
@@ -217,7 +210,6 @@ theorem wireSets_zero_of_ne (F : FlowSizes d tf) {b : KBag 64 d} (h : b ≠ KBag
     wireSets F 0 b = ∅ := by
   simp [wireSets, h]
 
-/-- W4 (main), packaged: node sizes, disjointness and completeness at every time `t ≤ tf`. -/
 theorem wireSets_inv (F : FlowSizes d tf) : ∀ t, t ≤ tf →
     (∀ b : KBag 64 d, (wireSets F t b).card = F.a b.l t) ∧
     (∀ b b' : KBag 64 d, b ≠ b' → Disjoint (wireSets F t b) (wireSets F t b')) ∧

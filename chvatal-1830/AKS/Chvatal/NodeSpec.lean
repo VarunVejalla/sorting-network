@@ -1,33 +1,20 @@
 module
 
-/-
-  # Node separator specification (interface between networks and the §4 counting)
-
-  A node holding `a` wires runs a comparator network `net : ComparatorNetwork a` on its
-  wires (cell `c` = the `c`-th smallest wire). Its output is cut into blocks by position:
-  the first `π/2` cells (`F₁`) and last `π/2` cells (`F₂`) go up; the middle `64·τ` cells
-  are split into 64 blocks of `τ` cells going to the children. Keys are normalized to their
-  ranks `0..a-1` among the node's keys, so an input is a permutation `x` of `Fin a`, and the
-  output `y := net.exec x` has `y c` = the rank of the key sitting at cell `c`.
-  Smaller keys belong at smaller cell indices (ascending order).
-
-  `NodeSpec` is the Chvátal Theorem 5.1 guarantee in two-sided position form:
-  * `bHigh p`: at most `EB` of the largest `p` keys sit above the bottom `p` cells
-    (cells `< a - p`), for every block boundary `p`;
-  * `bLow p`: at most `EB` of the smallest `p` keys sit below the top `p` cells
-    (cells `≥ p`), for every block boundary `p`;
-  * `fHigh j`: for `0 < j ≤ Jmax`, fewer than `εF·j` of the largest `j` keys are outside `F₂`;
-  * `fLow j`: symmetric for the smallest keys and `F₁`.
--/
-
 public import AKS.Sort.Defs
+
+/-! # Node separator specification
+
+A node on `a` wires runs `net`; its output `y = net.exec x` (`x` a permutation of `Fin a`, `y c` = rank of
+the key at cell `c`) is cut into the first `π/2` cells (`F₁`), the last `π/2` cells (`F₂`) and 64 blocks
+of `τ` middle cells. `NodeSpec` is the two-sided Theorem 5.1 guarantee: `bHigh`/`bLow` bound the
+misplaced largest/smallest `p` keys at block boundaries by `EB`; `fHigh`/`fLow` bound those outside
+`F₂`/`F₁` by `εF·j` for `0 < j ≤ Jmax`. -/
 
 @[expose] public section
 
 namespace Chvatal
 
-/-- Block boundaries (in cells) of a node that sends `π` wires up and `τ` wires to each of
-    its 64 children: `π/2 + j·τ` for `j = 0, …, 64`. -/
+/-- Block boundaries `π/2 + j·τ`, `j = 0, …, 64`. -/
 def blockBounds (π τ : ℕ) : Finset ℕ := (Finset.range 65).image fun j => π / 2 + j * τ
 
 /-- Two-sided position form of the Theorem 5.1 separator guarantee for one node. -/

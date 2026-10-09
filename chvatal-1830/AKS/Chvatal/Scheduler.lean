@@ -1,13 +1,4 @@
 module
-/-
-  # Chvátal §3 scheduler: capacity and allocation
-
-  Source: V. Chvátal, *Lecture Notes on the New AKS Sorting Network*,
-  Rutgers DCS-TR-294 (1992), §3. Checked in as `docs/dcs-tr-294.pdf`.
-
-  Status: scalar schedule definitions and basic identities.
-  Lemma 3.1 / 3.2 live in `SchedulerLemmas.lean`.
--/
 
 public import AKS.Chvatal.Tree
 public import Mathlib.Tactic.FieldSimp
@@ -17,12 +8,11 @@ public import Mathlib.Tactic.Ring
 
 @[expose] public section
 
+/-! # Chvátal §3 scheduler: capacity and allocation (DCS-TR-294 §3); Lemmas 3.1/3.2 in `SchedulerLemmas`. -/
+
 namespace Chvatal
 
-/-! **Parameters** -/
-
-/-- Scalar parameters controlling the §3 bag schedule.
-    Paper defaults at §7: `br = 64`, `A = br^2`, `nu = 1/br`. -/
+/-- Scalar parameters of the §3 bag schedule (§7: `br = 64`, `A = br^2`, `nu = 1/br`). -/
 structure ScheduleParams where
   br : Nat
   A : Rat
@@ -44,8 +34,6 @@ theorem A_pos : (0 : Rat) < p.A := by linarith [p.hA]
 theorem br_cast_pos : (0 : Rat) < (p.br : Rat) := by exact_mod_cast p.br_pos
 
 end ScheduleParams
-
-/-! **Capacity** -/
 
 /-- §3 capacity: `c(i,t) = N * A^i * nu^t / (A * nu * br)` with `N = br^d`. -/
 def capacity (p : ScheduleParams) (d i t : Nat) : Rat :=
@@ -87,48 +75,32 @@ theorem capacity_weighted_step (p : ScheduleParams) (d i t m : Nat) :
   induction m with
   | zero => simp [capacityRatio]
   | succ m ih =>
-    have hlev : i + 2 * (m + 1) = i + 2 * m + 1 + 1 := by omega
-    rw [hlev, capacity_succ_level, capacity_succ_level]
-    have hpow :
-        (p.br : Rat) ^ (2 * (m + 1)) =
-          (p.br : Rat) ^ (2 * m) * (p.br : Rat) ^ 2 := by
-      rw [show 2 * (m + 1) = 2 * m + 2 by omega, pow_add]
-    rw [hpow]
-    calc (p.br : Rat) ^ (2 * m) * (p.br : Rat) ^ 2 *
-            (p.A * (p.A * capacity p d (i + 2 * m) t))
-        = (p.A ^ 2 * (p.br : Rat) ^ 2) *
-            ((p.br : Rat) ^ (2 * m) * capacity p d (i + 2 * m) t) := by
-          rw [pow_two]; ring
-      _ = capacityRatio p * (capacityRatio p ^ m * capacity p d i t) := by
-          rw [ih]; rfl
-      _ = capacityRatio p ^ (m + 1) * capacity p d i t := by
-          rw [pow_succ]; ring
-
-/-! **Top and bottom levels** -/
+    rw [show i + 2 * (m + 1) = i + 2 * m + 1 + 1 by omega, capacity_succ_level,
+      capacity_succ_level]
+    unfold capacityRatio at *
+    linear_combination (p.A ^ 2 * (p.br : Rat) ^ 2) * ih
 
 /-- Discrete top/bottom schedule for stages `0 … tf`. -/
 structure LevelSchedule (p : ScheduleParams) (d : Nat) where
   tf : Nat
   alpha : Nat → Nat
   omega : Nat → Nat
-  alpha_le_d : ∀ t ≤ tf, alpha t ≤ d
   omega_le_d : ∀ t ≤ tf, omega t ≤ d
-  alpha_le_omega : ∀ t ≤ tf, alpha t ≤ omega t
   alpha_parity : ∀ t ≤ tf, alpha t % 2 = t % 2
   omega_parity : ∀ t ≤ tf, omega t % 2 = t % 2
-  alpha0 : alpha 0 = 0
-  omega0 : omega 0 = 0
   alpha_step : ∀ t, t + 1 ≤ tf →
     alpha (t + 1) ≤ alpha t + 1 ∧ alpha t ≤ alpha (t + 1) + 1
   omega_step : ∀ t, t + 1 ≤ tf →
     omega (t + 1) ≤ omega t + 1 ∧ omega t ≤ omega (t + 1) + 1
 
-/-! **Allocation** -/
+/-- Node `i` is active at time `t`. -/
+abbrev Active {p : ScheduleParams} {d : Nat} (sched : LevelSchedule p d) (i t : Nat) : Prop :=
+  t ≤ sched.tf ∧ sched.alpha t ≤ i ∧ i ≤ sched.omega t ∧ i % 2 = t % 2
 
 /-- §3 allocation `a(i,t)`. -/
 def allocation (p : ScheduleParams) (d : Nat) (sched : LevelSchedule p d)
     (i t : Nat) : Rat :=
-  if t ≤ sched.tf ∧ sched.alpha t ≤ i ∧ i ≤ sched.omega t ∧ i % 2 = t % 2 then
+  if Active sched i t then
     if i = sched.alpha t then
       capacity p d i t
     else if i = sched.omega t then
@@ -140,11 +112,29 @@ def allocation (p : ScheduleParams) (d : Nat) (sched : LevelSchedule p d)
     0
 
 theorem allocation_inactive (p : ScheduleParams) (d : Nat)
-    (sched : LevelSchedule p d) (i t : Nat)
-    (h : ¬(t ≤ sched.tf ∧ sched.alpha t ≤ i ∧ i ≤ sched.omega t ∧
-      i % 2 = t % 2)) :
+    (sched : LevelSchedule p d) (i t : Nat) (h : ¬Active sched i t) :
     allocation p d sched i t = 0 := by
   simp only [allocation, if_neg h]
 
+section Alloc
+
+variable (p : ScheduleParams) (d : Nat) (sched : LevelSchedule p d)
+
+theorem alloc_top {i t : Nat} (h : Active sched i t) (hα : i = sched.alpha t) :
+    allocation p d sched i t = capacity p d i t := by
+  unfold allocation; rw [if_pos h, if_pos hα]
+
+theorem alloc_bot {i t : Nat} (h : Active sched i t)
+    (hα : i ≠ sched.alpha t) (hω : i = sched.omega t) :
+    allocation p d sched i t =
+      (↑(p.br ^ d) : Rat) / (p.br : Rat) ^ i - capacity p d i t / capacityRatio p := by
+  unfold allocation; rw [if_pos h, if_neg hα, if_pos hω]
+
+theorem alloc_mid {i t : Nat} (h : Active sched i t)
+    (hα : i ≠ sched.alpha t) (hω : i ≠ sched.omega t) :
+    allocation p d sched i t = (1 - 1 / capacityRatio p) * capacity p d i t := by
+  unfold allocation; rw [if_pos h, if_neg hα, if_neg hω]
+
+end Alloc
 
 end Chvatal

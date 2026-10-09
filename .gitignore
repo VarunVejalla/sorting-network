@@ -6,6 +6,7 @@ build/
 data/
 rust/*/target/
 tmp/
+LLM-helpers/
 
 # Sandbox artifacts
 .bash_profile

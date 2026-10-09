@@ -9,7 +9,7 @@ module
   sort–scramble–sort pack. This replaces the `δ_F n < 1` shortcut (valid only for `n ≤ 31`).
 -/
 
-public import AKS.Chvatal.ModuleABridge
+public import AKS.Chvatal.ModuleA
 public import AKS.Chvatal.Lemma62FailE
 public import AKS.Chvatal.Lemma62Round
 public import AKS.Chvatal.Lemma62Bridge
@@ -33,7 +33,7 @@ theorem HasPackSemanticPropertyF.mono {m n f : ℕ} (hn : 0 < n) {σ : Scramble 
     (pack : SortScrambleSortPack m n hn σ) (hfm : f ≤ m) {δ δ' ε ε' : ℝ}
     (hδ : δ' ≤ δ) (hε : ε ≤ ε') (h : HasPackSemanticPropertyF hn pack f hfm δ ε) :
     HasPackSemanticPropertyF hn pack f hfm δ' ε' := by
-  rw [HasPackSemanticPropertyF_iff] at h ⊢
+  unfold HasPackSemanticPropertyF at h ⊢
   intro v j hj hjδ
   have hfn : (0 : ℝ) ≤ (f : ℝ) * n := by positivity
   have hjδ0 : (j : ℝ) ≤ δ * (f * n) :=

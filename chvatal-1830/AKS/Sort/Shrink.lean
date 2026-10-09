@@ -1,26 +1,11 @@
 module
-/-
-  # Wire Restriction for Comparator Networks
-
-  Restrict a network from n wires to m ≤ n wires by keeping only
-  comparators where both endpoints are in [0, m). This enables
-  non-power-of-two sorting networks: build at 2^⌈log₂ n⌉ then
-  restrict to n wires.
-
-  Main results:
-  • `ComparatorNetwork.restrictWires` — computable wire restriction
-  • `restrictWires_depth_le` — depth can only decrease
-  • `restrictWires_sorts` — sorting is preserved
--/
+/- Restrict a network from `n` to `m ≤ n` wires by keeping the comparators inside `[0, m)`. -/
 
 public import AKS.Sort.Monotone
 public import AKS.Sort.Depth
 public import AKS.Sort.ZeroOne
 
 @[expose] public section
-
-
-/-! **Wire Restriction** -/
 
 /-- The filter used by `restrictWires`: keep comparators with both endpoints in `[0, m)`. -/
 def restrictFilter {n : ℕ} (m : ℕ) (c : Comparator n) : Option (Comparator m) :=
@@ -36,10 +21,6 @@ def ComparatorNetwork.restrictWires {n : ℕ} (net : ComparatorNetwork n)
     (m : ℕ) (_hm : m ≤ n) : ComparatorNetwork m :=
   ⟨net.comparators.filterMap (restrictFilter m)⟩
 
-/-! **Depth bound** -/
-
-/-- Depth invariant: restricted wire times ≤ original wire times at
-    corresponding positions, and restricted running max ≤ original. -/
 private lemma restrictWires_depth_foldl {n m : ℕ} (hm : m ≤ n)
     (cs : List (Comparator n))
     (wt_n : Fin n → ℕ) (dm_n : ℕ) (wt_m : Fin m → ℕ) (dm_m : ℕ)
@@ -50,98 +31,40 @@ private lemma restrictWires_depth_foldl {n m : ℕ} (hm : m ≤ n)
   induction cs generalizing wt_n dm_n wt_m dm_m with
   | nil => simpa
   | cons c cs ih =>
+    have hc := c.h
+    rw [Fin.lt_def] at hc
     simp only [List.foldl_cons, List.filterMap_cons]
-    unfold restrictFilter
-    by_cases hi : c.i.val < m
-    · by_cases hj : c.j.val < m
-      · -- Both endpoints < m: comparator kept
-        simp only [hi, hj, dite_true, List.foldl_cons]
-        apply ih
-        · -- Wire times invariant after one depthStep on each side
-          intro k
-          simp only [Function.update_apply]
-          have h_ci := hwt ⟨c.i.val, hi⟩
-          have h_cj := hwt ⟨c.j.val, hj⟩
-          have hk := hwt k
-          -- Case split on val equalities to align Fin m and Fin n branches
-          by_cases hkj_val : k.val = c.j.val
-          · have hkj_m : k = ⟨c.j.val, hj⟩ := Fin.ext hkj_val
-            have hkj_n : (⟨k.val, by omega⟩ : Fin n) = c.j := Fin.ext hkj_val
-            rw [if_pos hkj_m, if_pos hkj_n]
-            exact Nat.add_le_add_right (Nat.max_le.mpr
-              ⟨le_trans h_ci (le_max_left _ _), le_trans h_cj (le_max_right _ _)⟩) 1
-          · have hkj_m : k ≠ ⟨c.j.val, hj⟩ := fun h => hkj_val (congr_arg Fin.val h)
-            have hkj_n : (⟨k.val, by omega⟩ : Fin n) ≠ c.j := fun h => hkj_val (congr_arg Fin.val h)
-            rw [if_neg hkj_m, if_neg hkj_n]
-            by_cases hki_val : k.val = c.i.val
-            · have hki_m : k = ⟨c.i.val, hi⟩ := Fin.ext hki_val
-              have hki_n : (⟨k.val, by omega⟩ : Fin n) = c.i := Fin.ext hki_val
-              rw [if_pos hki_m, if_pos hki_n]
-              exact Nat.add_le_add_right (Nat.max_le.mpr
-                ⟨le_trans h_ci (le_max_left _ _), le_trans h_cj (le_max_right _ _)⟩) 1
-            · have hki_m : k ≠ ⟨c.i.val, hi⟩ := fun h => hki_val (congr_arg Fin.val h)
-              have hki_n : (⟨k.val, by omega⟩ : Fin n) ≠ c.i := fun h => hki_val (congr_arg Fin.val h)
-              rw [if_neg hki_m, if_neg hki_n]
-              exact hk
-        · -- Running max invariant
-          dsimp only []
-          have h_ci := hwt ⟨c.i.val, hi⟩
-          have h_cj := hwt ⟨c.j.val, hj⟩
-          have : max (wt_m ⟨c.i.val, hi⟩) (wt_m ⟨c.j.val, hj⟩) ≤
-              max (wt_n c.i) (wt_n c.j) :=
-            Nat.max_le.mpr ⟨le_trans h_ci (le_max_left _ _), le_trans h_cj (le_max_right _ _)⟩
-          omega
-      · -- c.i < m, c.j ≥ m: comparator filtered out
-        simp only [hi, hj, dite_true, dite_false]
-        apply ih
-        · -- Wire times: original depthStep updates wires, restricted doesn't
-          intro k
-          simp only [Function.update_apply]
-          have hk := hwt k
-          -- k : Fin m has k.val < m, but c.j.val ≥ m, so ⟨k.val, _⟩ ≠ c.j
-          have hkj_n : (⟨k.val, by omega⟩ : Fin n) ≠ c.j := by
-            intro heq; have := congr_arg Fin.val heq; simp at this; omega
-          rw [if_neg hkj_n]
-          by_cases hki_val : k.val = c.i.val
-          · have hki_n : (⟨k.val, by omega⟩ : Fin n) = c.i := Fin.ext hki_val
-            rw [if_pos hki_n]
-            rw [hki_n] at hk
-            exact le_trans hk (le_trans (le_max_left _ _) (Nat.le_succ _))
-          · have hki_n : (⟨k.val, by omega⟩ : Fin n) ≠ c.i := fun h => hki_val (congr_arg Fin.val h)
-            rw [if_neg hki_n]; exact hk
-        · exact le_trans hdm (le_max_left _ _)
-    · -- c.i ≥ m: both endpoints ≥ m (since c.j > c.i), comparator filtered out
-      simp only [hi, dite_false]
-      apply ih
-      · intro k
-        simp only [Function.update_apply]
-        have hk := hwt k
-        -- k.val < m ≤ c.i.val, so ⟨k.val, _⟩ ≠ c.i
-        have hki_n : (⟨k.val, by omega⟩ : Fin n) ≠ c.i := by
-          intro heq; have := congr_arg Fin.val heq; simp at this; omega
-        -- c.j > c.i ≥ m > k.val, so ⟨k.val, _⟩ ≠ c.j
-        have hkj_n : (⟨k.val, by omega⟩ : Fin n) ≠ c.j := by
-          intro heq; have := congr_arg Fin.val heq; simp at this
-          have := c.h; exact absurd (show c.i.val < c.j.val from this) (by omega)
-        rw [if_neg hkj_n, if_neg hki_n]; exact hk
-      · omega
+    by_cases hi : c.i.val < m <;> by_cases hj : c.j.val < m
+    · simp only [restrictFilter, hi, hj, dite_true, List.foldl_cons]
+      have h1 : wt_m ⟨c.i.val, hi⟩ ≤ wt_n c.i := hwt ⟨c.i.val, hi⟩
+      have h2 : wt_m ⟨c.j.val, hj⟩ ≤ wt_n c.j := hwt ⟨c.j.val, hj⟩
+      refine ih _ _ _ _ (fun k ↦ ?_) (by dsimp only [depthStep]; omega)
+      have := hwt k
+      simp only [Function.update_apply, Fin.ext_iff]
+      split_ifs <;> omega
+    · simp only [restrictFilter, hi, hj, dite_true, dite_false]
+      refine ih _ _ _ _ (fun k ↦ ?_) (hdm.trans (le_max_left _ _))
+      have := k.isLt
+      simp only [Function.update_apply]
+      split_ifs with h1 h2
+      · have := congrArg Fin.val h1; simp at this; omega
+      · have := hwt k; rw [h2] at this; omega
+      · exact hwt k
+    · omega
+    · simp only [restrictFilter, hi, dite_false]
+      refine ih _ _ _ _ (fun k ↦ ?_) (hdm.trans (le_max_left _ _))
+      have := hwt k
+      have := k.isLt
+      simp only [Function.update_apply, Fin.ext_iff]
+      split_ifs <;> omega
 
 theorem restrictWires_depth_le {n : ℕ} (net : ComparatorNetwork n)
     (m : ℕ) (hm : m ≤ n) :
-    (net.restrictWires m hm).depth ≤ net.depth := by
-  simp only [ComparatorNetwork.depth, ComparatorNetwork.restrictWires]
-  exact restrictWires_depth_foldl hm net.comparators _ _ _ _
-    (fun _ ↦ le_refl _) (le_refl _)
+    (net.restrictWires m hm).depth ≤ net.depth :=
+  restrictWires_depth_foldl hm net.comparators _ _ _ _ (fun _ ↦ le_rfl) le_rfl
 
-
-/-! **General execution invariant** -/
-
-
-
-/-! **Sorting preservation** -/
-
-/-- Execution invariant for Bool inputs: positions `< m` agree with the
-    restricted execution, and positions `≥ m` remain `true`. -/
+/-- Execution invariant for Bool inputs: positions `< m` agree with the restricted
+    execution, and positions `≥ m` remain `true`. -/
 private lemma restrictWires_exec_foldl {n m : ℕ} (hm : m ≤ n)
     (cs : List (Comparator n))
     (w_n : Fin n → Bool) (w_m : Fin m → Bool)
@@ -155,128 +78,55 @@ private lemma restrictWires_exec_foldl {n m : ℕ} (hm : m ≤ n)
   induction cs generalizing w_n w_m with
   | nil => exact ⟨hinv_lo, hinv_hi⟩
   | cons c cs ih =>
+    have hc := c.h
+    rw [Fin.lt_def] at hc
     simp only [List.foldl_cons, List.filterMap_cons]
-    unfold restrictFilter
-    by_cases hi : c.i.val < m
-    · by_cases hj : c.j.val < m
-      · -- Both endpoints < m: comparator kept
-        simp only [hi, hj, dite_true, List.foldl_cons]
-        apply ih
-        · -- lo invariant: c.apply w_n agrees with c'.apply w_m at positions < m
-          intro k
-          simp only [Comparator.apply]
-          by_cases hki_val : k.val = c.i.val
-          · -- k maps to c.i
-            have hki_n : (⟨k.val, by omega⟩ : Fin n) = c.i := Fin.ext hki_val
-            have hki_m : k = ⟨c.i.val, hi⟩ := Fin.ext hki_val
-            rw [if_pos hki_n, if_pos hki_m]
-            congr 1 <;> [exact hinv_lo ⟨c.i.val, hi⟩; exact hinv_lo ⟨c.j.val, hj⟩]
-          · have hki_n : (⟨k.val, by omega⟩ : Fin n) ≠ c.i := fun h => hki_val (congr_arg Fin.val h)
-            have hki_m : k ≠ ⟨c.i.val, hi⟩ := fun h => hki_val (congr_arg Fin.val h)
-            rw [if_neg hki_n, if_neg hki_m]
-            by_cases hkj_val : k.val = c.j.val
-            · -- k maps to c.j
-              have hkj_n : (⟨k.val, by omega⟩ : Fin n) = c.j := Fin.ext hkj_val
-              have hkj_m : k = ⟨c.j.val, hj⟩ := Fin.ext hkj_val
-              rw [if_pos hkj_n, if_pos hkj_m]
-              congr 1 <;> [exact hinv_lo ⟨c.i.val, hi⟩; exact hinv_lo ⟨c.j.val, hj⟩]
-            · have hkj_n : (⟨k.val, by omega⟩ : Fin n) ≠ c.j := fun h => hkj_val (congr_arg Fin.val h)
-              have hkj_m : k ≠ ⟨c.j.val, hj⟩ := fun h => hkj_val (congr_arg Fin.val h)
-              rw [if_neg hkj_n, if_neg hkj_m]
-              exact hinv_lo k
-        · -- hi invariant: positions ≥ m stay true
-          intro i him
-          simp only [Comparator.apply]
-          have hne_i : i ≠ c.i := by intro heq; subst heq; omega
-          have hne_j : i ≠ c.j := by intro heq; subst heq; omega
-          rw [if_neg hne_i, if_neg hne_j]
-          exact hinv_hi i him
-      · -- c.i < m, c.j ≥ m: comparator filtered out
-        simp only [hi, hj, dite_true, dite_false]
-        apply ih
-        · -- lo invariant: c.apply w_n is no-op on positions < m
-          intro k
-          simp only [Comparator.apply]
-          by_cases hki_val : k.val = c.i.val
-          · -- k maps to c.i: min(w_n(c.i), w_n(c.j)) where c.j ≥ m so w_n(c.j) = true
-            have hki_n : (⟨k.val, by omega⟩ : Fin n) = c.i := Fin.ext hki_val
-            rw [if_pos hki_n]
-            have hcj_true := hinv_hi c.j (by omega)
-            rw [hcj_true, min_eq_left (Bool.le_true _)]
-            -- Goal: w_n c.i = w_m k
-            -- hinv_lo k : w_n ⟨k.val, _⟩ = w_m k, and ⟨k.val, _⟩ = c.i
-            rw [← hki_n]; exact hinv_lo k
-          · have hki_n : (⟨k.val, by omega⟩ : Fin n) ≠ c.i := fun h => hki_val (congr_arg Fin.val h)
-            rw [if_neg hki_n]
-            -- k.val < m but c.j.val ≥ m, so k ≠ c.j
-            have hkj_n : (⟨k.val, by omega⟩ : Fin n) ≠ c.j := by
-              intro heq; have := congr_arg Fin.val heq; simp at this; omega
-            rw [if_neg hkj_n]
-            exact hinv_lo k
-        · -- hi invariant: positions ≥ m stay true
-          intro i him
-          simp only [Comparator.apply]
-          by_cases hki : i = c.i
-          · -- c.i < m but i ≥ m — contradiction
-            subst hki; omega
-          · rw [if_neg hki]
-            by_cases hkj : i = c.j
-            · -- max(w_n(c.i), w_n(c.j)) where c.j ≥ m so w_n(c.j) = true
-              rw [if_pos hkj]
-              have := hinv_hi c.j (by omega)
-              rw [this, max_eq_right (Bool.le_true _)]
-            · rw [if_neg hkj]; exact hinv_hi i him
-    · -- c.i ≥ m: both endpoints ≥ m, comparator filtered, complete no-op
-      simp only [hi, dite_false]
-      apply ih
-      · intro k
-        simp only [Comparator.apply]
-        have hki_n : (⟨k.val, by omega⟩ : Fin n) ≠ c.i := by
-          intro heq; have := congr_arg Fin.val heq; simp at this; omega
-        rw [if_neg hki_n]
-        -- c.j > c.i ≥ m > k.val, so ⟨k.val, _⟩ ≠ c.j
-        have hkj_n : (⟨k.val, by omega⟩ : Fin n) ≠ c.j := by
-          intro heq; have := congr_arg Fin.val heq; simp at this
-          have := c.h; exact absurd (show c.i.val < c.j.val from this) (by omega)
-        rw [if_neg hkj_n]; exact hinv_lo k
-      · intro i him
-        simp only [Comparator.apply]
-        have h_ci_true := hinv_hi c.i (by omega)
-        have h_cj_true := hinv_hi c.j (by
-          have : c.i.val < c.j.val := c.h; omega)
-        by_cases hki : i = c.i
-        · rw [if_pos hki, h_ci_true, h_cj_true]; simp
-        · rw [if_neg hki]
-          by_cases hkj : i = c.j
-          · rw [if_pos hkj, h_ci_true, h_cj_true]; simp
-          · rw [if_neg hkj]; exact hinv_hi i him
+    by_cases hi : c.i.val < m <;> by_cases hj : c.j.val < m
+    · simp only [restrictFilter, hi, hj, dite_true, List.foldl_cons]
+      have h1 : w_n c.i = w_m ⟨c.i.val, hi⟩ := hinv_lo ⟨c.i.val, hi⟩
+      have h2 : w_n c.j = w_m ⟨c.j.val, hj⟩ := hinv_lo ⟨c.j.val, hj⟩
+      refine ih _ _ (fun k ↦ ?_) (fun i him ↦ ?_)
+      · have := hinv_lo k
+        simp only [Comparator.apply, Fin.ext_iff, h1, h2]
+        split_ifs <;> simp_all
+      · have := hinv_hi i him
+        simp only [Comparator.apply, Fin.ext_iff]
+        split_ifs <;> first | assumption | omega
+    · simp only [restrictFilter, hi, hj, dite_true, dite_false]
+      have h2 := hinv_hi c.j (by omega)
+      refine ih _ _ (fun k ↦ ?_) (fun i him ↦ ?_)
+      · have := hinv_lo k
+        have := k.isLt
+        simp only [Comparator.apply, Fin.ext_iff, h2]
+        split_ifs <;> simp_all
+      · have := hinv_hi i him
+        simp only [Comparator.apply, Fin.ext_iff, h2]
+        split_ifs <;> first | assumption | omega | simp
+    · omega
+    · simp only [restrictFilter, hi, dite_false]
+      have h1 := hinv_hi c.i (by omega)
+      have h2 := hinv_hi c.j (by omega)
+      refine ih _ _ (fun k ↦ ?_) (fun i him ↦ ?_)
+      · have := hinv_lo k
+        have := k.isLt
+        simp only [Comparator.apply, Fin.ext_iff]
+        split_ifs <;> first | assumption | omega
+      · have := hinv_hi i him
+        simp only [Comparator.apply, h1, h2]
+        split_ifs <;> first | assumption | simp
 
-/-- Sorting is preserved by wire restriction: if the original network sorts
-    all inputs, so does the restricted network. Uses the 0-1 principle to
-    reduce to Bool inputs, then shows restricted execution agrees with
-    padded execution on positions `[0, m)`. -/
+/-- Sorting is preserved by wire restriction (0-1 principle plus padding with `true`). -/
 theorem restrictWires_sorts {n : ℕ} (net : ComparatorNetwork n)
     (m : ℕ) (hm : m ≤ n)
     (hsort : ∀ v : Fin n → Bool, Monotone (net.exec v)) :
     (net.restrictWires m hm).Sorts := by
   apply zero_one_principle
-  intro v
-  -- Pad v with true at positions [m, n)
+  intro v i j hij
   let v' : Fin n → Bool := fun i ↦ if h : i.val < m then v ⟨i.val, h⟩ else true
-  -- The original network sorts v'
-  have hsorted : Monotone (net.exec v') := hsort v'
-  -- Restricted execution agrees with padded execution on [0, m)
   have hrestr := (restrictWires_exec_foldl hm net.comparators v' v
     (fun i ↦ by simp [v', i.isLt]) (fun i him ↦ by simp [v', show ¬(i.val < m) by omega])).1
-  -- Transfer monotonicity
-  intro i j hij
-  simp only [ComparatorNetwork.exec, ComparatorNetwork.restrictWires] at hrestr hsorted ⊢
+  simp only [ComparatorNetwork.exec, ComparatorNetwork.restrictWires] at hrestr hsort ⊢
   rw [← hrestr i, ← hrestr j]
-  exact hsorted (by exact hij)
-
-
-/-! **General execution correspondence** -/
-
-
+  exact hsort v' hij
 
 end

@@ -29,7 +29,7 @@ theorem event_depends_only_on_top {m n f : Nat} (hf : Even f)
     (σ : Scramble m n) (S : Finset (Fin n)) :
     onesAboveHalfFringe hf c σ S = onesAboveHalfFringe hf c' σ S := by
   refine Finset.sum_congr rfl fun r hr => ?_
-  have hr' : r.val < m - f / 2 := by simpa [aboveHalfFringeRows] using hr
+  have hr' : r.val < m - f / 2 := by simpa [topRows] using hr
   have hrow : monotoneRowOnes c r = monotoneRowOnes c' r := by
     ext col
     simp only [monotoneRowOnes, Finset.mem_filter, Finset.mem_univ, true_and]

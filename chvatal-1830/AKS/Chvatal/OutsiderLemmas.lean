@@ -1,9 +1,5 @@
 module
-/-
-  # Chvatal §4 Lemmas 4.2-4.4: algebraic cores
-
-  Source: V. Chvatal, DCS-TR-294 (1992), §4.
--/
+-- Chvátal §4 Lemmas 4.2-4.4: algebraic cores
 
 public import AKS.Chvatal.SeparatorContract
 
