@@ -26,7 +26,9 @@ NOT modelled and possibly binding: integrality/divisibility of the flow table fo
 parameters (we only allow powers of two), the Lean formalization's current restriction eps_F =
 1/(8e7), f >= 1.7e10, delta_F <= 128/4095 (mode --lean), and the exact schedule-derived t_f.
 
-Modes:  --mode paper   (general eps_F, delta_F <= 1/25: what the paper's theorems allow)
+Modes:  --mode paper   (the paper's Theorem 5.1 condition on eps_F taken literally, delta_F <= 1/25)
+        --mode proof   (general eps_F, but with the F-condition our Lean proof structure supports:
+                        sup_u xval <= 0.3223 numerically; delta_F = 128/4095)
         --mode lean    (what the current Lean proof of Property F covers)
 """
 import argparse
@@ -56,6 +58,46 @@ def eps_F_min(f):
     return eps
 
 
+X_MAX = 0.3223    # two-sided: 2*(1/100 + 1.025*x/(1-x)) < 1  <=>  x < 0.3223
+
+
+def x_sup(f, eps, deltaF):
+    """Sup over u = j/(f n) <= deltaF of the numeric quantity x of Lemma 6.2's proof (Lean `xval`):
+         x(u) = (e^2 (f+2)^2/(4 u f))^(2/(eps f)) * (e/(2 eps u))^(2/f) * 2 e u.
+       The exponent of u is 1 - 2/(eps f) - 2/f; when it is positive x is increasing in u and the
+       sup is at u = deltaF (otherwise we fall back to a grid scan in u)."""
+    def lx(u):
+        return (2 / (eps * f)) * (2 + 2 * math.log(f + 2) - math.log(4 * u * f))             + (2 / f) * (1 + math.log(1 / (2 * eps * u))) + math.log(2 * E * u)
+    if 1 - 2 / (eps * f) - 2 / f > 0:
+        return math.exp(lx(deltaF))
+    return math.exp(max(lx(deltaF * i / 400) for i in range(1, 401)))
+
+
+_F_CACHE = {}
+
+
+def eps_F_min_proof(f, deltaF):
+    key = (round(math.log(f), 9), deltaF)
+    if key not in _F_CACHE:
+        _F_CACHE[key] = _eps_F_min_proof(f, deltaF)
+    return _F_CACHE[key]
+
+
+def _eps_F_min_proof(f, deltaF):
+    """Least eps (>= 4e/f) with sup_u x(u) <= X_MAX, i.e. what our Lean proof structure of Lemma 6.2
+       (xval <= 3/10 style numerics) actually supports; x is decreasing in eps."""
+    lo, hi = 4 * E / f, 1.0
+    if x_sup(f, hi, deltaF) > X_MAX:
+        return None
+    for _ in range(80):
+        mid = math.sqrt(lo * hi)
+        if x_sup(f, mid, deltaF) <= X_MAX:
+            hi = mid
+        else:
+            lo = mid
+    return hi
+
+
 def f_over_m(k, A, nu):
     return (nu / (2 * A * k)) * (1 - 1 / (A * nu * k)) / (1 - 1 / (A * k) ** 2)
 
@@ -73,7 +115,12 @@ def evaluate(x, y, z, L, mode="paper"):
     f = m * f_over_m(k, A, nu)
     if f < 10:
         return False, "f < 10"
-    if mode == "paper":
+    if mode == "proof":
+        epsF = eps_F_min_proof(f, deltaF)
+        if epsF is None:
+            return False, "no eps_F (xval)"
+        epsF = 1 / math.floor(1 / epsF)
+    elif mode == "paper":
         epsF = eps_F_min(f)
         if epsF is None:
             return False, "no eps_F"
@@ -155,9 +202,62 @@ def relaxed_lower_bound(step=0.1):
     return best
 
 
+def feasible_real(x, y, z, L, deltaF=128 / 4095):
+    """Real-parameter version of evaluate(mode='proof') (no power-of-two or integrality
+       restrictions): returns epsB_max / epsB_need (>= 1 means feasible) or 0."""
+    k, A, nu = 2.0 ** x, 2.0 ** y, 2.0 ** -z
+    if A * nu <= 1 or L < 2 * (x + y):
+        return 0.0
+    mu = min(nu / (A * k * k), 0.5 * deltaF * (A * nu * k - 1) / (A * A * k * k))
+    f = 2.0 ** L * f_over_m(k, A, nu)
+    if f < 10:
+        return 0.0
+    epsF = eps_F_min_proof(f, deltaF)
+    if epsF is None:
+        return 0.0
+    a_, b_ = A * k / nu, epsF / (A * nu)
+    disc = 1 - 4 * a_ * b_
+    if disc < 0:
+        return 0.0
+    delta = (1 - math.sqrt(disc)) / (2 * a_)
+    if delta * k * A >= 1:
+        return 0.0
+    sib = delta * k * A * A / (1 - (delta * k * A) ** 2)
+    slack = (A * nu * k - 2 * A * nu + 1) / (2 * A * A * k * k)
+    emax = mu * (A * nu - 1 - (k - 1) * sib - delta * A * A * k) - slack
+    return emax / eps_B_need(L) if emax > 0 else 0.0
+
+
+def relaxed_proof_bound(step=0.25):
+    """Continuous optimum of the slope with real x, y, z, L under the constraints of mode 'proof'
+       (F-condition = what our Lean proof structure supports); no integrality, no power of two."""
+    best = (float("inf"), None)
+    x = 2.0
+    while x <= 9.0:
+        z = 1.0
+        while z <= 9.0:
+            y = z + 0.5
+            while y <= z + 14:
+                lo, hi = 2 * (x + y), 200.0
+                if feasible_real(x, y, z, hi) >= 1:
+                    for _ in range(30):
+                        mid = (lo + hi) / 2
+                        if feasible_real(x, y, z, mid) >= 1:
+                            hi = mid
+                        else:
+                            lo = mid
+                    sl = (hi + 1) * (hi + 2) * (x + y) / (x * z)
+                    if sl < best[0]:
+                        best = (sl, (x, y, z, hi))
+                y += step
+            z += step
+        x += step
+    return best
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--mode", choices=["paper", "lean"], default="paper")
+    ap.add_argument("--mode", choices=["paper", "proof", "lean"], default="proof")
     ap.add_argument("--xmax", type=int, default=12)
     ap.add_argument("--ymax", type=int, default=40)
     ap.add_argument("--zmax", type=int, default=24)
@@ -176,6 +276,9 @@ def main():
         print(f"{s:7.1f} {x:2d} {y:2d} {z:2d} {L:3d}  {d['mu']:.2e}  {d['delta']:.2e}  {d['epsF']:.2e}  "
               f"{d['epsB_need']:.2e}  {d['epsB_max']:.2e}  {d['f']:.2e}")
     if a.relax:
+        sp, pp = relaxed_proof_bound()
+        print(f"continuous optimum, proof-mode F-condition: slope >= {sp:.1f} at (x,y,z,L) = "
+              f"{tuple(round(v, 2) for v in pp)}")
         s, p = relaxed_lower_bound()
         print(f"continuous relaxation lower bound: slope >= {s:.1f} at (x,y,z,L) = {tuple(round(v, 2) for v in p)}")
 
