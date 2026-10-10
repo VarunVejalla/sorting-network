@@ -14,7 +14,7 @@ module
 -/
 
 public import AKS.Chvatal.RowScramble
-public import AKS.Bitonic.TightDepth
+public import AKS.Bitonic.Shrink
 
 @[expose] public section
 

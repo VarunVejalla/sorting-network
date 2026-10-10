@@ -114,21 +114,15 @@ def ComparatorNetwork.append {n : ℕ} (net₁ net₂ : ComparatorNetwork n) :
   ⟨net₁.comparators ++ net₂.comparators⟩
 
 /-- **Depth of concatenated networks.** -/
-theorem depth_append {n : ℕ} (net₁ net₂ : ComparatorNetwork n) :
-    (⟨net₁.comparators ++ net₂.comparators⟩ : ComparatorNetwork n).depth ≤
-    net₁.depth + net₂.depth := by
-  simp only [ComparatorNetwork.depth, List.foldl_append]
+theorem ComparatorNetwork.depth_append_le {n : ℕ} (net₁ net₂ : ComparatorNetwork n) :
+    (net₁.append net₂).depth ≤ net₁.depth + net₂.depth := by
+  simp only [ComparatorNetwork.depth, ComparatorNetwork.append, List.foldl_append]
   have := foldl_depth_pointwise_shift net₂.comparators
     (net₁.comparators.foldl depthStep (fun _ ↦ 0, 0)).1 (fun _ ↦ 0) _ 0
     (net₁.comparators.foldl depthStep (fun _ ↦ 0, 0)).2
     (fun k ↦ by simpa using wt_le_running_max net₁.comparators (fun _ ↦ 0) 0 (fun _ ↦ le_rfl) k)
     le_rfl
   simpa using this
-
-theorem ComparatorNetwork.depth_append_le {n : ℕ}
-    (net₁ net₂ : ComparatorNetwork n) :
-    (net₁.append net₂).depth ≤ net₁.depth + net₂.depth :=
-  depth_append net₁ net₂
 
 /-- Processing scatter-embedded comparators maintains the running max (`depthStep` only
     cares about which wires coincide). -/
