@@ -243,24 +243,6 @@ theorem columnSortNetwork_columnMonotone {m n : Nat} (hn : 0 < n) {α : Type} [L
     rw [columnSortNetwork_exec_matrixWire, columnSortNetwork_exec_matrixWire]
     exact ((bitonicNetwork_sorts m) (v := v ∘ columnWireEmbed m n hn j)) hrs
 
-/-- Column-monotone `Bool` inputs agreeing on every `matrixWire` cell are equal. -/
-theorem ColumnMonotoneInput.eq_of_matrixWire_eq {m n : Nat} (hn : 0 < n)
-    {f g : Fin (m * n) → Bool} (_hf : ColumnMonotoneInput m n hn f)
-    (_hg : ColumnMonotoneInput m n hn g)
-    (h : ∀ (r : Fin m) (j : Fin n), f (matrixWire m n r j) = g (matrixWire m n r j)) :
-    f = g := by
-  funext w
-  rw [← matrixWire_matrixRow_col hn w]
-  exact h (matrixRow m n hn w) (matrixCol m n hn w)
-
-/-- Key at or above the largest-`i·n` block (Chvátal matrix Property B threshold). -/
-abbrev isAmongLargestKeysBlock {m n : Nat} (i : Nat) (key : Fin (m * n)) : Prop :=
-  m * n - i * n ≤ key.val
-
-/-- Threshold marking for largest-`i·n` keys at a wire. -/
-def largestKeyThreshold01 {m n : Nat} (i : Nat) (key : Fin (m * n)) : Bool :=
-  decide (isAmongLargestKeysBlock i key)
-
 /-- Monotone `0–1` matrix from column sums `c` (ones in bottom `(c j)` rows of column `j`). -/
 def monotoneMatrixBool {m n : Nat} (hn : 0 < n) (c : MonotoneColumnSums m n)
     (w : Fin (m * n)) : Bool :=
@@ -270,18 +252,6 @@ theorem monotoneMatrixBool_matrixWire {m n : Nat} (hn : 0 < n) (c : MonotoneColu
     (r : Fin m) (j : Fin n) :
     monotoneMatrixBool hn c (matrixWire m n r j) ↔ j ∈ monotoneRowOnes c r := by
   simp [monotoneMatrixBool, matrixWire_row_col]
-
-theorem ColumnMonotoneInput_monotoneMatrixBool {m n : Nat} (hn : 0 < n)
-    (c : MonotoneColumnSums m n) :
-    ColumnMonotoneInput m n hn (monotoneMatrixBool hn c) := by
-  intro j r s hrs
-  simp only [monotoneMatrixBool, matrixWire_row_col, decide_eq_true_iff]
-  by_cases hr : j ∈ monotoneRowOnes c r
-  · have hs : j ∈ monotoneRowOnes c s := by
-      simp only [monotoneRowOnes, Finset.mem_filter, Finset.mem_univ, true_and] at hr ⊢
-      exact Nat.le_trans (Nat.sub_le_sub_left (Fin.mk_le_mk.mp hrs) m) hr
-    simp [hr, hs]
-  · by_cases hs : j ∈ monotoneRowOnes c s <;> simp [hr, hs]
 
 /-- Per-column count of scrambled ones in rows strictly above the bottom `i` block. -/
 def scrambledColSumInAboveBottomRows {m n : Nat} (c : MonotoneColumnSums m n)
@@ -329,7 +299,7 @@ def largestKeyThresholdJ01 {m n : Nat} (j : Nat) (key : Fin (m * n)) : Bool :=
 def HasPackSemanticPropertyB {m n : Nat} (hn : 0 < n) (σ : Scramble m n) (epsB : ℝ) : Prop :=
   ∀ (v : Equiv.Perm (Fin (m * n))) (i : Nat), 1 ≤ i → i ≤ m →
     (matrixOnesCountInRegion hn
-        (semanticExec hn σ fun w => largestKeyThreshold01 (m := m) (n := n) i (v w)) i : ℝ) <
+        (semanticExec hn σ fun w => largestKeyThresholdJ01 (m := m) (n := n) (i * n) (v w)) i : ℝ) <
       (epsB / 2) * (m * n)
 
 /-- Matrix Property F for the semantic sort–scramble–sort map. -/

@@ -1,30 +1,22 @@
 module
 
-public import AKS.Chvatal.Lemma62FailReduce
-public import AKS.Chvatal.Lemma62Ratio
+public import AKS.Chvatal.Lemma62FailE
 
 /-! # Rounding `j` up to a multiple of `1/ε` and summing the geometric series (Lemma 6.2)
 
-* `HasPaperPropertyF`: the corrected Property F (the event class ties `j` to the ones of `c`).
 * `round_event`: a bad event at `(c, j)` yields a bad event at `j' = 8·10^7·E`, `E = ⌈ε j⌉`,
   in `badSetF`, with `Lemma62Params`.
-* `paperF_fail_fraction`: union bound over `E ∈ [1, ⌈ε f n⌉]` and `∑ (3/10)^E ≤ 3/7`, given the
-  per-`E` failure bound `hfail`. -/
+* `paperF_fail_fraction`: union bound over `E ∈ [1, ⌈ε f n⌉]` with the per-`E` bound `fail_prob_at_E`
+  and `∑ (3/10)^E ≤ 3/7`. -/
 
 @[expose] public section
 
 namespace Chvatal
 
-/-- Corrected paper Property F. -/
-def HasPaperPropertyF {m n f : ℕ} (hf : Even f) (σ : Scramble m n) (deltaF epsF : ℝ) : Prop :=
-  ∀ (c : MonotoneColumnSums m n) (j : ℕ), totalColumnOnes c = j → 0 < j →
-    (j : ℝ) ≤ deltaF * (f * n) →
-      ∀ S : Finset (Fin n), ¬ fringeColumnEventBad hf deltaF epsF c σ j S
-
 /-- The fringe count is monotone in the column sums. -/
 theorem ones_mono {m n f : ℕ} (hf : Even f) {c c' : MonotoneColumnSums m n}
     (h : ∀ col, c col ≤ c' col) (σ : Scramble m n) (S : Finset (Fin n)) :
-    onesAboveHalfFringe hf c σ S ≤ onesAboveHalfFringe hf c' σ S := by
+    onesAboveHalfFringe f c σ S ≤ onesAboveHalfFringe f c' σ S := by
   refine Finset.sum_le_sum fun r _ => Finset.card_le_card
     (Finset.inter_subset_inter (Finset.image_subset_image fun x hx => ?_) subset_rfl)
   simp only [monotoneRowOnes, Finset.mem_filter, Finset.mem_univ, true_and] at hx ⊢
@@ -73,10 +65,10 @@ theorem round_event {m n f : ℕ} (hf : Even f) (hfm : f ≤ m) (hfbig : 17 * 10
     (hn : 16 ≤ n) (c : MonotoneColumnSums m n) (σ : Scramble m n) (j : ℕ) (S : Finset (Fin n))
     (htot : totalColumnOnes c = j) (hj0 : 0 < j)
     (hjδ : (j : ℝ) ≤ (128 / 4095 : ℝ) * (f * n))
-    (hbad : fringeColumnEventBad hf (128 / 4095) eps c σ j S) :
+    (hbad : fringeColumnEventBad f c σ j S) :
     ∃ E : ℕ, 1 ≤ E ∧ E ≤ ⌈eps * ((f : ℝ) * n)⌉₊ ∧
       Lemma62Params n (f : ℝ) ((8 * 10 ^ 7 * E : ℕ) : ℝ) ∧
-      σ ∈ badSetF (m := m) (n := n) hf (128 / 4095) eps (8 * 10 ^ 7 * E) := by
+      σ ∈ badSetF (m := m) (n := n) f (8 * 10 ^ 7 * E) := by
   classical
   have heps := eps_pos
   have hfR : (17 * 10 ^ 9 : ℝ) ≤ f := by exact_mod_cast hfbig
@@ -102,12 +94,12 @@ theorem round_event {m n f : ℕ} (hf : Even f) (hfm : f ≤ m) (hfbig : 17 * 10
   have hf2 := cast_half_of_even hf
   unfold fringeColumnEventBad at hbad
   rw [← hf2] at hbad
-  have hlt : f / 2 * S.card < onesAboveHalfFringe hf c σ S := by
-    have : ((f / 2 * S.card : ℕ) : ℝ) < onesAboveHalfFringe hf c σ S := by
+  have hlt : f / 2 * S.card < onesAboveHalfFringe f c σ S := by
+    have : ((f / 2 * S.card : ℕ) : ℝ) < onesAboveHalfFringe f c σ S := by
       push_cast; nlinarith [mul_pos heps hjR]
     exact_mod_cast this
-  have hEN : f / 2 * S.card + E ≤ onesAboveHalfFringe hf c σ S := by
-    have h1 : E ≤ onesAboveHalfFringe hf c σ S - f / 2 * S.card := by
+  have hEN : f / 2 * S.card + E ≤ onesAboveHalfFringe f c σ S := by
+    have h1 : E ≤ onesAboveHalfFringe f c σ S - f / 2 * S.card := by
       apply Nat.ceil_le.mpr
       rw [Nat.cast_sub hlt.le]; push_cast; linarith
     omega
@@ -120,7 +112,7 @@ theorem round_event {m n f : ℕ} (hf : Even f) (hfm : f ≤ m) (hfbig : 17 * 10
   refine ⟨Finset.mem_univ _, c', by omega, S, ?_⟩
   unfold fringeColumnEventBad
   rw [← hf2, show eps * (j' : ℝ) = E from eps_mul_J E]
-  have h1 : ((f / 2 * S.card + E : ℕ) : ℝ) ≤ (onesAboveHalfFringe hf c' σ S : ℝ) := by
+  have h1 : ((f / 2 * S.card + E : ℕ) : ℝ) ≤ (onesAboveHalfFringe f c' σ S : ℝ) := by
     exact_mod_cast hEN.trans (ones_mono hf hcc' σ S)
   push_cast at h1
   exact h1
@@ -135,21 +127,18 @@ lemma geom_Icc_le (K : ℕ) : ∑ E ∈ Finset.Icc 1 K, (3 / 10 : ℝ) ^ E ≤ 3
   linarith [pow_nonneg (by norm_num : (0 : ℝ) ≤ 3 / 10) K]
 
 open Classical in
-/-- The corrected Property F fails on at most `44%` of scrambles, given per-`E` bounds. -/
+/-- The corrected Property F fails on at most `44%` of scrambles, . -/
 theorem paperF_fail_fraction {m n f : ℕ} (hf : Even f) (hfm : f ≤ m) (hfbig : 17 * 10^9 ≤ f)
-    (hn : 16 ≤ n)
-    (hfail : ∀ (j E : ℕ), 1 ≤ E → (E : ℝ) = eps * j → Lemma62Params n (f : ℝ) (j : ℝ) →
-      ((badSetF (m := m) (n := n) hf (128/4095) eps j).card : ℝ) ≤
-        1.025 * (3/10 : ℝ)^E * (Fintype.card (Scramble m n) : ℝ)) :
+    (hn : 16 ≤ n) :
     (((Finset.univ.filter fun σ : Scramble m n =>
-        ¬ HasPaperPropertyF hf σ (128/4095) eps).card : ℝ) ≤
+        ¬ HasPaperPropertyF f σ).card : ℝ) ≤
       44/100 * (Fintype.card (Scramble m n) : ℝ)) := by
   set K := ⌈eps * ((f : ℝ) * n)⌉₊
   set I := (Finset.Icc 1 K).filter
     (fun E => Lemma62Params n (f : ℝ) ((8 * 10 ^ 7 * E : ℕ) : ℝ)) with hI
   have hsub : (Finset.univ.filter fun σ : Scramble m n =>
-        ¬ HasPaperPropertyF hf σ (128/4095) eps) ⊆
-      I.biUnion fun E => badSetF (m := m) (n := n) hf (128/4095) eps (8 * 10 ^ 7 * E) := by
+        ¬ HasPaperPropertyF f σ) ⊆
+      I.biUnion fun E => badSetF (m := m) (n := n) f (8 * 10 ^ 7 * E) := by
     intro σ hσ
     simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hσ
     unfold HasPaperPropertyF at hσ
@@ -160,15 +149,15 @@ theorem paperF_fail_fraction {m n f : ℕ} (hf : Even f) (hfm : f ≤ m) (hfbig 
     exact Finset.mem_biUnion.mpr ⟨E, by
       rw [hI, Finset.mem_filter, Finset.mem_Icc]; exact ⟨⟨hE1, hEK⟩, hpar⟩, hmem⟩
   have hcardR : (((Finset.univ.filter fun σ : Scramble m n =>
-        ¬ HasPaperPropertyF hf σ (128/4095) eps).card : ℕ) : ℝ) ≤
-      ∑ E ∈ I, ((badSetF (m := m) (n := n) hf (128/4095) eps (8 * 10 ^ 7 * E)).card : ℝ) := by
+        ¬ HasPaperPropertyF f σ).card : ℕ) : ℝ) ≤
+      ∑ E ∈ I, ((badSetF (m := m) (n := n) f (8 * 10 ^ 7 * E)).card : ℝ) := by
     exact_mod_cast (Finset.card_le_card hsub).trans Finset.card_biUnion_le
   have hterm : ∀ E ∈ I,
-      ((badSetF (m := m) (n := n) hf (128/4095) eps (8 * 10 ^ 7 * E)).card : ℝ) ≤
+      ((badSetF (m := m) (n := n) f (8 * 10 ^ 7 * E)).card : ℝ) ≤
         1.025 * (3/10 : ℝ)^E * (Fintype.card (Scramble m n) : ℝ) := by
     intro E hE
     rw [hI, Finset.mem_filter, Finset.mem_Icc] at hE
-    exact hfail _ E hE.1.1 (eps_mul_J E).symm hE.2
+    exact fail_prob_at_E hf _ E hE.1.1 (eps_mul_J E).symm hE.2
   have hg : ∑ E ∈ I, (3 / 10 : ℝ) ^ E ≤ 3 / 7 :=
     (Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
       (fun _ _ _ => by positivity)).trans (geom_Icc_le K)

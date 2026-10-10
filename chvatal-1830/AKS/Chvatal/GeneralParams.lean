@@ -3,7 +3,8 @@ module
 /- `Theorem51Params g` for every §7 scramble geometry: `ε_B` is the paper's
 `paperOrdinaryEpsB` / `paperRootEpsB` (valid for `m ≥ 2^59` resp. `m ≥ 2^79`). -/
 
-public import AKS.Chvatal.GeneralSeparator
+public import AKS.Chvatal.Theorem51Core
+public import AKS.Chvatal.Lemma62Ratio
 public import Mathlib.Analysis.Complex.ExponentialBounds
 public import Mathlib.Analysis.SpecialFunctions.Log.Basic
 

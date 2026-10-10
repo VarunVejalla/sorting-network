@@ -48,7 +48,7 @@ headline results, and guards), and `Misc/Fin.lean`.
 
 ### Proof map (`AKS/Chvatal/`)
 
-**A. Separators (paper §5–§6).** `Params`, `Theorem51Core`, `GeneralParams`, `GeneralSeparator`,
+**A. Separators (paper §5–§6).** `Params`, `Theorem51Core`, `GeneralParams`,
 `Lemma61`, `Lemma62*` (tops counting, tails, ratios, failure reduction, rounding),
 `Lemma63`, `MatrixBridge`, `SortedColumnDecode`, `PhysicalPack` (the physical sort–scramble–sort network),
 `PackSpec`, `FlipSpec`, `NodeSpec` (two-sided node guarantee), `NodeGeom` (geometry per node type),
@@ -61,9 +61,9 @@ headline results, and guards), and `Misc/Fin.lean`.
 `StageKernel`, `RoutingFromP`, `SeparatorContract`,
 `ChildSend`, `StageCountsFill`.
 
-**C. Assembly (paper §7).** `KernelSetup` (the invariant parameters `invariantReal`),
+**C. Assembly (paper §7).** `KernelSetup` (the numeric instance `invMu` etc.),
 `BadSendField`, `FringeSendField`, `RealKernel`, `RealNets` (per-node networks, `RealSpecs`),
-`RealInduction` (root step, induction, purity at level `d − 6`), `RealPurity`, `RealBlocks`
+`RealInduction` (root step, induction, purity at level `d − 6`), `RealBlocks` (also holds `realNets_purity`)
 (rank-pure level-`(d − 7)` blocks), `FinalSorts` (final block sorters + untangling to a
 standard network), `RealNetwork` (stage concatenation, depth), `RealSorter`, `DepthSkeleton`
 (`totalDepth`, the padded inequality).

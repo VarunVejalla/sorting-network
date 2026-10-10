@@ -1,14 +1,36 @@
 module
 
-public import AKS.Chvatal.RealPurity
+public import AKS.Chvatal.RealNets
+public import AKS.Chvatal.RealKernel
+public import AKS.Chvatal.RealInduction
+public import AKS.Chvatal.BadSendField
+public import AKS.Chvatal.FringeSendField
 
 @[expose] public section
 
 /-! Final blocks (Chvátal §7): at `t_f = 3d - 20` only level `d - 6` is occupied (`64^6` wires per
 node); the children of each level-`(d-7)` bag form disjoint blocks of `2^42` wires covering everything,
-and rank purity turns each block into a sorted-rank interval. -/
+and rank purity turns each block into a sorted-rank interval. `realNets_purity`: after the `t_f` stages
+every level-`(d-6)` bag holds no order-2 outsider (stage kernels from the two field theorems, then
+`real_purity`). -/
 
 namespace Chvatal
+
+/-- **Purity of the real network.** For `d ≥ 14` (needed for the root's `m = 2^79` pack) and
+every input permutation `v`, after `t_f` stages of `realNets` the keys on any level-`(d-6)`
+bag are all addressed below its ancestor of order 1 (no order-2 strangers). -/
+theorem realNets_purity {d : ℕ} (hd14 : 14 ≤ d) (v : Equiv.Perm (Fin (64 ^ d)))
+    (b : KBag 64 d) (hb : b.l = d - 6) :
+    b.strangers 2 id
+      ((execPlacement (flowSizes7 d (by omega)) (realNets d (by omega)) v (tf7 d) le_rfl).regs b)
+      (by norm_num : 1 ≤ 64) = 0 :=
+  real_purity (by omega) (realNets d (by omega)) (realNets_specs (by omega) hd14) v
+    (fun t ht1 ht hP =>
+      realStageKernel (by omega) (realNets d (by omega)) v t ht hP
+        (badSendField_real (by omega) (realNets d (by omega)) (realNets_specs (by omega) hd14)
+          v t ht1 ht hP)
+        (fringeSendField_real (by omega) (realNets d (by omega)) (realNets_specs (by omega) hd14)
+          v t ht1 ht hP)) b hb
 
 section Blocks
 
@@ -18,10 +40,10 @@ variable (d : ℕ) (hd : 7 ≤ d)
 theorem flowA7_tf (l : ℕ) :
     flowA7 d hd l (tf7 d) = if l = d - 6 then 64 ^ 6 else 0 := by
   by_cases h2 : 2 ≤ tf7 d
-  · have ha := levelSchedule7_alpha_tf d hd
-    have ho := levelSchedule7_omega_tf d hd
+  · have ha := alpha7_tf d hd
+    have ho := omega7_tf d hd
     have hc := capacity_meet7 d hd
-    have hf : (levelSchedule7 d hd).tf = tf7 d := rfl
+    have hf : tf7 d = tf7 d := rfl
     rw [hf] at ha ho
     simp only [meetLevel7] at ha ho hc
     unfold flowA7
@@ -36,11 +58,11 @@ theorem flowA7_tf (l : ℕ) :
     simp only [Active, ha, ho]
     by_cases hl : l = d - 6
     · subst hl
-      have hc' : capacity params7 d (d - 6) (tf7 d) = ((64 ^ 6 : ℕ) : ℚ) := by
+      have hc' : capacity d (d - 6) (tf7 d) = ((64 ^ 6 : ℕ) : ℚ) := by
         rw [hc]; push_cast; rfl
       rw [if_pos ⟨hf.ge, le_refl _, le_refl _, hpar⟩, if_pos rfl, if_pos rfl, hc']
       simp
-    · have hn : ¬ (tf7 d ≤ (levelSchedule7 d hd).tf ∧ d - 6 ≤ l ∧ l ≤ d - 6 ∧
+    · have hn : ¬ (tf7 d ≤ tf7 d ∧ d - 6 ≤ l ∧ l ≤ d - 6 ∧
           l % 2 = tf7 d % 2) := fun h => hl (by omega)
       rw [if_neg hn, if_neg hl]
       simp

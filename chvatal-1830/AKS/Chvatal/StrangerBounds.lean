@@ -1,6 +1,6 @@
 module
 
-public import AKS.Chvatal.ChildSend
+public import AKS.Chvatal.StageKernel
 public import AKS.Chvatal.WireFlow
 
 @[expose] public section
@@ -16,73 +16,69 @@ open Finset
 
 section Children
 
-theorem capacity_two_levels (p : ScheduleParams) (d t : Nat) (b : KBag p.br d) (hb : 1 ≤ b.l) :
-    capacity p d (b.l + 1) t = p.A * (p.A * capacity p d (b.l - 1) t) := by
+theorem capacity_two_levels (d t : Nat) (b : KBag 64 d) (hb : 1 ≤ b.l) :
+    capacity d (b.l + 1) t = (4096 : Rat) * ((4096 : Rat) * capacity d (b.l - 1) t) := by
   rw [capacity_succ_level, show b.l = (b.l - 1) + 1 by omega, capacity_succ_level]
   simp
 
-variable (p : ScheduleParams) (ip : InvariantParams) (d : Nat) (sched : LevelSchedule p d) (t : Nat)
-  (pl : Placement p.br d) (hP : OutsiderBoundLe p ip d sched t pl id) (b : KBag p.br d)
+variable (d t : Nat)
+  (pl : Placement 64 d) (hP : OutsiderBoundLe d t pl id) (b : KBag 64 d)
 
 include hP
 
 /-- Common core: order-`j` strangers of a set of child registers. -/
 theorem strangers_children_le (hbd : b.l < d) (j : Nat) (hj1 : 1 ≤ j) (hjd : j ≤ d)
-    (S : Finset (Fin (p.br ^ d)))
-    (hS : S ⊆ Finset.univ.biUnion (fun i : Fin p.br => pl.regs (b.child i.val i.isLt hbd))) :
-    (b.strangers j id S (br_ge_one p) : Rat) ≤
-      (p.br : Rat) * (ip.mu * ip.delta ^ j * capacity p d (b.l + 1) t) := by
-  have hbr := br_ge_one p
-  calc (b.strangers j id S hbr : Rat)
-      ≤ ∑ i : Fin p.br, (b.strangers j id (pl.regs (b.child i.val i.isLt hbd)) hbr : Rat) := by
-        exact_mod_cast (b.strangers_mono j id hS hbr).trans
-          (strangers_biUnion_le p d b j id fun i => pl.regs (b.child i.val i.isLt hbd))
-    _ ≤ ∑ _i : Fin p.br, ip.mu * ip.delta ^ j * capacity p d (b.l + 1) t :=
+    (S : Finset (Fin (64 ^ d)))
+    (hS : S ⊆ Finset.univ.biUnion (fun i : Fin 64 => pl.regs (b.child i.val i.isLt hbd))) :
+    (b.strangers j id S : Rat) ≤
+      (64 : Rat) * (invMu * invDelta ^ j * capacity d (b.l + 1) t) := by
+  calc (b.strangers j id S : Rat)
+      ≤ ∑ i : Fin 64, (b.strangers j id (pl.regs (b.child i.val i.isLt hbd)) : Rat) := by
+        exact_mod_cast (b.strangers_mono j id hS).trans
+          (strangers_biUnion_le d b j id fun i => pl.regs (b.child i.val i.isLt hbd))
+    _ ≤ ∑ _i : Fin 64, invMu * invDelta ^ j * capacity d (b.l + 1) t :=
         sum_le_sum fun i _ => by
-          rw [strangers_child_eq p d b hbd j hj1 i id _ hbr]
+          rw [strangers_child_eq d b hbd j hj1 i id _]
           exact hP (b.child i.val i.isLt hbd) j hjd
     _ = _ := by simp [sum_const]
 
 theorem hFromChildren0_of_subset (hb : 1 ≤ b.l)
-    (S : Finset (Fin (p.br ^ d)))
+    (S : Finset (Fin (64 ^ d)))
     (hS : ∀ hbd : b.l < d,
-      S ⊆ Finset.univ.biUnion (fun j : Fin p.br => pl.regs (b.child j.val j.isLt hbd)))
+      S ⊆ Finset.univ.biUnion (fun j : Fin 64 => pl.regs (b.child j.val j.isLt hbd)))
     (hleaf : b.l = d → S = ∅) :
-    (b.strangers 1 id S (br_ge_one p) : Rat) ≤
-      ip.mu * ip.delta * (p.br : Rat) * p.A ^ 2 * capacity p d (b.l - 1) t := by
-  have hbr := br_ge_one p
+    (b.strangers 1 id S : Rat) ≤
+      invMu * invDelta * (64 : Rat) * (4096 : Rat) ^ 2 * capacity d (b.l - 1) t := by
   by_cases hbd : b.l < d
-  · refine (strangers_children_le p ip d sched t pl hP b hbd 1 le_rfl (by omega) S (hS hbd)).trans
+  · refine (strangers_children_le d t pl hP b hbd 1 le_rfl (by omega) S (hS hbd)).trans
       (le_of_eq ?_)
-    rw [capacity_two_levels p d t b hb]; ring
+    rw [capacity_two_levels d t b hb]; ring
   · rw [hleaf (Nat.le_antisymm b.hl (Nat.not_lt.mp hbd)), KBag.strangers_empty, Nat.cast_zero]
-    have := (capacity_pos p d (b.l - 1) t).le
-    have := ip.mu_nonneg; have := ip.delta_nonneg; have := p.br_cast_pos.le
+    have := (capacity_pos d (b.l - 1) t).le
+    have := invMu_pos.le; have := invDelta_pos.le
     positivity
 
 theorem hFromChildrenR_of_subset (hb : 1 ≤ b.l)
-    (S : Finset (Fin (p.br ^ d)))
+    (S : Finset (Fin (64 ^ d)))
     (hS : ∀ hbd : b.l < d,
-      S ⊆ Finset.univ.biUnion (fun j : Fin p.br => pl.regs (b.child j.val j.isLt hbd)))
+      S ⊆ Finset.univ.biUnion (fun j : Fin 64 => pl.regs (b.child j.val j.isLt hbd)))
     (hleaf : b.l = d → S = ∅)
     (r : Nat) (hr1 : 1 ≤ r) (hrd : r ≤ d) :
-    (b.strangers (r + 1) id S (br_ge_one p) : Rat) ≤
-      ip.delta ^ 2 * p.A * (p.br : Rat) / p.nu *
-        (ip.mu * ip.delta ^ (r - 1) * (p.A * p.nu * capacity p d (b.l - 1) t)) := by
-  have hbr := br_ge_one p
-  have hnn : (0 : Rat) ≤ ip.delta ^ 2 * p.A * (p.br : Rat) / p.nu *
-        (ip.mu * ip.delta ^ (r - 1) * (p.A * p.nu * capacity p d (b.l - 1) t)) := by
-    have := (capacity_pos p d (b.l - 1) t).le
-    have := ip.mu_nonneg; have := ip.delta_nonneg; have := p.br_cast_pos.le
-    have := p.A_pos.le; have := p.hnu_pos.le
+    (b.strangers (r + 1) id S : Rat) ≤
+      invDelta ^ 2 * (4096 : Rat) * (64 : Rat) / (1 / 64 : Rat) *
+        (invMu * invDelta ^ (r - 1) * ((4096 : Rat) * (1 / 64 : Rat) * capacity d (b.l - 1) t)) := by
+  have hnn : (0 : Rat) ≤ invDelta ^ 2 * (4096 : Rat) * (64 : Rat) / (1 / 64 : Rat) *
+        (invMu * invDelta ^ (r - 1) * ((4096 : Rat) * (1 / 64 : Rat) * capacity d (b.l - 1) t)) := by
+    have := (capacity_pos d (b.l - 1) t).le
+    have := invMu_pos.le; have := invDelta_pos.le
     positivity
   by_cases hbd : b.l < d
   · by_cases hrd' : r + 1 ≤ d
-    · refine (strangers_children_le p ip d sched t pl hP b hbd (r + 1) (by omega) hrd' S
+    · refine (strangers_children_le d t pl hP b hbd (r + 1) (by omega) hrd' S
         (hS hbd)).trans (le_of_eq ?_)
-      rw [capacity_two_levels p d t b hb]
-      exact childrenR_scale p ip (capacity p d (b.l - 1) t) r hr1
-    · rw [KBag.strangers_eq_zero_of_lt_order b (r + 1) id S (br_ge_one p) (by omega) (by omega),
+      rw [capacity_two_levels d t b hb]
+      exact childrenR_scale (capacity d (b.l - 1) t) r hr1
+    · rw [KBag.strangers_eq_zero_of_lt_order b (r + 1) id S (by norm_num) (by omega) (by omega),
         Nat.cast_zero]
       exact hnn
   · rw [hleaf (Nat.le_antisymm b.hl (Nat.not_lt.mp hbd)), KBag.strangers_empty, Nat.cast_zero]

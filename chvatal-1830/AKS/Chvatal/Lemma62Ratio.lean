@@ -6,8 +6,8 @@ public import Mathlib.Analysis.Convex.Deriv
 public import Mathlib.Analysis.Convex.SpecificFunctions.Basic
 public import Mathlib.Analysis.Complex.Exponential
 public import Mathlib.Analysis.Complex.ExponentialBounds
-public import AKS.Chvatal.GeomTail
-public import AKS.Chvatal.Lemma62TopsAnalytic
+public import Mathlib.Data.Nat.Choose.Bounds
+public import Mathlib.Analysis.SpecificLimits.Basic
 
 /-! # Chvátal Lemma 6.2, claim (i): ratio bounds for the two majorants
 
@@ -19,6 +19,101 @@ two-sided sum `∑_{s=1}^n g(s) ≤ (1+e^-5)/(1-e^-5)·G1(b)` and `C(n,s)(e j s/
 @[expose] public section
 
 namespace Chvatal
+
+/-! ## Two-sided geometric tail sum -/
+
+/-- Left tail: if `g s ≤ ρ g (s+1)` for `1 ≤ s < a` then `∑_{1≤s≤a} g s ≤ g a/(1-ρ)`. -/
+theorem geom_left_sum (ρ : ℝ) (hρ_pos : 0 < ρ) (hρ_lt : ρ < 1) (g : ℕ → ℝ)
+    (hg : ∀ n, 0 ≤ g n) (a : ℕ)
+    (h_dec : ∀ s, 1 ≤ s → s < a → g s ≤ ρ * g (s + 1)) :
+    ∑ s ∈ Finset.Icc 1 a, g s ≤ g a / (1 - ρ) := by
+  have h1 : 0 < 1 - ρ := by linarith
+  induction a with
+  | zero => simpa using div_nonneg (hg 0) h1.le
+  | succ a ih =>
+    rw [Finset.sum_Icc_succ_top (by omega)]
+    rcases Nat.eq_zero_or_pos a with rfl | ha
+    · simpa using le_div_self (hg 1) h1 (by linarith)
+    · have := ih fun s hs hsa => h_dec s hs (by omega)
+      have hd := h_dec a ha (by omega)
+      calc _ ≤ ρ * g (a + 1) / (1 - ρ) + g (a + 1) := by
+            gcongr
+            exact this.trans (by gcongr)
+        _ = g (a + 1) / (1 - ρ) := by field_simp; ring
+
+/-- Right tail: if `g (s+1) ≤ ρ g s` for `c ≤ s < n` then `∑_{c≤s≤n} g s ≤ g c/(1-ρ)`. -/
+theorem geom_right_sum (ρ : ℝ) (hρ_pos : 0 < ρ) (hρ_lt : ρ < 1) (g : ℕ → ℝ)
+    (hg : ∀ n, 0 ≤ g n) (c n : ℕ)
+    (h_dec : ∀ s, c ≤ s → s < n → g (s + 1) ≤ ρ * g s) :
+    ∑ s ∈ Finset.Icc c n, g s ≤ g c / (1 - ρ) := by
+  have h1 : 0 < 1 - ρ := by linarith
+  rcases lt_or_ge n c with hn | hn
+  · simpa [Finset.Icc_eq_empty_of_lt hn] using div_nonneg (hg c) h1.le
+  · have key : ∑ s ∈ Finset.Icc c n, g s ≤ (g c - ρ * g n) / (1 - ρ) := by
+      induction n, hn using Nat.le_induction with
+      | base => simp; rw [le_div_iff₀ h1]; exact le_of_eq (by ring)
+      | succ n hn ih =>
+        rw [Finset.sum_Icc_succ_top (by omega)]
+        have := ih fun s hs hsn => h_dec s hs (by omega)
+        have hd := h_dec n hn (by omega)
+        calc _ ≤ (g c - ρ * g n) / (1 - ρ) + g (n + 1) := by gcongr
+          _ = (g c - ρ * g n + (1 - ρ) * g (n + 1)) / (1 - ρ) := by field_simp
+          _ ≤ _ := by gcongr; nlinarith
+    exact key.trans (by gcongr; nlinarith [mul_nonneg hρ_pos.le (hg n)])
+
+theorem geom_two_sided_sum (ρ : ℝ) (hρ_pos : 0 < ρ) (hρ_lt : ρ < 1) (g : ℕ → ℝ)
+    (hg : ∀ n, 0 ≤ g n) (a n : ℕ) (ha_succ : a + 1 ≤ n)
+    (h_dec_left : ∀ s, 1 ≤ s → s < a → g s ≤ ρ * g (s + 1))
+    (h_dec_right : ∀ s, a + 1 ≤ s → s < n → g (s + 1) ≤ ρ * g s) :
+    ∑ s ∈ Finset.Icc 1 n, g s ≤ (g a + g (a + 1)) / (1 - ρ) := by
+  have hsplit : Finset.Icc 1 n = Finset.Icc 1 a ∪ Finset.Icc (a + 1) n := by
+    ext s; simp only [Finset.mem_union, Finset.mem_Icc]; omega
+  have hdisj : Disjoint (Finset.Icc 1 a) (Finset.Icc (a + 1) n) := by
+    rw [Finset.disjoint_left]; intro s h1 h2
+    simp only [Finset.mem_Icc] at h1 h2; omega
+  rw [hsplit, Finset.sum_union hdisj, add_div]
+  exact add_le_add (geom_left_sum ρ hρ_pos hρ_lt g hg a h_dec_left)
+    (geom_right_sum ρ hρ_pos hρ_lt g hg (a + 1) n h_dec_right)
+
+/-! ## Binomial estimates -/
+
+section
+open Nat
+
+open Nat
+
+/-- `C(a,k) ≤ (e·a/k)^k` for `k ≥ 1`. -/
+theorem choose_le_exp_pow (a : ℕ) {k : ℕ} (hk : 1 ≤ k) :
+    (Nat.choose a k : ℝ) ≤ (Real.exp 1 * a / k) ^ k := by
+  have hkpos : (0 : ℝ) < k := by exact_mod_cast hk
+  have hf : (0 : ℝ) < (k ! : ℝ) := by exact_mod_cast Nat.factorial_pos k
+  have h2 : (k : ℝ) ^ k ≤ Real.exp 1 ^ k * (k ! : ℝ) := by
+    have h := Real.pow_div_factorial_le_exp (k : ℝ) (Nat.cast_nonneg k) k
+    rwa [div_le_iff₀ hf, show Real.exp (k : ℝ) = Real.exp 1 ^ k by
+      rw [← Real.exp_nat_mul, mul_one]] at h
+  refine (Nat.choose_le_pow_div k a).trans ?_
+  rw [div_pow, mul_pow, div_le_div_iff₀ hf (pow_pos hkpos k)]
+  calc (a : ℝ) ^ k * (k : ℝ) ^ k ≤ (a : ℝ) ^ k * (Real.exp 1 ^ k * (k ! : ℝ)) :=
+        mul_le_mul_of_nonneg_left h2 (pow_nonneg (Nat.cast_nonneg a) k)
+    _ = _ := by ring
+
+/-- `C(n,k)·C(J,k) ≤ (e²·n·j/k²)^k` for `k ≥ 1` and `J ≤ j`. -/
+theorem choose_mul_choose_le_of_le (n : ℕ) {J j : ℕ} (hJ : J ≤ j) {k : ℕ} (hk : 1 ≤ k) :
+    (Nat.choose n k : ℝ) * (Nat.choose J k : ℝ) ≤
+      (Real.exp 1 ^ 2 * n * j / (k : ℝ) ^ 2) ^ k := by
+  have hk2 : (0 : ℝ) < (k : ℝ) ^ 2 := by
+    have : (0 : ℝ) < k := by exact_mod_cast hk
+    positivity
+  have h := mul_le_mul (choose_le_exp_pow n hk) (choose_le_exp_pow J hk)
+    (Nat.cast_nonneg _) (by positivity)
+  refine h.trans ?_
+  rw [← mul_pow]
+  apply pow_le_pow_left₀ (by positivity)
+  rw [show Real.exp 1 * n / k * (Real.exp 1 * J / k) = Real.exp 1 ^ 2 * n * J / (k : ℝ) ^ 2 by
+    field_simp]
+  gcongr
+
+end
 
 noncomputable def eps : ℝ := 1 / (8 * 10 ^ 7)
 

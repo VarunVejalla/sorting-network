@@ -99,12 +99,12 @@ theorem val_bot_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t 
   · have hlt := alpha7_lt_omega7 d hd t ht2 ht
     have hp1 := alpha7_parity d t
     have hne := exp_nontop d t i hd ht2 ht (by omega) hact.2.2.2
-    have hc := capacity_params7 d i t (7 + h) (by omega)
+    have hc := capacity_eq_pow d i t (7 + h) (by omega)
     have h1 := (cast_flowUp7 d hd i t ht2 ht).1
-    rw [flowUp_mid params7 d (levelSchedule7 d hd) hact hα (fun _ => hs), hc,
-      capacityRatio_params7] at h1
+    rw [flowUp_mid d hact hα (fun _ => hs), hc,
+      capacityRatio_eq] at h1
     have h2 : ((flowUp7 d hd i t : ℕ) : ℚ) = ((2 * (4095 * 32 * 64 ^ h) : ℕ) : ℚ) := by
-      rw [h1]; simp only [params7]; push_cast; ring
+      rw [h1]; push_cast; ring
     exact_mod_cast h2
   · have hlt := alpha7_lt_omega7 d hd t ht2 ht
     have hp1 := alpha7_parity d t
@@ -117,19 +117,19 @@ theorem val_bot_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t 
         omega7 d t + 1 ≤ omega7 d (t + 1) ∧ (omega7 d t + 1) % 2 = (t + 1) % 2 := by
       refine ⟨by omega, by omega, by omega, by omega⟩
     have hd1 : ((flowDown7 d hd i t : ℕ) : ℚ) =
-        allocation params7 d (levelSchedule7 d hd) (omega7 d t + 1) (t + 1) := by
+        allocation d (omega7 d t + 1) (t + 1) := by
       rw [cast_flowDown7 d hd i t ht2 ht]
-      exact flowDown_bot_desc params7 d (levelSchedule7 d hd) hact hα hω hs
-    have hal := alloc_bot params7 d (levelSchedule7 d hd) hact1 (by
+      exact flowDown_bot_desc d hact hα hω hs
+    have hal := alloc_bot d hact1 (by
       show omega7 d t + 1 ≠ alpha7 d (t + 1); omega) (by
       show omega7 d t + 1 = omega7 d (t + 1); omega)
-    have hc := capacity_params7 d (omega7 d t + 1) (t + 1) (8 + h) (by omega)
+    have hc := capacity_eq_pow d (omega7 d t + 1) (t + 1) (8 + h) (by omega)
     rw [hal] at hd1
-    change _ = (((64 ^ d : ℕ) : ℚ)) / ((params7.br : ℕ) : ℚ) ^ (omega7 d t + 1) -
-      capacity params7 d (omega7 d t + 1) (t + 1) / capacityRatio params7 at hd1
-    rw [hc, capacityRatio_params7] at hd1
+    change _ = (((64 ^ d : ℕ) : ℚ)) / (64 : ℚ) ^ (omega7 d t + 1) -
+      capacity d (omega7 d t + 1) (t + 1) / capacityRatio at hd1
+    rw [hc, capacityRatio_eq] at hd1
     have key : ∀ w, d = w + g →
-        ((64 ^ d : ℕ) : ℚ) / ((params7.br : ℕ) : ℚ) ^ w = (64 : ℚ) ^ g := by
+        ((64 ^ d : ℕ) : ℚ) / (64 : ℚ) ^ w = (64 : ℚ) ^ g := by
       intro w hw
       show ((64 ^ d : ℕ) : ℚ) / ((64 : ℕ) : ℚ) ^ w = _
       rw [hw]; push_cast; rw [pow_add]; field_simp
@@ -169,18 +169,18 @@ theorem nodeGeom_T1_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht 
   obtain ⟨g, hg⟩ : ∃ g, d + 2 * i = t + 3 + g := ⟨d + 2 * i - (t + 3), by omega⟩
   have ha : flowA7 d hd i t = 64 ^ (g + 1) := by
     have h := cast_flowA7 d hd i t ht2 ht.le
-    rw [alloc_top params7 d (levelSchedule7 d hd) hact hα,
-      capacity_params7 d i t (g + 1) (by omega)] at h
+    rw [alloc_top d hact hα,
+      capacity_eq_pow d i t (g + 1) (by omega)] at h
     exact_mod_cast h
   have hu : flowUp7 d hd i t = 0 := by
     have h := (cast_flowUp7 d hd i t ht2 ht).1
-    rw [flowUp_top_desc params7 d (levelSchedule7 d hd) hact hα hs] at h
+    rw [flowUp_top_desc d hact hα hs] at h
     exact_mod_cast h
   have hdn : flowDown7 d hd i t = 64 ^ g := by
     have h := cast_flowDown7 d hd i t ht2 ht
-    rw [flowDown_top_desc params7 d (levelSchedule7 d hd) hact hα hs,
-      capacity_params7 d i t (g + 1) (by omega)] at h
-    exact Nat.cast_injective (R := ℚ) (h.trans (by simp only [params7]; push_cast; ring))
+    rw [flowDown_top_desc d hact hα hs,
+      capacity_eq_pow d i t (g + 1) (by omega)] at h
+    exact Nat.cast_injective (R := ℚ) (h.trans (by push_cast; ring))
   refine nodeGeom_of_template (6 * g) 64 0 1 (by norm_num) (by norm_num) (by norm_num)
     (Or.inl rfl) _ _ _ ?_ ?_ ?_ hbig
   · rw [ha, pow_succ, p64]
@@ -197,22 +197,22 @@ theorem nodeGeom_T1_rise (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht 
   rw [← hα] at he
   obtain ⟨f, hf⟩ : ∃ f, d + 2 * i = t + 8 + f := ⟨d + 2 * i - (t + 8), by omega⟩
   have hns : ¬ alpha7 d t < alpha7 d (t + 1) := by omega
-  have hc := capacity_params7 d i t (6 + f) (by omega)
+  have hc := capacity_eq_pow d i t (6 + f) (by omega)
   have hωi : i ≠ omega7 d t := by
     have := alpha7_lt_omega7 d hd t ht2 ht
     omega
   have ha : flowA7 d hd i t = 64 ^ (6 + f) := by
     have h := cast_flowA7 d hd i t ht2 ht.le
-    rw [alloc_top params7 d (levelSchedule7 d hd) hact hα, hc] at h
+    rw [alloc_top d hact hα, hc] at h
     exact_mod_cast h
   have hu : flowUp7 d hd i t = 2 * (32 * 64 ^ (1 + f)) := by
     have h := (cast_flowUp7 d hd i t ht2 ht).1
-    rw [flowUp_top_rise params7 d (levelSchedule7 d hd) hact hα hns, hc] at h
-    exact Nat.cast_injective (R := ℚ) (h.trans (by simp only [params7]; push_cast; ring))
+    rw [flowUp_top_rise d hact hα hns, hc] at h
+    exact Nat.cast_injective (R := ℚ) (h.trans (by push_cast; ring))
   have hdn : flowDown7 d hd i t = 16777215 * 64 ^ (1 + f) := by
     have h := cast_flowDown7 d hd i t ht2 ht
-    rw [flowDown_mid params7 d (levelSchedule7 d hd) hact (fun _ => hns) hωi, hc] at h
-    exact Nat.cast_injective (R := ℚ) (h.trans (by simp only [params7]; push_cast; ring))
+    rw [flowDown_mid d hact (fun _ => hns) hωi, hc] at h
+    exact Nat.cast_injective (R := ℚ) (h.trans (by push_cast; ring))
   refine nodeGeom_of_template (6 * f + 6) (2 ^ 30) 32 (2 ^ 24 - 1) (by norm_num) (by norm_num)
     (by norm_num) (Or.inr (by norm_num)) _ _ _ ?_ ?_ ?_ hbig
   · rw [ha, p64, show 6 * (6 + f) = 6 * f + 6 + 30 by ring, pow_add]
@@ -229,23 +229,23 @@ theorem nodeGeom_T2 (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t <
   have hp1 := alpha7_parity d t
   have hne := exp_nontop d t i hd ht2 ht (by omega) hact.2.2.2
   obtain ⟨g, hg⟩ : ∃ g, d + 2 * i = t + 9 + g := ⟨d + 2 * i - (t + 9), by omega⟩
-  have hc := capacity_params7 d i t (7 + g) (by omega)
+  have hc := capacity_eq_pow d i t (7 + g) (by omega)
   have hle : 64 ^ (1 + g) ≤ 64 ^ (7 + g) := Nat.pow_le_pow_right (by norm_num) (by omega)
   have ha : flowA7 d hd i t = 64 ^ (7 + g) - 64 ^ (1 + g) := by
     have h := cast_flowA7 d hd i t ht2 ht.le
-    rw [alloc_mid params7 d (levelSchedule7 d hd) hact hα hω, hc, capacityRatio_params7] at h
+    rw [alloc_mid d hact hα hω, hc, capacityRatio_eq] at h
     refine Nat.cast_injective (R := ℚ) (h.trans ?_)
     rw [Nat.cast_sub hle]; push_cast
     rw [pow_add, pow_add]; field_simp
   have hu : flowUp7 d hd i t = 2 * (4095 * 32 * 64 ^ g) := by
     have h := (cast_flowUp7 d hd i t ht2 ht).1
-    rw [flowUp_mid params7 d (levelSchedule7 d hd) hact hα (fun h => absurd h hω), hc,
-      capacityRatio_params7] at h
-    exact Nat.cast_injective (R := ℚ) (h.trans (by simp only [params7]; push_cast; ring))
+    rw [flowUp_mid d hact hα (fun h => absurd h hω), hc,
+      capacityRatio_eq] at h
+    exact Nat.cast_injective (R := ℚ) (h.trans (by push_cast; ring))
   have hdn : flowDown7 d hd i t = 16777215 * 64 ^ (2 + g) := by
     have h := cast_flowDown7 d hd i t ht2 ht
-    rw [flowDown_mid params7 d (levelSchedule7 d hd) hact (fun h => absurd h hα) hω, hc] at h
-    exact Nat.cast_injective (R := ℚ) (h.trans (by simp only [params7]; push_cast; ring))
+    rw [flowDown_mid d hact (fun h => absurd h hα) hω, hc] at h
+    exact Nat.cast_injective (R := ℚ) (h.trans (by push_cast; ring))
   refine nodeGeom_of_template (6 * g + 5) 137438953470 4095 2147483520 (by norm_num)
     (by norm_num) (by norm_num) (Or.inr (by norm_num)) _ _ _ ?_ ?_ ?_ hbig
   · rw [ha]
@@ -318,7 +318,7 @@ theorem nodeGeom_exists (d : ℕ) (hd : 7 ≤ d) (l t : ℕ) (hdown : 0 < flowDo
     swap
     · exfalso
       have h := cast_flowA7 d hd l t h2 ht.le
-      rw [allocation_inactive _ _ _ _ _ hact] at h
+      rw [allocation_inactive _ _ _ hact] at h
       have : flowA7 d hd l t = 0 := by exact_mod_cast h
       omega
     have hlt := alpha7_lt_omega7 d hd t h2 ht
@@ -334,7 +334,7 @@ theorem nodeGeom_exists (d : ℕ) (hd : 7 ≤ d) (l t : ℕ) (hdown : 0 < flowDo
         · exact nodeGeom_T3 d hd t h2 ht l hact hα hω hs hdown hbig
         · exfalso
           have h := cast_flowDown7 d hd l t h2 ht
-          rw [flowDown_bot_rise params7 d (levelSchedule7 d hd) hact hα hω hs] at h
+          rw [flowDown_bot_rise d hact hα hω hs] at h
           have : flowDown7 d hd l t = 0 := by exact_mod_cast h
           omega
       · exact nodeGeom_T2 d hd t h2 ht l hact hα hω hbig

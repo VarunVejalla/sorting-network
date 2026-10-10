@@ -1,7 +1,9 @@
 module
 public import AKS.Chvatal.Lemma63
 public import AKS.Chvatal.PackSpec
-public import AKS.Chvatal.GeneralSeparator
+public import AKS.Chvatal.Lemma62FailE
+public import AKS.Chvatal.Lemma62Round
+public import AKS.Chvatal.Lemma62Bridge
 public import AKS.Chvatal.ExecPlacement
 public import Mathlib.Data.Fin.Tuple.Sort
 
@@ -36,110 +38,22 @@ theorem card_filter_flip {m n : ℕ} (P : Scramble m n → Prop) [DecidablePred 
   Finset.card_equiv (Function.Involutive.toPerm flipScramble flipScramble_flipScramble) (by simp)
 
 open Classical in
-/-- Two-sided Properties B (pipeline) and F: `σ` and its flip both satisfy them. -/
-theorem exists_twoSided_pipelineB_paperF {m n f : ℕ} (hm : 100 ≤ m) (hn : 16 ≤ n)
-    (hf : Even f) (hfbig : 17 * 10 ^ 9 ≤ f) (hfm : f ≤ m) {epsB : ℝ}
-    (hepsB : Real.sqrt (2 * (1 + Real.log m) / m) ≤ epsB) (hepsB0 : 0 < epsB) :
-    ∃ σ : Scramble m n,
-      (HasCombinatorialPropertyBOnPipeline σ epsB ∧ HasPaperPropertyF hf σ (128 / 4095) eps) ∧
-      (HasCombinatorialPropertyBOnPipeline (flipScramble σ) epsB ∧
-        HasPaperPropertyF hf (flipScramble σ) (128 / 4095) eps) := by
-  have hmpos : 0 < m := lt_of_lt_of_le (by norm_num) hm
-  have hnpos : 0 < n := lt_of_lt_of_le (by norm_num) hn
-  have hBfail := lemma61FailBound_onPipeline epsB hmpos hnpos hepsB
-  have hfac : lemma61_failFactor m n < 1 / 100 := lemma61_failFactor_lt_one_hundredth m n hm hn
-  have hFfail := paperF_fail_fraction_final hf hfm hfbig hn
-  have hNpos : (0 : ℝ) < (Fintype.card (Scramble m n) : ℝ) := by
-    exact_mod_cast (Fintype.card_pos : 0 < Fintype.card (Scramble m n))
+/-- Pigeonhole: if at most a fraction `c < 1/2` of scrambles fail `P`, some `σ` has `P σ` and
+`P (flipScramble σ)`. -/
+theorem exists_and_flip {m n : ℕ} (P : Scramble m n → Prop) {c : ℝ} (hc : c < 1 / 2)
+    (h : ((Finset.univ.filter fun σ => ¬ P σ).card : ℝ) ≤ c * Fintype.card (Scramble m n)) :
+    ∃ σ, P σ ∧ P (flipScramble σ) := by
   by_contra hno
   push_neg at hno
-  set N : ℝ := (Fintype.card (Scramble m n) : ℝ) with hN
-  let badB := Finset.univ.filter fun σ : Scramble m n =>
-    ¬ HasCombinatorialPropertyBOnPipeline σ epsB
-  let badF := Finset.univ.filter fun σ : Scramble m n =>
-    ¬ HasPaperPropertyF hf σ (128 / 4095) eps
-  let badB' := Finset.univ.filter fun σ : Scramble m n =>
-    ¬ HasCombinatorialPropertyBOnPipeline (flipScramble σ) epsB
-  let badF' := Finset.univ.filter fun σ : Scramble m n =>
-    ¬ HasPaperPropertyF hf (flipScramble σ) (128 / 4095) eps
-  have hBle : (badB.card : ℝ) ≤ lemma61_failFactor m n * N :=
-    hBfail.bound badB (fun σ hσ => by simpa [badB] using hσ)
-  have hB'le : (badB'.card : ℝ) ≤ lemma61_failFactor m n * N := by
-    have hc : badB'.card = badB.card :=
-      card_filter_flip (fun σ => HasCombinatorialPropertyBOnPipeline σ epsB)
-    rw [hc]; exact hBle
-  have hFle : (badF.card : ℝ) ≤ 44 / 100 * N := hFfail
-  have hF'le : (badF'.card : ℝ) ≤ 44 / 100 * N := by
-    have hc : badF'.card = badF.card :=
-      card_filter_flip (fun σ => HasPaperPropertyF hf σ (128 / 4095) eps)
-    rw [hc]; exact hFle
-  have hcover : (Finset.univ : Finset (Scramble m n)) ⊆ ((badB ∪ badF) ∪ badB') ∪ badF' := by
-    intro σ _
-    by_cases h1 : HasCombinatorialPropertyBOnPipeline σ epsB
-    · by_cases h2 : HasPaperPropertyF hf σ (128 / 4095) eps
-      · by_cases h3 : HasCombinatorialPropertyBOnPipeline (flipScramble σ) epsB
-        · have h4 := hno σ ⟨h1, h2⟩ h3
-          exact Finset.mem_union_right _ (by simp [badF', h4])
-        · exact Finset.mem_union_left _ (Finset.mem_union_right _ (by simp [badB', h3]))
-      · exact Finset.mem_union_left _ (Finset.mem_union_left _
-          (Finset.mem_union_right _ (by simp [badF, h2])))
-    · exact Finset.mem_union_left _ (Finset.mem_union_left _
-        (Finset.mem_union_left _ (by simp [badB, h1])))
-  have hcard : N ≤ (badB.card : ℝ) + badF.card + badB'.card + badF'.card := by
-    have h1 := Finset.card_le_card hcover
-    have h2 : (badB ∪ badF ∪ badB' ∪ badF').card ≤
-        badB.card + badF.card + badB'.card + badF'.card :=
-      (Finset.card_union_le _ _).trans (Nat.add_le_add_right
-        ((Finset.card_union_le _ _).trans (Nat.add_le_add_right
-          (Finset.card_union_le badB badF) _)) _)
-    simp only [Finset.card_univ] at h1
-    have := h1.trans h2
-    rw [hN]
-    exact_mod_cast this
-  have hfacN : lemma61_failFactor m n * N ≤ 1 / 100 * N :=
-    mul_le_mul_of_nonneg_right hfac.le hNpos.le
-  linarith
-
-open Classical in
-/-- Two-sided Property B only (pipeline), no `f` constraint. -/
-theorem exists_twoSided_B {m n : ℕ} (hm : 100 ≤ m) (hn : 16 ≤ n) {epsB : ℝ}
-    (hepsB : Real.sqrt (2 * (1 + Real.log m) / m) ≤ epsB) :
-    ∃ σ : Scramble m n,
-      HasCombinatorialPropertyBOnPipeline σ epsB ∧
-        HasCombinatorialPropertyBOnPipeline (flipScramble σ) epsB := by
-  have hmpos : 0 < m := lt_of_lt_of_le (by norm_num) hm
-  have hnpos : 0 < n := lt_of_lt_of_le (by norm_num) hn
-  have hBfail := lemma61FailBound_onPipeline epsB hmpos hnpos hepsB
-  have hfac : lemma61_failFactor m n < 1 / 100 := lemma61_failFactor_lt_one_hundredth m n hm hn
-  have hNpos : (0 : ℝ) < (Fintype.card (Scramble m n) : ℝ) := by
-    exact_mod_cast (Fintype.card_pos : 0 < Fintype.card (Scramble m n))
-  by_contra hno
-  push_neg at hno
-  set N : ℝ := (Fintype.card (Scramble m n) : ℝ) with hN
-  let badB := Finset.univ.filter fun σ : Scramble m n =>
-    ¬ HasCombinatorialPropertyBOnPipeline σ epsB
-  let badB' := Finset.univ.filter fun σ : Scramble m n =>
-    ¬ HasCombinatorialPropertyBOnPipeline (flipScramble σ) epsB
-  have hBle : (badB.card : ℝ) ≤ lemma61_failFactor m n * N :=
-    hBfail.bound badB (fun σ hσ => by simpa [badB] using hσ)
-  have hB'le : (badB'.card : ℝ) ≤ lemma61_failFactor m n * N := by
-    have hc : badB'.card = badB.card :=
-      card_filter_flip (fun σ => HasCombinatorialPropertyBOnPipeline σ epsB)
-    rw [hc]; exact hBle
-  have hcover : (Finset.univ : Finset (Scramble m n)) ⊆ badB ∪ badB' := by
-    intro σ _
-    by_cases h1 : HasCombinatorialPropertyBOnPipeline σ epsB
-    · exact Finset.mem_union_right _ (by simp [badB', hno σ h1])
-    · exact Finset.mem_union_left _ (by simp [badB, h1])
-  have hcard : N ≤ (badB.card : ℝ) + badB'.card := by
-    have h1 := Finset.card_le_card hcover
-    have h2 := Finset.card_union_le badB badB'
-    simp only [Finset.card_univ] at h1
-    rw [hN]
-    exact_mod_cast h1.trans h2
-  have hfacN : lemma61_failFactor m n * N ≤ 1 / 100 * N :=
-    mul_le_mul_of_nonneg_right hfac.le hNpos.le
-  linarith
+  have hpos : (0 : ℝ) < Fintype.card (Scramble m n) := by exact_mod_cast Fintype.card_pos
+  have hcover : (Finset.univ : Finset (Scramble m n)) ⊆
+      (Finset.univ.filter fun σ => ¬ P σ) ∪ (Finset.univ.filter fun σ => ¬ P (flipScramble σ)) :=
+    fun σ _ => by by_cases h1 : P σ <;> simp [h1, hno σ]
+  have h1 := (Finset.card_le_card hcover).trans (Finset.card_union_le _ _)
+  rw [card_filter_flip P, Finset.card_univ] at h1
+  have : (Fintype.card (Scramble m n) : ℝ) ≤ 2 * (Finset.univ.filter fun σ => ¬ P σ).card := by
+    exact_mod_cast (by omega)
+  nlinarith
 
 /-! ## 2. Flip equivariance of the semantic execution -/
 
@@ -342,17 +256,7 @@ theorem packSpec_low {m n f b : ℕ} (hn : 0 < n) (σ : Scramble m n)
 
 /-! ## 4(c). Two-sided existence (semantic) -/
 
-/-- Semantic Property F of the canonical pack from the paper Property F of `σ`. -/
-theorem packSemanticF_of_paperF {m n f : ℕ} (hf : Even f) (hn : 0 < n) (hfm : f ≤ m)
-    (σ : Scramble m n) (hF : HasPaperPropertyF hf σ (128 / 4095) eps)
-    {deltaF epsF : ℝ} (hδ : deltaF ≤ 128 / 4095) (hε : eps ≤ epsF) :
-    HasPackSemanticPropertyF hn σ f hfm deltaF epsF := by
-  have h0 : HasPackSemanticPropertyF hn σ f hfm
-      (128 / 4095) eps :=
-    HasPackSemanticPropertyF.of_paperF (hf := hf) hn hfm (by norm_num)
-      (fun c j hc hj hjδ S => hF c j hc hj hjδ S)
-  exact HasPackSemanticPropertyF.mono hn hfm hδ hε h0
-
+open Classical in
 /-- **Two-sided Thm 5.1 existence.** Some scramble `σ` has semantic Properties B and F for
 both `σ` and the flipped scramble. -/
 theorem ExistsScrambleSeparator_twoSided {g : ScrambleGeometry} {P : Theorem51Params g}
@@ -370,14 +274,28 @@ theorem ExistsScrambleSeparator_twoSided {g : ScrambleGeometry} {P : Theorem51Pa
           (flipScramble σ) g.f
           (scrambleGeometry_f_le_m g) P.deltaF P.epsF) := by
   have hn := scrambleGeometry_hn g
-  obtain ⟨σ, ⟨hB1, hF1⟩, ⟨hB2, hF2⟩⟩ := exists_twoSided_pipelineB_paperF (n := g.n) g.hm g.hn
-    g.hfeven hfbig (scrambleGeometry_f_le_m g) P.hepsB_lb P.hepsB_pos
+  have hfac := lemma61_failFactor_lt_one_hundredth g.m g.n g.hm g.hn
+  have hB := lemma61FailBound_onPipeline P.epsB (by have := g.hm; omega) hn P.hepsB_lb
+  have hF := paperF_fail_fraction g.hfeven (scrambleGeometry_f_le_m g) hfbig g.hn
+  have hN : (0 : ℝ) < Fintype.card (Scramble g.m g.n) := by exact_mod_cast Fintype.card_pos
+  obtain ⟨σ, h1, h2⟩ := exists_and_flip (m := g.m) (n := g.n)
+    (fun σ => HasCombinatorialPropertyBOnPipeline σ P.epsB ∧
+      HasPaperPropertyF g.f σ) (c := 1 / 100 + 44 / 100) (by norm_num) (by
+      simp only [not_and_or, Finset.filter_or]
+      have h3 := (Nat.cast_le (α := ℝ)).2 (Finset.card_union_le
+        (Finset.univ.filter fun σ : Scramble g.m g.n => ¬ HasCombinatorialPropertyBOnPipeline σ P.epsB)
+        (Finset.univ.filter fun σ : Scramble g.m g.n => ¬ HasPaperPropertyF g.f σ))
+      have h4 : lemma61_failFactor g.m g.n * (Fintype.card (Scramble g.m g.n) : ℝ) ≤
+          1 / 100 * Fintype.card (Scramble g.m g.n) := by gcongr
+      push_cast at h3
+      linarith)
   exact ⟨σ,
-    ⟨HasPackSemanticPropertyB.of_combinatorial_onPipeline hn σ hB1,
-      packSemanticF_of_paperF g.hfeven hn (scrambleGeometry_f_le_m g) σ hF1 hδ hε⟩,
-    ⟨HasPackSemanticPropertyB.of_combinatorial_onPipeline hn _ hB2,
-      packSemanticF_of_paperF g.hfeven hn (scrambleGeometry_f_le_m g) _ hF2 hδ hε⟩⟩
+    ⟨HasPackSemanticPropertyB.of_combinatorial_onPipeline hn σ h1.1,
+      (HasPackSemanticPropertyF.of_paperF g.hfeven hn (scrambleGeometry_f_le_m g) h1.2).mono hn (scrambleGeometry_f_le_m g) hδ hε⟩,
+    ⟨HasPackSemanticPropertyB.of_combinatorial_onPipeline hn _ h2.1,
+      (HasPackSemanticPropertyF.of_paperF g.hfeven hn (scrambleGeometry_f_le_m g) h2.2).mono hn (scrambleGeometry_f_le_m g) hδ hε⟩⟩
 
+open Classical in
 /-- Two-sided semantic Property B only, for any `m ≥ 100`, `n ≥ 16`. -/
 theorem ExistsScrambleSeparator_twoSided_B {m n : ℕ} (hm : 100 ≤ m) (hn : 16 ≤ n)
     {epsB : ℝ} (hepsB : Real.sqrt (2 * (1 + Real.log m) / m) ≤ epsB) :
@@ -386,7 +304,11 @@ theorem ExistsScrambleSeparator_twoSided_B {m n : ℕ} (hm : 100 ≤ m) (hn : 16
           σ epsB ∧
         HasPackSemanticPropertyB (lt_of_lt_of_le (by norm_num) hn)
           (flipScramble σ) epsB := by
-  obtain ⟨σ, h1, h2⟩ := exists_twoSided_B hm hn hepsB
+  obtain ⟨σ, h1, h2⟩ := exists_and_flip (m := m) (n := n)
+    (fun σ => HasCombinatorialPropertyBOnPipeline σ epsB) (c := 1 / 100) (by norm_num)
+    ((lemma61FailBound_onPipeline epsB (by omega) (by omega) hepsB).trans
+      (mul_le_mul_of_nonneg_right (lemma61_failFactor_lt_one_hundredth m n hm hn).le
+        (Nat.cast_nonneg _)))
   exact ⟨σ, HasPackSemanticPropertyB.of_combinatorial_onPipeline _ σ h1,
     HasPackSemanticPropertyB.of_combinatorial_onPipeline _ _ h2⟩
 

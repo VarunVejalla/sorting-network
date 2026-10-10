@@ -48,8 +48,13 @@ theorem totalColumnOnes_eq_sum_rowOnes {m n : Nat} (c : MonotoneColumnSums m n) 
 def scrambledRowOnes {m n : Nat} (c : MonotoneColumnSums m n) (σ : Scramble m n) (r : Fin m) :
     Finset (Fin n) := (monotoneRowOnes c r).image (σ r)
 
-def onesInColumns {m n : Nat} (c : MonotoneColumnSums m n) (σ : Scramble m n)
-    (S : Finset (Fin n)) : Nat := ∑ r : Fin m, ((scrambledRowOnes c σ r) ∩ S).card
+/-- Ones that the scramble `σ` places in the columns `S`, counted only over the rows `R`. -/
+def onesInRows {m n : Nat} (c : MonotoneColumnSums m n) (σ : Scramble m n)
+    (R : Finset (Fin m)) (S : Finset (Fin n)) : Nat :=
+  ∑ r ∈ R, ((scrambledRowOnes c σ r) ∩ S).card
+
+abbrev onesInColumns {m n : Nat} (c : MonotoneColumnSums m n) (σ : Scramble m n)
+    (S : Finset (Fin n)) : Nat := onesInRows c σ Finset.univ S
 
 def scrambledColSum {m n : Nat} (c : MonotoneColumnSums m n) (σ : Scramble m n) (j : Fin n) : Nat :=
   ∑ r : Fin m, if j ∈ scrambledRowOnes c σ r then 1 else 0
@@ -70,13 +75,6 @@ def onesAboveBottom {m n : Nat} (c : MonotoneColumnSums m n) (σ : Scramble m n)
 def HasCombinatorialPropertyBOnPipeline {m n : Nat} (σ : Scramble m n) (epsB : ℝ) : Prop :=
   ∀ (c : MonotoneColumnSums m n) (i : Nat), totalColumnOnes c ≤ n * i → 1 ≤ i → i ≤ m →
     (onesAboveBottom c σ i : ℝ) < (epsB / 2) * (m * n)
-
-/-- Fail-fraction bound for pipeline-class Property B. -/
-structure Lemma61FailBoundOnPipeline (m n : Nat) (epsB : ℝ) : Prop where
-  bound :
-    ∀ (bad : Finset (Scramble m n)),
-      (∀ σ ∈ bad, ¬ HasCombinatorialPropertyBOnPipeline σ epsB) →
-        (bad.card : ℝ) ≤ lemma61_failFactor m n * (Fintype.card (Scramble m n) : ℝ)
 
 theorem lemma61_exp_bound (m n s : Nat) (epsB : ℝ) (hm : 1 ≤ m) (hs1 : 1 ≤ s) (hsn : s ≤ n)
     (heps : Real.sqrt (2 * (1 + Real.log m) / m) ≤ epsB) :
@@ -109,7 +107,7 @@ theorem lemma61_excess_columns {m n : Nat} (epsB : ℝ) (c : MonotoneColumnSums 
   classical
   have h1 : onesInColumns c σ (excessColumnSet c σ i) =
       ∑ j ∈ excessColumnSet c σ i, scrambledColSum c σ j := by
-    simp only [onesInColumns, scrambledColSum]
+    simp only [onesInColumns, onesInRows, scrambledColSum]
     rw [Finset.sum_comm]
     exact Finset.sum_congr rfl fun r _ => by
       rw [Finset.inter_comm, ← Finset.filter_mem_eq_inter, Finset.card_filter]

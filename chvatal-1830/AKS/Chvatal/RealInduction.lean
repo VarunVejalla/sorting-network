@@ -7,8 +7,7 @@ public import AKS.Chvatal.Lemma41Real
 @[expose] public section
 
 /-! The root step `P_one` (Lemma 4.3 root case, exceptional separator), the induction `P_all` and
-purity `real_purity` (level `d - 6` at `t = tf7 d`) for the real network (`params7`,
-`invariantReal`, `levelSchedule7`, execution-defined placements with `perm = id`). -/
+purity `real_purity` (level `d - 6` at `t = tf7 d`) for the real network (`invMu`, execution-defined placements with `perm = id`). -/
 
 namespace Chvatal
 
@@ -19,22 +18,22 @@ theorem one_le_tf7 {d : ℕ} (hd : 7 ≤ d) : 1 ≤ tf7 d := by unfold tf7; omeg
 
 /-- The right-hand side of the outsider invariant is nonnegative. -/
 theorem outsider_rhs_nonneg (d r l t : ℕ) :
-    (0 : ℚ) ≤ invariantReal.mu * invariantReal.delta ^ r * capacity params7 d l t := by
-  have h1 := invariantReal.hmu_pos
-  have h2 := invariantReal.hdelta_pos
-  have h3 := capacity_pos params7 d l t
+    (0 : ℚ) ≤ invMu * invDelta ^ r * capacity d l t := by
+  have h1 := invMu_pos
+  have h2 := invDelta_pos
+  have h3 := capacity_pos d l t
   positivity
 
 /-- `ε_* ≤ μ/64` numerically: `√(1+79 log 2)/2^39 ≈ 1.36e-11 ≤ 1023/2^46 ≈ 1.45e-11`. -/
 theorem paperRootEpsB_le_epsStar :
-    paperRootEpsB ≤ ((invariantReal.epsStar : ℚ) : ℝ) := by
+    paperRootEpsB ≤ (invMu : ℝ) / 64 := by
   have hl := Real.log_two_lt_d9
   have hs : Real.sqrt (1 + 79 * Real.log 2) ≤ 1023 / 128 := by
     rw [Real.sqrt_le_iff]
     refine ⟨by norm_num, ?_⟩
     norm_num at hl ⊢
     linarith
-  unfold paperRootEpsB invariantReal
+  unfold paperRootEpsB invMu
   push_cast
   rw [div_le_iff₀ (by positivity)]
   norm_num at hs ⊢
@@ -48,13 +47,13 @@ theorem P_one (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (hspecs : RealSpecs hd nets)
     (v : Equiv.Perm (Fin (64 ^ d))) :
-    OutsiderBoundLe params7 invariantReal d (levelSchedule7 d hd) 1
+    OutsiderBoundLe d 1
       (execPlacement (flowSizes7 d hd) nets v 1 (one_le_tf7 hd)) id := by
   show ∀ (b : KBag 64 d) (r : ℕ), r ≤ d →
     (((b.strangers (r + 1) id
       ((execPlacement (flowSizes7 d hd) nets v 1 (one_le_tf7 hd)).regs b)
       (by norm_num : 1 ≤ 64) : ℕ) : ℚ)) ≤
-      invariantReal.mu * invariantReal.delta ^ r * capacity params7 d b.l 1
+      invMu * invDelta ^ r * capacity d b.l 1
   intro b r hr
   have h1 := one_le_tf7 hd
   have hrhs := outsider_rhs_nonneg d r b.l 1
@@ -124,10 +123,10 @@ theorem P_one (hd : 7 ≤ d)
   rw [hroot0, ← hbj, ha0, hup] at hbad
   have hEB : specEB 0 (64 ^ d) = paperRootEpsB * (64 : ℝ) ^ d / 2 := by simp [specEB]
   rw [hEB] at hbad
-  have hcap : capacity params7 d b.l 1 = (64 : ℚ) ^ (d - 1) := by
+  have hcap : capacity d b.l 1 = (64 : ℚ) ^ (d - 1) := by
     rw [hl]
     obtain ⟨e, rfl⟩ : ∃ e, d = e + 1 := ⟨d - 1, by omega⟩
-    simp only [capacity, params7, Nat.add_sub_cancel]
+    simp only [capacity, Nat.add_sub_cancel]
     push_cast
     rw [pow_succ]
     field_simp
@@ -135,18 +134,16 @@ theorem P_one (hd : 7 ≤ d)
   have hpd : (64 : ℝ) ^ d = 64 * 64 ^ (d - 1) := by
     obtain ⟨e, rfl⟩ : ∃ e, d = e + 1 := ⟨d - 1, by omega⟩
     simp [pow_succ]; ring
-  have hμ : (invariantReal.epsStar : ℝ) * 64 = (invariantReal.mu : ℝ) := by
-    unfold invariantReal; push_cast; norm_num
   have hb2 : ((b.strangers 1 id (fromParentK (flowSizes7 d hd) nets v 0 b) : ℕ) : ℝ) ≤
       paperRootEpsB * (64 : ℝ) ^ d := by
     push_cast at hbad; refine hbad.trans (le_of_eq ?_); ring
   have key : ((b.strangers 1 id (fromParentK (flowSizes7 d hd) nets v 0 b) : ℕ) : ℝ) ≤
-      (invariantReal.mu : ℝ) * ((64 : ℝ) ^ (d - 1)) :=
+      (invMu : ℝ) * ((64 : ℝ) ^ (d - 1)) :=
     calc _ ≤ paperRootEpsB * (64 : ℝ) ^ d := hb2
       _ = paperRootEpsB * (64 * 64 ^ (d - 1)) := by rw [hpd]
-      _ ≤ (invariantReal.epsStar : ℝ) * (64 * 64 ^ (d - 1)) :=
+      _ ≤ ((invMu : ℝ) / 64) * (64 * 64 ^ (d - 1)) :=
           mul_le_mul_of_nonneg_right hεle (by positivity)
-      _ = (invariantReal.mu : ℝ) * ((64 : ℝ) ^ (d - 1)) := by rw [← hμ]; ring
+      _ = (invMu : ℝ) * ((64 : ℝ) ^ (d - 1)) := by ring
   rw [hregs, hcap, pow_zero, mul_one]
   rw [← Rat.cast_le (K := ℝ)]
   push_cast
@@ -157,9 +154,9 @@ abbrev KernelFamily {d : ℕ} (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (64 ^ d))) : Type :=
   ∀ t, 1 ≤ t → ∀ (ht : t + 1 ≤ tf7 d),
-    OutsiderBoundLe params7 invariantReal d (levelSchedule7 d hd) t
+    OutsiderBoundLe d t
       (execPlacement (flowSizes7 d hd) nets v t (by omega)) id →
-    StageKernel params7 invariantReal d (levelSchedule7 d hd) t
+    StageKernel d t
       (execPlacement (flowSizes7 d hd) nets v t (by omega)) id
       (execPlacement (flowSizes7 d hd) nets v (t + 1) ht) id
 
@@ -168,7 +165,7 @@ theorem P_all (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (hspecs : RealSpecs hd nets) (v : Equiv.Perm (Fin (64 ^ d))) (hK : KernelFamily hd nets v) :
     ∀ t, 1 ≤ t → ∀ (ht : t ≤ tf7 d),
-      OutsiderBoundLe params7 invariantReal d (levelSchedule7 d hd) t
+      OutsiderBoundLe d t
         (execPlacement (flowSizes7 d hd) nets v t ht) id := by
   intro t ht1
   induction t, ht1 using Nat.le_induction with
@@ -176,9 +173,9 @@ theorem P_all (hd : 7 ≤ d)
   | succ t ht1 ih =>
     intro ht
     have ht' : t ≤ tf7 d := by omega
-    exact outsiderBound_step_of_kernel params7 invariantReal d (levelSchedule7 d hd) t
+    exact outsiderBound_step_of_kernel d t
       (execPlacement (flowSizes7 d hd) nets v t ht')
-      (execPlacement (flowSizes7 d hd) nets v (t + 1) ht) id id separatorConds_real
+      (execPlacement (flowSizes7 d hd) nets v (t + 1) ht) id id
       (ih ht') (hK t ht1 ht (ih ht'))
 
 /-- Purity: at `t = tf7 d` no key of a level-`(d-6)` bag is an order-2 stranger
@@ -190,8 +187,8 @@ theorem real_purity (hd : 7 ≤ d)
     b.strangers 2 id ((execPlacement (flowSizes7 d hd) nets v (tf7 d) le_rfl).regs b)
       (by norm_num : 1 ≤ 64) = 0 := by
   have hP := P_all hd nets hspecs v hK (tf7 d) (one_le_tf7 hd) le_rfl b 1 (by omega)
-  rw [show capacity params7 d b.l (tf7 d) = (64 : ℚ) ^ 6 by rw [hb]; exact capacity_meet7 d hd] at hP
-  have hlt := lt_of_le_of_lt hP (by unfold invariantReal invariant7; norm_num : _ < (1 : ℚ))
+  rw [show capacity d b.l (tf7 d) = (64 : ℚ) ^ 6 by rw [hb]; exact capacity_meet7 d hd] at hP
+  have hlt := lt_of_le_of_lt hP (by unfold invMu invDelta; norm_num : _ < (1 : ℚ))
   exact Nat.lt_one_iff.mp (by exact_mod_cast hlt)
 
 end Chvatal

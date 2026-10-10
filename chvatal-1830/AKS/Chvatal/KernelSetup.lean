@@ -25,44 +25,13 @@ def RealSpecs {d : ℕ} (hd : 7 ≤ d)
       ((flowSizes7 d hd).down q.l t) (nets t q (wireSets (flowSizes7 d hd) t q).card)
       (specEB t ((flowSizes7 d hd).a q.l t)) (specJmax ((flowSizes7 d hd).up q.l t)) eps
 
-/-- Invariant parameters for the real network: the paper-ordinary budgets, but with
-`μ = (1 - 2^-10)·2^-30`, which keeps (4.1)–(4.5) true and makes `μ·c < 1` whenever `c ≤ 2^30`. -/
-def invariantReal : InvariantParams where
-  mu := 1023 / 1099511627776
-  delta := invariant7.delta
-  epsB := 1 / 80000000
-  epsF := invariant7.epsF
-  deltaF := invariant7.deltaF
-  epsStar := (1023 / 1099511627776) / 64
-  hmu_pos := by norm_num
-  hdelta_pos := invariant7.hdelta_pos
-  hdelta_lt := invariant7.hdelta_lt
-  hepsB_nonneg := by norm_num
-  hepsF_nonneg := invariant7.hepsF_nonneg
-  hdeltaF_pos := invariant7.hdeltaF_pos
-  hdeltaF_lt := invariant7.hdeltaF_lt
-  hepsStar_nonneg := by norm_num
+/-- The paper's actual (4.4): `μ ≤ ½·δ_F·(Aνk−1)/(A²k²)`, `δ_F = 128/4095`; gives `μ c ≤ δ_F·π/2`. -/
+theorem cond44_real : invMu ≤ (1 / 2) * (128 / 4095 : ℚ) * (4095 : ℚ) / 68719476736 := by
+  unfold invMu; norm_num
 
-theorem separatorConds_real : SeparatorConds params7 invariantReal := by
-  refine ⟨?_, ?_, ?_, ?_, ?_⟩
-  · unfold Cond41 params7 invariantReal; norm_num
-  · unfold Cond42 siblingFactor slackCoeff params7 invariantReal invariant7; norm_num
-  · unfold Cond43 params7 invariantReal; norm_num
-  · unfold Cond44 params7 invariantReal invariant7; norm_num
-  · unfold Cond45 params7 invariantReal invariant7; norm_num
-
-/-- The paper's actual (4.4): `μ ≤ ½·δ_F·(Aνk−1)/(A²k²)`; gives `μ c ≤ δ_F·π/2`. -/
-theorem cond44_real :
-    invariantReal.mu ≤ (1 / 2) * invariantReal.deltaF * (4095 : ℚ) / 68719476736 := by
-  unfold invariantReal invariant7; norm_num
-
-theorem mu_real_mul_le_one (c : ℚ) (hc : c ≤ 1073741824) : invariantReal.mu * c < 1 := by
-  unfold invariantReal
-  show (1023 / 1099511627776 : ℚ) * c < 1
+theorem mu_real_mul_le_one (c : ℚ) (hc : c ≤ 1073741824) : invMu * c < 1 := by
+  unfold invMu
   linarith
-
-theorem capacity_params7_nonneg (d i t : ℕ) : 0 ≤ capacity params7 d i t :=
-  (capacity_pos params7 d i t).le
 
 /-- Every bag below the root is a child of some node. -/
 theorem exists_parent_child {d : ℕ} (b : KBag 64 d) (hb : 1 ≤ b.l) :
@@ -90,21 +59,21 @@ def BadSendField {d : ℕ} (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (ht : t ≤ tf7 d) : Prop :=
   ∀ (b : KBag 64 d) (hb : 1 ≤ b.l),
-    ((b.strangers 1 id (fromParentK (flowSizes7 d hd) nets v t b) (br_ge_one params7) : ℕ) : ℚ) ≤
-      parentOutMass params7 d (execPlacement (flowSizes7 d hd) nets v t ht) id b hb +
-        sibMassBound params7 invariantReal d t b hb +
-        invariantReal.epsB * capacity params7 d (b.l - 1) t +
-        slackBound params7 d t b hb
+    ((b.strangers 1 id (fromParentK (flowSizes7 d hd) nets v t b) : ℕ) : ℚ) ≤
+      parentOutMass d (execPlacement (flowSizes7 d hd) nets v t ht) id b hb +
+        sibMassBound d t b hb +
+        invEpsB * capacity d (b.l - 1) t +
+        slackBound d t b hb
 
 /-- FringeSendField property definition. -/
 def FringeSendField {d : ℕ} (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (ht : t ≤ tf7 d) : Prop :=
   ∀ (b : KBag 64 d) (r : ℕ) (_hr1 : 1 ≤ r) (_hrd : r ≤ d) (hb : 1 ≤ b.l),
-    ((b.strangers (r + 1) id (fromParentK (flowSizes7 d hd) nets v t b) (br_ge_one params7) : ℕ) : ℚ) ≤
-      invariantReal.epsF *
-        (((b.parent (br_ge_one params7)).strangers r id
-          ((execPlacement (flowSizes7 d hd) nets v t ht).regs (b.parent (br_ge_one params7)))
-          (br_ge_one params7) : ℕ) : ℚ)
+    ((b.strangers (r + 1) id (fromParentK (flowSizes7 d hd) nets v t b) : ℕ) : ℚ) ≤
+      invEpsF *
+        (((b.parent).strangers r id
+          ((execPlacement (flowSizes7 d hd) nets v t ht).regs (b.parent))
+          : ℕ) : ℚ)
 
 end Chvatal

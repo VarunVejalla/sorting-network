@@ -1,7 +1,7 @@
 module
 
 public import AKS.Chvatal.StageNet
-public import AKS.Chvatal.OutsiderInduction
+public import AKS.Chvatal.StageKernel
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 public import Mathlib.Algebra.Field.GeomSum
 public import Mathlib.Tactic.Linarith
@@ -142,18 +142,17 @@ end Counting
 
 section Lemma41
 
-variable (p : ScheduleParams) (ip : InvariantParams) (d : ℕ) (sched : LevelSchedule p d)
-  (t : ℕ)
+variable (d t : ℕ)
 
 /-- Strangers in a subtree: the keys of `subtreeKeys w` not addressed below `w` number at
 most `∑_h k^h · min(μ δ^h c(w.l+h,t), a(w.l+h))`. -/
-theorem subtree_bad_le (pl : Placement p.br d) (a : ℕ → ℕ)
-    (hcard : ∀ b : KBag p.br d, (pl.regs b).card = a b.l)
-    (hP : OutsiderBoundLe p ip d sched t pl id) (w : KBag p.br d) :
-    (((subtreeKeys p.br d pl (br_ge_one p) w).filter fun κ => ¬ w.Native κ id).card : ℚ) ≤
-      ∑ h ∈ Finset.range (d - w.l + 1), (p.br : ℚ) ^ h *
-        min (ip.mu * ip.delta ^ h * capacity p d (w.l + h) t) (a (w.l + h) : ℚ) := by
-  have hbr := br_ge_one p
+theorem subtree_bad_le (pl : Placement 64 d) (a : ℕ → ℕ)
+    (hcard : ∀ b : KBag 64 d, (pl.regs b).card = a b.l)
+    (hP : OutsiderBoundLe d t pl id) (w : KBag 64 d) :
+    (((subtreeKeys 64 d pl (by norm_num) w).filter fun κ => ¬ w.Native κ id).card : ℚ) ≤
+      ∑ h ∈ Finset.range (d - w.l + 1), (64 : Rat) ^ h *
+        min (invMu * invDelta ^ h * capacity d (w.l + h) t) (a (w.l + h) : ℚ) := by
+  have hbr : 1 ≤ 64 := by norm_num
   unfold subtreeKeys subtreeBags
   rw [Finset.filter_biUnion, Finset.card_biUnion (fun z _ z' _ hne =>
     Finset.disjoint_filter_filter (pl.disjoint z z' hne)),
@@ -162,7 +161,7 @@ theorem subtree_bad_le (pl : Placement p.br d) (a : ℕ → ℕ)
   refine Finset.sum_le_sum fun h hh => ?_
   rw [Finset.mem_range] at hh
   have hc := descendants_card hbr w h (by have := w.hl; omega)
-  rw [show (p.br : ℚ) ^ h = ((descendants p.br d hbr w h).card : ℚ) by rw [hc]; push_cast; rfl,
+  rw [show (64 : Rat) ^ h = ((descendants 64 d hbr w h).card : ℚ) by rw [hc]; push_cast; rfl,
     ← nsmul_eq_mul, ← Finset.sum_const]
   refine Finset.sum_le_sum fun z hz => le_min ?_ ?_
   · have hzl := ((mem_descendants hbr w h z).mp hz).1
@@ -180,26 +179,26 @@ theorem subtree_bad_le (pl : Placement p.br d) (a : ℕ → ℕ)
 
 /-- Parity form: if levels of the wrong parity are empty, only `h` with `(w.l + h) % 2 = t % 2`
 contribute. -/
-theorem subtree_bad_le_parity (pl : Placement p.br d) (a : ℕ → ℕ)
-    (hcard : ∀ b : KBag p.br d, (pl.regs b).card = a b.l)
+theorem subtree_bad_le_parity (pl : Placement 64 d) (a : ℕ → ℕ)
+    (hcard : ∀ b : KBag 64 d, (pl.regs b).card = a b.l)
     (hpar : ∀ l, l % 2 ≠ t % 2 → a l = 0)
-    (hP : OutsiderBoundLe p ip d sched t pl id) (w : KBag p.br d) :
-    (((subtreeKeys p.br d pl (br_ge_one p) w).filter fun κ => ¬ w.Native κ id).card : ℚ) ≤
+    (hP : OutsiderBoundLe d t pl id) (w : KBag 64 d) :
+    (((subtreeKeys 64 d pl (by norm_num) w).filter fun κ => ¬ w.Native κ id).card : ℚ) ≤
       ∑ h ∈ (Finset.range (d - w.l + 1)).filter (fun h => (w.l + h) % 2 = t % 2),
-        (p.br : ℚ) ^ h * (ip.mu * ip.delta ^ h * capacity p d (w.l + h) t) := by
-  refine (subtree_bad_le p ip d sched t pl a hcard hP w).trans ?_
+        (64 : Rat) ^ h * (invMu * invDelta ^ h * capacity d (w.l + h) t) := by
+  refine (subtree_bad_le d t pl a hcard hP w).trans ?_
   rw [Finset.sum_filter]
   refine Finset.sum_le_sum fun h _ => ?_
-  have hk : (0 : ℚ) ≤ (p.br : ℚ) ^ h := by positivity
+  have hk : (0 : ℚ) ≤ (64 : Rat) ^ h := by positivity
   split_ifs with hh
   · exact mul_le_mul_of_nonneg_left (min_le_left _ _) hk
   · have := hpar (w.l + h) hh
-    have h0 : min (ip.mu * ip.delta ^ h * capacity p d (w.l + h) t) (a (w.l + h) : ℚ) ≤ 0 :=
+    have h0 : min (invMu * invDelta ^ h * capacity d (w.l + h) t) (a (w.l + h) : ℚ) ≤ 0 :=
       (min_le_right _ _).trans (by rw [this]; simp)
     nlinarith
 
 theorem capacity_add (m i : ℕ) :
-    capacity p d (i + m) t = p.A ^ m * capacity p d i t := by
+    capacity d (i + m) t = (4096 : Rat) ^ m * capacity d i t := by
   induction m with
   | zero => simp
   | succ m ih => rw [← add_assoc, capacity_succ_level, ih]; ring
@@ -237,33 +236,31 @@ theorem odd_geom_le (x : ℚ) (hx0 : 0 ≤ x) (hx : x ^ 2 < 1) (M : ℕ) :
 
 section Lemma41b
 
-variable (p : ScheduleParams) (ip : InvariantParams) (d : ℕ) (sched : LevelSchedule p d)
-  (t : ℕ)
+variable (d t : ℕ)
 
 /-- Geometric sum: with `c(i+m,t) = A^m c(i,t)` and `(δ k A)² < 1`, the odd-depth stranger series
 below a child is at most `μ · siblingFactor · c(i,t)`. -/
-theorem sibling_sum_le (hδ : ip.delta ^ 2 * (p.br : ℚ) ^ 2 * p.A ^ 2 < 1) (i M : ℕ) :
+theorem sibling_sum_le (hδ : invDelta ^ 2 * (64 : Rat) ^ 2 * (4096 : Rat) ^ 2 < 1) (i M : ℕ) :
     ∑ h ∈ (Finset.range M).filter (fun h => h % 2 = 1),
-        (p.br : ℚ) ^ h * (ip.mu * ip.delta ^ h * capacity p d (i + 1 + h) t) ≤
-      ip.mu * siblingFactor p ip * capacity p d i t := by
-  set x : ℚ := ip.delta * (p.br : ℚ) * p.A with hx
-  have hmu := ip.hmu_pos
-  have hA := p.A_pos
-  have hc := capacity_pos p d i t
+        (64 : Rat) ^ h * (invMu * invDelta ^ h * capacity d (i + 1 + h) t) ≤
+      invMu * siblingFactor * capacity d i t := by
+  set x : ℚ := invDelta * (64 : Rat) * (4096 : Rat) with hx
+  have hmu := invMu_pos
+  have hc := capacity_pos d i t
   have hx0 : 0 ≤ x := by
-    have := p.br_cast_pos; have := ip.hdelta_pos
+    have := invDelta_pos
     positivity
-  have hx2 : x ^ 2 = ip.delta ^ 2 * (p.br : ℚ) ^ 2 * p.A ^ 2 := by rw [hx]; ring
-  have hterm : ∀ h : ℕ, (p.br : ℚ) ^ h * (ip.mu * ip.delta ^ h * capacity p d (i + 1 + h) t) =
-      (ip.mu * p.A * capacity p d i t) * x ^ h := by
+  have hx2 : x ^ 2 = invDelta ^ 2 * (64 : Rat) ^ 2 * (4096 : Rat) ^ 2 := by rw [hx]; ring
+  have hterm : ∀ h : ℕ, (64 : Rat) ^ h * (invMu * invDelta ^ h * capacity d (i + 1 + h) t) =
+      (invMu * (4096 : Rat) * capacity d i t) * x ^ h := by
     intro h
-    rw [show i + 1 + h = i + (1 + h) by ring, capacity_add, hx]; ring
+    rw [show i + 1 + h = i + (1 + h) by ring, capacity_add, hx, mul_pow, mul_pow]; ring
   rw [Finset.sum_congr rfl (fun h _ => hterm h), ← Finset.mul_sum]
-  calc (ip.mu * p.A * capacity p d i t) *
+  calc (invMu * (4096 : Rat) * capacity d i t) *
         ∑ h ∈ (Finset.range M).filter (fun h => h % 2 = 1), x ^ h
-      ≤ (ip.mu * p.A * capacity p d i t) * (x / (1 - x ^ 2)) :=
+      ≤ (invMu * (4096 : Rat) * capacity d i t) * (x / (1 - x ^ 2)) :=
         mul_le_mul_of_nonneg_left (odd_geom_le x hx0 (hx2 ▸ hδ) M) (by positivity)
-    _ = ip.mu * siblingFactor p ip * capacity p d i t := by
+    _ = invMu * siblingFactor * capacity d i t := by
         unfold siblingFactor
         rw [hx2, hx]; ring
 
@@ -281,11 +278,11 @@ theorem wires_reindex (a : ℕ → ℕ) (c : ℕ) (n : ℕ) (hc : c < n) (r : �
     rw [show c + 1 + (l - c - 1) = l by omega]
 
 /-- Keys of `u` addressed below its child `w` number at most `k^(d-u.l-1)`. -/
-theorem keys_below_child_le_pow (pl : Placement p.br d) (u : KBag p.br d) (hul : u.l < d)
-    (j : Fin p.br) :
+theorem keys_below_child_le_pow (pl : Placement 64 d) (u : KBag 64 d) (hul : u.l < d)
+    (j : Fin 64) :
     ((pl.regs u).filter fun κ => (u.child j.val j.isLt hul).Native κ id).card ≤
-      p.br ^ (d - u.l - 1) := by
-  have h1 := native_card (br_ge_one p) (u.child j.val j.isLt hul)
+      64 ^ (d - u.l - 1) := by
+  have h1 := native_card (by norm_num) (u.child j.val j.isLt hul)
   rw [show (u.child j.val j.isLt hul).l = u.l + 1 from rfl,
     show d - (u.l + 1) = d - u.l - 1 by omega] at h1
   rw [← h1]
@@ -296,25 +293,25 @@ theorem keys_below_child_le_pow (pl : Placement p.br d) (u : KBag p.br d) (hul :
 /-- **Lemma 4.1 (real).**  A node `u` on an occupied level (`u.l % 2 = t % 2`) holds at most
 `c/k + μ · siblingFactor · c` keys addressed below any one child `w`, where `c = c(u.l, t)`,
 under invariant `P` for the actual placement and the Lemma 3.1 wire count below `u`. -/
-theorem keys_below_child_le (pl : Placement p.br d) (a : ℕ → ℕ)
-    (hcard : ∀ b : KBag p.br d, (pl.regs b).card = a b.l)
+theorem keys_below_child_le (pl : Placement 64 d) (a : ℕ → ℕ)
+    (hcard : ∀ b : KBag 64 d, (pl.regs b).card = a b.l)
     (hpar : ∀ l, l % 2 ≠ t % 2 → a l = 0)
-    (hP : OutsiderBoundLe p ip d sched t pl id)
-    (hδ : ip.delta ^ 2 * (p.br : ℚ) ^ 2 * p.A ^ 2 < 1)
-    (u : KBag p.br d) (hul : u.l < d) (j : Fin p.br)
-    (hwires : (∑ l ∈ Finset.Ioc u.l d, (p.br : ℚ) ^ (l - u.l - 1) * (a l : ℚ)) =
-      ((p.br : ℚ) ^ d / (p.br : ℚ) ^ u.l - capacity p d u.l t) / p.br)
+    (hP : OutsiderBoundLe d t pl id)
+    (hδ : invDelta ^ 2 * (64 : Rat) ^ 2 * (4096 : Rat) ^ 2 < 1)
+    (u : KBag 64 d) (hul : u.l < d) (j : Fin 64)
+    (hwires : (∑ l ∈ Finset.Ioc u.l d, (64 : Rat) ^ (l - u.l - 1) * (a l : ℚ)) =
+      ((64 : Rat) ^ d / (64 : Rat) ^ u.l - capacity d u.l t) / 64)
     (hu : u.l % 2 = t % 2) :
     (((pl.regs u).filter fun κ => (u.child j.val j.isLt hul).Native κ id).card : ℚ) ≤
-      capacity p d u.l t / p.br + ip.mu * siblingFactor p ip * capacity p d u.l t := by
-  have hbr := br_ge_one p
-  set w : KBag p.br d := u.child j.val j.isLt hul with hw
+      capacity d u.l t / 64 + invMu * siblingFactor * capacity d u.l t := by
+  have hbr : 1 ≤ 64 := by norm_num
+  set w : KBag 64 d := u.child j.val j.isLt hul with hw
   have hwl : w.l = u.l + 1 := rfl
-  set S := subtreeKeys p.br d pl hbr w with hS
+  set S := subtreeKeys 64 d pl hbr w with hS
   set X := (pl.regs u).filter fun κ => w.Native κ id with hX
   set Y := S.filter fun κ => w.Native κ id with hY
-  set A := (Finset.univ : Finset (Fin (p.br ^ d))).filter fun κ => w.Native κ id with hA
-  have hAcard : A.card = p.br ^ (d - u.l - 1) := by
+  set A := (Finset.univ : Finset (Fin (64 ^ d))).filter fun κ => w.Native κ id with hA
+  have hAcard : A.card = 64 ^ (d - u.l - 1) := by
     have h1 := native_card hbr w
     rwa [hwl, show d - (u.l + 1) = d - u.l - 1 by omega] at h1
   have hdisjS : Disjoint (pl.regs u) S := by
@@ -332,20 +329,19 @@ theorem keys_below_child_le (pl : Placement p.br d) (a : ℕ → ℕ)
       exact fun κ hκ => mem_filter.2 ⟨mem_univ _, (mem_filter.1 hκ).2⟩
   have hsplit := Finset.card_filter_add_card_filter_not (s := S) (fun κ => w.Native κ id)
   have hScard : (S.card : ℚ) =
-      ((p.br : ℚ) ^ d / (p.br : ℚ) ^ u.l - capacity p d u.l t) / p.br := by
-    rw [← hwires, hS, card_subtreeKeys hbr pl w a hcard, wires_reindex a u.l d hul (p.br : ℚ)]
+      ((64 : Rat) ^ d / (64 : Rat) ^ u.l - capacity d u.l t) / 64 := by
+    rw [← hwires, hS, card_subtreeKeys hbr pl w a hcard, wires_reindex a u.l d hul (64 : Rat)]
     push_cast
     rw [hwl]
   have hbad : (((S.filter fun κ => ¬ w.Native κ id).card : ℕ) : ℚ) ≤
-      ip.mu * siblingFactor p ip * capacity p d u.l t := by
-    refine (subtree_bad_le_parity p ip d sched t pl a hcard hpar hP w).trans ?_
+      invMu * siblingFactor * capacity d u.l t := by
+    refine (subtree_bad_le_parity d t pl a hcard hpar hP w).trans ?_
     rw [Finset.filter_congr (fun h _ => by rw [hwl]; omega : ∀ h ∈ Finset.range (d - w.l + 1),
       (w.l + h) % 2 = t % 2 ↔ h % 2 = 1), hwl]
-    exact sibling_sum_le p ip d t hδ u.l _
-  have hk := p.br_cast_pos
-  have hAq : ((A.card : ℕ) : ℚ) = (p.br : ℚ) ^ d / (p.br : ℚ) ^ u.l / p.br := by
+    exact sibling_sum_le d t hδ u.l _
+  have hAq : ((A.card : ℕ) : ℚ) = (64 : Rat) ^ d / (64 : Rat) ^ u.l / 64 := by
     rw [hAcard]
-    have hpow : (p.br : ℚ) ^ d = (p.br : ℚ) ^ (d - u.l - 1) * p.br * (p.br : ℚ) ^ u.l := by
+    have hpow : (64 : Rat) ^ d = (64 : Rat) ^ (d - u.l - 1) * 64 * (64 : Rat) ^ u.l := by
       rw [← pow_succ, ← pow_add]; congr 1; omega
     push_cast
     rw [hpow]
@@ -354,9 +350,9 @@ theorem keys_below_child_le (pl : Placement p.br d) (a : ℕ → ℕ)
   have c2 : ((Y.card + (S.filter fun κ => ¬ w.Native κ id).card : ℕ) : ℚ) = S.card := by
     exact_mod_cast hsplit
   push_cast at c1 c2 hbad hAq
-  have hid : capacity p d u.l t / p.br =
-      (p.br : ℚ) ^ d / (p.br : ℚ) ^ u.l / p.br -
-        ((p.br : ℚ) ^ d / (p.br : ℚ) ^ u.l - capacity p d u.l t) / p.br := by ring
+  have hid : capacity d u.l t / 64 =
+      (64 : Rat) ^ d / (64 : Rat) ^ u.l / 64 -
+        ((64 : Rat) ^ d / (64 : Rat) ^ u.l - capacity d u.l t) / 64 := by ring
   linarith
 
 end Lemma41b
