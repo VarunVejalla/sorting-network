@@ -43,14 +43,10 @@ theorem onesAboveHalfFringe_ge_sum_excess {m n f : Nat} (hf : Even f) (hfm : f �
 
 theorem HasPackSemanticPropertyF.of_paperF {m n f : ℕ} {hf : Even f} (hn : 0 < n)
     (hfm : f ≤ m) {deltaF epsF : ℝ} (hdelta1 : deltaF ≤ 1)
-    (hcol : ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ),
-      IdealColumnSort m n hn pack.colSort)
-    (hrow : ∀ (σ : Scramble m n) (pack : SortScrambleSortPack m n hn σ),
-      RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble)
-    {σ : Scramble m n} (pack : SortScrambleSortPack m n hn σ)
+    {σ : Scramble m n}
     (hP : ∀ (c : MonotoneColumnSums m n) (j : ℕ), totalColumnOnes c = j → 0 < j →
       (j : ℝ) ≤ deltaF * (f * n) → ∀ S : Finset (Fin n), ¬ fringeColumnEventBad hf deltaF epsF c σ j S) :
-    HasPackSemanticPropertyF hn pack f hfm deltaF epsF := by
+    HasPackSemanticPropertyF hn σ f hfm deltaF epsF := by
   classical
   intro v j hj hjδ
   have hjmn : j ≤ m * n := by
@@ -58,12 +54,10 @@ theorem HasPackSemanticPropertyF.of_paperF {m n f : ℕ} {hf : Even f} (hn : 0 <
     have h1 : deltaF * (f * n) ≤ 1 * (f * n) := mul_le_mul_of_nonneg_right hdelta1 (by positivity)
     have h2 : (f : ℝ) * n ≤ m * n := by gcongr
     exact_mod_cast (by push_cast; linarith : (j : ℝ) ≤ (m * n : ℕ))
-  rw [packSemanticIntrusionCountF_eq_onesAboveBottom (m := m) (n := n) (f := f) hn hfm
-    (hf := hf) (σ := σ) (pack := pack) (hcol σ pack) (hrow σ pack) v j]
+  rw [matrixOnesCountInRegion_semanticExec hn σ _ f hfm]
   set cMark := monotoneColumnSumsOfBool hn
-      (pack.colSort.net.exec fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w))
-  have htot : totalColumnOnes cMark = j :=
-    sum_topJ_colSums_eq_j hn pack.colSort (hcol σ pack) v j hj hjmn
+      ((columnSortNetwork m n hn).exec fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w))
+  have htot : totalColumnOnes cMark = j := sum_topJ_colSums_eq_j hn v j hj hjmn
   by_contra hcon
   rw [not_lt] at hcon
   set S := excessColumnSet cMark σ (f + 1) with hS

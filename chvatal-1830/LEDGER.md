@@ -22,7 +22,7 @@ constant `58657` matches the paper's Theorem 1.1 (`N ≥ 2^78`).
 
 | # | Piece | Status |
 | --- | --- | --- |
-| A1 | Property B for general `n`: **✔** `DecodeMatrixClassObligation.standard` is already general in `(m,n)`; used in `ExistsScrambleSeparator_general` | ✔ |
+| A1 | Property B for general `n`: **✔** `lemma61FailBound_onPipeline` is already general in `(m,n)`; used in `ExistsScrambleSeparator_general` | ✔ |
 | A2 | Claim (ii): tops counting + binomial estimates ([Lemma62TopsCount](AKS/Chvatal/Lemma62TopsCount.lean), [Lemma62TopsAnalytic](AKS/Chvatal/Lemma62TopsAnalytic.lean)) | ✔ |
 | A3 | Two-sided geometric tail sum ([GeomTail](AKS/Chvatal/GeomTail.lean)) | ✔ |
 | A4 | Per-`s` tail and ratio bounds: **✔** `p(s) ≤ C(n,s)(e j s/(nT))^T` ([Lemma62Tail](AKS/Chvatal/Lemma62Tail.lean)); `key_right`, `ratio_left/right`, `gfun_sum_le_G1` (`Σ_{s≤n} g(s) ≤ (1+e^-5)/(1-e^-5) G1(b)`) and `pbound_le_gfun` ([Lemma62Ratio](AKS/Chvatal/Lemma62Ratio.lean)), for `n ≥ 16`, `f ≥ 1.7e10`, `j ≤ (128/4095) f n`; integrality of `ε_F j` and evenness of `f` not needed | ✔ |

@@ -2,8 +2,7 @@ module
 /-
   # Physical sort–scramble–sort network
 
-  `SortScrambleSortPack.net` ignores the scramble wire permutation (the middle stage is the
-  semantic relabeling `wiredExec`). Here we build a genuine standard comparator network on the
+  The semantic map `semanticExec` relabels wires in the middle stage. Here we build a genuine standard comparator network on the
   `m·n` row-major wires: first column sorter, then the second column sorter with every
   comparator relabeled through `wirePerm.symm`. Row preservation of the scramble keeps each
   relabeled comparator standard (`i < j`).
@@ -102,19 +101,18 @@ theorem wire_lt_of_matrixRow_lt {m n : ℕ} (hn : 0 < n) {w w' : Fin (m * n)}
 
 /-- Column-sorter comparators join different rows `r < r'` (same column). -/
 theorem columnSortNetwork_comparator_rows {m n : ℕ} (hn : 0 < n)
-    (c : Comparator (m * n)) (hc : c ∈ (columnSortNetwork m n hn).net.comparators) :
+    (c : Comparator (m * n)) (hc : c ∈ (columnSortNetwork m n hn).comparators) :
     matrixRow m n hn c.i < matrixRow m n hn c.j := by
-  obtain ⟨j, r, k, hi, hk⟩ := (columnSortNetwork m n hn).col_local c hc
+  obtain ⟨j, r, k, hi, hk⟩ := columnSortNetwork_columnLocal m n hn c hc
   have hrk : r < k := (matrixWire_row_lt_iff hn j).mp (by rw [← hi, ← hk]; exact c.h)
   rw [hi, hk, (matrixWire_row_col hn r j).1, (matrixWire_row_col hn k j).1]
   exact hrk
 
 theorem columnSortNetwork_relabel_lt {m n : ℕ} (hn : 0 < n) (σ : Scramble m n)
-    (c : Comparator (m * n)) (hc : c ∈ (columnSortNetwork m n hn).net.comparators) :
-    (rowScrambleNetwork m n hn σ).wirePerm.symm c.i <
-      (rowScrambleNetwork m n hn σ).wirePerm.symm c.j := by
+    (c : Comparator (m * n)) (hc : c ∈ (columnSortNetwork m n hn).comparators) :
+    (rowScrambleWirePerm m n hn σ).symm c.i < (rowScrambleWirePerm m n hn σ).symm c.j := by
   apply wire_lt_of_matrixRow_lt hn
-  rw [RowScrambleNetwork.wirePerm_symm_matrixRow hn, RowScrambleNetwork.wirePerm_symm_matrixRow hn]
+  rw [matrixRow_rowScrambleWirePerm_symm, matrixRow_rowScrambleWirePerm_symm]
   exact columnSortNetwork_comparator_rows hn c hc
 
 /-! ## The physical network -/
@@ -122,8 +120,8 @@ theorem columnSortNetwork_relabel_lt {m n : ℕ} (hn : 0 < n) (σ : Scramble m n
 /-- Physical sort–scramble–sort: column sorter, then the column sorter relabeled by
 `wirePerm.symm` of the canonical row scramble. -/
 def physicalPackNet (m n : ℕ) (hn : 0 < n) (σ : Scramble m n) : ComparatorNetwork (m * n) :=
-  ⟨(columnSortNetwork m n hn).net.comparators ++
-    (relabelNet (rowScrambleNetwork m n hn σ).wirePerm.symm (columnSortNetwork m n hn).net
+  ⟨(columnSortNetwork m n hn).comparators ++
+    (relabelNet (rowScrambleWirePerm m n hn σ).symm (columnSortNetwork m n hn)
       (columnSortNetwork_relabel_lt hn σ)).comparators⟩
 
 /-- Main theorem: physical output = semantic output with columns permuted within rows by
@@ -131,21 +129,12 @@ def physicalPackNet (m n : ℕ) (hn : 0 < n) (σ : Scramble m n) : ComparatorNet
 theorem physicalPackNet_exec {m n : ℕ} (hn : 0 < n) (σ : Scramble m n)
     {α : Type*} [LinearOrder α] (v : Fin (m * n) → α) :
     (physicalPackNet m n hn σ).exec v =
-      ((canonicalSortScrambleSortPack m n hn σ).semanticExec v) ∘
-        (rowScrambleNetwork m n hn σ).wirePerm := by
-  have hx := ComparatorNetwork.exec_append (columnSortNetwork m n hn).net
-    (relabelNet (rowScrambleNetwork m n hn σ).wirePerm.symm (columnSortNetwork m n hn).net
+      (semanticExec hn σ v) ∘ rowScrambleWirePerm m n hn σ := by
+  have hx := ComparatorNetwork.exec_append (columnSortNetwork m n hn)
+    (relabelNet (rowScrambleWirePerm m n hn σ).symm (columnSortNetwork m n hn)
       (columnSortNetwork_relabel_lt hn σ)) v
-  have hid : ∀ y : Fin (m * n) → α, (rowScrambleNetwork m n hn σ).net.exec y = y := by
-    intro y
-    simp [ComparatorNetwork.exec, rowScrambleNetwork_comparators_eq_nil m n hn σ]
   unfold physicalPackNet
   rw [hx, relabelNet_exec]
-  funext w
-  simp only [SortScrambleSortPack.semanticExec, SortScrambleSortPack.middleExec,
-    sortScrambleMiddleExec, RowScrambleNetwork.wiredExec, canonicalSortScrambleSortPack,
-    SortScrambleSortPack.colSort, Function.comp_apply]
-  rw [hid]
   rfl
 
 /-- Count form: for every predicate `P` on values and every set of rows `R`, the number of
@@ -157,12 +146,12 @@ theorem physicalPackNet_rowRegion_card {m n : ℕ} (hn : 0 < n) (σ : Scramble m
         matrixRow m n hn w ∈ R ∧ P ((physicalPackNet m n hn σ).exec v w)).card =
     (Finset.univ.filter fun w : Fin (m * n) =>
         matrixRow m n hn w ∈ R ∧
-          P ((canonicalSortScrambleSortPack m n hn σ).semanticExec v w)).card := by
-  set ρ := (rowScrambleNetwork m n hn σ).wirePerm with hρ
+          P (semanticExec hn σ v w)).card := by
+  set ρ := rowScrambleWirePerm m n hn σ with hρ
   refine Finset.card_bij (fun w _ => ρ w) ?_ ?_ ?_
   · intro w hw
     simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hw ⊢
-    rw [hρ, RowScrambleNetwork.wirePerm_matrixRow hn]
+    rw [hρ, matrixRow_rowScrambleWirePerm hn σ]
     refine ⟨hw.1, ?_⟩
     have := hw.2
     rwa [physicalPackNet_exec] at this
@@ -170,19 +159,19 @@ theorem physicalPackNet_rowRegion_card {m n : ℕ} (hn : 0 < n) (σ : Scramble m
   · intro w hw
     refine ⟨ρ.symm w, ?_, by simp⟩
     simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hw ⊢
-    rw [hρ, RowScrambleNetwork.wirePerm_symm_matrixRow hn, physicalPackNet_exec]
+    rw [hρ, matrixRow_rowScrambleWirePerm_symm hn σ, physicalPackNet_exec]
     exact ⟨hw.1, by simpa using hw.2⟩
 
 /-! ## Depth -/
 
 theorem physicalPackNet_depth_le (m n : ℕ) (hn : 0 < n) (σ : Scramble m n) :
-    (physicalPackNet m n hn σ).depth ≤ 2 * (columnSortNetwork m n hn).net.depth := by
-  have h := ComparatorNetwork.depth_append_le (columnSortNetwork m n hn).net
-    (relabelNet (rowScrambleNetwork m n hn σ).wirePerm.symm (columnSortNetwork m n hn).net
+    (physicalPackNet m n hn σ).depth ≤ 2 * (columnSortNetwork m n hn).depth := by
+  have h := ComparatorNetwork.depth_append_le (columnSortNetwork m n hn)
+    (relabelNet (rowScrambleWirePerm m n hn σ).symm (columnSortNetwork m n hn)
       (columnSortNetwork_relabel_lt hn σ))
   rw [relabelNet_depth] at h
-  have e : physicalPackNet m n hn σ = ((columnSortNetwork m n hn).net.append
-    (relabelNet (rowScrambleNetwork m n hn σ).wirePerm.symm (columnSortNetwork m n hn).net
+  have e : physicalPackNet m n hn σ = ((columnSortNetwork m n hn).append
+    (relabelNet (rowScrambleWirePerm m n hn σ).symm (columnSortNetwork m n hn)
       (columnSortNetwork_relabel_lt hn σ))) := rfl
   rw [e]
   omega

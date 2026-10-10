@@ -50,7 +50,7 @@ headline results, and guards), and `Misc/Fin.lean`.
 
 **A. Separators (paper §5–§6).** `Params`, `Theorem51Core`, `GeneralParams`, `GeneralSeparator`,
 `Lemma61`, `Lemma62*` (tops counting, tails, ratios, failure reduction, rounding),
-`Lemma63`, `RowScramble`, `MatrixBridge`, `SortedColumnDecode`, `ModuleA`, `PhysicalPack` (the physical sort–scramble–sort network),
+`Lemma63`, `MatrixBridge`, `SortedColumnDecode`, `PhysicalPack` (the physical sort–scramble–sort network),
 `PackSpec`, `FlipSpec`, `NodeSpec` (two-sided node guarantee), `NodeGeom` (geometry per node type),
 `SeparatorDepth`.
 

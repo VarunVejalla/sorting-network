@@ -80,8 +80,8 @@ theorem NodeSpec_of_sorts {a : ℕ} (π τ : ℕ) (net : ComparatorNetwork a) (h
     simpa using mul_pos hε this
 
 theorem hasPackSemanticPropertyF_zero {m n : ℕ} (hn : 0 < n) {σ : Scramble m n}
-    (pack : SortScrambleSortPack m n hn σ) (hfm : 0 ≤ m) (deltaF epsF : ℝ) :
-    HasPackSemanticPropertyF hn pack 0 hfm deltaF epsF := by
+    (hfm : 0 ≤ m) (deltaF epsF : ℝ) :
+    HasPackSemanticPropertyF hn σ 0 hfm deltaF epsF := by
   intro v j hj hjd
   exfalso
   simp at hjd
@@ -90,23 +90,23 @@ theorem hasPackSemanticPropertyF_zero {m n : ℕ} (hn : 0 < n) {σ : Scramble m 
 theorem packNodeSpec {m n f b : ℕ} (hn : 0 < n) (σ : Scramble m n)
     (hmfb : m = 2 * f + 64 * b) (hfm : f ≤ m) {epsB EB : ℝ}
     (hEB : EB = epsB / 2 * ((m * n : ℕ) : ℝ))
-    (hB1 : HasPackSemanticPropertyB hn (canonicalSortScrambleSortPack m n hn σ) epsB)
+    (hB1 : HasPackSemanticPropertyB hn σ epsB)
     (hB2 : HasPackSemanticPropertyB hn
-      (canonicalSortScrambleSortPack m n hn (flipScramble σ)) epsB)
+      (flipScramble σ) epsB)
     (hF : 0 < f →
-      HasPackSemanticPropertyF hn (canonicalSortScrambleSortPack m n hn σ) f hfm
+      HasPackSemanticPropertyF hn σ f hfm
         (128 / 4095) eps ∧
-      HasPackSemanticPropertyF hn (canonicalSortScrambleSortPack m n hn (flipScramble σ)) f hfm
+      HasPackSemanticPropertyF hn (flipScramble σ) f hfm
         (128 / 4095) eps) :
     NodeSpec (m * n) (2 * f * n) (b * n) (physicalPackNet m n hn σ) EB
       (specJmax (2 * f * n)) eps := by
-  have hFF : HasPackSemanticPropertyF hn (canonicalSortScrambleSortPack m n hn σ) f hfm
+  have hFF : HasPackSemanticPropertyF hn σ f hfm
         (128 / 4095) eps ∧
-      HasPackSemanticPropertyF hn (canonicalSortScrambleSortPack m n hn (flipScramble σ)) f hfm
+      HasPackSemanticPropertyF hn (flipScramble σ) f hfm
         (128 / 4095) eps := by
     rcases Nat.eq_zero_or_pos f with h0 | h0
     · subst h0
-      exact ⟨hasPackSemanticPropertyF_zero hn _ _ _ _, hasPackSemanticPropertyF_zero hn _ _ _ _⟩
+      exact ⟨hasPackSemanticPropertyF_zero hn _ _ _, hasPackSemanticPropertyF_zero hn _ _ _⟩
     · exact hF h0
   have hH := packSpec_high hn σ hmfb hfm hB1 hFF.1
   have hL := packSpec_low hn σ hmfb hfm hB2 hFF.2

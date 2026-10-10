@@ -1,18 +1,12 @@
 module
 /-
-  Column-monotone `Bool` decode: above-bottom counts are `∑ⱼ (colSumⱼ - i)₊`.
-  With `IdealColumnSort` + `RowScrambleCorrect`, matrix Property B intrusion equals
-  combinatorial `onesAboveBottom` for the post–first-sort column sums of the threshold
-  marking — discharging `MiddleStageDecodeHyp` for general `m` and every permutation.
-
-  Property F: top-`j` key marking at fringe depth `f` gives the same `onesAboveBottom`
-  route, then `onesAboveBottom_le_onesAboveHalfFringe_univ` discharges
-  `MiddleStageFringeDecodeHyp.of_idealColumnSort_rowScramble`. Closing
-  `FringePropertyFClosingHyp.of_idealColumnSort_rowScramble` uses `j < f` from
-  `δ_F · n < 1` (paper §7 loop) and zero above-bottom at level `f`.
+  Column-monotone `Bool` decode: above-bottom counts are `∑ⱼ (colSumⱼ - i)₊`. For the concrete
+  `semanticExec` (column sort, row scramble, column sort), the region count of any Boolean marking
+  equals the combinatorial `onesAboveBottom` of its post-first-sort column sums; this gives matrix
+  Property B from the pipeline combinatorial Property B, and is the decode step of Property F.
 -/
 
-public import AKS.Chvatal.RowScramble
+public import AKS.Chvatal.MatrixBridge
 public import AKS.Misc.Fin
 
 @[expose] public section
@@ -354,25 +348,15 @@ theorem matrixColumnTrueCount_exec_eq {m n : Nat} (hn : 0 < n) (j : Fin n)
     rw [hfold, ih (c.apply v) htail]
     exact matrixColumnTrueCount_apply_eq hn j c (hcol c (by simp [List.mem_cons])) v
 
-/-- After an ideal column sort, region count equals `∑ⱼ (colSumⱼ - i)`. -/
+/-- After column sort, the region count equals `∑ⱼ (colSumⱼ - i)`. -/
 theorem matrixOnesCountInRegion_colSort_eq_sum_columnSub {m n : Nat} (hn : 0 < n) (i : Nat)
-    (him : i ≤ m) (colSort : ColumnSortNetwork m n) (hcol : IdealColumnSort m n hn colSort)
-    (v : Fin (m * n) → Bool) :
-    matrixOnesCountInRegion hn (colSort.net.exec v) i =
+    (him : i ≤ m) (v : Fin (m * n) → Bool) :
+    matrixOnesCountInRegion hn ((columnSortNetwork m n hn).exec v) i =
       ∑ j : Fin n, (matrixColumnTrueCount hn j v - i) := by
-  have hcm : ColumnMonotoneInput m n hn (colSort.net.exec v) :=
-    IdealColumnSort.exec_columnMonotoneInput hn colSort hcol v
-  calc
-    matrixOnesCountInRegion hn (colSort.net.exec v) i
-        = ∑ j : Fin n, matrixColumnOnesAboveBottom hn j (colSort.net.exec v) i :=
-      matrixOnesCountInRegion_eq_sum_columnOnesAboveBottom hn i (colSort.net.exec v)
-    _ = ∑ j : Fin n, (matrixColumnTrueCount hn j (colSort.net.exec v) - i) := by
-      refine Finset.sum_congr rfl fun j _ =>
-        matrixColumnOnesAboveBottom_eq_sub hn j (colSort.net.exec v) i him
-          (fun hrs => hcm j hrs)
-    _ = ∑ j : Fin n, (matrixColumnTrueCount hn j v - i) := by
-      refine Finset.sum_congr rfl fun j _ => by
-        rw [matrixColumnTrueCount_exec_eq hn j colSort.net colSort.col_local v]
+  rw [matrixOnesCountInRegion_eq_sum_columnOnesAboveBottom]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  rw [matrixColumnOnesAboveBottom_eq_sub hn j _ i him fun hrs => columnSortNetwork_columnMonotone hn v j hrs,
+    matrixColumnTrueCount_exec_eq hn j _ (columnSortNetwork_columnLocal m n hn)]
 
 /-- Column sums of a Boolean matrix, as a `MonotoneColumnSums` witness. -/
 def monotoneColumnSumsOfBool {m n : Nat} (hn : 0 < n) (v : Fin (m * n) → Bool) :
@@ -390,207 +374,56 @@ theorem monotoneMatrixBool_eq_of_columnMonotone {m n : Nat} (hn : 0 < n)
     v = monotoneMatrixBool hn (monotoneColumnSumsOfBool hn v) := by
   classical
   refine ColumnMonotoneInput.eq_of_matrixWire_eq hn hcm
-      (ColumnMonotoneInput_monotoneMatrixBool hn _) fun r j => ?_
-  set c := monotoneColumnSumsOfBool hn v
-  set col : Fin m → Bool := fun r' => v (matrixWire m n r' j)
-  have hmono : Monotone col := fun a b hab => hcm j hab
-  set falseSet := Finset.univ.filter fun r' : Fin m => col r' = false
-  obtain ⟨hfalse, htrue⟩ := Monotone.bool_pattern_at_card col hmono
-  set k := falseSet.card
-  have hpart : (Finset.univ.filter fun r' => col r' = true).card + falseSet.card = m := by
-      have hf : Finset.univ.filter (fun r' : Fin m => ¬ col r' = true) = falseSet := by
-        ext r'; simp [falseSet]
-      have hcardFalse :
-          falseSet.card =
-            (Finset.univ.filter (fun r' : Fin m => ¬ col r' = true)).card := by
-        rw [hf]
-      calc
-        (Finset.univ.filter fun r' => col r' = true).card + falseSet.card
-            = (Finset.univ.filter fun r' => col r' = true).card +
-                (Finset.univ.filter (fun r' : Fin m => ¬ col r' = true)).card := by
-              rw [hcardFalse]
-        _ = (Finset.univ : Finset (Fin m)).card := by
-              rw [← Finset.card_filter_add_card_filter_not (fun r' : Fin m => col r' = true)
-                (s := Finset.univ)]
-        _ = m := by rw [Finset.card_univ, Fintype.card_fin]
-  have hmc : matrixColumnTrueCount hn j v = m - k := by
-    unfold matrixColumnTrueCount
-    have hfilt :
-        Finset.univ.filter (fun r' : Fin m => v (matrixWire m n r' j) = true) =
-          Finset.univ.filter (fun r' : Fin m => col r' = true) := by
-      ext r'; simp [col]
-    rw [hfilt]
-    have : (Finset.univ.filter fun r' => col r' = true).card + k = m := by
-      simpa [k] using hpart
+    (ColumnMonotoneInput_monotoneMatrixBool hn _) fun r j => ?_
+  rw [Bool.eq_iff_iff, monotoneMatrixBool_matrixWire, mem_monotoneRowOnes_iff]
+  show _ ↔ m - r.val ≤ matrixColumnTrueCount hn j v
+  unfold matrixColumnTrueCount
+  have hr := r.isLt
+  constructor
+  · intro h
+    have hsub : Finset.Ici r ⊆ Finset.univ.filter fun s => v (matrixWire m n s j) = true :=
+      fun s hs => by
+        simpa using Bool.le_iff_imp.mp (hcm j (Finset.mem_Ici.mp hs)) h
+    simpa using Finset.card_le_card hsub
+  · intro h
+    by_contra hf
+    have hsub : (Finset.univ.filter fun s => v (matrixWire m n s j) = true) ⊆ Finset.Ioi r :=
+      fun s hs => by
+        by_contra hs'
+        exact hf (Bool.le_iff_imp.mp (hcm j (not_lt.mp (Finset.mem_Ioi.not.mp hs')))
+          (Finset.mem_filter.mp hs).2)
+    have := Finset.card_le_card hsub
+    simp at this
     omega
-  have hc : (c j).val = m - k := by
-    dsimp [c, monotoneColumnSumsOfBool, matrixColumnTrueCount]
-    exact hmc
-  by_cases hv : v (matrixWire m n r j) = true
-  · have hkrow : k ≤ r.val := by
-      by_contra hkrow; push_neg at hkrow
-      exact absurd (hfalse r hkrow) (by simpa [col] using hv)
-    have hle : m - r.val ≤ (c j).val := by rw [hc]; exact Nat.sub_le_sub_left hkrow m
-    simp [monotoneMatrixBool, matrixWire_row_col hn r j, decide_eq_true_iff,
-      mem_monotoneRowOnes_iff, hv, hle]
-  · have hv' : v (matrixWire m n r j) = false := by
-      cases h : v (matrixWire m n r j) <;> simp_all
-    have hkrow : r.val < k := by
-      by_contra hkrow; push_neg at hkrow
-      exact absurd (htrue r hkrow) (by simpa [col] using hv')
-    have hlt : (c j).val < m - r.val := by rw [hc]; omega
-    have hnin : j ∉ monotoneRowOnes c r := by
-      rw [mem_monotoneRowOnes_iff]; exact not_le.mpr hlt
-    simp [monotoneMatrixBool, matrixWire_row_col hn r j, hnin, hv']
 
-theorem scrambledColSum_eq_matrixColumnTrueCount_of_rowScramble {m n : Nat} (hn : 0 < n)
-    {σ : Scramble m n} (pack : SortScrambleSortPack m n hn σ)
-    (hrow : RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble)
+theorem scrambledColSum_eq_matrixColumnTrueCount {m n : Nat} (hn : 0 < n) (σ : Scramble m n)
     (c : MonotoneColumnSums m n) (j : Fin n) :
     scrambledColSum c σ j =
-      matrixColumnTrueCount hn j (pack.middleExec (monotoneMatrixBool hn c)) := by
+      matrixColumnTrueCount hn j (monotoneMatrixBool hn c ∘ (rowScrambleWirePerm m n hn σ).symm) := by
   classical
-  set mid := pack.middleExec (monotoneMatrixBool hn c)
   unfold scrambledColSum
-  have hsum :
-      (∑ r : Fin m, if j ∈ scrambledRowOnes c σ r then 1 else 0) =
-        ∑ r : Fin m, if mid (matrixWire m n r j) = true then 1 else 0 := by
-    refine Finset.sum_congr rfl fun r _ => ?_
-    have hiff := hrow.maps_scramble c r j
-    have hmid :
-        mid (matrixWire m n r j) = true ↔ j ∈ scrambledRowOnes c σ r := by
-      dsimp [mid, SortScrambleSortPack.middleExec]
-      exact hiff
-    by_cases h : j ∈ scrambledRowOnes c σ r <;>
-      simp [h, hmid, matrixWire_row_col hn r j, ↓reduceIte]
-  rw [hsum, matrixColumnTrueCount_eq_sum hn j mid]
+  rw [matrixColumnTrueCount_eq_sum hn j]
+  refine Finset.sum_congr rfl fun r _ => ?_
+  have h : (monotoneMatrixBool hn c ∘ (rowScrambleWirePerm m n hn σ).symm) (matrixWire m n r j) =
+      true ↔ j ∈ scrambledRowOnes c σ r := by
+    simp only [Function.comp, rowScrambleWirePerm_symm_apply, decide_eq_true_iff,
+      monotoneMatrixBool_matrixWire, scrambledRowOnes, Finset.mem_image]
+    exact ⟨fun hj => ⟨_, hj, Equiv.apply_symm_apply _ _⟩, fun ⟨j0, hj0, e⟩ => by
+      simpa [← e] using hj0⟩
+  simp only [h]
 
-/-- After the full pack on a Boolean marking, region count equals `onesAboveBottom`. -/
-theorem matrixOnesCountInRegion_pack_eq_onesAboveBottom {m n : Nat} (hn : 0 < n)
-    {σ : Scramble m n} (pack : SortScrambleSortPack m n hn σ)
-    (hcol : IdealColumnSort m n hn pack.colSort)
-    (hrow : RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble)
+/-- After the semantic map on a Boolean marking, the region count at level `i ≤ m` is the
+combinatorial `onesAboveBottom` of the post-first-sort column sums (Property B and F decode). -/
+theorem matrixOnesCountInRegion_semanticExec {m n : Nat} (hn : 0 < n) (σ : Scramble m n)
     (v : Fin (m * n) → Bool) (i : Nat) (him : i ≤ m) :
-    matrixOnesCountInRegion hn (pack.colSort.net.exec (pack.middleExec v)) i =
-      onesAboveBottom (monotoneColumnSumsOfBool hn (pack.colSort.net.exec v)) σ i := by
-  set u1 := pack.colSort.net.exec v
-  set c := monotoneColumnSumsOfBool hn u1
-  have hcm : ColumnMonotoneInput m n hn u1 :=
-    IdealColumnSort.exec_columnMonotoneInput hn pack.colSort hcol v
-  have hu1 : u1 = monotoneMatrixBool hn c := monotoneMatrixBool_eq_of_columnMonotone hn u1 hcm
-  have hmb_cm : ColumnMonotoneInput m n hn (monotoneMatrixBool hn c) :=
-    ColumnMonotoneInput_monotoneMatrixBool hn c
-  have hfix_mb :
-      pack.colSort.net.exec (monotoneMatrixBool hn c) = monotoneMatrixBool hn c :=
-    IdealColumnSort.exec_eq_of_columnMonotoneInput hn pack.colSort hcol _ hmb_cm
-  have hmid_v :
-      pack.middleExec v = pack.middleExec (monotoneMatrixBool hn c) := by
-    rw [SortScrambleSortPack.middle_exec_eq, SortScrambleSortPack.middle_exec_eq,
-      show pack.colSort.net.exec v = pack.colSort.net.exec (monotoneMatrixBool hn c) by
-        calc pack.colSort.net.exec v = u1 := rfl
-          _ = monotoneMatrixBool hn c := hu1
-          _ = pack.colSort.net.exec (monotoneMatrixBool hn c) := hfix_mb.symm]
-  rw [hmid_v]
-  have hregion :
-      matrixOnesCountInRegion hn
-          (pack.colSort.net.exec (pack.middleExec (monotoneMatrixBool hn c))) i =
-        ∑ j : Fin n, (matrixColumnTrueCount hn j
-            (pack.middleExec (monotoneMatrixBool hn c)) - i) :=
-    matrixOnesCountInRegion_colSort_eq_sum_columnSub hn i him pack.colSort hcol _
-  rw [hregion]
-  unfold onesAboveBottom
+    matrixOnesCountInRegion hn (semanticExec hn σ v) i =
+      onesAboveBottom (monotoneColumnSumsOfBool hn ((columnSortNetwork m n hn).exec v)) σ i := by
+  set c := monotoneColumnSumsOfBool hn ((columnSortNetwork m n hn).exec v)
+  have hu1 : (columnSortNetwork m n hn).exec v = monotoneMatrixBool hn c :=
+    monotoneMatrixBool_eq_of_columnMonotone hn _ (columnSortNetwork_columnMonotone hn v)
+  rw [semanticExec, matrixOnesCountInRegion_colSort_eq_sum_columnSub hn i him]
   refine Finset.sum_congr rfl fun j _ => ?_
-  rw [← scrambledColSum_eq_matrixColumnTrueCount_of_rowScramble hn pack hrow c j]
-
-/-- Semantic decode: region after `semanticExec` equals `onesAboveBottom`. -/
-theorem matrixIntrusionCountB_semantic_eq_onesAboveBottom {m n : Nat} (hn : 0 < n)
-    {σ : Scramble m n} (pack : SortScrambleSortPack m n hn σ)
-    (hcol : IdealColumnSort m n hn pack.colSort)
-    (hrow : RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble)
-    (v : Equiv.Perm (Fin (m * n))) (i : Nat) (him : i ≤ m) :
-    matrixOnesCountInRegion hn
-        (pack.semanticExec fun w => largestKeyThreshold01 (m := m) (n := n) i (v w)) i =
-      onesAboveBottom
-        (monotoneColumnSumsOfBool hn
-          (pack.colSort.net.exec fun w => largestKeyThreshold01 (m := m) (n := n) i (v w)))
-        σ i := by
-  set u := fun w => largestKeyThreshold01 (m := m) (n := n) i (v w)
-  simpa [SortScrambleSortPack.semanticExec] using
-    matrixOnesCountInRegion_pack_eq_onesAboveBottom hn pack hcol hrow u i him
-
-theorem packSemanticIntrusionCountB_eq_onesAboveBottom {m n : Nat} (hn : 0 < n)
-    {σ : Scramble m n} (pack : SortScrambleSortPack m n hn σ)
-    (hcol : IdealColumnSort m n hn pack.colSort)
-    (hrow : RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble)
-    (v : Equiv.Perm (Fin (m * n))) (i : Nat) (him : i ≤ m) :
-    packSemanticIntrusionCountB hn pack v i =
-      onesAboveBottom
-        (monotoneColumnSumsOfBool hn
-          (pack.colSort.net.exec fun w => largestKeyThreshold01 (m := m) (n := n) i (v w)))
-        σ i :=
-  matrixIntrusionCountB_semantic_eq_onesAboveBottom hn pack hcol hrow v i him
-
-/-! **Property F (fringe depth `f`, top-`j` keys)** -/
-
-theorem matrixOnesCountInRegion_pack_eq_onesAboveBottom_f {m n f : Nat} (hn : 0 < n)
-    (hfm : f ≤ m) {σ : Scramble m n} (pack : SortScrambleSortPack m n hn σ)
-    (hcol : IdealColumnSort m n hn pack.colSort)
-    (hrow : RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble)
-    (v : Equiv.Perm (Fin (m * n))) (j : Nat) :
-    matrixOnesCountInRegion hn
-        (pack.colSort.net.exec
-          (pack.middleExec
-            (fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w)))) f =
-      onesAboveBottom
-        (monotoneColumnSumsOfBool hn
-          (pack.colSort.net.exec fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w)))
-        σ f := by
-  set u1 := pack.colSort.net.exec
-      (fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w))
-  set c := monotoneColumnSumsOfBool hn u1
-  have hcm : ColumnMonotoneInput m n hn u1 :=
-    IdealColumnSort.exec_columnMonotoneInput hn pack.colSort hcol
-      (fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w))
-  have hu1 : u1 = monotoneMatrixBool hn c := monotoneMatrixBool_eq_of_columnMonotone hn u1 hcm
-  have hmb_cm : ColumnMonotoneInput m n hn (monotoneMatrixBool hn c) :=
-    ColumnMonotoneInput_monotoneMatrixBool hn c
-  have hfix_mb :
-      pack.colSort.net.exec (monotoneMatrixBool hn c) = monotoneMatrixBool hn c :=
-    IdealColumnSort.exec_eq_of_columnMonotoneInput hn pack.colSort hcol _ hmb_cm
-  have hmid_v :
-      pack.middleExec (fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w)) =
-        pack.middleExec (monotoneMatrixBool hn c) := by
-    rw [SortScrambleSortPack.middle_exec_eq, SortScrambleSortPack.middle_exec_eq,
-      show pack.colSort.net.exec (fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w)) =
-          pack.colSort.net.exec (monotoneMatrixBool hn c) by
-        calc pack.colSort.net.exec (fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w)) = u1 := rfl
-          _ = monotoneMatrixBool hn c := hu1
-          _ = pack.colSort.net.exec (monotoneMatrixBool hn c) := hfix_mb.symm]
-  rw [hmid_v]
-  have hregion :
-      matrixOnesCountInRegion hn
-          (pack.colSort.net.exec (pack.middleExec (monotoneMatrixBool hn c))) f =
-        ∑ col : Fin n, (matrixColumnTrueCount hn col
-            (pack.middleExec (monotoneMatrixBool hn c)) - f) :=
-    matrixOnesCountInRegion_colSort_eq_sum_columnSub hn f hfm pack.colSort hcol _
-  rw [hregion]
-  unfold onesAboveBottom
-  refine Finset.sum_congr rfl fun col _ => ?_
-  rw [← scrambledColSum_eq_matrixColumnTrueCount_of_rowScramble hn pack hrow c col]
-
-theorem packSemanticIntrusionCountF_eq_onesAboveBottom {m n f : Nat} (hn : 0 < n) (hfm : f ≤ m)
-    {hf : Even f} {σ : Scramble m n} (pack : SortScrambleSortPack m n hn σ)
-    (hcol : IdealColumnSort m n hn pack.colSort)
-    (hrow : RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble)
-    (v : Equiv.Perm (Fin (m * n))) (j : Nat) :
-    packSemanticIntrusionCountF hn pack v f j =
-      onesAboveBottom
-        (monotoneColumnSumsOfBool hn
-          (pack.colSort.net.exec fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w)))
-        σ f := by
-  unfold packSemanticIntrusionCountF
-  simpa [SortScrambleSortPack.semanticExec] using
-    matrixOnesCountInRegion_pack_eq_onesAboveBottom_f hn hfm pack hcol hrow v j
+  rw [scrambledColSum_eq_matrixColumnTrueCount hn σ c j, hu1]
 
 /-! **Top-`j` marking counts (Property F closing)** -/
 
@@ -678,22 +511,13 @@ private theorem sum_matrixColumnTrueCount_eq_trueWireCount {m n : Nat} (hn : 0 <
   unfold matrixColumnTrueCount
   exact (Finset.card_image_of_injOn (hinj col)).symm
 
-theorem totalColumnOnes_monotoneColumnSumsOfBool_eq_trueWireCount {m n : Nat} (hn : 0 < n)
-    (v : Fin (m * n) → Bool) :
-    totalColumnOnes (monotoneColumnSumsOfBool hn v) =
+theorem totalColumnOnes_colSort_exec_eq {m n : Nat} (hn : 0 < n) (v : Fin (m * n) → Bool) :
+    totalColumnOnes (monotoneColumnSumsOfBool hn ((columnSortNetwork m n hn).exec v)) =
       (Finset.univ.filter fun w : Fin (m * n) => v w = true).card := by
   unfold totalColumnOnes monotoneColumnSumsOfBool
   rw [← sum_matrixColumnTrueCount_eq_trueWireCount hn v]
-
-theorem totalColumnOnes_monotoneColumnSumsOfBool_colSort_exec_eq {m n : Nat} (hn : 0 < n)
-    (colSort : ColumnSortNetwork m n) (hcol : IdealColumnSort m n hn colSort)
-    (v : Fin (m * n) → Bool) :
-    totalColumnOnes (monotoneColumnSumsOfBool hn (colSort.net.exec v)) =
-      totalColumnOnes (monotoneColumnSumsOfBool hn v) := by
-  unfold totalColumnOnes monotoneColumnSumsOfBool
-  refine Finset.sum_congr rfl fun j _ => ?_
-  dsimp
-  exact matrixColumnTrueCount_exec_eq hn j colSort.net colSort.col_local v
+  exact Finset.sum_congr rfl fun j _ =>
+    matrixColumnTrueCount_exec_eq hn j _ (columnSortNetwork_columnLocal m n hn) v
 
 theorem largestKeyThreshold01_trueWireCount_eq {m n : Nat} (hn : 0 < n) (i : Nat) (hi : 1 ≤ i)
     (him : i ≤ m) (v : Equiv.Perm (Fin (m * n))) :
@@ -713,66 +537,19 @@ theorem largestKeyThreshold01_trueWireCount_eq {m n : Nat} (hn : 0 < n) (i : Nat
     simp [largestKeyThreshold01, largestKeyThresholdJ01, isAmongLargestKeysBlock, j]
   rw [hfilter, hcard]
 
-/-- Decode column sums after ideal column sort at level `i`: total mass `i·n` (avg row ones `= i`). -/
-theorem totalColumnOnes_decodeColumnSums_atLevel_eq {m n : Nat} (hn : 0 < n)
-    (colSort : ColumnSortNetwork m n) (hcol : IdealColumnSort m n hn colSort)
-    (i : Nat) (hi : 1 ≤ i) (him : i ≤ m) (v : Equiv.Perm (Fin (m * n))) :
-    totalColumnOnes
-        (monotoneColumnSumsOfBool hn
-          (colSort.net.exec fun w => largestKeyThreshold01 (m := m) (n := n) i (v w))) =
-      i * n := by
-  rw [totalColumnOnes_monotoneColumnSumsOfBool_colSort_exec_eq hn colSort hcol]
-  rw [totalColumnOnes_monotoneColumnSumsOfBool_eq_trueWireCount hn]
-  exact largestKeyThreshold01_trueWireCount_eq hn i hi him v
-
-theorem totalColumnOnesLeLevel_decodeColumnSums_atLevel {m n : Nat} (hn : 0 < n)
-    (colSort : ColumnSortNetwork m n) (hcol : IdealColumnSort m n hn colSort)
-    (i : Nat) (hi1 : 1 ≤ i) (him : i ≤ m) (v : Equiv.Perm (Fin (m * n))) :
-    totalColumnOnes
-        (monotoneColumnSumsOfBool hn
-          (colSort.net.exec fun w => largestKeyThreshold01 (m := m) (n := n) i (v w))) ≤ n * i := by
-  rw [totalColumnOnes_decodeColumnSums_atLevel_eq hn colSort hcol i hi1 him v]
-  exact Nat.le_of_eq (Nat.mul_comm i n)
-
 theorem HasPackSemanticPropertyB.of_combinatorial_onPipeline {m n : Nat} {epsB : ℝ} (hn : 0 < n)
-    {σ : Scramble m n} (pack : SortScrambleSortPack m n hn σ)
-    (hcol : IdealColumnSort m n hn pack.colSort)
-    (hrow : RowScrambleCorrect m n hn σ pack.colSort pack.rowScramble)
-    (hComb : HasCombinatorialPropertyBOnPipeline σ epsB) :
-    HasPackSemanticPropertyB hn pack epsB := by
-  unfold HasPackSemanticPropertyB
-  intro v i hi1 him
-  set c := monotoneColumnSumsOfBool hn
-      (pack.colSort.net.exec fun w => largestKeyThreshold01 (m := m) (n := n) i (v w))
-  rw [packSemanticIntrusionCountB_eq_onesAboveBottom hn pack hcol hrow v i him]
-  exact hComb c i (totalColumnOnesLeLevel_decodeColumnSums_atLevel hn pack.colSort hcol i hi1 him v)
-    hi1 him
+    (σ : Scramble m n) (hComb : HasCombinatorialPropertyBOnPipeline σ epsB) :
+    HasPackSemanticPropertyB hn σ epsB := fun v i hi1 him => by
+  rw [matrixOnesCountInRegion_semanticExec hn σ _ i him]
+  refine hComb _ i ?_ hi1 him
+  rw [totalColumnOnes_colSort_exec_eq, largestKeyThreshold01_trueWireCount_eq hn i hi1 him v,
+    Nat.mul_comm]
 
-theorem HasPackSemanticPropertyB_canonical_of_combinatorial_onPipeline {m n : Nat} {epsB : ℝ}
-    (hn : 0 < n) (σ : Scramble m n) (hComb : HasCombinatorialPropertyBOnPipeline σ epsB) :
-    HasMatrixPropertyB_exec m n hn (canonicalSortScrambleSortPack m n hn σ) epsB :=
-  HasPackSemanticPropertyB.of_combinatorial_onPipeline hn (canonicalSortScrambleSortPack m n hn σ)
-    (idealColumnSort_columnSortNetwork m n hn)
-    (RowScrambleCorrect.rowScrambleNetwork_columnSortNetwork hn σ) hComb
-
-theorem sum_topJ_colSums_eq_j {m n : Nat} (hn : 0 < n)
-    (colSort : ColumnSortNetwork m n) (hcol : IdealColumnSort m n hn colSort)
-    (v : Equiv.Perm (Fin (m * n))) (j : Nat) (hjpos : 0 < j) (hjmn : j ≤ m * n) :
-    ∑ col : Fin n,
-        (monotoneColumnSumsOfBool hn
-            (colSort.net.exec fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w)) col).val =
-      j := by
-  set u := fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w)
-  set c := monotoneColumnSumsOfBool hn (colSort.net.exec u)
-  have hsum := sum_matrixColumnTrueCount_eq_trueWireCount hn u
-  have hj := topJMarking_trueWireCount_eq j hjpos hjmn v
-  calc ∑ col : Fin n, (c col).val
-      = ∑ col : Fin n, matrixColumnTrueCount hn col (colSort.net.exec u) := by
-        refine Finset.sum_congr rfl fun col _ => ?_
-        simp [c, monotoneColumnSumsOfBool, matrixColumnTrueCount]
-    _ = ∑ col : Fin n, matrixColumnTrueCount hn col u := by
-        refine Finset.sum_congr rfl fun col _ =>
-          matrixColumnTrueCount_exec_eq hn col colSort.net colSort.col_local u
-    _ = j := by rw [hsum, hj]
+theorem sum_topJ_colSums_eq_j {m n : Nat} (hn : 0 < n) (v : Equiv.Perm (Fin (m * n))) (j : Nat)
+    (hjpos : 0 < j) (hjmn : j ≤ m * n) :
+    totalColumnOnes (monotoneColumnSumsOfBool hn ((columnSortNetwork m n hn).exec
+        fun w => largestKeyThresholdJ01 (m := m) (n := n) j (v w))) = j := by
+  rw [totalColumnOnes_colSort_exec_eq]
+  exact topJMarking_trueWireCount_eq j hjpos hjmn v
 
 end Chvatal

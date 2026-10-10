@@ -1,9 +1,9 @@
 module
+public import AKS.Chvatal.Lemma63
 public import AKS.Chvatal.PackSpec
 public import AKS.Chvatal.GeneralSeparator
 public import AKS.Chvatal.ExecPlacement
 public import Mathlib.Data.Fin.Tuple.Sort
-public import AKS.Chvatal.ModuleA
 
 /-! # Two-sided node guarantee: the flipped scramble and flip symmetry
 
@@ -46,9 +46,7 @@ theorem exists_twoSided_pipelineB_paperF {m n f : ℕ} (hm : 100 ≤ m) (hn : 16
         HasPaperPropertyF hf (flipScramble σ) (128 / 4095) eps) := by
   have hmpos : 0 < m := lt_of_lt_of_le (by norm_num) hm
   have hnpos : 0 < n := lt_of_lt_of_le (by norm_num) hn
-  let O := DecodeMatrixClassObligation.standard hmpos hnpos (Nat.succ_le_of_lt hmpos)
-    (Nat.succ_le_of_lt hnpos) hepsB
-  have hBfail := lemma61FailBound_onPipeline_of_decodeClass epsB O
+  have hBfail := lemma61FailBound_onPipeline epsB hmpos hnpos hepsB
   have hfac : lemma61_failFactor m n < 1 / 100 := lemma61_failFactor_lt_one_hundredth m n hm hn
   have hFfail := paperF_fail_fraction_final hf hfm hfbig hn
   have hNpos : (0 : ℝ) < (Fintype.card (Scramble m n) : ℝ) := by
@@ -111,9 +109,7 @@ theorem exists_twoSided_B {m n : ℕ} (hm : 100 ≤ m) (hn : 16 ≤ n) {epsB : �
         HasCombinatorialPropertyBOnPipeline (flipScramble σ) epsB := by
   have hmpos : 0 < m := lt_of_lt_of_le (by norm_num) hm
   have hnpos : 0 < n := lt_of_lt_of_le (by norm_num) hn
-  let O := DecodeMatrixClassObligation.standard hmpos hnpos (Nat.succ_le_of_lt hmpos)
-    (Nat.succ_le_of_lt hnpos) hepsB
-  have hBfail := lemma61FailBound_onPipeline_of_decodeClass epsB O
+  have hBfail := lemma61FailBound_onPipeline epsB hmpos hnpos hepsB
   have hfac : lemma61_failFactor m n < 1 / 100 := lemma61_failFactor_lt_one_hundredth m n hm hn
   have hNpos : (0 : ℝ) < (Fintype.card (Scramble m n) : ℝ) := by
     exact_mod_cast (Fintype.card_pos : 0 < Fintype.card (Scramble m n))
@@ -193,8 +189,8 @@ theorem rev_matrixWire (m n : ℕ) (r : Fin m) (j : Fin n) :
 
 /-- Column sorting commutes with value reversal and cell reversal. -/
 theorem colSort_flip {m n : ℕ} (hn : 0 < n) (v : Fin (m * n) → Fin (m * n)) :
-    (columnSortNetwork m n hn).net.exec (fun w => Fin.rev (v (Fin.rev w))) =
-      fun w => Fin.rev ((columnSortNetwork m n hn).net.exec v (Fin.rev w)) := by
+    (columnSortNetwork m n hn).exec (fun w => Fin.rev (v (Fin.rev w))) =
+      fun w => Fin.rev ((columnSortNetwork m n hn).exec v (Fin.rev w)) := by
   funext w
   rw [← matrixWire_matrixRow_col hn w]
   set r := matrixRow m n hn w
@@ -232,45 +228,29 @@ theorem rowScrambleWirePerm_symm_flip {m n : ℕ} (hn : 0 < n) (σ : Scramble m 
   apply (rowScrambleWirePerm m n hn (flipScramble σ)).injective
   rw [Equiv.apply_symm_apply, rowScrambleWirePerm_flip, Equiv.apply_symm_apply]
 
-/-- The semantic execution of the canonical pack, in closed form. -/
-theorem semanticExec_canonical {m n : ℕ} (hn : 0 < n) (σ : Scramble m n)
-    (v : Fin (m * n) → Fin (m * n)) :
-    (canonicalSortScrambleSortPack m n hn σ).semanticExec v =
-      (columnSortNetwork m n hn).net.exec
-        (fun w => (columnSortNetwork m n hn).net.exec v
-          ((rowScrambleWirePerm m n hn σ).symm w)) := by
-  have hid : ∀ y : Fin (m * n) → Fin (m * n), (rowScrambleNetwork m n hn σ).net.exec y = y := by
-    intro y
-    simp [ComparatorNetwork.exec, rowScrambleNetwork_comparators_eq_nil m n hn σ]
-  simp only [SortScrambleSortPack.semanticExec, SortScrambleSortPack.middleExec,
-    sortScrambleMiddleExec, RowScrambleNetwork.wiredExec, canonicalSortScrambleSortPack,
-    SortScrambleSortPack.colSort]
-  rw [hid]
-  rfl
-
 /-- **Flip equivariance of the semantic execution.** With `x̃ w = rev (x (cellRev w))`
 (`rev k = m·n-1-k`, `cellRev w = m·n-1-w`), the flipped scramble's pack acts on `x̃` as the
 original acts on `x`, conjugated by the reversals. -/
 theorem semanticExec_flip {m n : ℕ} (hn : 0 < n) (σ : Scramble m n)
     (x : Fin (m * n) → Fin (m * n)) :
-    (canonicalSortScrambleSortPack m n hn (flipScramble σ)).semanticExec
+    semanticExec hn (flipScramble σ)
         (fun w => Fin.rev (x (Fin.rev w))) =
-      fun w => Fin.rev ((canonicalSortScrambleSortPack m n hn σ).semanticExec x (Fin.rev w)) := by
-  have h : (fun w => (columnSortNetwork m n hn).net.exec
-        (fun w => Fin.rev (x (Fin.rev w)))
-        ((rowScrambleWirePerm m n hn (flipScramble σ)).symm w)) =
-      fun w => Fin.rev ((fun w' => (columnSortNetwork m n hn).net.exec x
-        ((rowScrambleWirePerm m n hn σ).symm w')) (Fin.rev w)) := by
+      fun w => Fin.rev (semanticExec hn σ x (Fin.rev w)) := by
+  have h : (columnSortNetwork m n hn).exec (fun w => Fin.rev (x (Fin.rev w))) ∘
+        (rowScrambleWirePerm m n hn (flipScramble σ)).symm =
+      fun w => Fin.rev (((columnSortNetwork m n hn).exec x ∘
+        (rowScrambleWirePerm m n hn σ).symm) (Fin.rev w)) := by
     funext w
+    simp only [Function.comp_apply]
     rw [colSort_flip]
     have h2 : (rowScrambleWirePerm m n hn (flipScramble σ)).symm w =
         Fin.rev ((rowScrambleWirePerm m n hn σ).symm (Fin.rev w)) := by
       have := rowScrambleWirePerm_symm_flip hn σ (Fin.rev w)
       rwa [Fin.rev_rev] at this
     simp only [h2, Fin.rev_rev]
-  rw [semanticExec_canonical, semanticExec_canonical, h]
-  exact colSort_flip hn (fun w' => (columnSortNetwork m n hn).net.exec x
-    ((rowScrambleWirePerm m n hn σ).symm w'))
+  unfold semanticExec
+  rw [h]
+  exact colSort_flip hn _
 
 /-- Physical flip equivariance: `physicalPackNet` for the flip on `x̃` is the reversed
 physical output for `σ` on `x`. -/
@@ -280,12 +260,12 @@ theorem physicalPackNet_flip {m n : ℕ} (hn : 0 < n) (σ : Scramble m n)
       fun c => Fin.rev ((physicalPackNet m n hn σ).exec x (Fin.rev c)) := by
   funext c
   rw [physicalPackNet_exec, physicalPackNet_exec]
-  show (canonicalSortScrambleSortPack m n hn (flipScramble σ)).semanticExec _
+  show semanticExec hn (flipScramble σ) _
       (rowScrambleWirePerm m n hn (flipScramble σ) c) = _
   rw [semanticExec_flip]
-  show Fin.rev ((canonicalSortScrambleSortPack m n hn σ).semanticExec x
+  show Fin.rev (semanticExec hn σ x
       (Fin.rev (rowScrambleWirePerm m n hn (flipScramble σ) c))) =
-    Fin.rev ((canonicalSortScrambleSortPack m n hn σ).semanticExec x
+    Fin.rev (semanticExec hn σ x
       (rowScrambleWirePerm m n hn σ (Fin.rev c)))
   congr 2
   have := rowScrambleWirePerm_flip hn σ (Fin.rev c)
@@ -326,9 +306,9 @@ theorem card_low_eq_high {N : ℕ} (y yf : Fin N → Fin N)
 theorem packSpec_low {m n f b : ℕ} (hn : 0 < n) (σ : Scramble m n)
     (hmfb : m = 2 * f + 64 * b) (hfm : f ≤ m) {epsB deltaF epsF : ℝ}
     (hB' : HasPackSemanticPropertyB hn
-      (canonicalSortScrambleSortPack m n hn (flipScramble σ)) epsB)
+      (flipScramble σ) epsB)
     (hF' : HasPackSemanticPropertyF hn
-      (canonicalSortScrambleSortPack m n hn (flipScramble σ)) f hfm deltaF epsF) :
+      (flipScramble σ) f hfm deltaF epsF) :
     (∀ x : Equiv.Perm (Fin (m * n)), ∀ p ∈ blockBounds (2 * f * n) (b * n), p ≤ m * n →
       ((Finset.univ.filter fun c : Fin (m * n) =>
         ((physicalPackNet m n hn σ).exec (x : Fin (m * n) → Fin (m * n)) c).val < p ∧
@@ -366,14 +346,12 @@ theorem packSpec_low {m n f b : ℕ} (hn : 0 < n) (σ : Scramble m n)
 theorem packSemanticF_of_paperF {m n f : ℕ} (hf : Even f) (hn : 0 < n) (hfm : f ≤ m)
     (σ : Scramble m n) (hF : HasPaperPropertyF hf σ (128 / 4095) eps)
     {deltaF epsF : ℝ} (hδ : deltaF ≤ 128 / 4095) (hε : eps ≤ epsF) :
-    HasPackSemanticPropertyF hn (canonicalSortScrambleSortPack m n hn σ) f hfm deltaF epsF := by
-  have h0 : HasPackSemanticPropertyF hn (canonicalSortScrambleSortPack m n hn σ) f hfm
+    HasPackSemanticPropertyF hn σ f hfm deltaF epsF := by
+  have h0 : HasPackSemanticPropertyF hn σ f hfm
       (128 / 4095) eps :=
     HasPackSemanticPropertyF.of_paperF (hf := hf) hn hfm (by norm_num)
-      (IdealColumnSort.all_packs hn) (RowScrambleCorrect.all_packs_forall hn)
-      (canonicalSortScrambleSortPack m n hn σ)
       (fun c j hc hj hjδ S => hF c j hc hj hjδ S)
-  exact HasPackSemanticPropertyF.mono hn _ hfm hδ hε h0
+  exact HasPackSemanticPropertyF.mono hn hfm hδ hε h0
 
 /-- **Two-sided Thm 5.1 existence.** Some scramble `σ` has semantic Properties B and F for
 both `σ` and the flipped scramble. -/
@@ -381,23 +359,23 @@ theorem ExistsScrambleSeparator_twoSided {g : ScrambleGeometry} {P : Theorem51Pa
     (hfbig : 17 * 10 ^ 9 ≤ g.f) (hδ : P.deltaF ≤ 128 / 4095) (hε : eps ≤ P.epsF) :
     ∃ σ : Scramble g.m g.n,
       (HasPackSemanticPropertyB (scrambleGeometry_hn g)
-          (canonicalSortScrambleSortPack g.m g.n (scrambleGeometry_hn g) σ) P.epsB ∧
+          σ P.epsB ∧
         HasPackSemanticPropertyF (scrambleGeometry_hn g)
-          (canonicalSortScrambleSortPack g.m g.n (scrambleGeometry_hn g) σ) g.f
+          σ g.f
           (scrambleGeometry_f_le_m g) P.deltaF P.epsF) ∧
       (HasPackSemanticPropertyB (scrambleGeometry_hn g)
-          (canonicalSortScrambleSortPack g.m g.n (scrambleGeometry_hn g) (flipScramble σ))
+          (flipScramble σ)
           P.epsB ∧
         HasPackSemanticPropertyF (scrambleGeometry_hn g)
-          (canonicalSortScrambleSortPack g.m g.n (scrambleGeometry_hn g) (flipScramble σ)) g.f
+          (flipScramble σ) g.f
           (scrambleGeometry_f_le_m g) P.deltaF P.epsF) := by
   have hn := scrambleGeometry_hn g
   obtain ⟨σ, ⟨hB1, hF1⟩, ⟨hB2, hF2⟩⟩ := exists_twoSided_pipelineB_paperF (n := g.n) g.hm g.hn
     g.hfeven hfbig (scrambleGeometry_f_le_m g) P.hepsB_lb P.hepsB_pos
   exact ⟨σ,
-    ⟨HasPackSemanticPropertyB_canonical_of_combinatorial_onPipeline hn σ hB1,
+    ⟨HasPackSemanticPropertyB.of_combinatorial_onPipeline hn σ hB1,
       packSemanticF_of_paperF g.hfeven hn (scrambleGeometry_f_le_m g) σ hF1 hδ hε⟩,
-    ⟨HasPackSemanticPropertyB_canonical_of_combinatorial_onPipeline hn _ hB2,
+    ⟨HasPackSemanticPropertyB.of_combinatorial_onPipeline hn _ hB2,
       packSemanticF_of_paperF g.hfeven hn (scrambleGeometry_f_le_m g) _ hF2 hδ hε⟩⟩
 
 /-- Two-sided semantic Property B only, for any `m ≥ 100`, `n ≥ 16`. -/
@@ -405,12 +383,11 @@ theorem ExistsScrambleSeparator_twoSided_B {m n : ℕ} (hm : 100 ≤ m) (hn : 16
     {epsB : ℝ} (hepsB : Real.sqrt (2 * (1 + Real.log m) / m) ≤ epsB) :
     ∃ σ : Scramble m n,
       HasPackSemanticPropertyB (lt_of_lt_of_le (by norm_num) hn)
-          (canonicalSortScrambleSortPack m n (lt_of_lt_of_le (by norm_num) hn) σ) epsB ∧
+          σ epsB ∧
         HasPackSemanticPropertyB (lt_of_lt_of_le (by norm_num) hn)
-          (canonicalSortScrambleSortPack m n (lt_of_lt_of_le (by norm_num) hn)
-            (flipScramble σ)) epsB := by
+          (flipScramble σ) epsB := by
   obtain ⟨σ, h1, h2⟩ := exists_twoSided_B hm hn hepsB
-  exact ⟨σ, HasPackSemanticPropertyB_canonical_of_combinatorial_onPipeline _ σ h1,
-    HasPackSemanticPropertyB_canonical_of_combinatorial_onPipeline _ _ h2⟩
+  exact ⟨σ, HasPackSemanticPropertyB.of_combinatorial_onPipeline _ σ h1,
+    HasPackSemanticPropertyB.of_combinatorial_onPipeline _ _ h2⟩
 
 end Chvatal

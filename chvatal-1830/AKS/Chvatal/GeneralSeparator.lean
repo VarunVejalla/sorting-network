@@ -29,9 +29,9 @@ theorem paperF_fail_fraction_final {m n f : ℕ} (hf : Even f) (hfm : f ≤ m)
 
 /-- Semantic Property F is monotone in `δ_F` (down) and `ε_F` (up). -/
 theorem HasPackSemanticPropertyF.mono {m n f : ℕ} (hn : 0 < n) {σ : Scramble m n}
-    (pack : SortScrambleSortPack m n hn σ) (hfm : f ≤ m) {δ δ' ε ε' : ℝ}
-    (hδ : δ' ≤ δ) (hε : ε ≤ ε') (h : HasPackSemanticPropertyF hn pack f hfm δ ε) :
-    HasPackSemanticPropertyF hn pack f hfm δ' ε' := by
+    (hfm : f ≤ m) {δ δ' ε ε' : ℝ}
+    (hδ : δ' ≤ δ) (hε : ε ≤ ε') (h : HasPackSemanticPropertyF hn σ f hfm δ ε) :
+    HasPackSemanticPropertyF hn σ f hfm δ' ε' := by
   unfold HasPackSemanticPropertyF at h ⊢
   intro v j hj hjδ
   have hfn : (0 : ℝ) ≤ (f : ℝ) * n := by positivity

@@ -13,7 +13,7 @@ module
   `64^d` stage nets live in `StagePackEmbed` / `PackEmbed` (depth shells only).
 -/
 
-public import AKS.Chvatal.RowScramble
+public import AKS.Chvatal.MatrixBridge
 public import AKS.Bitonic.Shrink
 
 @[expose] public section
@@ -45,8 +45,8 @@ private theorem columnSortColumnNets_wire_disjoint {m n : Nat} (hn : 0 < n)
   · intro h; exact hne (by rw [← ha_j, h, hb_j])
 
 theorem columnSortNetwork_depth_le (m n : Nat) (hn : 0 < n) :
-    (columnSortNetwork m n hn).net.depth ≤ (bitonicNetwork m).depth := by
-  dsimp [columnSortNetwork, ColumnSortNetwork.net]
+    (columnSortNetwork m n hn).depth ≤ (bitonicNetwork m).depth := by
+  dsimp [columnSortNetwork]
   refine depth_flatMap_disjoint (List.finRange n)
     (fun j => (columnSortColumnNet m n hn j).comparators)
     (bitonicNetwork m).depth ?hchunk ?hdisj
@@ -57,7 +57,7 @@ theorem columnSortNetwork_depth_le (m n : Nat) (hn : 0 < n) :
     exact columnSortColumnNets_wire_disjoint hn hne c₁ hc₁ c₂ hc₂
 
 theorem columnSortNetwork_depth_le_budget (m n : Nat) (hn : 0 < n) :
-    (columnSortNetwork m n hn).net.depth ≤ bitonicDepthBudget (Nat.clog 2 m) :=
+    (columnSortNetwork m n hn).depth ≤ bitonicDepthBudget (Nat.clog 2 m) :=
   (columnSortNetwork_depth_le m n hn).trans (bitonicNetwork_depth_le_budget m)
 
 end Chvatal

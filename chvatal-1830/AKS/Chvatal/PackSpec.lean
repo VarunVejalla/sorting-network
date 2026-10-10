@@ -20,7 +20,7 @@ theorem physical_threshold_count_eq_semantic {m n : ℕ} (hn : 0 < n) (σ : Scra
         m * n - t ≤ ((physicalPackNet m n hn σ).exec (x : Fin (m * n) → Fin (m * n)) c).val ∧
           c.val < m * n - i * n).card =
       matrixOnesCountInRegion hn
-        ((canonicalSortScrambleSortPack m n hn σ).semanticExec
+        (semanticExec hn σ
           (fun w => decide (m * n - t ≤ (x w).val))) i := by
   classical
   have hmono : Monotone (fun k : Fin (m * n) => decide (m * n - t ≤ k.val)) := fun a b hab => by
@@ -54,7 +54,7 @@ theorem physical_threshold_count_eq_semantic {m n : ℕ} (hn : 0 < n) (σ : Scra
 
 theorem packSpec_high_F {m n f : ℕ} (hn : 0 < n) (σ : Scramble m n) (hfm : f ≤ m)
     {deltaF epsF : ℝ}
-    (hF : HasPackSemanticPropertyF hn (canonicalSortScrambleSortPack m n hn σ) f hfm
+    (hF : HasPackSemanticPropertyF hn σ f hfm
       deltaF epsF)
     (x : Equiv.Perm (Fin (m * n))) (j : ℕ) (hj : 0 < j) (hjd : (j : ℝ) ≤ deltaF * (f * n)) :
     ((Finset.univ.filter fun c : Fin (m * n) =>
@@ -68,8 +68,8 @@ theorem packSpec_high_F {m n f : ℕ} (hn : 0 < n) (σ : Scramble m n) (hfm : f 
 
 theorem packSpec_high {m n f b : ℕ} (hn : 0 < n) (σ : Scramble m n)
     (hmfb : m = 2 * f + 64 * b) (hfm : f ≤ m) {epsB deltaF epsF : ℝ}
-    (hB : HasPackSemanticPropertyB hn (canonicalSortScrambleSortPack m n hn σ) epsB)
-    (hF : HasPackSemanticPropertyF hn (canonicalSortScrambleSortPack m n hn σ) f hfm
+    (hB : HasPackSemanticPropertyB hn σ epsB)
+    (hF : HasPackSemanticPropertyF hn σ f hfm
       deltaF epsF) :
     (∀ x : Equiv.Perm (Fin (m * n)), ∀ p ∈ blockBounds (2 * f * n) (b * n), p ≤ m * n →
       ((Finset.univ.filter fun c : Fin (m * n) =>
@@ -101,15 +101,11 @@ theorem packSpec_high {m n f b : ℕ} (hn : 0 < n) (σ : Scramble m n)
     rw [hempty, Finset.card_empty, Nat.cast_zero]
     rcases Nat.eq_zero_or_pos m with rfl | h0
     · simp
-    · have h := hB (Equiv.refl _) 1 le_rfl h0
-      have : (0 : ℝ) ≤ (packSemanticIntrusionCountB hn
-        (canonicalSortScrambleSortPack m n hn σ) (Equiv.refl _) 1 : ℝ) := Nat.cast_nonneg _
-      linarith
+    · exact ((Nat.cast_nonneg _).trans_lt (hB (Equiv.refl _) 1 le_rfl h0)).le
   · have h := hB x i hi0 him
-    rw [show packSemanticIntrusionCountB hn (canonicalSortScrambleSortPack m n hn σ) x i =
-      matrixOnesCountInRegion hn ((canonicalSortScrambleSortPack m n hn σ).semanticExec
-          (fun w => decide (m * n - i * n ≤ (x w).val))) i from rfl,
-      ← physical_threshold_count_eq_semantic hn σ x (i * n) i] at h
+    change (matrixOnesCountInRegion hn (semanticExec hn σ
+          (fun w => decide (m * n - i * n ≤ (x w).val))) i : ℝ) < _ at h
+    rw [← physical_threshold_count_eq_semantic hn σ x (i * n) i] at h
     exact h.le
 
 end Chvatal
