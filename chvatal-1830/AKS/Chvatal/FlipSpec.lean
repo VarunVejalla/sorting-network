@@ -260,7 +260,7 @@ open Classical in
 /-- **Two-sided Thm 5.1 existence.** Some scramble `σ` has semantic Properties B and F for
 both `σ` and the flipped scramble. -/
 theorem ExistsScrambleSeparator_twoSided {g : ScrambleGeometry} {P : Theorem51Params g}
-    (hfbig : 17 * 10 ^ 9 ≤ g.f) (hδ : P.deltaF ≤ 128 / 4095) (hε : eps ≤ P.epsF) :
+    (hfbig : 85 * 10 ^ 8 ≤ g.f) (hδ : P.deltaF ≤ 128 / 4095) (hε : eps ≤ P.epsF) :
     ∃ σ : Scramble g.m g.n,
       (HasPackSemanticPropertyB (scrambleGeometry_hn g)
           σ P.epsB ∧
@@ -280,7 +280,7 @@ theorem ExistsScrambleSeparator_twoSided {g : ScrambleGeometry} {P : Theorem51Pa
   have hN : (0 : ℝ) < Fintype.card (Scramble g.m g.n) := by exact_mod_cast Fintype.card_pos
   obtain ⟨σ, h1, h2⟩ := exists_and_flip (m := g.m) (n := g.n)
     (fun σ => HasCombinatorialPropertyBOnPipeline σ P.epsB ∧
-      HasPaperPropertyF g.f σ) (c := 1 / 100 + 44 / 100) (by norm_num) (by
+      HasPaperPropertyF g.f σ) (c := 1 / 100 + 483 / 1000) (by norm_num) (by
       simp only [not_and_or, Finset.filter_or]
       have h3 := (Nat.cast_le (α := ℝ)).2 (Finset.card_union_le
         (Finset.univ.filter fun σ : Scramble g.m g.n => ¬ HasCombinatorialPropertyBOnPipeline σ P.epsB)

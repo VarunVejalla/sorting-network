@@ -2,7 +2,7 @@ module
 
 public import Mathlib.Analysis.SpecialFunctions.Log.Base
 
-/-! # §7 depth arithmetic: total depth `6320 + (3d-21)·3660 + 903` (DCS-TR-294 §7). -/
+/-! # §7 depth arithmetic: total depth `6320 + (3d-21)·3540 + 903` (DCS-TR-294 §7). -/
 
 @[expose] public section
 
@@ -15,7 +15,7 @@ def ordinaryRounds (d : ℕ) : ℕ := 3 * d - 21
 def rootSeparatorPaperDepth : ℕ := 6320
 
 /-- §7 paper depth of one ordinary separator round. -/
-def ordinaryStagePaperDepth : ℕ := 3660
+def ordinaryStagePaperDepth : ℕ := 3540
 
 /-- §7 paper depth of the final sorter layer. -/
 def finalSorterPaperDepth : ℕ := 903
@@ -25,8 +25,8 @@ def totalDepth (d : ℕ) : ℕ :=
   rootSeparatorPaperDepth + ordinaryRounds d * ordinaryStagePaperDepth + finalSorterPaperDepth
 
 theorem totalDepth_real (d : ℕ) (hd : 7 ≤ d) :
-    (totalDepth d : ℝ) = 1830 * (6 * (d : ℝ)) - 69637 := by
-  have heq : totalDepth d = 10980 * d - 69637 := by
+    (totalDepth d : ℝ) = 1770 * (6 * (d : ℝ)) - 67117 := by
+  have heq : totalDepth d = 10620 * d - 67117 := by
     unfold totalDepth ordinaryRounds rootSeparatorPaperDepth ordinaryStagePaperDepth
       finalSorterPaperDepth
     omega
@@ -34,10 +34,10 @@ theorem totalDepth_real (d : ℕ) (hd : 7 ≤ d) :
   push_cast
   ring
 
-/-- Padding to the next power of 64 costs at most 6 binary logs, giving the `-58657` form. -/
+/-- Padding to the next power of 64 costs at most 6 binary logs, giving the `-56497` form. -/
 theorem totalDepth_logb_le {n d : ℕ} (hd : 7 ≤ d) (hclog : Nat.clog 64 n = d)
     (hn : 1 < n) :
-    (totalDepth d : ℝ) ≤ 1830 * Real.logb 2 (n : ℝ) - 58657 := by
+    (totalDepth d : ℝ) ≤ 1770 * Real.logb 2 (n : ℝ) - 56497 := by
   have hltN : 64 ^ (d - 1) < n := by
     have h := Nat.pow_pred_clog_lt_self (show 1 < 64 by norm_num) hn
     rwa [hclog] at h

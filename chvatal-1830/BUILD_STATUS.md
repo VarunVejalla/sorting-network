@@ -29,8 +29,8 @@ Verified 2026-10-08 with Lean 4.29.0-rc4:
 - Both headline axiom guards accept exactly `propext`, `Classical.choice`,
   and `Quot.sound`.
 
-The results remain `D(n) ≤ 1830 log₂(n) - 58657` for `n ≥ 2^42` and
-`limsup D(n)/log₂(n) ≤ 1830`.
+The results remain `D(n) ≤ 1770 log₂(n) - 56497` for `n ≥ 2^42` and
+`limsup D(n)/log₂(n) ≤ 1770`.
 
 This checkpoint preserves the interrupted simplification, with targeted repairs
 to imports, embedding unfolding, dependent rewriting, deleted wrapper references,

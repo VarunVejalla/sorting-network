@@ -12,13 +12,13 @@ namespace Chvatal
 open Finset
 open scoped Classical
 
-theorem paperOrdinaryEpsB_le : paperOrdinaryEpsB ≤ (1 / 80000000 : ℝ) := by
+theorem paperOrdinaryEpsB_le : paperOrdinaryEpsB ≤ (1 / 59000000 : ℝ) := by
   unfold paperOrdinaryEpsB
   have hl := Real.log_two_lt_d9
-  rw [div_le_iff₀ (by positivity)]
-  calc Real.sqrt (1 + 59 * Real.log 2) ≤ (2 : ℝ) ^ 29 / 80000000 := by
-        rw [Real.sqrt_le_iff]; refine ⟨by positivity, ?_⟩; norm_num; nlinarith
-    _ = 1 / 80000000 * (2 : ℝ) ^ 29 := by ring
+  rw [Real.sqrt_le_iff]
+  refine ⟨by positivity, ?_⟩
+  norm_num
+  nlinarith
 
 theorem siblingFactor_real_nonneg : 0 ≤ siblingFactor := by
   unfold siblingFactor invDelta; norm_num
@@ -131,7 +131,7 @@ theorem badSendField_real {d : ℕ} (hd : 7 ≤ d)
   have hael : (((flowSizes7 d hd).a q.l t : ℕ) : ℝ) ≤ ((capacity d q.l t : ℚ) : ℝ) := by
     exact_mod_cast hF.a_le
   have hEB : 2 * specEB t ((flowSizes7 d hd).a q.l t) ≤
-      (1 / 80000000 : ℝ) * ((capacity d q.l t : ℚ) : ℝ) := by
+      (1 / 59000000 : ℝ) * ((capacity d q.l t : ℚ) : ℝ) := by
     unfold specEB
     rw [if_neg (by omega)]
     have h1 := paperOrdinaryEpsB_le
@@ -143,7 +143,7 @@ theorem badSendField_real {d : ℕ} (hd : 7 ≤ d)
   rw [← Rat.cast_le (K := ℝ)]
   simp only [show (q.child j.val j.isLt hqlt).l - 1 = q.l from rfl, e2, hk]
   push_cast
-  have hepsB : ((invEpsB : ℚ) : ℝ) = 1 / 80000000 := by simp [invEpsB]
+  have hepsB : ((invEpsB : ℚ) : ℝ) = 1 / 59000000 := by simp [invEpsB]
   rw [hepsB]
   refine le_trans hbad ?_
   change _ ≤ (((q.strangers 1 id ((execPlacement (flowSizes7 d hd) nets v t (by omega)).regs q)

@@ -115,7 +115,7 @@ theorem choose_mul_choose_le_of_le (n : ℕ) {J j : ℕ} (hJ : J ≤ j) {k : ℕ
 
 end
 
-noncomputable def eps : ℝ := 1 / (8 * 10 ^ 7)
+noncomputable def eps : ℝ := 1 / (86 * 10 ^ 6)
 
 lemma eps_pos : 0 < eps := by unfold eps; positivity
 
@@ -137,7 +137,7 @@ noncomputable def L2 (N f j x : ℝ) : ℝ :=
 
 structure Lemma62Params (n : ℕ) (f j : ℝ) : Prop where
   hn : 16 ≤ n
-  hf : 17 * 10 ^ 9 ≤ f
+  hf : 85 * 10 ^ 8 ≤ f
   hj : 0 < j
   hjf : j ≤ f * n / 31
 
@@ -206,7 +206,7 @@ lemma bpt_le_eps_N {n : ℕ} {f j : ℝ} (P : Lemma62Params n f j) : bpt f j ≤
 lemma bpt_succ_le {n : ℕ} {f j : ℝ} (P : Lemma62Params n f j) : bpt f j + 1 ≤ n := by
   have h := bpt_le_eps_N P
   have hn : (16 : ℝ) ≤ n := by exact_mod_cast P.hn
-  have : eps ≤ 1 / (8 * 10 ^ 7) := le_refl _
+  have : eps ≤ 1 / (86 * 10 ^ 6) := le_refl _
   nlinarith
 
 /-- Key inequality: `ln n - ln b + (f/2) ln(2 e j/(f n)) ≤ -5`. -/
@@ -234,9 +234,9 @@ lemma key_right {n : ℕ} {f j : ℝ} (P : Lemma62Params n f j) :
     rw [show bpt f j = eps * (u * N) by unfold bpt; rw [hu]; field_simp,
       Real.log_mul hep.ne' (by positivity), Real.log_mul hu_pos.ne' hN.ne']
     ring
-  have heps : -Real.log eps ≤ 8 * 10 ^ 7 := by
-    rw [show eps = (8 * 10 ^ 7 : ℝ)⁻¹ by unfold eps; rw [one_div], Real.log_inv, neg_neg]
-    linarith [Real.log_le_sub_one_of_pos (show (0 : ℝ) < 8 * 10 ^ 7 by norm_num)]
+  have heps : -Real.log eps ≤ 86 * 10 ^ 6 := by
+    rw [show eps = (86 * 10 ^ 6 : ℝ)⁻¹ by unfold eps; rw [one_div], Real.log_inv, neg_neg]
+    linarith [Real.log_le_sub_one_of_pos (show (0 : ℝ) < 86 * 10 ^ 6 by norm_num)]
   have hprod : (f / 2 - 1) * (Real.log u + 2) ≤ 0 :=
     mul_nonpos_of_nonneg_of_nonpos (by linarith [P.hf]) (by linarith)
   rw [hb, hk]

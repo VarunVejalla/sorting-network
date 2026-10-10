@@ -18,11 +18,11 @@ public import Mathlib.Tactic.Ring
 namespace Chvatal
 
 /-- Outsider-bound scalars: `μ = (1 - 2^-10)·2^-30` (keeps (4.1)–(4.5) true and makes `μ·c < 1`
-whenever `c ≤ 2^30`), `δ = 2^-32`, and the paper-ordinary budgets `ε_B = ε_F = 1/(8·10^7)`. -/
+whenever `c ≤ 2^30`), `δ = 1/(5.3·10^9)`, `ε_B = 1/(5.9·10^7)` and `ε_F = 1/(8.6·10^7)`. -/
 def invMu : Rat := 1023 / 1099511627776
-def invDelta : Rat := 1 / 4294967296
-def invEpsB : Rat := 1 / 80000000
-def invEpsF : Rat := 1 / 80000000
+def invDelta : Rat := 1 / 5300000000
+def invEpsB : Rat := 1 / 59000000
+def invEpsF : Rat := 1 / 86000000
 
 theorem invMu_pos : (0 : Rat) < invMu := by unfold invMu; norm_num
 theorem invDelta_pos : (0 : Rat) < invDelta := by unfold invDelta; norm_num

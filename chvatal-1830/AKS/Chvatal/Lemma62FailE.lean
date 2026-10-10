@@ -12,7 +12,7 @@ set `S` realise `fringeColumnEventBad`; `badSetF_card_le` is a union bound over 
 (the fringe count only depends on the top), each top being represented by one matrix.
 `fail_prob_at_E` assembles it with the per-matrix tail sum
 (`scramble_tail_union_top`, `pbound_le_gfun`), the two-sided geometric sum (`gfun_sum_le_G1`), the
-closed form for the number of tops and the numeric bound `x ≤ 3/10`. -/
+closed form for the number of tops and the numeric bound `x ≤ 8/25`. -/
 
 @[expose] public section
 
@@ -214,12 +214,12 @@ theorem tops_mul_G1_le {n j f : ℕ} (hf : Even f) (P : Lemma62Params n (f : ℝ
 theorem fail_prob_at_E {m n f : ℕ} (hf : Even f) (j E : ℕ) (hE1 : 1 ≤ E)
     (hE : (E : ℝ) = eps * j) (P : Lemma62Params n (f : ℝ) (j : ℝ)) :
     ((badSetF (m := m) (n := n) f j).card : ℝ) ≤
-      1.025 * (3 / 10 : ℝ) ^ E * (Fintype.card (Scramble m n) : ℝ) := by
+      1.025 * (8 / 25 : ℝ) ^ E * (Fintype.card (Scramble m n) : ℝ) := by
   have hep := eps_pos
   have hj0 : 0 < j := by exact_mod_cast P.hj
-  have hjE : (8 * 10 ^ 7 : ℝ) ≤ j := by
+  have hjE : (86 * 10 ^ 6 : ℝ) ≤ j := by
     have h1 : (1 : ℝ) ≤ E := by exact_mod_cast hE1
-    rw [hE, show eps = 1 / (8 * 10 ^ 7) from rfl, div_mul_eq_mul_div,
+    rw [hE, show eps = 1 / (86 * 10 ^ 6) from rfl, div_mul_eq_mul_div,
       le_div_iff₀ (by norm_num)] at h1
     linarith
   have hb := bpt_pos P.f_pos P.hj
@@ -240,11 +240,11 @@ theorem fail_prob_at_E {m n f : ℕ} (hf : Even f) (j E : ℕ) (hE1 : 1 ≤ E)
   have h2 := xval_pow_le P hjE E
   calc _ = C * (((tops (f / 2) n j).card : ℝ) * G1 n (j : ℝ) (bpt (f : ℝ) (j : ℝ))) *
         (Fintype.card (Scramble m n) : ℝ) := by ring
-    _ ≤ C * (90 / 89 * (3 / 10 : ℝ) ^ E) * (Fintype.card (Scramble m n) : ℝ) := by
+    _ ≤ C * (90 / 89 * (8 / 25 : ℝ) ^ E) * (Fintype.card (Scramble m n) : ℝ) := by
         exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left
           (h1.trans (mul_le_mul_of_nonneg_left h2 (by norm_num))) hC0) hcard
-    _ = (90 / 89 * C) * (3 / 10 : ℝ) ^ E * (Fintype.card (Scramble m n) : ℝ) := by ring
-    _ ≤ 1.025 * (3 / 10 : ℝ) ^ E * (Fintype.card (Scramble m n) : ℝ) := by
+    _ = (90 / 89 * C) * (8 / 25 : ℝ) ^ E * (Fintype.card (Scramble m n) : ℝ) := by ring
+    _ ≤ 1.025 * (8 / 25 : ℝ) ^ E * (Fintype.card (Scramble m n) : ℝ) := by
         exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right const_bound (by positivity)) hcard
 
 end Chvatal

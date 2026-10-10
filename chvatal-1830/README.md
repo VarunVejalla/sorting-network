@@ -2,9 +2,9 @@
 
 A self-contained Lean 4 / Mathlib formalization of
 
-* `SortingDepth.minimum_depth_le_1830_logb` — for every `n ≥ 64^7`,
-  `D(n) ≤ 1830 · log₂ n − 58657`;
-* `SortingDepth.limsup_minimum_div_logb_le_1830` — `limsup D(n)/log₂ n ≤ 1830`,
+* `SortingDepth.minimum_depth_le_1770_logb` — for every `n ≥ 64^7`,
+  `D(n) ≤ 1770 · log₂ n − 56497`;
+* `SortingDepth.limsup_minimum_div_logb_le_1770` — `limsup D(n)/log₂ n ≤ 1770`,
 
 where `D(n)` (`SortingDepth.minimum n`) is the minimum depth of a comparator network sorting
 `n` wires. Both are in `AKS/Bounds/Chvatal1830Final.lean` and depend only on the standard axioms
@@ -13,9 +13,9 @@ where `D(n)` (`SortingDepth.minimum n`) is the minimum depth of a comparator net
 The proof follows V. Chvátal, *Lecture Notes on the New AKS Sorting Network*, DCS-TR-294 (1992)
 (`../docs/dcs-tr-294.pdf`), §3–§7; `LEDGER.md` records how it was assembled. The central object is `Chvatal.chvatal_sorter_exists`
 (`AKS/Chvatal/RealSorter.lean`): for every `d ≥ 14` a sorting network on `64^d` wires of depth at
-most `totalDepth d = 6320 + (3d − 21)·3660 + 903` (`= 10980 d − 69637`). For `7 ≤ d ≤ 13`
+most `totalDepth d = 6320 + (3d − 21)·3540 + 903` (`= 10620 d − 67117`). For `7 ≤ d ≤ 13`
 full-wire bitonic sorting is used instead; both are restricted to `n` wires with
-`d = ⌈log₆₄ n⌉`, which gives the padded form `1830 log₂ n − 58657`.
+`d = ⌈log₆₄ n⌉`, which gives the padded form `1770 log₂ n − 56497`.
 
 ## Building
 

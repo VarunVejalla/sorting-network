@@ -17,7 +17,7 @@ Note: constants that only occur in tactic syntax (e.g. `simp only [foo]` argumen
 open Lean Elab Command
 
 def roots : List Name :=
-  [`SortingDepth.minimum_depth_le_1830_logb, `SortingDepth.limsup_minimum_div_logb_le_1830]
+  [`SortingDepth.minimum_depth_le_1770_logb, `SortingDepth.limsup_minimum_div_logb_le_1770]
 
 def directDeps (env : Environment) (n : Name) : Array Name :=
   match env.find? n with

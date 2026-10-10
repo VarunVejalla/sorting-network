@@ -5,7 +5,7 @@ module
 
   Source: Chvátal, DCS-TR-294, p. 22, end of the proof of Lemma 6.2.  With
   `xval n f j = (e²(f+2)² n/(4j))^{2/(εf)} (e f n/(2εj))^{2/f} (2 e j/(f n))` we prove
-  `xval ≤ 3/10` on the parameter range of `Lemma62Params` (plus `1/ε ≤ j`, which is
+  `xval ≤ 8/25` on the parameter range of `Lemma62Params` (plus `1/ε ≤ j`, which is
   not needed by the argument).  The parameter `n` cancels after substituting `u = j/(f n)`.
 -/
 
@@ -27,13 +27,13 @@ lemma xval_pos {n f j : ℝ} (hn : 0 < n) (hf : 0 < f) (hj : 0 < j) : 0 < xval n
   positivity
 
 set_option maxHeartbeats 1600000 in
-theorem xval_le_three_tenths {n : ℕ} {f j : ℝ} (P : Lemma62Params n f j)
-    (_hj1 : 8 * 10 ^ 7 ≤ j) : xval (n : ℝ) f j ≤ 3 / 10 := by
+theorem xval_le_eight_25ths {n : ℕ} {f j : ℝ} (P : Lemma62Params n f j)
+    (_hj1 : 86 * 10 ^ 6 ≤ j) : xval (n : ℝ) f j ≤ 8 / 25 := by
   have hf := P.f_pos
   have hN := P.N_pos
   have hj := P.hj
   have hep := eps_pos
-  have hf0 : (1.7e10 : ℝ) ≤ f := by have := P.hf; norm_num at this ⊢; linarith
+  have hf0 : (8.5e9 : ℝ) ≤ f := by have := P.hf; norm_num at this ⊢; linarith
   set N : ℝ := (n : ℝ) with hNdef
   have hx := xval_pos hN hf hj
   -- logs of the three bases
@@ -77,7 +77,7 @@ theorem xval_le_three_tenths {n : ℕ} {f j : ℝ} (P : Lemma62Params n f j)
     nlinarith [P.hjf, mul_pos hf hN]
   have h2lo := Real.log_two_gt_d9
   have h2hi := Real.log_two_lt_d9
-  have hL : Real.log u ≤ -3.43 := by
+  have hL : Real.log u ≤ -3.4334 := by
     have h1' : Real.log u ≤ Real.log (1 / 31) := Real.log_le_log hu_pos hu_le
     have h2' : Real.log (1 / 31 : ℝ) = -(5 * Real.log 2) + Real.log (32 / 31) := by
       rw [show (1 / 31 : ℝ) = (1 / 32) * (32 / 31) by norm_num,
@@ -89,34 +89,34 @@ theorem xval_le_three_tenths {n : ℕ} {f j : ℝ} (P : Lemma62Params n f j)
   -- size of the f-dependent coefficients
   set a : ℝ := 2 / (eps * f) with ha
   set b : ℝ := 2 / f with hb
-  have ha_eq : a = 1.6e8 / f := by
+  have ha_eq : a = 1.72e8 / f := by
     rw [ha]; unfold eps; field_simp; norm_num
   have ha0 : 0 < a := by positivity
   have hb0 : 0 < b := by positivity
-  have ha1 : a ≤ 0.00942 := by
+  have ha1 : a ≤ 0.02024 := by
     rw [ha_eq, div_le_iff₀ hf]; nlinarith
-  have hb1 : b ≤ 1.2e-10 := by
+  have hb1 : b ≤ 2.36e-10 := by
     rw [hb, div_le_iff₀ hf]; nlinarith
   -- log f / f is antitone
-  have hlf_f : Real.log f / f ≤ Real.log 1.7e10 / 1.7e10 := by
-    have he : Real.exp 1 ≤ 1.7e10 := by
+  have hlf_f : Real.log f / f ≤ Real.log 8.5e9 / 8.5e9 := by
+    have he : Real.exp 1 ≤ 8.5e9 := by
       have := Real.exp_one_lt_d9; norm_num at this ⊢; linarith
-    exact Real.log_div_self_antitoneOn (show (1.7e10 : ℝ) ∈ {x | Real.exp 1 ≤ x} from he)
+    exact Real.log_div_self_antitoneOn (show (8.5e9 : ℝ) ∈ {x | Real.exp 1 ≤ x} from he)
       (show f ∈ {x | Real.exp 1 ≤ x} from le_trans he hf0) hf0
-  have hlf0 : Real.log (1.7e10 : ℝ) ≤ 35 * Real.log 2 := by
-    have h := Real.log_le_log (show (0:ℝ) < 1.7e10 by norm_num)
-      (show (1.7e10 : ℝ) ≤ 2 ^ 35 by norm_num)
+  have hlf0 : Real.log (8.5e9 : ℝ) ≤ 33 * Real.log 2 := by
+    have h := Real.log_le_log (show (0:ℝ) < 8.5e9 by norm_num)
+      (show (8.5e9 : ℝ) ≤ 2 ^ 33 by norm_num)
     rw [Real.log_pow] at h
     push_cast at h
     exact h
-  have hlf0' : Real.log (1.7e10 : ℝ) ≤ 24.27 := by linarith
-  have haf : a * Real.log f ≤ 0.2285 := by
-    have : a * Real.log f = 1.6e8 * (Real.log f / f) := by rw [ha_eq]; ring
+  have hlf0' : Real.log (8.5e9 : ℝ) ≤ 22.88 := by linarith
+  have haf : a * Real.log f ≤ 0.463 := by
+    have : a * Real.log f = 1.72e8 * (Real.log f / f) := by rw [ha_eq]; ring
     rw [this]
-    have h := mul_le_mul_of_nonneg_left hlf_f (by norm_num : (0 : ℝ) ≤ 1.6e8)
-    have h' : Real.log 1.7e10 / 1.7e10 ≤ 24.27 / 1.7e10 :=
+    have h := mul_le_mul_of_nonneg_left hlf_f (by norm_num : (0 : ℝ) ≤ 1.72e8)
+    have h' : Real.log 8.5e9 / 8.5e9 ≤ 22.88 / 8.5e9 :=
       div_le_div_of_nonneg_right hlf0' (by norm_num)
-    have := mul_le_mul_of_nonneg_left h' (by norm_num : (0 : ℝ) ≤ 1.6e8)
+    have := mul_le_mul_of_nonneg_left h' (by norm_num : (0 : ℝ) ≤ 1.72e8)
     norm_num at this ⊢
     linarith
   have hlf2 : Real.log (f + 2) ≤ Real.log f + b := by
@@ -125,43 +125,51 @@ theorem xval_le_three_tenths {n : ℕ} {f j : ℝ} (P : Lemma62Params n f j)
     rw [this]
     have := Real.log_le_sub_one_of_pos (show (0 : ℝ) < 1 + 2 / f by positivity)
     rw [hb]; linarith
-  have heps : -Real.log eps ≤ 8 * 10 ^ 7 := by
-    have : eps = (8 * 10 ^ 7 : ℝ)⁻¹ := by unfold eps; rw [one_div]
+  have heps : -Real.log eps ≤ 86 * 10 ^ 6 := by
+    have : eps = (86 * 10 ^ 6 : ℝ)⁻¹ := by unfold eps; rw [one_div]
     rw [this, Real.log_inv, neg_neg]
-    have := Real.log_le_sub_one_of_pos (show (0:ℝ) < 8 * 10 ^ 7 by norm_num)
+    have := Real.log_le_sub_one_of_pos (show (0:ℝ) < 86 * 10 ^ 6 by norm_num)
     linarith
   -- assemble
-  have hcoef : 0.99 ≤ 1 - a - b := by linarith
-  have hcw : (1 - a - b) * Real.log u ≤ 0.99 * (-3.43) := by
-    have e1 : (1 - a - b) * Real.log u ≤ (1 - a - b) * (-3.43) :=
+  have hcoef : 0.979 ≤ 1 - a - b := by linarith
+  have hcw : (1 - a - b) * Real.log u ≤ 0.979 * (-3.4334) := by
+    have e1 : (1 - a - b) * Real.log u ≤ (1 - a - b) * (-3.4334) :=
       mul_le_mul_of_nonneg_left hL (by linarith)
     linarith only [e1, hcoef]
   have hab : a * Real.log (f + 2) ≤ a * Real.log f + a * b :=
     by have := mul_le_mul_of_nonneg_left hlf2 ha0.le; rw [mul_add] at this; exact this
-  have hab2 : a * b ≤ 0.00942 * 1.2e-10 := mul_le_mul ha1 hb1 hb0.le (by norm_num)
+  have hab2 : a * b ≤ 0.02024 * 2.36e-10 := mul_le_mul ha1 hb1 hb0.le (by norm_num)
   have hl4 : 0 ≤ a * Real.log 2 := by positivity
-  have hbe : b * (1 - Real.log 2 - Real.log eps) ≤ 1.2e-10 * (1 + 8 * 10 ^ 7) := by
-    have : 1 - Real.log 2 - Real.log eps ≤ 1 + 8 * 10 ^ 7 := by linarith
-    calc b * (1 - Real.log 2 - Real.log eps) ≤ b * (1 + 8 * 10 ^ 7) :=
+  have hbe : b * (1 - Real.log 2 - Real.log eps) ≤ 2.36e-10 * (1 + 86 * 10 ^ 6) := by
+    have : 1 - Real.log 2 - Real.log eps ≤ 1 + 86 * 10 ^ 6 := by linarith
+    calc b * (1 - Real.log 2 - Real.log eps) ≤ b * (1 + 86 * 10 ^ 6) :=
           mul_le_mul_of_nonneg_left this hb0.le
-      _ ≤ 1.2e-10 * (1 + 8 * 10 ^ 7) := by nlinarith
+      _ ≤ 2.36e-10 * (1 + 86 * 10 ^ 6) := by nlinarith
   have hexp : Real.log (xval N f j) =
       a * (2 + 2 * Real.log (f + 2) - 2 * Real.log 2 - Real.log f) +
       b * (1 - Real.log 2 - Real.log eps) + (Real.log 2 + 1) +
       (1 - a - b) * Real.log u := by
     rw [hlog, hju]; ring
-  have hlt : Real.log (xval N f j) ≤ Real.log (1 / 4) := by
-    have : Real.log (1 / 4 : ℝ) = -(2 * Real.log 2) := by
-      rw [one_div, Real.log_inv, show (4 : ℝ) = 2 ^ 2 by norm_num, Real.log_pow]
-      push_cast; ring
-    rw [this, hexp]
+  have hlt : Real.log (xval N f j) ≤ -1.143 := by
+    rw [hexp]
     nlinarith
-  have := (Real.log_le_log_iff hx (by norm_num)).mp hlt
-  linarith
+  have hx1 : xval N f j ≤ Real.exp (-1.143) := by
+    calc xval N f j = Real.exp (Real.log (xval N f j)) := (Real.exp_log hx).symm
+      _ ≤ _ := Real.exp_le_exp.mpr hlt
+  have he1 := Real.exp_one_gt_d9
+  have he2 := Real.quadratic_le_exp_of_nonneg (show (0 : ℝ) ≤ 0.143 by norm_num)
+  have he3 : Real.exp 1.143 = Real.exp 1 * Real.exp 0.143 := by
+    rw [← Real.exp_add]; norm_num
+  have he4 : (25 / 8 : ℝ) ≤ Real.exp 1.143 := by
+    rw [he3]; nlinarith
+  have he5 : Real.exp (-1.143) ≤ 8 / 25 := by
+    rw [Real.exp_neg, inv_le_comm₀ (Real.exp_pos _) (by norm_num)]
+    norm_num; norm_num at he4; linarith
+  exact hx1.trans he5
 
 theorem xval_pow_le {n : ℕ} {f j : ℝ} (P : Lemma62Params n f j)
-    (hj1 : 8 * 10 ^ 7 ≤ j) (E : ℕ) :
-    xval (n : ℝ) f j ^ E ≤ (3 / 10) ^ E :=
-  pow_le_pow_left₀ (xval_pos P.N_pos P.f_pos P.hj).le (xval_le_three_tenths P hj1) E
+    (hj1 : 86 * 10 ^ 6 ≤ j) (E : ℕ) :
+    xval (n : ℝ) f j ^ E ≤ (8 / 25) ^ E :=
+  pow_le_pow_left₀ (xval_pos P.N_pos P.f_pos P.hj).le (xval_le_eight_25ths P hj1) E
 
 end Chvatal

@@ -20,15 +20,15 @@ The strongest completed upper bound is the Chvátal construction in the separate
 [chvatal-1830 package](chvatal-1830/README.md). Lean proves
 
 ```text
-D(n) <= 1830 * log_2 n - 58657   for n >= 64^7 = 2^42.
-limsup D(n)/log_2 n <= 1830.
+D(n) <= 1770 * log_2 n - 56497   for n >= 64^7 = 2^42.
+limsup D(n)/log_2 n <= 1770.
 ```
 
 The theorem endpoints are
 
 ```lean
-SortingDepth.minimum_depth_le_1830_logb
-SortingDepth.limsup_minimum_div_logb_le_1830
+SortingDepth.minimum_depth_le_1770_logb
+SortingDepth.limsup_minimum_div_logb_le_1770
 ```
 
 See [Chvatal1830Final.lean](chvatal-1830/AKS/Bounds/Chvatal1830Final.lean).
@@ -102,7 +102,7 @@ Start with [the research index](docs/research-index.md) for the proof map and
 | --- | --- |
 | [AKS/Bounds/](AKS/Bounds/) | Minimum-depth definition, all-arity bounds, and asymptotic theorems |
 | [AKS/Paterson/](AKS/Paterson/) | Completed rounded bag construction |
-| [chvatal-1830/](chvatal-1830/README.md) | Self-contained Lean package: `D(n) ≤ 1830 log₂ n − 58657` for `n ≥ 64^7` and `limsup D(n)/log₂ n ≤ 1830` (Chvátal DCS-TR-294) |
+| [chvatal-1830/](chvatal-1830/README.md) | Self-contained Lean package: `D(n) ≤ 1770 log₂ n − 56497` for `n ≥ 64^7` and `limsup D(n)/log₂ n ≤ 1770` (variant of Chvátal DCS-TR-294) |
 | [AKS/Halver/](AKS/Halver/) | Paterson halvers, probabilistic existence, and expander-based halvers |
 | [AKS/Separator/](AKS/Separator/) | Generic and Paterson separator constructions |
 | [AKS/Bags/](AKS/Bags/) | Verified Seiferas scheduler and shared bag infrastructure |

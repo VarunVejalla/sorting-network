@@ -43,7 +43,7 @@ structure Theorem51Params (g : ScrambleGeometry) where
 theorem scrambleGeometry_hn (g : ScrambleGeometry) : 0 < g.n := by have := g.hn; omega
 
 /-- §7 ordinary separator quality `ε_B` (DCS-TR-294 §7). -/
-noncomputable def paperOrdinaryEpsB : ℝ := Real.sqrt (1 + 59 * Real.log 2) / (2 ^ 29 : ℝ)
+noncomputable def paperOrdinaryEpsB : ℝ := Real.sqrt (2 * (1 + 58 * Real.log 2) / (2 ^ 58 : ℝ))
 
 /-- §7 root separator quality `ε_B` at `m = 2^79`. -/
 noncomputable def paperRootEpsB : ℝ := Real.sqrt (1 + 79 * Real.log 2) / (2 ^ 39 : ℝ)

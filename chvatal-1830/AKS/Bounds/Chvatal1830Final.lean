@@ -4,11 +4,11 @@ import AKS.Chvatal.DepthSkeleton
 import AKS.Sort.Shrink
 import Mathlib.Topology.Order.LiminfLimsup
 
-/-! # Chvátal's 1830 bound
+/-! # Chvátal's 1770 bound
 
-* `SortingDepth.minimum_depth_le_1830_logb`: for every `n ≥ 64^7`,
-  `D(n) ≤ 1830 · log₂ n − 58657`.
-* `SortingDepth.limsup_minimum_div_logb_le_1830`: `limsup D(n)/log₂ n ≤ 1830`.
+* `SortingDepth.minimum_depth_le_1770_logb`: for every `n ≥ 64^7`,
+  `D(n) ≤ 1770 · log₂ n − 56497`.
+* `SortingDepth.limsup_minimum_div_logb_le_1770`: `limsup D(n)/log₂ n ≤ 1770`.
 
 For `7 ≤ d ≤ 13` the witness on `64^d` wires is full-wire Batcher (bitonic) sorting; for
 `d ≥ 14` it is Chvátal's network (`Chvatal.chvatal_sorter_exists`). Both are restricted to `n`
@@ -33,9 +33,9 @@ theorem exists_sorter {d : ℕ} (hd : 7 ≤ d) :
     interval_cases d <;> decide +kernel
   · exact chvatal_sorter_exists (by omega)
 
-/-- **Pointwise bound.** For every `n ≥ 64^7`, `D(n) ≤ 1830 · log₂ n − 58657`. -/
-theorem minimum_depth_le_1830_logb {n : ℕ} (hn64 : 64 ^ 7 ≤ n) :
-    (minimum n : ℝ) ≤ 1830 * Real.logb 2 (n : ℝ) - 58657 := by
+/-- **Pointwise bound.** For every `n ≥ 64^7`, `D(n) ≤ 1770 · log₂ n − 56497`. -/
+theorem minimum_depth_le_1770_logb {n : ℕ} (hn64 : 64 ^ 7 ≤ n) :
+    (minimum n : ℝ) ≤ 1770 * Real.logb 2 (n : ℝ) - 56497 := by
   have hn : 1 < n := lt_of_lt_of_le (by decide : 1 < 64 ^ 7) hn64
   have hd7 : 7 ≤ Nat.clog 64 n := by
     have hmono : Nat.clog 64 (64 ^ 7) ≤ Nat.clog 64 n := Nat.clog_mono_right 64 hn64
@@ -51,22 +51,22 @@ theorem minimum_depth_le_1830_logb {n : ℕ} (hn64 : 64 ^ 7 ≤ n) :
   have h1 : (net.depth : ℝ) ≤ (totalDepth d : ℝ) := by exact_mod_cast hdep
   exact hm.trans (h1.trans (totalDepth_logb_le hd7 rfl hn))
 
-/-- **`limsup D(n)/log₂ n ≤ 1830`.** -/
-theorem limsup_minimum_div_logb_le_1830 :
-    limsup (fun n : ℕ ↦ (minimum n : ℝ) / Real.logb 2 n) atTop ≤ (1830 : ℝ) := by
+/-- **`limsup D(n)/log₂ n ≤ 1770`.** -/
+theorem limsup_minimum_div_logb_le_1770 :
+    limsup (fun n : ℕ ↦ (minimum n : ℝ) / Real.logb 2 n) atTop ≤ (1770 : ℝ) := by
   have hnonneg : ∀ᶠ n : ℕ in atTop, 0 ≤ (minimum n : ℝ) / Real.logb 2 n := by
     filter_upwards [eventually_ge_atTop 2] with n hn
     have hnR : (1 : ℝ) < n := by exact_mod_cast (show 1 < n by omega)
     exact div_nonneg (Nat.cast_nonneg _) (Real.logb_pos (by norm_num) hnR).le
-  have hle : ∀ᶠ n : ℕ in atTop, (minimum n : ℝ) / Real.logb 2 n ≤ (1830 : ℝ) := by
+  have hle : ∀ᶠ n : ℕ in atTop, (minimum n : ℝ) / Real.logb 2 n ≤ (1770 : ℝ) := by
     filter_upwards [eventually_ge_atTop (64 ^ 7)] with n hn64
     have hn : 1 < n := lt_of_lt_of_le (by decide : 1 < 64 ^ 7) hn64
     have hnR : (1 : ℝ) < n := by exact_mod_cast hn
     have hl : 0 < Real.logb 2 (n : ℝ) := Real.logb_pos (by norm_num) hnR
-    have hb := minimum_depth_le_1830_logb hn64
+    have hb := minimum_depth_le_1770_logb hn64
     exact (div_le_iff₀ hl).mpr (by linarith)
   exact (limsup_le_limsup hle
     (isCoboundedUnder_le_of_eventually_le atTop hnonneg)
-    isBoundedUnder_const).trans (le_of_eq (limsup_const (1830 : ℝ)))
+    isBoundedUnder_const).trans (le_of_eq (limsup_const (1770 : ℝ)))
 
 end SortingDepth

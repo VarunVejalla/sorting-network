@@ -1,7 +1,7 @@
 module
 
 /- `Theorem51Params g` for every §7 scramble geometry: `ε_B` is the paper's
-`paperOrdinaryEpsB` / `paperRootEpsB` (valid for `m ≥ 2^59` resp. `m ≥ 2^79`). -/
+`paperOrdinaryEpsB` / `paperRootEpsB` (valid for `m ≥ 2^58` resp. `m ≥ 2^79`). -/
 
 public import AKS.Chvatal.Theorem51Core
 public import AKS.Chvatal.Lemma62Ratio
@@ -37,17 +37,21 @@ private theorem sqrt_chernoff_le {m k j : ℕ} (hm : 2 ^ k ≤ m) (hkj : 2 ^ k =
   have : (0 : ℝ) < (2 : ℝ) ^ j := by positivity
   field_simp
 
-theorem epsB_general {m : ℕ} (hm : 2 ^ 59 ≤ m) :
+theorem epsB_general {m : ℕ} (hm : 2 ^ 58 ≤ m) :
     Real.sqrt (2 * (1 + Real.log m) / m) ≤ paperOrdinaryEpsB := by
-  simpa [paperOrdinaryEpsB] using sqrt_chernoff_le (j := 29) hm (by norm_num)
+  have hmR : (2 : ℝ) ^ 58 ≤ m := by exact_mod_cast hm
+  have hmono := chernoff_mono (M := (2 : ℝ) ^ 58) (m := m) (one_le_pow₀ (by norm_num)) hmR
+  rw [Real.log_pow] at hmono
+  unfold paperOrdinaryEpsB
+  exact Real.sqrt_le_sqrt (by push_cast at hmono ⊢; exact hmono)
 
 theorem epsB_root_general {m : ℕ} (hm : 2 ^ 79 ≤ m) :
     Real.sqrt (2 * (1 + Real.log m) / m) ≤ paperRootEpsB := by
   simpa [paperRootEpsB] using sqrt_chernoff_le (j := 39) hm (by norm_num)
 
 /-- `Theorem51Params` for every ordinary geometry (`δ_F = 128/4095`, `ε_F = eps`). -/
-noncomputable def theorem51Params_general (g : ScrambleGeometry) (_ : 17 * 10 ^ 9 ≤ g.f)
-    (hm : 2 ^ 59 ≤ g.m) : Theorem51Params g where
+noncomputable def theorem51Params_general (g : ScrambleGeometry) (_ : 85 * 10 ^ 8 ≤ g.f)
+    (hm : 2 ^ 58 ≤ g.m) : Theorem51Params g where
   epsB := paperOrdinaryEpsB
   deltaF := 128 / 4095
   epsF := eps

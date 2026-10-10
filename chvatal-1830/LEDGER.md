@@ -16,7 +16,7 @@ its address (the input rank map), and the placement is data-dependent; then
 `perms (t+1) = perms t` is correct. The paper's wire sets of nodes are
 input-independent (wires stay put, keys move). The final 2^42 blocks are made
 contiguous by one global relabeling of the wires (inputs are arbitrary). The
-constant `58657` matches the paper's Theorem 1.1 (`N ≥ 2^78`).
+constant `56497` is for the L = 58 variant (ordinary window `m ∈ (2^58, 2^59]`), not the paper's `1830 lg n − 58657`.
 
 ### A. Separators for every bag size (paper §5–6)
 
@@ -47,7 +47,7 @@ constant `58657` matches the paper's Theorem 1.1 (`N ≥ 2^78`).
 | B4 | Wire sets need not be contiguous at `t_f`: use generalized comparators and **✔ `Untangle.untangle`** ([Untangle](AKS/Sort/Untangle.lean): a generalized network sorting into any fixed output order τ yields a standard network of equal greedy depth that sorts; supersedes the depth-`k` `KnownPermutation` correction). Remaining: generalized-network versions of the stage nets (embedding packs along arbitrary bijections) | partly ✔ `[me]` |
 | B5a | `physicalPackNet`: standard network realizing the sort–scramble–sort pack on a node's wires (second column sort relabeled through the scramble); `physicalPackNet_exec` (= semantic output ∘ `wirePerm`), row-region counts agree, depth `≤ 2·bitonicDepthBudget` ([PhysicalPack](AKS/Chvatal/PhysicalPack.lean)) | ✔ |
 | B5b | `stageNet`: heterogeneous node networks on sorted wire lists, `stageNet_exec_inside`, `stageNet_outside`, `stageNet_depth_le` ([StageNet](AKS/Chvatal/StageNet.lean)) | ✔ |
-| B5c | Per-node networks `realNets` (bitonic for small bags; physical pack with the chosen two-sided σ for `a > 2^64`; root `m = 2^79` geometry at `t = 0`; empty when `down = 0`), `realNets_specs : RealSpecs`, `realNets_depth_le` (3660 for `t ≥ 1`, 6320 at `t = 0`) ([RealNets](AKS/Chvatal/RealNets.lean)). **Open:** the full network `stages 0..t_f−1 ++ final sorters` and its total depth `≤ totalDepth d` (C3) | partly ✔ |
+| B5c | Per-node networks `realNets` (bitonic for small bags; physical pack with the chosen two-sided σ for `a > 2^63`; root `m = 2^79` geometry at `t = 0`; empty when `down = 0`), `realNets_specs : RealSpecs`, `realNets_depth_le` (3540 for `t ≥ 1`, 6320 at `t = 0`) ([RealNets](AKS/Chvatal/RealNets.lean)). **Open:** the full network `stages 0..t_f−1 ++ final sorters` and its total depth `≤ totalDepth d` (C3) | partly ✔ |
 | B6 | Execution-defined placement: **✔** ([ExecPlacement](AKS/Chvatal/ExecPlacement.lean)): `X v t`, `execPlacement` (keys on each node's wires), `fromParentK`/`fromChildrenK`, `execPlacement_succ_regs`, `stage_preserves_node_keys`, `fromChildrenK_subset`, cell/key dictionary `mem_image_downSet_iff`/`_upSet_iff` | ✔ |
 | B7a | Lemma 4.1/4.2 counting: **✔** pure window counting (`BlockWindow` (archived); `rankIn` renamed `rankNat`), real Lemma 4.1 `keys_below_child_le` ([Lemma41Real](AKS/Chvatal/Lemma41Real.lean)), scalar §7 facts `total_mass`, `hwires7_real` (Lemma 3.1), per-type `τ`/`π`, `slack_*` ([Wires31](AKS/Chvatal/Wires31.lean)) | ✔ |
 | B7b | Real parent/children sends: **✔** `bad_send0_real` ([BadSendReal](AKS/Chvatal/BadSendReal.lean): `(b.strangers 1 (fromParentK b)) ≤ (q.strangers 1 K) + 63ρ − π/2 + 2·EB` given `hM`, `hpos`, the node spec; it carries a private copy `BW` of the window lemma that can now be replaced by the `BlockWindow` import), `fringe_send_real` ([FringeSendReal](AKS/Chvatal/FringeSendReal.lean)), children bounds `hFromChildren0/R_of_subset` ([StrangerBounds](AKS/Chvatal/StrangerBounds.lean)), `NodeSpec` ⇒ key counts ([NodeKeys](AKS/Chvatal/NodeKeys.lean)) | ✔ |
@@ -64,7 +64,7 @@ constant `58657` matches the paper's Theorem 1.1 (`N ≥ 2^78`).
 | C3b | Final layer sorts into a fixed output order and untangles: `final_layer_sorts` ([FinalSorts](AKS/Chvatal/FinalSorts.lean)) | ✔ |
 | C3c | Permutations ⇒ all inputs (`exists_sorting_perm`) and `Untangle.untangle`, inside `final_layer_sorts` | ✔ |
 | C3d | Depth `≤ totalDepth d` (`fullNet_depth_le`; reproved inline in `chvatal_sorter_exists`) | ✔ |
-| C3e | `Chvatal.chvatal_sorter_exists`: for every `d ≥ 14` a sorting network on `64^d` wires of depth `≤ totalDepth d` ([RealSorter](AKS/Chvatal/RealSorter.lean)); `SortingDepth.limsup_minimum_div_logb_le_1830` (unconditional, [Chvatal1830Final](AKS/Bounds/Chvatal1830Final.lean)). Axioms: propext, Classical.choice, Quot.sound only | ✔ |
-| C4 | Pointwise bound: `SortingDepth.minimum_depth_le_1830_logb` (`D(n) ≤ 1830·log₂ n − 58657` for every `n ≥ 64^7`; Batcher for `clog 64 n ≤ 603`, `chvatal_sorter_exists` beyond, both restricted to `n` wires) and `eventually_minimum_depth_le_1830_logb` ([Chvatal1830Final](AKS/Bounds/Chvatal1830Final.lean)) | ✔ |
+| C3e | `Chvatal.chvatal_sorter_exists`: for every `d ≥ 14` a sorting network on `64^d` wires of depth `≤ totalDepth d` ([RealSorter](AKS/Chvatal/RealSorter.lean)); `SortingDepth.limsup_minimum_div_logb_le_1770` (unconditional, [Chvatal1830Final](AKS/Bounds/Chvatal1830Final.lean)). Axioms: propext, Classical.choice, Quot.sound only | ✔ |
+| C4 | Pointwise bound: `SortingDepth.minimum_depth_le_1770_logb` (`D(n) ≤ 1770·log₂ n − 56497` for every `n ≥ 64^7`; Batcher for `clog 64 n ≤ 603`, `chvatal_sorter_exists` beyond, both restricted to `n` wires) and `eventually_minimum_depth_le_1770_logb` ([Chvatal1830Final](AKS/Bounds/Chvatal1830Final.lean)) | ✔ |
 
 Dependency order: `A → B3/B5 → B6 → B7 → B8 → C2 → C3 → C4`.

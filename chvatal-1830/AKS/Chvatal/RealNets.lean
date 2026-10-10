@@ -136,17 +136,17 @@ theorem pack_depth_le (m n : ℕ) (hn : 0 < n) (σ : Scramble m n) (k : ℕ) (hm
   have := bitonicDepthBudget_double k
   omega
 
-theorem bitonic_depth_le_small (a : ℕ) (h : a ≤ 2 ^ 64) : (bitonicNetwork a).depth ≤ 2080 := by
+theorem bitonic_depth_le_small (a : ℕ) (h : a ≤ 2 ^ 63) : (bitonicNetwork a).depth ≤ 2016 := by
   refine (bitonicNetwork_depth_le_budget a).trans ?_
-  have h1 : Nat.clog 2 a ≤ 64 := by
+  have h1 : Nat.clog 2 a ≤ 63 := by
     have := Nat.clog_mono_right 2 h
-    rwa [Nat.clog_pow 2 64 (by norm_num)] at this
+    rwa [Nat.clog_pow 2 63 (by norm_num)] at this
   have h2 := bitonicDepthBudget_mono h1
-  have : bitonicDepthBudget 64 = 2080 := by rw [bitonicDepthBudget_eq]
+  have : bitonicDepthBudget 63 = 2016 := by rw [bitonicDepthBudget_eq]
   omega
 
 /-- Depth budget of a node network. -/
-def depthBound (t : ℕ) : ℕ := if t = 0 then 6320 else 3660
+def depthBound (t : ℕ) : ℕ := if t = 0 then 6320 else 3540
 
 /-- The node network `net` of a node with `a` wires (`up` to the parent, `down` to each child)
 at stage `t` meets the Theorem 5.1 guarantee `NodeSpec` with the `RealSpecs` budgets and has
@@ -158,7 +158,7 @@ theorem specEB_nonneg (t a : ℕ) : 0 ≤ specEB t a := by
   unfold specEB paperRootEpsB paperOrdinaryEpsB
   split_ifs <;> positivity
 
-theorem nodeGood_small (t a up down : ℕ) (h : a ≤ 2 ^ 64) :
+theorem nodeGood_small (t a up down : ℕ) (h : a ≤ 2 ^ 63) :
     ∃ net : ComparatorNetwork a, NodeGood t a up down net := by
   refine ⟨bitonicNetwork a, NodeSpec_of_sorts up down _ (bitonicNetwork_sorts a)
     (specEB_nonneg t a) eps_pos (specJmax_le_half up), ?_⟩
@@ -170,19 +170,19 @@ theorem nodeGood_geom (t a up down : ℕ) (ht : 1 ≤ t) (G : NodeGeom a up down
   obtain ⟨m, n, f, b, hm, ha, hup, hdown, hm1, hm2, hn, hf⟩ := G
   subst ha hup hdown
   have hn0 : 0 < n := by omega
-  have h59 : 2 ^ 59 ≤ m := hm1.le
-  have h100 : 100 ≤ m := le_trans (by norm_num) h59
+  have h58 : 2 ^ 58 ≤ m := hm1.le
+  have h100 : 100 ≤ m := le_trans (by norm_num) h58
   have hfm : f ≤ m := by omega
   have hEB : specEB t (m * n) = paperOrdinaryEpsB / 2 * ((m * n : ℕ) : ℝ) := by
     unfold specEB
     rw [if_neg (by omega)]; ring
   have hD : ∀ σ : Scramble m n, (physicalPackNet m n hn0 σ).depth ≤ depthBound t := by
     intro σ
-    have := pack_depth_le m n hn0 σ 60 hm2
+    have := pack_depth_le m n hn0 σ 59 hm2
     unfold depthBound; rw [if_neg (by omega)]; omega
   rcases hf with rfl | ⟨hfbig, hfev⟩
   · obtain ⟨σ, hB1, hB2⟩ := ExistsScrambleSeparator_twoSided_B h100 hn
-      (epsB_general h59)
+      (epsB_general h58)
     refine ⟨physicalPackNet m n hn0 σ, ?_, hD σ⟩
     exact packNodeSpec hn0 σ hm hfm hEB hB1 hB2 (fun h => absurd h (lt_irrefl 0))
   · have hf10 : 10 ≤ f := le_trans (by norm_num) hfbig
@@ -190,7 +190,7 @@ theorem nodeGood_geom (t a up down : ℕ) (ht : 1 ≤ t) (G : NodeGeom a up down
       (by omega)
     obtain ⟨σ, ⟨hB1, hF1⟩, ⟨hB2, hF2⟩⟩ :=
       ExistsScrambleSeparator_twoSided (g := g)
-        (P := theorem51Params_general g hfbig h59) hfbig le_rfl le_rfl
+        (P := theorem51Params_general g hfbig h58) hfbig le_rfl le_rfl
     refine ⟨physicalPackNet m n hn0 σ, ?_, hD σ⟩
     exact packNodeSpec hn0 σ hm hfm hEB hB1 hB2 (fun _ => ⟨hF1, hF2⟩)
 
@@ -227,7 +227,7 @@ theorem nodeGood_exists (d : ℕ) (hd : 7 ≤ d) (hd14 : 14 ≤ d) (t l : ℕ) (
     ∃ net : ComparatorNetwork ((flowSizes7 d hd).a l t),
       NodeGood t ((flowSizes7 d hd).a l t) ((flowSizes7 d hd).up l t)
         ((flowSizes7 d hd).down l t) net := by
-  by_cases hs : (flowSizes7 d hd).a l t ≤ 2 ^ 64
+  by_cases hs : (flowSizes7 d hd).a l t ≤ 2 ^ 63
   · exact nodeGood_small _ _ _ _ hs
   by_cases h0 : t = 0
   · subst h0
@@ -238,7 +238,7 @@ theorem nodeGood_exists (d : ℕ) (hd : 7 ≤ d) (hd14 : 14 ≤ d) (t l : ℕ) (
     subst hl
     exact nodeGood_root d hd14 _ _ _ (by simp [flowSizes7, flowA7])
       (by simp [flowSizes7, flowUp7]) (by simp [flowSizes7, flowDown7])
-  · have hbig : 2 ^ 64 < flowA7 d hd l t := not_le.mp hs
+  · have hbig : 2 ^ 63 < flowA7 d hd l t := not_le.mp hs
     obtain ⟨G⟩ := nodeGeom_exists d hd l t hdown hbig ht
     exact nodeGood_geom t _ _ _ (by omega) G
 

@@ -4,10 +4,10 @@ public import AKS.Chvatal.Lemma62FailE
 
 /-! # Rounding `j` up to a multiple of `1/ε` and summing the geometric series (Lemma 6.2)
 
-* `round_event`: a bad event at `(c, j)` yields a bad event at `j' = 8·10^7·E`, `E = ⌈ε j⌉`,
+* `round_event`: a bad event at `(c, j)` yields a bad event at `j' = 86·10^6·E`, `E = ⌈ε j⌉`,
   in `badSetF`, with `Lemma62Params`.
 * `paperF_fail_fraction`: union bound over `E ∈ [1, ⌈ε f n⌉]` with the per-`E` bound `fail_prob_at_E`
-  and `∑ (3/10)^E ≤ 3/7`. -/
+  and `∑ (8/25)^E ≤ 8/17`. -/
 
 @[expose] public section
 
@@ -57,34 +57,34 @@ theorem exists_extension {m n : ℕ} :
     obtain ⟨c', hc', htot⟩ := ih c1 (by omega)
     exact ⟨c', fun x => (hle1 x).trans (hc' x), by omega⟩
 
-lemma eps_mul_J (E : ℕ) : eps * ((8 * 10 ^ 7 * E : ℕ) : ℝ) = (E : ℝ) := by
+lemma eps_mul_J (E : ℕ) : eps * ((86 * 10 ^ 6 * E : ℕ) : ℝ) = (E : ℝ) := by
   unfold eps; push_cast; field_simp; norm_num
 
 /-- Rounding step. -/
-theorem round_event {m n f : ℕ} (hf : Even f) (hfm : f ≤ m) (hfbig : 17 * 10 ^ 9 ≤ f)
+theorem round_event {m n f : ℕ} (hf : Even f) (hfm : f ≤ m) (hfbig : 85 * 10 ^ 8 ≤ f)
     (hn : 16 ≤ n) (c : MonotoneColumnSums m n) (σ : Scramble m n) (j : ℕ) (S : Finset (Fin n))
     (htot : totalColumnOnes c = j) (hj0 : 0 < j)
     (hjδ : (j : ℝ) ≤ (128 / 4095 : ℝ) * (f * n))
     (hbad : fringeColumnEventBad f c σ j S) :
     ∃ E : ℕ, 1 ≤ E ∧ E ≤ ⌈eps * ((f : ℝ) * n)⌉₊ ∧
-      Lemma62Params n (f : ℝ) ((8 * 10 ^ 7 * E : ℕ) : ℝ) ∧
-      σ ∈ badSetF (m := m) (n := n) f (8 * 10 ^ 7 * E) := by
+      Lemma62Params n (f : ℝ) ((86 * 10 ^ 6 * E : ℕ) : ℝ) ∧
+      σ ∈ badSetF (m := m) (n := n) f (86 * 10 ^ 6 * E) := by
   classical
   have heps := eps_pos
-  have hfR : (17 * 10 ^ 9 : ℝ) ≤ f := by exact_mod_cast hfbig
+  have hfR : (85 * 10 ^ 8 : ℝ) ≤ f := by exact_mod_cast hfbig
   have hnR : (16 : ℝ) ≤ n := by exact_mod_cast hn
   have hfmR : (f : ℝ) ≤ m := by exact_mod_cast hfm
   have hjR : (0 : ℝ) < j := by exact_mod_cast hj0
-  have hfn : (17 * 10 ^ 9 * 16 : ℝ) ≤ f * n := by nlinarith
+  have hfn : (85 * 10 ^ 8 * 16 : ℝ) ≤ f * n := by nlinarith
   set E := ⌈eps * (j : ℝ)⌉₊ with hE
   have hE1 : 1 ≤ E := Nat.ceil_pos.mpr (mul_pos heps hjR)
   have hEge : eps * (j : ℝ) ≤ E := Nat.le_ceil _
   have hElt : (E : ℝ) < eps * j + 1 := Nat.ceil_lt_add_one (by positivity)
   have hEK : E ≤ ⌈eps * ((f : ℝ) * n)⌉₊ :=
     Nat.ceil_mono (mul_le_mul_of_nonneg_left (by nlinarith) heps.le)
-  set j' : ℕ := 8 * 10 ^ 7 * E with hj'
-  have hj'R : (j' : ℝ) = 8 * 10 ^ 7 * E := by rw [hj']; push_cast; ring
-  have hjeq : (j : ℝ) = 8 * 10 ^ 7 * (eps * j) := by unfold eps; field_simp
+  set j' : ℕ := 86 * 10 ^ 6 * E with hj'
+  have hj'R : (j' : ℝ) = 86 * 10 ^ 6 * E := by rw [hj']; push_cast; ring
+  have hjeq : (j : ℝ) = 86 * 10 ^ 6 * (eps * j) := by unfold eps; field_simp
   have hjj' : (j : ℝ) ≤ j' := by rw [hj'R]; nlinarith
   have hj'f : (j' : ℝ) ≤ f * n / 31 := by rw [hj'R]; nlinarith
   have hj'm : j' ≤ m * n := by
@@ -117,28 +117,28 @@ theorem round_event {m n f : ℕ} (hf : Even f) (hfm : f ≤ m) (hfbig : 17 * 10
   push_cast at h1
   exact h1
 
-lemma geom_Icc_le (K : ℕ) : ∑ E ∈ Finset.Icc 1 K, (3 / 10 : ℝ) ^ E ≤ 3 / 7 := by
-  have : ∀ K : ℕ, ∑ E ∈ Finset.Icc 1 K, (3 / 10 : ℝ) ^ E = 3 / 7 - 3 / 7 * (3 / 10 : ℝ) ^ K := by
+lemma geom_Icc_le (K : ℕ) : ∑ E ∈ Finset.Icc 1 K, (8 / 25 : ℝ) ^ E ≤ 8 / 17 := by
+  have : ∀ K : ℕ, ∑ E ∈ Finset.Icc 1 K, (8 / 25 : ℝ) ^ E = 8 / 17 - 8 / 17 * (8 / 25 : ℝ) ^ K := by
     intro K
     induction K with
     | zero => simp
     | succ K ih => rw [Finset.sum_Icc_succ_top (by omega), ih]; ring
   rw [this]
-  linarith [pow_nonneg (by norm_num : (0 : ℝ) ≤ 3 / 10) K]
+  linarith [pow_nonneg (by norm_num : (0 : ℝ) ≤ 8 / 25) K]
 
 open Classical in
-/-- The corrected Property F fails on at most `44%` of scrambles, . -/
-theorem paperF_fail_fraction {m n f : ℕ} (hf : Even f) (hfm : f ≤ m) (hfbig : 17 * 10^9 ≤ f)
+/-- The corrected Property F fails on at most `48.3%` of scrambles, . -/
+theorem paperF_fail_fraction {m n f : ℕ} (hf : Even f) (hfm : f ≤ m) (hfbig : 85 * 10 ^ 8 ≤ f)
     (hn : 16 ≤ n) :
     (((Finset.univ.filter fun σ : Scramble m n =>
         ¬ HasPaperPropertyF f σ).card : ℝ) ≤
-      44/100 * (Fintype.card (Scramble m n) : ℝ)) := by
+      483/1000 * (Fintype.card (Scramble m n) : ℝ)) := by
   set K := ⌈eps * ((f : ℝ) * n)⌉₊
   set I := (Finset.Icc 1 K).filter
-    (fun E => Lemma62Params n (f : ℝ) ((8 * 10 ^ 7 * E : ℕ) : ℝ)) with hI
+    (fun E => Lemma62Params n (f : ℝ) ((86 * 10 ^ 6 * E : ℕ) : ℝ)) with hI
   have hsub : (Finset.univ.filter fun σ : Scramble m n =>
         ¬ HasPaperPropertyF f σ) ⊆
-      I.biUnion fun E => badSetF (m := m) (n := n) f (8 * 10 ^ 7 * E) := by
+      I.biUnion fun E => badSetF (m := m) (n := n) f (86 * 10 ^ 6 * E) := by
     intro σ hσ
     simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hσ
     unfold HasPaperPropertyF at hσ
@@ -150,15 +150,15 @@ theorem paperF_fail_fraction {m n f : ℕ} (hf : Even f) (hfm : f ≤ m) (hfbig 
       rw [hI, Finset.mem_filter, Finset.mem_Icc]; exact ⟨⟨hE1, hEK⟩, hpar⟩, hmem⟩
   have hcardR : (((Finset.univ.filter fun σ : Scramble m n =>
         ¬ HasPaperPropertyF f σ).card : ℕ) : ℝ) ≤
-      ∑ E ∈ I, ((badSetF (m := m) (n := n) f (8 * 10 ^ 7 * E)).card : ℝ) := by
+      ∑ E ∈ I, ((badSetF (m := m) (n := n) f (86 * 10 ^ 6 * E)).card : ℝ) := by
     exact_mod_cast (Finset.card_le_card hsub).trans Finset.card_biUnion_le
   have hterm : ∀ E ∈ I,
-      ((badSetF (m := m) (n := n) f (8 * 10 ^ 7 * E)).card : ℝ) ≤
-        1.025 * (3/10 : ℝ)^E * (Fintype.card (Scramble m n) : ℝ) := by
+      ((badSetF (m := m) (n := n) f (86 * 10 ^ 6 * E)).card : ℝ) ≤
+        1.025 * (8/25 : ℝ)^E * (Fintype.card (Scramble m n) : ℝ) := by
     intro E hE
     rw [hI, Finset.mem_filter, Finset.mem_Icc] at hE
     exact fail_prob_at_E hf _ E hE.1.1 (eps_mul_J E).symm hE.2
-  have hg : ∑ E ∈ I, (3 / 10 : ℝ) ^ E ≤ 3 / 7 :=
+  have hg : ∑ E ∈ I, (8 / 25 : ℝ) ^ E ≤ 8 / 17 :=
     (Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
       (fun _ _ _ => by positivity)).trans (geom_Icc_le K)
   have := hcardR.trans (Finset.sum_le_sum hterm)
