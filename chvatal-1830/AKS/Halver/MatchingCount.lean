@@ -103,10 +103,4 @@ theorem descFactorial_ratio_le_pow (m b r : ℕ) (hb : b ≤ m) :
       rw [hz, Nat.mul_zero]
       exact Nat.zero_le _
 
-
-
-
-
-
-
 end Paterson

@@ -13,9 +13,71 @@ module
 -/
 
 public import AKS.Chvatal.RowScramble
-public import AKS.Halver.Defs
+public import AKS.Misc.Fin
 
 @[expose] public section
+
+/-- The false-set cardinality is a `0*1*` witness for a monotone Boolean sequence. -/
+lemma Monotone.bool_pattern_at_card {n : ℕ} (w : Fin n → Bool) (hw : Monotone w) :
+    let k := (Finset.univ.filter (fun i : Fin n ↦ w i = false)).card
+    (∀ i : Fin n, (i : ℕ) < k → w i = false) ∧
+      (∀ i : Fin n, k ≤ (i : ℕ) → w i = true) := by
+  dsimp only
+  set k := (Finset.univ.filter (fun i : Fin n ↦ w i = false)).card
+  constructor
+  · -- For i.val < k: w i = false
+    intro ⟨i, hi⟩ h_lt
+    by_contra h_not
+    have h_true : w ⟨i, hi⟩ = true := by
+      match h : w ⟨i, hi⟩ with
+      | true => rfl
+      | false => exact absurd h h_not
+    -- Every j ≥ i has w j = true (by monotonicity)
+    have h_above : ∀ j : Fin n, i ≤ j.val → w j = true := by
+      intro ⟨j, hj⟩ h_ij
+      have := hw (show (⟨i, hi⟩ : Fin n) ≤ ⟨j, hj⟩ from h_ij)
+      rw [h_true] at this
+      match h : w ⟨j, hj⟩ with
+      | true => rfl
+      | false => rw [h] at this; exact absurd this (by decide)
+    -- So false set ⊆ {j | j.val < i}
+    have h_sub : Finset.univ.filter (fun j : Fin n ↦ w j = false) ⊆
+        Finset.Iio ⟨i, hi⟩ := by
+      intro ⟨j, hj⟩ hm
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hm
+      simp only [Finset.mem_Iio, Fin.lt_def]
+      by_contra h_ge; push_neg at h_ge
+      exact absurd (h_above ⟨j, hj⟩ h_ge) (by simp [hm])
+    -- Card of false set ≤ card of Iio = i
+    have := Finset.card_le_card h_sub
+    rw [Fin.card_Iio] at this; omega
+  · -- For k ≤ i.val: w i = true
+    intro ⟨i, hi⟩ h_ge
+    by_contra h_not
+    have h_false : w ⟨i, hi⟩ = false := by
+      match h : w ⟨i, hi⟩ with
+      | false => rfl
+      | true => exact absurd h h_not
+    -- Every j ≤ i has w j = false (by monotonicity)
+    have h_below : ∀ j : Fin n, j.val ≤ i → w j = false := by
+      intro ⟨j, hj⟩ h_ji
+      have := hw (show (⟨j, hj⟩ : Fin n) ≤ ⟨i, hi⟩ from h_ji)
+      rw [h_false] at this
+      match h : w ⟨j, hj⟩ with
+      | false => rfl
+      | true => rw [h] at this; exact absurd this (by decide)
+    -- So Iic ⟨i, hi⟩ ⊆ false set
+    have h_sub : Finset.Iic ⟨i, hi⟩ ⊆
+        Finset.univ.filter (fun j : Fin n ↦ w j = false) := by
+      intro ⟨j, hj⟩ hm
+      simp only [Finset.mem_Iic, Fin.le_iff_val_le_val] at hm
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+      exact h_below ⟨j, hj⟩ hm
+    -- Card of Iic = i + 1 ≤ card of false set = k
+    have := Finset.card_le_card h_sub
+    rw [Fin.card_Iic] at this; omega
+
+/-! **Network Cast** -/
 
 namespace Chvatal
 
@@ -440,7 +502,6 @@ theorem matrixOnesCountInRegion_pack_eq_onesAboveBottom {m n : Nat} (hn : 0 < n)
   refine Finset.sum_congr rfl fun j _ => ?_
   rw [← scrambledColSum_eq_matrixColumnTrueCount_of_rowScramble hn pack hrow c j]
 
-
 /-- Semantic decode: region after `semanticExec` equals `onesAboveBottom`. -/
 theorem matrixIntrusionCountB_semantic_eq_onesAboveBottom {m n : Nat} (hn : 0 < n)
     {σ : Scramble m n} (pack : SortScrambleSortPack m n hn σ)
@@ -468,13 +529,6 @@ theorem packSemanticIntrusionCountB_eq_onesAboveBottom {m n : Nat} (hn : 0 < n)
           (pack.colSort.net.exec fun w => largestKeyThreshold01 (m := m) (n := n) i (v w)))
         σ i :=
   matrixIntrusionCountB_semantic_eq_onesAboveBottom hn pack hcol hrow v i him
-
-
-
-
-
-
-
 
 /-! **Property F (fringe depth `f`, top-`j` keys)** -/
 
@@ -538,9 +592,7 @@ theorem packSemanticIntrusionCountF_eq_onesAboveBottom {m n f : Nat} (hn : 0 < n
   simpa [SortScrambleSortPack.semanticExec] using
     matrixOnesCountInRegion_pack_eq_onesAboveBottom_f hn hfm pack hcol hrow v j
 
-
 /-! **Top-`j` marking counts (Property F closing)** -/
-
 
 private theorem card_topJKeys (N j : Nat) (_hjpos : 0 < j) (hj : j ≤ N) :
     (Finset.univ.filter fun k : Fin N => N - j ≤ k.val).card = j := by
@@ -703,12 +755,6 @@ theorem HasPackSemanticPropertyB_canonical_of_combinatorial_onPipeline {m n : Na
     (idealColumnSort_columnSortNetwork m n hn)
     (RowScrambleCorrect.rowScrambleNetwork_columnSortNetwork hn σ) hComb
 
-
-
-
-
-
-
 theorem sum_topJ_colSums_eq_j {m n : Nat} (hn : 0 < n)
     (colSort : ColumnSortNetwork m n) (hcol : IdealColumnSort m n hn colSort)
     (v : Equiv.Perm (Fin (m * n))) (j : Nat) (hjpos : 0 < j) (hjmn : j ≤ m * n) :
@@ -728,20 +774,5 @@ theorem sum_topJ_colSums_eq_j {m n : Nat} (hn : 0 < n)
         refine Finset.sum_congr rfl fun col _ =>
           matrixColumnTrueCount_exec_eq hn col colSort.net colSort.col_local u
     _ = j := by rw [hsum, hj]
-
-
-
-
-
-
-
-
-
-
-
-
-/-! **Semantic F without combinatorial F** (`δ_F·n < 1` closing ignores `hComb`) -/
-
-
 
 end Chvatal

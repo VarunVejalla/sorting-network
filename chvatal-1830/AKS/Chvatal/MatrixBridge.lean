@@ -99,8 +99,6 @@ theorem matrixWire_injective {m n : Nat} (hn : 0 < n) {r r' : Fin m} {j j' : Fin
   simp [matrixWire_row_col] at hrow hcol
   exact ⟨hrow, hcol⟩
 
-/-! **Matrix intrusion counts (Theorem 5.1 §6)** -/
-
 /-! **Column sort and sort–scramble–sort network** -/
 
 /-- Comparators may only compare wires in a single column. -/
@@ -382,7 +380,6 @@ theorem RowScrambleNetwork.wirePerm_matrixRow {m n : Nat} (hn : 0 < n) {σ : Scr
   rw [hw, rs.perm_on_matrixWire (matrixRow m n hn w) (matrixCol m n hn w)]
   simp [matrixWire_row_col]
 
-
 /-- Key at or above the largest-`i·n` block (Chvátal matrix Property B threshold). -/
 abbrev isAmongLargestKeysBlock {m n : Nat} (i : Nat) (key : Fin (m * n)) : Prop :=
   m * n - i * n ≤ key.val
@@ -447,7 +444,6 @@ structure SortScrambleSortPack (m n : Nat) (hn : 0 < n) (σ : Scramble m n) wher
 def SortScrambleSortPack.colSort {m n : Nat} {hn : 0 < n} {σ : Scramble m n}
     (_pack : SortScrambleSortPack m n hn σ) : ColumnSortNetwork m n :=
   columnSortNetwork m n hn
-
 
 /-- Semantic middle stage: column sort then wire relabeling. -/
 def sortScrambleMiddleExec {m n : Nat} {σ : Scramble m n}

@@ -196,7 +196,6 @@ theorem mem_blockOf_iff {lo hi : ℕ} {w : Fin n} :
     rw [rankIn_orderEmb]
     exact ⟨Finset.orderEmbOfFin_mem _ rfl _, h1, h2⟩
 
-
 end Dict
 
 section KeyDict

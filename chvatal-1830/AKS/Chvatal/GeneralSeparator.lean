@@ -42,5 +42,4 @@ theorem HasPackSemanticPropertyF.mono {m n f : ℕ} (hn : 0 < n) {σ : Scramble 
   calc _ < ε * j := h1
     _ ≤ ε' * j := mul_le_mul_of_nonneg_right hε hj0
 
-
 end Chvatal

@@ -140,8 +140,6 @@ theorem bagSize_pos {br d l : ℕ} (hbr : 1 ≤ br) (_h : l ≤ d) :
   unfold bagSize
   exact Nat.pow_pos (Nat.succ_le_iff.mp hbr)
 
-
-
 theorem KBag.hi_eq_lo_add_size (b : KBag br d) : b.hi = b.lo + b.size := by
   simp [KBag.hi, KBag.lo, Nat.add_mul]
 

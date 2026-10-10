@@ -35,7 +35,6 @@ theorem card_filter_flip {m n : ℕ} (P : Scramble m n → Prop) [DecidablePred 
       (Finset.univ.filter fun σ : Scramble m n => ¬ P σ).card :=
   Finset.card_equiv (Function.Involutive.toPerm flipScramble flipScramble_flipScramble) (by simp)
 
-
 open Classical in
 /-- Two-sided Properties B (pipeline) and F: `σ` and its flip both satisfy them. -/
 theorem exists_twoSided_pipelineB_paperF {m n f : ℕ} (hm : 100 ≤ m) (hn : 16 ≤ n)

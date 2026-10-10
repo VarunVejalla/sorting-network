@@ -190,7 +190,6 @@ theorem bitonicSort_sorts_bool : ∀ (k : ℕ) (v : Fin (2 ^ k) → Bool),
 theorem bitonicSort_sorts (k : ℕ) : (bitonicSort k).Sorts :=
   zero_one_principle _ (bitonicSort_sorts_bool k)
 
-
 end Bitonic
 
 end

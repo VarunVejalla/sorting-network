@@ -18,6 +18,4 @@ lemma card_filter_val_ge (n thresh : ℕ) (h : thresh ≤ n) :
   · obtain rfl := le_antisymm h (not_lt.1 ht)
     simp
 
-
-
 end

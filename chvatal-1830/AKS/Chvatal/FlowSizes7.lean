@@ -73,7 +73,6 @@ theorem omega7_mul3 (d t : ℕ) (ht2 : 2 ≤ t) : 3 * omega7 d t ≤ t + 8 := by
   unfold ceilParity omegaStarLower
   split_ifs <;> omega
 
-
 theorem cdivQ (f : ℕ) :
     ((64 ^ (6 + f) : ℕ) : ℚ) / capacityRatio params7 = ((64 ^ f : ℕ) : ℚ) := by
   rw [capacityRatio_params7]; push_cast; rw [pow_add]; field_simp
@@ -110,7 +109,6 @@ theorem alloc_bot_val (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t
     show ((64 ^ d : ℕ) : ℚ) / ((64 : ℕ) : ℚ) ^ i = _
     rw [hg]; push_cast; rw [pow_add]; field_simp
   rw [e2]; push_cast; rfl
-
 
 theorem allocNat (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t ≤ tf7 d) (i : ℕ) :
     ∃ n : ℕ, allocation params7 d (levelSchedule7 d hd) i t = n := by

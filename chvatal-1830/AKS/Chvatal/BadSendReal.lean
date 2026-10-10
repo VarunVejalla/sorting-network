@@ -76,7 +76,6 @@ theorem sorted_window_wrong_le (K : Finset ℕ) (s τ lo hi : ℕ) (hsτ : s + �
     omega
   exact le_trans hsub hcard
 
-
 /-! ### Counting keys below the child intervals -/
 
 theorem card_lt_split (K : Finset ℕ) {lo hi : ℕ} (h : lo ≤ hi) :
@@ -184,7 +183,6 @@ theorem window_wrong_le (K : Finset ℕ) (k π τ S Ulo j : ℕ) (hj : j < k)
   rcases max_cases 0 ((OL : ℝ) + j*ρ - p) with ⟨c1, _⟩ | ⟨c1, _⟩ <;>
     rcases max_cases 0 ((OR : ℝ) + m*ρ - p) with ⟨c2, _⟩ | ⟨c2, _⟩ <;>
     · rw [c1] at hx; rw [c2] at hy; linarith
-
 
 end BW
 

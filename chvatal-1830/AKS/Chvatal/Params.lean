@@ -53,14 +53,4 @@ def invariant7 : InvariantParams where
   hdeltaF_lt := by norm_num
   hepsStar_nonneg := by norm_num
 
-
-
-
-
-
-
-
-
-
-
 end Chvatal

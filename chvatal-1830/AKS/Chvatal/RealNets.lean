@@ -12,7 +12,6 @@ namespace Chvatal
 def castNet {n n' : ℕ} (h : n = n') (net : ComparatorNetwork n) : ComparatorNetwork n' := by
   subst h; exact net
 
-
 theorem exec_eq_self_of_sorts {a : ℕ} (net : ComparatorNetwork a) (hs : ComparatorNetwork.Sorts.{0} net)
     (x : Equiv.Perm (Fin a)) (c : Fin a) : net.exec (x : Fin a → Fin a) c = c := by
   have hm : Monotone (net.exec (x : Fin a → Fin a)) := hs (Fin a) _

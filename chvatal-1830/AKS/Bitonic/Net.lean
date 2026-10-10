@@ -26,7 +26,6 @@ open ComparatorNetwork
 namespace Bitonic
 variable {N n : ℕ}
 
-
 /-- Lower half of a vector on `n = N + N` wires. -/
 def lowH (hn : N + N = n) {α : Type*} (w : Fin n → α) : Fin N → α :=
   fun j => w ⟨j, by have := j.2; omega⟩
@@ -59,7 +58,6 @@ theorem par_exec {α : Type*} [LinearOrder α] (hn : N + N = n) (A B : Comparato
     funext j
     exact shiftEmbed_exec_outside A n 0 (by omega) w ⟨N + j, by have := j.2; omega⟩
       (Or.inr (by simp))
-
 
 /-! ### One layer: wire `i` of the lower half against wire `σ i` of the upper half -/
 
@@ -158,7 +156,6 @@ def bitonicSort : (k : ℕ) → ComparatorNetwork (2 ^ k)
       ((layer (two_pow_succ' k) Fin.revPerm).append
         (par (two_pow_succ' k) (bitonicMerge k) (bitonicMerge k)))
 
-
 theorem bitonicMerge_depth_le : ∀ k, (bitonicMerge k).depth ≤ k
   | 0 => by simp [bitonicMerge, depth_nil]
   | k + 1 =>
@@ -181,7 +178,6 @@ theorem bitonicSort_depth_le_budget : ∀ k, (bitonicSort k).depth ≤ bitonicDe
         (bitonicMerge_depth_le k) (bitonicMerge_depth_le k)
       simp only [bitonicDepthBudget]
       omega)
-
 
 end Bitonic
 

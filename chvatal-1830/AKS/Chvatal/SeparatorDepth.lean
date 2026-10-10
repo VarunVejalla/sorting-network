@@ -60,23 +60,4 @@ theorem columnSortNetwork_depth_le_budget (m n : Nat) (hn : 0 < n) :
     (columnSortNetwork m n hn).net.depth ≤ bitonicDepthBudget (Nat.clog 2 m) :=
   (columnSortNetwork_depth_le m n hn).trans (bitonicNetwork_depth_le_budget m)
 
-/-! ## Pack depth (two column sorts; empty scramble comparators) -/
-
-
-
-
-
-
-
-/-! ## Paper budgets -/
-
-
-
-
-
-
-
-
-
-
 end Chvatal

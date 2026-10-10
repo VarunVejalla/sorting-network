@@ -148,7 +148,6 @@ theorem physicalPackNet_exec {m n : ℕ} (hn : 0 < n) (σ : Scramble m n)
   rw [hid]
   rfl
 
-
 /-- Count form: for every predicate `P` on values and every set of rows `R`, the number of
 wires in rows of `R` whose value satisfies `P` agrees between physical and semantic output. -/
 theorem physicalPackNet_rowRegion_card {m n : ℕ} (hn : 0 < n) (σ : Scramble m n)
@@ -173,7 +172,6 @@ theorem physicalPackNet_rowRegion_card {m n : ℕ} (hn : 0 < n) (σ : Scramble m
     simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hw ⊢
     rw [hρ, RowScrambleNetwork.wirePerm_symm_matrixRow hn, physicalPackNet_exec]
     exact ⟨hw.1, by simpa using hw.2⟩
-
 
 /-! ## Depth -/
 

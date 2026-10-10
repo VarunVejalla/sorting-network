@@ -7,7 +7,6 @@ public import Mathlib.Order.BoundedOrder.Basic
 public import Mathlib.Analysis.SpecialFunctions.Log.Basic
 public import Mathlib.Topology.Order.Basic
 
-
 @[expose] public section
 
 open Finset BigOperators
