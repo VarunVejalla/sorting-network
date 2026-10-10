@@ -10,26 +10,19 @@ namespace Chvatal
 
 open Finset
 
-theorem jmax_of_le (n π : ℕ) (c : ℚ)
-    (h : (n : ℚ) ≤ invMu * c)
-    (h2 : invMu * c ≤ (1 / 2) * (128 / 4095 : ℚ) * (π : ℚ)) :
-    n ≤ specJmax π := by
+/-- `Jmax` from `π ≥ 4095 c/2^36`: `n ≤ μ c ≤ (128/4095) (π/2)`. -/
+theorem jmax_of_le (n π : ℕ) (c : ℚ) (hc : 0 ≤ c) (h : (n : ℚ) ≤ invMu * c)
+    (hπ : 4095 * c / 2 ^ 36 ≤ (π : ℚ)) : n ≤ specJmax π := by
   unfold specJmax
   apply Nat.le_floor
-  have h3 : (n : ℚ) ≤ (128 / 4095 : ℚ) * ((π : ℚ) / 2) := by linarith
-  have h4 : ((n : ℚ) : ℝ) ≤ (((128 / 4095 : ℚ) * ((π : ℚ) / 2) : ℚ) : ℝ) := by exact_mod_cast h3
+  have h4 : ((n : ℚ) : ℝ) ≤ (((128 / 4095 : ℚ) * ((π : ℚ) / 2) : ℚ) : ℝ) := by
+    exact_mod_cast (by linarith [mul_le_mul_of_nonneg_right cond44_real hc] :
+      (n : ℚ) ≤ (128 / 4095 : ℚ) * ((π : ℚ) / 2))
   push_cast at h4
   exact h4
 
-/-- Nodes with high π: upper bound on mu times capacity. -/
-theorem mu_le_of_up_lower (c : ℚ) (hc : 0 ≤ c) (π : ℕ)
-    (hπ : 4095 * c / 68719476736 ≤ (π : ℚ)) :
-    invMu * c ≤ (1 / 2) * (128 / 4095 : ℚ) * (π : ℚ) := by
-  have h44 := cond44_real
-  linarith [mul_le_mul_of_nonneg_right h44 hc]
-
 /-- The invariant at the parent gives `strangers r ≤ μ c` (order `r - 1` in `P`). -/
-theorem strangers_le_mu_cap {d : ℕ} (hd : 7 ≤ d) (t : ℕ) (pl : Placement 64 d)
+theorem strangers_le_mu_cap {d : ℕ} (t : ℕ) (pl : Placement 64 d)
     (hP : OutsiderBoundLe d t pl id)
     (q : KBag 64 d) (r : ℕ) (hr1 : 1 ≤ r) (hrd : r ≤ d) :
     ((q.strangers r id (pl.regs q) : ℕ) : ℚ) ≤
@@ -44,101 +37,24 @@ theorem strangers_le_mu_cap {d : ℕ} (hd : 7 ≤ d) (t : ℕ) (pl : Placement 6
     _ ≤ invMu * 1 * capacity d q.l t := by gcongr
     _ = _ := by ring
 
-theorem up_mid_ge (c : ℚ) :
-    4095 * c / 68719476736 ≤
-      (4095 : Rat) * c / capacityRatio := by
-  rw [capacityRatio_eq]; apply le_of_eq; norm_num
-
-theorem up_rise_ge (c : ℚ) (hc : 0 ≤ c) :
-    4095 * c / 68719476736 ≤ (1 / 64 : Rat) * c / ((4096 : Rat) * 64) := by
-  norm_num; linarith
-
-/-- Nodes sending wires down have either low up or high capacity. -/
-theorem up_lower_or_top_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t < tf7 d)
-    (i : ℕ) (hdown : 0 < flowDown7 d hd i t) :
-    (i = alpha7 d t ∧ alpha7 d t < alpha7 d (t + 1)) ∨
-      4095 * capacity d i t / 68719476736 ≤ (flowUp7 d hd i t : ℚ) := by
-  have hc := capacity_nonneg d i t
-  have hdq : (0 : ℚ) < (flowDown7 d hd i t : ℚ) := by exact_mod_cast hdown
-  have hdc := cast_flowDown7 d hd i t ht2 ht
-  by_cases hact : alpha7 d t ≤ i ∧ i ≤ omega7 d t ∧ i % 2 = t % 2
-  swap
-  · exfalso
-    rw [flowDown_inactive d (by
-      show ¬(t ≤ tf7 d ∧ alpha7 d t ≤ i ∧ i ≤ omega7 d t ∧ i % 2 = t % 2)
-      omega)] at hdc
-    linarith
-  have hact' : t ≤ tf7 d ∧ alpha7 d t ≤ i ∧ i ≤ omega7 d t ∧ i % 2 = t % 2 := ⟨ht.le, hact⟩
-  have hp1 := alpha7_parity d t
-  have hp2 := alpha7_parity d (t + 1)
-  have hst := alpha7_step d t hd ht
-  by_cases hi : i = alpha7 d t
-  · by_cases hs : alpha7 d t < alpha7 d (t + 1)
-    · exact Or.inl ⟨hi, hs⟩
-    · right
-      rw [(tau_top_rise d hd t ht2 ht i hact' hi (by omega)).1]
-      exact up_rise_ge _ hc
-  · right
-    by_cases hω : i = omega7 d t
-    · by_cases hs : omega7 d t < omega7 d (t + 1)
-      · rw [(tau_bot_desc d hd t ht2 ht i hact' hi hω hs).1]
-        exact up_mid_ge _
-      · exfalso
-        rw [flowDown_bot_rise d hact' hi hω hs] at hdc
-        linarith
-    · rw [(tau_mid d hd t ht2 ht i hact' hi hω).1]
-      exact up_mid_ge _
-
-/-- At `t = 1`: only level-1 node sends wires down. -/
-theorem up_lower_one (d : ℕ) (hd : 7 ≤ d) (i : ℕ) (hdown : 0 < flowDown7 d hd i 1) :
-    4095 * capacity d i 1 / 68719476736 ≤ (flowUp7 d hd i 1 : ℚ) := by
-  obtain rfl : i = 1 := by
-    by_contra h
-    simp [flowDown7, h] at hdown
-  obtain ⟨e, rfl⟩ : ∃ e, d = e + 7 := ⟨d - 7, by omega⟩
-  rw [capacity_eq_pow (e + 7) 1 1 (e + 6) (by omega)]
-  simp only [flowUp7, if_true, show (1 : ℕ) ≠ 0 by omega, if_false]
-  rw [show e + 7 - 5 = e + 2 by omega]
-  push_cast
-  rw [show e + 6 = (e + 2) + 4 by omega, pow_add]
-  have : (0 : ℚ) ≤ 64 ^ (e + 2) := by positivity
-  norm_num; nlinarith
-
-/-- Descending top nodes have no outsiders. -/
-theorem top_desc_no_strangers {d : ℕ} (hd : 7 ≤ d) (t : ℕ) (pl : Placement 64 d)
-    (hP : OutsiderBoundLe d t pl id)
-    (q : KBag 64 d) (r : ℕ) (hr1 : 1 ≤ r) (hrd : r ≤ d)
-    (hq : q.l = alpha7 d t) (hs : alpha7 d t < alpha7 d (t + 1)) :
-    q.strangers r id (pl.regs q) = 0 := by
-  by_cases h0 : alpha7 d t = 0
-  · exact KBag.strangers_eq_zero_of_lt_order q r id _ _ hr1 (by omega)
-  rcases lemma32_schedule7 d hd t hs with hl | hl
-  · exact absurd hl h0
-  have hc : capacity d q.l t ≤ 1073741824 := hq ▸ hl
-  have h1 := strangers_le_mu_cap hd t pl hP q r hr1 hrd
-  have h2 := mu_real_mul_le_one _ hc
-  have : ((q.strangers r id (pl.regs q) : ℕ) : ℚ) < 1 := by linarith
-  exact_mod_cast Nat.lt_one_iff.mp (by exact_mod_cast this)
-
-/-- `Jmax` hypothesis for nodes sending wires down. -/
+/-- `Jmax` hypothesis for nodes sending wires down.  Uniform: by `node_facts`, either `π ≥ 4095 c/2^36`,
+or `π = 0` at a top-descending node, which has no outsiders (level `0`, or `μ c < 1`). -/
 theorem jmax_ok {d : ℕ} (hd : 7 ≤ d) (t : ℕ) (ht1 : 1 ≤ t) (ht : t < tf7 d)
     (pl : Placement 64 d)
     (hP : OutsiderBoundLe d t pl id)
     (q : KBag 64 d) (r : ℕ) (hr1 : 1 ≤ r) (hrd : r ≤ d)
     (hdown : 0 < (flowSizes7 d hd).down q.l t) :
     q.strangers r id (pl.regs q) ≤ specJmax ((flowSizes7 d hd).up q.l t) := by
-  have hdown' : 0 < flowDown7 d hd q.l t := hdown
-  have hmu := strangers_le_mu_cap hd t pl hP q r hr1 hrd
-  have key : 4095 * capacity d q.l t / 68719476736 ≤ (flowUp7 d hd q.l t : ℚ) →
-      q.strangers r id (pl.regs q) ≤ specJmax (flowUp7 d hd q.l t) :=
-    fun h => jmax_of_le _ _ _ hmu (mu_le_of_up_lower _ (capacity_nonneg d q.l t) _ h)
-  show _ ≤ specJmax (flowUp7 d hd q.l t)
-  by_cases h1 : t = 1
-  · subst h1
-    exact key (up_lower_one d hd q.l hdown')
-  · rcases up_lower_or_top_desc d hd t (by omega) ht q.l hdown' with ⟨hq, hs⟩ | h
-    · rw [top_desc_no_strangers hd t pl hP q r hr1 hrd hq hs]; exact Nat.zero_le _
-    · exact key h
+  obtain ⟨-, -, hlow, -⟩ := node_facts d hd t q.l ht1 ht hdown
+  have hmu := strangers_le_mu_cap t pl hP q r hr1 hrd
+  rcases hlow with ⟨-, h0 | hc⟩ | h
+  · rw [KBag.strangers_eq_zero_of_lt_order q r id _ _ hr1 (by omega)]; exact Nat.zero_le _
+  · have h2 := mu_real_mul_le_one _ (by exact_mod_cast hc.trans (by norm_num))
+    have : q.strangers r id (pl.regs q) = 0 := by
+      have : ((q.strangers r id (pl.regs q) : ℕ) : ℚ) < 1 := by linarith
+      exact_mod_cast Nat.lt_one_iff.mp (by exact_mod_cast this)
+    rw [this]; exact Nat.zero_le _
+  · exact jmax_of_le _ _ _ (capacity_nonneg d q.l t) hmu h
 
 /-- **Fringe send field** (Chvátal, Lemma 4.4 parent). -/
 theorem fringeSendField_real {d : ℕ} (hd : 7 ≤ d)

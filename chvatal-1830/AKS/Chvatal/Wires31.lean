@@ -1,6 +1,6 @@
 module
 
-public import AKS.Chvatal.NodeGeom
+public import AKS.Chvatal.FlowSizes7
 public import AKS.Chvatal.Schedule7
 public import AKS.Chvatal.StageKernel
 
@@ -125,97 +125,70 @@ theorem hwires7 (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t ≤ t
     rw [this] at hsplit
     linarith
 
-def delta2_7 (c : ℚ) : ℚ := (1 / 64 : Rat) / ((4096 : Rat) * (64 : ℚ) ^ 2) * c
+/-- What the Lemma 4.1/4.2/4.4 arguments need to know about a node with capacity `c`, `a` wires,
+`π` up and `τ` down per child, for a "deficit" `Δ` (`Δ = 0` at a top-descending node, `Δ = c/2^30`
+at every other sending node). -/
+structure NodeFacts (c a π τ Δ : ℚ) : Prop where
+  a_le : a ≤ c
+  nonneg : 0 ≤ Δ
+  up_le : π ≤ 64 * Δ
+  half : π / 2 ≤ 63 * Δ
+  slack : 63 * Δ - π / 2 ≤ slackCoeff * c
 
-theorem delta2_7_eq (c : ℚ) : delta2_7 c = c / 2 ^ 30 := by
-  unfold delta2_7; norm_num; ring
+/-- Facts of a sending node, from its `NodeShape`.  Besides `NodeFacts`: either `π = 0` (a
+top-descending node, at level `0` or with `c ≤ 2^30`) or `π ≥ 4095 c/2^36`; and the source of the
+Lemma 4.1 bound on keys below a child: either an ordinary interior stage with `c/64 ≤ τ + Δ`, or
+the trivial bound `64^(d-i-1) ≤ τ + Δ`. -/
+theorem NodeShape.facts {d t i a u n : ℕ} (h : NodeShape d t i a u n) (hn : 0 < n) :
+    ∃ Δ : ℚ, NodeFacts (capacity d i t) a u n Δ ∧
+      ((u = 0 ∧ (i = 0 ∨ capacity d i t ≤ 2 ^ 30)) ∨ 4095 * capacity d i t / 2 ^ 36 ≤ u) ∧
+      ((Inner d t i ∧ capacity d i t / 64 ≤ n + Δ) ∨ (64 : ℚ) ^ (d - i - 1) ≤ n + Δ) := by
+  cases h with
+  | off => omega
+  | topDesc g e hi h0 =>
+    rw [capacity_eq_pow d i t (g + 1) (by omega)]
+    have hX : (0 : ℚ) < 64 ^ g := by positivity
+    have h5 : g ≤ 4 → ((64 ^ (g + 1) : ℕ) : ℚ) ≤ 2 ^ 30 := fun h => by
+      have : 64 ^ (g + 1) ≤ 64 ^ 5 := Nat.pow_le_pow_right (by norm_num) (by omega)
+      exact_mod_cast this.trans (by norm_num)
+    refine ⟨0, ⟨?_, ?_, ?_, ?_, ?_⟩, Or.inl ⟨rfl, h0.imp id h5⟩, Or.inl ⟨hi, ?_⟩⟩ <;>
+      push_cast <;> norm_num [pow_succ, slackCoeff]
+  | topRise f e h0 =>
+    rw [capacity_eq_pow d i t (6 + f) (by omega)]
+    have hX : (0 : ℚ) < 64 ^ f := by positivity
+    refine ⟨64 ^ (1 + f), ⟨?_, ?_, ?_, ?_, ?_⟩, Or.inr ?_, ?_⟩ <;> push_cast <;>
+      norm_num [pow_add, slackCoeff] <;> try linarith
+    rcases h0 with hi | ⟨rfl, rfl⟩
+    · exact Or.inl ⟨hi, by linarith⟩
+    · right; rw [show d - 1 - 1 = 5 + f by omega]; norm_num [pow_add]; linarith
+  | mid g e hi =>
+    rw [capacity_eq_pow d i t (7 + g) (by omega)]
+    have hX : (0 : ℚ) < 64 ^ g := by positivity
+    have hle : 64 ^ (1 + g) ≤ 64 ^ (7 + g) := Nat.pow_le_pow_right (by norm_num) (by omega)
+    refine ⟨64 ^ (2 + g), ⟨?_, ?_, ?_, ?_, ?_⟩, Or.inr ?_, Or.inl ⟨hi, ?_⟩⟩ <;>
+      push_cast [Nat.cast_sub hle] <;> norm_num [pow_add, slackCoeff] <;> linarith
+  | botDesc g h hgh hg e hd =>
+    rw [capacity_eq_pow d i t (7 + h) (by omega), show d - i - 1 = g by omega]
+    have hX : (0 : ℚ) < 64 ^ h := by positivity
+    have hle : 64 ^ (h + 1) ≤ 64 ^ (g + 1) := Nat.pow_le_pow_right (by norm_num) (by omega)
+    have hle2 : 64 ^ (h + 2) ≤ 64 ^ g := Nat.pow_le_pow_right (by norm_num) (by omega)
+    have hg' : (64 : ℚ) ^ g ≤ 64 ^ 6 * 64 ^ h := by
+      rw [← pow_add]; exact pow_le_pow_right₀ (by norm_num) (by omega)
+    refine ⟨64 ^ (h + 2), ⟨?_, ?_, ?_, ?_, ?_⟩, Or.inr ?_, Or.inr ?_⟩ <;>
+      push_cast [Nat.cast_sub hle, Nat.cast_sub hle2] <;> norm_num [pow_add, slackCoeff] <;>
+      linarith [(by positivity : (0 : ℚ) < 64 ^ (h + 1))]
+  | botRise => omega
 
-/-- Descending top node. -/
-theorem tau_top_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t < tf7 d) (i : ℕ)
-    (hact : t ≤ tf7 d ∧ alpha7 d t ≤ i ∧ i ≤ omega7 d t ∧ i % 2 = t % 2)
-    (hα : i = alpha7 d t) (hs : alpha7 d t < alpha7 d (t + 1)) :
-    (flowUp7 d hd i t : ℚ) = 0 ∧
-      (flowDown7 d hd i t : ℚ) = capacity d i t / 64 := by
-  constructor
-  · have h := (cast_flowUp7 d hd i t ht2 ht).1
-    rw [flowUp_top_desc d hact hα hs] at h
-    exact h
-  · rw [cast_flowDown7 d hd i t ht2 ht,
-      flowDown_top_desc d hact hα hs]
-
-/-- Rising top node. -/
-theorem tau_top_rise (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t < tf7 d) (i : ℕ)
-    (hact : t ≤ tf7 d ∧ alpha7 d t ≤ i ∧ i ≤ omega7 d t ∧ i % 2 = t % 2)
-    (hα : i = alpha7 d t) (hs : alpha7 d (t + 1) < alpha7 d t) :
-    (flowUp7 d hd i t : ℚ) = (1 / 64 : Rat) * capacity d i t / ((4096 : Rat) * 64) ∧
-      (flowDown7 d hd i t : ℚ) = capacity d i t / 64 - delta2_7 (capacity d i t) := by
-  have hns : ¬ alpha7 d t < alpha7 d (t + 1) := by omega
-  have hωi : i ≠ omega7 d t := by
-    have := alpha7_lt_omega7 d hd t ht2 ht
-    omega
-  constructor
-  · rw [(cast_flowUp7 d hd i t ht2 ht).1,
-      flowUp_top_rise d hact hα hns]
-  · rw [cast_flowDown7 d hd i t ht2 ht,
-      flowDown_mid d hact (fun _ => hns) hωi]
-    unfold delta2_7
-    ring
-
-/-- Interior node. -/
-theorem tau_mid (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t < tf7 d) (i : ℕ)
-    (hact : t ≤ tf7 d ∧ alpha7 d t ≤ i ∧ i ≤ omega7 d t ∧ i % 2 = t % 2)
-    (hα : i ≠ alpha7 d t) (hω : i ≠ omega7 d t) :
-    (flowUp7 d hd i t : ℚ) =
-        (4095 : Rat) * capacity d i t / capacityRatio ∧
-      (flowDown7 d hd i t : ℚ) = capacity d i t / 64 - delta2_7 (capacity d i t) := by
-  constructor
-  · rw [(cast_flowUp7 d hd i t ht2 ht).1,
-      flowUp_mid d hact hα (fun h => absurd h hω)]
-  · rw [cast_flowDown7 d hd i t ht2 ht,
-      flowDown_mid d hact (fun h => absurd h hα) hω]
-    unfold delta2_7
-    ring
-
-/-- Descending bottom node. -/
-theorem tau_bot_desc (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (ht2 : 2 ≤ t) (ht : t < tf7 d) (i : ℕ)
-    (hact : t ≤ tf7 d ∧ alpha7 d t ≤ i ∧ i ≤ omega7 d t ∧ i % 2 = t % 2)
-    (hα : i ≠ alpha7 d t) (hω : i = omega7 d t) (hs : omega7 d t < omega7 d (t + 1)) :
-    (flowUp7 d hd i t : ℚ) =
-        (4095 : Rat) * capacity d i t / capacityRatio ∧
-      (flowDown7 d hd i t : ℚ) + delta2_7 (capacity d i t) = (64 : ℚ) ^ (d - i - 1) := by
-  constructor
-  · rw [(cast_flowUp7 d hd i t ht2 ht).1,
-      flowUp_mid d hact hα (fun _ => hs)]
-  · obtain ⟨g, h, hgh, hdg, hh, -, -, hdown⟩ := val_bot_desc d hd t ht2 ht i hact hα hω hs
-    have hc := capacity_eq_pow d i t (7 + h) (by omega)
-    have hb := omega7_bounds d t ht2
-    have hle : 64 ^ (h + 2) ≤ 64 ^ g := Nat.pow_le_pow_right (by norm_num) (by omega)
-    rw [hdown, hc, delta2_7_eq, Nat.cast_sub hle, show d - i - 1 = g by omega]
-    push_cast
-    rw [pow_add, pow_add]
-    ring
-
-theorem slackCoeff7_nonneg : 0 ≤ slackCoeff := by
-  unfold slackCoeff; norm_num
-
-/-- Rising top node slack inequality. -/
-theorem slack_top_rise (c : ℚ) (hc : 0 ≤ c) :
-    ((64 : ℚ) - 1) * (delta2_7 c + invMu * siblingFactor * c) -
-        ((1 / 64 : Rat) * c / ((4096 : Rat) * 64)) / 2 ≤
-      ((64 : ℚ) - 1) * (invMu * siblingFactor * c) +
-        slackCoeff * c := by
-  rw [delta2_7_eq]
-  unfold slackCoeff
-  norm_num
-  linarith
-
-/-- Interior node slack equality. -/
-theorem slack_mid (c : ℚ) :
-    ((64 : ℚ) - 1) * (delta2_7 c + invMu * siblingFactor * c) -
-        ((4095 : Rat) * c / capacityRatio) / 2 =
-      ((64 : ℚ) - 1) * (invMu * siblingFactor * c) +
-        slackCoeff * c := by
-  unfold delta2_7 slackCoeff capacityRatio
-  ring
+/-- **Classification of sending nodes** (`1 ≤ t < t_f`): `NodeShape` (the single case split on node
+types) gives `NodeFacts`, the fringe dichotomy and the source of the Lemma 4.1 bound. -/
+theorem node_facts (d : ℕ) (hd : 7 ≤ d) (t l : ℕ) (ht1 : 1 ≤ t) (ht : t < tf7 d)
+    (hdown : 0 < (flowSizes7 d hd).down l t) :
+    ∃ Δ : ℚ, NodeFacts (capacity d l t) ((flowSizes7 d hd).a l t : ℕ)
+        ((flowSizes7 d hd).up l t : ℕ) ((flowSizes7 d hd).down l t : ℕ) Δ ∧
+      ((flowSizes7 d hd).up l t = 0 ∧ (l = 0 ∨ capacity d l t ≤ 2 ^ 30) ∨
+        4095 * capacity d l t / 2 ^ 36 ≤ ((flowSizes7 d hd).up l t : ℕ)) ∧
+      (Inner d t l ∧ capacity d l t / 64 ≤ ((flowSizes7 d hd).down l t : ℕ) + Δ ∨
+        (64 : ℚ) ^ (d - l - 1) ≤ ((flowSizes7 d hd).down l t : ℕ) + Δ) :=
+  (node_shape d hd t l ht1 ht).facts hdown
 
 end Chvatal
