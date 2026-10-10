@@ -1,0 +1,6 @@
+import AKS.Chvatal.Bulk2Exists
+#print axioms Chvatal.bulk2_fail_fraction_le
+#print axioms Chvatal.HasPackSemanticPropertyB2.of_combinatorial
+#print axioms Chvatal.ExistsScrambleSeparator_twoSided_B2
+#print axioms Chvatal.ExistsScrambleSeparator_twoSided_two
+#check @Chvatal.ExistsScrambleSeparator_twoSided_two

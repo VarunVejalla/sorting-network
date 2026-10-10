@@ -13,7 +13,7 @@ public import Mathlib.Analysis.SpecialFunctions.Log.Basic
 namespace Chvatal
 
 /-- Monotonicity of `2(1+log x)/x` on `x ≥ 1`. -/
-private theorem chernoff_mono {M m : ℝ} (hM : 1 ≤ M) (hmM : M ≤ m) :
+theorem chernoff_mono {M m : ℝ} (hM : 1 ≤ M) (hmM : M ≤ m) :
     2 * (1 + Real.log m) / m ≤ 2 * (1 + Real.log M) / M := by
   have hM0 : 0 < M := by linarith
   have hm0 : 0 < m := by linarith
