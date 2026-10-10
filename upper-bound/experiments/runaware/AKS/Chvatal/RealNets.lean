@@ -3,6 +3,7 @@ module
 public import AKS.Chvatal.KernelSetup
 public import AKS.Chvatal.FlipSpec
 public import AKS.Chvatal.NodeGeom
+public import AKS.Chvatal.NodeGeomDvd
 public import AKS.Chvatal.GeneralParams
 
 @[expose] public section
@@ -166,11 +167,12 @@ inductive NodeChoice (t a up down : ℕ) : Type
       (ha : a = m * n) (hup : up = 2 * f * n) (hdown : down = b * n)
       (hmfb : m = 2 * f + 64 * b)
       (hgeom : (1 ≤ t ∧ 2 ^ 58 < m ∧ m ≤ 2 ^ 59) ∨ (t = 0 ∧ m = 2 ^ 79 ∧ f = 0 ∧ b = 2 ^ 73))
+      (hdvd : 2 ^ 29 ∣ f ∧ 2 ^ 29 ∣ b)
 
 /-- The network described by a choice. -/
 def NodeChoice.net {t a up down : ℕ} : NodeChoice t a up down → ComparatorNetwork a
   | .small _ => bitonicNetwork a
-  | .pack m n _ _ hn σ ha _ _ _ _ => castNet ha.symm (physicalPackNet m n hn σ)
+  | .pack m n _ _ hn σ ha _ _ _ _ _ => castNet ha.symm (physicalPackNet m n hn σ)
 
 /-- Geometry of a packed node at stage `t ≥ 1`. -/
 theorem NodeChoice.pack_geom {t m f b : ℕ}
@@ -184,12 +186,13 @@ theorem NodeChoice.pack_geom {t m f b : ℕ}
 theorem NodeChoice.pack_of_big {t a up down : ℕ} (c : NodeChoice t a up down) (h : 2 ^ 63 < a) :
     ∃ (m n f b : ℕ) (hn : 0 < n) (σ : Scramble m n) (ha : a = m * n) (hup : up = 2 * f * n)
       (hdown : down = b * n) (hmfb : m = 2 * f + 64 * b)
-      (hgeom : (1 ≤ t ∧ 2 ^ 58 < m ∧ m ≤ 2 ^ 59) ∨ (t = 0 ∧ m = 2 ^ 79 ∧ f = 0 ∧ b = 2 ^ 73)),
-      c = .pack m n f b hn σ ha hup hdown hmfb hgeom := by
+      (hgeom : (1 ≤ t ∧ 2 ^ 58 < m ∧ m ≤ 2 ^ 59) ∨ (t = 0 ∧ m = 2 ^ 79 ∧ f = 0 ∧ b = 2 ^ 73))
+      (hdvd : 2 ^ 29 ∣ f ∧ 2 ^ 29 ∣ b),
+      c = .pack m n f b hn σ ha hup hdown hmfb hgeom hdvd := by
   cases c with
   | small h' => omega
-  | pack m n f b hn σ ha hup hdown hmfb hgeom =>
-    exact ⟨m, n, f, b, hn, σ, ha, hup, hdown, hmfb, hgeom, rfl⟩
+  | pack m n f b hn σ ha hup hdown hmfb hgeom hdvd =>
+    exact ⟨m, n, f, b, hn, σ, ha, hup, hdown, hmfb, hgeom, hdvd, rfl⟩
 
 theorem nodeGood_small (t a up down : ℕ) (h : a ≤ 2 ^ 63) :
     ∃ c : NodeChoice t a up down, NodeGood t a up down c.net := by
@@ -199,9 +202,9 @@ theorem nodeGood_small (t a up down : ℕ) (h : a ≤ 2 ^ 63) :
   show (bitonicNetwork a).depth ≤ _
   unfold depthBound; split_ifs <;> omega
 
-theorem nodeGood_geom (t a up down : ℕ) (ht : 1 ≤ t) (G : NodeGeom a up down) :
+theorem nodeGood_geom (t a up down : ℕ) (ht : 1 ≤ t) (G : NodeGeomD a up down) :
     ∃ c : NodeChoice t a up down, NodeGood t a up down c.net := by
-  obtain ⟨m, n, f, b, hm, ha, hup, hdown, hm1, hm2, hn, hf⟩ := G
+  obtain ⟨⟨m, n, f, b, hm, ha, hup, hdown, hm1, hm2, hn, hf⟩, hdf, hdb⟩ := G
   have ha' := ha
   have hup' := hup
   have hdown' := hdown
@@ -222,7 +225,7 @@ theorem nodeGood_geom (t a up down : ℕ) (ht : 1 ≤ t) (G : NodeGeom a up down
   rcases hf with rfl | ⟨hfbig, hfev⟩
   · obtain ⟨σ, hB1, hB2⟩ := ExistsScrambleSeparator_twoSided_B h100 hn
       (epsB_general h58)
-    refine ⟨.pack m n 0 b hn0 σ ha' hup' hdown' hm hg, ?_, hD σ⟩
+    refine ⟨.pack m n 0 b hn0 σ ha' hup' hdown' hm hg ⟨hdf, hdb⟩, ?_, hD σ⟩
     exact packNodeSpec hn0 σ hm hfm hEB hB1 hB2 (fun h => absurd h (lt_irrefl 0))
   · have hf10 : 10 ≤ f := le_trans (by norm_num) hfbig
     let g : ScrambleGeometry := ScrambleGeometry.ofShape m n b f 64 h100 hn hf10 hfev
@@ -230,7 +233,7 @@ theorem nodeGood_geom (t a up down : ℕ) (ht : 1 ≤ t) (G : NodeGeom a up down
     obtain ⟨σ, ⟨hB1, hF1⟩, ⟨hB2, hF2⟩⟩ :=
       ExistsScrambleSeparator_twoSided (g := g)
         (P := theorem51Params_general g hfbig h58) hfbig le_rfl le_rfl
-    refine ⟨.pack m n f b hn0 σ ha' hup' hdown' hm hg, ?_, hD σ⟩
+    refine ⟨.pack m n f b hn0 σ ha' hup' hdown' hm hg ⟨hdf, hdb⟩, ?_, hD σ⟩
     exact packNodeSpec hn0 σ hm hfm hEB hB1 hB2 (fun _ => ⟨hF1, hF2⟩)
 
 theorem nodeGood_root (d : ℕ) (hd : 14 ≤ d) (a up down : ℕ) (ha : a = 64 ^ d) (hup : up = 0)
@@ -257,7 +260,7 @@ theorem nodeGood_root (d : ℕ) (hd : 14 ≤ d) (a up down : ℕ) (ha : a = 64 ^
   obtain ⟨σ, hB1, hB2⟩ := ExistsScrambleSeparator_twoSided_B (m := 2 ^ 79) (n := nn) h100 hn16
     (epsB_root_general (m := 2 ^ 79) le_rfl)
   refine ⟨.pack (2 ^ 79) nn 0 (2 ^ 73) hn0 σ hmn' hup'' hdn' (by norm_num)
-    (Or.inr ⟨rfl, rfl, rfl, rfl⟩), ?_, ?_⟩
+    (Or.inr ⟨rfl, rfl, rfl, rfl⟩) ⟨dvd_zero _, pow_dvd_pow 2 (by norm_num)⟩, ?_, ?_⟩
   · refine packNodeSpec (f := 0) (b := 2 ^ 73) hn0 σ (by norm_num) (Nat.zero_le _) ?_ hB1 hB2
       (fun h => absurd h (lt_irrefl 0))
     unfold specEB
@@ -284,7 +287,7 @@ theorem nodeGood_exists (d : ℕ) (hd : 7 ≤ d) (hd14 : 14 ≤ d) (t l : ℕ) (
     exact nodeGood_root d hd14 _ _ _ (by simp [flowSizes7, flowA7])
       (by simp [flowSizes7, flowUp7]) (by simp [flowSizes7, flowDown7])
   · have hbig : 2 ^ 63 < flowA7 d hd l t := not_le.mp hs
-    obtain ⟨G⟩ := nodeGeom_exists d hd l t hdown hbig ht
+    obtain ⟨G⟩ := nodeGeomD_exists d hd l t hdown hbig ht (by omega)
     exact nodeGood_geom t _ _ _ (by omega) G
 
 open scoped Classical in
@@ -340,12 +343,13 @@ theorem nodeChoice_pack (d : ℕ) (hd : 7 ≤ d) (hd14 : 14 ≤ d) (t l : ℕ) (
     ∃ (m n f b : ℕ) (hn : 0 < n) (σ : Scramble m n)
       (ha : (flowSizes7 d hd).a l t = m * n) (hup : (flowSizes7 d hd).up l t = 2 * f * n)
       (hdn : (flowSizes7 d hd).down l t = b * n) (hmfb : m = 2 * f + 64 * b)
-      (hgeom : (1 ≤ t ∧ 2 ^ 58 < m ∧ m ≤ 2 ^ 59) ∨ (t = 0 ∧ m = 2 ^ 79 ∧ f = 0 ∧ b = 2 ^ 73)),
-      nodeChoice d hd hd14 t l ht hdown = .pack m n f b hn σ ha hup hdn hmfb hgeom ∧
+      (hgeom : (1 ≤ t ∧ 2 ^ 58 < m ∧ m ≤ 2 ^ 59) ∨ (t = 0 ∧ m = 2 ^ 79 ∧ f = 0 ∧ b = 2 ^ 73))
+      (hdvd : 2 ^ 29 ∣ f ∧ 2 ^ 29 ∣ b),
+      nodeChoice d hd hd14 t l ht hdown = .pack m n f b hn σ ha hup hdn hmfb hgeom hdvd ∧
         2 ^ 58 < m ∧ m ≤ 2 ^ 59 := by
-  obtain ⟨m, n, f, b, hn, σ, ha, hup, hdn, hmfb, hg, h⟩ :=
+  obtain ⟨m, n, f, b, hn, σ, ha, hup, hdn, hmfb, hg, hdvd, h⟩ :=
     (nodeChoice d hd hd14 t l ht hdown).pack_of_big hbig
-  exact ⟨m, n, f, b, hn, σ, ha, hup, hdn, hmfb, hg, h, NodeChoice.pack_geom hg ht1⟩
+  exact ⟨m, n, f, b, hn, σ, ha, hup, hdn, hmfb, hg, hdvd, h, NodeChoice.pack_geom hg ht1⟩
 
 open scoped Classical in
 /-- Real tree node networks (empty where down = 0). -/
