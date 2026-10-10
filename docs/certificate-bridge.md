@@ -2,11 +2,17 @@
 
 Detailed architecture, conventions, and proof tactics for the certificate bridge subsystem.
 
+**Current package location:** `upper-bound/experiments/expanders`. Run all
+certificate Lake targets and helpers from that directory; the root Lakefile is
+now cache-only and no longer defines the certificate executables. See the
+package [README](../upper-bound/experiments/expanders/README.md).
+
 ## Overview
 
 Base expander graphs are certified via davidad's triangular-inverse method + `native_decide`. Data is base-85 or base-128 encoded as `String` literals (compact `Expr` nodes visible to kernel). Pipeline: `Random/Cert.lean` (checker) → `Random/Bridge/WalkBound.lean` (abstract theory) → `Random/Bridge/Bridge.lean` (bridge) → `Random/Concrete/{Random16,Random1728,Random20736,Random65536}.lean` (per-size graphs). Data files in `data/{n}/` (`.b85`/`.b128`/`.b128x5` text, `.gitignore`d) — Rust writes encoded data directly so Lean just reads the text as-is.
 
-See [`docs/bridge-proof-plan.md`](bridge-proof-plan.md) for the original design document.
+The original design notes referenced `docs/bridge-proof-plan.md`, which is not
+present in this checkout.
 
 ## Architecture
 
@@ -32,7 +38,7 @@ Concrete base expander certified via davidad's triangular-inverse method:
 3. **`Specific.lean`** — concrete spectral gap conditions: β=17/32, c=7/8, 6-step squaring chain for c^64 ≤ 1/1000
 
 ### `Random/Bench/` — Benchmarks, Tests, and Profiles
-Not part of the proof. Contains optimization variants (`CertFast`, `CertV2`, `CertV7`, `CertParallel`) and profiling tools. Run via `scripts/bench` or `lake exe cert-{bench,test,profile}`.
+Not part of the proof. Contains optimization variants (`CertFast`, `CertV2`, `CertV7`, `CertParallel`) and profiling tools. From the expander package directory, run `scripts/bench` or `lake exe cert-{bench,test,profile}`.
 
 ## Bridge Decomposition
 
@@ -59,7 +65,7 @@ Three lemmas (all proved, 0 sorry):
 
 ## Certificate Data and GCS
 
-Certificate data lives in `data/{n}/` (gitignored). `scripts/download-certificates` fetches prebuilt certs from `gs://aks-cert/`. The `ensureCertificateData` Lean function (called via `#eval`) tries the download script first, then falls back to generating with `rust/certificate.rs`.
+Certificate data lives in `data/{n}/` under the expander package (gitignored). From that package directory, `scripts/download-certificates` fetches prebuilt certs from `gs://aks-cert/`. The `ensureCertificateData` Lean function (called via `#eval`) tries the download script first, then falls back to generating with `rust/certificate.rs`.
 
 ### Formats
 
@@ -67,7 +73,7 @@ Certificate data lives in `data/{n}/` (gitignored). `scripts/download-certificat
 - **b128** — base-128 encoded i32 (4 bytes per entry, off-diagonal only). ~20% more compact than b85. Used for medium sizes (n=20736). Requires `checkCertificateB128` / `certificate_bridge_b128`.
 - **b128x5** — base-128 encoded i40 (5 bytes per entry, off-diagonal only). Range ±17 billion vs ±134 million for b128. Used for n=65536 with c₁=650 (large c₁ produces entries exceeding i32 range). Requires `checkCertificateB128x5` / `certificate_bridge_b128x5`.
 - **rot_map.b85** — rotation map, standard b85 format (10 bytes per half-edge: 5-byte vertex + 5-byte port). Small (~2.4 MB for n=20736, ~10 MB for n=65536).
-- **rot_map.b85c** / **Random/Concrete/Rot{n}{a,b,c}.lean** — compact rotation map (4 bytes per half-edge: 3 b85 vertex digits + 1 b85 port digit). 60% smaller than b85. Inlined as string literals in Lean source files, expanded to standard b85 by `compactToB85` at native-code evaluation time. Split into three files to stay under Lean's ~1 MB string literal limit. Regenerate with `scripts/gen-rot-lean`.
+- **rot_map.b85c** / **Random/Concrete/Rot{n}{a,b,c}.lean** — compact rotation map (4 bytes per half-edge: 3 b85 vertex digits + 1 b85 port digit). 60% smaller than b85. Inlined as string literals in Lean source files, expanded to standard b85 by `compactToB85` at native-code evaluation time. Split into three files to stay under Lean's ~1 MB string literal limit. Regenerate with `scripts/gen-rot-lean` from the expander package directory.
 
 ### GCS naming convention
 

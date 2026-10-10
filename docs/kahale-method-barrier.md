@@ -166,13 +166,13 @@ histogram construction; it does not establish that low-height wires land in
 the boundary region required by approximate selection.
 
 The rounding argument is a mathematical derivation here, not yet a Lean theorem.
-[`scripts/kahale_height_barrier.py`](../scripts/kahale_height_barrier.py) implements
+[`scripts/kahale_height_barrier.py`](../lower-bound/experiments/scripts/kahale_height_barrier.py) implements
 the recurrence and checks the rounding bounds and all prefix counts using exact
 integer arithmetic for any requested finite depth.
 
 ## 5. What has been formalized
 
-[`AKS/Kahale/MethodBarrier.lean`](../AKS/Kahale/MethodBarrier.lean) proves:
+[`AKS/Kahale/MethodBarrier.lean`](../lower-bound/experiments/AKS/Kahale/MethodBarrier.lean) proves:
 
 - exact local saturation for equal heights;
 - the individual binomial/Fibonacci bound;

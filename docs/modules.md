@@ -2,6 +2,11 @@
 
 This documents how the AKS project uses Lean 4's `module` system (introduced in v4.27.0) to control `.olean` serialization and reduce build artifact sizes.
 
+The certificate modules referenced here now live in the isolated optional
+package `upper-bound/experiments/expanders/Random`; run its Lake targets from
+`upper-bound/experiments/expanders`. The root Lakefile now provides only the
+shared dependency/cache context.
+
 ## Why modules?
 
 Without `module`, Lean serializes all `def` bodies into `.olean` files. For `Random65536.lean`, this produced an **8.1 GB** `.olean` because the certificate data (~4 GB of base-85/base-128 encoded strings) was embedded as string literals via `ascii_file%`. Downstream files that imported `Random65536` had to read this 8 GB file at import time, causing OOM crashes on machines without swap.

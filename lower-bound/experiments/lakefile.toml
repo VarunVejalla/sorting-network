@@ -1,0 +1,72 @@
+name = "sorting-depth-lower-experiments"
+version = "0.1.0"
+defaultTargets = ["AKSExperiments"]
+
+[[require]]
+name = "sorting_depth_lower_best"
+path = "../best"
+
+[[lean_lib]]
+name = "AKSExperiments"
+globs = [
+  "AKS.Kahale",
+  "AKS.Kahale.ActiveWidth",
+  "AKS.Kahale.AmortizedAccounting",
+  "AKS.Kahale.Axioms",
+  "AKS.Kahale.BoundaryTransfer",
+  "AKS.Kahale.BoundaryTransferAxioms",
+  "AKS.Kahale.CertificateCompatibility",
+  "AKS.Kahale.ComparatorBoundary",
+  "AKS.Kahale.ComparatorBoundaryAxioms",
+  "AKS.Kahale.ComparatorInformation",
+  "AKS.Kahale.ComparatorInformationAxioms",
+  "AKS.Kahale.ComparatorTransfer",
+  "AKS.Kahale.ComparatorTransferAxioms",
+  "AKS.Kahale.ComparisonTrace",
+  "AKS.Kahale.ComparisonTraceAxioms",
+  "AKS.Kahale.CongestionBarrier",
+  "AKS.Kahale.CongestionBarrierAxioms",
+  "AKS.Kahale.CoupledFaces",
+  "AKS.Kahale.CoupledFacesAxioms",
+  "AKS.Kahale.CrossingHistory",
+  "AKS.Kahale.CrossingHistoryAxioms",
+  "AKS.Kahale.EntropyMonotonicity",
+  "AKS.Kahale.EntropyMonotonicityAxioms",
+  "AKS.Kahale.FaceSortingCriterion",
+  "AKS.Kahale.FaceSortingCriterionAxioms",
+  "AKS.Kahale.FaceTransport",
+  "AKS.Kahale.FaceTransportAxioms",
+  "AKS.Kahale.FiniteEntropy",
+  "AKS.Kahale.FiniteFibers",
+  "AKS.Kahale.HierarchyRefinement",
+  "AKS.Kahale.HierarchyRefinementAxioms",
+  "AKS.Kahale.HistoryInnovation",
+  "AKS.Kahale.HistoryInnovationAxioms",
+  "AKS.Kahale.InsertionFibers",
+  "AKS.Kahale.JointPotential",
+  "AKS.Kahale.LayerAccountingAxioms",
+  "AKS.Kahale.LayerBank",
+  "AKS.Kahale.LocalizedCharging",
+  "AKS.Kahale.LocalizedChargingAxioms",
+  "AKS.Kahale.MethodBarrier",
+  "AKS.Kahale.OccupationCounterexample",
+  "AKS.Kahale.OccupationCounterexampleAxioms",
+  "AKS.Kahale.OccupationLayer",
+  "AKS.Kahale.OccupationLayerAxioms",
+  "AKS.Kahale.PairUnionRecurrence",
+  "AKS.Kahale.PermutationCompletion",
+  "AKS.Kahale.PermutationCompletionAxioms",
+  "AKS.Kahale.PositionalBarrier",
+  "AKS.Kahale.RankCongestion",
+  "AKS.Kahale.RankCrossing",
+  "AKS.Kahale.RankFiberMerge",
+  "AKS.Kahale.RankFiberMergeAxioms",
+  "AKS.Kahale.RankInformation",
+  "AKS.Kahale.RankInformationAxioms",
+  "AKS.Kahale.RankSetTransition",
+  "AKS.Kahale.RankSetTransitionAxioms",
+  "AKS.Kahale.RelativeOrderBank",
+  "AKS.Kahale.RelativeOrderCode",
+  "AKS.Kahale.RelativeOrderCodeAxioms",
+  "AKS.Kahale.UnionCoupling"
+]

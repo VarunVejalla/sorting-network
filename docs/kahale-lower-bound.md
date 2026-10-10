@@ -22,10 +22,10 @@ arguments locally. No published theorem is introduced as an axiom.
 
 ## Endpoints
 
-The entry point is [`AKS/Kahale.lean`](../AKS/Kahale.lean). The finite bounds
-are in [`Bounds/Kahale.lean`](../AKS/Bounds/Kahale.lean), and the limiting
+The entry point is [`AKS/Kahale.lean`](../lower-bound/experiments/AKS/Kahale.lean). The finite bounds
+are in [`Bounds/Kahale.lean`](../lower-bound/best/AKS/Bounds/Kahale.lean), and the limiting
 statements are in
-[`Bounds/KahaleAsymptotic.lean`](../AKS/Bounds/KahaleAsymptotic.lean).
+[`Bounds/KahaleAsymptotic.lean`](../lower-bound/best/AKS/Bounds/KahaleAsymptotic.lean).
 
 For every `n`, with `d = D(n)`, the finite result is
 

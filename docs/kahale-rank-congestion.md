@@ -59,7 +59,7 @@ they are not additional Lean definitions or equivalence theorems.
 
 ## Formal proof
 
-[RankCongestion.lean](../AKS/Kahale/RankCongestion.lean) contains:
+[RankCongestion.lean](../lower-bound/experiments/AKS/Kahale/RankCongestion.lean) contains:
 
 - `rank_cover_hall`: distinct prefix rank values cannot fit into a smaller
   union of allowed output ranks;

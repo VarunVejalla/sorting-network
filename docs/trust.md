@@ -2,6 +2,11 @@
 
 This documents every mechanism in the AKS project that extends trust beyond the Lean kernel. The Lean kernel is the ultimate arbiter of proof correctness; anything outside it is part of the "trusted codebase" whose bugs could compromise soundness.
 
+The optional certificate modules described below now live in
+`upper-bound/experiments/expanders/Random`. Build or run them from that package
+directory; the root Lakefile is cache-only. The module paths in this document
+are Lean module names, relative to that package.
+
 ## Axiom inventory
 
 The top-level theorem `Random65536.gap` (and transitively `seiferas_sorting_networks_exist_pow2`) depends on exactly these axioms:

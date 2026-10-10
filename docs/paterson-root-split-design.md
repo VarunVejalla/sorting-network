@@ -4,7 +4,7 @@ Status: **formalized**. The actual rebuild and child invariant are checked in
 `RootRebuildInvariant` and `ChildInvariant`; the terminating forest and final
 rank correction establish full sorting in `PatersonForestSorts`. The final
 bound is `limsup D(n)/log_2 n <= 6990.5`, with endpoints in
-[PatersonTight](../AKS/Bounds/PatersonTight.lean). The argument below records
+[PatersonTight](../upper-bound/alternatives/legacy/AKS/Bounds/PatersonTight.lean). The argument below records
 the design that guided these proofs.
 
 ## Rebuild the upper allocation after sorting

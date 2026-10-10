@@ -8,6 +8,11 @@ rust/*/target/
 tmp/
 LLM-helpers/
 __pycache__/
+**/.lake/
+**/data/
+**/*.stackdump
+archive/local/
+**/rust/**/target/
 
 # Sandbox artifacts
 .bash_profile

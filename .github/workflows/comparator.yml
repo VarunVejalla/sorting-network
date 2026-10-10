@@ -49,4 +49,5 @@ jobs:
             || (echo "nanoda binary not found:"; ls target/release/; exit 1)
 
       - name: Run comparator
+        working-directory: upper-bound/alternatives/legacy
         run: lake env comparator challenge.json

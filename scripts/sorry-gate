@@ -4,11 +4,12 @@
 Rules (defined in DENY_ALL / DENY_MARKER / ALLOW_MARKER below):
   AKS/              — deny sorry, #exit, native_decide, axiom (noncomputable allowed per-subdir)
   AKS/Seiferas.lean — additionally deny noncomputable
-  Random/           — deny sorry, #exit, axiom (native_decide allowed)
+  optional expander `Random/` — deny sorry, #exit, axiom (native_decide allowed)
 
 Usage:
   scripts/sorry-gate              # check all protected files
   scripts/sorry-gate file1 file2  # check only specified files
+  scripts/sorry-gate --stdin0    # repository-relative paths, NUL-separated
 
 Exits 0 if clean, 1 if violations found.
 """
@@ -68,7 +69,15 @@ ALLOW_MARKER: dict[str, frozenset[str]] = {
                                # Refined Paterson stages reuse the same
                                # existentially selected separator networks.
                                "AKS/Paterson/BagSeparator.lean",
-                               "AKS/Paterson/Stage.lean"}),
+                               "AKS/Paterson/Stage.lean",
+                               # Existing promoted best construction and analytic
+                               # lower experiments retain classical definitions.
+                               "AKS/Bounds/Minimum.lean", "AKS/Chvatal/",
+                               "AKS/Kahale/FiniteEntropy.lean",
+                               "AKS/Kahale/HistoryInnovation.lean",
+                               "AKS/Kahale/RelativeOrderBank.lean",
+                               "AKS/Kahale/BoundaryTransfer.lean",
+                               "AKS/Kahale/ComparatorInformation.lean"}),
 }
 
 # ---------------------------------------------------------------------------
@@ -119,6 +128,15 @@ def is_allowed(relpath: str, marker: str) -> bool:
 
 def is_denied(relpath: str, marker: str) -> bool:
     """Return True if *marker* is forbidden in *relpath*."""
+    # Packages retain AKS/Random module paths below their workstream roots.
+    # Archived historical/scratch sources are not active proof targets.
+    if relpath.startswith("archive/"):
+        return False
+    for component in ("AKS/", "Random/"):
+        if "/" + component in relpath:
+            relpath = relpath.split("/" + component, 1)[1]
+            relpath = component + relpath
+            break
     for entry in DENY_ALL:
         if entry.endswith("/"):
             if relpath.startswith(entry):
@@ -140,15 +158,23 @@ def is_denied(relpath: str, marker: str) -> bool:
 def main() -> None:
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    if len(sys.argv) > 1:
+    if sys.argv[1:] == ["--stdin0"]:
+        relpaths = [p for p in sys.stdin.buffer.read().decode("utf-8").split("\0") if p]
+    elif len(sys.argv) > 1:
         # Check specific files (pre-commit hook mode).
         relpaths = [os.path.relpath(os.path.join(os.getcwd(), f), root)
                      if not os.path.isabs(f) else os.path.relpath(f, root)
                      for f in sys.argv[1:]]
     else:
         # Check all protected files.
-        files = sorted(f for pat in ["AKS/**/*.lean", "Random/**/*.lean"]
-                       for f in glob.glob(f"{root}/{pat}", recursive=True))
+        files = []
+        for stream in ("upper-bound", "lower-bound", "research"):
+            for directory, dirs, names in os.walk(os.path.join(root, stream)):
+                dirs[:] = [d for d in dirs if not d.startswith(".") and d != "data"]
+                rel = os.path.relpath(directory, root).replace(os.sep, "/") + "/"
+                if "/AKS/" in rel or "/Random/" in rel:
+                    files.extend(os.path.join(directory, n) for n in names if n.endswith(".lean"))
+        files.sort()
         relpaths = [os.path.relpath(f, root) for f in files]
 
     # Normalize to forward slashes for consistent matching.

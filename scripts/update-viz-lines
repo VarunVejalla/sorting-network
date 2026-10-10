@@ -17,6 +17,23 @@ import sys
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INDEX_HTML = os.path.join(PROJECT_ROOT, "docs", "index.html")
 
+
+def resolve_source(filepath: str) -> str | None:
+    """Resolve historical module paths against the current package layout."""
+    candidates = [os.path.join(PROJECT_ROOT, filepath)]
+    if filepath == "AKS.lean" or filepath.startswith("AKS/"):
+        candidates.extend(os.path.join(PROJECT_ROOT, package, filepath) for package in (
+            "upper-bound/best",
+            "lower-bound/best",
+            "upper-bound/alternatives/legacy",
+            "upper-bound/experiments/expanders",
+        ))
+    elif filepath.startswith("Random/"):
+        candidates.append(os.path.join(
+            PROJECT_ROOT, "upper-bound", "experiments", "expanders", filepath
+        ))
+    return next((path for path in candidates if os.path.isfile(path)), None)
+
 # Patterns that introduce a named declaration in Lean
 DECL_KEYWORDS = [
     "theorem", "lemma", "def", "noncomputable def", "private def",
@@ -28,8 +45,8 @@ DECL_KEYWORDS = [
 
 def find_line(filepath: str, name: str) -> int | None:
     """Find the line number where `name` is declared in `filepath`."""
-    full = os.path.join(PROJECT_ROOT, filepath)
-    if not os.path.exists(full):
+    full = resolve_source(filepath)
+    if full is None:
         return None
 
     # Strip module prefix: "RegularGraph.square" -> "square" for matching,

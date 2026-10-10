@@ -2,9 +2,8 @@
 # Pre-commit hook: block commits with forbidden markers in protected files.
 # Enable: git config core.hooksPath .githooks
 
-staged=$(git diff --cached --name-only --diff-filter=ACM -- '*.lean')
-if [ -z "$staged" ]; then
-    exit 0
-fi
-
-exec "$(git rev-parse --show-toplevel)/scripts/sorry-gate" $staged
+set -o pipefail
+# NUL-separated input handles spaces and large reorganizations without
+# exceeding Windows command-line limits.
+git diff --cached --name-only --diff-filter=ACMR -z -- '*.lean' |
+    "$(git rev-parse --show-toplevel)/scripts/sorry-gate" --stdin0

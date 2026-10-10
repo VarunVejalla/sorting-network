@@ -112,7 +112,7 @@ in this document. They are not new Lean entropy theorems.
 
 ## What the exact finite computation rules out
 
-[kahale_rank_entropy.py](../scripts/kahale_rank_entropy.py) enumerates actual
+[kahale_rank_entropy.py](../lower-bound/experiments/scripts/kahale_rank_entropy.py) enumerates actual
 reachable Boolean network states on three through five wires, and propagates
 the exact counts of all input rank permutations. Boolean wire functions
 determine rank behavior because execution commutes with every rank-threshold
@@ -168,8 +168,8 @@ which exceeds the raw `n/4=1` budget. This rules out that pointwise criterion,
 not an amortized bound with a bank or a finite-size correction.
 
 Both sets of exact certificate and rank-fiber facts are kernel evaluated in
-[RankInformation.lean](../AKS/Kahale/RankInformation.lean). The focused build
-and [separate axiom audit](../AKS/Kahale/RankInformationAxioms.lean) passed,
+[RankInformation.lean](../lower-bound/experiments/AKS/Kahale/RankInformation.lean). The focused build
+and [separate axiom audit](../lower-bound/experiments/AKS/Kahale/RankInformationAxioms.lean) passed,
 with dependencies only `propext`, `Classical.choice`, and `Quot.sound`.
 The real-valued entropy consequences are the calculations here, not additional
 formalized entropy inequalities.

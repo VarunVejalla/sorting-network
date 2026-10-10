@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Report the largest .lean files in AKS/ by non-comment lines.
+"""Report the largest .lean files in an AKS source tree by non-comment lines.
 
 Always shows at least 10 files and all files over 600 non-comment lines.
 Uses a color ramp from green (small) through yellow/red (large).
@@ -12,6 +12,7 @@ penalized.
 import os
 import re
 import sys
+import argparse
 
 # ── Configuration ──────────────────────────────────────────────
 MIN_DISPLAY = 10       # always show at least this many
@@ -76,12 +77,21 @@ BOLD  = "\033[1m" if sys.stdout.isatty() else ""
 DIM   = "\033[2m" if sys.stdout.isatty() else ""
 
 def main():
-    root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-    aks_dir = os.path.join(root, "AKS")
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "path", nargs="?", default="upper-bound/best/AKS",
+        help="AKS source directory (default: upper-bound/best/AKS)",
+    )
+    args = parser.parse_args()
+    aks_dir = os.path.abspath(os.path.join(root, args.path))
+    if not os.path.isdir(aks_dir):
+        parser.error(f"source directory not found: {args.path}")
 
     # Collect all .lean files with line counts
     entries = []
-    for dirpath, _, filenames in os.walk(aks_dir):
+    for dirpath, dirnames, filenames in os.walk(aks_dir):
+        dirnames[:] = [d for d in dirnames if d not in {".lake", "data", "archive"}]
         for fn in filenames:
             if fn.endswith(".lean"):
                 path = os.path.join(dirpath, fn)
@@ -97,14 +107,14 @@ def main():
     shown = entries[:n_show]
 
     if not shown:
-        print("No .lean files found in AKS/")
+        print(f"No .lean files found under {args.path}")
         return
 
     max_lines = shown[0][0]
     bar_width = 40
 
     # Header
-    print(f"\n{BOLD}  Largest AKS/*.lean files (non-comment lines){RESET}")
+    print(f"\n{BOLD}  Largest Lean files under {args.path} (non-comment lines){RESET}")
     print(f"  {DIM}{'─' * 60}{RESET}\n")
 
     for code, total, path in shown:

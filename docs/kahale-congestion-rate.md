@@ -67,10 +67,10 @@ automatic: for any target set `B` and source coalition `A` with
 The empty coalition is trivial; for every nonempty coalition the union is the
 whole output universe. This generic statement and zero Hall deficit are
 formalized in
-[CongestionBarrier.lean](../AKS/Kahale/CongestionBarrier.lean).
+[CongestionBarrier.lean](../lower-bound/experiments/AKS/Kahale/CongestionBarrier.lean).
 
 The focused build of that module and
-[its separate axiom audit](../AKS/Kahale/CongestionBarrierAxioms.lean) passed.
+[its separate axiom audit](../lower-bound/experiments/AKS/Kahale/CongestionBarrierAxioms.lean) passed.
 Both new theorems depend only on `propext`, `Classical.choice`, and `Quot.sound`.
 
 Such reachability is inexpensive. On `n=2^m` wires indexed by binary strings,
@@ -129,7 +129,7 @@ No such quantitative bound has been proved in this work.
 
 ## Symbolic search at longer suffix depths
 
-[kahale_congestion_search.py](../scripts/kahale_congestion_search.py) encodes
+[kahale_congestion_search.py](../lower-bound/experiments/scripts/kahale_congestion_search.py) encodes
 the actual 161-wire prefix with exactly 88 input zeros. It requires:
 
 - a valid individual destination for every prefix zero and one;

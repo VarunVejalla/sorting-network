@@ -18,6 +18,23 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
+def resolve_source(file_path: str) -> str | None:
+    """Resolve module paths from the old root layout to current packages."""
+    candidates = [os.path.join(ROOT, file_path)]
+    if file_path == "AKS.lean" or file_path.startswith("AKS/"):
+        candidates.extend(os.path.join(ROOT, package, file_path) for package in (
+            "upper-bound/best",
+            "lower-bound/best",
+            "upper-bound/alternatives/legacy",
+            "upper-bound/experiments/expanders",
+        ))
+    elif file_path.startswith("Random/"):
+        candidates.append(os.path.join(
+            ROOT, "upper-bound", "experiments", "expanders", file_path
+        ))
+    return next((path for path in candidates if os.path.isfile(path)), None)
+
+
 def extract_nodes(html_path: str) -> list[dict]:
     """Parse PROOF_DATA nodes from index.html."""
     with open(html_path) as f:
@@ -58,8 +75,8 @@ def load_lean_deps(deps_path: str) -> dict[str, list[str]]:
 
 def extract_body(file_path: str, start_line: int) -> str:
     """Extract proof/def body starting at start_line, stripping comments."""
-    full_path = os.path.join(ROOT, file_path)
-    if not os.path.exists(full_path):
+    full_path = resolve_source(file_path)
+    if full_path is None:
         return ""
 
     with open(full_path) as f:

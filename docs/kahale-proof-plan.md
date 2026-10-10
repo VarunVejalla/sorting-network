@@ -154,7 +154,7 @@ The endpoint-controlled bank alone supplies no such charge.
 
 ### 1. Reconstruct inputs from decisions — completed
 
-[ComparisonTrace.lean](../AKS/Kahale/ComparisonTrace.lean) now defines the
+[ComparisonTrace.lean](../lower-bound/experiments/AKS/Kahale/ComparisonTrace.lean) now defines the
 comparator swap trace and its reverse reconstruction. It proves:
 
 - a strict ordered comparator output has exactly the two candidate predecessor
@@ -179,7 +179,7 @@ injectivity of ranks. The two predecessor families are disjoint. Then prove
 the entropy-sum identity from finite counts, using `0 log 0 = 0`.
 
 Useful dependencies already exist: rank-fiber definitions in
-[RankInformation](../AKS/Kahale/RankInformation.lean), input reconstruction,
+[RankInformation](../lower-bound/experiments/AKS/Kahale/RankInformation.lean), input reconstruction,
 rank injectivity, and Mathlib's binary-entropy upper bound and derivative.
 For the quadratic imbalance bound, use the elementary second-derivative proof
 above rather than introducing external trust.

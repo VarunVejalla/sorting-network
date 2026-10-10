@@ -90,7 +90,7 @@ It identifies the structure a new quantitative argument must exploit.
 
 ## Verification and scope
 
-[`AKS/Kahale/CertificateCompatibility.lean`](../AKS/Kahale/CertificateCompatibility.lean)
+[`AKS/Kahale/CertificateCompatibility.lean`](../lower-bound/experiments/AKS/Kahale/CertificateCompatibility.lean)
 proves the extremal-input certificate criterion, the four comparator family
 updates, hitting-set duality, the cross-output intersection characterization,
 the two cardinality lower bounds, and their equivalence to sorting.

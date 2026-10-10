@@ -71,14 +71,14 @@ it does not improve the published result.
 coupling and width theorems. Their dependencies are only `propext`,
 `Classical.choice`, and `Quot.sound`. The focused source gate passes as well.
 
-[`AKS/Kahale/RankCrossing.lean`](../AKS/Kahale/RankCrossing.lean):
+[`AKS/Kahale/RankCrossing.lean`](../lower-bound/experiments/AKS/Kahale/RankCrossing.lean):
 
 ```lean
 Kahale.boolean_inversion_rank_witness
 Kahale.inverted_ranks_have_adjacent_witness
 ```
 
-[`AKS/Kahale/UnionCoupling.lean`](../AKS/Kahale/UnionCoupling.lean):
+[`AKS/Kahale/UnionCoupling.lean`](../lower-bound/experiments/AKS/Kahale/UnionCoupling.lean):
 
 ```lean
 Kahale.rank_threshold_certificate_pair
@@ -103,7 +103,7 @@ say `r,r+1`. The suffix fanout/rank-interval bound places each rank less than
 `2^s` away from its wire index. Hence the endpoint separation is at most
 `(2^s-1)+1+(2^s-1)`. This is formalized as
 `Kahale.active_comparator_width_le` in
-[`AKS/Kahale/ActiveWidth.lean`](../AKS/Kahale/ActiveWidth.lean).
+[`AKS/Kahale/ActiveWidth.lean`](../lower-bound/experiments/AKS/Kahale/ActiveWidth.lean).
 It gives widths `1,3,7,...` for suffix lengths `0,1,2,...`.
 
 This is a structural restriction consistent with the known last-layer and

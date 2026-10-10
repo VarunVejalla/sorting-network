@@ -125,7 +125,7 @@ network conservation.
 inequality and the exact small-network examples. No new axioms or external
 decision procedures are used.
 
-[`AKS/Kahale/JointPotential.lean`](../AKS/Kahale/JointPotential.lean) contains:
+[`AKS/Kahale/JointPotential.lean`](../lower-bound/experiments/AKS/Kahale/JointPotential.lean) contains:
 
 - the universal integer product inequality and its conditional pair bound;
 - a computable exact minimum support-size statistic (equivalent to minimum
@@ -137,7 +137,7 @@ decision procedures are used.
 The product depth corollary and the general real-exponent monomial exclusion
 are mathematical derivations here, not additional Lean limit theorems.
 
-[`scripts/kahale_joint_potential.py`](../scripts/kahale_joint_potential.py)
+[`scripts/kahale_joint_potential.py`](../lower-bound/experiments/scripts/kahale_joint_potential.py)
 exhausts the reachable Boolean wire-function states on four wires: 261 states
 and 45 input-statistic signatures. Its catalogue is stored in
 [`kahale-joint-potential-catalogue.json`](kahale-joint-potential-catalogue.json).

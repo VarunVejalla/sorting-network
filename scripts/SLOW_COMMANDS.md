@@ -12,8 +12,8 @@ Track commands that exceeded expected time. Each entry should include:
 | `rg` through Mathlib | ~0.2s | 86MB, 7516 .lean files |
 | `mcp__lean__check` warm | 0.2-2s | Persistent lake serve LSP |
 | `mcp__lean__check` cold first file | 2-5s | lake serve loading imports |
-| `lake build` (cached) | ~1.6s | No changes |
-| `lake build` (one file changed) | ~20s | Re-elaborates from scratch |
+| Root `lake build` | Cache/package context only | Root Lakefile defines no Lean libraries; build from a proof package instead |
+| Package `lake build` (cached) | Varies by package | Run in `upper-bound/best`, `lower-bound/best`, or another package directory |
 
 ## Log
 

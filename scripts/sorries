@@ -5,7 +5,6 @@ Prints each hit with one line of context (usually the theorem/def name) and a
 summary count.  Informational only — always exits 0.
 """
 
-import glob
 import os
 import re
 import sys
@@ -20,8 +19,13 @@ PATTERN = re.compile(
     r"(?<![`\w])(?P<marker>sorry|#exit|native_decide|axiom)\b"
 )
 
-# Prefix where native_decide is expected and should not be flagged.
-NATIVE_DECIDE_ALLOWED_PREFIX = "Random/"
+EXCLUDED_DIRS = {".lake", "data", "archive"}
+ACTIVE_WORKSTREAMS = ("upper-bound", "lower-bound", "research")
+
+
+def is_random_source(relpath: str) -> bool:
+    """Whether a source path is inside a Random module tree at any depth."""
+    return "Random" in relpath.replace("\\", "/").split("/")
 
 
 def block_comment_depth_at(lines: list[str], lineno: int, col: int) -> int:
@@ -79,9 +83,22 @@ def main() -> None:
 
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    # Collect all .lean files under AKS/ plus the top-level AKS.lean
-    lean_files = sorted(f for pat in ["AKS/**/*.lean", "Random/**/*.lean", "AKS.lean"]
-                        for f in glob.glob(f"{root}/{pat}", recursive=True))
+    # Scan the active workstreams, including package-local AKS.lean umbrellas.
+    # Prune generated data/build trees and the preserved archive.
+    lean_files = []
+    for workstream in ACTIVE_WORKSTREAMS:
+        base = os.path.join(root, workstream)
+        if not os.path.isdir(base):
+            continue
+        for dirpath, dirnames, filenames in os.walk(base):
+            dirnames[:] = [d for d in dirnames if d not in EXCLUDED_DIRS]
+            rel_dir = os.path.relpath(dirpath, root).replace(os.sep, "/")
+            parts = rel_dir.split("/")
+            in_module_tree = "AKS" in parts or "Random" in parts
+            for filename in filenames:
+                if filename.endswith(".lean") and (in_module_tree or filename == "AKS.lean"):
+                    lean_files.append(os.path.join(dirpath, filename))
+    lean_files.sort()
 
     counts = {m: 0 for m in MARKERS}
     any_hit = False
@@ -97,7 +114,7 @@ def main() -> None:
                 marker = m.group("marker")
                 if is_in_comment(lines, i, line, marker, m.start()):
                     continue
-                if marker == "native_decide" and relpath.startswith(NATIVE_DECIDE_ALLOWED_PREFIX):
+                if marker == "native_decide" and is_random_source(relpath):
                     continue
                 file_hits.append((i, marker))
                 counts[marker] += 1

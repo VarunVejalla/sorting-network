@@ -102,7 +102,7 @@ the argument above supplies the general mathematical construction.
 
 ## Formalization status
 
-[`AKS/Kahale/PositionalBarrier.lean`](../AKS/Kahale/PositionalBarrier.lean)
+[`AKS/Kahale/PositionalBarrier.lean`](../lower-bound/experiments/AKS/Kahale/PositionalBarrier.lean)
 kernel-checks two ingredients:
 
 - `splitBlockProfile_monotone`: incrementing the upper segment of every

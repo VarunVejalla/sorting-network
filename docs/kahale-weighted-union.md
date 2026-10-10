@@ -4,7 +4,7 @@
 
 We have a universal closed **upper** update bound using only per-wire and
 pairwise certificate costs. Its certificate-cover witnesses are formalized in
-[PairUnionRecurrence.lean](../AKS/Kahale/PairUnionRecurrence.lean).
+[PairUnionRecurrence.lean](../lower-bound/experiments/AKS/Kahale/PairUnionRecurrence.lean).
 The complete numerical recurrence and weighted-potential consequences below
 are mathematical derivations, not additional Lean theorems.
 

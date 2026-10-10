@@ -1,0 +1,30 @@
+name: bounds
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - package: upper-bound/best
+            guard: AKS.Bounds.Chvatal1830Axioms
+          - package: lower-bound/best
+            guard: AKS.Bounds.KahaleAxioms
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install elan
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Get shared Mathlib cache
+        run: lake exe cache get
+      - name: Build package and guards
+        working-directory: ${{ matrix.package }}
+        run: |
+          lake build
+          lake build ${{ matrix.guard }}

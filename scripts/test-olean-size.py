@@ -2,6 +2,9 @@
 """Test whether private defs, opaque defs, module keyword, etc. keep data out of .oleans."""
 
 import subprocess, tempfile, os, sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
 
 # Generate a ~1MB string literal
 BIG = "A" * (1024 * 1024)
@@ -42,7 +45,7 @@ end
 
 def compile_and_measure(name, code):
     """Compile a .lean file and return the .olean size."""
-    with tempfile.TemporaryDirectory(dir="/home/ubuntu/aks") as tmpdir:
+    with tempfile.TemporaryDirectory(dir=ROOT) as tmpdir:
         lean_file = os.path.join(tmpdir, "Test.lean")
         olean_file = os.path.join(tmpdir, "Test.olean")
         ilean_file = os.path.join(tmpdir, "Test.ilean")
@@ -55,7 +58,7 @@ def compile_and_measure(name, code):
              "-o", olean_file,
              "-i", ilean_file],
             capture_output=True, text=True,
-            cwd="/home/ubuntu/aks",
+            cwd=ROOT,
             timeout=120
         )
 
