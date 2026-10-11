@@ -2,7 +2,7 @@
 
 Ideas that are **not** being implemented now, kept so another agent (or a later session) can
 pick them up. Each entry says what it would buy, what is known, and what was already ruled out.
-Active work lives in `../experiments/`; the current best proof is `../best` (limsup ≤ 1770).
+Active work lives in `../experiments/`; the current best proof is `../best` (limsup ≤ 1419).
 
 | document | target | status |
 |---|---|---|
@@ -11,4 +11,4 @@ Active work lives in `../experiments/`; the current best proof is `../best` (lim
 
 Numbers in these notes come from the relaxed parameter model
 (`../../scripts/chvatal_param_search.py` and the scripts in `../experiments/chvatal/scripts`),
-calibrated so its baseline reproduces the proved 1770. They are guides, not theorems.
+calibrated so its baseline reproduced the earlier proved 1770 (current best: 1419). They are guides, not theorems.
