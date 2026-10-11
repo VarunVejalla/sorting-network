@@ -1,0 +1,18 @@
+(6,12,6) general vs Lean alpha7/omega7: 0 mismatches; tf != 3d-20 for 0 d
+(6,10,6) d=14..300: meet/apart failures: []
+  d = 0 mod 6: 3*tf - 8d in [-45] ; d - lam in [5]  (d=18..300)
+  d = 1 mod 6: 3*tf - 8d in [-41] ; d - lam in [4]  (d=19..295)
+  d = 2 mod 6: 3*tf - 8d in [-40] ; d - lam in [4]  (d=14..296)
+  d = 3 mod 6: 3*tf - 8d in [-39] ; d - lam in [4]  (d=15..297)
+  d = 4 mod 6: 3*tf - 8d in [-38] ; d - lam in [4]  (d=16..298)
+  d = 5 mod 6: 3*tf - 8d in [-46] ; d - lam in [5]  (d=17..299)
+  per residue: tf, lam, final block, c(lam,tf), mu*delta*c(lam,tf) < 1, totalDepth
+   d=36 (r=0): tf=81 lam=31 finalBlock=2^36 (depth T=666) c(lam,tf)=1073741824 mu*delta*c=2.911e-09 totalDepth=234026 = (3784/3)*6d - 38422
+   d=37 (r=1): tf=85 lam=33 finalBlock=2^30 (depth T=465) c(lam,tf)=4294967296 mu*delta*c=1.164e-08 totalDepth=245177 = (3784/3)*6d - 34839
+   d=32 (r=2): tf=72 lam=28 finalBlock=2^30 (depth T=465) c(lam,tf)=1073741824 mu*delta*c=2.911e-09 totalDepth=208283 = (3784/3)*6d - 33893
+   d=33 (r=3): tf=75 lam=29 finalBlock=2^30 (depth T=465) c(lam,tf)=268435456 mu*delta*c=7.277e-10 totalDepth=216797 = (3784/3)*6d - 32947
+   d=34 (r=4): tf=78 lam=30 finalBlock=2^30 (depth T=465) c(lam,tf)=67108864 mu*delta*c=1.819e-10 totalDepth=225311 = (3784/3)*6d - 32001
+   d=35 (r=5): tf=78 lam=30 finalBlock=2^36 (depth T=666) c(lam,tf)=4294967296 mu*delta*c=1.164e-08 totalDepth=225512 = (3784/3)*6d - 39368
+  totalDepth(d) <= (3784/3) * 6d - 32001 for all d >= 14 (period 6 in d; checked to 300)
+  with lg n > 6(d-1):  D(n) <= (3784/3) lg n - 24433 = 1261.3333 lg n - 24433.00
+  integer-coefficient form: D(n) <= 1262 lg n - c0 needs care (1262 > 3784/3); e.g. D(n) <= 1261.34 lg n - 24433

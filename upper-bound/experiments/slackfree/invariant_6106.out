@@ -1,0 +1,48 @@
+# (6,10,6)  p=2.381857e-07 pT=2.384186e-07 gam=2.9104e-11
+#   gs = 2729/343597383680 = 7.942435e-09   rT = gs+gam = 7.971539e-09
+#   (J-mid) slack = 0.000e+00 >= 0 : True;  (J-top) slack = 7.826e-09 >= 0 : True
+# symbolic: 39 (signature[,exponent]) classes over d=14..300; failures: 0
+   ('botDesc', 'below', 'below', 'botDesc', -20)                          n=  7342 first d= 14 R-G  a/c in [9.457319e-07, 0.000000954] Gchild<=1.490e-08 OK
+   ('botDesc', 'below', 'below', 'topRise', -10)                          n=   287 first d= 14 R-G  a/c in [9.765546e-04, 0.000976562] Gchild<=1.526e-05 OK
+   ('botDesc', 'botDesc', 'botRise', 'mid', -2)                           n=  7103 first d= 14 R-G  a/c in [2.500000e-01, 0.250000000] Gchild<=3.906e-03 OK
+   ('botDesc', 'botDesc', 'botRise', 'mid', -4)                           n=  7151 first d= 14 R-G  a/c in [6.249999e-02, 0.062500000] Gchild<=9.766e-04 OK
+   ('botDesc', 'botDesc', 'botRise', 'mid', -6)                           n=  7199 first d= 14 R-G  a/c in [1.562499e-02, 0.015625000] Gchild<=2.441e-04 OK
+   ('botDesc', 'botDesc', 'botRise', 'mid', -8)                           n=  7295 first d= 14 R-G  a/c in [3.906242e-03, 0.003906250] Gchild<=6.104e-05 OK
+   ('botDesc', 'botDesc', 'botRise', 'mid', 0)                            n=  7008 first d= 14 R-G  a/c in [1.000000e+00, 1.000000000] Gchild<=1.562e-02 OK
+   ('botDesc', 'botDesc', 'botRise', 'topRise', -4)                       n=    48 first d= 16 R-G  a/c in [6.249999e-02, 0.062500000] Gchild<=9.766e-04 OK
+   ('botDesc', 'botDesc', 'botRise', 'topRise', -6)                       n=    48 first d= 15 R-G  a/c in [1.562499e-02, 0.015625000] Gchild<=2.441e-04 OK
+   ('botDesc', 'botDesc', 'botRise', 'topRise', 0)                        n=    47 first d= 19 R-G  a/c in [1.000000e+00, 1.000000000] Gchild<=1.562e-02 OK
+   ('botDesc', 'botRise', 'below', 'botDesc', -10)                        n=  7055 first d= 14 R-G  a/c in [9.765546e-04, 0.000976562] Gchild<=1.526e-05 OK
+   ('botDesc', 'botRise', 'below', 'botDesc', -12)                        n=  7103 first d= 14 R-G  a/c in [2.441327e-04, 0.000244141] Gchild<=3.815e-06 OK
+   ('botDesc', 'botRise', 'below', 'botDesc', -14)                        n=  7199 first d= 14 R-G  a/c in [6.102721e-05, 0.000061035] Gchild<=9.537e-07 OK
+   ('botDesc', 'botRise', 'below', 'botDesc', -16)                        n=  7247 first d= 14 R-G  a/c in [1.525085e-05, 0.000015259] Gchild<=2.384e-07 OK
+   ('botDesc', 'botRise', 'below', 'botDesc', -18)                        n=  7295 first d= 14 R-G  a/c in [3.806755e-06, 0.000003815] Gchild<=5.960e-08 OK
+   ('botRise', 'below', 'below', 'botDesc', -22)                          n=  7103 first d= 14 R-G  a/c in [2.304761e-07, 0.000000238] Gchild<=3.725e-09 OK
+   ('botRise', 'below', 'below', 'botDesc', -24)                          n=  7199 first d= 14 R-G  a/c in [5.166221e-08, 0.000000060] Gchild<=9.313e-10 OK
+   ('botRise', 'below', 'below', 'botDesc', -26)                          n=  7247 first d= 14 R-G  a/c in [6.958726e-09, 0.000000015] Gchild<=2.328e-10 OK
+   ('botRise', 'below', 'below', 'botDesc', -28)                          n=  7295 first d= 14 R-G  a/c in [-4.217145e-09, 0.000000004] Gchild<=5.821e-11 OK
+   ('botRise', 'below', 'below', 'botDesc', -30)                          n=  7342 first d= 14 R-G  a/c in [-7.011113e-09, 0.000000001] Gchild<=1.455e-11 OK
+   ('mid', 'botDesc', 'botDesc', 'mid')                                   n= 42237 first d= 14 C1   a/c in [9.999990e-01, 1.000153768] Gchild<=1.613e-02 OK
+   ('mid', 'botDesc', 'botDesc', 'topRise')                               n=   479 first d= 14 C1   a/c in [9.999990e-01, 1.000153768] Gchild<=1.613e-02 OK
+   ('mid', 'mid', 'botDesc', 'mid')                                       n= 34847 first d= 14 C1   a/c in [9.999990e-01, 1.000153768] Gchild<=1.613e-02 OK
+   ('mid', 'mid', 'botDesc', 'topRise')                                   n=   430 first d= 14 C1   a/c in [9.999990e-01, 1.000153768] Gchild<=1.613e-02 OK
+   ('mid', 'mid', 'mid', 'mid')                                           n=1990608 first d= 14 C1   a/c in [9.999990e-01, 1.000153768] Gchild<=1.613e-02 OK
+   ('mid', 'mid', 'mid', 'topRise')                                       n= 34847 first d= 14 C1   a/c in [9.999990e-01, 1.000153768] Gchild<=1.613e-02 OK
+   ('topDesc', 'botDesc', 'botDesc', 'topDesc')                           n=   334 first d= 14 C1   a/c in [9.999990e-01, 1.000153768] Gchild<=1.613e-02 OK
+   ('topDesc', 'mid', 'botDesc', 'topDesc')                               n=   335 first d= 14 C1   a/c in [9.999990e-01, 1.000153768] Gchild<=1.613e-02 OK
+   ('topDesc', 'mid', 'mid', 'topDesc')                                   n= 28270 first d= 14 C1   a/c in [9.999990e-01, 1.000153768] Gchild<=1.613e-02 OK
+   ('topDesc', 'root', 'topRise', 'above')                                n=   287 first d= 14 C1   a/c in [1.000000e+00, 1.000122070] Gchild<=1.563e-02 OK
+   ('topDesc', 'topDesc', 'topRise', 'above')                             n= 35899 first d= 14 C1   a/c in [1.000000e+00, 1.000122070] Gchild<=1.563e-02 OK
+   ('topDesc', 'topRise', 'botDesc', 'topDesc')                           n=   143 first d= 15 C1   a/c in [1.000000e+00, 1.000122190] Gchild<=1.613e-02 OK
+   ('topDesc', 'topRise', 'mid', 'topDesc')                               n= 14446 first d= 14 C1   a/c in [1.000000e+00, 1.000122190] Gchild<=1.613e-02 OK
+   ('topRise', 'botDesc', 'botDesc', 'topDesc')                           n=   191 first d= 14 C1   a/c in [9.999990e-01, 1.000153768] Gchild<=1.613e-02 OK
+   ('topRise', 'mid', 'botDesc', 'topDesc')                               n=   144 first d= 15 C1   a/c in [9.999990e-01, 1.000153768] Gchild<=1.613e-02 OK
+   ('topRise', 'mid', 'mid', 'topDesc')                                   n= 13967 first d= 14 C1   a/c in [9.999990e-01, 1.000153768] Gchild<=1.613e-02 OK
+   ('topRise', 'pre', 'below', 'root')                                    n=   287 first d= 14 R-G  a/c in [1.000000e+00, 1.000000000] Gchild<=1.562e-02 OK
+   ('topRise', 'topRise', 'botDesc', 'topDesc')                           n=   287 first d= 14 C1   a/c in [1.000000e+00, 1.000122190] Gchild<=1.613e-02 OK
+   ('topRise', 'topRise', 'mid', 'topDesc')                               n= 21310 first d= 14 C1   a/c in [1.000000e+00, 1.000122190] Gchild<=1.613e-02 OK
+#   max first-d of any class: 19
+#   eta (max formula a/c) = 1.000153768
+#   cond (4.2) with rT, eta (formula bounds), eps_B=1/59e6: margin = 2.1336  (rT = 2.1435 mu)
+# data check d=14..60: 159679 sender records; violations: {}
+#   data max h/c=7.939889e-09 (gs 7.942435e-09), resid/c=7.942617e-09 (rT 7.971539e-09), a/c=1.000032425
