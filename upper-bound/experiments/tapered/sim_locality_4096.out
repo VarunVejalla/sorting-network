@@ -1,0 +1,13 @@
+m=4096 n=512 k=16 band=256 rows; Lemma 6.1 eps_B(m)=0.0675, 1/sqrt(m)=0.0156
+rounds=1 random : misplaced 1.12e-02 (per boundary 7.49e-04) dist>=2 0.0e+00 (0 keys) max|disp|=20 q99.9=13
+rounds=1 adv R= 256 H= 769 targets=   0 marks=      0: misplaced 1.12e-02 dist>=2 0.00e+00 (0 keys) max|disp|=18
+rounds=1 adv R=2048 H=2561 targets=   0 marks=      0: misplaced 1.12e-02 dist>=2 0.00e+00 (0 keys) max|disp|=20
+   fringe f=128 dF=0.031 j=2048: escapes random 0, adversarial 0 (targets 0, j_used 0)
+   fringe f=128 dF=0.500 j=32768: escapes random 0, adversarial 129 (targets 1, j_used 27509)
+   fringe f=128 dF=0.900 j=58982: escapes random 0, adversarial 258 (targets 2, j_used 48212)
+rounds=2 random : misplaced 4.09e-03 (per boundary 2.73e-04) dist>=2 0.0e+00 (0 keys) max|disp|=7 q99.9=5
+rounds=2 adv R= 256 H= 769 targets=   0 marks=      0: misplaced 4.07e-03 dist>=2 0.00e+00 (0 keys) max|disp|=7
+rounds=2 adv R=2048 H=2561 targets=   1 marks=1046291: misplaced 7.35e-03 dist>=2 0.00e+00 (0 keys) max|disp|=14
+   fringe f=128 dF=0.031 j=2048: escapes random 0, adversarial 0 (targets 0, j_used 0)
+   fringe f=128 dF=0.500 j=32768: escapes random 0, adversarial 0 (targets 1, j_used 27683)
+   fringe f=128 dF=0.900 j=58982: escapes random 0, adversarial 0 (targets 2, j_used 46712)

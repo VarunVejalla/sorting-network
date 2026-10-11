@@ -1,0 +1,25 @@
+m=1024 n=1024 k=8 band=128 rows; Lemma 6.1 eps_B(m)=0.1245, 1/sqrt(m)=0.0312
+rounds=1 random : misplaced 1.51e-02 (per boundary 2.16e-03) dist>=2 0.0e+00 (0 keys) max|disp|=13 q99.9=9
+rounds=1 adv R= 128 H= 385 targets=   2 marks= 116993: misplaced 3.46e-02 dist>=2 2.61e-04 (274 keys) max|disp|=270
+rounds=1 adv R= 512 H= 769 targets=   3 marks= 482513: misplaced 4.68e-02 dist>=2 4.00e-04 (419 keys) max|disp|=297
+   fringe f=32 dF=0.031 j=1024: escapes random 0, adversarial 0 (targets 0, j_used 0)
+   fringe f=32 dF=0.500 j=16384: escapes random 0, adversarial 297 (targets 9, j_used 16224)
+   fringe f=32 dF=0.900 j=29491: escapes random 10, adversarial 789 (targets 19, j_used 28371)
+rounds=1 random : misplaced 1.52e-02 (per boundary 2.17e-03) dist>=2 0.0e+00 (0 keys) max|disp|=14 q99.9=9
+rounds=1 adv R= 128 H= 385 targets=   2 marks= 118146: misplaced 3.51e-02 dist>=2 2.59e-04 (272 keys) max|disp|=269
+rounds=1 adv R= 512 H= 769 targets=   3 marks= 477235: misplaced 4.70e-02 dist>=2 4.01e-04 (421 keys) max|disp|=302
+   fringe f=32 dF=0.031 j=1024: escapes random 0, adversarial 0 (targets 0, j_used 0)
+   fringe f=32 dF=0.500 j=16384: escapes random 0, adversarial 297 (targets 9, j_used 16201)
+   fringe f=32 dF=0.900 j=29491: escapes random 15, adversarial 741 (targets 19, j_used 27978)
+rounds=2 random : misplaced 6.26e-03 (per boundary 8.94e-04) dist>=2 0.0e+00 (0 keys) max|disp|=6 q99.9=4
+rounds=2 adv R= 128 H= 385 targets=   2 marks= 116473: misplaced 9.97e-03 dist>=2 0.00e+00 (0 keys) max|disp|=11
+rounds=2 adv R= 512 H= 769 targets=   3 marks= 481251: misplaced 1.19e-02 dist>=2 0.00e+00 (0 keys) max|disp|=12
+   fringe f=32 dF=0.031 j=1024: escapes random 0, adversarial 0 (targets 0, j_used 0)
+   fringe f=32 dF=0.500 j=16384: escapes random 0, adversarial 0 (targets 9, j_used 15972)
+   fringe f=32 dF=0.900 j=29491: escapes random 0, adversarial 0 (targets 19, j_used 28479)
+rounds=2 random : misplaced 6.45e-03 (per boundary 9.22e-04) dist>=2 0.0e+00 (0 keys) max|disp|=6 q99.9=4
+rounds=2 adv R= 128 H= 385 targets=   2 marks= 115307: misplaced 1.01e-02 dist>=2 0.00e+00 (0 keys) max|disp|=12
+rounds=2 adv R= 512 H= 769 targets=   3 marks= 486083: misplaced 1.18e-02 dist>=2 0.00e+00 (0 keys) max|disp|=13
+   fringe f=32 dF=0.031 j=1024: escapes random 0, adversarial 0 (targets 0, j_used 0)
+   fringe f=32 dF=0.500 j=16384: escapes random 0, adversarial 0 (targets 8, j_used 15277)
+   fringe f=32 dF=0.900 j=29491: escapes random 0, adversarial 8 (targets 19, j_used 28576)

@@ -1,0 +1,44 @@
+calibration: two-round threshold for d = 1/59e6: lg m = 41.659999999999286 (BULK2: 41.658); one-round for 1/59e6: 57.999999999998934
+check (6,12,6) eps=1/59e6: lg m=41.86 (F needs 41.86, B needs 41.66) ideal=1346 win=1419
+
+===== f_floor=92160 (proved 2-round F route); 2-round separator =====
+V0 Chvatal as is (2-round sep)       1334   1322   1486   1684   2006   2507   2949   4326  44922  | best 1322 at eps=2^-23 (x,y,z)=(5.8,9.9,4.5) lg m=37.8 [B 37.8, F 37.7] spb=0.602
+V0' slack removed                     935    881    878    894    936   1027   1354   2450  44922  | best 878 at eps=2^-20 (x,y,z)=(5.4,4.1,3.5) lg m=33.6 [B 33.6, F 30.5] spb=0.503
+V0'' sibling term removed            1292   1318   1486   1684   2006   2507   2949   4326  44922  | best 1292 at eps=2^-26 (x,y,z)=(6.0,12.1,6.3) lg m=41.9 [B 41.9, F 41.9] spb=0.479
+V1 per-side Property B (eps/2)       1310   1289   1419   1583   1821   2229   2733   3459   6219  | best 1289 at eps=2^-23 (x,y,z)=(6.0,10.1,4.7) lg m=38.3 [B 37.8, F 38.3] spb=0.571
+V2 V1 + dF = 1/2                     1275   1175   1124   1119   1122   1145   1205   1329   1552  | best 1119 at eps=2^-18 (x,y,z)=(3.0,6.5,4.3) lg m=31.3 [B 30.8, F 31.3] spb=0.736
+V3 V2 + drop (4.3)                    938    854    819    843    886    954   1060   1232   1552  | best 819 at eps=2^-20 (x,y,z)=(6.4,6.3,4.5) lg m=34.7 [B 33.6, F 34.7] spb=0.441
+V4 V3 + no slack                      814    733    669    663    685    723    787    895   1126  | best 663 at eps=2^-18 (x,y,z)=(5.6,4.3,4.1) lg m=31.5 [B 30.8, F 31.5] spb=0.431
+V5 V4 + no sibling                    709    666    650    661    681    723    787    895   1126  | best 650 at eps=2^-20 (x,y,z)=(6.6,4.9,4.7) lg m=33.7 [B 33.6, F 33.7] spb=0.371
+
+===== f_floor=92160 (proved 2-round F route); 1-round separator =====
+V0 Chvatal as is (2-round sep)       1713   1677   1722   1784   1928   2158   2603   3103  46702  | best 1677 at eps=2^-23 (x,y,z)=(5.8,10.5,4.7) lg m=52.5 [B 52.2, F 52.5] spb=0.598
+V0' slack removed                    1201   1114   1090   1095   1123   1201   1402   2047  46693  | best 1090 at eps=2^-20 (x,y,z)=(5.4,4.1,3.5) lg m=46.1 [B 46.1, F 46.0] spb=0.503
+V0'' sibling term removed            1660   1589   1606   1681   1800   2051   2501   3001  44388  | best 1589 at eps=2^-23 (x,y,z)=(6.0,11.5,5.1) lg m=52.2 [B 52.2, F 50.9] spb=0.572
+V1 per-side Property B (eps/2)       1676   1626   1643   1686   1768   1933   2190   2399   4146  | best 1626 at eps=2^-23 (x,y,z)=(6.0,10.5,4.7) lg m=52.2 [B 52.2, F 52.2] spb=0.585
+V2 V1 + dF = 1/2                     1631   1481   1345   1256   1166   1095   1009    996   1150  | best 996 at eps=2^-10 (x,y,z)=(2.0,3.7,1.9) lg m=25.3 [B 25.2, F 25.3] spb=1.500
+V3 V2 + drop (4.3)                   1190   1122   1061   1025    994    979    973    996   1150  | best 973 at eps=2^-12 (x,y,z)=(2.8,4.1,2.3) lg m=29.6 [B 29.4, F 29.6] spb=1.071
+V4 V3 + no slack                     1035    957    884    838    797    762    739    740    824  | best 739 at eps=2^-12 (x,y,z)=(3.0,2.7,2.3) lg m=29.4 [B 29.4, F 29.3] spb=0.826
+V5 V4 + no sibling                    911    844    780    739    705    677    650    646    774  | best 646 at eps=2^-10 (x,y,z)=(3.0,2.5,1.9) lg m=25.4 [B 25.2, F 25.4] spb=0.965
+
+===== f_floor=2^10 (hypothetical F proof at small fringe); 2-round separator =====
+V0 Chvatal as is (2-round sep)       1334   1286   1306   1376   1499   1728   2166   2743  34832  | best 1286 at eps=2^-23 (x,y,z)=(6.0,10.5,4.7) lg m=37.8 [B 37.8, F 37.6] spb=0.585
+V0' slack removed                     935    881    878    894    936   1025   1234   1871  34832  | best 878 at eps=2^-20 (x,y,z)=(5.4,4.1,3.5) lg m=33.6 [B 33.6, F 30.0] spb=0.503
+V0'' sibling term removed            1292   1257   1282   1359   1497   1728   2166   2743  34832  | best 1257 at eps=2^-23 (x,y,z)=(6.0,11.5,5.1) lg m=37.8 [B 37.8, F 34.9] spb=0.572
+V1 per-side Property B (eps/2)       1310   1240   1215   1237   1306   1453   1790   2169   3294  | best 1215 at eps=2^-20 (x,y,z)=(5.8,9.9,3.9) lg m=33.7 [B 33.6, F 33.7] spb=0.694
+V2 V1 + dF = 1/2                     1275   1150   1037    971    901    839    786    761    858  | best 761 at eps=2^-10 (x,y,z)=(2.2,4.1,2.3) lg m=19.7 [B 19.6, F 19.7] spb=1.245
+V3 V2 + drop (4.3)                    938    854    774    726    687    658    653    716    858  | best 653 at eps=2^-12 (x,y,z)=(3.8,4.7,2.7) lg m=22.4 [B 22.4, F 22.2] spb=0.828
+V4 V3 + no slack                      814    733    661    615    579    549    535    533    599  | best 533 at eps=2^-10 (x,y,z)=(3.4,2.9,2.1) lg m=19.6 [B 19.6, F 19.5] spb=0.882
+V5 V4 + no sibling                    709    661    615    588    565    546    535    533    599  | best 533 at eps=2^-10 (x,y,z)=(3.4,2.9,2.1) lg m=19.6 [B 19.6, F 19.5] spb=0.882
+
+===== f_floor=2^10 (hypothetical F proof at small fringe); 1-round separator =====
+V0 Chvatal as is (2-round sep)       1660   1589   1592   1660   1796   2025   2455   3001  30532  | best 1589 at eps=2^-23 (x,y,z)=(6.0,11.5,5.1) lg m=52.2 [B 52.2, F 49.2] spb=0.572
+V0' slack removed                    1201   1114   1090   1092   1123   1201   1402   2047  30526  | best 1090 at eps=2^-20 (x,y,z)=(5.4,4.1,3.5) lg m=46.1 [B 46.1, F 38.4] spb=0.503
+V0'' sibling term removed            1660   1588   1592   1660   1796   2025   2455   3001  28666  | best 1588 at eps=2^-23 (x,y,z)=(5.8,11.1,5.1) lg m=52.2 [B 52.2, F 46.9] spb=0.571
+V1 per-side Property B (eps/2)       1578   1491   1454   1490   1549   1684   1935   2373   3120  | best 1454 at eps=2^-20 (x,y,z)=(6.0,10.5,4.1) lg m=46.1 [B 46.1, F 45.2] spb=0.671
+V2 V1 + dF = 1/2                     1556   1416   1264   1169   1081    983    884    790    739  | best 739 at eps=2^-8 (x,y,z)=(2.0,4.1,1.9) lg m=21.0 [B 21.0, F 19.8] spb=1.605
+V3 V2 + drop (4.3)                   1030    957    888    843    800    770    734    719    719  | best 719 at eps=2^-8 (x,y,z)=(2.6,4.3,1.7) lg m=21.0 [B 21.0, F 20.8] spb=1.561
+V4 V3 + no slack                      921    846    775    729    688    643    608    583    575  | best 575 at eps=2^-8 (x,y,z)=(2.4,2.7,1.7) lg m=21.0 [B 21.0, F 20.9] spb=1.250
+V5 V4 + no sibling                    895    827    761    718    678    639    608    583    571  | best 571 at eps=2^-8 (x,y,z)=(2.8,3.1,1.7) lg m=21.0 [B 21.0, F 20.1] spb=1.239
+
+columns: eps_B = 2^-w for w in [26, 23, 20, 18, 16, 14, 12, 10, 8] ; entries: best continuous slope (ideal cost)

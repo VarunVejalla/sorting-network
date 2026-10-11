@@ -6,7 +6,7 @@ Active work lives in `../experiments/`; the current best proof is `../best` (lim
 
 | document | target | status |
 |---|---|---|
-| [few-hundred-tapered-invariant.md](few-hundred-tapered-invariant.md) | slope in the few-hundred range via an invariant that tolerates a much larger per-stage error | research, nothing proved |
+| [few-hundred-tapered-invariant.md](few-hundred-tapered-invariant.md) | slope in the few-hundred range via an invariant that tolerates a much larger per-stage error | explored in `../experiments/tapered/`: a larger ε alone does not help; the concrete lever is removing the schedule slack (≈1025 modeled) |
 | [ruled-out.md](ruled-out.md) | ideas examined and rejected, with the reason | reference |
 
 Numbers in these notes come from the relaxed parameter model

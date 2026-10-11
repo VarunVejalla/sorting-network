@@ -1,0 +1,322 @@
+# Tolerated error vs slope in Chvátal-type trees with sort-based separators
+
+Research note, 2026-10-10. Parameter model and a hand derivation, plus a small simulation. Nothing
+here is proved or certified, and no Lean was touched. Scripts are in this folder:
+`exchange_rate.py` (the model, all variants; output in `exchange_rate.out`), `exchange_table.py`
+(per-ε tables, `exchange_table.out`), `slack_sensitivity.out`, and `sim_locality.py`
+(`sim_locality*.out`). Read `SURVEY.md` first. Chvátal page numbers are the **printed** page numbers of
+DCS-TR-294 (printed page = PDF page − 1).
+
+## VERDICT
+
+1. **Larger tolerated ε alone does not get below ~700.** Chvátal's invariant P (p. 10) is already
+   tapered: there are fewer than μδ^r·c outsiders of order r. So "tapered vs strict" is not the lever.
+   * The ε_B tolerance follows ε_B ≲ μ·Aν (from (4.2), p. 12), where μ ≤ min(ν/(Ak²), ½δ_F·ν/(Ak))
+     ((4.3), (4.4), p. 13). This gives ε_B ≲ (ν/k)².
+   * Change only the separator interface (per-side Property B, adjacent-only contamination) and the
+     model's best is **~1250–1290** (two-round, ideal cost), against 1334 for the model of today's
+     package. That is a few percent.
+2. **Sort-based locality is real but helps only modestly.** In mass, misplacements go to adjacent
+   blocks; the distance-≥2 mass is O(1/m) ≈ O(ε²). Per key the claim is **false** under an adversary
+   for one round (see §4). Locality legitimately buys three things:
+   * per-cut instead of per-block ε_B accounting (factor 2);
+   * a sibling-contamination multiplier of ~2 instead of k−1;
+   * probably a larger fringe fraction δ_F (≈1/2 instead of 128/4095), which is plausible for two
+     rounds and unproved.
+
+   None of these touches the two terms that actually bind: the **schedule slack** (48 % of the (4.2)
+   budget) and the **top-node condition (4.3)**.
+3. **The single most valuable assumption is not about ε at all. It is removing the schedule slack.**
+   The slack is the systematic boundary drift caused by equal block sizes (Lemma 4.2, p. 11).
+   * Remove it with an inhomogeneous ("non-uniform blocks") flow table and keep everything else as is
+     (ε_B = 2^-26, two rounds, current F route). The model then gives **935 ideal / 1025 with the
+     power-of-two window at integer (k,A,ν) = (64, 2^7, 2^-6)**, against 1334/1419 today.
+   * The gain comes from letting A drop from 2^12 to 2^7. The slack forces Aν ≳ k/2.
+   * It is fragile: if only half the slack is removed the model gives 1246, and 90 % removed gives 1084
+     (`slack_sensitivity.out`).
+   * I think it is plausibly true (argument in §2.3), but it requires rewriting Lemmas 3.1, 4.1 and 4.2
+     and the flow table.
+4. **Slope < 700 is plausible only if four changes are all made.** These are: no slack, drop (4.3),
+   δ_F ≈ 1/2, and per-side/adjacent accounting. With all four (variant L4):
+   * **650 ideal / ~780 windowed** at ε_B ≈ 2^-20 with the current two-round fringe floor f ≥ 92160;
+   * **528 ideal / ~700 windowed** at ε_B ≈ 2^-12 only if Property F can also be proved at fringes
+     f ~ 2^10.
+
+   In that regime the exchange rate is flat: ε from 2^-26 to 2^-12 moves the slope by only ~25 %. The
+   (x,y,z) optimum in today's family is already ≈ (5.8, 9.9, 4.5) at slope ~1320 (ideal), so parameter
+   freedom is exhausted (confirms the coordinator's (5.6, 10, 4.5)).
+   * My judgement: getting **below 700 within this family is unlikely** without also attacking the
+     power-of-two/integrality window (~+100–150) and the fringe floor.
+   * **Below ~600 is implausible.**
+
+## 1. Where each smallness condition comes from (Chvátal §3–§4)
+
+Notation as in the paper:
+* capacity c(i,t) ∝ A^i ν^t (p. 7);
+* each node sends π(i,t) wires to its parent and β(i,t) wires to each child (p. 8);
+* in the middle range, π/c = (Aνk−1)/(A²k²) ≈ ν/(Ak) and β/c = (Ak−ν)/(Ak²) ≈ 1/k.
+
+Property B (p. 5): at most ε_B·a keys of I_j are placed outside B_j. Property F (p. 5): for
+j ≤ δ_F|F|, at most ε_F·j of the j extreme keys miss F.
+
+The invariant **P** (p. 10): every node on level i has fewer than μδ^r·c(i,t) outsiders of order r.
+This is Paterson's geometric taper with "distance" = order, i.e. the number of levels the key must climb.
+
+**Lemma 4.1 (p. 11), the sibling term.** Node u holds fewer than (1/k + Δ1/c)c keys addressed below a
+child w, where Δ1/c = μδkA²/(1−δ²k²A²). This counts keys of w's range hidden as order-≥1 outsiders deep
+in other subtrees. Subtree mass grows like (kA)^depth, so convergence needs δ < 1/(kA). It is structural
+and does not depend on the separator.
+
+**Lemma 4.2 (p. 11), the bulk count.** With a perfect sort, B_j would get fewer than
+μc + (k−1)Δ − π/2 foreign keys. Here Δ = Δ1 + Δ2 and Δ2 = νc/(Ak²) = c/k − β.
+
+The separator adds ε_B·a. The term (k−1)Δ2 − π/2 = (Aνk−2Aν+1)/(2A²k²)·c ≈ (ν/(2Ak))·c is the
+**schedule slack**. Its source:
+* the fringe takes π/2 of the smallest keys (child 1's) and π/2 of the largest (child k's);
+* every block nevertheless has the same size β < c/k;
+* so a perfect sort's block boundaries drift by up to ≈ π/2 against the children's key ranges.
+
+The slack is independent of the separator. ε_B·a is per block, so it covers two cuts.
+
+**(4.1) (p. 12): ε* ≤ μ/k.** This is the root separator only, so it is an additive constant.
+
+**(4.2) (p. 12), multiplied by Aν:**
+
+ε_B + slack + μ(1 + (k−1)·sib + δA²k) ≤ μAν.
+
+The left side counts four things:
+* the separator's misplacements;
+* the drift;
+* u's own outsiders shifting the boundaries, plus siblings;
+* order-1 outsiders arriving from v's k children (the δA²k term).
+
+The right side is the capacity growth from u to v, c(i+1,t+1) = Aν·c(i,t).
+
+At the Lean values the shares of the budget are: slack 48 %, ε_B 28 %, sibling 20 %, μ 2 %
+(SURVEY.md, reproduced in my check: budget 5.95e-8, slack 2.89e-8, ε_B 1.69e-8, sibling 1.19e-8).
+
+**(4.3) (p. 13): μ ≤ ν/(Ak²).** It is used once, in Lemma 4.4.
+* A node that contains any outsider must have c > Ak²/ν.
+* Lemma 3.2 (p. 10) shows the only node with π = 0 is the top node α(t) at a moment of descent, and
+  that node has c ≤ Ak²/ν.
+* So (4.3) says the descending top node has μc < 1 and therefore no outsiders at all, because it has no
+  exit upward.
+
+This is an **integrality and boundary artifact**. The top window [2k², Ak²/ν] (pp. 7–10) is set by
+even splitting and by the ±1 zig-zag of α. It is not a property of the bulk process.
+
+**(4.4) (p. 13): μ ≤ ½δ_F(Aνk−1)/(A²k²) ≈ δ_F·π/(2c).** All order-(r−1) outsiders of u must fit inside
+the δ_F-part of one fringe side, because only that part is covered by Property F. This is the genuine
+**exit bandwidth**: π/c ≈ ν/(Ak) is forced by capacity conservation, since the level above is filled by
+the k children's up-flows.
+
+**(4.5) (p. 13): ε_F/(Aν) + δ²Ak/ν ≤ δ.** The fringe failures feed order r+1. Together with δ ≲ ν/(k²A)
+(from the sibling term) this gives ε_F ≲ ν²/k² and hence the fringe-size requirement.
+
+**The chain.** It is not the backlog's "ε* ≤ μ/k, μ ≤ ν/(Ak²)". (4.1) concerns only the root. The
+binding chain is:
+* ε_B ≤ μ(Aν − 1) − slack − sibling;
+* μ ≤ min((4.3), (4.4));
+* the slack requires μ(Aν−1) > ν/(2Ak). With μ = ν/(Ak²) this forces **Aν ≳ k/2**, i.e. y ≥ x + z − 1.
+
+That last requirement is what makes stages per bit (x+y)/(xz) ≈ (2x+z)/(xz) instead of
+(x+z)/(xz). The result is ε_B ≲ (ν/k)² at Aν ≈ k (2^-24 at (6,12,6)).
+
+**Inherent vs artifact.**
+
+| Term | Inherent? | Why |
+|---|---|---|
+| bandwidth (4.4), up to δ_F | yes | flux balance, §2.1 |
+| order-1 inflow δA²k | yes | structural |
+| sibling (k−1)·sib | partly | (k−1) → ~2 under locality, §2.2 |
+| slack | artifact of equal blocks | §2.3 |
+| (4.3) | boundary artifact | top node at descent |
+| δ_F = 1/25 (paper) or 128/4095 (Lean) | proof artifact | sort-based fringes plausibly allow ~1/2 |
+
+## 2. Can a locality-aware or restructured invariant beat the (ν/k)² law?
+
+### 2.1 A flux lower bound that no relabelling of the invariant avoids
+
+Per stage, the separator at u pushes about (ε_B/2)·a(u) foreign keys across each cut. They become
+order-0 outsiders in the child v.
+
+Order-0 outsiders of v leave v in one of two ways:
+* up, through v's fringe, which has bandwidth δ_F·π(v)/2 ≈ δ_F(ν²/(2k))·c(u) per side;
+* down into v's children as order-1 outsiders. That channel is capped at k·δμ·c(child)/μc(v) ≲ ν of
+  the outsider budget, because δ < 1/(kA).
+
+So in steady state **ε_B/2 ≲ δ_F·ν²/(2k)**, i.e. ε_B ≲ δ_F ν²/k. This holds for any bookkeeping on this
+tree and flow table.
+
+Locality does not change the count of order-0 outsiders. Their sibling distance is irrelevant: all of
+them must leave through the parent. Tapering by sibling distance therefore gains nothing.
+
+What can change is the gap between (ν/k)² and δ_F ν²/k:
+* (4.3) costs a factor 2/(δ_F k), which is 1 today and 32 at δ_F = 1/2;
+* δ_F itself costs a factor of up to ~16.
+
+### 2.2 What locality does buy (proposed contract)
+
+**Property B_loc.** For each of the k+1 cuts, the mass crossing it is < (ε_B/2)·a. The mass displaced
+across two or more block boundaries is < ε₂·a, with ε₂ = O(k²·ln m/m) ≈ O(ε_B²).
+* The Lean `onesAboveBottom` predicate is already per cut, so the first half is free.
+* The ε₂ part is heuristic: Lemma-6.1-style counting with deviation m/k.
+
+**Property F_loc.** Of the j ≤ δ_F|F| extreme keys, fewer than ε_F·j miss F, with δ_F ≈ 1/2. Misses
+land only in B_1 (resp. B_k), up to ε₂.
+
+With these contracts, the invariant becomes P_loc. It is P with separate per-side constants μ_L, μ_R,
+plus the fact that order-≥1 outsiders below a child w belong only to the ranges of w±1. That fact holds
+because they are near-boundary keys that entered through fringe failures or cut crossings.
+
+Lemma 4.2's cumulative boundary error then only sees cross-boundary hiding. Wire counts per subtree are
+exact (Lemma 3.1, p. 9), so a key of child j hidden in child j+2's subtree is needed to move the j/j+1
+boundary. The (k−1)·sib multiplier becomes 2·sib + O(ε₂).
+
+**Replacement conditions** (per side; heuristic):
+
+* (L2) ε_B/2 + s·(ν/(2Ak)) + μ(1 + 2·sib(δ) + δA²k) ≤ μAν. Here s ∈ [0, 1] is the remaining
+  slack fraction: 1 for equal blocks, ≈ 0 for non-uniform blocks.
+* (L3) μ ≤ ν/(Ak²), only if the top-node rule is kept.
+* (L4) μ ≤ ½·δ_F·(Aνk−1)/(A²k²), with δ_F ≈ 1/2.
+* (L5) ε_F ≤ Aνδ − A²kδ², δkA < 1.
+* (F) f = m·ν/(2Ak)·(1−1/(Aνk))/(1−1/(Ak)²) ≥ f_floor, with ε_F(f) = 1/(656·f) (two-round route).
+
+The recurrence is the one in Lemmas 4.3/4.4, with ε_B a replaced by ε_B a/2 per side and (k−1) by 2.
+To first order, the tolerance is then **ε_B ≈ δ_F ν²/k − (ν/Ak)·s**.
+
+### 2.3 The slack is removable (plausible, unproved)
+
+The drift exists because the fringe always takes child 1's smallest and child k's largest keys, while
+the blocks are equal. Fix: give the end blocks size β − π/2 and the middle blocks c/k.
+
+The children's down-flows then depend on their position (end or middle relative to each ancestor).
+That makes the flow table deterministic but inhomogeneous. In steady state the ancestors hold exactly
+those fringe keys, so per-child compositions match the blocks up to:
+* outsiders (the μ term, already budgeted);
+* sibling hiding;
+* separator and fringe errors;
+* row rounding of block sizes (O(1/m)).
+
+To prove:
+* an inhomogeneous Lemma 3.1 (wires below each node, now position-dependent);
+* integrality of the new π, β;
+* a two-sided (lower and upper) composition bound replacing Lemma 4.1.
+
+This is a real rewrite of §3, but it involves no probability.
+
+### 2.4 Removing (4.3)
+
+Options:
+* keep a sacrificial level above the top that accepts the top node's outsiders;
+* or delay the top's descent until μ·c(α) < 1, which needs top nodes with capacity below 2k² and
+  therefore uneven splits at the top.
+
+Both change only O(1) stages, so the cost is in the additive constant. I could not close either one
+here. Flagged as an **assumption**. For k ≤ 2/δ_F, (4.3) is not binding anyway.
+
+## 3. Exchange-rate table
+
+The model runs a continuous search over x = lg k, y = lg A, z = lg(1/ν) (grid 0.1). Then:
+* m = max(bulk need, fringe need, (Ak)² from (5.1));
+* bulk need: two rounds per BULK2 (calibrated: threshold 2^41.66 at ε = 1/59e6, matching BULK2);
+* stage = 3·T(lg m), T(L) = L(L+1)/2;
+* "win" = best integer (x,y,z) with the power-of-two window 3·T(⌈lg m⌉+1). This reproduces 1419 at
+  (6,12,6).
+
+Two-round separators, current F route (f ≥ 92160, ε_F = 1/(656f)):
+
+| ε_B | variant | (k, A, ν) cont. | lg m [bulk, fringe] | stage | stages/bit | slope ideal | int (x,y,z): win |
+|---|---|---|---|---|---|---|---|
+| 2^-26 | V0 today | (64, 2896, 1/60) | 41.9 [41.9, 41.9] | 2699 | 0.494 | 1334 | (6,12,6): 1419 |
+| 2^-20 | V0 | (34, 549, 1/12) | 35.3 [33.6, 35.3] | 1921 | 0.773 | 1486 | (5,10,4): 1667 |
+| 2^-12 | V0 | (2, 20, 1/3.2) | 24.6 [22.4, 24.6] | 946 | 3.12 | 2949 | (1,5,2): 3402 |
+| 2^-26 | S (slack 0 only) | (69, 104, 1/68) | 41.9 | 2699 | 0.344 | 928 | (6,7,6): 1025 |
+| 2^-20 | S | (39, 23, 1/13) | 33.6 | 1746 | 0.500 | 872 | (5,6,4): 1040 |
+| 2^-26 | L3 (loc., δ_F=½, no (4.3)) | (676, 338, 1/79) | 41.9 | 2699 | 0.301 | 811 | (10,8,6): 891 |
+| 2^-20 | L3 | (97, 69, 1/21) | 34.6 [33.6, 34.6] | 1847 | 0.437 | 808 | (7,7,5): 889 |
+| 2^-26 | L4 (L3 + slack 0) | (630, 137, 1/97) | 41.9 | 2699 | 0.267 | 721 | (9,8,7): 801 |
+| 2^-20 | L4 | (97, 30, 1/26) | 33.7 | 1755 | 0.371 | **650** | (7,6,5): 783 |
+| 2^-16 | L4 | (32, 13, 1/11) | 29.7 [28.0, 29.7] | 1371 | 0.497 | 681 | (5,5,4): 842 |
+| 2^-12 | L4 | (15, 6, 1/4.9) | 26.4 [22.4, 26.4] | 1083 | 0.725 | 785 | (3,4,3): 1015 |
+| 2^-8 | L4 | (5, 4, 1/2.8) | 23.5 [16.7, 23.5] | 864 | 1.30 | 1126 | (3,2,1): 1625 |
+
+Same variants, if F were provable at fringes f ≥ 2^10 (hypothetical):
+
+| ε_B | variant | slope ideal | int: win |
+|---|---|---|---|
+| 2^-26 / 2^-20 / 2^-16 / 2^-12 / 2^-8 | V0 | 1334 / 1304 / 1488 / 2166 / – | 1419 / 1498 / 1814 / 2700 |
+| same | L2 (loc., δ_F=½, (4.3) kept) | 1225 / 1023 / 893 / 775 / 854 | 1378 / 1181 / 1116 / 1050 / 1328 |
+| same | L3 | 811 / 702 / 647 / 647 / 854 | 891 / 810 / 756 / 800 / 1260 |
+| same | L4 | 721 / 617 / 562 / **528** / 598 | 801 / 702 / 698 / 700 / 950 |
+
+Single-term ablations from V0, best over ε (`exchange_rate.out`):
+
+| ablation | slope ideal |
+|---|---|
+| none | 1322 |
+| sibling term removed | 1292 |
+| per-side B | 1289 |
+| slack removed | **878** (ε = 2^-20, (x,y,z) = (5.4, 4.1, 3.5)) |
+
+One-round separators are at least as good only with the optimistic fringe ε_F = 1/(2f). That is the
+obstruction value, a necessary condition and far from proved. Under that assumption L4 gives
+600 ideal / 744 win at ε = 2^-12, lg m ≈ 29.4. Treat it as an upper bound on what one round could do.
+
+**Assumptions (loud).**
+* (a) ε_F(f) = 1/(656f) is extrapolated from the single certified point f = 131040 (F2ROUND).
+* (b) f_floor = 92160 is a limit of the proof route, not a theorem about the separator.
+* (c) δ_F = 1/2 is unproved. The F2 proof uses 128/4095.
+* (d) "slack 0" and "drop (4.3)" are redesigns (§2.3, §2.4), not lemmas.
+* (e) Integrality and divisibility of a non-power-of-two flow table are ignored. The integer column
+  allows only powers of two.
+* (f) The root separator and final sorters are ignored; they add only constants.
+* (g) With small A (Aν ≈ 1.5–2) the margin μ(Aν−1) is thin, so second-order terms not modelled could
+  bite.
+
+## 4. Simulation (`sim_locality.py`)
+
+Setup: m = 1024, n = 1024, k = 8 bands of 128 rows; one and two rounds. The adversary is chosen after
+σ: the backward closure of `docs/chvatal-fringe-obstruction.md`, aimed at one band boundary with reach
+H = R + 2·(m/k) + 1.
+
+| input | rounds | misplaced mass | distance ≥ 2 | max \|displacement\| (rows) |
+|---|---|---|---|---|
+| random | 1 | 1.5e-2 | 0 | 13 |
+| adversary | 1 | 3.5–4.7e-2 | **2.6–4.0e-4** (≈270–420 keys) | **≈300 > band 128** |
+| random | 2 | 6.3e-3 | 0 | 6 |
+| one-round adversary | 2 | 1.0–1.2e-2 | 0 | 12 |
+
+At m = 4096 (n = 512, k = 16) random inputs again give no distance-≥2 keys (max displacement 20 vs
+band 256).
+
+Conclusions:
+* **"Adjacent only" is false per key for one round.** An adversary that knows σ can push about one
+  column's worth of keys (~m/k each) arbitrarily far. In mass it is ~1 % of the misplacement and
+  O(1/m), so a contract must carry an ε₂ = O(1/m) term rather than assume zero.
+* For two rounds, the one-round adversary produces nothing at distance ≥ 2. A genuine two-round
+  pullback was not tested; the obstruction note suggests it costs a factor of ~2f more mass.
+
+Fringe test (f = 32 rows, j = δ_F·f·n):
+
+| | δ_F = 128/4095 | δ_F = 1/2 | δ_F = 0.9 |
+|---|---|---|---|
+| one round, random | 0 escapes | 0 | 10–15 |
+| one round, adversarial | 0 | **297 of 16k** | ~760 |
+| two rounds, adversarial | 0 | 0 | 0–8 |
+
+This weakly supports δ_F ≈ 1/2 for two rounds only.
+
+## 5. What would have to be proved, in order of value
+
+1. **Non-uniform block flow table (slack → 0).**
+   * Alone: 1419 → ~1025 (windowed, integer (6,7,6), same separator).
+   * Deterministic and plausible.
+   * The best next step: re-derive Lemmas 3.1/4.1/4.2 for the inhomogeneous table and certify the
+     residual slack is ≤ ~10 % (`slack_sensitivity.out`: 10 % residual already costs +150).
+2. **Top-node redesign removing (4.3).** It is worth ~1.5× only together with δ_F ≈ 1/2.
+3. **A two-round Property F with δ_F ≈ 1/2.** Simulation-supported; unproved.
+4. Small-fringe F (f ~ 2^10) and per-side/adjacent bookkeeping: each is worth ~5–10 %.
+
+Even with all of these, the model sits at ~650 ideal / ~700–780 windowed. "Few hundred" is not reached
+in this family.
