@@ -1,0 +1,36 @@
+(2,4,2) d=10 tf=10 design U: one-sided residual/c = 1.0986e-03  (slackCoeff 1.0986e-03, r* = 3.6621e-04)
+   negative blocks: 0
+   perfect-separator outsiders per stage (t, max outsiders/c, total):
+    [(1, 0.0, 0), (2, np.float64(0.000244), 2048), (3, np.float64(0.000336), 36864), (4, np.float64(0.000244), 128), (5, np.float64(0.000336), 2304), (6, np.float64(0.000359), 36864), (7, np.float64(0.000244), 128), (8, np.float64(0.000336), 2304), (9, np.float64(0.000359), 36864), (10, 0.0, 0)]
+(2,4,2) d=10 tf=10 design D2: one-sided residual/c = 0.0000e+00  (slackCoeff 1.0986e-03, r* = 3.6621e-04)
+   negative blocks: 0
+   perfect-separator outsiders per stage (t, max outsiders/c, total):
+    [(1, 0.0, 0), (2, 0.0, 0), (3, 0.0, 0), (4, 0.0, 0), (5, 0.0, 0), (6, 0.0, 0), (7, 0.0, 0), (8, 0.0, 0), (9, 0.0, 0), (10, 0.0, 0)]
+(2,4,2) d=10 tf=10 design P: one-sided residual/c = 3.6621e-04  (slackCoeff 1.0986e-03, r* = 3.6621e-04)
+(2,3,2) d=10 tf=11 design U: one-sided residual/c = 2.4414e-03  (slackCoeff 2.4414e-03, r* = 1.4648e-03)
+   negative blocks: 0
+   perfect-separator outsiders per stage (t, max outsiders/c, total):
+    [(1, 0.0, 0), (2, np.float64(0.000977), 4096), (3, np.float64(0.001709), 40960), (4, np.float64(0.000977), 264448), (5, np.float64(0.001709), 2560), (6, np.float64(0.002075), 21008), (7, np.float64(0.002258), 169120), (8, np.float64(0.002075), 1312), (9, np.float64(0.002258), 10560), (10, np.float64(0.00235), 84608), (11, 0.0, 0)]
+(2,3,2) d=10 tf=11 design D2: one-sided residual/c = 0.0000e+00  (slackCoeff 2.4414e-03, r* = 1.4648e-03)
+   negative blocks: 0
+   perfect-separator outsiders per stage (t, max outsiders/c, total):
+    [(1, 0.0, 0), (2, 0.0, 0), (3, 0.0, 0), (4, 0.0, 0), (5, 0.0, 0), (6, 0.0, 0), (7, 0.0, 0), (8, 0.0, 0), (9, 0.0, 0), (10, 0.0, 0), (11, 0.0, 0)]
+(2,3,2) d=10 tf=11 design P: one-sided residual/c = 1.4648e-03  (slackCoeff 2.4414e-03, r* = 1.4648e-03)
+(2,5,2) d=11 tf=15 design U: one-sided residual/c = 5.1880e-04  (slackCoeff 5.1880e-04, r* = 9.1553e-05)
+   negative blocks: 0
+   perfect-separator outsiders per stage (t, max outsiders/c, total):
+    [(1, 0.0, 0), (2, np.float64(6.1e-05), 4096), (3, np.float64(7.2e-05), 139264), (4, np.float64(6.1e-05), 256), (5, np.float64(7.2e-05), 8704), (6, np.float64(7.4e-05), 278544), (7, np.float64(7.2e-05), 544), (8, np.float64(7.4e-05), 17408), (9, np.float64(7.4e-05), 557056), (10, np.float64(6.1e-05), 1024), (11, np.float64(7.2e-05), 34816), (12, np.float64(6.1e-05), 1048576), (13, np.float64(6.1e-05), 2048), (14, np.float64(7.2e-05), 69632), (15, 0.0, 0)]
+(2,5,2) d=11 tf=15 design D2: one-sided residual/c = 0.0000e+00  (slackCoeff 5.1880e-04, r* = 9.1553e-05)
+   negative blocks: 0
+   perfect-separator outsiders per stage (t, max outsiders/c, total):
+    [(1, 0.0, 0), (2, 0.0, 0), (3, 0.0, 0), (4, 0.0, 0), (5, 0.0, 0), (6, 0.0, 0), (7, 0.0, 0), (8, 0.0, 0), (9, 0.0, 0), (10, 0.0, 0), (11, 0.0, 0), (12, 0.0, 0), (13, 0.0, 0), (14, 0.0, 0), (15, 0.0, 0)]
+(2,5,2) d=11 tf=15 design P: one-sided residual/c = 9.1553e-05  (slackCoeff 5.1880e-04, r* = 9.1553e-05)
+(3,4,3) d=7 tf=5 design U: one-sided residual/c = 3.9673e-04  (slackCoeff 3.9673e-04, r* = 2.1362e-04)
+   negative blocks: 0
+   perfect-separator outsiders per stage (t, max outsiders/c, total):
+    [(1, 0.0, 0), (2, np.float64(0.000183), 3072), (3, np.float64(0.00029), 55296), (4, np.float64(0.000183), 810496), (5, 0.0, 0)]
+(3,4,3) d=7 tf=5 design D2: one-sided residual/c = 0.0000e+00  (slackCoeff 3.9673e-04, r* = 2.1362e-04)
+   negative blocks: 0
+   perfect-separator outsiders per stage (t, max outsiders/c, total):
+    [(1, 0.0, 0), (2, 0.0, 0), (3, 0.0, 0), (4, 0.0, 0), (5, 0.0, 0)]
+(3,4,3) d=7 tf=5 design P: one-sided residual/c = 2.1362e-04  (slackCoeff 3.9673e-04, r* = 2.1362e-04)
