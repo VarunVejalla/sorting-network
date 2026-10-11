@@ -1,5 +1,6 @@
 module
 public import AKS.Chvatal.FlowSizes7
+public import AKS.Chvatal.FlowTableB
 public import AKS.Chvatal.Tree
 
 @[expose] public section
@@ -119,26 +120,135 @@ theorem cover (hs : s.card = π + 64 * τ) (hπ : 2 ∣ π) (hw : w ∈ s) :
 
 end Blocks
 
+section Blocks
+
+variable {n : ℕ} {s : Finset (Fin n)} {w : Fin n} {π j j' : ℕ} {off : ℕ → ℕ}
+
+/-- The `j`-th middle block, with cumulative boundaries `π/2 + off j`. -/
+def downSetB (s : Finset (Fin n)) (π : ℕ) (off : ℕ → ℕ) (j : ℕ) : Finset (Fin n) :=
+  blockOf s (π / 2 + off j) (π / 2 + off (j + 1))
+
+theorem downSetB_subset : downSetB s π off j ⊆ s := blockOf_subset
+
+/-- Equal blocks recover `WireFlow.downSet`. -/
+theorem downSetB_uniform (τ : ℕ) : downSetB s π (fun i => i * τ) j = downSet s π τ j := rfl
+
+theorem mem_downSetB : w ∈ downSetB s π off j ↔
+    w ∈ s ∧ π / 2 + off j ≤ rankIn s w ∧ rankIn s w < π / 2 + off (j + 1) := mem_blockOf
+
+theorem downSetB_card (hmono : Monotone off) (hs : s.card = π + off 64) (hj : j < 64) :
+    (downSetB s π off j).card = off (j + 1) - off j := by
+  have h1 : off (j + 1) ≤ off 64 := hmono (by omega)
+  unfold downSetB
+  rw [blockOf_card (by omega)]
+  omega
+
+theorem disjoint_downSetB (hmono : Monotone off) (hj : j < j') :
+    Disjoint (downSetB s π off j) (downSetB s π off j') := by
+  have : off (j + 1) ≤ off j' := hmono (by omega)
+  exact disjoint_blockOf (by omega)
+
+theorem disjoint_upSet_downSetB (hmono : Monotone off) (hs : s.card = π + off 64) (hπ : 2 ∣ π)
+    (hj : j < 64) : Disjoint (upSet s π) (downSetB s π off j) := by
+  have h1 : off (j + 1) ≤ off 64 := hmono (by omega)
+  unfold upSet downSetB
+  rw [Finset.disjoint_union_left]
+  exact ⟨disjoint_blockOf (by omega), (disjoint_blockOf (by omega)).symm⟩
+
+/-- Every wire is in the fringe or in exactly one (hence some) middle block. -/
+theorem cover_B (hoff0 : off 0 = 0) (hs : s.card = π + off 64)
+    (hπ : 2 ∣ π) (hw : w ∈ s) :
+    w ∈ upSet s π ∨ ∃ j, j < 64 ∧ w ∈ downSetB s π off j := by
+  have hr := rankIn_lt_card hw
+  unfold upSet
+  by_cases h1 : rankIn s w < π / 2
+  · exact .inl (Finset.mem_union_left _ (mem_blockOf.2 ⟨hw, by omega, h1⟩))
+  by_cases h3 : s.card - π / 2 ≤ rankIn s w
+  · exact .inl (Finset.mem_union_right _ (mem_blockOf.2 ⟨hw, h3, hr⟩))
+  right
+  have e64 : off (63 + 1) = off 64 := rfl
+  have hex : ∃ k, rankIn s w - π / 2 < off (k + 1) := ⟨63, by omega⟩
+  have hspec := Nat.find_spec hex
+  have hle : Nat.find hex ≤ 63 := Nat.find_min' hex (by omega)
+  have hlo : off (Nat.find hex) ≤ rankIn s w - π / 2 := by
+    by_cases h0 : Nat.find hex = 0
+    · rw [h0, hoff0]; exact Nat.zero_le _
+    · have := Nat.find_min hex (show Nat.find hex - 1 < Nat.find hex by omega)
+      rw [show Nat.find hex - 1 + 1 = Nat.find hex by omega] at this
+      omega
+  exact ⟨Nat.find hex, by omega, mem_blockOf.2 ⟨hw, by omega, by omega⟩⟩
+
+end Blocks
+
+namespace FlowTableB
+
+variable {d tf : ℕ} (F : FlowTableB d tf) (t : ℕ) (b : KBag 64 d)
+
+theorem off_zero : F.off t b 0 = 0 := by simp [off]
+
+theorem off_mono : Monotone (F.off t b) := by
+  intro j j' hjj
+  unfold off
+  apply Finset.sum_le_sum_of_subset
+  intro i hi
+  simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hi ⊢
+  omega
+
+theorem off_sixtyfour : F.off t b 64 = ∑ j, F.down t b j := by
+  unfold off
+  rw [Finset.filter_true_of_mem (fun i _ => i.isLt)]
+
+theorem off_succ {j : ℕ} (hj : j < 64) : F.off t b (j + 1) = F.off t b j + F.down t b ⟨j, hj⟩ := by
+  unfold off
+  have : (Finset.univ.filter (fun i : Fin 64 => i.val < j + 1)) =
+      insert ⟨j, hj⟩ (Finset.univ.filter (fun i : Fin 64 => i.val < j)) := by
+    ext i
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_insert, Fin.ext_iff]
+    omega
+  rw [this, Finset.sum_insert (by simp), add_comm]
+
+/-- Equal blocks: if every child receives `τ`, the offsets are `j * τ` (`j ≤ 64`). -/
+theorem off_const {τ : ℕ} (h : ∀ i, F.down t b i = τ) {j : ℕ} (hj : j ≤ 64) :
+    F.off t b j = j * τ := by
+  unfold off
+  simp only [h, Finset.sum_const, smul_eq_mul]
+  congr 1
+  have : (Finset.univ.filter fun i : Fin 64 => i.val < j) = (Finset.range j).attachFin
+      (fun m hm => by have := Finset.mem_range.1 hm; omega) := by
+    ext i; simp
+  rw [this, Finset.card_attachFin, Finset.card_range]
+
+/-- Block sizes of the generalized `downSet` for a table: child `j` gets exactly `down t b j`. -/
+theorem card_downSetB {n : ℕ} {s : Finset (Fin n)}
+    (hs : s.card = F.up t b + ∑ j, F.down t b j) {j : ℕ} (hj : j < 64) :
+    (downSetB s (F.up t b) (F.off t b) j).card = F.down t b ⟨j, hj⟩ := by
+  rw [downSetB_card (F.off_mono t b) (by rw [F.off_sixtyfour]; exact hs) hj, F.off_succ t b hj]
+  omega
+
+end FlowTableB
+
 variable {d tf : ℕ}
 
 /-- Wires of `b` at time `t+1` coming from its parent. -/
-def parentPart (F : FlowSizes d tf) (S : KBag 64 d → Finset (Fin (64 ^ d))) (t : ℕ)
+def parentPart (F : FlowTableB d tf) (S : KBag 64 d → Finset (Fin (64 ^ d))) (t : ℕ)
     (b : KBag 64 d) : Finset (Fin (64 ^ d)) :=
-  if 1 ≤ b.l then downSet (S b.parent) (F.up (b.l - 1) t) (F.down (b.l - 1) t) (b.x % 64) else ∅
+  if 1 ≤ b.l then
+    downSetB (S b.parent) (F.up t b.parent) (F.off t b.parent) (b.x % 64) else ∅
 
 /-- Wires of `b` at time `t+1` coming from its children. -/
-def childPart (F : FlowSizes d tf) (S : KBag 64 d → Finset (Fin (64 ^ d))) (t : ℕ)
+def childPart (F : FlowTableB d tf) (S : KBag 64 d → Finset (Fin (64 ^ d))) (t : ℕ)
     (b : KBag 64 d) : Finset (Fin (64 ^ d)) :=
   if h : b.l < d then
-    Finset.univ.biUnion (fun j : Fin 64 => upSet (S (b.child j.val j.isLt h)) (F.up (b.l + 1) t))
+    Finset.univ.biUnion (fun j : Fin 64 =>
+      upSet (S (b.child j.val j.isLt h)) (F.up t (b.child j.val j.isLt h)))
   else ∅
 
 /-- The wires held by each node at time `t`, determined by the flow sizes alone. -/
-def wireSets (F : FlowSizes d tf) : ℕ → KBag 64 d → Finset (Fin (64 ^ d))
+def wireSets (F : FlowTableB d tf) : ℕ → KBag 64 d → Finset (Fin (64 ^ d))
   | 0 => fun b => if b = KBag.root 64 d then Finset.univ else ∅
   | t + 1 => fun b => parentPart F (wireSets F t) t b ∪ childPart F (wireSets F t) t b
 
-theorem wireSets_succ_eq (F : FlowSizes d tf) (t : ℕ) (b : KBag 64 d) :
+theorem wireSets_succ_eq (F : FlowTableB d tf) (t : ℕ) (b : KBag 64 d) :
     wireSets F (t + 1) b = parentPart F (wireSets F t) t b ∪ childPart F (wireSets F t) t b := rfl
 theorem KBag.parent_l (b : KBag 64 d) : b.parent.l = b.l - 1 := rfl
 
@@ -159,12 +269,12 @@ theorem KBag.child_inj (b : KBag 64 d) (j j' : ℕ) (hj : j < 64) (hj' : j' < 64
 theorem KBag.parent_child' (q : KBag 64 d) (j : ℕ) (hj : j < 64) (h : q.l < d) :
     (q.child j hj h).parent = q := KBag.child_parent q j hj h (by omega)
 
-theorem mem_wireSets_succ (F : FlowSizes d tf) (t : ℕ) (b : KBag 64 d) (w : Fin (64 ^ d)) :
+theorem mem_wireSets_succ (F : FlowTableB d tf) (t : ℕ) (b : KBag 64 d) (w : Fin (64 ^ d)) :
     w ∈ wireSets F (t + 1) b ↔
       ∃ q : KBag 64 d, w ∈ wireSets F t q ∧
-        ((1 ≤ q.l ∧ b = q.parent ∧ w ∈ upSet (wireSets F t q) (F.up q.l t)) ∨
+        ((1 ≤ q.l ∧ b = q.parent ∧ w ∈ upSet (wireSets F t q) (F.up t q)) ∨
          (q.l < d ∧ ∃ j : Fin 64, ∃ h : q.l < d, b = q.child j.val j.isLt h ∧
-            w ∈ downSet (wireSets F t q) (F.up q.l t) (F.down q.l t) j.val)) := by
+            w ∈ downSetB (wireSets F t q) (F.up t q) (F.off t q) j.val)) := by
   rw [wireSets_succ_eq]
   unfold parentPart childPart
   constructor
@@ -173,7 +283,7 @@ theorem mem_wireSets_succ (F : FlowSizes d tf) (t : ℕ) (b : KBag 64 d) (w : Fi
     · by_cases h1 : 1 ≤ b.l
       · rw [if_pos h1] at hw
         have hl : b.parent.l < d := by rw [KBag.parent_l]; have := b.hl; omega
-        exact ⟨b.parent, downSet_subset hw, Or.inr ⟨hl, ⟨b.x % 64, Nat.mod_lt _ (by omega)⟩, hl,
+        exact ⟨b.parent, downSetB_subset hw, Or.inr ⟨hl, ⟨b.x % 64, Nat.mod_lt _ (by omega)⟩, hl,
           KBag.eq_parent_child b h1 hl, by simpa [KBag.parent_l] using hw⟩⟩
       · simp [h1] at hw
     · by_cases h1 : b.l < d
@@ -190,8 +300,7 @@ theorem mem_wireSets_succ (F : FlowSizes d tf) (t : ℕ) (b : KBag 64 d) (w : Fi
       simp only [Finset.mem_biUnion, Finset.mem_univ, true_and]
       refine ⟨⟨q.x % 64, Nat.mod_lt _ (by omega)⟩, ?_⟩
       rw [← KBag.eq_parent_child q h1 hl]
-      have : q.parent.l + 1 = q.l := by rw [KBag.parent_l]; omega
-      rw [this]; exact hw
+      exact hw
     · refine Finset.mem_union_left _ ?_
       have h3 : 1 ≤ (q.child j.val j.isLt h2).l := by rw [KBag.child_l]; omega
       rw [if_pos h3]
@@ -207,12 +316,12 @@ theorem KBag.l_pos_of_ne_root {b : KBag 64 d} (h : b ≠ KBag.root 64 d) : 1 ≤
   rw [hl0] at this
   exact h (KBag.ext hl0 (by simp at this; show b.x = 0; omega))
 
-theorem wireSets_zero_of_ne (F : FlowSizes d tf) {b : KBag 64 d} (h : b ≠ KBag.root 64 d) :
+theorem wireSets_zero_of_ne (F : FlowTableB d tf) {b : KBag 64 d} (h : b ≠ KBag.root 64 d) :
     wireSets F 0 b = ∅ := by
   simp [wireSets, h]
 
-theorem wireSets_inv (F : FlowSizes d tf) : ∀ t, t ≤ tf →
-    (∀ b : KBag 64 d, (wireSets F t b).card = F.a b.l t) ∧
+theorem wireSets_inv (F : FlowTableB d tf) : ∀ t, t ≤ tf →
+    (∀ b : KBag 64 d, (wireSets F t b).card = F.a t b) ∧
     (∀ b b' : KBag 64 d, b ≠ b' → Disjoint (wireSets F t b) (wireSets F t b')) ∧
     (∀ w : Fin (64 ^ d), ∃ b : KBag 64 d, w ∈ wireSets F t b)
   | 0, _ => by
@@ -221,7 +330,7 @@ theorem wireSets_inv (F : FlowSizes d tf) : ∀ t, t ≤ tf →
     · by_cases hb : b = KBag.root 64 d
       · subst hb
         rw [hr]; simpa [KBag.root] using F.ha_root.symm
-      · rw [wireSets_zero_of_ne F hb, F.ha_init _ (KBag.l_pos_of_ne_root hb)]
+      · rw [wireSets_zero_of_ne F hb, F.ha_init b hb]
         simp
     · by_cases hb : b = KBag.root 64 d
       · rw [wireSets_zero_of_ne F (show b' ≠ KBag.root 64 d from fun h => hne (hb.trans h.symm))]
@@ -230,8 +339,10 @@ theorem wireSets_inv (F : FlowSizes d tf) : ∀ t, t ≤ tf →
   | t + 1, ht => by
     obtain ⟨hcard, hdisj, hcomp⟩ := wireSets_inv F t (by omega)
     have ht : t < tf := ht
-    have hsp : ∀ q : KBag 64 d, (wireSets F t q).card = F.up q.l t + 64 * F.down q.l t :=
-      fun q => by rw [hcard q, F.hsplit q.l t q.hl ht]
+    have hsp : ∀ q : KBag 64 d, (wireSets F t q).card = F.up t q + ∑ j, F.down t q j :=
+      fun q => by rw [hcard q, F.hsplit t q ht]
+    have hs64 : ∀ q : KBag 64 d, (wireSets F t q).card = F.up t q + F.off t q 64 :=
+      fun q => by rw [hsp q, F.off_sixtyfour]
     refine ⟨fun b => ?_, fun b b' hne => ?_, fun w => ?_⟩
     · -- sizes
       have hdisj' :
@@ -250,28 +361,27 @@ theorem wireSets_inv (F : FlowSizes d tf) : ∀ t, t ≤ tf →
               have := congrArg KBag.l he
               rw [KBag.parent_l, KBag.child_l] at this
               omega
-            exact Finset.disjoint_left.1 (hdisj _ _ hne) (downSet_subset hP) (upSet_subset hj)
+            exact Finset.disjoint_left.1 (hdisj _ _ hne) (downSetB_subset hP) (upSet_subset hj)
           · rw [dif_neg h2] at hC; simp at hC
         · rw [if_neg h1] at hP; simp at hP
       have hP : (parentPart F (wireSets F t) t b).card =
-          if 1 ≤ b.l then F.down (b.l - 1) t else 0 := by
+          if 1 ≤ b.l then F.down t b.parent ⟨b.x % 64, Nat.mod_lt _ (by norm_num)⟩ else 0 := by
         unfold parentPart
         split_ifs with h1
-        · exact downSet_card (hsp b.parent) (Nat.mod_lt _ (by omega))
+        · exact F.card_downSetB t b.parent (hsp b.parent) (Nat.mod_lt _ (by norm_num))
         · simp
       have hC : (childPart F (wireSets F t) t b).card =
-          if b.l < d then 64 * F.up (b.l + 1) t else 0 := by
+          if h : b.l < d then ∑ j : Fin 64, F.up t (b.child j j.isLt h) else 0 := by
         unfold childPart
         split_ifs with h1
         · rw [Finset.card_biUnion]
-          · rw [Finset.sum_congr rfl (fun j _ => upSet_card (F.hup_even (b.l + 1) t ht)
-              (by have := hsp (b.child j.val j.isLt h1); rw [KBag.child_l] at this; omega))]
-            simp
+          · rw [Finset.sum_congr rfl (fun j _ => upSet_card (F.hup_even t _ ht)
+              (by have := hsp (b.child j.val j.isLt h1); omega))]
           · intro j _ j' _ hne
             refine Disjoint.mono upSet_subset upSet_subset (hdisj _ _ fun he => hne ?_)
             exact Fin.ext (KBag.child_inj b j.val j'.val j.isLt j'.isLt h1 he)
         · simp
-      rw [wireSets_succ_eq, Finset.card_union_of_disjoint hdisj', hP, hC, F.hcons b.l t b.hl ht]
+      rw [wireSets_succ_eq, Finset.card_union_of_disjoint hdisj', hP, hC, F.hcons t b ht]
     · -- disjointness
       rw [Finset.disjoint_left]
       intro w h1 h2
@@ -281,46 +391,48 @@ theorem wireSets_inv (F : FlowSizes d tf) : ∀ t, t ≤ tf →
       obtain rfl : q = q' := by
         by_contra hn
         exact Finset.disjoint_left.1 (hdisj q q' hn) hq hq'
-      have hev := F.hup_even q.l t ht
+      have hev := F.hup_even t q ht
       rcases hr with ⟨_, rfl, hu⟩ | ⟨_, j, hj, rfl, hd⟩ <;>
         rcases hr' with ⟨_, he, hu'⟩ | ⟨_, j', hj', he, hd'⟩
       · exact hne he.symm
-      · exact Finset.disjoint_left.1 (disjoint_upSet_downSet (hsp q) hev j'.isLt) hu hd'
-      · exact Finset.disjoint_left.1 (disjoint_upSet_downSet (hsp q) hev j.isLt) hu' hd
+      · exact Finset.disjoint_left.1 (disjoint_upSet_downSetB (F.off_mono t q) (hs64 q) hev j'.isLt) hu hd'
+      · exact Finset.disjoint_left.1 (disjoint_upSet_downSetB (F.off_mono t q) (hs64 q) hev j.isLt) hu' hd
       · rcases lt_trichotomy j.val j'.val with hl | hl | hl
-        · exact Finset.disjoint_left.1 (disjoint_downSet hl) hd hd'
+        · exact Finset.disjoint_left.1 (disjoint_downSetB (F.off_mono t q) hl) hd hd'
         · obtain rfl : j = j' := Fin.ext hl
           exact hne he.symm
-        · exact Finset.disjoint_left.1 (disjoint_downSet hl) hd' hd
+        · exact Finset.disjoint_left.1 (disjoint_downSetB (F.off_mono t q) hl) hd' hd
     · -- completeness
       obtain ⟨q, hq⟩ := hcomp w
-      have hev := F.hup_even q.l t ht
-      rcases cover (hsp q) hev hq with hu | ⟨j, hj, hd⟩
+      have hev := F.hup_even t q ht
+      rcases cover_B (F.off_zero t q) (hs64 q) hev hq with hu | ⟨j, hj, hd⟩
       · have h1 : 1 ≤ q.l := by
           by_contra h0
-          have hc : (upSet (wireSets F t q) (F.up q.l t)).card = 0 := by
-            rw [upSet_card hev (by have := hsp q; omega), show q.l = 0 by omega]; exact F.hup_root t ht
+          have hc : (upSet (wireSets F t q) (F.up t q)).card = 0 := by
+            rw [upSet_card hev (by have := hsp q; omega), show q = KBag.root 64 d from by
+              by_contra hne; exact h0 (KBag.l_pos_of_ne_root hne)]
+            exact F.hup_root t ht
           rw [Finset.card_eq_zero.1 hc] at hu
           simp at hu
         exact ⟨q.parent, (mem_wireSets_succ F t _ w).2 ⟨q, hq, Or.inl ⟨h1, rfl, hu⟩⟩⟩
       · have h1 : q.l < d := by
           by_contra h0
-          have hc : (downSet (wireSets F t q) (F.up q.l t) (F.down q.l t) j).card = 0 := by
-            rw [downSet_card (hsp q) hj, show q.l = d by have := q.hl; omega]
-            exact F.hdown_leaf t ht
+          have hc : (downSetB (wireSets F t q) (F.up t q) (F.off t q) j).card = 0 := by
+            rw [F.card_downSetB t q (hsp q) hj]
+            exact F.hdown_leaf t q ⟨j, hj⟩ ht (by have := q.hl; omega)
           rw [Finset.card_eq_zero.1 hc] at hd
           simp at hd
         exact ⟨q.child j hj h1, (mem_wireSets_succ F t _ w).2
           ⟨q, hq, Or.inr ⟨h1, ⟨j, hj⟩, h1, rfl, hd⟩⟩⟩
 
-theorem wireSets_card (F : FlowSizes d tf) {t : ℕ} (ht : t ≤ tf) (b : KBag 64 d) :
-    (wireSets F t b).card = F.a b.l t := (wireSets_inv F t ht).1 b
+theorem wireSets_card (F : FlowTableB d tf) {t : ℕ} (ht : t ≤ tf) (b : KBag 64 d) :
+    (wireSets F t b).card = F.a t b := (wireSets_inv F t ht).1 b
 
-theorem wireSets_disjoint (F : FlowSizes d tf) {t : ℕ} (ht : t ≤ tf) (b b' : KBag 64 d)
+theorem wireSets_disjoint (F : FlowTableB d tf) {t : ℕ} (ht : t ≤ tf) (b b' : KBag 64 d)
     (hne : b ≠ b') : Disjoint (wireSets F t b) (wireSets F t b') :=
   (wireSets_inv F t ht).2.1 b b' hne
 
-theorem wireSets_complete (F : FlowSizes d tf) {t : ℕ} (ht : t ≤ tf) (w : Fin (64 ^ d)) :
+theorem wireSets_complete (F : FlowTableB d tf) {t : ℕ} (ht : t ≤ tf) (w : Fin (64 ^ d)) :
     ∃ b : KBag 64 d, w ∈ wireSets F t b := (wireSets_inv F t ht).2.2 w
 
 end Chvatal

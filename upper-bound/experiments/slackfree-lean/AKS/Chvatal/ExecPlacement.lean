@@ -42,7 +42,7 @@ variable {d tf : ℕ}
 
 /-- The key on each wire after `t` stages: `X v 0 = v`, `X v (t+1) = (stage t).exec (X v t)`,
 where `stage t = stageNet (wireSets F t) (nets t)`. -/
-noncomputable def X (F : FlowSizes d tf)
+noncomputable def X (F : FlowTableB d tf)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (64 ^ d))) : ℕ → Fin (64 ^ d) → Fin (64 ^ d)
   | 0 => fun w => v w
@@ -50,7 +50,7 @@ noncomputable def X (F : FlowSizes d tf)
 
 section Exec
 
-variable (F : FlowSizes d tf) (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
+variable (F : FlowTableB d tf) (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
   (v : Equiv.Perm (Fin (64 ^ d)))
 
 theorem X_succ (t : ℕ) :
@@ -83,21 +83,21 @@ noncomputable def execPlacement (t : ℕ) (ht : t ≤ tf) : Placement 64 d where
     exact ⟨b, Finset.mem_image_of_mem _ hb⟩
 
 theorem execPlacement_card (t : ℕ) (ht : t ≤ tf) (b : KBag 64 d) :
-    (((execPlacement F nets v t ht).regs b)).card = F.a b.l t := by
+    (((execPlacement F nets v t ht).regs b)).card = F.a t b := by
   show ((wireSets F t b).image (X F nets v t)).card = _
   rw [Finset.card_image_of_injective _ (X_injective F nets v t)]
   exact wireSets_card F ht b
 
 /-- Keys that the parent's separator sent down to `b` (values after stage `t`). -/
 noncomputable def fromParentK (t : ℕ) (b : KBag 64 d) : Finset (Fin (64 ^ d)) :=
-  (downSet (wireSets F t b.parent) (F.up (b.l - 1) t) (F.down (b.l - 1) t) (b.x % 64)).image
+  (downSetB (wireSets F t b.parent) (F.up t b.parent) (F.off t b.parent) (b.x % 64)).image
     (X F nets v (t + 1))
 
 /-- Keys that the children's separators sent up to `b` (values after stage `t`). -/
 noncomputable def fromChildrenK (t : ℕ) (b : KBag 64 d) : Finset (Fin (64 ^ d)) :=
   if h : b.l < d then
     Finset.univ.biUnion (fun j : Fin 64 =>
-      (upSet (wireSets F t (b.child j.val j.isLt h)) (F.up (b.l + 1) t)).image
+      (upSet (wireSets F t (b.child j.val j.isLt h)) (F.up t (b.child j.val j.isLt h))).image
         (X F nets v (t + 1)))
   else ∅
 
@@ -200,16 +200,16 @@ end Dict
 
 section KeyDict
 
-variable {d tf : ℕ} (F : FlowSizes d tf)
+variable {d tf : ℕ} (F : FlowTableB d tf)
   (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
   (v : Equiv.Perm (Fin (64 ^ d)))
 
 /-- Keys sent down to child `j`: outputs of the node network on cells of the `j`-th middle block,
 fed with the node's input vector. -/
-theorem mem_image_downSet_iff (t : ℕ) (ht : t < tf) (q : KBag 64 d) (π τ j : ℕ)
+theorem mem_image_downSet_iff (t : ℕ) (ht : t < tf) (q : KBag 64 d) (π : ℕ) (off : ℕ → ℕ) (j : ℕ)
     (k : Fin (64 ^ d)) :
-    k ∈ (downSet (wireSets F t q) π τ j).image (X F nets v (t + 1)) ↔
-      ∃ c : Fin (wireSets F t q).card, π / 2 + j * τ ≤ c.val ∧ c.val < π / 2 + (j + 1) * τ ∧
+    k ∈ (downSetB (wireSets F t q) π off j).image (X F nets v (t + 1)) ↔
+      ∃ c : Fin (wireSets F t q).card, π / 2 + off j ≤ c.val ∧ c.val < π / 2 + off (j + 1) ∧
         k = (nets t q (wireSets F t q).card).exec
           (fun i => X F nets v t ((wireSets F t q).orderEmbOfFin rfl i)) c := by
   rw [Finset.mem_image]

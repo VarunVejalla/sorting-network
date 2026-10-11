@@ -33,4 +33,37 @@ structure NodeSpec (a π τ : ℕ) (net : ComparatorNetwork a) (EB : ℝ) (Jmax 
     ((Finset.univ.filter fun c : Fin a =>
         (net.exec (x : Fin a → Fin a) c).val < j ∧ π / 2 ≤ c.val).card : ℝ) < εF * j
 
+/-- Generalized node specification (slack-free design D2): the boundary set `bds` of the middle
+blocks is arbitrary (`bds = {π/2 + off j}` for a per-child offset function `off`) instead of the
+equal-block `blockBounds π τ`.  The fringe clauses only involve `π`. -/
+structure NodeSpecB (a π : ℕ) (bds : Finset ℕ) (net : ComparatorNetwork a) (EB : ℝ) (Jmax : ℕ)
+    (εF : ℝ) : Prop where
+  bHigh : ∀ (x : Equiv.Perm (Fin a)), ∀ p ∈ bds, p ≤ a →
+    ((Finset.univ.filter fun c : Fin a =>
+        a - p ≤ (net.exec (x : Fin a → Fin a) c).val ∧ c.val < a - p).card : ℝ) ≤ EB
+  bLow : ∀ (x : Equiv.Perm (Fin a)), ∀ p ∈ bds, p ≤ a →
+    ((Finset.univ.filter fun c : Fin a =>
+        (net.exec (x : Fin a → Fin a) c).val < p ∧ p ≤ c.val).card : ℝ) ≤ EB
+  fHigh : ∀ (x : Equiv.Perm (Fin a)) (j : ℕ), 0 < j → j ≤ Jmax → j ≤ a →
+    ((Finset.univ.filter fun c : Fin a =>
+        a - j ≤ (net.exec (x : Fin a → Fin a) c).val ∧ c.val < a - π / 2).card : ℝ) < εF * j
+  fLow : ∀ (x : Equiv.Perm (Fin a)) (j : ℕ), 0 < j → j ≤ Jmax → j ≤ a →
+    ((Finset.univ.filter fun c : Fin a =>
+        (net.exec (x : Fin a → Fin a) c).val < j ∧ π / 2 ≤ c.val).card : ℝ) < εF * j
+
+/-- The equal-block spec is the special case `bds = blockBounds π τ`. -/
+theorem NodeSpec.toB {a π τ : ℕ} {net : ComparatorNetwork a} {EB : ℝ} {Jmax : ℕ} {εF : ℝ}
+    (h : NodeSpec a π τ net EB Jmax εF) : NodeSpecB a π (blockBounds π τ) net EB Jmax εF :=
+  ⟨h.bHigh, h.bLow, h.fHigh, h.fLow⟩
+
+theorem NodeSpecB.toNodeSpec {a π τ : ℕ} {net : ComparatorNetwork a} {EB : ℝ} {Jmax : ℕ}
+    {εF : ℝ} (h : NodeSpecB a π (blockBounds π τ) net EB Jmax εF) :
+    NodeSpec a π τ net EB Jmax εF :=
+  ⟨h.bHigh, h.bLow, h.fHigh, h.fLow⟩
+
+theorem NodeSpecB.mono {a π : ℕ} {bds bds' : Finset ℕ} {net : ComparatorNetwork a} {EB : ℝ}
+    {Jmax : ℕ} {εF : ℝ} (h : NodeSpecB a π bds net EB Jmax εF) (hs : bds' ⊆ bds) :
+    NodeSpecB a π bds' net EB Jmax εF :=
+  ⟨fun x p hp => h.bHigh x p (hs hp), fun x p hp => h.bLow x p (hs hp), h.fHigh, h.fLow⟩
+
 end Chvatal

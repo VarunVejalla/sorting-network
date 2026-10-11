@@ -24,7 +24,7 @@ theorem chvatal_sorter_exists (hyp : TwoRoundSeparatorExists) {d : ℕ} (hd14 : 
     ∃ net : ComparatorNetwork (64 ^ d),
       ComparatorNetwork.Sorts.{0} net ∧ net.depth ≤ totalDepth d := by
   have hd : 7 ≤ d := by omega
-  set A := stagesNet (flowSizes7 d hd) (realNets d hd) (tf7 d) with hA
+  set A := stagesNet (uniformB d hd) (realNets d hd) (tf7 d) with hA
   have hcard : ∀ b, (finalS d hd b).card = 0 ∨ (finalS d hd b).card = 2 ^ 42 := by
     intro b
     by_cases hb : b.l = d - 7
@@ -36,7 +36,7 @@ theorem chvatal_sorter_exists (hyp : TwoRoundSeparatorExists) {d : ℕ} (hd14 : 
       rw [hA, stagesNet_exec]
       exact finalS_image_real hyp hd14 p b)
   refine ⟨T, hTs, hTd.trans ?_⟩
-  have hst := stagesNet_depth_le (flowSizes7 d hd) (realNets d hd)
+  have hst := stagesNet_depth_le (uniformB d hd) (realNets d hd)
     depthBound (tf7 d) (Nat.le_succ _)
     (fun t ht b n => realNets_depth_le hyp hd hd14 t ht b n)
   have hsum : ∑ t ∈ Finset.range (tf7 d), depthBound t = 6320 + (3 * d - 21) * 2838 := by

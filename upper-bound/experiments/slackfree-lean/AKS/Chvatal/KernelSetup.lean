@@ -1,5 +1,6 @@
 module
 
+public import AKS.Chvatal.FlowTableBUniformDef
 public import AKS.Chvatal.NodeSpec
 public import AKS.Chvatal.Theorem51Core
 public import AKS.Chvatal.Lemma62Ratio
@@ -21,8 +22,8 @@ noncomputable def specJmax (π : ℕ) : ℕ := ⌊(128 / 4095 : ℝ) * ((π : �
 def RealSpecs {d : ℕ} (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n) : Prop :=
   ∀ (t : ℕ) (q : KBag 64 d), t < tf7 d → 0 < (flowSizes7 d hd).down q.l t →
-    NodeSpec (wireSets (flowSizes7 d hd) t q).card ((flowSizes7 d hd).up q.l t)
-      ((flowSizes7 d hd).down q.l t) (nets t q (wireSets (flowSizes7 d hd) t q).card)
+    NodeSpec (wireSets (uniformB d hd) t q).card ((flowSizes7 d hd).up q.l t)
+      ((flowSizes7 d hd).down q.l t) (nets t q (wireSets (uniformB d hd) t q).card)
       (specEB t ((flowSizes7 d hd).a q.l t)) (specJmax ((flowSizes7 d hd).up q.l t)) eps
 
 /-- The paper's actual (4.4): `μ ≤ ½·δ_F·(Aνk−1)/(A²k²)`, `δ_F = 128/4095`; gives `μ c ≤ δ_F·π/2`. -/
@@ -47,11 +48,12 @@ theorem fromParentK_eq_empty {d : ℕ} (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (b : KBag 64 d)
     (h0 : (flowSizes7 d hd).down (b.l - 1) t = 0) :
-    fromParentK (flowSizes7 d hd) nets v t b = ∅ := by
+    fromParentK (uniformB d hd) nets v t b = ∅ := by
   unfold fromParentK
   rw [Finset.image_eq_empty]
-  unfold downSet blockOf
-  rw [h0]
+  unfold downSetB blockOf
+  rw [FlowTableB.off_succ _ t b.parent (Nat.mod_lt _ (by norm_num)),
+    show (uniformB d hd).down t b.parent ⟨b.x % 64, Nat.mod_lt _ (by norm_num)⟩ = 0 from h0]
   exact Finset.filter_false_of_mem fun w _ h => by omega
 
 /-- BadSendField property definition. -/
@@ -59,8 +61,8 @@ def BadSendField {d : ℕ} (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (ht : t ≤ tf7 d) : Prop :=
   ∀ (b : KBag 64 d) (hb : 1 ≤ b.l),
-    ((b.strangers 1 id (fromParentK (flowSizes7 d hd) nets v t b) : ℕ) : ℚ) ≤
-      parentOutMass d (execPlacement (flowSizes7 d hd) nets v t ht) id b hb +
+    ((b.strangers 1 id (fromParentK (uniformB d hd) nets v t b) : ℕ) : ℚ) ≤
+      parentOutMass d (execPlacement (uniformB d hd) nets v t ht) id b hb +
         sibMassBound d t b hb +
         invEpsB * capacity d (b.l - 1) t +
         slackBound d t b hb
@@ -70,10 +72,10 @@ def FringeSendField {d : ℕ} (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (ht : t ≤ tf7 d) : Prop :=
   ∀ (b : KBag 64 d) (r : ℕ) (_hr1 : 1 ≤ r) (_hrd : r ≤ d) (hb : 1 ≤ b.l),
-    ((b.strangers (r + 1) id (fromParentK (flowSizes7 d hd) nets v t b) : ℕ) : ℚ) ≤
+    ((b.strangers (r + 1) id (fromParentK (uniformB d hd) nets v t b) : ℕ) : ℚ) ≤
       invEpsF *
         (((b.parent).strangers r id
-          ((execPlacement (flowSizes7 d hd) nets v t ht).regs (b.parent))
+          ((execPlacement (uniformB d hd) nets v t ht).regs (b.parent))
           : ℕ) : ℚ)
 
 end Chvatal

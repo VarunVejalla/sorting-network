@@ -1,4 +1,5 @@
 module
+public import AKS.Chvatal.FlowTableBUniformDef
 public import AKS.Chvatal.KernelSetup
 public import AKS.Chvatal.BadSendReal
 public import AKS.Chvatal.Lemma41Real
@@ -33,8 +34,8 @@ def BadSendAt {d : ℕ} (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (ht : t ≤ tf7 d) (b : KBag 64 d) (hb : 1 ≤ b.l) :
     Prop :=
-  ((b.strangers 1 id (fromParentK (flowSizes7 d hd) nets v t b) : ℕ) : ℚ) ≤
-    parentOutMass d (execPlacement (flowSizes7 d hd) nets v t ht) id b hb +
+  ((b.strangers 1 id (fromParentK (uniformB d hd) nets v t b) : ℕ) : ℚ) ≤
+    parentOutMass d (execPlacement (uniformB d hd) nets v t ht) id b hb +
       sibMassBound d t b hb +
       invEpsB * capacity d (b.l - 1) t +
       slackBound d t b hb
@@ -44,15 +45,15 @@ theorem hM_keys {d : ℕ} (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (ht2 : 2 ≤ t) (htt : t ≤ tf7 d)
     (hP : OutsiderBoundLe d t
-      (execPlacement (flowSizes7 d hd) nets v t htt) id)
+      (execPlacement (uniformB d hd) nets v t htt) id)
     (q : KBag 64 d) (hq : q.l < d) (hα : alpha7 d t ≤ q.l) (hω : q.l < omega7 d t)
     (hpar : q.l % 2 = t % 2) (j' : Fin 64) :
-    ((((execPlacement (flowSizes7 d hd) nets v t htt).regs q).filter fun κ =>
+    ((((execPlacement (uniformB d hd) nets v t htt).regs q).filter fun κ =>
         (q.child j'.val j'.isLt hq).Native κ id).card : ℚ) ≤
       capacity d q.l t / 64 +
         invMu * siblingFactor * capacity d q.l t := by
   have h := keys_below_child_le d t
-    (execPlacement (flowSizes7 d hd) nets v t htt) (fun l => (flowSizes7 d hd).a l t)
+    (execPlacement (uniformB d hd) nets v t htt) (fun l => (flowSizes7 d hd).a l t)
     (fun b => execPlacement_card _ nets v t htt b) (hpar7 d hd t (by omega) htt) hP
     delta_sq_lt_one q hq j' (hwires7 d hd t ht2 htt q.l hα hω hpar) hpar
   exact h
@@ -62,9 +63,9 @@ theorem hM_pow {d : ℕ} (hd : 7 ≤ d)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (htt : t ≤ tf7 d)
     (q : KBag 64 d) (hq : q.l < d) (j' : Fin 64) :
-    ((((execPlacement (flowSizes7 d hd) nets v t htt).regs q).filter fun κ =>
+    ((((execPlacement (uniformB d hd) nets v t htt).regs q).filter fun κ =>
         (q.child j'.val j'.isLt hq).Native κ id).card : ℚ) ≤ (64 : ℚ) ^ (d - q.l - 1) := by
-  have h := keys_below_child_le_pow d (execPlacement (flowSizes7 d hd) nets v t htt) q hq j'
+  have h := keys_below_child_le_pow d (execPlacement (uniformB d hd) nets v t htt) q hq j'
   exact_mod_cast h
 
 /-- **BadSendField for real network** (Lemma 4.2, order 0).  Uniform in the node type: only
@@ -74,7 +75,7 @@ theorem badSendField_real {d : ℕ} (hd : 7 ≤ d)
     (hspecs : RealSpecs hd nets) (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (ht1 : 1 ≤ t)
     (ht : t + 1 ≤ tf7 d)
     (hP : OutsiderBoundLe d t
-      (execPlacement (flowSizes7 d hd) nets v t (by omega)) id) :
+      (execPlacement (uniformB d hd) nets v t (by omega)) id) :
     BadSendField hd nets v t (by omega) := by
   intro b hb
   obtain ⟨q, hqlt, j, rfl⟩ := exists_parent_child b hb
@@ -96,16 +97,16 @@ theorem badSendField_real {d : ℕ} (hd : 7 ≤ d)
     positivity
   obtain ⟨Δ, hF, -, hMs⟩ := node_facts d hd t q.l ht1 htt (Nat.pos_of_ne_zero hd0)
   have hM : ∀ j' : Fin 64,
-      ((((execPlacement (flowSizes7 d hd) nets v t (by omega)).regs q).filter fun κ =>
+      ((((execPlacement (uniformB d hd) nets v t (by omega)).regs q).filter fun κ =>
         (q.child j'.val j'.isLt hqlt).Native κ id).card : ℚ) ≤
           ((flowSizes7 d hd).down q.l t : ℚ) +
             (Δ + invMu * siblingFactor * capacity d q.l t) := fun j' => by
     rcases hMs with ⟨⟨ht2, hα, hω, hpar⟩, h⟩ | h
     · linarith [hM_keys hd nets v t ht2 htt.le hP q hqlt hα hω hpar j']
     · linarith [hM_pow hd nets v t htt.le q hqlt j']
-  have hout : (0 : ℚ) ≤ (q.strangers 1 id ((execPlacement (flowSizes7 d hd) nets v t (by omega)).regs q)
+  have hout : (0 : ℚ) ≤ (q.strangers 1 id ((execPlacement (uniformB d hd) nets v t (by omega)).regs q)
       : ℕ) := Nat.cast_nonneg _
-  have hbad := bad_send0_real (flowSizes7 d hd) nets v t htt q hqlt j
+  have hbad := bad_send0_real (uniformB d hd) nets v t htt q hqlt j (flowDown7 d hd q.l t) (fun _ => rfl)
     (specEB t ((flowSizes7 d hd).a q.l t)) (specJmax ((flowSizes7 d hd).up q.l t)) eps
     ((Δ + invMu * siblingFactor * capacity d q.l t : ℚ) : ℝ)
     (by exact_mod_cast add_nonneg hF.nonneg hm0) (hspecs t q htt (Nat.pos_of_ne_zero hd0))
@@ -113,7 +114,7 @@ theorem badSendField_real {d : ℕ} (hd : 7 ≤ d)
     (by
       have := (Rat.cast_le (K := ℝ)).mpr
         (show ((flowSizes7 d hd).up q.l t : ℚ) / 2 ≤
-          (q.strangers 1 id ((execPlacement (flowSizes7 d hd) nets v t (by omega)).regs q)
+          (q.strangers 1 id ((execPlacement (uniformB d hd) nets v t (by omega)).regs q)
             : ℚ) + 63 * (Δ + invMu * siblingFactor * capacity d q.l t) by
           linarith [hF.half])
       push_cast at this ⊢; exact this)
@@ -121,6 +122,7 @@ theorem badSendField_real {d : ℕ} (hd : 7 ≤ d)
     (show 63 * (Δ + invMu * siblingFactor * capacity d q.l t) - ((flowSizes7 d hd).up q.l t : ℚ) / 2 ≤
         63 * (invMu * siblingFactor * capacity d q.l t) + slackCoeff * capacity d q.l t by
       linarith [hF.slack])
+  simp only [uniformB_up_fs, uniformB_a_fs] at hbad
   push_cast at hslR hbad
   have hael : (((flowSizes7 d hd).a q.l t : ℕ) : ℝ) ≤ ((capacity d q.l t : ℚ) : ℝ) := by
     exact_mod_cast hF.a_le
@@ -140,7 +142,7 @@ theorem badSendField_real {d : ℕ} (hd : 7 ≤ d)
   have hepsB : ((invEpsB : ℚ) : ℝ) = 1 / 59000000 := by simp [invEpsB]
   rw [hepsB]
   refine le_trans hbad ?_
-  change _ ≤ (((q.strangers 1 id ((execPlacement (flowSizes7 d hd) nets v t (by omega)).regs q)
+  change _ ≤ (((q.strangers 1 id ((execPlacement (uniformB d hd) nets v t (by omega)).regs q)
     : ℕ) : ℝ)) + _ + _ + _
   linarith
 

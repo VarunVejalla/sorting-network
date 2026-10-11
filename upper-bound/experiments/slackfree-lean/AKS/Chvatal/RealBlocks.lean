@@ -1,5 +1,6 @@
 module
 
+public import AKS.Chvatal.FlowTableBUniformDef
 public import AKS.Chvatal.RealNets
 public import AKS.Chvatal.RealKernel
 public import AKS.Chvatal.RealInduction
@@ -22,7 +23,7 @@ bag are all addressed below its ancestor of order 1 (no order-2 strangers). -/
 theorem realNets_purity (hyp : TwoRoundSeparatorExists) {d : ℕ} (hd14 : 14 ≤ d) (v : Equiv.Perm (Fin (64 ^ d)))
     (b : KBag 64 d) (hb : b.l = d - 6) :
     b.strangers 2 id
-      ((execPlacement (flowSizes7 d (by omega)) (realNets d (by omega)) v (tf7 d) le_rfl).regs b)
+      ((execPlacement (uniformB d (by omega)) (realNets d (by omega)) v (tf7 d) le_rfl).regs b)
       (by norm_num : 1 ≤ 64) = 0 :=
   real_purity (by omega) (realNets d (by omega)) (realNets_specs hyp (by omega) hd14) v
     (fun t ht1 ht hP =>
@@ -74,14 +75,14 @@ theorem flowA7_tf (l : ℕ) :
 
 /-- Occupancy of the nodes at the final time: `64^6` wires on the meeting level, none elsewhere. -/
 theorem wireSets_final_card (b : KBag 64 d) :
-    (wireSets (flowSizes7 d hd) (tf7 d) b).card = if b.l = d - 6 then 64 ^ 6 else 0 := by
-  rw [wireSets_card (flowSizes7 d hd) le_rfl b]; exact flowA7_tf d hd b.l
+    (wireSets (uniformB d hd) (tf7 d) b).card = if b.l = d - 6 then 64 ^ 6 else 0 := by
+  rw [wireSets_card (uniformB d hd) le_rfl b]; exact flowA7_tf d hd b.l
 
 /-- The wires held at the final time by the 64 children of `p`. -/
 def blockWires (p : KBag 64 d) : Finset (Fin (64 ^ d)) :=
   if h : p.l < d then
     Finset.univ.biUnion
-      (fun j : Fin 64 => wireSets (flowSizes7 d hd) (tf7 d) (p.child j.val j.isLt h))
+      (fun j : Fin 64 => wireSets (uniformB d hd) (tf7 d) (p.child j.val j.isLt h))
   else ∅
 
 /-- The final block of a level-`(d-7)` bag; empty for every other bag. -/
@@ -93,12 +94,12 @@ theorem finalS_card (b : KBag 64 d) (hb : b.l = d - 7) : (finalS d hd b).card = 
   unfold finalS blockWires
   rw [if_pos hb, dif_pos hlt, Finset.card_biUnion]
   · have : ∀ j ∈ (Finset.univ : Finset (Fin 64)),
-        (wireSets (flowSizes7 d hd) (tf7 d) (b.child j.val j.isLt hlt)).card = 64 ^ 6 :=
+        (wireSets (uniformB d hd) (tf7 d) (b.child j.val j.isLt hlt)).card = 64 ^ 6 :=
       fun j _ => by rw [wireSets_final_card, if_pos (by rw [KBag.child_l]; omega)]
     rw [Finset.sum_congr rfl this]
     simp
   · intro j _ j' _ hjj
-    apply wireSets_disjoint (flowSizes7 d hd) le_rfl
+    apply wireSets_disjoint (uniformB d hd) le_rfl
     intro h
     apply hjj
     exact Fin.ext (KBag.child_inj b _ _ j.isLt j'.isLt hlt h)
@@ -115,13 +116,13 @@ theorem finalS_disjoint (b b' : KBag 64 d) (hne : b ≠ b') :
     rw [Finset.mem_biUnion] at hw hw'
     obtain ⟨j, _, hj⟩ := hw
     obtain ⟨j', _, hj'⟩ := hw'
-    refine Finset.disjoint_left.mp (wireSets_disjoint (flowSizes7 d hd) le_rfl
+    refine Finset.disjoint_left.mp (wireSets_disjoint (uniformB d hd) le_rfl
       (b.child j.val j.isLt hlt) (b'.child j'.val j'.isLt hlt') fun h => hne ?_) hj hj'
     simpa [KBag.parent_child'] using congrArg KBag.parent h
   all_goals simp
 
 theorem finalS_cover (w : Fin (64 ^ d)) : ∃ b : KBag 64 d, w ∈ finalS d hd b := by
-  obtain ⟨q, hq⟩ := wireSets_complete (flowSizes7 d hd) (t := tf7 d) le_rfl w
+  obtain ⟨q, hq⟩ := wireSets_complete (uniformB d hd) (t := tf7 d) le_rfl w
   have hql : q.l = d - 6 := by
     by_contra h
     have := wireSets_final_card d hd q
@@ -141,14 +142,14 @@ section Image
 variable (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
   (v : Equiv.Perm (Fin (64 ^ d)))
   (hpur : ∀ b : KBag 64 d, b.l = d - 6 →
-    b.strangers 2 id ((execPlacement (flowSizes7 d hd) nets v (tf7 d) le_rfl).regs b)
+    b.strangers 2 id ((execPlacement (uniformB d hd) nets v (tf7 d) le_rfl).regs b)
       (by norm_num : 1 ≤ 64) = 0)
 
 include hpur
 
 /-- Rank purity turns the final block of `b` into a sorted-rank interval. -/
 theorem finalS_image (b : KBag 64 d) :
-    (finalS d hd b).image (X (flowSizes7 d hd) nets v (tf7 d)) =
+    (finalS d hd b).image (X (uniformB d hd) nets v (tf7 d)) =
       Finset.univ.filter (fun x : Fin (64 ^ d) =>
         b.x * 2 ^ 42 ≤ x.val ∧ x.val < b.x * 2 ^ 42 + (finalS d hd b).card) := by
   by_cases hb : b.l = d - 7
@@ -177,8 +178,8 @@ theorem finalS_image (b : KBag 64 d) :
       rw [hanc] at hnot
       simp only [KBag.Native, nativeBagIdx, bagSize, id, show d - b.l = 7 by omega,
         show (64 : ℕ) ^ 7 = 2 ^ 42 by norm_num] at hnot
-      have h1 := Nat.div_mul_le_self (X (flowSizes7 d hd) nets v (tf7 d) w).val (2 ^ 42)
-      have h2 := Nat.lt_div_mul_add (a := (X (flowSizes7 d hd) nets v (tf7 d) w).val)
+      have h1 := Nat.div_mul_le_self (X (uniformB d hd) nets v (tf7 d) w).val (2 ^ 42)
+      have h2 := Nat.lt_div_mul_add (a := (X (uniformB d hd) nets v (tf7 d) w).val)
         (by positivity : 0 < 2 ^ 42)
       rw [hnot] at h1 h2
       exact Finset.mem_filter.2 ⟨Finset.mem_univ _, h1, h2⟩
@@ -205,7 +206,7 @@ end Blocks
 theorem finalS_image_real (hyp : TwoRoundSeparatorExists) {d : ℕ} (hd14 : 14 ≤ d) (v : Equiv.Perm (Fin (64 ^ d)))
     (b : KBag 64 d) :
     (finalS d (by omega) b).image
-        (X (flowSizes7 d (by omega)) (realNets d (by omega)) v (tf7 d)) =
+        (X (uniformB d (by omega)) (realNets d (by omega)) v (tf7 d)) =
       Finset.univ.filter (fun x : Fin (64 ^ d) =>
         b.x * 2 ^ 42 ≤ x.val ∧ x.val < b.x * 2 ^ 42 + (finalS d (by omega) b).card) :=
   finalS_image d (by omega) (realNets d (by omega)) v

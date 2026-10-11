@@ -1,5 +1,6 @@
 module
 
+public import AKS.Chvatal.FlowTableBUniformDef
 public import AKS.Chvatal.KernelSetup
 public import AKS.Chvatal.FlipSpec
 public import AKS.Chvatal.NodeGeom
@@ -269,8 +270,9 @@ theorem nodeNetOf_good (hyp : TwoRoundSeparatorExists) (d : ℕ) (hd : 7 ≤ d) 
 wires down. -/
 theorem realNets_specs (hyp : TwoRoundSeparatorExists) {d : ℕ} (hd : 7 ≤ d) (hd14 : 14 ≤ d) : RealSpecs hd (realNets d hd) := by
   intro t q ht hdown
-  have hc := wireSets_card (flowSizes7 d hd) ht.le q
-  generalize (wireSets (flowSizes7 d hd) t q).card = c at hc ⊢
+  have hc : (wireSets (uniformB d hd) t q).card = (flowSizes7 d hd).a q.l t :=
+    wireSets_card (uniformB d hd) ht.le q
+  generalize (wireSets (uniformB d hd) t q).card = c at hc ⊢
   subst hc
   rw [realNets_eq d hd t q hdown]
   exact (nodeNetOf_good hyp d hd hd14 t q.l ht hdown).1

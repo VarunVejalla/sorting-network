@@ -71,12 +71,12 @@ variable {d tf : ℕ}
 sent from `q` to its child `b = q.child j` at stage `t` number at most `εF` times the order-`r`
 outsiders among the keys on `q`, given the node specification (Property F) and
 `strangers ≤ Jmax`. -/
-theorem fringe_send_real (F : FlowSizes d tf)
+theorem fringe_send_real (F : FlowTableB d tf)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (ht : t < tf) (q : KBag 64 d) (hq : q.l < d)
-    (j : Fin 64) (r : ℕ) (hr : 1 ≤ r) (EB : ℝ) (Jmax : ℕ) (εF : ℝ)
-    (ha : (wireSets F t q).card = F.up q.l t + 64 * F.down q.l t)
-    (hspec : NodeSpec (wireSets F t q).card (F.up q.l t) (F.down q.l t)
+    (j : Fin 64) (τ : ℕ) (hτ : ∀ i, F.down t q i = τ) (r : ℕ) (hr : 1 ≤ r) (EB : ℝ) (Jmax : ℕ) (εF : ℝ)
+    (ha : (wireSets F t q).card = F.up t q + 64 * τ)
+    (hspec : NodeSpec (wireSets F t q).card (F.up t q) (τ)
       (nets t q (wireSets F t q).card) EB Jmax εF)
     (hJ : q.strangers r id ((execPlacement F nets v t ht.le).regs q) ≤ Jmax) :
     (((q.child j.val j.isLt hq).strangers (r + 1) id (fromParentK F nets v t
@@ -84,8 +84,7 @@ theorem fringe_send_real (F : FlowSizes d tf)
       εF * ((q.strangers r id ((execPlacement F nets v t ht.le).regs q) : ℕ) : ℝ) := by
   classical
   set s := wireSets F t q with hs
-  set π := F.up q.l t
-  set τ := F.down q.l t
+  set π := F.up t q
   set xr : Fin s.card → Fin (64 ^ d) :=
     fun i => X F nets v t (s.orderEmbOfFin rfl i) with hxrdef
   have hxr : Function.Injective xr := fun i i' h =>
@@ -120,14 +119,13 @@ theorem fringe_send_real (F : FlowSizes d tf)
     rw [← KBag.strangers_parent_eq b r hr (by show 1 ≤ q.l + 1; omega) id _ (by norm_num),
       hb, KBag.child_parent q _ _ _ (by norm_num)]
   -- the sent keys
-  have hfp : fromParentK F nets v t b = (downSet s π τ j.val).image (X F nets v (t + 1)) := by
+  have hfp : fromParentK F nets v t b = (downSetB s π (F.off t q) j.val).image (X F nets v (t + 1)) := by
     unfold fromParentK
     have hp : b.parent (by omega) = q := KBag.child_parent q _ _ _ (by norm_num)
-    have hl : b.l - 1 = q.l := by show q.l + 1 - 1 = q.l; omega
     have hx : b.x % 64 = j.val := by
       show (64 * q.x + j.val) % 64 = j.val
       rw [Nat.mul_add_mod]; exact Nat.mod_eq_of_lt j.isLt
-    rw [hp, hl, hx]
+    rw [hp, hx]
   -- strangers of b
   have hbs' := strangers_eq_filter q r hr (fromParentK F nets v t b)
   have hqs := strangers_eq_filter q r hr (keySet xr)
@@ -142,7 +140,8 @@ theorem fringe_send_real (F : FlowSizes d tf)
     intro κ hκ
     simp only [Finset.mem_filter] at hκ ⊢
     obtain ⟨hκS, hn⟩ := hκ
-    rw [hfp, mem_image_downSet_iff F nets v t ht q π τ j.val κ] at hκS
+    rw [hfp, mem_image_downSet_iff F nets v t ht q π (F.off t q) j.val κ,
+      F.off_const t q hτ j.isLt.le, F.off_const t q hτ (by have := j.isLt; omega)] at hκS
     obtain ⟨c, h1, h2, rfl⟩ := hκS
     have hpc : pos (y c) = c.val := cellOf_apply hyinj c
     refine ⟨⟨exec_mem_keySet _ c, ?_, ?_⟩, hn⟩

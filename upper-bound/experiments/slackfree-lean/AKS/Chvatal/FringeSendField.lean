@@ -1,5 +1,6 @@
 module
 
+public import AKS.Chvatal.FlowTableBUniformDef
 public import AKS.Chvatal.KernelSetup
 public import AKS.Chvatal.FringeSendReal
 public import AKS.Chvatal.Wires31
@@ -62,7 +63,7 @@ theorem fringeSendField_real {d : ℕ} (hd : 7 ≤ d)
     (hspecs : RealSpecs hd nets) (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (ht1 : 1 ≤ t)
     (ht : t + 1 ≤ tf7 d)
     (hP : OutsiderBoundLe d t
-      (execPlacement (flowSizes7 d hd) nets v t (by omega)) id) :
+      (execPlacement (uniformB d hd) nets v t (by omega)) id) :
     FringeSendField hd nets v t (by omega) := by
   intro b r hr1 hrd hb
   obtain ⟨q, hqd, j, rfl⟩ := exists_parent_child b hb
@@ -73,11 +74,11 @@ theorem fringeSendField_real {d : ℕ} (hd : 7 ≤ d)
     have := invEpsF_nonneg
     positivity
   · have hpos : 0 < (flowSizes7 d hd).down q.l t := Nat.pos_of_ne_zero hdown
-    have ha : (wireSets (flowSizes7 d hd) t q).card =
-        (flowSizes7 d hd).up q.l t + 64 * (flowSizes7 d hd).down q.l t := by
-      rw [wireSets_card (flowSizes7 d hd) (by omega)]
+    have ha : (wireSets (uniformB d hd) t q).card =
+        (uniformB d hd).up t q + 64 * flowDown7 d hd q.l t := by
+      rw [wireSets_card (uniformB d hd) (by omega)]
       exact flowSizes7_split d hd q.l t (by omega)
-    have hfs := fringe_send_real (flowSizes7 d hd) nets v t (by omega) q hqd j r hr1 _ _ eps
+    have hfs := fringe_send_real (uniformB d hd) nets v t (by omega) q hqd j (flowDown7 d hd q.l t) (fun _ => rfl) r hr1 _ _ eps
       ha (hspecs t q (by omega) hpos)
       (jmax_ok hd t ht1 (by omega) _ hP q r hr1 hrd hpos)
     have e : ((invEpsF : ℚ) : ℝ) = eps := by

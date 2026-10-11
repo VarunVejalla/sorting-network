@@ -331,28 +331,29 @@ variable {d tf : ℕ}
 
 /-- **Lemma 4.2 (real network, order 0).**  Keys of `q` sent down to child `b = q.child j` in
 stage `t` that are not addressed to `b`. -/
-theorem bad_send0_real (F : FlowSizes d tf)
+theorem bad_send0_real (F : FlowTableB d tf)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (64 ^ d))) (t : ℕ) (ht : t < tf) (q : KBag 64 d) (hq : q.l < d)
-    (j : Fin 64) (EB : ℝ) (Jmax : ℕ) (εF ρ : ℝ) (hρ : 0 ≤ ρ)
-    (hspec : NodeSpec (wireSets F t q).card (F.up q.l t) (F.down q.l t)
+    (j : Fin 64) (τ : ℕ) (hτ : ∀ i, F.down t q i = τ) (EB : ℝ) (Jmax : ℕ) (εF ρ : ℝ) (hρ : 0 ≤ ρ)
+    (hspec : NodeSpec (wireSets F t q).card (F.up t q) (τ)
       (nets t q (wireSets F t q).card) EB Jmax εF)
     (hM : ∀ j' : Fin 64,
       ((((execPlacement F nets v t ht.le).regs q).filter fun κ =>
-        (q.child j'.val j'.isLt hq).Native κ id).card : ℝ) ≤ F.down q.l t + ρ)
-    (hpos : (F.up q.l t : ℝ) / 2 ≤
+        (q.child j'.val j'.isLt hq).Native κ id).card : ℝ) ≤ τ + ρ)
+    (hpos : (F.up t q : ℝ) / 2 ≤
       (q.strangers 1 id ((execPlacement F nets v t ht.le).regs q) : ℝ) + 63 * ρ) :
     (((q.child j.val j.isLt hq).strangers 1 id
         (fromParentK F nets v t (q.child j.val j.isLt hq)) : ℕ) : ℝ) ≤
       (q.strangers 1 id ((execPlacement F nets v t ht.le).regs q) : ℝ) + 63 * ρ -
-        (F.up q.l t : ℝ) / 2 + 2 * EB := by
+        (F.up t q : ℝ) / 2 + 2 * EB := by
   classical
-  have hπ : 2 ∣ F.up q.l t := F.hup_even q.l t ht
-  have hsplit := F.hsplit q.l t q.hl ht
-  have hcardS : (wireSets F t q).card = F.a q.l t := wireSets_card F ht.le q
-  have ha : (wireSets F t q).card = F.up q.l t + 64 * F.down q.l t := by rw [hcardS, hsplit]
+  have hπ : 2 ∣ F.up t q := F.hup_even t q ht
+  have hsplit : F.a t q = F.up t q + 64 * τ := by
+    rw [F.hsplit t q ht]; simp [hτ]
+  have hcardS : (wireSets F t q).card = F.a t q := wireSets_card F ht.le q
+  have ha : (wireSets F t q).card = F.up t q + 64 * τ := by rw [hcardS, hsplit]
   set K := (execPlacement F nets v t ht.le).regs q with hK
-  have hKc : K.card = F.up q.l t + 64 * F.down q.l t := by
+  have hKc : K.card = F.up t q + 64 * τ := by
     rw [hK, execPlacement_card F nets v t ht.le q, ← hsplit]
   let xr : Fin (wireSets F t q).card → Fin (64 ^ d) := fun i =>
     X F nets v t ((wireSets F t q).orderEmbOfFin rfl i)
@@ -370,19 +371,19 @@ theorem bad_send0_real (F : FlowSizes d tf)
   -- the set of keys sent to child `j`
   set b := q.child j.val j.isLt hq with hb
   have hbp : b.parent = q := KBag.parent_child' q j.val j.isLt hq
-  have hbl : b.l - 1 = q.l := by simp [hb, KBag.child]
   have hbx : b.x % 64 = j.val := by
     show (64 * q.x + j.val) % 64 = j.val
     omega
   have hW : fromParentK F nets v t b =
       ((Finset.univ : Finset (Fin (wireSets F t q).card)).filter fun c =>
-        F.up q.l t / 2 + j.val * F.down q.l t ≤ c.val ∧
-          c.val < F.up q.l t / 2 + j.val * F.down q.l t + F.down q.l t).image
+        F.up t q / 2 + j.val * τ ≤ c.val ∧
+          c.val < F.up t q / 2 + j.val * τ + τ).image
         ((nets t q (wireSets F t q).card).exec xr) := by
     unfold fromParentK
-    rw [hbp, hbl, hbx]
+    rw [hbp, hbx]
     ext κ
-    rw [mem_image_downSet_iff F nets v t ht q]
+    rw [mem_image_downSet_iff F nets v t ht q, F.off_const t q hτ j.isLt.le,
+      F.off_const t q hτ (by have := j.isLt; omega)]
     simp only [Finset.mem_image, Finset.mem_filter, Finset.mem_univ, true_and]
     constructor
     · rintro ⟨c, h1, h2, rfl⟩
@@ -391,8 +392,8 @@ theorem bad_send0_real (F : FlowSizes d tf)
       exact ⟨c, h1, by rw [Nat.add_mul, one_mul, ← add_assoc]; exact h2, rfl⟩
   rw [hW, strangers_one_eq]
   set Wn := ((Finset.univ : Finset (Fin (wireSets F t q).card)).filter fun c =>
-        F.up q.l t / 2 + j.val * F.down q.l t ≤ c.val ∧
-          c.val < F.up q.l t / 2 + j.val * F.down q.l t + F.down q.l t).image
+        F.up t q / 2 + j.val * τ ≤ c.val ∧
+          c.val < F.up t q / 2 + j.val * τ + τ).image
         ((nets t q (wireSets F t q).card).exec xr) with hWn
   have hWK : ∀ κ ∈ Wn, κ ∈ K := by
     intro κ hκ
@@ -401,30 +402,30 @@ theorem bad_send0_real (F : FlowSizes d tf)
   have hI := hspec.intruder_keys hxr ha hπ j.val j.isLt
   rw [hkey] at hI
   have hsub : (Wn.filter fun κ => ¬ b.Native κ id) ⊆
-      (Wn.filter fun κ => ¬ (F.up q.l t / 2 + j.val * F.down q.l t ≤ rk K κ ∧
-          rk K κ < F.up q.l t / 2 + j.val * F.down q.l t + F.down q.l t)) ∪
-      (K.filter fun κ => F.up q.l t / 2 + j.val * F.down q.l t ≤ rk K κ ∧
-          rk K κ < F.up q.l t / 2 + j.val * F.down q.l t + F.down q.l t ∧
+      (Wn.filter fun κ => ¬ (F.up t q / 2 + j.val * τ ≤ rk K κ ∧
+          rk K κ < F.up t q / 2 + j.val * τ + τ)) ∪
+      (K.filter fun κ => F.up t q / 2 + j.val * τ ≤ rk K κ ∧
+          rk K κ < F.up t q / 2 + j.val * τ + τ ∧
             ¬ b.Native κ id) := by
     intro κ hκ
     simp only [Finset.mem_filter, Finset.mem_union] at hκ ⊢
-    by_cases hw : F.up q.l t / 2 + j.val * F.down q.l t ≤ rk K κ ∧
-        rk K κ < F.up q.l t / 2 + j.val * F.down q.l t + F.down q.l t
+    by_cases hw : F.up t q / 2 + j.val * τ ≤ rk K κ ∧
+        rk K κ < F.up t q / 2 + j.val * τ + τ
     · exact Or.inr ⟨hWK κ hκ.1, hw.1, hw.2, hκ.2⟩
     · exact Or.inl ⟨hκ.1, hw⟩
   have h1 := Finset.card_le_card hsub
   have h2 := Finset.card_union_le
-    (Wn.filter fun κ => ¬ (F.up q.l t / 2 + j.val * F.down q.l t ≤ rk K κ ∧
-          rk K κ < F.up q.l t / 2 + j.val * F.down q.l t + F.down q.l t))
-    (K.filter fun κ => F.up q.l t / 2 + j.val * F.down q.l t ≤ rk K κ ∧
-          rk K κ < F.up q.l t / 2 + j.val * F.down q.l t + F.down q.l t ∧
+    (Wn.filter fun κ => ¬ (F.up t q / 2 + j.val * τ ≤ rk K κ ∧
+          rk K κ < F.up t q / 2 + j.val * τ + τ))
+    (K.filter fun κ => F.up t q / 2 + j.val * τ ≤ rk K κ ∧
+          rk K κ < F.up t q / 2 + j.val * τ + τ ∧
             ¬ b.Native κ id)
-  have h3 := window_real K q hq j (F.up q.l t) (F.down q.l t) hKc hπ ρ hρ hM hpos
+  have h3 := window_real K q hq j (F.up t q) (τ) hKc hπ ρ hρ hM hpos
   have h4 : (((Wn.filter fun κ => ¬ b.Native κ id).card : ℕ) : ℝ) ≤
-      ((Wn.filter fun κ => ¬ (F.up q.l t / 2 + j.val * F.down q.l t ≤ rk K κ ∧
-          rk K κ < F.up q.l t / 2 + j.val * F.down q.l t + F.down q.l t)).card : ℝ) +
-      ((K.filter fun κ => F.up q.l t / 2 + j.val * F.down q.l t ≤ rk K κ ∧
-          rk K κ < F.up q.l t / 2 + j.val * F.down q.l t + F.down q.l t ∧
+      ((Wn.filter fun κ => ¬ (F.up t q / 2 + j.val * τ ≤ rk K κ ∧
+          rk K κ < F.up t q / 2 + j.val * τ + τ)).card : ℝ) +
+      ((K.filter fun κ => F.up t q / 2 + j.val * τ ≤ rk K κ ∧
+          rk K κ < F.up t q / 2 + j.val * τ + τ ∧
             ¬ b.Native κ id).card : ℝ) := by
     exact_mod_cast h1.trans h2
   linarith

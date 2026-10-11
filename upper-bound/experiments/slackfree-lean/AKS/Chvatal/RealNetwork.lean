@@ -17,13 +17,13 @@ namespace Chvatal
 variable {d tf : ℕ}
 
 /-- The first `t` stages, composed sequentially. -/
-noncomputable def stagesNet (F : FlowSizes d tf)
+noncomputable def stagesNet (F : FlowTableB d tf)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n) :
     ℕ → ComparatorNetwork (64 ^ d)
   | 0 => ⟨[]⟩
   | t + 1 => (stagesNet F nets t).append (stageNet (wireSets F t) (nets t))
 
-theorem stagesNet_exec (F : FlowSizes d tf)
+theorem stagesNet_exec (F : FlowTableB d tf)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (64 ^ d))) :
     ∀ t, (stagesNet F nets t).exec (fun w => v w) = X F nets v t := by
@@ -36,7 +36,7 @@ theorem stagesNet_exec (F : FlowSizes d tf)
     rw [ComparatorNetwork.exec_append, ih]
     rfl
 
-theorem stagesNet_depth_le (F : FlowSizes d tf)
+theorem stagesNet_depth_le (F : FlowTableB d tf)
     (nets : ℕ → (b : KBag 64 d) → (n : ℕ) → ComparatorNetwork n)
     (D : ℕ → ℕ) (T : ℕ) (hT : T ≤ tf + 1)
     (hD : ∀ t < T, ∀ b n, (nets t b n).depth ≤ D t) :
