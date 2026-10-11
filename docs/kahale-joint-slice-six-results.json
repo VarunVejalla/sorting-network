@@ -1,0 +1,192 @@
+{
+  "solver": "z3",
+  "solver_version": "4.13.4",
+  "random_seed": 0,
+  "unproved_symmetry_restrictions": false,
+  "queries": [
+    {
+      "wires": 6,
+      "weights": [
+        3
+      ],
+      "depth_at_most": 2,
+      "status": "unsat",
+      "solve_seconds": 0.0,
+      "input_count": 20,
+      "timeout_ms": 5000
+    },
+    {
+      "wires": 6,
+      "weights": [
+        3
+      ],
+      "depth_at_most": 3,
+      "status": "sat",
+      "solve_seconds": 0.062,
+      "input_count": 20,
+      "timeout_ms": 5000,
+      "layers": [
+        [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            5
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            5
+          ]
+        ],
+        [
+          [
+            0,
+            5
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      ],
+      "all_completed_middle_weights": [
+        3
+      ],
+      "equal_height_comparators": 3,
+      "total_comparators": 9,
+      "witness_checked_on_all_target_inputs": true
+    },
+    {
+      "wires": 6,
+      "weights": [
+        2,
+        3
+      ],
+      "depth_at_most": 2,
+      "status": "unsat",
+      "solve_seconds": 0.015,
+      "input_count": 35,
+      "timeout_ms": 5000
+    },
+    {
+      "wires": 6,
+      "weights": [
+        2,
+        3
+      ],
+      "depth_at_most": 3,
+      "status": "unsat",
+      "solve_seconds": 0.109,
+      "input_count": 35,
+      "timeout_ms": 5000
+    },
+    {
+      "wires": 6,
+      "weights": [
+        2,
+        3
+      ],
+      "depth_at_most": 4,
+      "status": "unsat",
+      "solve_seconds": 1.484,
+      "input_count": 35,
+      "timeout_ms": 5000
+    },
+    {
+      "wires": 6,
+      "weights": [
+        2,
+        3
+      ],
+      "depth_at_most": 5,
+      "status": "sat",
+      "solve_seconds": 0.734,
+      "input_count": 35,
+      "timeout_ms": 5000,
+      "layers": [
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            5
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          [
+            3,
+            5
+          ]
+        ],
+        [
+          [
+            0,
+            5
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        [
+          [
+            2,
+            5
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        [
+          [
+            2,
+            3
+          ]
+        ]
+      ],
+      "all_completed_middle_weights": [
+        2,
+        3
+      ],
+      "equal_height_comparators": 5,
+      "total_comparators": 11,
+      "witness_checked_on_all_target_inputs": true
+    }
+  ],
+  "status": "SMT feasibility only; UNKNOWN is inconclusive and UNSAT is not kernel-checked"
+}

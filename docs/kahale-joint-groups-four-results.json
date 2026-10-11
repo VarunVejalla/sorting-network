@@ -1,0 +1,332 @@
+{
+  "wires": 4,
+  "reachable_states": 261,
+  "catalogue_complete": true,
+  "diamond_queries": 6264,
+  "baseline_gate_update_queries": 25056,
+  "certificate_cores_verified": true,
+  "adjacent_weight_second_moment_law_verified": true,
+  "core_plus_vertex_cover_inequality_verified": true,
+  "exact_meet_graph_update_queries": 25056,
+  "zero_output_certificate_queries": 8352,
+  "core_plus_cover_tight_queries": 7574,
+  "core_plus_cover_strict_queries": 778,
+  "depth_metric": "Shortest path using arbitrary nonempty disjoint ordered-comparator layers",
+  "targets": [
+    {
+      "middle_weights": [
+        1
+      ],
+      "concentration_envelope": [
+        {
+          "depth_at_most": 0,
+          "best_minimum_coalesced_fraction": "0"
+        },
+        {
+          "depth_at_most": 1,
+          "best_minimum_coalesced_fraction": "1/3"
+        },
+        {
+          "depth_at_most": 2,
+          "best_minimum_coalesced_fraction": "1"
+        },
+        {
+          "depth_at_most": 3,
+          "best_minimum_coalesced_fraction": "1"
+        },
+        {
+          "depth_at_most": 4,
+          "best_minimum_coalesced_fraction": "1"
+        }
+      ],
+      "minimum_completion_depth": 2,
+      "shortest_completion_layers": [
+        [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            1,
+            3
+          ]
+        ]
+      ]
+    },
+    {
+      "middle_weights": [
+        2
+      ],
+      "concentration_envelope": [
+        {
+          "depth_at_most": 0,
+          "best_minimum_coalesced_fraction": "0"
+        },
+        {
+          "depth_at_most": 1,
+          "best_minimum_coalesced_fraction": "1/3"
+        },
+        {
+          "depth_at_most": 2,
+          "best_minimum_coalesced_fraction": "1"
+        },
+        {
+          "depth_at_most": 3,
+          "best_minimum_coalesced_fraction": "1"
+        },
+        {
+          "depth_at_most": 4,
+          "best_minimum_coalesced_fraction": "1"
+        }
+      ],
+      "minimum_completion_depth": 2,
+      "shortest_completion_layers": [
+        [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      ]
+    },
+    {
+      "middle_weights": [
+        3
+      ],
+      "concentration_envelope": [
+        {
+          "depth_at_most": 0,
+          "best_minimum_coalesced_fraction": "0"
+        },
+        {
+          "depth_at_most": 1,
+          "best_minimum_coalesced_fraction": "1/3"
+        },
+        {
+          "depth_at_most": 2,
+          "best_minimum_coalesced_fraction": "1"
+        },
+        {
+          "depth_at_most": 3,
+          "best_minimum_coalesced_fraction": "1"
+        },
+        {
+          "depth_at_most": 4,
+          "best_minimum_coalesced_fraction": "1"
+        }
+      ],
+      "minimum_completion_depth": 2,
+      "shortest_completion_layers": [
+        [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            0,
+            2
+          ]
+        ]
+      ]
+    },
+    {
+      "middle_weights": [
+        1,
+        2
+      ],
+      "concentration_envelope": [
+        {
+          "depth_at_most": 0,
+          "best_minimum_coalesced_fraction": "0"
+        },
+        {
+          "depth_at_most": 1,
+          "best_minimum_coalesced_fraction": "1/3"
+        },
+        {
+          "depth_at_most": 2,
+          "best_minimum_coalesced_fraction": "1/2"
+        },
+        {
+          "depth_at_most": 3,
+          "best_minimum_coalesced_fraction": "1"
+        },
+        {
+          "depth_at_most": 4,
+          "best_minimum_coalesced_fraction": "1"
+        }
+      ],
+      "minimum_completion_depth": 3,
+      "shortest_completion_layers": [
+        [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        [
+          [
+            2,
+            3
+          ]
+        ]
+      ]
+    },
+    {
+      "middle_weights": [
+        2,
+        3
+      ],
+      "concentration_envelope": [
+        {
+          "depth_at_most": 0,
+          "best_minimum_coalesced_fraction": "0"
+        },
+        {
+          "depth_at_most": 1,
+          "best_minimum_coalesced_fraction": "1/3"
+        },
+        {
+          "depth_at_most": 2,
+          "best_minimum_coalesced_fraction": "1/2"
+        },
+        {
+          "depth_at_most": 3,
+          "best_minimum_coalesced_fraction": "1"
+        },
+        {
+          "depth_at_most": 4,
+          "best_minimum_coalesced_fraction": "1"
+        }
+      ],
+      "minimum_completion_depth": 3,
+      "shortest_completion_layers": [
+        [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        [
+          [
+            0,
+            1
+          ]
+        ]
+      ]
+    },
+    {
+      "middle_weights": [
+        1,
+        2,
+        3
+      ],
+      "concentration_envelope": [
+        {
+          "depth_at_most": 0,
+          "best_minimum_coalesced_fraction": "0"
+        },
+        {
+          "depth_at_most": 1,
+          "best_minimum_coalesced_fraction": "1/3"
+        },
+        {
+          "depth_at_most": 2,
+          "best_minimum_coalesced_fraction": "1/2"
+        },
+        {
+          "depth_at_most": 3,
+          "best_minimum_coalesced_fraction": "1"
+        },
+        {
+          "depth_at_most": 4,
+          "best_minimum_coalesced_fraction": "1"
+        }
+      ],
+      "minimum_completion_depth": 3,
+      "shortest_completion_layers": [
+        [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        [
+          [
+            1,
+            2
+          ]
+        ]
+      ]
+    }
+  ],
+  "status": "Finite exact feasibility; no new universal amortized inequality or improved coefficient"
+}

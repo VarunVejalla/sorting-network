@@ -30,6 +30,17 @@ baseline. A logarithmic-depth OR/AND prefix shows why global minimum
 certificate height cannot bound those groups. No improved coefficient or
 general quantitative compatibility inequality is proved.
 
+The [joint routing-group investigation](kahale-joint-groups.md) derives the
+adjacent-weight square/moment laws and a conditional certificate bound
+`c_i(S) >= r_i(S) + tau(G_i(S))`, with an exact meet-graph gate update.
+Complete four- and five-wire searches exhibit extra depth for completing
+neighboring weights together; a six-wire SMT screen agrees. These are
+finite feasibility results, not an asymptotic bound. The unweighted
+order-two certificate potential has only constant endpoint amplification,
+so the next rate target needs activation orders growing with n and an
+amortized accounting of transferred obligations. No Lean formalization of
+this investigation has been attempted.
+
 The [joint hierarchy-layer investigation](kahale-hierarchy-layer.md) identifies
 two barriers: joint histories collapse to the finest scale, and rank-update
 dependence can be leading order in a fully efficient layer. The remaining

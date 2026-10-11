@@ -1,0 +1,146 @@
+{
+  "solver": "z3",
+  "solver_version": "4.13.4",
+  "random_seed": 0,
+  "unproved_symmetry_restrictions": false,
+  "queries": [
+    {
+      "wires": 7,
+      "weights": [
+        3
+      ],
+      "depth_at_most": 3,
+      "status": "unsat",
+      "solve_seconds": 1.235,
+      "input_count": 35,
+      "timeout_ms": 5000
+    },
+    {
+      "wires": 7,
+      "weights": [
+        3
+      ],
+      "depth_at_most": 4,
+      "status": "sat",
+      "solve_seconds": 0.797,
+      "input_count": 35,
+      "timeout_ms": 5000,
+      "layers": [
+        [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            5
+          ],
+          [
+            4,
+            6
+          ]
+        ],
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            6
+          ],
+          [
+            4,
+            5
+          ]
+        ],
+        [
+          [
+            0,
+            6
+          ],
+          [
+            1,
+            5
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            0,
+            5
+          ],
+          [
+            2,
+            6
+          ],
+          [
+            3,
+            4
+          ]
+        ]
+      ],
+      "all_completed_middle_weights": [
+        3
+      ],
+      "equal_height_comparators": 3,
+      "total_comparators": 12,
+      "witness_checked_on_all_target_inputs": true
+    },
+    {
+      "wires": 7,
+      "weights": [
+        3,
+        4
+      ],
+      "depth_at_most": 3,
+      "status": "unsat",
+      "solve_seconds": 0.375,
+      "input_count": 70,
+      "timeout_ms": 5000
+    },
+    {
+      "wires": 7,
+      "weights": [
+        3,
+        4
+      ],
+      "depth_at_most": 4,
+      "status": "unknown",
+      "solve_seconds": 5.016,
+      "input_count": 70,
+      "timeout_ms": 5000,
+      "reason": "timeout"
+    },
+    {
+      "wires": 7,
+      "weights": [
+        3,
+        4
+      ],
+      "depth_at_most": 5,
+      "status": "unknown",
+      "solve_seconds": 5.016,
+      "input_count": 70,
+      "timeout_ms": 5000,
+      "reason": "timeout"
+    },
+    {
+      "wires": 7,
+      "weights": [
+        3,
+        4
+      ],
+      "depth_at_most": 6,
+      "status": "unknown",
+      "solve_seconds": 5.047,
+      "input_count": 70,
+      "timeout_ms": 5000,
+      "reason": "timeout"
+    }
+  ],
+  "status": "SMT feasibility only; UNKNOWN is inconclusive and UNSAT is not kernel-checked"
+}
