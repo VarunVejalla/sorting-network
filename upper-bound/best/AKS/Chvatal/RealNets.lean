@@ -4,6 +4,8 @@ public import AKS.Chvatal.KernelSetup
 public import AKS.Chvatal.FlipSpec
 public import AKS.Chvatal.NodeGeom
 public import AKS.Chvatal.GeneralParams
+public import AKS.Chvatal.PackNodeSpec2
+public import AKS.Chvatal.TwoRoundHyp
 
 @[expose] public section
 
@@ -25,10 +27,6 @@ theorem exec_eq_self_of_sorts {a : ℕ} (net : ComparatorNetwork a) (hs : Compar
       funext c
       exact congrArg (fun e : Fin a ≃o Fin a => e c) this
   rw [h2]; rfl
-
-theorem specJmax_le_real (π j : ℕ) (hj : j ≤ specJmax π) :
-    (j : ℝ) ≤ (128 / 4095 : ℝ) * ((π : ℝ) / 2) :=
-  (Nat.cast_le.2 hj).trans (Nat.floor_le (by positivity))
 
 theorem specJmax_le_half (π : ℕ) : specJmax π ≤ π / 2 := by
   have h := specJmax_le_real π _ le_rfl
@@ -146,7 +144,7 @@ theorem bitonic_depth_le_small (a : ℕ) (h : a ≤ 2 ^ 63) : (bitonicNetwork a)
   omega
 
 /-- Depth budget of a node network. -/
-def depthBound (t : ℕ) : ℕ := if t = 0 then 6320 else 3540
+def depthBound (t : ℕ) : ℕ := if t = 0 then 6320 else 2838
 
 /-- The node network `net` of a node with `a` wires (`up` to the parent, `down` to each child)
 at stage `t` meets the Theorem 5.1 guarantee `NodeSpec` with the `RealSpecs` budgets and has
@@ -165,34 +163,21 @@ theorem nodeGood_small (t a up down : ℕ) (h : a ≤ 2 ^ 63) :
   have := bitonic_depth_le_small a h
   unfold depthBound; split_ifs <;> omega
 
-theorem nodeGood_geom (t a up down : ℕ) (ht : 1 ≤ t) (G : NodeGeom a up down) :
+theorem nodeGood_geom (hyp : TwoRoundSeparatorExists) (t a up down : ℕ) (ht : 1 ≤ t)
+    (G : NodeGeom a up down) :
     ∃ net : ComparatorNetwork a, NodeGood t a up down net := by
   obtain ⟨m, n, f, b, hm, ha, hup, hdown, hm1, hm2, hn, hf⟩ := G
   subst ha hup hdown
   have hn0 : 0 < n := by omega
-  have h58 : 2 ^ 58 ≤ m := hm1.le
-  have h100 : 100 ≤ m := le_trans (by norm_num) h58
   have hfm : f ≤ m := by omega
-  have hEB : specEB t (m * n) = paperOrdinaryEpsB / 2 * ((m * n : ℕ) : ℝ) := by
-    unfold specEB
+  have hEB : specEB t (m * n) = (1 / 59000000 : ℝ) / 2 * ((m * n : ℕ) : ℝ) := by
+    unfold specEB paperOrdinaryEpsB
     rw [if_neg (by omega)]; ring
-  have hD : ∀ σ : Scramble m n, (physicalPackNet m n hn0 σ).depth ≤ depthBound t := by
-    intro σ
-    have := pack_depth_le m n hn0 σ 59 hm2
+  obtain ⟨σ1, σ2, ⟨hB1, hB2⟩, hF⟩ := hyp m n f b hm1 hm2 hn hm hf hfm
+  refine ⟨physicalPack2Net m n hn0 σ1 σ2, ?_, ?_⟩
+  · exact packNodeSpec2 hn0 σ1 σ2 hm hfm hEB hB1 hB2 hF
+  · have := pack2_depth_le m n hn0 σ1 σ2 43 hm2
     unfold depthBound; rw [if_neg (by omega)]; omega
-  rcases hf with rfl | ⟨hfbig, hfev⟩
-  · obtain ⟨σ, hB1, hB2⟩ := ExistsScrambleSeparator_twoSided_B h100 hn
-      (epsB_general h58)
-    refine ⟨physicalPackNet m n hn0 σ, ?_, hD σ⟩
-    exact packNodeSpec hn0 σ hm hfm hEB hB1 hB2 (fun h => absurd h (lt_irrefl 0))
-  · have hf10 : 10 ≤ f := le_trans (by norm_num) hfbig
-    let g : ScrambleGeometry := ScrambleGeometry.ofShape m n b f 64 h100 hn hf10 hfev
-      (by omega)
-    obtain ⟨σ, ⟨hB1, hF1⟩, ⟨hB2, hF2⟩⟩ :=
-      ExistsScrambleSeparator_twoSided (g := g)
-        (P := theorem51Params_general g hfbig h58) hfbig le_rfl le_rfl
-    refine ⟨physicalPackNet m n hn0 σ, ?_, hD σ⟩
-    exact packNodeSpec hn0 σ hm hfm hEB hB1 hB2 (fun _ => ⟨hF1, hF2⟩)
 
 theorem nodeGood_root (d : ℕ) (hd : 14 ≤ d) (a up down : ℕ) (ha : a = 64 ^ d) (hup : up = 0)
     (hdown : down = 64 ^ (d - 1)) :
@@ -222,7 +207,7 @@ theorem nodeGood_root (d : ℕ) (hd : 14 ≤ d) (a up down : ℕ) (ha : a = 64 ^
   · have := pack_depth_le (2 ^ 79) nn hn0 σ 79 le_rfl
     unfold depthBound; rw [if_pos rfl]; omega
 
-theorem nodeGood_exists (d : ℕ) (hd : 7 ≤ d) (hd14 : 14 ≤ d) (t l : ℕ) (ht : t < tf7 d)
+theorem nodeGood_exists (hyp : TwoRoundSeparatorExists) (d : ℕ) (hd : 7 ≤ d) (hd14 : 14 ≤ d) (t l : ℕ) (ht : t < tf7 d)
     (hdown : 0 < (flowSizes7 d hd).down l t) :
     ∃ net : ComparatorNetwork ((flowSizes7 d hd).a l t),
       NodeGood t ((flowSizes7 d hd).a l t) ((flowSizes7 d hd).up l t)
@@ -240,7 +225,7 @@ theorem nodeGood_exists (d : ℕ) (hd : 7 ≤ d) (hd14 : 14 ≤ d) (t l : ℕ) (
       (by simp [flowSizes7, flowUp7]) (by simp [flowSizes7, flowDown7])
   · have hbig : 2 ^ 63 < flowA7 d hd l t := not_le.mp hs
     obtain ⟨G⟩ := nodeGeom_exists d hd l t hdown hbig ht
-    exact nodeGood_geom t _ _ _ (by omega) G
+    exact nodeGood_geom hyp t _ _ _ (by omega) G
 
 open scoped Classical in
 noncomputable def nodeNetOf (d : ℕ) (hd : 7 ≤ d) (t l : ℕ) :
@@ -271,34 +256,34 @@ theorem realNets_empty (d : ℕ) (hd : 7 ≤ d) (t : ℕ) (b : KBag 64 d) (n : �
   unfold realNets
   rw [dif_neg h]
 
-theorem nodeNetOf_good (d : ℕ) (hd : 7 ≤ d) (hd14 : 14 ≤ d) (t l : ℕ) (ht : t < tf7 d)
+theorem nodeNetOf_good (hyp : TwoRoundSeparatorExists) (d : ℕ) (hd : 7 ≤ d) (hd14 : 14 ≤ d) (t l : ℕ) (ht : t < tf7 d)
     (hdown : 0 < (flowSizes7 d hd).down l t) :
     NodeGood t ((flowSizes7 d hd).a l t) ((flowSizes7 d hd).up l t)
       ((flowSizes7 d hd).down l t) (nodeNetOf d hd t l) := by
-  have hex := nodeGood_exists d hd hd14 t l ht hdown
+  have hex := nodeGood_exists hyp d hd hd14 t l ht hdown
   unfold nodeNetOf
   rw [dif_pos hex]
   exact hex.choose_spec
 
 /-- **A11 + B5c core.** The real node networks meet the node guarantee at every node that sends
 wires down. -/
-theorem realNets_specs {d : ℕ} (hd : 7 ≤ d) (hd14 : 14 ≤ d) : RealSpecs hd (realNets d hd) := by
+theorem realNets_specs (hyp : TwoRoundSeparatorExists) {d : ℕ} (hd : 7 ≤ d) (hd14 : 14 ≤ d) : RealSpecs hd (realNets d hd) := by
   intro t q ht hdown
   have hc := wireSets_card (flowSizes7 d hd) ht.le q
   generalize (wireSets (flowSizes7 d hd) t q).card = c at hc ⊢
   subst hc
   rw [realNets_eq d hd t q hdown]
-  exact (nodeNetOf_good d hd hd14 t q.l ht hdown).1
+  exact (nodeNetOf_good hyp d hd hd14 t q.l ht hdown).1
 
 /-- **Depth.** -/
-theorem realNets_depth_le {d : ℕ} (hd : 7 ≤ d) (hd14 : 14 ≤ d) (t : ℕ) (hts : t < tf7 d)
+theorem realNets_depth_le (hyp : TwoRoundSeparatorExists) {d : ℕ} (hd : 7 ≤ d) (hd14 : 14 ≤ d) (t : ℕ) (hts : t < tf7 d)
     (b : KBag 64 d) (n : ℕ) :
     (realNets d hd t b n).depth ≤ depthBound t := by
   by_cases h : n = (flowSizes7 d hd).a b.l t ∧ 0 < (flowSizes7 d hd).down b.l t
   · obtain ⟨h1, h2⟩ := h
     subst h1
     rw [realNets_eq d hd t b h2]
-    exact (nodeNetOf_good d hd hd14 t b.l hts h2).2
+    exact (nodeNetOf_good hyp d hd hd14 t b.l hts h2).2
   · rw [realNets_empty d hd t b n h]
     have : (⟨[]⟩ : ComparatorNetwork n).depth = 0 := by simp [ComparatorNetwork.depth]
     rw [this]; exact Nat.zero_le _

@@ -2,9 +2,9 @@
 
 A self-contained Lean 4 / Mathlib formalization of
 
-* `SortingDepth.minimum_depth_le_1770_logb` — for every `n ≥ 64^7`,
-  `D(n) ≤ 1770 · log₂ n − 56497`;
-* `SortingDepth.limsup_minimum_div_logb_le_1770` — `limsup D(n)/log₂ n ≤ 1770`,
+* `SortingDepth.minimum_depth_le_1419_logb` — for every `n ≥ 64^7`,
+  `D(n) ≤ 1419 · log₂ n − 43861`;
+* `SortingDepth.limsup_minimum_div_logb_le_1419` — `limsup D(n)/log₂ n ≤ 1419`,
 
 where `D(n)` (`SortingDepth.minimum n`) is the minimum depth of a comparator network sorting
 `n` wires. Both are in `AKS/Bounds/Chvatal1830Final.lean` and depend only on the standard axioms
@@ -13,27 +13,33 @@ where `D(n)` (`SortingDepth.minimum n`) is the minimum depth of a comparator net
 The proof follows V. Chvátal, *Lecture Notes on the New AKS Sorting Network*, DCS-TR-294 (1992)
 (`../../docs/dcs-tr-294.pdf`), §3–§7; `LEDGER.md` records how it was assembled. The central object is `Chvatal.chvatal_sorter_exists`
 (`AKS/Chvatal/RealSorter.lean`): for every `d ≥ 14` a sorting network on `64^d` wires of depth at
-most `totalDepth d = 6320 + (3d − 21)·3540 + 903` (`= 10620 d − 67117`). For `7 ≤ d ≤ 13`
+most `totalDepth d` (window `2^42 < m ≤ 2^43`, node depth 2838; `D(n) ≤ 1419 lg n − 43861`). For `7 ≤ d ≤ 13`
 full-wire bitonic sorting is used instead; both are restricted to `n` wires with
-`d = ⌈log₆₄ n⌉`, which gives the padded form `1770 log₂ n − 56497`.
+`d = ⌈log₆₄ n⌉`, which gives the padded form `1419 log₂ n − 43861`.
+
+## Two-round separator (new in this package)
+
+The 1419 bound replaces the one-round separator by the two-round one
+(sort, scramble `σ1`, sort, scramble `σ2`, sort; `PhysicalPack2`, `PackSpec2`, `PackNodeSpec2`).
+The probabilistic existence `Chvatal.twoRoundSeparatorExists : TwoRoundSeparatorExists`
+(`AKS/Chvatal/TwoRoundProof.lean`) is proved with three cases:
+`f = 0` (`Bulk2Exists`, B2 only); `131040 ≤ f < 8.5·10⁹` (`F2Exists.exists_twoRound_mid`:
+round-1 bulk B1, `F2SmallRank`/`F2R1` for `σ1`, bulk B2 and `F2R2n` for `σ2`, via the deterministic
+reduction `F2Det.F2_both_orientations` and the parameters `F2Params.ofF`); `f ≥ 8.5·10⁹`
+(old one-round Property F, `ExistsScrambleSeparator_twoSided_two`). New modules:
+`Bulk2*`, `F2Defs`, `F2Det`, `F2SR`, `F2R1Fail`, `F2R2*`, `F2ParamsOf`, `F2Exists`, `TwoRoundHyp`, `TwoRoundProof`.
 
 ## Building
 
 ```
 cd upper-bound/best
 lake build
+lake build AKS.Bounds.Chvatal1830Axioms
 ```
 
-The package shares the Mathlib checkout of the repository root (`packagesDir := "../../.lake/packages"`).
-The promoted pruning checkpoint passed `lake build` (3009 jobs) and the explicit
-`AKS.Bounds.Chvatal1830Axioms` target (3008 jobs) on 2026-10-09. Both headline
-modules freshly compiled; their guarded axiom checks allow only `propext`,
-`Classical.choice`, and `Quot.sound`. See [BUILD_STATUS.md](BUILD_STATUS.md).
-
-The current checkout contains 61 Lean source files under `AKS/`. The dated
-[source inventory](../../docs/chvatal-proof-inventory.md) records the earlier
-2026-10-09 pruning checkpoint and its counting method; its file and line totals
-are historical rather than an inventory of this checkout.
+The package shares the Mathlib checkout of the repository root. Both targets succeed (3003 jobs);
+the guard accepts only `propext`, `Classical.choice`, `Quot.sound` for the two headlines and
+`Chvatal.twoRoundSeparatorExists`. See [BUILD_STATUS.md](BUILD_STATUS.md).
 
 ## Layout
 

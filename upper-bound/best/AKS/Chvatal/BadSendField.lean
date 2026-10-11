@@ -12,13 +12,7 @@ namespace Chvatal
 open Finset
 open scoped Classical
 
-theorem paperOrdinaryEpsB_le : paperOrdinaryEpsB ≤ (1 / 59000000 : ℝ) := by
-  unfold paperOrdinaryEpsB
-  have hl := Real.log_two_lt_d9
-  rw [Real.sqrt_le_iff]
-  refine ⟨by positivity, ?_⟩
-  norm_num
-  nlinarith
+theorem paperOrdinaryEpsB_le : paperOrdinaryEpsB ≤ (1 / 59000000 : ℝ) := le_refl _
 
 theorem siblingFactor_real_nonneg : 0 ≤ siblingFactor := by
   unfold siblingFactor invDelta; norm_num

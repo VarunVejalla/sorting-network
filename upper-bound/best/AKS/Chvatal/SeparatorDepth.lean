@@ -6,7 +6,8 @@ module
   (`depth_flatMap_disjoint`). The canonical row scramble has empty comparators,
   so a sort–scramble–sort pack has depth at most twice one column sort.
 
-  At paper ordinary `m = 2^59` this is `2 · 1770 = 3540 = ordinaryStagePaperDepth`.
+  Two-round ordinary pack at `m = 2^43`: `3 · 946 = 2838 = ordinaryStagePaperDepth`.
+  (The old one-round `m = 2^59` figure was `2 · 1770 = 3540`.)
   At paper root `m = 2^79` this is `2 · 3160 = 6320 = rootSeparatorPaperDepth`.
 
   Status: pack-depth accounting only. Contiguous / abstract embeddings into

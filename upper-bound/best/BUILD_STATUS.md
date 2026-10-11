@@ -1,3 +1,14 @@
+# Build status
+
+2026-10-10, Lean 4.29.0-rc4: the 1419 result is unconditional.
+`lake build` (3003 jobs) and `lake build AKS.Bounds.Chvatal1830Axioms` succeed; no `sorry`,
+`native_decide`, `admit`, `axiom` or `unsafe` in `AKS/`. Headlines:
+`SortingDepth.minimum_depth_le_1419_logb` (`n ≥ 64^7`: `D(n) ≤ 1419 lg n − 43861`) and
+`SortingDepth.limsup_minimum_div_logb_le_1419`, no hypothesis; axioms: propext, Classical.choice,
+Quot.sound. Final step: `Chvatal.twoRoundSeparatorExists` (`TwoRoundProof.lean`).
+
+Older history (previous package state):
+
 # Verified pruning checkpoint
 
 ## Relocation check

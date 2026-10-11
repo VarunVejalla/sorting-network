@@ -19,17 +19,17 @@ namespace Chvatal
 /-- **Purity of the real network.** For `d ≥ 14` (needed for the root's `m = 2^79` pack) and
 every input permutation `v`, after `t_f` stages of `realNets` the keys on any level-`(d-6)`
 bag are all addressed below its ancestor of order 1 (no order-2 strangers). -/
-theorem realNets_purity {d : ℕ} (hd14 : 14 ≤ d) (v : Equiv.Perm (Fin (64 ^ d)))
+theorem realNets_purity (hyp : TwoRoundSeparatorExists) {d : ℕ} (hd14 : 14 ≤ d) (v : Equiv.Perm (Fin (64 ^ d)))
     (b : KBag 64 d) (hb : b.l = d - 6) :
     b.strangers 2 id
       ((execPlacement (flowSizes7 d (by omega)) (realNets d (by omega)) v (tf7 d) le_rfl).regs b)
       (by norm_num : 1 ≤ 64) = 0 :=
-  real_purity (by omega) (realNets d (by omega)) (realNets_specs (by omega) hd14) v
+  real_purity (by omega) (realNets d (by omega)) (realNets_specs hyp (by omega) hd14) v
     (fun t ht1 ht hP =>
       realStageKernel (by omega) (realNets d (by omega)) v t ht hP
-        (badSendField_real (by omega) (realNets d (by omega)) (realNets_specs (by omega) hd14)
+        (badSendField_real (by omega) (realNets d (by omega)) (realNets_specs hyp (by omega) hd14)
           v t ht1 ht hP)
-        (fringeSendField_real (by omega) (realNets d (by omega)) (realNets_specs (by omega) hd14)
+        (fringeSendField_real (by omega) (realNets d (by omega)) (realNets_specs hyp (by omega) hd14)
           v t ht1 ht hP)) b hb
 
 section Blocks
@@ -202,13 +202,13 @@ end Image
 end Blocks
 
 /-- Real specialization of the rank-interval statement for the blocks. -/
-theorem finalS_image_real {d : ℕ} (hd14 : 14 ≤ d) (v : Equiv.Perm (Fin (64 ^ d)))
+theorem finalS_image_real (hyp : TwoRoundSeparatorExists) {d : ℕ} (hd14 : 14 ≤ d) (v : Equiv.Perm (Fin (64 ^ d)))
     (b : KBag 64 d) :
     (finalS d (by omega) b).image
         (X (flowSizes7 d (by omega)) (realNets d (by omega)) v (tf7 d)) =
       Finset.univ.filter (fun x : Fin (64 ^ d) =>
         b.x * 2 ^ 42 ≤ x.val ∧ x.val < b.x * 2 ^ 42 + (finalS d (by omega) b).card) :=
   finalS_image d (by omega) (realNets d (by omega)) v
-    (fun b hb => realNets_purity hd14 v b hb) b
+    (fun b hb => realNets_purity hyp hd14 v b hb) b
 
 end Chvatal

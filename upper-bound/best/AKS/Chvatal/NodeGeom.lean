@@ -7,7 +7,7 @@ public import AKS.Chvatal.FlowSizes7
 
 namespace Chvatal
 
-/-! Node geometry: every node with >2^63 wires runs separator on m×n matrix with 2^58 < m ≤ 2^59. -/
+/-! Node geometry: every node with >2^63 wires runs separator on m×n matrix with 2^42 < m ≤ 2^43. -/
 
 /-- Geometry of a separator node with `a` wires, `up` to parent, `down` to each child. -/
 structure NodeGeom (a up down : ℕ) where
@@ -19,22 +19,22 @@ structure NodeGeom (a up down : ℕ) where
   ha : a = m * n
   hup : up = 2 * f * n
   hdown : down = b * n
-  hm1 : 2 ^ 58 < m
-  hm2 : m ≤ 2 ^ 59
+  hm1 : 2 ^ 42 < m
+  hm2 : m ≤ 2 ^ 43
   hn : 16 ≤ n
-  hf : f = 0 ∨ (85 * 10 ^ 8 ≤ f ∧ Even f)
+  hf : f = 0 ∨ (131040 ≤ f ∧ Even f)
 
 theorem nodeGeom_of_template (s m' f0 b0 : ℕ) (hm' : m' = 2 * f0 + 64 * b0)
     (hm'le : m' ≤ 2 ^ 37) (hm'pos : 0 < m') (hf0 : f0 = 0 ∨ 4095 * m' ≤ f0 * 2 ^ 37)
     (a up down : ℕ) (ha : a = 2 ^ s * m') (hup : up = 2 * (2 ^ s * f0))
     (hdown : down = 2 ^ s * b0) (hbig : 2 ^ 63 < a) : Nonempty (NodeGeom a up down) := by
-  have h37 : 2 ^ 37 ≤ 2 ^ 59 := Nat.pow_le_pow_right (by norm_num) (by norm_num)
+  have h37 : 2 ^ 37 ≤ 2 ^ 43 := Nat.pow_le_pow_right (by norm_num) (by norm_num)
   obtain ⟨r, hr1, hr2⟩ := exists_pow_scale m' hm'pos (le_trans hm'le h37)
   have hrs : r < s := by
     by_contra hc
     have h1 : 2 ^ s ≤ 2 ^ r := Nat.pow_le_pow_right (by norm_num) (by omega)
     have h2 : 2 ^ s * m' ≤ 2 ^ r * m' := Nat.mul_le_mul_right _ h1
-    have h3 : (2 : ℕ) ^ 59 < 2 ^ 63 := by norm_num
+    have h3 : (2 : ℕ) ^ 43 < 2 ^ 63 := by norm_num
     omega
   have hpow : 2 ^ s = 2 ^ r * 2 ^ (s - r) := by
     rw [← pow_add]; congr 1; omega
@@ -42,9 +42,9 @@ theorem nodeGeom_of_template (s m' f0 b0 : ℕ) (hm' : m' = 2 * f0 + 64 * b0)
   have hn : 16 ≤ 2 ^ (s - r) := by
     by_contra hc
     push_neg at hc
-    have h1 : 2 ^ r * m' * 2 ^ (s - r) ≤ 2 ^ 59 * 15 :=
+    have h1 : 2 ^ r * m' * 2 ^ (s - r) ≤ 2 ^ 43 * 15 :=
       Nat.mul_le_mul hr2 (by omega)
-    have h3 : (2 : ℕ) ^ 59 * 15 < 2 ^ 63 := by norm_num
+    have h3 : (2 : ℕ) ^ 43 * 15 < 2 ^ 63 := by norm_num
     omega
   refine ⟨⟨2 ^ r * m', 2 ^ (s - r), 2 ^ r * f0, 2 ^ r * b0, ?_, hmn, ?_, ?_, hr1, hr2, hn, ?_⟩⟩
   · exact scaled_m_eq f0 b0 64 r m' hm'
@@ -54,7 +54,7 @@ theorem nodeGeom_of_template (s m' f0 b0 : ℕ) (hm' : m' = 2 * f0 + 64 * b0)
     · left; rw [h]; simp
     · right
       obtain ⟨h1, h2⟩ := scaled_fringe_big_ratio f0 m' r hm'pos hm'le h hr1
-      exact ⟨by omega, h2⟩
+      exact ⟨h1, h2⟩
 
 theorem p64 (n : ℕ) : (64 : ℕ) ^ n = 2 ^ (6 * n) := by
   rw [show (64 : ℕ) = 2 ^ 6 by norm_num, ← pow_mul]

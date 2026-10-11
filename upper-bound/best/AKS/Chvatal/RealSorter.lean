@@ -1,7 +1,7 @@
 module
 
 /-
-  # The 1770 sorting network on `64^d` wires (Chvátal DCS-TR-294, §7)
+  # The two-round (1419) sorting network on `64^d` wires (Chvátal DCS-TR-294, §7)
 
   Assembles the proved pieces: the `t_f` stage networks (`stagesNet`, with the node networks
   `realNets`), rank-purity of the level-`(d-7)` blocks (`finalS_image_real`), the final layer of
@@ -19,8 +19,8 @@ public import AKS.Chvatal.DepthSkeleton
 namespace Chvatal
 
 /-- **Chvátal's sorting network**: for every `d ≥ 14` there is a sorting network on `64^d` wires
-of depth at most `totalDepth d = 6320 + (3d-21)·3540 + 903`. -/
-theorem chvatal_sorter_exists {d : ℕ} (hd14 : 14 ≤ d) :
+of depth at most `totalDepth d = 6320 + (3d-21)·2838 + 903`. -/
+theorem chvatal_sorter_exists (hyp : TwoRoundSeparatorExists) {d : ℕ} (hd14 : 14 ≤ d) :
     ∃ net : ComparatorNetwork (64 ^ d),
       ComparatorNetwork.Sorts.{0} net ∧ net.depth ≤ totalDepth d := by
   have hd : 7 ≤ d := by omega
@@ -34,20 +34,20 @@ theorem chvatal_sorter_exists {d : ℕ} (hd14 : 14 ≤ d) :
     (finalS_cover d hd) (fun b => b.x * 2 ^ 42) A (by
       intro p b
       rw [hA, stagesNet_exec]
-      exact finalS_image_real hd14 p b)
+      exact finalS_image_real hyp hd14 p b)
   refine ⟨T, hTs, hTd.trans ?_⟩
   have hst := stagesNet_depth_le (flowSizes7 d hd) (realNets d hd)
     depthBound (tf7 d) (Nat.le_succ _)
-    (fun t ht b n => realNets_depth_le hd hd14 t ht b n)
-  have hsum : ∑ t ∈ Finset.range (tf7 d), depthBound t = 6320 + (3 * d - 21) * 3540 := by
+    (fun t ht b n => realNets_depth_le hyp hd hd14 t ht b n)
+  have hsum : ∑ t ∈ Finset.range (tf7 d), depthBound t = 6320 + (3 * d - 21) * 2838 := by
     have : tf7 d = (3 * d - 21) + 1 := by unfold tf7; omega
     rw [this, Finset.sum_range_succ']
-    have h2 : ∀ i ∈ Finset.range (3 * d - 21), depthBound (i + 1) = 3540 := by
+    have h2 : ∀ i ∈ Finset.range (3 * d - 21), depthBound (i + 1) = 2838 := by
       intro i _; simp [depthBound]
     rw [Finset.sum_congr rfl h2]
     simp [depthBound]
     ring
-  have hA' : A.depth ≤ 6320 + (3 * d - 21) * 3540 := by rw [← hsum]; exact hst
+  have hA' : A.depth ≤ 6320 + (3 * d - 21) * 2838 := by rw [← hsum]; exact hst
   have hf : (stageNet (finalS d hd) (fun _ n => bitonicNetwork n)).depth ≤ 903 :=
     finalLayer_depth_le (finalS d hd) (finalS_disjoint d hd) hcard
   unfold totalDepth ordinaryRounds rootSeparatorPaperDepth ordinaryStagePaperDepth

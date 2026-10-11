@@ -32,7 +32,9 @@ sorting bound; trace correctness and depth through the global scheduler.
 
 ## Repository map
 
-- `upper-bound/best/`: current verified Chvátal upper package, coefficient `1770`.
+- `upper-bound/best/`: current verified Chvátal upper package with the two-round separator, coefficient `1419`.
+- `upper-bound/alternatives/chvatal-1770/`: previous best (one-round separator, coefficient `1770`).
+- `upper-bound/backlog/`: parked research ideas and ideas ruled out (read before proposing a new separator idea).
 - `upper-bound/experiments/`: separate improvement attempts; expander certificate tooling is optional.
 - `upper-bound/alternatives/legacy/`: rounded Paterson all-n coefficient `6991`, limsup `6990.5`, and older Seiferas/MGG constructions.
 - `lower-bound/best/`: complete Kahale lower-bound endpoint and its foundations.

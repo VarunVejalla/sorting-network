@@ -2,8 +2,11 @@
 
 ## Current package layout (2026-10-10)
 
-- `upper-bound/best`: current Chvátal endpoint, coefficient 1770. Its relocated
-  full build and both headline guards passed on 2026-10-10.
+- `upper-bound/best`: current Chvátal endpoint with the two-round separator, coefficient 1419
+  (`D(n) ≤ 1419 lg n − 43861`, `limsup ≤ 1419`). Full build and the headline guards passed on
+  2026-10-10; math notes in `upper-bound/best/notes/two-round/` (`BULK2.md`, `F2ROUND.md`).
+  The previous endpoint (1770) is `upper-bound/alternatives/chvatal-1770`; parked and ruled-out
+  ideas are in `upper-bound/backlog/`.
 - `lower-bound/best`: Kahale endpoint, coefficient approximately 3.270559454.
   Its real-valued liminf boundedness premise uses the legacy upper package;
   the finite Kahale inequality itself is independent of that construction.
