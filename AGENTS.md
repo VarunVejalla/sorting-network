@@ -29,12 +29,16 @@ sorting bound; trace correctness and depth through the global scheduler.
 - For Lean changes, keep definitions computable when appropriate, state complexity in network depth, and avoid adding axioms, `sorry`, `native_decide`, or trust extensions without clear justification and explicit user agreement. Follow local module conventions and cite the mathematical source of nontrivial constructions.
 - Verify only as needed for the requested work. A focused check is usually preferable to an unnecessarily broad build; report exactly what was checked and what was not.
 - Keep unrelated changes and generated/build artifacts out of commits. Do not push, publish, or contact others unless explicitly asked.
+- Parallel agents: follow [`docs/agent-protocol.md`](docs/agent-protocol.md) (own worktree per ticket, never leave uncommitted edits in the `main` checkout, claim levels, handoff report, verification checklist). Tickets are in `upper-bound/backlog/tickets.json` (`python3 scripts/tickets`).
+- Verifying a claimed upper bound: read [`upper-bound/TRUSTED.md`](upper-bound/TRUSTED.md); run `python3 scripts/check-contribution`. The accepted constant is recorded in `upper-bound/STATUS.json`.
 
 ## Repository map
 
 - `upper-bound/best/`: current verified Chvátal upper package with the two-round separator, coefficient `1419`.
 - `upper-bound/alternatives/chvatal-1770/`: previous best (one-round separator, coefficient `1770`).
-- `upper-bound/backlog/`: parked research ideas and ideas ruled out (read before proposing a new separator idea).
+- `upper-bound/backlog/`: ticket registry (`tickets.json`), research tickets, parked ideas and ideas ruled out (read before proposing a new separator idea).
+- `upper-bound/contributions/`: submission package for a proved better constant (pinned statement, guards); `upper-bound/TRUSTED.md` explains what is trusted.
+- `upper-bound/experiments/INDEX.md`: lifecycle state of every experiment folder.
 - `upper-bound/experiments/`: separate improvement attempts; expander certificate tooling is optional.
 - `upper-bound/alternatives/legacy/`: rounded Paterson all-n coefficient `6991`, limsup `6990.5`, and older Seiferas/MGG constructions.
 - `lower-bound/best/`: complete Kahale lower-bound endpoint and its foundations.
