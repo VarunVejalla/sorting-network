@@ -1,0 +1,26 @@
+name: tickets
+
+on:
+  push:
+    paths:
+      - 'upper-bound/backlog/tickets.json'
+      - 'upper-bound/STATUS.json'
+      - 'scripts/tickets'
+      - 'scripts/check-status'
+  pull_request:
+    paths:
+      - 'upper-bound/backlog/tickets.json'
+      - 'upper-bound/STATUS.json'
+      - 'scripts/tickets'
+      - 'scripts/check-status'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Validate the ticket registry
+        run: python3 scripts/tickets
+      - name: STATUS.json consistent with the sources
+        run: python3 scripts/check-status

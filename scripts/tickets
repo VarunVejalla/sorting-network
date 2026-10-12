@@ -1,0 +1,138 @@
+#!/usr/bin/env python3
+"""Validate and render the upper-bound ticket registry (upper-bound/backlog/tickets.json).
+
+  scripts/tickets                 # validate (exit 1 on errors; warnings are printed)
+  scripts/tickets --table         # print the ticket table in markdown (for README paste)
+  scripts/tickets --list [status] # one line per ticket, optionally filtered by status
+  scripts/tickets --show UB-14    # print one ticket
+
+Schema: upper-bound/backlog/tickets.schema.md. Claim levels follow AGENTS.md: a projected coefficient is
+never a theorem unless claim_level is 'kernel-checked'.
+"""
+import json
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REG = os.path.join(ROOT, "upper-bound", "backlog", "tickets.json")
+README = os.path.join(ROOT, "upper-bound", "backlog", "README.md")
+
+STATUSES = ["proposed", "ready", "active", "blocked", "parked", "done", "rejected"]
+CLAIMS = ["none", "conjecture", "simulation", "model", "hand-proof", "kernel-checked"]
+PRIORITIES = ["P1", "P2", "P3"]
+REQUIRED = ["id", "title", "priority", "status", "claim_level", "baseline", "projected", "owner",
+            "branch", "depends_on", "first_deliverable", "evidence", "notes"]
+
+
+def load():
+    with open(REG, encoding="utf-8") as f:
+        return json.load(f)["tickets"]
+
+
+def validate(tickets):
+    errors, warnings = [], []
+    ids = [t.get("id") for t in tickets]
+    for i in ids:
+        if ids.count(i) > 1:
+            errors.append(f"duplicate id {i}")
+    idset = set(ids)
+    for t in tickets:
+        tid = t.get("id", "?")
+        for k in REQUIRED:
+            if k not in t:
+                errors.append(f"{tid}: missing field '{k}'")
+        if not re.fullmatch(r"UB-\d{2,}", str(t.get("id", ""))):
+            errors.append(f"{tid}: id must look like UB-NN")
+        if t.get("status") not in STATUSES:
+            errors.append(f"{tid}: status '{t.get('status')}' not in {STATUSES}")
+        if t.get("claim_level") not in CLAIMS:
+            errors.append(f"{tid}: claim_level '{t.get('claim_level')}' not in {CLAIMS}")
+        if t.get("priority") not in PRIORITIES:
+            errors.append(f"{tid}: priority '{t.get('priority')}' not in {PRIORITIES}")
+        for dep in t.get("depends_on", []):
+            if dep not in idset:
+                errors.append(f"{tid}: depends_on unknown ticket {dep}")
+            if dep == tid:
+                errors.append(f"{tid}: depends on itself")
+        if t.get("projected") is not None and t.get("claim_level") == "kernel-checked" \
+                and t.get("status") != "done":
+            warnings.append(f"{tid}: projected value with claim_level kernel-checked but status {t.get('status')}")
+        if t.get("status") == "active" and not (t.get("owner") or t.get("branch")):
+            warnings.append(f"{tid}: active ticket has neither owner nor branch")
+        if t.get("status") == "done" and t.get("claim_level") in ("none", "conjecture"):
+            warnings.append(f"{tid}: done with claim_level {t.get('claim_level')}")
+        for ev in t.get("evidence", []):
+            if not os.path.exists(os.path.join(ROOT, ev)):
+                warnings.append(f"{tid}: evidence path not found: {ev}")
+    # cycles in depends_on
+    graph = {t["id"]: t.get("depends_on", []) for t in tickets if "id" in t}
+    state = {}
+
+    def dfs(n, stack):
+        if state.get(n) == 1:
+            errors.append("dependency cycle: " + " -> ".join(stack + [n]))
+            return
+        if state.get(n) == 2:
+            return
+        state[n] = 1
+        for m in graph.get(n, []):
+            if m in graph:
+                dfs(m, stack + [n])
+        state[n] = 2
+
+    for n in graph:
+        dfs(n, [])
+    # README cross-check (warning only: the README is a hand-maintained view)
+    if os.path.exists(README):
+        text = open(README, encoding="utf-8").read()
+        for t in tickets:
+            if t.get("id") and t["id"] not in text:
+                warnings.append(f"{t['id']} not mentioned in backlog/README.md (README is a hand-maintained view)")
+        for m in set(re.findall(r"UB-\d{2,}", text)):
+            if m not in idset:
+                warnings.append(f"backlog/README.md mentions {m}, which is not in tickets.json")
+    return errors, warnings
+
+
+def table(tickets):
+    lines = ["| ID | Priority | Status | Claim | Baseline -> projected | Idea |",
+             "|---|---|---|---|---|---|"]
+    for t in tickets:
+        proj = "" if t["projected"] is None else f"{t['baseline']} -> {t['projected']}"
+        lines.append(f"| {t['id']} | {t['priority']} | {t['status']} | {t['claim_level']} | {proj} | {t['title']} |")
+    return "\n".join(lines)
+
+
+def main():
+    tickets = load()
+    args = sys.argv[1:]
+    if args[:1] == ["--table"]:
+        print(table(tickets))
+        return 0
+    if args[:1] == ["--list"]:
+        flt = args[1] if len(args) > 1 else None
+        for t in tickets:
+            if flt is None or t["status"] == flt:
+                print(f"{t['id']}  {t['priority']}  {t['status']:<9} {t['claim_level']:<14} {t['title']}")
+        return 0
+    if args[:1] == ["--show"]:
+        for t in tickets:
+            if t["id"] == args[1]:
+                print(json.dumps(t, indent=2, ensure_ascii=False))
+                return 0
+        print("no such ticket")
+        return 1
+    errors, warnings = validate(tickets)
+    for w in warnings:
+        print("warning:", w)
+    for e in errors:
+        print("ERROR:", e)
+    if errors:
+        return 1
+    print(f"tickets ok: {len(tickets)} tickets")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
