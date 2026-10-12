@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+"""Regenerate the comparator Challenge and its Solution for another claimed constant (DRAFT tooling).
+
+  scripts/make-limsup-challenge 1000        # rewrite the constant in the two files
+  scripts/make-limsup-challenge --check     # report the constant currently used in both files
+
+Files (both in upper-bound/contributions/):
+  Challenge.lean         Mathlib-only definitions + `theorem upper_bound_certified ... := sorry`
+  UpperBoundSolution.lean root-level theorem with the same statement, proved from the candidate
+
+The constant must be an integer or a decimal literal (e.g. 945 or 944.5). The definitions in Challenge.lean
+are NOT regenerated: they must stay textually identical to upper-bound/best/AKS/Sort/*.lean; that is part of
+the trusted base (see upper-bound/TRUSTED.md) and is covered by scripts/trusted-fingerprint.
+"""
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FILES = [os.path.join(ROOT, "upper-bound", "contributions", f)
+         for f in ("Challenge.lean", "UpperBoundSolution.lean")]
+PAT = re.compile(r"\(\((\d+(?:\.\d+)?) : ℝ\) \+ ε\)")
+
+
+def main():
+    if len(sys.argv) != 2:
+        print(__doc__)
+        return 2
+    arg = sys.argv[1]
+    if arg == "--check":
+        vals = []
+        for p in FILES:
+            m = PAT.search(open(p, encoding="utf-8").read())
+            vals.append(m.group(1) if m else None)
+            print(f"{os.path.basename(p)}: {vals[-1]}")
+        return 0 if len(set(vals)) == 1 and vals[0] else 1
+    if not re.fullmatch(r"\d+(?:\.\d+)?", arg):
+        print("constant must be a non-negative decimal literal")
+        return 2
+    for p in FILES:
+        s = open(p, encoding="utf-8").read()
+        t, n = PAT.subn(f"(({arg} : ℝ) + ε)", s)
+        if n != 1:
+            print(f"{p}: expected exactly one occurrence, found {n}")
+            return 1
+        t = re.sub(r"with `C = \d+(?:\.\d+)?` in this instance", f"with `C = {arg}` in this instance", t)
+        open(p, "w", encoding="utf-8", newline="\n").write(t)
+        print("updated", p)
+    print("Now set `claimed` in UpperBoundContrib/Candidate.lean to the same constant, prove it, then run "
+          "scripts/trusted-fingerprint --update (owner) and scripts/check-contribution.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

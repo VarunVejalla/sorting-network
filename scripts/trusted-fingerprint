@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+"""Fingerprint the trusted base of the upper-bound verification pipeline.
+
+  scripts/trusted-fingerprint            # print `sha256  path` for every file in upper-bound/TRUSTED_FILES
+  scripts/trusted-fingerprint --check    # compare with upper-bound/TRUSTED.sha256 (exit 1 on any difference)
+  scripts/trusted-fingerprint --update   # rewrite upper-bound/TRUSTED.sha256 (owner action; review the diff!)
+
+Line endings are normalized to LF before hashing so Windows/Linux checkouts agree.
+"""
+import hashlib
+import os
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+LIST = os.path.join(ROOT, "upper-bound", "TRUSTED_FILES")
+SUMS = os.path.join(ROOT, "upper-bound", "TRUSTED.sha256")
+
+
+def trusted_paths():
+    paths = []
+    with open(LIST, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith("#"):
+                paths.append(line)
+    return paths
+
+
+def digest(rel):
+    with open(os.path.join(ROOT, rel), "rb") as f:
+        data = f.read().replace(b"\r\n", b"\n")
+    return hashlib.sha256(data).hexdigest()
+
+
+def current():
+    out = {}
+    for rel in trusted_paths():
+        if not os.path.exists(os.path.join(ROOT, rel)):
+            out[rel] = "MISSING"
+        else:
+            out[rel] = digest(rel)
+    return out
+
+
+def main():
+    cur = current()
+    mode = sys.argv[1] if len(sys.argv) > 1 else ""
+    if mode == "--update":
+        with open(SUMS, "w", encoding="utf-8", newline="\n") as f:
+            for rel, h in cur.items():
+                f.write(f"{h}  {rel}\n")
+        print(f"wrote {SUMS} ({len(cur)} files)")
+        return 0
+    if mode == "--check":
+        expected = {}
+        with open(SUMS, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    h, rel = line.split("  ", 1)
+                    expected[rel] = h
+        bad = []
+        for rel, h in cur.items():
+            if expected.get(rel) != h:
+                bad.append((rel, expected.get(rel, "<not recorded>"), h))
+        for rel in expected:
+            if rel not in cur:
+                bad.append((rel, expected[rel], "<removed from TRUSTED_FILES>"))
+        if bad:
+            print("TRUSTED BASE CHANGED (owner review required; then run scripts/trusted-fingerprint --update):")
+            for rel, e, h in bad:
+                print(f"  {rel}\n    expected {e}\n    actual   {h}")
+            return 1
+        print(f"trusted base unchanged ({len(cur)} files)")
+        return 0
+    for rel, h in cur.items():
+        print(f"{h}  {rel}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

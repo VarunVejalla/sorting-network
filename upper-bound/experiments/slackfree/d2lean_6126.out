@@ -1,0 +1,95 @@
+# (6,12,6) design=D2 grid=True mu=9.3041e-10 delta=1.8224e-10 lean7=True
+d=14 tf=22 lam=8 classes=389 senders=196 big=18 fails={'big_a_gt_c (needs fix (a))': 1} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(14, 9, 3, 'mid', 0.6295210166177908) f=[131072,1073741824]
+   examples: {'big_a_gt_c (needs fix (a))': (14, 3, 1, 'topRise', 1.000244140625)}
+d=15 tf=25 lam=9 classes=492 senders=249 big=36 fails={'big_a_gt_c (needs fix (a))': 4} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(15, 12, 4, 'mid', 0.6304985337243402) f=[131072,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (15, 3, 1, 'topRise', 1.000244140625)}
+d=16 tf=28 lam=10 classes=598 senders=302 big=60 fails={'big_a_gt_c (needs fix (a))': 10} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(16, 12, 4, 'mid', 0.6304985337243402) f=[131056,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (16, 3, 1, 'topRise', 1.000244140625)}
+d=17 tf=31 lam=11 classes=725 senders=366 big=89 fails={'big_a_gt_c (needs fix (a))': 20} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(17, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (17, 3, 1, 'topRise', 1.000244140625)}
+d=18 tf=34 lam=12 classes=855 senders=431 big=123 fails={'big_a_gt_c (needs fix (a))': 35} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(18, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (18, 3, 1, 'topRise', 1.000244140625)}
+d=19 tf=37 lam=13 classes=1007 senders=507 big=162 fails={'big_a_gt_c (needs fix (a))': 54} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(19, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (19, 3, 1, 'topRise', 1.000244140625)}
+d=20 tf=40 lam=14 classes=1162 senders=584 big=206 fails={'big_a_gt_c (needs fix (a))': 79} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(20, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (20, 3, 1, 'topRise', 1.000244140625)}
+d=21 tf=43 lam=15 classes=1340 senders=672 big=255 fails={'big_a_gt_c (needs fix (a))': 108} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(21, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (21, 3, 1, 'topRise', 1.000244140625)}
+d=22 tf=46 lam=16 classes=1521 senders=761 big=309 fails={'big_a_gt_c (needs fix (a))': 143} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(22, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (22, 3, 1, 'topRise', 1.000244140625)}
+d=23 tf=49 lam=17 classes=1726 senders=861 big=368 fails={'big_a_gt_c (needs fix (a))': 182} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(23, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (23, 3, 1, 'topRise', 1.000244140625)}
+d=24 tf=52 lam=18 classes=1934 senders=962 big=432 fails={'big_a_gt_c (needs fix (a))': 227} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(24, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (24, 3, 1, 'topRise', 1.000244140625)}
+d=25 tf=55 lam=19 classes=2167 senders=1074 big=501 fails={'big_a_gt_c (needs fix (a))': 276} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(25, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (25, 3, 1, 'topRise', 1.000244140625)}
+d=26 tf=58 lam=20 classes=2403 senders=1188 big=576 fails={'big_a_gt_c (needs fix (a))': 332} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(26, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (26, 3, 1, 'topRise', 1.000244140625)}
+d=27 tf=61 lam=21 classes=2665 senders=1313 big=656 fails={'big_a_gt_c (needs fix (a))': 392} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(27, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (27, 3, 1, 'topRise', 1.000244140625)}
+d=28 tf=64 lam=22 classes=2930 senders=1440 big=742 fails={'big_a_gt_c (needs fix (a))': 459} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(28, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (28, 3, 1, 'topRise', 1.000244140625)}
+d=29 tf=67 lam=23 classes=3222 senders=1578 big=833 fails={'big_a_gt_c (needs fix (a))': 530} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(29, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (29, 3, 1, 'topRise', 1.000244140625)}
+d=30 tf=70 lam=24 classes=3517 senders=1718 big=930 fails={'big_a_gt_c (needs fix (a))': 608} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(30, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (30, 3, 1, 'topRise', 1.000244140625)}
+d=31 tf=73 lam=25 classes=3840 senders=1869 big=1032 fails={'big_a_gt_c (needs fix (a))': 690} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(31, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (31, 3, 1, 'topRise', 1.000244140625)}
+d=32 tf=76 lam=26 classes=4166 senders=2022 big=1140 fails={'big_a_gt_c (needs fix (a))': 779} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(32, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (32, 3, 1, 'topRise', 1.000244140625)}
+d=33 tf=79 lam=27 classes=4521 senders=2186 big=1253 fails={'big_a_gt_c (needs fix (a))': 872} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(33, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (33, 3, 1, 'topRise', 1.000244140625)}
+d=34 tf=82 lam=28 classes=4879 senders=2353 big=1373 fails={'big_a_gt_c (needs fix (a))': 973} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(34, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (34, 3, 1, 'topRise', 1.000244140625)}
+d=35 tf=85 lam=29 classes=5267 senders=2531 big=1498 fails={'big_a_gt_c (needs fix (a))': 1078} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(35, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (35, 3, 1, 'topRise', 1.000244140625)}
+d=36 tf=88 lam=30 classes=5658 senders=2712 big=1630 fails={'big_a_gt_c (needs fix (a))': 1191} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(36, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (36, 3, 1, 'topRise', 1.000244140625)}
+d=37 tf=91 lam=31 classes=6080 senders=2904 big=1767 fails={'big_a_gt_c (needs fix (a))': 1308} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(37, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (37, 3, 1, 'topRise', 1.000244140625)}
+d=38 tf=94 lam=32 classes=6505 senders=3099 big=1911 fails={'big_a_gt_c (needs fix (a))': 1433} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(38, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (38, 3, 1, 'topRise', 1.000244140625)}
+d=39 tf=97 lam=33 classes=6962 senders=3305 big=2060 fails={'big_a_gt_c (needs fix (a))': 1562} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(39, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (39, 3, 1, 'topRise', 1.000244140625)}
+d=40 tf=100 lam=34 classes=7422 senders=3514 big=2216 fails={'big_a_gt_c (needs fix (a))': 1699} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(40, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (40, 3, 1, 'topRise', 1.000244140625)}
+d=41 tf=103 lam=35 classes=7915 senders=3734 big=2377 fails={'big_a_gt_c (needs fix (a))': 1840} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(41, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (41, 3, 1, 'topRise', 1.000244140625)}
+d=42 tf=106 lam=36 classes=8411 senders=3958 big=2546 fails={'big_a_gt_c (needs fix (a))': 1990} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(42, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (42, 3, 1, 'topRise', 1.000244140625)}
+d=43 tf=109 lam=37 classes=8941 senders=4193 big=2720 fails={'big_a_gt_c (needs fix (a))': 2144} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(43, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (43, 3, 1, 'topRise', 1.000244140625)}
+d=44 tf=112 lam=38 classes=9474 senders=4432 big=2902 fails={'big_a_gt_c (needs fix (a))': 2307} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(44, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (44, 3, 1, 'topRise', 1.000244140625)}
+d=45 tf=115 lam=39 classes=10042 senders=4682 big=3089 fails={'big_a_gt_c (needs fix (a))': 2474} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(45, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (45, 3, 1, 'topRise', 1.000244140625)}
+d=46 tf=118 lam=40 classes=10613 senders=4936 big=3284 fails={'big_a_gt_c (needs fix (a))': 2650} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(46, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (46, 3, 1, 'topRise', 1.000244140625)}
+d=47 tf=121 lam=41 classes=11220 senders=5201 big=3484 fails={'big_a_gt_c (needs fix (a))': 2830} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(47, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (47, 3, 1, 'topRise', 1.000244140625)}
+d=48 tf=124 lam=42 classes=11830 senders=5470 big=3692 fails={'big_a_gt_c (needs fix (a))': 3019} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(48, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (48, 3, 1, 'topRise', 1.000244140625)}
+d=49 tf=127 lam=43 classes=12477 senders=5750 big=3905 fails={'big_a_gt_c (needs fix (a))': 3212} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(49, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (49, 3, 1, 'topRise', 1.000244140625)}
+d=50 tf=130 lam=44 classes=13127 senders=6035 big=4127 fails={'big_a_gt_c (needs fix (a))': 3415} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(50, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (50, 3, 1, 'topRise', 1.000244140625)}
+d=51 tf=133 lam=45 classes=13815 senders=6331 big=4354 fails={'big_a_gt_c (needs fix (a))': 3622} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(51, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (51, 3, 1, 'topRise', 1.000244140625)}
+d=52 tf=136 lam=46 classes=14506 senders=6632 big=4590 fails={'big_a_gt_c (needs fix (a))': 3839} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(52, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (52, 3, 1, 'topRise', 1.000244140625)}
+d=53 tf=139 lam=47 classes=15236 senders=6944 big=4831 fails={'big_a_gt_c (needs fix (a))': 4060} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(53, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (53, 3, 1, 'topRise', 1.000244140625)}
+d=54 tf=142 lam=48 classes=15969 senders=7261 big=5081 fails={'big_a_gt_c (needs fix (a))': 4291} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(54, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (54, 3, 1, 'topRise', 1.000244140625)}
+d=55 tf=145 lam=49 classes=16742 senders=7589 big=5336 fails={'big_a_gt_c (needs fix (a))': 4526} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(55, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (55, 3, 1, 'topRise', 1.000244140625)}
+d=56 tf=148 lam=50 classes=17518 senders=7922 big=5600 fails={'big_a_gt_c (needs fix (a))': 4771} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(56, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (56, 3, 1, 'topRise', 1.000244140625)}
+d=57 tf=151 lam=51 classes=18335 senders=8266 big=5869 fails={'big_a_gt_c (needs fix (a))': 5020} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(57, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (57, 3, 1, 'topRise', 1.000244140625)}
+d=58 tf=154 lam=52 classes=19155 senders=8616 big=6148 fails={'big_a_gt_c (needs fix (a))': 5280} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(58, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (58, 3, 1, 'topRise', 1.000244140625)}
+d=59 tf=157 lam=53 classes=20017 senders=8977 big=6432 fails={'big_a_gt_c (needs fix (a))': 5544} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(59, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (59, 3, 1, 'topRise', 1.000244140625)}
+d=60 tf=160 lam=54 classes=20882 senders=9344 big=6726 fails={'big_a_gt_c (needs fix (a))': 5819} a/c=1.000244141 G/c=4.7476e-10 resid/c=5.8662e-10 (resid-G)/c=1.155e-10 cond42margin=2.7356@(60, 12, 4, 'mid', 0.6304985337243402) f=[131052,1073774592]
+   examples: {'big_a_gt_c (needs fix (a))': (60, 3, 1, 'topRise', 1.000244140625)}

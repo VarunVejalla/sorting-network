@@ -1,0 +1,28 @@
+# Trusted base of the upper-bound verification pipeline (see upper-bound/TRUSTED.md).
+# Enable branch protection with "Require review from Code Owners" for these paths to be enforced.
+/upper-bound/TRUSTED.md                      @VarunVejalla
+/upper-bound/TRUSTED_FILES                   @VarunVejalla
+/upper-bound/TRUSTED.sha256                  @VarunVejalla
+/upper-bound/STATUS.json                     @VarunVejalla
+/upper-bound/best/AKS/Sort/Defs.lean         @VarunVejalla
+/upper-bound/best/AKS/Sort/Depth.lean        @VarunVejalla
+/upper-bound/best/AKS/Sort/Monotone.lean     @VarunVejalla
+/upper-bound/best/AKS/Bounds/Minimum.lean    @VarunVejalla
+/upper-bound/best/lakefile.lean              @VarunVejalla
+/upper-bound/best/lake-manifest.json         @VarunVejalla
+/upper-bound/best/lean-toolchain             @VarunVejalla
+/upper-bound/contributions/lakefile.lean     @VarunVejalla
+/upper-bound/contributions/lake-manifest.json @VarunVejalla
+/upper-bound/contributions/lean-toolchain    @VarunVejalla
+/upper-bound/contributions/UpperBoundContrib/Spec.lean    @VarunVejalla
+/upper-bound/contributions/UpperBoundContrib/Best.lean    @VarunVejalla
+/upper-bound/contributions/UpperBoundContrib/Axioms.lean  @VarunVejalla
+/upper-bound/contributions/UpperBoundGate/               @VarunVejalla
+/upper-bound/contributions/Challenge.lean    @VarunVejalla
+/upper-bound/contributions/challenge.json    @VarunVejalla
+/upper-bound/contributions/UpperBoundSolution.lean @VarunVejalla
+/scripts/trusted-fingerprint                 @VarunVejalla
+/scripts/check-contribution                  @VarunVejalla
+/scripts/check-status                        @VarunVejalla
+/scripts/sorry-gate                          @VarunVejalla
+/.github/                                    @VarunVejalla

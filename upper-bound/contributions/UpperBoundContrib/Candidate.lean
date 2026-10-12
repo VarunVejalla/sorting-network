@@ -1,14 +1,21 @@
 import AKS.Bounds.Chvatal1830Final
+import UpperBoundContrib.Spec
+import UpperBoundContrib.Best
 
-/-! Replace this baseline with a closed proof of the canonical limsup statement.
-The declaration name and type shape are the contribution check's entry point. -/
+/-! # Contribution entry point
+
+Replace the baseline below with a closed proof that the canonical `D(n)` satisfies
+`UpperBoundContrib.BoundSpec claimed` for your claimed constant. Keep the names `claimed` and
+`candidate_bound` and this module path: the CI guards (`UpperBoundContrib.Axioms`,
+`UpperBoundContrib.Improvement`) look them up. The statement is pinned by `Axioms.lean`
+(`example : UpperBoundContrib.BoundSpec UpperBoundContrib.claimed := UpperBoundContrib.candidate_bound`),
+so the type cannot be changed. See `README.md`. -/
 
 namespace UpperBoundContrib
 
-theorem candidate_bound :
-    Filter.limsup
-      (fun n : ℕ => (SortingDepth.minimum n : ℝ) / Real.logb 2 n)
-      Filter.atTop ≤ (1419 : ℝ) := by
-  exact SortingDepth.limsup_minimum_div_logb_le_1419
+/-- The constant this contribution claims. -/
+def claimed : ℝ := 1419
+
+theorem candidate_bound : BoundSpec claimed := currentBest_spec
 
 end UpperBoundContrib

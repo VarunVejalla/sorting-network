@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+"""Local one-stop check of an upper-bound contribution (what CI runs, in order).
+
+  scripts/check-contribution            # fingerprint + status + build + guard; report improvement status
+  scripts/check-contribution --no-lean  # only the Python checks
+
+Exit status 0 means: the trusted base is unchanged, STATUS.json is consistent, and the candidate builds
+against the canonical definitions with the statement pinned and only standard axioms. The script then
+prints whether the claim strictly improves `currentBest` (informational; exit status unaffected).
+"""
+import os
+import subprocess
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONTRIB = os.path.join(ROOT, "upper-bound", "contributions")
+
+
+def run(cmd, cwd=ROOT, check=True):
+    print("$", " ".join(cmd), flush=True)
+    r = subprocess.run(cmd, cwd=cwd)
+    if check and r.returncode:
+        print(f"FAILED: {' '.join(cmd)} (exit {r.returncode})")
+        sys.exit(r.returncode)
+    return r.returncode
+
+
+def main():
+    py = sys.executable
+    run([py, os.path.join(ROOT, "scripts", "trusted-fingerprint"), "--check"])
+    run([py, os.path.join(ROOT, "scripts", "check-status")])
+    if "--no-lean" in sys.argv:
+        return 0
+    run(["lake", "build"], cwd=CONTRIB)
+    run(["lake", "build", "UpperBoundContrib.Axioms"], cwd=CONTRIB)
+    rc = run(["lake", "build", "UpperBoundGate"], cwd=CONTRIB, check=False)
+    print("IMPROVEMENT: claimed < currentBest (strictly better than the accepted best)"
+          if rc == 0 else
+          "IMPROVEMENT: no (claimed is not strictly below currentBest; fine for the baseline)")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

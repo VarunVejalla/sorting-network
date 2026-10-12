@@ -1,0 +1,34 @@
+# Files whose content defines what an upper-bound claim means (the trusted base).
+# One repository-relative path per line. `scripts/trusted-fingerprint --check` compares their
+# SHA-256 (line endings normalized to LF) with upper-bound/TRUSTED.sha256; changing any of them
+# requires `scripts/trusted-fingerprint --update` and owner review (.github/CODEOWNERS).
+#
+# Definitions of comparators, networks, execution, depth, sorting and D(n)
+upper-bound/best/AKS/Sort/Defs.lean
+upper-bound/best/AKS/Sort/Depth.lean
+upper-bound/best/AKS/Sort/Monotone.lean
+upper-bound/best/AKS/Bounds/Minimum.lean
+# The trusted statement, the accepted best constant, and the guards
+upper-bound/contributions/UpperBoundContrib/Spec.lean
+upper-bound/contributions/UpperBoundContrib/Best.lean
+upper-bound/contributions/UpperBoundContrib/Axioms.lean
+upper-bound/contributions/UpperBoundGate/Improvement.lean
+upper-bound/contributions/Challenge.lean
+upper-bound/contributions/challenge.json
+upper-bound/contributions/UpperBoundSolution.lean
+scripts/make-limsup-challenge
+scripts/tickets
+.github/CODEOWNERS
+.github/workflows/upper-bound-comparator.yml
+# Build configuration (toolchain, dependency pins, lake options)
+upper-bound/best/lakefile.lean
+upper-bound/best/lake-manifest.json
+upper-bound/best/lean-toolchain
+upper-bound/contributions/lakefile.lean
+upper-bound/contributions/lake-manifest.json
+upper-bound/contributions/lean-toolchain
+# The checking scripts and CI definitions themselves
+scripts/trusted-fingerprint
+scripts/check-contribution
+scripts/check-status
+.github/workflows/upper-bound-contributions.yml

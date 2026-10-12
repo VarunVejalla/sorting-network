@@ -1,12 +1,29 @@
 name: upper-bound-contributions
 
+# Checks a contribution to upper-bound/contributions (a closed proof of `BoundSpec claimed`).
+# The workflow file itself, the scripts it calls and the files listed in upper-bound/TRUSTED_FILES are
+# the trusted base; protect them with CODEOWNERS + "Require review from Code Owners" branch protection
+# (a pull request can edit this file, so CI alone cannot defend it; see upper-bound/TRUSTED.md).
+
 on:
   pull_request:
   workflow_dispatch:
 
 jobs:
-  check:
+  trusted-base:
+    name: trusted base unchanged and status consistent
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Fingerprint of the trusted base
+        run: python3 scripts/trusted-fingerprint --check
+      - name: STATUS.json consistent with the sources
+        run: python3 scripts/check-status
+
+  check:
+    name: build candidate, pinned statement, axiom guard
+    runs-on: ubuntu-latest
+    needs: trusted-base
     steps:
       - uses: actions/checkout@v5
       - name: Install elan
@@ -15,8 +32,26 @@ jobs:
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
       - name: Get shared Mathlib cache
         run: lake exe cache get
-      - name: Build candidate and axiom guard
+      - name: Build candidate
         working-directory: upper-bound/contributions
+        run: lake build
+      - name: Statement pin and axiom guard
+        working-directory: upper-bound/contributions
+        run: lake build UpperBoundContrib.Axioms
+
+  improvement:
+    name: claimed constant strictly below the accepted best (informational)
+    runs-on: ubuntu-latest
+    needs: check
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install elan
         run: |
-          lake build
-          lake build UpperBoundContrib.Axioms
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Get shared Mathlib cache
+        run: lake exe cache get
+      - name: Improvement gate (fails for the baseline, which claims exactly currentBest)
+        working-directory: upper-bound/contributions
+        run: lake build UpperBoundGate

@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+"""Check upper-bound/STATUS.json against the sources it summarizes.
+
+Hard errors (exit 1): the current-best coefficient in STATUS.json differs from `currentBest` in
+contributions/UpperBoundContrib/Best.lean; a listed headline theorem is missing from the headline file;
+the coefficient does not appear in the headline file.
+Warnings: the baseline `claimed` constant is below the current best (pending promotion?); documents
+listed in `docs_to_scan` mention a historical coefficient next to the word 'coefficient'/'endpoint'.
+"""
+import json
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def read(rel):
+    with open(os.path.join(ROOT, rel), encoding="utf-8") as f:
+        return f.read()
+
+
+def main():
+    status = json.loads(read("upper-bound/STATUS.json"))
+    best = status["current_best_coefficient"]
+    errors, warnings = [], []
+
+    m = re.search(r"def currentBest : ℝ := (\d+)",
+                  read("upper-bound/contributions/UpperBoundContrib/Best.lean"))
+    if not m or int(m.group(1)) != best:
+        errors.append(f"Best.lean currentBest ({m.group(1) if m else '?'}) != STATUS.json ({best})")
+
+    final = read(status["headline"]["file"])
+    for thm in status["headline"]["theorems"]:
+        if thm not in final:
+            errors.append(f"headline theorem {thm} not found in {status['headline']['file']}")
+    if str(best) not in final:
+        errors.append(f"coefficient {best} not found in headline file")
+
+    cand = re.search(r"def claimed : ℝ := ([0-9.]+)",
+                     read("upper-bound/contributions/UpperBoundContrib/Candidate.lean"))
+    if cand and float(cand.group(1)) < best:
+        warnings.append(f"Candidate.claimed = {cand.group(1)} < currentBest {best}: pending promotion?")
+
+    hist = status.get("historical_coefficients", [])
+    for rel in status.get("docs_to_scan", []):
+        try:
+            text = read(rel)
+        except OSError:
+            continue
+        for mm in re.finditer(r"(?:coefficient|endpoint)[^\n]{0,30}?(\d{3,4})", text):
+            val = int(mm.group(1))
+            if val != best and val in hist:
+                line = text.count("\n", 0, mm.start()) + 1
+                ctx = text.splitlines()[line - 1].lower()
+                if any(w in ctx for w in ("previous", "legacy", "alternatives", "former", "older",
+                                          "historical", "paterson")):
+                    continue
+                warnings.append(f"{rel}:{line} mentions {val} near 'coefficient/endpoint' (historical?)")
+
+    for w in warnings:
+        print("warning:", w)
+    for e in errors:
+        print("ERROR:", e)
+    if errors:
+        return 1
+    print(f"status ok: current best {best}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

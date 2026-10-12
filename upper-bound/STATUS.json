@@ -1,0 +1,21 @@
+{
+  "current_best_coefficient": 1419,
+  "statement": "limsup D(n)/log_2 n <= 1419, with D(n) <= 1419 log_2 n - 43861 for n >= 64^7",
+  "package": "upper-bound/best",
+  "headline": {
+    "file": "upper-bound/best/AKS/Bounds/Chvatal1830Final.lean",
+    "theorems": [
+      "minimum_depth_le_1419_logb",
+      "limsup_minimum_div_logb_le_1419"
+    ],
+    "guard": "AKS.Bounds.Chvatal1830Axioms"
+  },
+  "verified": "2026-10-10: clean full build (3002 jobs) and axiom guard; axioms propext, Classical.choice, Quot.sound",
+  "historical_coefficients": [6991, 1830, 1770, 1354],
+  "previous_best": {"coefficient": 1770, "package": "upper-bound/alternatives/chvatal-1770"},
+  "docs_to_scan": [
+    "README.md", "AGENTS.md", "upper-bound/README.md", "upper-bound/best/README.md",
+    "upper-bound/backlog/README.md", "docs/research-index.md"
+  ],
+  "note": "Single source of truth for the accepted best constant. Update together with contributions/UpperBoundContrib/Best.lean and run scripts/trusted-fingerprint --update when upper-bound/best is promoted."
+}

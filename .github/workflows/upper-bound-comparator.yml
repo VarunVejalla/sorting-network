@@ -1,0 +1,64 @@
+name: upper-bound-comparator
+
+# DRAFT, manual trigger only. Replays the contribution through an independent kernel in a sandbox:
+# the Mathlib-only Challenge (upper-bound/contributions/Challenge.lean) is compared with the solution
+# theorem `upper_bound_certified` of UpperBoundSolution, then the exported environment is checked by
+# nanoda. This mirrors .github/workflows/comparator.yml (legacy package). It has NOT been run in this
+# repository yet; expect to adjust tool versions on the first run.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Check the trusted base is unchanged
+        run: python3 scripts/trusted-fingerprint --check
+
+      - name: Build landrun
+        run: |
+          git clone --depth 1 https://github.com/Zouuup/landrun
+          cd landrun && go build -o /usr/local/bin/landrun ./cmd/landrun
+          landrun --version
+
+      - name: Install elan
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: Get Mathlib cache
+        run: lake exe cache get
+
+      - name: Build lean4export
+        run: |
+          LEAN_VERSION=$(sed 's|leanprover/lean4:||' lean-toolchain)
+          git clone --depth 1 --branch "$LEAN_VERSION" https://github.com/leanprover/lean4export
+          cd lean4export && lake build
+          echo "$GITHUB_WORKSPACE/lean4export/.lake/build/bin" >> $GITHUB_PATH
+
+      - name: Build comparator
+        run: |
+          git clone --depth 1 https://github.com/leanprover/comparator
+          cd comparator && lake build
+          echo "$GITHUB_WORKSPACE/comparator/.lake/build/bin" >> $GITHUB_PATH
+
+      - name: Build nanoda
+        run: |
+          git clone --depth 1 https://github.com/ammkrn/nanoda_lib
+          cd nanoda_lib && cargo build --release
+          cp target/release/nanoda_bin "$HOME/.elan/bin/" 2>/dev/null \
+            || cp target/release/nanoda "$HOME/.elan/bin/nanoda_bin" 2>/dev/null \
+            || (echo "nanoda binary not found:"; ls target/release/; exit 1)
+
+      - name: Build the solution module
+        working-directory: upper-bound/contributions
+        run: lake build UpperBoundSolution
+
+      - name: Run comparator
+        working-directory: upper-bound/contributions
+        run: lake env comparator challenge.json
