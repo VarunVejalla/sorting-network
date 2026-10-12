@@ -1,11 +1,85 @@
 # Tolerated error vs slope in Chvátal-type trees with sort-based separators
 
-Research note, 2026-10-10. Parameter model and a hand derivation, plus a small simulation. Nothing
-here is proved or certified, and no Lean was touched. Scripts are in this folder:
+Research note, 2026-10-10, with subsequent 945-candidate work recorded below. The parameter model and separator screen are research calculations; the scratch Lean results are listed separately and do not establish a sorting theorem. Scripts are in this folder:
 `exchange_rate.py` (the model, all variants; output in `exchange_rate.out`), `exchange_table.py`
 (per-ε tables, `exchange_table.out`), `slack_sensitivity.out`, and `sim_locality.py`
 (`sim_locality*.out`). Read `SURVEY.md` first. Chvátal page numbers are the **printed** page numbers of
 DCS-TR-294 (printed page = PDF page − 1).
+
+## New conditional sub-1000 screen
+
+[`SUB1000-CANDIDATE.md`](SUB1000-CANDIDATE.md) records an exact-rational
+candidate at `(k,A,nu)=(64,64,1/16)`. A two-tailed two-round bulk screen and the
+existing fringe floor fit a column height of `2^34`; the conditional depth
+price is conditionally 945. The unequal-width window, signed path reserve,
+address debt, integer rounding, and variable-slot intruder lemmas now compile
+in scratch files `VariableWindow.lean`, `SignedReserve.lean`,
+`AddressDebt.lean`, `IntegerRounding.lean`, and `VariableSlots.lean`; see the
+saved [proof plan](PLAN-945.md). Lean maps the address-corrected flow to
+base-64 bag addresses and checks its one- and two-level real occupancy
+identities. It also constructs even up-flows and exact-total integer child
+blocks and proves a 69-wire one-step occupancy invariant, conditionally on
+each bag's schedule hypotheses. The schedule-specific outsider invariant and
+subtree-mass hypotheses remain open. The earlier `+0.0053`
+terminal surcharge belonged to the superseded product-profile model and is not
+charged by the signed-debt model. Reproduce the scalar screen with
+[`sub1000_screen.py`](sub1000_screen.py). This is a research lead, not a bound.
+
+The rounding audit distinguishes signed address debt `d(v)` from integer
+occupancy discrepancy `eta(v)`. Lean constructs the balanced integer
+allocation and checks positivity of adjusted child targets at the `2^34`
+cutoff, under the local flow equations and discrepancy hypotheses.
+`VariableSlots.lean` isolates the two-boundary intruder estimate for unequal
+slot widths. Applying these local facts to the actual stage/frontier schedule
+and proving its variable-width outsider induction are still outstanding.
+
+Seed progress (2026-10-11): `CandidateSeed.lean` now packages the special
+root/level-one transitions and the next frontier transition as `FlowSizes`,
+with canonical disjoint and complete wire placements through stage 3. The root,
+level-one sender, and both stage-two frontier sender shapes have `NodeGood`
+providers; the top and bottom frontier geometries are proved by scaling their
+row templates. The stage-2-to-3 capacity equations are exact. This still gives
+no rank/outsider information about those owned wires, no stage-3 sender
+provider, and no extension to a global schedule. The root-to-level-one
+outsider base is described below; the next decisive proof is the actual
+stage-one-to-stage-two outsider transition.
+
+The root-to-level-one outsider base is now proved as
+`candidateSeed_root_child_outsider_bound`: each child's order-1 outsider count
+after root fan-out is at most `paperRootEpsB * 64^d`, assuming the root
+network's existing `NodeSpec`. `candidateSeed_root_child_tapered_budget`
+compares this with `mu * candidateReferenceCapacity d 1 1`. The proof uses
+exact native occupancy of the raw root and zero root outsiders, followed by
+the two boundary-error clauses. Also, `candidateSeed_stageOne_descendants_empty`
+proves exact zero mass below each level-two bag in the stage-one placement.
+`VariableWindow.lean` now has generic prefix/suffix cut-count lemmas: moving a
+cut across an interval of length `m` adds at most `m` keys. This gives the
+input-tail estimates once the stage-one output widths have the right
+cumulative profile. The current equal-width seed is short by about `31r` at
+the far cut after accounting for its `32r` half-fringe. The address-dependent
+end/middle profile in `AddressDebt.lean`, with the bootstrap `C/Q` added to
+up-flow, now has a formally checked rational profile and exact integer-wire
+split (`RaggedBootstrapFlow.lean`). Ragged stage-one and root stage-two row
+profiles, including exact conservation and the stage-three count reset, are
+also checked in `RaggedBootstrapGeometry.lean`, `RaggedResetGeometry.lean`,
+and `RaggedResetFlow.lean`. `RaggedFlowContract.lean` packages the required
+row-aligned cut bounds. These are finite geometry/count results, not yet a
+sorting-network transition or an improved global bound. The first stage-one
+input-tail gate is now kernel checked in `RaggedStageOneRank.lean`:
+`candidate_bootstrap_stage_one_input_tails` derives both signed hL/hR cut
+estimates for the actual level-one register, and bounds its two native tails
+by `paperRootEpsB * 64^d`, using the root `NodeSpec` and the exact bootstrap
+profile identities in `BootstrapTailSlack.lean`. The uniform-flow
+`bad_send0_real` interface is still not the right bridge here: its common
+width and global lower-tail premise discard the signed per-slot structure.
+
+The exact stage-one bag-card decomposition is also kernel checked in
+`StageOneWindowGate.lean` (`candidate_bootstrap_stage_one_card_split`). The
+next gate is to compose that count with the input-tail bounds in
+`variable_window_wrong_le_signed_path`, then connect the result to the ragged
+separator's actual output/rank guarantee. The variable-width profile is not
+yet installed in a coherent global scheduler; this work does not prove the
+stage-one-to-stage-two outsider transition or an improved global bound.
 
 ## VERDICT
 
