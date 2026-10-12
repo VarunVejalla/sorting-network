@@ -1,0 +1,22 @@
+name: upper-bound-contributions
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install elan
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Get shared Mathlib cache
+        run: lake exe cache get
+      - name: Build candidate and axiom guard
+        working-directory: upper-bound/contributions
+        run: |
+          lake build
+          lake build UpperBoundContrib.Axioms
