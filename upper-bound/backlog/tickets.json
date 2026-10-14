@@ -118,9 +118,9 @@
       "owner": "Varun",
       "branch": "tapered-945",
       "depends_on": [],
-      "first_deliverable": "Close actual frontier mass/range estimates and instantiate badSend0/fringeSend for the routed partitions; propagate the all-order outsider invariant, then terminal sorting and the complete eventual depth recurrence.",
-      "evidence": ["upper-bound/experiments/tapered/NOTES.md", "upper-bound/experiments/tapered/SURVEY.md", "upper-bound/backlog/few-hundred-tapered-invariant.md", "upper-bound/backlog/roadmap-700-200.md"],
-      "notes": "Observed 2026-10-13 in tapered-945: AdaptivePaddedWitness supplies actual networks at every live size >=2^34 with depth <=1890, arbitrary-cut estimates and rare-rank coefficient 1/9000000. Local Lean components are not a global theorem; 945 remains conditional and accepted best remains 1419. The old parked 780 L4 model is historical."
+      "first_deliverable": "Correct the frontier flow types and actual half-port/cohort contracts, then prove a signed native-prefix rank profile and instantiate the outsider induction on the actual routed execution; see UB-22 through UB-24.",
+      "evidence": ["upper-bound/experiments/tapered/NOTES.md", "upper-bound/experiments/tapered/SURVEY.md", "upper-bound/backlog/few-hundred-tapered-invariant.md", "upper-bound/backlog/roadmap-700-200.md", "upper-bound/backlog/tapered-recovery-plan.md"],
+      "notes": "945 remains a conditional price, accepted best 1419. Recovery audit found that actual/reference size, total/half up-flow, cohort support, and frontier/interior occupancy must be distinguished. Exact whole-bag sorting for a<=2^60 fits within 1890 layers and can replace the complicated small-size provider. Whole-subtree and uniform ancestor bounds do not close the rank gate; a signed nonuniform profile is needed."
     },
     {
       "id": "UB-08",
@@ -316,6 +316,66 @@
       "first_deliverable": "Prove or refute a fixed even/odd adjacent-region repair family with compaction/attenuation, simultaneous threshold guarantees, far-jump leakage and a complete composable depth recurrence.",
       "evidence": ["upper-bound/backlog/roadmap-700-200.md"],
       "notes": "A new lateral comparison channel could bypass the old assumption that all repair passes through parent fringe bandwidth. No adjacent-only per-key error premise is established. Charge compaction and every serial layer; input-dependent maximum matchings are not comparator networks. For a new factor-64 macro-stage, total depth gates are 4200 for 700 and 1200 for 200."
+    },
+    {
+      "id": "UB-21",
+      "title": "Audit tapered obstructions and specify first sub-1000 recovery gates",
+      "priority": "P1",
+      "status": "done",
+      "claim_level": "hand-proof",
+      "baseline": 1419,
+      "projected": null,
+      "owner": "Codex",
+      "branch": "research-tapered-recovery",
+      "depends_on": [],
+      "first_deliverable": "Source audit and reviewable recovery plan separating local contracts, exceptional flow targets, rank cancellation and final depth.",
+      "evidence": ["upper-bound/backlog/tapered-recovery-plan.md"],
+      "notes": "Completed source audit and recovery plan with two read-only sub-agent reviews and exact-rational calculations. No Lean rebuild or new sorting theorem. Implementation gates are UB-22, UB-23 and UB-24; the tapered worktree was not modified."
+    },
+    {
+      "id": "UB-22",
+      "title": "Use exact small-bag sorters and correct the large ordinary provider contract",
+      "priority": "P1",
+      "status": "ready",
+      "claim_level": "model",
+      "baseline": 1419,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "Prove an exact local provider for all a<=2^60 with depth<=1830 and actual half-up cohort support. For larger ordinary bags, prove one narrow-row rectangle and both half-fringe fit and cohort range; screen mu_new=63/64 times the old mu.",
+      "evidence": ["upper-bound/backlog/tapered-recovery-plan.md"],
+      "notes": "Existing bitonic depth source makes exact small bags affordable under the 1890 ceiling. Candidate large ordinary screen uses M=2^34+2^28 and arbitrary integer column count; positive scalar/support margins are model evidence only. Frontier providers still use their own count/port shapes."
+    },
+    {
+      "id": "UB-23",
+      "title": "Give every tapered frontier its own flow and discrepancy target",
+      "priority": "P1",
+      "status": "ready",
+      "claim_level": "hand-proof",
+      "baseline": 1419,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "Replace the all-active ordinary LocalIntegerFlow wrapper by a shape-indexed family; prove receiver counts and conservation through bootstrap, a symbolic six-stage cycle, and meeting.",
+      "evidence": ["upper-bound/backlog/tapered-recovery-plan.md"],
+      "notes": "Current GlobalFlowStep assumes frontier counts near ordinary mass, incompatible with FrontierDebtFlow top/bottom targets. At e=0 the top discrepancy is C/2^24, not a bounded rounding error. SameBagScale selects top-frontier bags, not strict interior bags."
+    },
+    {
+      "id": "UB-24",
+      "title": "Prove the signed native-prefix rank profile before extending the outsider induction",
+      "priority": "P1",
+      "status": "ready",
+      "claim_level": "conjecture",
+      "baseline": 1419,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": ["UB-23"],
+      "first_deliverable": "Prove the clipped prefix-count identity and the exact bootstrap profile; close a symbolic six-stage ordinary/frontier rank recurrence with native-prefix cancellation, cohort errors and a valid upper-retirement rule.",
+      "evidence": ["upper-bound/backlog/tapered-recovery-plan.md"],
+      "notes": "Ancestor/fringe keys are intentionally concentrated near descendant endpoints. Descendant-only deficits have signed q_j terms; their cancellation needs an ancestor lower bound in the same prefix. Keep shared endpoint deficits until telescoping; reject uniform ancestor-share assumptions. No global stability theorem is claimed."
     }
   ]
 }

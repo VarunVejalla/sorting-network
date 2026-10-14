@@ -1,5 +1,10 @@
 # Algorithm research toward 700 and 200
 
+The later [tapered recovery audit](tapered-recovery-plan.md) supersedes the
+small-provider installation assessment here. It identifies actual-size,
+half-up-port, cohort-support, and exceptional-flow gaps, and recommends exact
+whole-bag sorting for small registers before a signed rank-profile proof.
+
 Audit date: 2026-10-13. This is a research agenda, not a new sorting bound.
 The accepted endpoint remains 1419. The tapered worktree is developing 945;
 its local separator providers and conditional transition lemmas are much
