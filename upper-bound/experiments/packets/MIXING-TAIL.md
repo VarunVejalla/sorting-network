@@ -131,10 +131,11 @@ checked definitions, not an impossibility theorem for redesigned schedules.
 There is a favorable refinement: the positional ports are not arbitrary with
 respect to a 4096-wire packet grid. In every non-frontier `mid` node,
 `down = (64^3-1)·64^(g+2)` is divisible by 4096. Its half-fringe is
-`up/2 = 4095·32·64^g`, which is divisible by 4096 for `g ≥ 1`; at `g=0` it
-has residue 4064 modulo 4096. Similarly, `botDesc` has
+`up/2 = 4095·32·64^g`, which is divisible by 4096 for `g ≥ 2`; at `g=0` it
+has residue 4064 modulo 4096, and at `g=1` residue 2048. Similarly, `botDesc` has
 `down = 64^g-64^(h+2)`, divisible by 4096, and
-`up/2 = 4095·32·64^h`, aligned for `h ≥ 1` with residue 4064 at `h=0`.
+`up/2 = 4095·32·64^h`, aligned for `h ≥ 2`, residue 2048 at `h=1`, and
+residue 4064 at `h=0`.
 For `topRise`, `up/2 = 32·64^(1+f)`, aligned for `f ≥ 1` and equal to
 2048 at `f=0`. `topDesc` has no up-fringe. Thus most ordinary bulk cuts
 preserve packet boundaries exactly; the exceptional exponents create a
@@ -208,12 +209,52 @@ smallest mid exponents. In all these cases the remainder is within 64 wires
 of a packet boundary, except the half-fringe residue 2048, which is exactly
 half a packet. Thus the data support a stronger candidate interface than
 “all intervals aligned”: each port interval is a sequence of complete
-4096-packets plus at most two partial boundary fragments, and each bag is a
-complete packet bank plus one terminal fragment.
+4096-packet positions plus at most two partial boundary pieces. Bag
+capacities have a canonical arithmetic decomposition into full packet
+positions and at most one terminal remainder; the screen does not show that
+source packet contents assemble into this decomposition intact.
 
-This is only a finite screen and must not be read as a universal residue
-classification. The next proof target is a case split over `NodeShape` that
-establishes those residue classes for all exponents, then an explicit
-fragment-flow invariant showing where the at-most-two boundary pieces go
-and how they are repaired or carried. The JSON records the exact enumeration
-and its finite scope.
+The finite screen is not itself a universal theorem. A hand case split over
+the schedule's `NodeShape` formulas gives the uniform residue classification
+below. The JSON still records only the finite enumeration.
+
+### Hand derivation of the residue classes
+
+The universal modular calculation itself is short. Modulo `M=64^2=4096`,
+`64^k` is `1` for `k=0`, `64` for `k=1`, and `0` for `k≥2`. The `topDesc`
+shape has `g≥2` in the actual schedule: `exp_top` gives capacity exponent at
+least 3, while this shape's exponent is `g+1`. Substituting the source
+`NodeShape` formulas therefore gives this complete table (all entries are
+residues modulo 4096):
+
+| shape | bag size `a` | half fringe `up/2` | child block `down` |
+|---|---:|---:|---:|
+| off | 0 | 0 | 0 |
+| topDesc (`g≥2`) | 0 | 0 | 0 |
+| topRise | 0 | 2048 if `f=0`, else 0 | 4032 if `f=0`, else 0 |
+| mid | 4032 if `g=0`, else 0 | 4064 if `g=0`; 2048 if `g=1`; else 0 | 0 |
+| botDesc | 4032 if `h=0`, else 0 | 4064 if `h=0`; 2048 if `h=1`; else 0 | 0 |
+| botRise (`h≥2`) | 0 | 0 | 0 |
+
+For `botDesc`, `g≥h+2` makes the `64^g` term vanish modulo `M`. For `botRise`,
+the shape constructor only records `h≤g`, but schedule constraints improve
+this to `h≥2`: since `omega` does not rise, parity and the unit-step property
+give `omega(t+1)=omega(t)-1`; applying `t+2≤3ω(t)≤t+6` at both times forces
+`3ω(t)=t+6`. Then `t<3d-20` gives `3d≥t+21`, so
+`h=d+2ω(t)-t-9≥2`. Similarly, `topDesc` has `g≥2` by `exp_top` as noted
+above. These two schedule side conditions make the table valid for every
+active ordinary stage covered by `shape_rat`. This is a hand derivation, not
+yet a Lean lemma.
+
+It yields a precise wire-layout consequence. Each `downSet` is one contiguous
+interval of length `down`, and each `upSet` is two contiguous intervals of
+length `up/2`. Their endpoints can be off the 4096-grid, but each interval
+intersects at most two partial 4096-packets; its interior consists of whole
+packets. A receiving bag's wire count has a canonical arithmetic
+decomposition into full 4096-wire slots plus (only when its residue is 4032)
+a final 4032-wire slot. The residue calculation does not show that incoming
+sorted packet objects can actually be assembled into those slots intact.
+Existing partial pieces may also be carried through later ports, so their
+count needs its own recurrence; merge-and-deal currently expects equal-size
+inputs. That fragment-flow invariant is now the decisive gap, ahead of the
+spectral-family certificate.

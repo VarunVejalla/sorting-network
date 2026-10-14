@@ -74,6 +74,14 @@ This suggests no comparator-based repacking is needed in bulk if packet
 labels can be carried across placements. The fixed-label proof and frontier
 cases remain unproved.
 
+Follow-up: a hand case split of the six `NodeShape` formulas now gives the
+uniform 4096-residue table, using `exp_top` for `topDesc` and the omega-frontier
+schedule inequalities for `botRise`. Every individual port interval therefore
+cuts at most two packet boundaries under the assumed packet ordering. This is
+not yet a Lean lemma, and it does not prove that partial packet pieces remain
+bounded through repeated stages; merge-and-deal needs equal-size packets.
+Details are in the final section of `MIXING-TAIL.md`.
+
 Finite frontier screen: exact rational enumeration for `7 ≤ d ≤ 40` checked
 1,650 ordinary stages and 5,900 active bags; all receiver flow identities
 held. The only nonzero residues modulo 4096 were 4032 for bag/down sizes and
