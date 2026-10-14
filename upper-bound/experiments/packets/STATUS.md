@@ -51,6 +51,13 @@ Claim level: `conjecture` for the full UB-25 construction; the local count
 identity is `hand-proof` conditional on source theorems and `simulation` for
 the finite executable check.
 
+Follow-up arithmetic screen: for packet size 4096, the `mid` and `botDesc`
+down-block lengths are exactly packet-aligned; their half-fringes are aligned
+except at exponent 0 (residue 4064). `topRise` half-fringes align from
+exponent 1 (the exponent-0 case is 2048). This weakens the earlier raggedness
+concern for bulk nodes, but does not establish sorted packet order or price
+the many-run receive. Exact formulas and next gate are in `MIXING-TAIL.md`.
+
 Scheduler audit (2026-10-14): the proposed 64-fragment receive is not the
 checked Chvatal flow. Each child receives one variable-size positional
 `downSet` block from its parent and the union of up to 64 child `upSet` tails;

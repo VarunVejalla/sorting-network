@@ -125,3 +125,30 @@ merge cost. If the exact `downSet`/`upSet` shapes do not admit that interface,
 UB-25 needs a redesigned flow (and likely a new rate analysis), not just a
 better matching cycle. This is a structural compatibility finding from the
 checked definitions, not an impossibility theorem for redesigned schedules.
+
+### Fixed-packet boundary arithmetic (m = 4096)
+
+There is a favorable refinement: the positional ports are not arbitrary with
+respect to a 4096-wire packet grid. In every non-frontier `mid` node,
+`down = (64^3-1)·64^(g+2)` is divisible by 4096. Its half-fringe is
+`up/2 = 4095·32·64^g`, which is divisible by 4096 for `g ≥ 1`; at `g=0` it
+has residue 4064 modulo 4096. Similarly, `botDesc` has
+`down = 64^g-64^(h+2)`, divisible by 4096, and
+`up/2 = 4095·32·64^h`, aligned for `h ≥ 1` with residue 4064 at `h=0`.
+For `topRise`, `up/2 = 32·64^(1+f)`, aligned for `f ≥ 1` and equal to
+2048 at `f=0`. `topDesc` has no up-fringe. Thus most ordinary bulk cuts
+preserve packet boundaries exactly; the exceptional exponents create a
+bounded packet-boundary defect (at most one partial packet at a given cut),
+not arbitrary raggedness.
+
+This makes the next port test materially more promising: assume each node's
+register order is partitioned into contiguous sorted 4096-wire packets, then
+check how `parentPart` and the 64 child `upSet`s split those packets using the
+exact residues above. It should first establish a run-level transport lemma,
+including the few frontier residues, before pricing any merging. It still
+does not validate the 57-layer estimate: a receiver can inherit many packet
+runs (two fringe intervals from each child plus a parent middle interval),
+and their count/length profile must be fed into a real repacking network.
+Nor does the current separator theorem provide the assumed packet ordering.
+This is an exact divisibility calculation from the `NodeShape` formulas in
+`FlowSizes7.lean`, not a kernel-checked new theorem.
