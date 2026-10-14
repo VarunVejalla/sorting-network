@@ -396,16 +396,16 @@
       "id": "UB-26",
       "title": "Bootstrap a binary power-scale localization network through recursive overlapping cleanup",
       "priority": "P2",
-      "status": "proposed",
+      "status": "active",
       "claim_level": "conjecture",
       "baseline": 1419,
       "projected": null,
-      "owner": null,
-      "branch": null,
+      "owner": "Codex (GPT-6)",
+      "branch": "ub-26-localization",
       "depends_on": [],
-      "first_deliverable": "Prove the fixed two-pass cleanup lemma and all-n recurrence F(n)<=a*log2(n)+O(1)+2*F(2*ceil(n^theta)); then price one binary preprocessor that uniformly confines Boolean disorder to n^theta positions with a<200*(1-2*theta), theta<1/2.",
-      "evidence": ["upper-bound/backlog/sub200-structural-strategies.md"],
-      "notes": "Author/signature: GPT-6 (Codex), 2026-10-14. Conditional hand derivation gives coefficient a/(1-2*theta); theta=1/4,a=90 would yield 180 if the localization network exists. No such network is supplied. Uses localized disorder/overlapping blocks from the 2024 paper as a binary self-recursion, distinct from the parked UB-08 black-box compilation. Average displacement or few outsiders does not imply the needed interval-width bound; both cleanup passes, padding and base recursion costs must be charged."
+      "first_deliverable": "Check whether the early-stop fractional outsider invariant yields any physical localization contract; price the rank-tail width inflation. Then identify a binary multiscale rank-pure prefix with depth coefficient p < 200*(1-theta), or a concrete obstruction, for blocks of size n^theta.",
+      "evidence": ["upper-bound/backlog/sub200-structural-strategies.md", "upper-bound/experiments/localized-cleanup/STATUS.md", "upper-bound/experiments/localized-cleanup/PREFIX-SCREEN.md", "upper-bound/best/AKS/Chvatal/RealBlocks.lean", "upper-bound/best/AKS/Chvatal/RealNetwork.lean"],
+      "notes": "Claimed 2026-10-14 by Codex (GPT-6), branch ub-26-localization. A rank-pure block partition gives one parallel recursive cleanup and coefficient p/(1-theta); an s-sorted interval of width n^theta uses two overlapping cleanup passes and coefficient a/(1-2*theta). The checked Chvatal proof gets rank purity only at fixed 2^42-wire blocks; earlier fractional outsider bounds do not directly give physical localization. No cheaper prefix is identified yet."
     },
     {
       "id": "UB-27",

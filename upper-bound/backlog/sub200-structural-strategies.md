@@ -163,8 +163,38 @@ The localized-disorder interface and overlapping-block idea are present in
 is a **binary** preprocessor and a fully priced self-recursion, rather than
 the independent binary compilation screened in UB-08.
 
-Construct the recursive sorting family at strictly smaller sizes, using
-exact base sorters below a fixed cutoff. Its depth `F(n)` satisfies
+There is a stronger interface worth testing first. Suppose the prefix
+partitions the output wires into fixed consecutive blocks of length at most
+`n^theta`, and each block carries a **contiguous interval of global ranks**
+for every permutation input. Then recursively sorting every block in
+parallel needs just one recursive level:
+
+```text
+F(n) <= P(n) + F(ceil(n^theta)),
+P(n) <= p*log n + O(1),
+limsup F(n)/log n <= p/(1-theta).
+```
+
+This rank-pure-block contract is stronger than s-sortedness, but is the
+better target because cleanup does not double. To get below 200 it is enough
+to build such a prefix with `p < 200*(1-theta)`; for `theta=1/4`, this is
+`p<150`. Once the order of the rank intervals is proved, all block sorts
+run concurrently and no cross-block merge remains.
+
+The checked Chvatal network already has rank-pure final blocks of
+`64^7=2^42` wires (`RealBlocks.realNets_purity` and
+`RealBlocks.finalS_image_real`). Stop its prefix earlier so those blocks
+have size `n^theta`: it uses `3(1-theta)log_64(n)+O(1)` ordinary stages,
+each of depth 2838. This gives
+`P(n)=1419*(1-theta)*log₂(n)+O(1)`, hence the recurrence above returns
+exactly 1419. This source screen is useful because it rules out a tempting
+shortcut precisely: early stopping the existing tree does not improve its
+coefficient.
+
+If no cheap rank-pure partitioner is available, seek only the weaker
+s-sorted contract and use the overlapping cleanup route. Construct the
+recursive sorting family at strictly smaller sizes, using exact base sorters
+below a fixed cutoff. Its depth `F(n)` satisfies
 
 ```text
 F(n) <= a*log n + O(1) + 2*F(2*ceil(n^theta)),    0 < theta < 1/2.
