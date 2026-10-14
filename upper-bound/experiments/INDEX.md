@@ -22,6 +22,7 @@ its numbers) · **retired** (superseded; kept in history only).
 | `paterson/` | notes + scripts | reference | UB-06 | audit of the completed Paterson construction (requirements versus cost) |
 | `expanders/` | separate Lake package | reference | UB-06 | optional expander-certificate package (own trust boundary) |
 | `localized-cleanup/` | research notes | active (Codex) | UB-26 | rank-pure partition versus localized-interval recursion; existing Chvatal early-stop screen |
+| `coupled-multiway/` | derivation + handoff notes | reference | UB-26 | active-level aggregate error sum, boundary-displacement interface, and tapered 528 handoff; hand-derived, not a theorem |
 
 ## Policy for Lean forks
 
