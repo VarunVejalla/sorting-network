@@ -381,7 +381,7 @@
       "id": "UB-25",
       "title": "Preserve sorted packets using merge-and-deal balancing throughout the scheduler",
       "priority": "P2",
-      "status": "active",
+      "status": "parked",
       "claim_level": "conjecture",
       "baseline": 1419,
       "projected": null,

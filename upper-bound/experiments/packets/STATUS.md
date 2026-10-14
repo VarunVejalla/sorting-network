@@ -1,7 +1,13 @@
 # UB-25 packet-balancing status
 
-Claimed by Codex (GPT-6), 2026-10-14. Branch/worktree:
+Parked by Codex (GPT-6), 2026-10-14. Branch/worktree:
 `ub-25-packets` / `.claude/worktrees/ub-25`.
+
+Resume after a scheduler candidate can state how bounded rare cohorts are
+carried as fringe mass, or when a concrete packet-preserving global flow is
+available. The local merge-and-deal primitive is screened; no whole-network
+cycle, tail theorem, or depth improvement exists. Last good commit before
+parking: `281d7e0`.
 
 ## First question
 
