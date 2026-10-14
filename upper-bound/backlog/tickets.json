@@ -1,6 +1,6 @@
 {
   "schema": "upper-bound/backlog/tickets.schema.md",
-  "updated": "2026-10-13",
+  "updated": "2026-10-14",
   "tickets": [
     {
       "id": "UB-00",
@@ -376,6 +376,66 @@
       "first_deliverable": "Prove the clipped prefix-count identity and the exact bootstrap profile; close a symbolic six-stage ordinary/frontier rank recurrence with native-prefix cancellation, cohort errors and a valid upper-retirement rule.",
       "evidence": ["upper-bound/backlog/tapered-recovery-plan.md"],
       "notes": "Ancestor/fringe keys are intentionally concentrated near descendant endpoints. Descendant-only deficits have signed q_j terms; their cancellation needs an ancestor lower bound in the same prefix. Keep shared endpoint deficits until telescoping; reject uniform ancestor-share assumptions. No global stability theorem is claimed."
+    },
+    {
+      "id": "UB-25",
+      "title": "Preserve sorted packets using merge-and-deal balancing throughout the scheduler",
+      "priority": "P2",
+      "status": "proposed",
+      "claim_level": "conjecture",
+      "baseline": 1419,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "Prove the exact merge-and-deal threshold-count identity; certify one matching-cycle family and bulk/tail bounds at unbounded packet counts; trace sorted packets through a complete ordinary/frontier routing cycle and price repacking.",
+      "evidence": ["upper-bound/backlog/sub200-structural-strategies.md", "upper-bound/best/AKS/Bitonic/Net.lean", "upper-bound/best/AKS/Sort/Untangle.lean"],
+      "notes": "Author/signature: GPT-6 (Codex), 2026-10-14; exact runtime variant/effort not exposed. Merging two sorted 2^q packets and dealing alternate outputs implements rounded averaging in q+1 layers. Conditional deterministic L2 screen avoids a profile union, but rare cohorts and packet-preserving global routing are open. The q=12, 30-round, coefficient-195 calculation is only a depth gate under an unchanged stage rate; no matching/tail tuple is claimed. Extends UB-13 by changing the mixing operation, not just the first sort."
+    },
+    {
+      "id": "UB-26",
+      "title": "Bootstrap a binary power-scale localization network through recursive overlapping cleanup",
+      "priority": "P2",
+      "status": "proposed",
+      "claim_level": "conjecture",
+      "baseline": 1419,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "Prove the fixed two-pass cleanup lemma and all-n recurrence F(n)<=a*log2(n)+O(1)+2*F(2*ceil(n^theta)); then price one binary preprocessor that uniformly confines Boolean disorder to n^theta positions with a<200*(1-2*theta), theta<1/2.",
+      "evidence": ["upper-bound/backlog/sub200-structural-strategies.md"],
+      "notes": "Author/signature: GPT-6 (Codex), 2026-10-14. Conditional hand derivation gives coefficient a/(1-2*theta); theta=1/4,a=90 would yield 180 if the localization network exists. No such network is supplied. Uses localized disorder/overlapping blocks from the 2024 paper as a binary self-recursion, distinct from the parked UB-08 black-box compilation. Average displacement or few outsiders does not imply the needed interval-width bound; both cleanup passes, padding and base recursion costs must be charged."
+    },
+    {
+      "id": "UB-27",
+      "title": "Alternate coarse stages with periodic precision restoration and certify the whole period",
+      "priority": "P2",
+      "status": "proposed",
+      "claim_level": "conjecture",
+      "baseline": 1419,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "Screen an ideal exact-bag restoration stage after coarse routing on actual ports; if recoverable, derive a phase-indexed affine error transfer including forcing, transient cohort support, frontiers, terminal purity and actual bits advanced per period.",
+      "evidence": ["upper-bound/backlog/sub200-structural-strategies.md", "upper-bound/backlog/tapered-recovery-plan.md"],
+      "notes": "Author/signature: GPT-6 (Codex), 2026-10-14. Changes precision over time, beyond UB-19's static weighted profile. At the unchanged tapered stage rate, seven hypothetical depth-64 stages plus one depth-1890 restoration price to 146.125; no coarse provider or valid cycle is known. Local exact sorting cannot recover keys absent from the bag. Reject cycles that lose repair reach or stall advancement; reusing tapered flow requires UB-23/24's actual rank accounting."
+    },
+    {
+      "id": "UB-28",
+      "title": "Certify a whole randomized multiscale network using paired Boolean forcing witnesses",
+      "priority": "P3",
+      "status": "proposed",
+      "claim_level": "conjecture",
+      "baseline": 1419,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "Define a dyadic even/odd block-pair matching family; extract compatible output-1/output-0 forcing certificates and compare with exhaustive or SAT failures; derive or refute a uniform witness-counting recurrence before seeking a whole-run failure bound below one.",
+      "evidence": ["upper-bound/backlog/sub200-structural-strategies.md"],
+      "notes": "Author/signature: GPT-6 (Codex), 2026-10-14. Explore one global existence proof instead of universally good local gadgets. At AND/OR comparator gates, a surviving adjacent inversion has disjoint initial 1- and 0-forcing leaf sets; counting must preserve shared DAG dependencies. The candidate two-pass d-matching schedule has depth gate 2d<200 before extra sweeps. Per-input high probability from Randomized Shellsort does not imply one network works for all inputs; no successful counting estimate or sorter is claimed."
     }
   ]
 }
