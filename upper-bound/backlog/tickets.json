@@ -1,6 +1,6 @@
 {
   "schema": "upper-bound/backlog/tickets.schema.md",
-  "updated": "2026-10-12",
+  "updated": "2026-10-13",
   "tickets": [
     {
       "id": "UB-00",
@@ -28,9 +28,9 @@
       "owner": null,
       "branch": null,
       "depends_on": [],
-      "first_deliverable": "Lean interface plus a cost table for replacing bitonic without touching separator mathematics",
-      "evidence": ["upper-bound/backlog/ordinary-node-tickets.md"],
-      "notes": ""
+      "first_deliverable": "Generic exact-column-sorter interface: sortedness, permutation/count preservation, sorted-input fixed point, ordered comparator endpoints, and depth; audit MatrixBridge, Bulk2Bridge, FlipSpec and PhysicalPack2.",
+      "evidence": ["upper-bound/backlog/ordinary-node-tickets.md", "upper-bound/backlog/roadmap-700-200.md"],
+      "notes": "2026-10-13 audit: exact sorting appears reusable independently of bitonic. Keep promised approximate repair under a separate contract (UB-18/UB-14). Odd-even mergesort alone has the same triangular depth budget."
     },
     {
       "id": "UB-02",
@@ -80,17 +80,17 @@
     {
       "id": "UB-05",
       "title": "Jointly optimize branching factor, number of rounds, and node geometry",
-      "priority": "P2",
-      "status": "proposed",
+      "priority": "P3",
+      "status": "parked",
       "claim_level": "model",
       "baseline": 1419,
       "projected": null,
       "owner": null,
       "branch": null,
       "depends_on": [],
-      "first_deliverable": "Small exact/rational parameter sweep with a valid global-schedule cost formula",
-      "evidence": ["upper-bound/experiments/chvatal/scripts", "upper-bound/experiments/tapered/NOTES.md"],
-      "notes": "Parameter freedom of the current family is already exhausted: optimum near (x,y,z)=(5.8,9.9,4.5) (tapered/NOTES.md)."
+      "first_deliverable": "Reopen the exact/rational parameter sweep only after changing a binding local contract or schedule constraint; price the full global recurrence.",
+      "evidence": ["upper-bound/experiments/chvatal/scripts", "upper-bound/experiments/tapered/NOTES.md", "upper-bound/backlog/roadmap-700-200.md"],
+      "notes": "Current-family parameter freedom has already been screened. Repeating that sweep is lower priority than UB-14, UB-18 and the signed-cut/repair-channel route. The active 945 development is UB-07."
     },
     {
       "id": "UB-06",
@@ -104,53 +104,53 @@
       "branch": null,
       "depends_on": [],
       "first_deliverable": "A concrete halver depth/error pair and a compatible fringe/bulk guarantee",
-      "evidence": ["upper-bound/backlog/ruled-out.md"],
-      "notes": "Expander halvers cost ~1/eps depth; sort-based separators win for eps < 2^-4 (ruled-out.md)."
+      "evidence": ["upper-bound/backlog/ruled-out.md", "upper-bound/backlog/roadmap-700-200.md"],
+      "notes": "The tiny-error drop-in expander route remains unattractive at the present epsilon. That screen does not rule out moderate-error halvers or attenuators under a changed composition contract; see UB-19/UB-20. Price depth and the complete fringe/bulk contract."
     },
     {
       "id": "UB-07",
-      "title": "Tapered stranger invariant allowing larger local error",
-      "priority": "P3",
-      "status": "parked",
+      "title": "Tapered nonuniform flow: close the global 945 candidate",
+      "priority": "P1",
+      "status": "active",
       "claim_level": "model",
       "baseline": 1419,
-      "projected": 780,
-      "owner": null,
-      "branch": null,
+      "projected": 945,
+      "owner": "Varun",
+      "branch": "tapered-945",
       "depends_on": [],
-      "first_deliverable": "Recalibrated parameter model against the 1419 endpoint, then a target below 1200",
-      "evidence": ["upper-bound/experiments/tapered/NOTES.md", "upper-bound/experiments/tapered/SURVEY.md", "upper-bound/backlog/few-hundred-tapered-invariant.md"],
-      "notes": "Explored 2026-10-11: the invariant is already tapered; a larger eps alone does not help; the lever is the schedule slack (UB-12). All-four-changes variant L4 ~780 windowed (model)."
+      "first_deliverable": "Close actual frontier mass/range estimates and instantiate badSend0/fringeSend for the routed partitions; propagate the all-order outsider invariant, then terminal sorting and the complete eventual depth recurrence.",
+      "evidence": ["upper-bound/experiments/tapered/NOTES.md", "upper-bound/experiments/tapered/SURVEY.md", "upper-bound/backlog/few-hundred-tapered-invariant.md", "upper-bound/backlog/roadmap-700-200.md"],
+      "notes": "Observed 2026-10-13 in tapered-945: AdaptivePaddedWitness supplies actual networks at every live size >=2^34 with depth <=1890, arbitrary-cut estimates and rare-rank coefficient 1/9000000. Local Lean components are not a global theorem; 945 remains conditional and accepted best remains 1419. The old parked 780 L4 model is historical."
     },
     {
       "id": "UB-08",
       "title": "Compile the 2024 shallow high-arity k-sorters into binary sorters",
-      "priority": "P1",
-      "status": "proposed",
-      "claim_level": "none",
+      "priority": "P3",
+      "status": "parked",
+      "claim_level": "model",
       "baseline": 1419,
       "projected": null,
       "owner": null,
       "branch": null,
       "depends_on": [],
-      "first_deliverable": "An explicit finite arity schedule and a proved binary coefficient below 200, or a quantitative barrier",
-      "evidence": ["upper-bound/backlog/high-upside-architecture.md", "upper-bound/experiments/k-sorting-2024/README.md"],
-      "notes": ""
+      "first_deliverable": "Identify a useful s-sorted/merge contract and prove its binary repair bridge; reopen numerical compilation only if a full binary depth calculation beats the tapered candidate.",
+      "evidence": ["upper-bound/backlog/high-upside-architecture.md", "upper-bound/experiments/k-sorting-2024/README.md", "upper-bound/backlog/roadmap-700-200.md"],
+      "notes": "Existing k-sorting-2024 source screen: independent binary compilation with current base sorters does not improve the endpoint. Retain the localized-disorder interface as a research lead, not a projected sub-200 construction. See roadmap-700-200.md."
     },
     {
       "id": "UB-09",
-      "title": "Extract finite-M constants from Chvatal's M-sorter construction",
-      "priority": "P1",
+      "title": "Screen feasible finite M before extracting the M-sorter constant",
+      "priority": "P2",
       "status": "proposed",
-      "claim_level": "none",
+      "claim_level": "hand-proof",
       "baseline": 1419,
       "projected": null,
       "owner": null,
       "branch": null,
       "depends_on": [],
-      "first_deliverable": "Prove a finite c_M at M=16 or 32 and check c_M * d2(M)/log2 M < 200",
-      "evidence": ["upper-bound/backlog/high-upside-architecture.md"],
-      "notes": ""
+      "first_deliverable": "Use the actual finite separator/geometry/fringe conditions to find feasible M, then extract c_M and charge binary replacement. The cited proof has necessary M >=204800, already excluding M=16/32.",
+      "evidence": ["upper-bound/backlog/high-upside-architecture.md", "upper-bound/backlog/roadmap-700-200.md"],
+      "notes": "Source audit 2026-10-13: Theorem 1.2 uses M/32 < m <= M/16 and sqrt(2(1+ln m)/m) <= (1/5)*k^(-4). For k>=2 and integer m>=1 this implies m>=12800, hence M>=204800; the real finite threshold is larger. This is a necessary-condition hand derivation, not an improved upper bound. Do not substitute the large-M asymptotic coefficient at small M."
     },
     {
       "id": "UB-10",
@@ -214,18 +214,18 @@
     },
     {
       "id": "UB-14",
-      "title": "Cheap approximate last sort (d-sorter for the third column sort)",
+      "title": "Replace the tapered final column sort by a certified promised repair",
       "priority": "P1",
       "status": "proposed",
       "claim_level": "simulation",
       "baseline": 1419,
-      "projected": 1050,
+      "projected": null,
       "owner": null,
       "branch": null,
       "depends_on": [],
-      "first_deliverable": "Note proving or refuting the promise: state the d-sorter, show output excess <= input excess + promise-tail mass (standard comparators never increase marks above a cut, cf. ScrambleMonotone), bound the tail with the BULK2 machinery; scale the displacement simulation with an adversary choosing input after sigma",
-      "evidence": [],
-      "notes": "Idea from the 2026-10-12 discussion. Simulation (m=4096,n=256): sort-3 input displacement ~3*m^(1/4) rms (max ~115 adversarial) vs full height at sort 2. At m~2^42 a d-sorter with d~2^15-2^16 costs ~200 layers vs 903-946. Caveat: per-column tails vs L1 control against an adversary that picks the input after sigma. Stage depth 2838 -> ~2100 (coefficient ~1050)."
+      "first_deliverable": "Specify the repair network and prove its deterministic cut bound against the full-sort baseline plus explicit tail mass; then prove one uniform scramble witness for all consumed cuts/ranks, both orientations, padding and fringe cohorts. Reprice the entire final operation against <=140 layers under the intended 945 schedule.",
+      "evidence": ["upper-bound/backlog/roadmap-700-200.md"],
+      "notes": "Rebased 2026-10-13: retaining two depth-630 sorts gives coefficient (1260+R)/2 if the tapered global schedule closes. R=200 prices to730; R=140 to700; R=136 to698. These are arithmetic gates, not constructed repairs. Existing RMS/sampled displacement does not supply uniform adversarial tails; L1 alone permits a profile about 40x over the desired cut allowance. See UB-18 and roadmap-700-200.md. Earlier unverified samples at m=4096,n=256 reported RMS displacement about 3*m^(1/4) and adversarial maximum about 115; these are discovery data. The earlier 1050 projection used the 1419 schedule."
     },
     {
       "id": "UB-15",
@@ -237,10 +237,10 @@
       "projected": null,
       "owner": null,
       "branch": null,
-      "depends_on": ["UB-03"],
-      "first_deliverable": "Two-round fringe contract at f ~ 2^11-2^15, or a precise obstruction",
-      "evidence": ["upper-bound/best/notes/two-round/F2ROUND.md", "upper-bound/experiments/fringe-single-round/NOTES.md"],
-      "notes": "Route certifies f >= 92160 (F2ROUND.md); the fringe floor pins m >= ~2^40-2^42 since f ~ m*nu/(2Ak). Needed to drop m toward 2^34 (coefficient < 700 only with this plus UB-12 and UB-14)."
+      "depends_on": [],
+      "first_deliverable": "Audit a small-fringe contract at arbitrary column width, including the nonempty large-rank R2n event, and charge the same network bulk/fringe failure budget. Distinguish it from the already present width-16 provider.",
+      "evidence": ["upper-bound/best/notes/two-round/F2ROUND.md", "upper-bound/experiments/fringe-single-round/NOTES.md", "upper-bound/backlog/roadmap-700-200.md"],
+      "notes": "Observed 2026-10-13: tapered-945 CyclicSmallF2Params/AdaptivePaddedWitness use f=16000 at width 16 and common rare-rank coefficient 1/9000000. Its R2n range is empty, so this is not a general-width small-fringe theorem. The standard large-width branch retains f=131040. Lowering the scale further must reprice both probability and flow conditions."
     },
     {
       "id": "UB-16",
@@ -256,6 +256,66 @@
       "first_deliverable": "Pinned statement, trusted-base fingerprint, eventual-bound spec, improvement gate, CODEOWNERS, comparator Challenge draft",
       "evidence": ["upper-bound/TRUSTED.md", "upper-bound/contributions/README.md", "scripts/check-contribution"],
       "notes": "Comparator Challenge for the limsup statement is a draft (not run locally: needs landrun and nanoda)."
+    },
+    {
+      "id": "UB-17",
+      "title": "Audit algorithm research toward 700 and 200",
+      "priority": "P1",
+      "status": "done",
+      "claim_level": "hand-proof",
+      "baseline": 1419,
+      "projected": null,
+      "owner": null,
+      "branch": "research-roadmap-700-200",
+      "depends_on": [],
+      "first_deliverable": "Source audit, exact depth gates, primary-literature necessary-condition screen and an updated research agenda.",
+      "evidence": ["upper-bound/backlog/roadmap-700-200.md"],
+      "notes": "Completed 2026-10-13 on research-roadmap-700-200, with read-only sub-audits in research-audit-column-cost and research-audit-architecture. No Lean builds or new sorting theorem. Status distinguishes accepted 1419, conditional 945, arithmetic 698 gate and conjectural lateral repair."
+    },
+    {
+      "id": "UB-18",
+      "title": "Extract the minimal tapered cut/rank provider contract",
+      "priority": "P1",
+      "status": "ready",
+      "claim_level": "none",
+      "baseline": 1419,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "Map every ordinary/frontier badSend0 and fringeSend use to positional cuts and native rank thresholds; prove a sufficient prescribed-cut interface or document why all-cut control is necessary.",
+      "evidence": ["upper-bound/backlog/roadmap-700-200.md"],
+      "notes": "AdaptivePaddedWitness currently quantifies over every r<=a. A 65-cut gadget is not a substitute. Cut choices must depend only on fixed schedule geometry, never the input. Enables a correctly scoped UB-14 search."
+    },
+    {
+      "id": "UB-19",
+      "title": "Track signed cumulative cut discrepancy in the multiway transfer",
+      "priority": "P2",
+      "status": "proposed",
+      "claim_level": "conjecture",
+      "baseline": 1419,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": ["UB-11"],
+      "first_deliverable": "Derive a finite affine transfer for signed cut discrepancies, child-count defects, left/right outsider imbalance and higher-rank errors; close forcing, root/frontier and terminal-purity budgets with explicit depth.",
+      "evidence": ["upper-bound/backlog/roadmap-700-200.md"],
+      "notes": "Information retained by this state may sharpen current per-child bounds. It does not erase the approximately 32 mismatches per outsider in the one-sided 64-child example. Keep every such amplification in the operator. No contraction or coefficient is claimed."
+    },
+    {
+      "id": "UB-20",
+      "title": "Add adjacent-region compaction and attenuation as a repair channel",
+      "priority": "P2",
+      "status": "proposed",
+      "claim_level": "conjecture",
+      "baseline": 1419,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": ["UB-19"],
+      "first_deliverable": "Prove or refute a fixed even/odd adjacent-region repair family with compaction/attenuation, simultaneous threshold guarantees, far-jump leakage and a complete composable depth recurrence.",
+      "evidence": ["upper-bound/backlog/roadmap-700-200.md"],
+      "notes": "A new lateral comparison channel could bypass the old assumption that all repair passes through parent fringe bandwidth. No adjacent-only per-key error premise is established. Charge compaction and every serial layer; input-dependent maximum matchings are not comparator networks. For a new factor-64 macro-stage, total depth gates are 4200 for 700 and 1200 for 200."
     }
   ]
 }
