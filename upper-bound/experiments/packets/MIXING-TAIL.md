@@ -338,3 +338,21 @@ a pathwise or profile-aggregate discrepancy theorem for integer merge-and-deal,
 strong enough to close under the coupled rank recurrence. In particular, the
 singleton tail remains present and must be charged explicitly; the screen does
 not solve that tail problem.
+
+### Adversarial profile search (14 October 2026)
+
+To test whether the seven hand-picked profiles understated the leakage,
+`adversarial-rounding-search.py` runs single-coordinate simulated annealing on
+both Boolean endpoint profiles `{0,64}^c` and unrestricted integer profiles
+`{0,…,64}^c` for the fixed 26-round schedule at each packet count. Five
+restarts of 6,000 proposals each were run for `c=64,128,256,512`. The largest
+found spill fractions were respectively `0.3906%`, `0.3906%`, `0.3937%`, and
+`0.3922%`; all best profiles ended with coordinate range at most 2. At `c=64`
+the best spill is exactly `16/(64·64)`, attained with final range 1.
+
+This search did not raise the observed spill materially, and repeated restarts
+converged to the same small values. It is still only a heuristic search on one
+fixed cycle per size, so it is not a worst-case certificate. The next rigorous
+step remains proving a uniform final discrepancy bound for every initial
+profile under these cycles (or an explicit bound on their rounding error
+operator), then checking that bound against the rank-profile recurrence.
