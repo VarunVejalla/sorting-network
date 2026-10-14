@@ -33,9 +33,12 @@ of sorted Boolean packet inputs through q=7.
 No new Lean adapter theorem or matching schedule has been added. The fixed
 deal layout must be carried through the whole generalized network and its
 final target order before `Untangle.untangle` applies. Separately, a matching
-cycle still needs a useful contraction and a rigorous rare-cohort tail; the
-q=12/30-round/195 figure remains only a depth gate from the proposal. See
-`MERGE-DEAL.md` for the derivation and limitations.
+cycle still needs a useful contraction and a rigorous rare-cohort tail. There
+is an exact limitation: a total cohort count of one stays in one packet under
+every merge-and-deal matching, since `(1,0)` maps to `(1,0)`. UB-25 therefore
+needs the scheduler to tolerate bounded rare cohorts as explicit fringe mass
+or add a mechanism beyond pure packet averaging. The q=12/30-round/195 figure
+remains only a depth gate from the proposal. See `MERGE-DEAL.md` for details.
 
 Claim level: `conjecture` for the full UB-25 construction; the local count
 identity is `hand-proof` conditional on source theorems and `simulation` for

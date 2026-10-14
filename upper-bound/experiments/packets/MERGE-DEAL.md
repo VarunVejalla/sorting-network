@@ -52,3 +52,13 @@ The global AKS flow must also split sorted packets into fragments at ports,
 keep those fragments sorted, and charge all re-merging and frontier repair.
 No matching family, tail theorem, or complete scheduler is currently known
 to fit the UB-25 depth budget.
+
+There is an exact obstruction for the most delicate tail: if the total zero
+count over all packets is one, every matching round leaves it concentrated
+in exactly one packet. The only nonzero pair is `(1,0)`, and merge-and-deal
+maps it to `(1,0)`; unmatched packets do not change. Thus no schedule made
+only of this primitive can spread a singleton cohort or satisfy a tail
+contract that demands such spreading. This does not rule out UB-25 if the
+global proof can track singleton and other bounded cohorts as exceptional
+fringe mass, but that exception needs an explicit account in the flow and
+terminal repair.
