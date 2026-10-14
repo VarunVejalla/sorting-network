@@ -261,3 +261,35 @@ are added. A successful next result should be one of: a refined all-rank tail
 certificate for a concrete vector; a new probabilistic existence proof for
 one vector with the full tail envelope; or a construction whose
 matching/routing structure supplies localization deterministically.
+
+## Seeded joint cut/rank/width witness scan (2026-10-14)
+
+I extended `seeded_spill_attack.py` to scan one fixed PCG64 row-permutation
+vector (`k=N=1024`, seed `20261014`) jointly over 17 bin-aligned row cuts,
+lower-half rank boundaries, and spill widths 32, 64, and 128. For every
+feasible `(cut, rank, width)`, it greedily forces columns to cross the selected
+cut, pads the input to that rank mass, and measures the resulting exact
+per-column tail. Full output is in `seed-20261014-joint-scan.json`.
+
+The strongest witnesses found were:
+
+| target width | largest observed `Q(width)` | cut bins | rank bins | largest `Q(2 width)` |
+|---:|---:|---:|---:|---:|
+| 32 | 43 | 26 or 28 | 6 or 4 | 1 |
+| 64 | 20 | 20 | 12 | 0 |
+| 128 | 9 | 16 | 16 | 0 |
+
+The maximum spill mass beyond one 32-row bin among the width-128 witnesses was
+902, at cut bin 18/rank bin 14 (with nine columns reaching width 128). This is
+consistent with a decaying long-tail profile for this particular seed and
+greedy witness family. It does not establish a tail upper bound: the search is
+heuristic, samples cuts rather than every row, and the chosen random vector has
+no proved all-input aggregate guarantee. In particular, do not use these
+numbers as the missing `R_(h,m)(w)` envelope or as evidence that the existential
+core selected by the aggregate argument is this seed.
+
+Implementation note: the forced output rows for occupancy threshold
+`k-cut+width` start at input row `cut-width`. The scan also compares rank mass
+to the total cut capacity `(k-cut)*columns`, but computes each column's excess
+against `k-cut`; these distinctions matter in the noncentral cuts. A basic
+Python syntax check passed; no Lean target or universal certificate was run.

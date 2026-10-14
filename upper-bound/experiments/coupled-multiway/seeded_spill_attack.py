@@ -67,10 +67,91 @@ def greedy_tail_rank_scan(sigma: np.ndarray, k: int, columns: int,
     return report
 
 
+def joint_cut_rank_width_scan(sigma: np.ndarray, k: int, columns: int,
+                              p: int, widths: list[int]) -> list[dict[str, int]]:
+    """Search witnesses jointly over every bin-aligned cut and lower rank.
+
+    For each cut/width, greedily force output columns to have the required
+    occupancy, then inspect each feasible rank budget. This only finds lower
+    witnesses; it is not an upper certificate.
+    """
+    bin_rows = k // p
+    source_columns = np.arange(columns)
+    reports: list[dict[str, int]] = []
+    # Sample cuts at one-bin intervals for smaller instances, and at a spread
+    # of deciles for the default 1024-row exploratory scan.
+    cut_bins = sorted(set(range(1, p) if k <= 256 else
+                           [1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 31]))
+    for cut_bin in cut_bins:
+        cut = cut_bin * bin_rows
+        for width in widths:
+            if width > k - cut:
+                continue
+            required_rows = np.arange(cut - width, k)
+            single = np.zeros((columns, columns), dtype=np.int16)
+            for row in required_rows:
+                single[sigma[row], source_columns] = np.maximum(
+                    single[sigma[row], source_columns], k - row
+                )
+            heights = np.zeros(columns, dtype=np.int16)
+            available = np.ones(columns, dtype=bool)
+            selected_count = 0
+            counts_at_rank: dict[int, int] = {}
+            heights_at_rank: dict[int, np.ndarray] = {}
+            max_mass = (p // 2) * bin_rows * columns
+            for rank_bins in range(1, min(p // 2, p - cut_bin) + 1):
+                budget = rank_bins * bin_rows * columns
+                while available.any():
+                    costs = (np.maximum(single, heights[None, :]).sum(axis=1, dtype=np.int64)
+                             - int(heights.sum()))
+                    costs[~available] = np.iinfo(np.int64).max
+                    dest = int(np.argmin(costs))
+                    candidate = np.maximum(heights, single[dest])
+                    if int(candidate.sum()) > budget:
+                        break
+                    heights = candidate
+                    available[dest] = False
+                    selected_count += 1
+                counts_at_rank[rank_bins] = selected_count
+                heights_at_rank[rank_bins] = heights.copy()
+                # Allow subsequent ranks to continue from the same greedy prefix.
+            base_mass = int(heights.sum())
+            for rank_bins in range(1, min(p // 2, p - cut_bin) + 1):
+                rank_mass = rank_bins * bin_rows * columns
+                padded = heights_at_rank[rank_bins].copy()
+                remaining = rank_mass - int(padded.sum())
+                for source in range(columns):
+                    add = min(remaining, k - int(padded[source]))
+                    padded[source] += add
+                    remaining -= add
+                    if remaining == 0:
+                        break
+                output = np.zeros(columns, dtype=np.int32)
+                for row in range(k):
+                    output[sigma[row]] += padded >= k - row
+                bottom = k - cut
+                spill = (np.maximum(0, output - bottom)
+                         if rank_mass <= bottom * columns
+                         else np.maximum(0, bottom - output))
+                reports.append({
+                    "cut_bins": cut_bin,
+                    "width": width,
+                    "rank_bins": rank_bins,
+                    "rank_mass": rank_mass,
+                    "greedy_forced_Q": counts_at_rank[rank_bins],
+                    "actual_Q_at_width": int(np.count_nonzero(spill >= width)),
+                    "actual_Q_at_2width": int(np.count_nonzero(spill >= 2 * width)),
+                    "actual_Q_at_4width": int(np.count_nonzero(spill >= 4 * width)),
+                    "spill_mass_beyond_one_bin": int(np.maximum(0, spill - bin_rows).sum()),
+                    "base_mass_at_rank": int(heights_at_rank[rank_bins].sum()),
+                })
+    return reports
+
+
 def build_attack(k: int, columns: int, seed: int, cut: int, width: int,
                  exceptional_columns: int, p: int) -> dict[str, object]:
-    if not (0 < cut < k and 0 < width <= k - cut):
-        raise ValueError("require 0 < cut < k and 0 < width <= k-cut")
+    if not (0 < cut < k and 0 < width <= cut):
+        raise ValueError("require 0 < cut < k and 0 < width <= cut")
     if p < 2 or k % p:
         raise ValueError("p must be at least two and divide k")
     if exceptional_columns > columns:
@@ -80,7 +161,7 @@ def build_attack(k: int, columns: int, seed: int, cut: int, width: int,
     source_columns = np.arange(columns)
     # To spill width rows above `cut`, force ones into the bottom `cut+width`
     # output rows. A source height h contains row r (0-based) iff h >= k-r.
-    required_rows = np.arange(k - cut - width, k)
+    required_rows = np.arange(cut - width, k)
     single_column_heights = np.zeros((columns, columns), dtype=np.int16)
     for row in required_rows:
         single_column_heights[sigma[row], source_columns] = np.maximum(
@@ -210,9 +291,16 @@ def main() -> None:
     parser.add_argument("--exceptional-columns", type=int, default=42)
     parser.add_argument("--save", type=Path, help="write full JSON witness, including input heights")
     parser.add_argument("--save-core", type=Path, help="write exact row permutations as compressed NPZ")
+    parser.add_argument("--joint-scan", action="store_true",
+                        help="scan all bin-aligned cuts, ranks, and widths 32/64/128")
     args = parser.parse_args()
     result = build_attack(args.k, args.columns, args.seed, args.cut,
                           args.width, args.exceptional_columns, args.p)
+    if args.joint_scan:
+        result["joint_cut_rank_width_scan"] = joint_cut_rank_width_scan(
+            make_core(args.k, args.columns, args.seed), args.k, args.columns,
+            args.p, [32, 64, 128]
+        )
     if args.save:
         args.save.parent.mkdir(parents=True, exist_ok=True)
         args.save.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
