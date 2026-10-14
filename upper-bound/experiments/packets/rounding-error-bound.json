@@ -1,0 +1,65 @@
+{
+  "status": "exact finite schedule perturbation bound; not an unbounded theorem",
+  "results": [
+    {
+      "packets": 64,
+      "rounds": 26,
+      "cycle_seed": 51064,
+      "max_pairwise_difference_bound": "239852089/33554432",
+      "max_pairwise_difference_decimal": 7.148149281740189,
+      "integer_final_range_bound": 7,
+      "normalized_positive_spill_bound": "7/256",
+      "normalized_positive_spill_bound_decimal": 0.02734375,
+      "maximizing_output_pair": [
+        21,
+        48
+      ],
+      "certificate_arithmetic": "exact integer numerator over 2**rounds"
+    },
+    {
+      "packets": 128,
+      "rounds": 26,
+      "cycle_seed": 51128,
+      "max_pairwise_difference_bound": "70057751/8388608",
+      "max_pairwise_difference_decimal": 8.351534724235535,
+      "integer_final_range_bound": 8,
+      "normalized_positive_spill_bound": "1/32",
+      "normalized_positive_spill_bound_decimal": 0.03125,
+      "maximizing_output_pair": [
+        36,
+        101
+      ],
+      "certificate_arithmetic": "exact integer numerator over 2**rounds"
+    },
+    {
+      "packets": 256,
+      "rounds": 26,
+      "cycle_seed": 51256,
+      "max_pairwise_difference_bound": "76324557/8388608",
+      "max_pairwise_difference_decimal": 9.098596215248108,
+      "integer_final_range_bound": 9,
+      "normalized_positive_spill_bound": "9/256",
+      "normalized_positive_spill_bound_decimal": 0.03515625,
+      "maximizing_output_pair": [
+        71,
+        219
+      ],
+      "certificate_arithmetic": "exact integer numerator over 2**rounds"
+    },
+    {
+      "packets": 512,
+      "rounds": 26,
+      "cycle_seed": 51512,
+      "max_pairwise_difference_bound": "335730353/33554432",
+      "max_pairwise_difference_decimal": 10.00554421544075,
+      "integer_final_range_bound": 10,
+      "normalized_positive_spill_bound": "5/128",
+      "normalized_positive_spill_bound_decimal": 0.0390625,
+      "maximizing_output_pair": [
+        175,
+        437
+      ],
+      "certificate_arithmetic": "exact integer numerator over 2**rounds"
+    }
+  ]
+}

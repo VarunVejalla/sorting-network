@@ -356,3 +356,39 @@ fixed cycle per size, so it is not a worst-case certificate. The next rigorous
 step remains proving a uniform final discrepancy bound for every initial
 profile under these cycles (or an explicit bound on their rounding error
 operator), then checking that bound against the rank-profile recurrence.
+
+### Uniform finite-cycle discrepancy bound (14 October 2026)
+
+A deterministic all-profile bound is available for each fixed schedule. Write
+one rounded update as `x[t+1] = A[t] x[t] + e[t]`, where `A[t]` averages each
+matched pair and the two coordinates of `e[t]` on an edge are opposite, each
+of magnitude at most `1/2`. For output coordinates `i,j`, let `P` be the full
+exact-averaging product and `Q[t]` the exact suffix after update `t`. Then for
+all integer profiles `x[0] in [0,64]^c`,
+
+```text
+|x[s]_i - x[s]_j|
+ <= 32 * ||P_i - P_j||_1
+    + (1/2) * sum_t sum_(l,r in matching[t])
+        |(Q[t]_i,l - Q[t]_i,r) - (Q[t]_j,l - Q[t]_j,r)|.
+```
+
+The first term maximizes the initial-profile contribution over the box; each
+later term maximizes the oriented pair-rounding error independently. For the
+fixed seeded cycles, `rounding-error-bound.py` evaluates the right side with
+exact integer numerators over `2^26`. The resulting maximum pairwise bounds
+are `239852089/33554432` (about 7.148), `70057751/8388608` (about 8.352),
+`76324557/8388608` (about 9.099), and `335730353/33554432` (about 10.006)
+for 64, 128, 256, and 512 packets. Since final coordinates are integers,
+their ranges are at most 7, 8, 9, and 10. A vector with range `R` has positive
+spill at most `cR/4`; normalized by the `64c` total packet mass, this gives
+caps `R/256`, or 2.73%, 3.13%, 3.52%, and 3.91%.
+
+This is a valid uniform bound for every initial profile under each listed finite
+cycle, and it materially improves the earlier 10.2% estimate. It is still too
+loose to explain the 0.39% search results, and it does not establish a uniform
+family of schedules as `c` grows. The selector MILP attempt to prove actual
+range at most two did not close in the time budget. The next proof target is to
+exploit the dependence and sign structure of the rounding errors, rather than
+bounding each error independently, and then sum the resulting threshold
+leakage through the global rank recurrence.
