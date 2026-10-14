@@ -258,3 +258,62 @@ Existing partial pieces may also be carried through later ports, so their
 count needs its own recurrence; merge-and-deal currently expects equal-size
 inputs. That fragment-flow invariant is now the decisive gap, ahead of the
 spectral-family certificate.
+
+### A cleaner candidate: 64-wire packets
+
+The same shape formulas are unusually clean modulo 64. With the schedule
+side conditions `topDesc.g≥2` and `botRise.h≥2`, every active bag size and
+every down-block is divisible by 64. Every up half-fringe is either divisible
+by 64 or congruent to 32. In the latter case the source bag length is a
+multiple of 64, so each of its two fringe intervals contains exactly one
+32-wire partial packet; all other packets in those intervals remain whole.
+The residues by shape are: `topDesc`, `topRise`, and `botRise` give
+`(a,up/2,down)=(0,0,0)`; `mid` gives `(0,32,0)` exactly at `g=0` and
+`(0,0,0)` otherwise; `botDesc` gives `(0,32,0)` exactly at `h=0` and
+`(0,0,0)` otherwise; `off` is `(0,0,0)`. These follow by reducing powers
+of 64 modulo 64 in the displayed shape formulas.
+
+For a receiver, let `εp` indicate that its parent half-fringe is 32 mod 64,
+and `εc` the same for each child half-fringe. The 64 siblings have identical
+flow sizes. The parent down interval starts at `up_parent/2 + j*down_parent`,
+and `down_parent` is a multiple of 64, so it contributes `2 εp` sorted
+32-wire pieces. The child `upSet`s contribute `2·64·εc` such pieces. Thus
+the receiver gets
+
+```text
+F = 2 εp + 128 εc ∈ {0, 2, 128, 130}
+```
+
+half-packets. Pair them in a fixed order. Each pair consists of two sorted
+32-runs; reverse one and apply the 64-wire bitonic merge, yielding one sorted
+64-packet in at most 6 layers. `F` is even, and flow conservation plus the
+receiver's 64-divisible capacity ensures that the untouched full packets and
+the `F/2` repaired packets fill the receiver exactly. This gives a clean
+one-stage port repair interface, conditional on the packet labels being
+carried through the node networks.
+
+`packet64_repair_screen.py` checked 46,926 receiver instances from 1,650
+ordinary stages for `7≤d≤40`; all flow identities and packet-count checks
+passed. The observed fragment counts were 0, 2, or 128 (the symbolic bound
+allows 130). The script is an exact rational model of `FlowTable`/`NodeShape`,
+not a Lean placement proof. The hand residue proof is the same six-case
+calculation as above, reduced modulo 64; the output data are in
+`packet64-repair-screen.json`.
+
+The local cost model is enticing: a merge-and-deal round on two 64-wire
+packets costs 7 layers, so 26 rounds plus at most 6 repair layers costs 188
+per scheduled node operation. If the existing `3d` ordinary-operation rate
+and all rank obligations survived, this would price to coefficient
+`3·188/6 = 94`, leaving substantial room below 200. This is only a cost gate;
+it does not account for root/terminal work or prove any global sorting bound.
+
+There is a serious precision tradeoff. With `m=64` and `s=26`, the rounded
+cycle's additive bulk-leakage floor from the earlier inequality is
+`s/(4m(1-rho))`, about `0.102` of the normalized packet mass for `rho≈0`
+(the L1 deviation floor is about twice that). This may be far too large for
+a useful rank-profile recurrence.
+The next gate should therefore compare the coupled global rank budget against
+this exact rounding floor, and then search for the largest packet size whose
+finite fragment pieces still admit a cheap deterministic repair. Port
+compatibility is no longer the main obstacle; precision versus repair depth
+is.

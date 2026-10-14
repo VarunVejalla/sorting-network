@@ -1,0 +1,116 @@
+{
+  "claim_level": "finite exact-rational schedule model; not a Lean theorem",
+  "packet_wires": 64,
+  "depths": [
+    7,
+    40
+  ],
+  "ordinary_stages_checked": 1650,
+  "receiver_instances_checked": 46926,
+  "half_packet_fragment_count_by_receiver": {
+    "0": 46382,
+    "2": 272,
+    "128": 272
+  },
+  "max_half_packet_fragments_per_receiver": 128,
+  "max_repair_pairs_per_receiver": 64,
+  "repair_merge_depth_candidate": 6,
+  "sample_receivers_requiring_repair": [
+    {
+      "d": 9,
+      "t": 4,
+      "receiver_level": 1,
+      "parent_fragments": 0,
+      "child_fragments": 128,
+      "repair_pairs": 64
+    },
+    {
+      "d": 9,
+      "t": 4,
+      "receiver_level": 3,
+      "parent_fragments": 2,
+      "child_fragments": 0,
+      "repair_pairs": 1
+    },
+    {
+      "d": 10,
+      "t": 7,
+      "receiver_level": 2,
+      "parent_fragments": 0,
+      "child_fragments": 128,
+      "repair_pairs": 64
+    },
+    {
+      "d": 10,
+      "t": 7,
+      "receiver_level": 4,
+      "parent_fragments": 2,
+      "child_fragments": 0,
+      "repair_pairs": 1
+    },
+    {
+      "d": 11,
+      "t": 6,
+      "receiver_level": 1,
+      "parent_fragments": 0,
+      "child_fragments": 128,
+      "repair_pairs": 64
+    },
+    {
+      "d": 11,
+      "t": 6,
+      "receiver_level": 3,
+      "parent_fragments": 2,
+      "child_fragments": 0,
+      "repair_pairs": 1
+    },
+    {
+      "d": 11,
+      "t": 10,
+      "receiver_level": 3,
+      "parent_fragments": 0,
+      "child_fragments": 128,
+      "repair_pairs": 64
+    },
+    {
+      "d": 11,
+      "t": 10,
+      "receiver_level": 5,
+      "parent_fragments": 2,
+      "child_fragments": 0,
+      "repair_pairs": 1
+    },
+    {
+      "d": 12,
+      "t": 9,
+      "receiver_level": 2,
+      "parent_fragments": 0,
+      "child_fragments": 128,
+      "repair_pairs": 64
+    },
+    {
+      "d": 12,
+      "t": 9,
+      "receiver_level": 4,
+      "parent_fragments": 2,
+      "child_fragments": 0,
+      "repair_pairs": 1
+    },
+    {
+      "d": 12,
+      "t": 13,
+      "receiver_level": 4,
+      "parent_fragments": 0,
+      "child_fragments": 128,
+      "repair_pairs": 64
+    },
+    {
+      "d": 12,
+      "t": 13,
+      "receiver_level": 6,
+      "parent_fragments": 2,
+      "child_fragments": 0,
+      "repair_pairs": 1
+    }
+  ]
+}

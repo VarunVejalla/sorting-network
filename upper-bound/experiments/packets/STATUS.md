@@ -82,6 +82,16 @@ not yet a Lean lemma, and it does not prove that partial packet pieces remain
 bounded through repeated stages; merge-and-deal needs equal-size packets.
 Details are in the final section of `MIXING-TAIL.md`.
 
+New packet-size screen: at 64 wires per packet, every scheduled bag and
+down-block is aligned modulo 64; each up half-fringe is aligned or exactly
+half a packet off. That gives at most 128 half-packet fragments per receiver
+in the finite schedule screen, repairable by 64 parallel 64-wire merges in
+six layers. The resulting conditional local cost is 188 layers per ordinary
+node operation, or coefficient 94 under the old 3d operation rate. However,
+the rounded-cycle bulk leakage floor is about 10%, so this packet size may
+fail the quality invariant. Precision versus repair depth is the next gate.
+See `packet64_repair_screen.py` and its JSON.
+
 Finite frontier screen: exact rational enumeration for `7 ≤ d ≤ 40` checked
 1,650 ordinary stages and 5,900 active bags; all receiver flow identities
 held. The only nonzero residues modulo 4096 were 4032 for bag/down sizes and
