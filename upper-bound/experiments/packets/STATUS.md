@@ -73,3 +73,10 @@ its `mid(g=4)` capacity; see the script and JSON listed in UB-25 evidence.
 This suggests no comparator-based repacking is needed in bulk if packet
 labels can be carried across placements. The fixed-label proof and frontier
 cases remain unproved.
+
+Finite frontier screen: exact rational enumeration for `7 ≤ d ≤ 40` checked
+1,650 ordinary stages and 5,900 active bags; all receiver flow identities
+held. The only nonzero residues modulo 4096 were 4032 for bag/down sizes and
+2048 or 4064 for up half-fringes. This supports a whole-packets-plus-one
+terminal-fragment invariant with at most two boundary fragments per interval,
+but is not a universal proof. See `frontier_alignment_screen.py` and its JSON.

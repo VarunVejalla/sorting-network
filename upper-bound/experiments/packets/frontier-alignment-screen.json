@@ -1,0 +1,232 @@
+{
+  "claim_level": "finite exact-rational model screen; not a universal theorem",
+  "packet_wires": 4096,
+  "depths": [
+    7,
+    40
+  ],
+  "ordinary_stages_checked": 1650,
+  "active_bag_instances": 5900,
+  "residue_counts": {
+    "bag:0": 5628,
+    "bag:4032": 272,
+    "down:0": 5628,
+    "down:4032": 272,
+    "up_half:0": 5067,
+    "up_half:2048": 561,
+    "up_half:4064": 272
+  },
+  "first_alignment_failures": [
+    {
+      "kind": "up_half",
+      "d": 8,
+      "t": 2,
+      "i": 2,
+      "residue": 2048
+    },
+    {
+      "kind": "up_half",
+      "d": 9,
+      "t": 3,
+      "i": 1,
+      "residue": 2048
+    },
+    {
+      "kind": "down",
+      "d": 9,
+      "t": 3,
+      "i": 1,
+      "residue": 4032
+    },
+    {
+      "kind": "bag",
+      "d": 9,
+      "t": 4,
+      "i": 2,
+      "residue": 4032
+    },
+    {
+      "kind": "up_half",
+      "d": 9,
+      "t": 4,
+      "i": 2,
+      "residue": 4064
+    },
+    {
+      "kind": "up_half",
+      "d": 9,
+      "t": 5,
+      "i": 3,
+      "residue": 2048
+    },
+    {
+      "kind": "up_half",
+      "d": 10,
+      "t": 4,
+      "i": 2,
+      "residue": 2048
+    },
+    {
+      "kind": "up_half",
+      "d": 10,
+      "t": 6,
+      "i": 2,
+      "residue": 2048
+    },
+    {
+      "kind": "down",
+      "d": 10,
+      "t": 6,
+      "i": 2,
+      "residue": 4032
+    },
+    {
+      "kind": "bag",
+      "d": 10,
+      "t": 7,
+      "i": 3,
+      "residue": 4032
+    },
+    {
+      "kind": "up_half",
+      "d": 10,
+      "t": 7,
+      "i": 3,
+      "residue": 4064
+    },
+    {
+      "kind": "up_half",
+      "d": 10,
+      "t": 8,
+      "i": 4,
+      "residue": 2048
+    },
+    {
+      "kind": "up_half",
+      "d": 11,
+      "t": 5,
+      "i": 1,
+      "residue": 2048
+    },
+    {
+      "kind": "down",
+      "d": 11,
+      "t": 5,
+      "i": 1,
+      "residue": 4032
+    },
+    {
+      "kind": "bag",
+      "d": 11,
+      "t": 6,
+      "i": 2,
+      "residue": 4032
+    },
+    {
+      "kind": "up_half",
+      "d": 11,
+      "t": 6,
+      "i": 2,
+      "residue": 4064
+    },
+    {
+      "kind": "up_half",
+      "d": 11,
+      "t": 7,
+      "i": 3,
+      "residue": 2048
+    },
+    {
+      "kind": "up_half",
+      "d": 11,
+      "t": 9,
+      "i": 3,
+      "residue": 2048
+    },
+    {
+      "kind": "down",
+      "d": 11,
+      "t": 9,
+      "i": 3,
+      "residue": 4032
+    },
+    {
+      "kind": "bag",
+      "d": 11,
+      "t": 10,
+      "i": 4,
+      "residue": 4032
+    },
+    {
+      "kind": "up_half",
+      "d": 11,
+      "t": 10,
+      "i": 4,
+      "residue": 4064
+    },
+    {
+      "kind": "up_half",
+      "d": 11,
+      "t": 11,
+      "i": 5,
+      "residue": 2048
+    },
+    {
+      "kind": "up_half",
+      "d": 12,
+      "t": 6,
+      "i": 2,
+      "residue": 2048
+    },
+    {
+      "kind": "up_half",
+      "d": 12,
+      "t": 8,
+      "i": 2,
+      "residue": 2048
+    },
+    {
+      "kind": "down",
+      "d": 12,
+      "t": 8,
+      "i": 2,
+      "residue": 4032
+    },
+    {
+      "kind": "bag",
+      "d": 12,
+      "t": 9,
+      "i": 3,
+      "residue": 4032
+    },
+    {
+      "kind": "up_half",
+      "d": 12,
+      "t": 9,
+      "i": 3,
+      "residue": 4064
+    },
+    {
+      "kind": "up_half",
+      "d": 12,
+      "t": 10,
+      "i": 4,
+      "residue": 2048
+    },
+    {
+      "kind": "up_half",
+      "d": 12,
+      "t": 12,
+      "i": 4,
+      "residue": 2048
+    },
+    {
+      "kind": "down",
+      "d": 12,
+      "t": 12,
+      "i": 4,
+      "residue": 4032
+    }
+  ],
+  "receiving_flow_identity": "passed for every enumerated non-root/non-leaf level"
+}

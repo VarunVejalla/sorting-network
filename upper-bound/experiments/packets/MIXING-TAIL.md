@@ -186,3 +186,34 @@ labels consistently. The instance is only a source-formula model, not an
 instantiated Lean `wireSets` theorem; top/bottom exceptions and the complete
 ordinary/frontier induction are still open. It does, however, pass the first
 bulk port gate and makes a no-repacking bulk variant worth pursuing.
+
+### Finite top/bottom frontier screen
+
+`frontier_alignment_screen.py` mirrors the exact rational schedule formulas
+and checks every active level at ordinary times `2 ≤ t < tf7(d)` for
+`7 ≤ d ≤ 40`. Across 1,650 stages and 5,900 active bag instances, all
+receiving-flow identities passed. The only observed residues modulo 4096
+were:
+
+```text
+bag sizes:       5,628 residue 0; 272 residue 4032
+down intervals:  5,628 residue 0; 272 residue 4032
+up half-fringes: 5,067 residue 0; 561 residue 2048; 272 residue 4064
+```
+
+The count by shape role is also informative: every nonaligned down interval
+was a top-frontier case; nonaligned bag sizes occurred at the low-exponent
+mid or bottom frontier; fringe residues came from top, bottom, and the
+smallest mid exponents. In all these cases the remainder is within 64 wires
+of a packet boundary, except the half-fringe residue 2048, which is exactly
+half a packet. Thus the data support a stronger candidate interface than
+“all intervals aligned”: each port interval is a sequence of complete
+4096-packets plus at most two partial boundary fragments, and each bag is a
+complete packet bank plus one terminal fragment.
+
+This is only a finite screen and must not be read as a universal residue
+classification. The next proof target is a case split over `NodeShape` that
+establishes those residue classes for all exponents, then an explicit
+fragment-flow invariant showing where the at-most-two boundary pieces go
+and how they are repaired or carried. The JSON records the exact enumeration
+and its finite scope.
