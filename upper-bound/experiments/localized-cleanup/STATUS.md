@@ -54,6 +54,10 @@ Claim level: `hand-proof` for the conditional cleanup recurrences below;
   consecutive *ranks within a set*, not necessarily a physical interval.
 - Identified rank-pure partitioning as the primary construction target for
   this ticket. It has the easier depth gate `p<200*(1-theta)`.
+- Screened existing Chvatal, AKS row-scramble, direct-multiway profile, and
+  2024 high-arity k-sorting work for a plug-in prefix; none currently supplies
+  the positional/purity contract within the roughly 150-per-bit gate at
+  theta=1/4. Details and the most targeted reuse test are in `REUSE-SCREEN.md`.
 
 ## Not done
 
@@ -66,11 +70,12 @@ Claim level: `hand-proof` for the conditional cleanup recurrences below;
 
 The current early-stop Chvatal route remains a poor investment: the optimistic
 rank-width recurrence is already worse than 1419, and its invariant cannot
-establish physical localization. Continue UB-26 by finding a new prefix for
-the now-cheaper seam-cleanup interface. The next useful step is to formalize
-the odd-even merge and the all-n cleanup lemma, then screen candidate prefixes
-against the `p < 200-201*theta` gate. Exact Chvatal `wireSets` component
-analysis is lower priority unless it enables such a candidate.
+establish physical localization. No existing prefix candidate passes the
+reuse screen. The next useful construction search is a jointly designed
+multiway partitioner with a positional/rank-pure contract; reuse of AKS or
+Chvatal components must include a new discrepancy/localization theorem and
+oblivious repair. Formalizing the seam cleanup is lower priority until a
+prefix candidate plausibly meets `p < 200-201*theta`.
 
 ## Verification
 
