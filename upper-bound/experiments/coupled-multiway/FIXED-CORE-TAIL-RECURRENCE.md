@@ -173,6 +173,46 @@ It is still vacuous for central `q` at `w=k/p`; it does not imply the desired
 `O(p)` exceptional-column bound. This is an algebraic consequence of the
 current theorem, not evidence that the actual core has a large tail.
 
+The existential core from the aggregate probability argument is already a
+single vector satisfying every rank, cut, and input clause simultaneously, so
+it also satisfies this simultaneous Markov envelope. There is no separate
+“identify the witness” gap. The problem is solely the scale of the guarantee.
+Using integrality, the sharper integer form is
+
+```text
+Q_(h,m)(w) <= min(N, floor(E*min(m,kN-m)/w)).
+```
+
+For the central `(1024,32,1024,.45)` rank, `floor(E*m/w)` is 7372 at
+`w=32`, 1843 at `w=128`, and 921 at `w=256`; after capping by `N`, this still
+allows all columns at one-band and four-band widths. At aligned child rank
+`m=qC` and matching cut `h=qb`, it gives
+`Q(b) <= min(N, .45*min(q,p-q)*N)`. Even `q=1` allows about `.45N`, while
+the desired sparse exceptional set has size `O(p)`.
+
+The same loss leaves the central child's rank-distance allowance at `13.95C`
+before prior impurity. Thus the aggregate theorem by itself cannot close the
+coupled recurrence. This is a no-go for extracting localization from the
+existing aggregate contract alone, not a no-go for the random-core route.
+
+To prove a stronger tail by the probabilistic method, one can union-bound
+tail-bad cores together with the aggregate-bad cores. The current direct
+screen in `SPILL-TAIL-RESEARCH.md` does not close that union: at central rank
+for `(1024,32,1024)`, weak-composition entropy contributes `7.134N` to its
+log-union rate, while the fixed-set concentration exponent at the one-band
+target is only 120 in total. The published filled-bottom class reduction
+loses the positive deviation on most dense ranks. The missing mathematical
+step is a uniform estimate on
+`max_{height profile, |S|=r} sum_{c in S} X_c(m)` (or an equivalent
+discrepancy bound), not locating the aggregate proof's anonymous witness.
+
+Assessment: retain the seeded scan as a heuristic diagnostic, but do not infer
+that the aggregate witness has its measured tail. The viable random-core
+route needs a new uniform discrepancy/counting argument strong enough for an
+oblivious repair. The more promising alternative is to put locality into the
+stage or its routing structurally, so it does not depend on a rare event.
+Neither route currently closes a sub-200 sorting bound.
+
 The existing attempt to prove a stronger universal tail from random row
 permutations also has a specific failure mode. A union bound over input
 height vectors and exceptional column sets pays entropy much larger than the
