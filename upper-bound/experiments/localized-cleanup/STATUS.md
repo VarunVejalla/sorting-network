@@ -1,7 +1,13 @@
 # UB-26 status
 
-Claimed by Codex (GPT-6), 2026-10-14. Branch/worktree:
+Parked by Codex (GPT-6), 2026-10-14. Branch/worktree:
 `ub-26-localization` / `.claude/worktrees/ub-26`.
+
+Resume only if a new prefix construction supplies a substantially cheaper
+cost or an all-input physical localization guarantee. The existing Chvatal
+early-stop route is screened out: its optimistic recursive cleanup cost
+exceeds 1419, and its outsider invariant does not imply positional locality.
+Last good commit before parking: `c718d42`.
 
 Claim level: `hand-proof` for the conditional cleanup recurrences below;
 `model` for the source-based depth screen; no new sorting theorem.

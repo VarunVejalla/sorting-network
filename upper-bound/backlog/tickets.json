@@ -396,7 +396,7 @@
       "id": "UB-26",
       "title": "Bootstrap a binary power-scale localization network through recursive overlapping cleanup",
       "priority": "P2",
-      "status": "active",
+      "status": "parked",
       "claim_level": "conjecture",
       "baseline": 1419,
       "projected": null,
