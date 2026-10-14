@@ -1,13 +1,13 @@
 # UB-26 status
 
-Parked by Codex (GPT-6), 2026-10-14. Branch/worktree:
+Resumed by Codex (GPT-6), 2026-10-14. Branch/worktree:
 `ub-26-localization` / `.claude/worktrees/ub-26`.
 
-Resume only if a new prefix construction supplies a substantially cheaper
-cost or an all-input physical localization guarantee. The existing Chvatal
-early-stop route is screened out: its optimistic recursive cleanup cost
-exceeds 1419, and its outsider invariant does not imply positional locality.
-Last good commit before parking: `c718d42`.
+The existing Chvatal early-stop route remains screened out: its optimistic
+recursive cleanup cost exceeds 1419, and its outsider invariant does not imply
+positional locality. This resumed pass investigates a cheaper composition
+lemma for any future physical s-sorted prefix. Previous good screen commit:
+`c718d42`; parking commit: `09194dc`.
 
 Claim level: `hand-proof` for the conditional cleanup recurrences below;
 `model` for the source-based depth screen; no new sorting theorem.
@@ -20,6 +20,15 @@ Claim level: `hand-proof` for the conditional cleanup recurrences below;
 - Derived two recursive composition targets: rank-pure blocks need one
   recursive cleanup; an arbitrary s-sorted interval needs two overlapping
   cleanup passes.
+- Improved the s-sorted cleanup: recursively sort aligned chunks of length
+  `2B` once, then merge only the disjoint `B`-by-`B` seams using Batcher's
+  odd-even merge network. The conditional recurrence is
+  `F(n) <= P(n) + max_{k<4B} F(k) + log2(2B) + O(1)`, giving coefficient
+  `(p+theta)/(1-theta)` and gate `p < 200-201*theta` (149.75 at theta=1/4).
+- Exhaustively checked the Boolean chunk/seam cleanup with a fixed odd-even
+  merge comparator generator: 139,506 s-sorted inputs through n=16, and all
+  equal-run Boolean count pairs through run length 16. This is simulation,
+  not a theorem.
 - Screened early stopping of the existing Chvatal prefix. The checked proof
   establishes rank purity only at fixed `2^42`-wire blocks. Its fractional
   outsider invariant does not directly give purity or a contiguous
@@ -49,17 +58,19 @@ Claim level: `hand-proof` for the conditional cleanup recurrences below;
 ## Not done
 
 - No binary prefix with coefficient below that gate is known.
-- The all-n padding and recursive depth estimates have not been formalized.
+- The odd-even merge proof, all-n cleanup lemma, and recursive depth estimate
+  have not been formalized.
 - No Lean source, executable network, or sorting-bound theorem has been added.
 
 ## Next step
 
-The current early-stop Chvatal route is a poor investment: the optimistic
+The current early-stop Chvatal route remains a poor investment: the optimistic
 rank-width recurrence is already worse than 1419, and its invariant cannot
-establish physical localization. Continue UB-26 only if an independent
-candidate construction supplies an all-input positional contract or a much
-cheaper prefix. The next useful work item is then exact `wireSets` component
-analysis, not a further adjustment of the stranger-tail exponent.
+establish physical localization. Continue UB-26 by finding a new prefix for
+the now-cheaper seam-cleanup interface. The next useful step is to formalize
+the odd-even merge and the all-n cleanup lemma, then screen candidate prefixes
+against the `p < 200-201*theta` gate. Exact Chvatal `wireSets` component
+analysis is lower priority unless it enables such a candidate.
 
 ## Verification
 

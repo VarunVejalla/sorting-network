@@ -396,16 +396,16 @@
       "id": "UB-26",
       "title": "Bootstrap a binary power-scale localization network through recursive overlapping cleanup",
       "priority": "P2",
-      "status": "parked",
+      "status": "active",
       "claim_level": "conjecture",
       "baseline": 1419,
       "projected": null,
       "owner": "Codex (GPT-6)",
       "branch": "ub-26-localization",
       "depends_on": [],
-      "first_deliverable": "Screen the early-stop Chvatal route using stranger-tail width and physical wire geometry; then identify a binary multiscale rank-pure prefix with depth coefficient p < 200*(1-theta), or a concrete obstruction, for blocks of size n^theta.",
-      "evidence": ["upper-bound/backlog/sub200-structural-strategies.md", "upper-bound/experiments/localized-cleanup/STATUS.md", "upper-bound/experiments/localized-cleanup/PREFIX-SCREEN.md", "upper-bound/best/AKS/Chvatal/RealBlocks.lean", "upper-bound/best/AKS/Chvatal/RealNetwork.lean"],
-      "notes": "Claimed 2026-10-14 by Codex (GPT-6), branch ub-26-localization. A rank-pure block partition gives one parallel recursive cleanup and coefficient p/(1-theta); an s-sorted interval of width n^theta uses two overlapping cleanup passes and coefficient a/(1-2*theta). The checked Chvatal proof gets rank purity only at fixed 2^42-wire blocks. Its rough stranger-tail early-stop screen prices above 1419 even assuming physical localization. Source audit shows OutsiderBoundLe constrains ranks within logical bags but states no positional order for their wireSets; the exact schedule-specific component geometry is unproved. Thus the current early-stop route is a poor investment. No cheaper prefix is identified yet."
+      "first_deliverable": "Screen early-stop Chvatal (done: no useful physical localization follows from its invariant, and its optimistic cost exceeds 1419); derive and formalize the cheapest s-sorted/rank-pure cleanup recurrence; identify a binary prefix meeting p < 200*(1-theta) for rank-pure blocks or p < 200-201*theta for s-sorted width n^theta, or a concrete obstruction.",
+      "evidence": ["upper-bound/backlog/sub200-structural-strategies.md", "upper-bound/experiments/localized-cleanup/STATUS.md", "upper-bound/experiments/localized-cleanup/PREFIX-SCREEN.md", "upper-bound/experiments/localized-cleanup/SEAM-CLEANUP.md", "upper-bound/experiments/localized-cleanup/seam_cleanup_check.py", "upper-bound/best/AKS/Chvatal/RealBlocks.lean", "upper-bound/best/AKS/Chvatal/RealNetwork.lean"],
+      "notes": "Claimed 2026-10-14 by Codex (GPT-6), branch ub-26-localization. Resumed after parking on 2026-10-14. Rank-pure blocks of width n^theta give coefficient p/(1-theta). An s-sorted interval can be cleaned more cheaply by recursively sorting chunks of length 2B once and then merging disjoint B-by-B seams with Batcher odd-even merge; conditional coefficient is (p+theta)/(1-theta), requiring p < 200-201*theta. At theta=1/4 this is p<149.75. The Boolean cleanup passed a finite simulator through n=16, but no Lean proof exists. The checked Chvatal proof gets rank purity only at fixed 2^42-wire blocks; its early-stop route remains screened out (optimistic cost >1419), and OutsiderBoundLe alone gives no physical localization. Main remaining gap is a prefix with the all-input positional contract and charged depth; no improved bound is claimed."
     },
     {
       "id": "UB-27",

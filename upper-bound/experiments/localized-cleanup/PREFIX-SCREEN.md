@@ -53,6 +53,28 @@ The gate is `p<200*(1-2*theta)`. For `theta=1/4`, it requires `p<100`.
 This is stricter than the rank-pure contract and explains why searching for
 the stronger local guarantee can be worthwhile.
 
+There is a sharper cleanup that reuses sorted chunks instead of recursively
+sorting both shifted windows; see `SEAM-CLEANUP.md`. Choose power-of-two
+`B >= s`, sort disjoint chunks of length `2B` recursively, and then merge the
+suffix half of each chunk with the prefix half of its neighbor. The seam
+windows are disjoint. Batcher odd-even merging sorts two already-sorted
+`B`-runs in `log2(2B)` layers. If a dirty interval of width at most `B` lies
+inside one chunk, sorting that chunk resolves it; if it crosses a boundary,
+the corresponding seam merge resolves it. With the last remainder joined to
+the preceding chunk, all chunk sizes lie in `[2B,4B)`. The depth recurrence
+and coefficient gate become
+
+```text
+F(N) <= P(N) + max_(k<4B) F(k) + log2(2B) + O(1),
+C <= (p+theta)/(1-theta),
+p < 200 - 201*theta.
+```
+
+At `theta=1/4`, this admits `p<149.75`, close to the rank-pure gate `p<150`.
+The old two-recursive-pass recurrence remains valid but is no longer the best
+cleanup estimate. This refinement is a conditional hand proof; the odd-even
+merge construction and all-size recurrence remain to be formalized.
+
 ## What the checked Chvatal prefix supplies
 
 The checked assembly has `N=64^d`. After `tf7 d` stages, every level
