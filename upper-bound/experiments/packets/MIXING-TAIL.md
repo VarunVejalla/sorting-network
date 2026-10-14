@@ -392,3 +392,20 @@ range at most two did not close in the time budget. The next proof target is to
 exploit the dependence and sign structure of the rounding errors, rather than
 bounding each error independently, and then sum the resulting threshold
 leakage through the global rank recurrence.
+
+### Proof boundary and old-kernel comparison (14 October 2026)
+
+A bit-vector SMT query over all 64-packet inputs asking whether any final
+profile has range at least 3 timed out after 120 seconds. A query for the
+single output pair attaining the largest perturbation envelope also timed out
+after 45 seconds. Thus the finite perturbation calculation above is currently
+the strongest all-profile statement; the range-1/2 observed in searches is not
+proved.
+
+The spill caps `R/256` (2.7% or more here) cannot be inserted into the existing
+Chvatal `StageKernel`: its bulk and fringe allowances are `1/59,000,000` and
+`1/86,000,000`. The packet-cycle route therefore needs a new rank invariant
+that aggregates cancellation and leakage across thresholds/stages. A
+per-threshold worst-case range bound alone misses that structure by over six
+orders of magnitude. This comparison is a design constraint, not a no-go for
+UB-25, whose target scheduler is allowed to use a different invariant.
