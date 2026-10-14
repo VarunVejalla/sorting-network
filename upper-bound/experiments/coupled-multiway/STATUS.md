@@ -11,6 +11,9 @@ level error sum and its limits. Read [`TAPERED-HANDOFF.md`](TAPERED-HANDOFF.md)
 for the status of the conditional 528 model and the other tapered estimates.
 Read [`STAGE-ARCHITECTURE-SCREEN.md`](STAGE-ARCHITECTURE-SCREEN.md) for the
 below-200 stage budgets and the recommended 32-way spill-tail gate.
+Read [`FIXED-CORE-TAIL-RECURRENCE.md`](FIXED-CORE-TAIL-RECURRENCE.md) for the
+exact layer-cake crossing identities and the rank-profile screen induced by
+the available all-cut leakage theorem.
 
 The next proof gate is to formalize the active-level geometric sum and the
 boundary-displacement aggregate inequality, then instantiate the exact
