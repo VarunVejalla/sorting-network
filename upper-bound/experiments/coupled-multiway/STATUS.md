@@ -13,9 +13,11 @@ Read [`STAGE-ARCHITECTURE-SCREEN.md`](STAGE-ARCHITECTURE-SCREEN.md) for the
 below-200 stage budgets and the recommended 32-way spill-tail gate.
 Read [`FIXED-CORE-TAIL-RECURRENCE.md`](FIXED-CORE-TAIL-RECURRENCE.md) for the
 exact layer-cake crossing identities and the rank-profile screen induced by
-the available all-cut leakage theorem.
+the available all-cut leakage theorem, plus a seeded 1024-way-core attack
+finding 42 one-band spill columns at the middle rank and cut.
 
-The next proof gate is to formalize the active-level geometric sum and the
-boundary-displacement aggregate inequality, then instantiate the exact
-stage-to-stage map for all rank channels. The formulas below are candidate
-interfaces, not currently proved global recurrences.
+The next gate for the high-arity route is a simultaneous upper tail bound for
+the actual seeded core over all monotone profiles, ranks, cuts and orientations.
+The greedy attack script only finds lower witnesses. Independently, the
+active-level sum and boundary-displacement formulas remain hand derivations,
+not formalized global recurrences.
