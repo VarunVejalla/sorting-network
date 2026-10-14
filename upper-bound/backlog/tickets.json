@@ -109,18 +109,18 @@
     },
     {
       "id": "UB-07",
-      "title": "Tapered stranger invariant allowing larger local error",
-      "priority": "P3",
-      "status": "parked",
+      "title": "Complete the tapered signed-flow sub-1000 upper bound",
+      "priority": "P1",
+      "status": "active",
       "claim_level": "model",
       "baseline": 1419,
-      "projected": 780,
-      "owner": null,
-      "branch": null,
+      "projected": 945,
+      "owner": "Codex",
+      "branch": "tapered-945",
       "depends_on": [],
-      "first_deliverable": "Recalibrated parameter model against the 1419 endpoint, then a target below 1200",
-      "evidence": ["upper-bound/experiments/tapered/NOTES.md", "upper-bound/experiments/tapered/SURVEY.md", "upper-bound/backlog/few-hundred-tapered-invariant.md"],
-      "notes": "Explored 2026-10-11: the invariant is already tapered; a larger eps alone does not help; the lever is the schedule slack (UB-12). All-four-changes variant L4 ~780 windowed (model)."
+      "first_deliverable": "Connect the actual ragged ownership recurrence to the outsider invariant and close the bootstrap-to-interior transition",
+      "evidence": ["upper-bound/experiments/tapered/PLAN-945.md", "upper-bound/experiments/tapered/BootstrapStageOneProvider.lean", "upper-bound/experiments/tapered/RaggedRouteCard.lean"],
+      "notes": "Active 2026-10-12 after repo reorganization. The 945 coefficient remains conditional/model-level; no global sorting theorem yet. Working in isolated worktree tapered-945."
     },
     {
       "id": "UB-08",
