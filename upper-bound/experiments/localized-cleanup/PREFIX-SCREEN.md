@@ -69,6 +69,41 @@ integer outsider bound is then below one. `P_all` gives fractional outsider
 bounds at earlier times, but it does not make larger bags rank-pure. Thus
 one cannot simply stop at `d'` and invoke the one-call rank-pure recurrence.
 
+## What the outsider invariant says about physical positions
+
+The invariant is a statement about the *keys* in each logical bag, not about
+their physical indices. In `Tree.lean`, native membership means that a key's
+rank lies in the bag's global rank interval. In `ExecPlacement.lean`, the
+physical support of that bag is `wireSets F t b`, mapped through the current
+key permutation. `OutsiderBoundLe` bounds how many keys in that support fall
+outside an ancestor's rank interval; it gives no order or interval property
+for the support itself.
+
+This gap matters even if every bag were perfectly rank-pure. For a Boolean
+threshold, the bags below the threshold would contain zeros and those above it
+ones, but an arbitrary interleaving of their physical supports can still
+produce alternating zeros and ones across the wire line. A small number of
+outsider keys also does not fix this: even one misplaced bit near each end can
+make the smallest enclosing dirty interval have length `N`. Thus neither
+rank purity nor a sparse outsider count alone implies an s-sorted *physical*
+output.
+
+The source does give a concrete schedule-dependent geometry to investigate:
+`WireFlow.lean` defines each send as a contiguous rank slice of the sender's
+current physical wire set (`blockOf`), and `wireSets` recursively unions those
+slices. A rank slice of a fragmented set need not be a physical interval.
+Tracking the interval components (or proving a strong order property) of
+these exact wire sets is therefore a separate obligation. Until that is done,
+the stranger-tail estimate above is only a rank-space width screen; it cannot
+be converted into a physical dirty-interval bound.
+
+**Assessment:** the checked outsider invariant by itself cannot certify the
+localization contract UB-26 needs. The remaining schedule-specific component
+analysis could still uncover useful structure, but the early-stop route now
+has two independent costs: the rank-tail inflation already loses in the
+optimistic recurrence, and no physical localization theorem follows from the
+invariant.
+
 There is a useful rough screen for the obvious attempt to promote those
 fractional bounds to an s-sorted output. Suppose the stop leaves active bags
 with native rank scale `B=64^k≈N^theta`. Their reference capacities are
