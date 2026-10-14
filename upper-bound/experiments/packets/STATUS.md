@@ -22,14 +22,21 @@ routing.
 
 ## Status
 
-No new Lean theorem, network implementation, or matching schedule has been
-added yet. The threshold identity is an immediate finite-sequence argument
-conditional on the merged output being sorted. Next, inspect the exact
-`ComparatorNetwork` conventions and existing bitonic merge API, then either
-formalize the adapter or produce a small executable check plus precise
-network statement. Separately, check whether a fixed matching cycle gives a
-useful contraction with a rigorous tail bound; the q=12/30-round/195 figure
-remains only a depth gate from the proposal.
+The checked source provides `Bitonic.bitonicMerge_sorts` for `Window` Boolean
+inputs and `Bitonic.bitonicMerge_depth_le`. Reversing the second sorted packet
+makes the concatenation a `Window`; after merging, the even and odd
+subsequences are sorted and their false counts are the ceiling and floor of
+half the total. This gives the local identity at hand-proof level, conditional
+on the existing theorem. The independent simulator passed all 22,363 pairs
+of sorted Boolean packet inputs through q=7.
+
+No new Lean adapter theorem or matching schedule has been added. The fixed
+deal layout must be carried through the whole generalized network and its
+final target order before `Untangle.untangle` applies. Separately, a matching
+cycle still needs a useful contraction and a rigorous rare-cohort tail; the
+q=12/30-round/195 figure remains only a depth gate from the proposal. See
+`MERGE-DEAL.md` for the derivation and limitations.
 
 Claim level: `conjecture` for the full UB-25 construction; the local count
-identity remains to be checked against the repository's wire-layout model.
+identity is `hand-proof` conditional on source theorems and `simulation` for
+the finite executable check.
