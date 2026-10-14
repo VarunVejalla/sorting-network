@@ -409,3 +409,47 @@ that aggregates cancellation and leakage across thresholds/stages. A
 per-threshold worst-case range bound alone misses that structure by over six
 orders of magnitude. This comparison is a design constraint, not a no-go for
 UB-25, whose target scheduler is allowed to use a different invariant.
+
+### Aggregate fresh-error budget and missing recurrence
+
+For a scheduled node operation `v` acting on `c_v` sorted 64-wire packets, let
+`T_v` be the set of Boolean thresholds that the proposed global rank profile
+actually tracks. The finite exact-cycle bound gives, for each tracked threshold,
+positive spill at most `c_v R(c_v)/4`, where `R(c)` is the integer final-range
+bound (currently computed only for `c=64,128,256,512`). Thus the fresh error
+for that operation is bounded by
+
+```text
+Fresh(v) <= |T_v| * c_v * R(c_v)/4.
+```
+
+For the tested `c=64` cycle this is 112 count-units per active threshold, or
+2.734% of that operation's 4096 wires; for the generic 26-round spectral
+perturbation estimate it is `6.5*c_v` per threshold, or 10.156% of its wire
+capacity. For an entire stage `t`, the corresponding budget is
+`sum_(v active at t) Fresh(v)`. Across the actual `3d-21` ordinary operations
+on a Chvatal path, the raw sum is
+
+```text
+sum_(t=1..3d-21) sum_(v active at t) |T_v| * c_v * R(c_v)/4.
+```
+
+This is the correct fresh-error sum interface, but it is not yet a closed rank
+recurrence: the UB-25 proposal does not define `T_v`, a state `E_t` measuring
+rank-profile error, or the propagation/contraction inequality relating
+`E_(t+1)` to `E_t` and `Fresh(t)`. If one simply adds a fixed relative allowance
+`eta` at every ordinary operation, the budget grows like `(3d-21)*eta`; that
+cannot yield a bounded asymptotic rank profile. A valid coupled inequality
+would need a proved contraction or a summable scale weight, e.g.
+`E_(t+1) <= lambda_t*E_t + Fresh(t)` with an explicit product/sum bound.
+
+The existing Chvatal invariant is not that missing recurrence: it tracks
+per-bag order-`r` stranger counts with `mu*delta^r*capacity`, and its fresh
+allowances are constrained to `1/59,000,000` and `1/86,000,000`. The packet
+spill estimates do not satisfy those bounds. Also, the finite `R(c)` table
+cannot be applied to the actual unbounded bag sizes without a uniform matching
+family and discrepancy theorem. Therefore no numeric total over actual active
+thresholds can honestly be reported yet. The next UB-25 deliverable should be
+the explicit state, active threshold set, and one-stage recurrence; then the
+formula above can be instantiated against the actual scheduler levels rather
+than guessed.
