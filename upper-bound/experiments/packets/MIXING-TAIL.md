@@ -87,3 +87,41 @@ a certified `rho` strong enough for the coupled cohort invariant, plus a
 complete ordinary/frontier port-flow proof charging that fringe and all
 reassembly, or an obstruction showing those costs exceed the gate. The
 existing 26-round figure and this finite screen do not establish either.
+
+## Audit against the checked Chvatal port flow
+
+The “64-fragment receive” in the depth gate is not currently an interface in
+the checked scheduler. `WireFlow.parentPart` selects one `downSet` block from
+the parent, indexed by the child number, while `childPart` unions the `upSet`
+tails from all 64 children. The child’s register set is exactly this union
+(see `ExecPlacement.execPlacement_succ_regs`). These are positional rank
+blocks of arbitrary cardinalities prescribed by `FlowSizes`, not 64 equal
+sorted packets of length `2^q`. In particular, the existing identity
+`a = up + 64*down` only counts wires; it does not assert sorted runs, nor
+that the parent block or each child tail is a sorted fragment.
+
+Consequently the 57-layer balanced merge estimate has no proved application
+to this receive set. Even if packet labels were carried through the ordinary
+network, the current receive has a variable parent middle block plus up to 64
+child tails, with frontier cases where one side vanishes. The current
+stranger invariant controls how many keys lie outside ancestor rank intervals;
+it does not give within-block sortedness. This is the concrete global gap
+behind the earlier phrase “trace sorted packets through a complete routing
+cycle.”
+
+The 197.5 coefficient gate therefore cannot be interpreted as a modification
+of one existing Chvatal stage. It would require a new node/port contract that
+simultaneously (i) emits sorted runs aligned to the prescribed `downSet` and
+`upSet` rank blocks, (ii) bounds the rounded mixing fringe for every active
+threshold, and (iii) receives those differently sized runs with a priced
+merge/repacking network. No such contract follows from the current
+`StageKernel`; replacing its stranger estimates with the spectral estimates
+alone would leave the placement and sortedness obligations unproved.
+
+This changes the early gate: before spending effort on an unbounded spectral
+matching-family certificate, first find a finite scheduler-shaped port
+instance and demonstrate the required sorted-run decomposition and receive
+merge cost. If the exact `downSet`/`upSet` shapes do not admit that interface,
+UB-25 needs a redesigned flow (and likely a new rate analysis), not just a
+better matching cycle. This is a structural compatibility finding from the
+checked definitions, not an impossibility theorem for redesigned schedules.

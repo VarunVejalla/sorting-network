@@ -50,3 +50,11 @@ remains only a depth gate from the proposal. See `MERGE-DEAL.md` for details.
 Claim level: `conjecture` for the full UB-25 construction; the local count
 identity is `hand-proof` conditional on source theorems and `simulation` for
 the finite executable check.
+
+Scheduler audit (2026-10-14): the proposed 64-fragment receive is not the
+checked Chvatal flow. Each child receives one variable-size positional
+`downSet` block from its parent and the union of up to 64 child `upSet` tails;
+the flow proves wire counts, not sorted-run structure. The 57-layer reassembly
+and 197.5 gate therefore have no current scheduler realization. See the
+port-flow audit in `MIXING-TAIL.md`. First test a scheduler-shaped port
+instance before investing in an unbounded matching-family certificate.
