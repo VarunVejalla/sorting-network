@@ -65,3 +65,11 @@ the flow proves wire counts, not sorted-run structure. The 57-layer reassembly
 and 197.5 gate therefore have no current scheduler realization. See the
 port-flow audit in `MIXING-TAIL.md`. First test a scheduler-shaped port
 instance before investing in an unbounded matching-family certificate.
+
+Concrete ordinary port instance now passes: at `d=20,t=20`, a level-7
+receiver gets one aligned parent packet interval and two aligned fringe
+intervals from each of 64 children. Exact packet-count conservation matches
+its `mid(g=4)` capacity; see the script and JSON listed in UB-25 evidence.
+This suggests no comparator-based repacking is needed in bulk if packet
+labels can be carried across placements. The fixed-label proof and frontier
+cases remain unproved.

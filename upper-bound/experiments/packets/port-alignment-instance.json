@@ -1,0 +1,30 @@
+{
+  "claim_level": "exact integer model of source NodeShape formulas",
+  "parameters": {
+    "branching": 64,
+    "packet_wires": 4096,
+    "d": 20,
+    "t": 20,
+    "parent_level": 6,
+    "receiver_level_at_t_plus_1": 7,
+    "child_level": 8,
+    "parent_mid_g": 3,
+    "child_botdesc_h": 7,
+    "child_botdesc_g": 11,
+    "receiver_mid_g": 4
+  },
+  "wires": {
+    "parent_down_block": 18014397435740160,
+    "child_up_half_interval": 576320014815068160,
+    "child_up_total_each": 1152640029630136320,
+    "receiver_total": 73786976293764464640
+  },
+  "packets": {
+    "parent_down_block": 4398046248960,
+    "each_child_up_total": 281406257233920,
+    "all_64_children_up": 18010000462970880,
+    "receiver_total": 18014398509219840
+  },
+  "aligned_intervals": 129,
+  "flow_conservation": true
+}

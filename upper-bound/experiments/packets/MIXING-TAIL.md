@@ -152,3 +152,37 @@ and their count/length profile must be fed into a real repacking network.
 Nor does the current separator theorem provide the assumed packet ordering.
 This is an exact divisibility calculation from the `NodeShape` formulas in
 `FlowSizes7.lean`, not a kernel-checked new theorem.
+
+### One exact ordinary-stage port instance
+
+For `d=20`, `t=20`, take a receiver at level 7 at time `t+1`; its parent is
+level 6 and its 64 children are level 8. The source `NodeShape` cases are a
+parent `mid(g=3)`, each child `botDesc(g=11,h=7)`, and the receiver
+`mid(g=4)`. With packet size 4096, exact integer arithmetic gives:
+
+```text
+parent down block:       64^7 - 64^3       = 4,398,046,248,960 packets
+each child's up fringe:  4095*64^6         =   281,406,257,233,920 packets
+all 64 child up fringes: 4095*64^7         = 18,010,000,462,970,880 packets
+receiver capacity:       64^9 - 64^3       = 18,014,398,509,219,840 packets
+```
+
+Here “packet” in the display means one 4096-wire packet: the child number
+uses the exact `FlowSizes7.NodeShape` wire count divided by 4096. Both
+half-fringes of every child and the parent block are packet-aligned, and the
+packet counts add exactly to the receiver capacity. Thus this concrete
+ordinary port transports intact packet objects; the 129 source intervals
+(one parent interval and two per child) can be assigned packetwise without
+comparison-based merging, assuming each source node already has the packet
+invariant. The machine-readable exact check is
+`port_alignment_instance.py` / `port-alignment-instance.json`.
+
+This is substantially better than a 129-run merge estimate: an interval can
+contain a long sequence of packet objects, but aligned boundaries mean the
+objects need not be merged just to restore packet height. What remains is a
+fixed-label/placement proof that packets from those intervals can occupy the
+receiver's packet slots and that each subsequent matching cycle uses those
+labels consistently. The instance is only a source-formula model, not an
+instantiated Lean `wireSets` theorem; top/bottom exceptions and the complete
+ordinary/frontier induction are still open. It does, however, pass the first
+bulk port gate and makes a no-repacking bulk variant worth pursuing.
