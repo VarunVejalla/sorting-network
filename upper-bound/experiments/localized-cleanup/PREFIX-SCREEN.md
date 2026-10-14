@@ -89,6 +89,31 @@ frontier capacities, integer rounding, and the actual sets of wires assigned
 to the bags. A rank interval is not automatically a contiguous interval of
 physical output positions.
 
+Even granting the optimistic assumption that this becomes a physical
+s-sorted interval, combining the current prefix cost with two-pass recursive
+cleanup does not help. If the prefix stops with native block exponent
+`theta`, its cost coefficient is `1419*(1-theta)`. The estimated dirty
+interval exponent is `theta'=(1+gamma)*theta`, so the recursive coefficient
+would be
+
+```text
+C(theta) = 1419*(1-theta)/(1-2*(1+gamma)*theta).
+```
+
+For every `theta>0` where the denominator is positive, `C(theta)>1419`.
+Some illustrative model values are:
+
+| theta | estimated theta' | conditional coefficient |
+| ---: | ---: | ---: |
+| 0.025 | 0.02964 | 1470.72 |
+| 0.05 | 0.05929 | 1529.40 |
+| 0.10 | 0.11857 | 1674.11 |
+
+This is not a theorem about the actual wire layout. It says that the obvious
+early-stop-plus-recursive-window-cleanup route already loses under an
+optimistic positional model; a useful UB-26 construction must improve the
+prefix cost or reduce the uncertainty-width exponent.
+
 If, counterfactually, early stopping at `d'` did establish rank-pure blocks
 of width `64^(d-d')`, it would take `3d'-21` ordinary nodes, each depth
 2838, plus the fixed root depth. Setting `d-d'≈theta*d` and using

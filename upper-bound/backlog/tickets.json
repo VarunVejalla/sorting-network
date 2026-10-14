@@ -403,9 +403,9 @@
       "owner": "Codex (GPT-6)",
       "branch": "ub-26-localization",
       "depends_on": [],
-      "first_deliverable": "Check whether the early-stop fractional outsider invariant yields any physical localization contract; price the rank-tail width inflation. Then identify a binary multiscale rank-pure prefix with depth coefficient p < 200*(1-theta), or a concrete obstruction, for blocks of size n^theta.",
+      "first_deliverable": "Screen and close the early-stop Chvatal route using the stranger-tail width and actual wire geometry; identify a binary multiscale rank-pure prefix with depth coefficient p < 200*(1-theta), or a concrete obstruction, for blocks of size n^theta.",
       "evidence": ["upper-bound/backlog/sub200-structural-strategies.md", "upper-bound/experiments/localized-cleanup/STATUS.md", "upper-bound/experiments/localized-cleanup/PREFIX-SCREEN.md", "upper-bound/best/AKS/Chvatal/RealBlocks.lean", "upper-bound/best/AKS/Chvatal/RealNetwork.lean"],
-      "notes": "Claimed 2026-10-14 by Codex (GPT-6), branch ub-26-localization. A rank-pure block partition gives one parallel recursive cleanup and coefficient p/(1-theta); an s-sorted interval of width n^theta uses two overlapping cleanup passes and coefficient a/(1-2*theta). The checked Chvatal proof gets rank purity only at fixed 2^42-wire blocks; earlier fractional outsider bounds do not directly give physical localization. No cheaper prefix is identified yet."
+      "notes": "Claimed 2026-10-14 by Codex (GPT-6), branch ub-26-localization. A rank-pure block partition gives one parallel recursive cleanup and coefficient p/(1-theta); an s-sorted interval of width n^theta uses two overlapping cleanup passes and coefficient a/(1-2*theta). The checked Chvatal proof gets rank purity only at fixed 2^42-wire blocks. A rough stranger-tail exponent screen shows its optimistic early-stop/window-cleanup price exceeds 1419 for every positive stop fraction; physical wire localization is still unproved. No cheaper prefix is identified yet."
     },
     {
       "id": "UB-27",

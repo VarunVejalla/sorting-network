@@ -22,6 +22,10 @@ Claim level: `hand-proof` for the conditional cleanup recurrences below;
   `N^theta` native rank block may leave an unresolved rank region as large
   as `N^(1.186*theta)`. This is a model calculation, not a localization
   theorem, and it omits physical wire-set geometry.
+- Under the optimistic assumption that this rank region is a physical dirty
+  interval, two-pass recursive cleanup prices the stopped Chvatal prefix at
+  `1419*(1-theta)/(1-2*1.186*theta)`, which is worse than 1419 for every
+  positive theta. So this particular early-stop route is screened out.
 - Identified rank-pure partitioning as the primary construction target for
   this ticket. It has the easier depth gate `p<200*(1-theta)`.
 
@@ -33,9 +37,8 @@ Claim level: `hand-proof` for the conditional cleanup recurrences below;
 
 ## Next step
 
-Check whether any earlier stopping time of the existing network yields a
-useful physical localization contract. Account for stranger-tail inflation
-and the scheduled wire sets. Then derive a local rank-pure partition network
+Seek a prefix construction with a lower per-logarithm cost or a sharper
+uncertainty-width exponent than the checked Chvatal invariant. Derive a local rank-pure partition network
 on `N` wires with `N^theta`-scale blocks from fixed binary comparator layers.
 Price multiscale compare-split/halver stages, requiring global consecutive
 rank intervals on every permutation input and including all merge, routing,
