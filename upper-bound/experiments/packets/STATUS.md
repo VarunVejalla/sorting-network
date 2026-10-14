@@ -1,13 +1,14 @@
 # UB-25 packet-balancing status
 
-Parked by Codex (GPT-6), 2026-10-14. Branch/worktree:
+Resumed by Codex (GPT-6), 2026-10-14. Branch/worktree:
 `ub-25-packets` / `.claude/worktrees/ub-25`.
 
-Resume after a scheduler candidate can state how bounded rare cohorts are
-carried as fringe mass, or when a concrete packet-preserving global flow is
-available. The local merge-and-deal primitive is screened; no whole-network
-cycle, tail theorem, or depth improvement exists. Last good commit before
-parking: `281d7e0`.
+The local merge-and-deal primitive remains screened. A new conditional
+spectral-cycle lemma bounds each output packet's cohort by
+`H*(1/c+rho)+s/2` and gives a bulk leakage estimate; finite random matching
+screens look promising through 256 packets. The unbounded matching family and
+global port-flow remain open. No whole-network depth improvement exists.
+Previous parked checkpoint: `1d52a55`.
 
 ## First question
 
