@@ -1,0 +1,356 @@
+{
+  "status": "exact finite integer screen only; no universal rounding bound",
+  "update": "(a,b) -> (ceil((a+b)/2), floor((a+b)/2))",
+  "results": [
+    {
+      "packets": 64,
+      "rounds": 26,
+      "schedule_seed": 51064,
+      "profile": "singleton",
+      "spill_fraction_of_packet_mass": 0.000732421875,
+      "l1_fraction_of_packet_mass": 0.00146484375,
+      "max_abs_deviation": 1.0,
+      "final_range": 2
+    },
+    {
+      "packets": 64,
+      "rounds": 26,
+      "schedule_seed": 51064,
+      "profile": "half_extremes",
+      "spill_fraction_of_packet_mass": 0.001220703125,
+      "l1_fraction_of_packet_mass": 0.00244140625,
+      "max_abs_deviation": 1.0,
+      "final_range": 2
+    },
+    {
+      "packets": 64,
+      "rounds": 26,
+      "schedule_seed": 51064,
+      "profile": "alternating_extremes",
+      "spill_fraction_of_packet_mass": 0.000244140625,
+      "l1_fraction_of_packet_mass": 0.00048828125,
+      "max_abs_deviation": 1.0,
+      "final_range": 2
+    },
+    {
+      "packets": 64,
+      "rounds": 26,
+      "schedule_seed": 51064,
+      "profile": "uniform_random",
+      "spill_fraction_of_packet_mass": 0.003597259521484375,
+      "l1_fraction_of_packet_mass": 0.00719451904296875,
+      "max_abs_deviation": 0.640625,
+      "final_range": 1
+    },
+    {
+      "packets": 64,
+      "rounds": 26,
+      "schedule_seed": 51064,
+      "profile": "bernoulli_extremes",
+      "spill_fraction_of_packet_mass": 0.0009765625,
+      "l1_fraction_of_packet_mass": 0.001953125,
+      "max_abs_deviation": 1.0,
+      "final_range": 2
+    },
+    {
+      "packets": 64,
+      "rounds": 26,
+      "schedule_seed": 51064,
+      "profile": "near_half",
+      "spill_fraction_of_packet_mass": 0.0009613037109375,
+      "l1_fraction_of_packet_mass": 0.001922607421875,
+      "max_abs_deviation": 1.015625,
+      "final_range": 2
+    },
+    {
+      "packets": 64,
+      "rounds": 26,
+      "schedule_seed": 51064,
+      "profile": "ramp",
+      "spill_fraction_of_packet_mass": 0.000732421875,
+      "l1_fraction_of_packet_mass": 0.00146484375,
+      "max_abs_deviation": 1.0,
+      "final_range": 2
+    },
+    {
+      "packets": 128,
+      "rounds": 26,
+      "schedule_seed": 51128,
+      "profile": "singleton",
+      "spill_fraction_of_packet_mass": 0.00390625,
+      "l1_fraction_of_packet_mass": 0.0078125,
+      "max_abs_deviation": 0.5,
+      "final_range": 1
+    },
+    {
+      "packets": 128,
+      "rounds": 26,
+      "schedule_seed": 51128,
+      "profile": "half_extremes",
+      "spill_fraction_of_packet_mass": 0.0006103515625,
+      "l1_fraction_of_packet_mass": 0.001220703125,
+      "max_abs_deviation": 1.0,
+      "final_range": 2
+    },
+    {
+      "packets": 128,
+      "rounds": 26,
+      "schedule_seed": 51128,
+      "profile": "alternating_extremes",
+      "spill_fraction_of_packet_mass": 0.0008544921875,
+      "l1_fraction_of_packet_mass": 0.001708984375,
+      "max_abs_deviation": 1.0,
+      "final_range": 2
+    },
+    {
+      "packets": 128,
+      "rounds": 26,
+      "schedule_seed": 51128,
+      "profile": "uniform_random",
+      "spill_fraction_of_packet_mass": 0.0037689208984375,
+      "l1_fraction_of_packet_mass": 0.007537841796875,
+      "max_abs_deviation": 0.59375,
+      "final_range": 1
+    },
+    {
+      "packets": 128,
+      "rounds": 26,
+      "schedule_seed": 51128,
+      "profile": "bernoulli_extremes",
+      "spill_fraction_of_packet_mass": 0.00390625,
+      "l1_fraction_of_packet_mass": 0.0078125,
+      "max_abs_deviation": 0.5,
+      "final_range": 1
+    },
+    {
+      "packets": 128,
+      "rounds": 26,
+      "schedule_seed": 51128,
+      "profile": "near_half",
+      "spill_fraction_of_packet_mass": 0.0002422332763671875,
+      "l1_fraction_of_packet_mass": 0.000484466552734375,
+      "max_abs_deviation": 1.0078125,
+      "final_range": 2
+    },
+    {
+      "packets": 128,
+      "rounds": 26,
+      "schedule_seed": 51128,
+      "profile": "ramp",
+      "spill_fraction_of_packet_mass": 0.000732421875,
+      "l1_fraction_of_packet_mass": 0.00146484375,
+      "max_abs_deviation": 1.0,
+      "final_range": 2
+    },
+    {
+      "packets": 256,
+      "rounds": 26,
+      "schedule_seed": 51256,
+      "profile": "singleton",
+      "spill_fraction_of_packet_mass": 0.0029296875,
+      "l1_fraction_of_packet_mass": 0.005859375,
+      "max_abs_deviation": 0.75,
+      "final_range": 1
+    },
+    {
+      "packets": 256,
+      "rounds": 26,
+      "schedule_seed": 51256,
+      "profile": "half_extremes",
+      "spill_fraction_of_packet_mass": 0.0009765625,
+      "l1_fraction_of_packet_mass": 0.001953125,
+      "max_abs_deviation": 1.0,
+      "final_range": 2
+    },
+    {
+      "packets": 256,
+      "rounds": 26,
+      "schedule_seed": 51256,
+      "profile": "alternating_extremes",
+      "spill_fraction_of_packet_mass": 0.0006103515625,
+      "l1_fraction_of_packet_mass": 0.001220703125,
+      "max_abs_deviation": 1.0,
+      "final_range": 2
+    },
+    {
+      "packets": 256,
+      "rounds": 26,
+      "schedule_seed": 51256,
+      "profile": "uniform_random",
+      "spill_fraction_of_packet_mass": 0.003865957260131836,
+      "l1_fraction_of_packet_mass": 0.007731914520263672,
+      "max_abs_deviation": 0.55078125,
+      "final_range": 1
+    },
+    {
+      "packets": 256,
+      "rounds": 26,
+      "schedule_seed": 51256,
+      "profile": "bernoulli_extremes",
+      "spill_fraction_of_packet_mass": 0.0029296875,
+      "l1_fraction_of_packet_mass": 0.005859375,
+      "max_abs_deviation": 0.75,
+      "final_range": 1
+    },
+    {
+      "packets": 256,
+      "rounds": 26,
+      "schedule_seed": 51256,
+      "profile": "near_half",
+      "spill_fraction_of_packet_mass": 0.00042557716369628906,
+      "l1_fraction_of_packet_mass": 0.0008511543273925781,
+      "max_abs_deviation": 1.00390625,
+      "final_range": 2
+    },
+    {
+      "packets": 256,
+      "rounds": 26,
+      "schedule_seed": 51256,
+      "profile": "ramp",
+      "spill_fraction_of_packet_mass": 0.00067138671875,
+      "l1_fraction_of_packet_mass": 0.0013427734375,
+      "max_abs_deviation": 1.0,
+      "final_range": 2
+    },
+    {
+      "packets": 512,
+      "rounds": 26,
+      "schedule_seed": 51512,
+      "profile": "singleton",
+      "spill_fraction_of_packet_mass": 0.001708984375,
+      "l1_fraction_of_packet_mass": 0.00341796875,
+      "max_abs_deviation": 0.875,
+      "final_range": 1
+    },
+    {
+      "packets": 512,
+      "rounds": 26,
+      "schedule_seed": 51512,
+      "profile": "half_extremes",
+      "spill_fraction_of_packet_mass": 0.0008544921875,
+      "l1_fraction_of_packet_mass": 0.001708984375,
+      "max_abs_deviation": 1.0,
+      "final_range": 2
+    },
+    {
+      "packets": 512,
+      "rounds": 26,
+      "schedule_seed": 51512,
+      "profile": "alternating_extremes",
+      "spill_fraction_of_packet_mass": 0.0008544921875,
+      "l1_fraction_of_packet_mass": 0.001708984375,
+      "max_abs_deviation": 1.0,
+      "final_range": 2
+    },
+    {
+      "packets": 512,
+      "rounds": 26,
+      "schedule_seed": 51512,
+      "profile": "uniform_random",
+      "spill_fraction_of_packet_mass": 0.003076314926147461,
+      "l1_fraction_of_packet_mass": 0.006152629852294922,
+      "max_abs_deviation": 0.73046875,
+      "final_range": 1
+    },
+    {
+      "packets": 512,
+      "rounds": 26,
+      "schedule_seed": 51512,
+      "profile": "bernoulli_extremes",
+      "spill_fraction_of_packet_mass": 0.003681182861328125,
+      "l1_fraction_of_packet_mass": 0.00736236572265625,
+      "max_abs_deviation": 1.375,
+      "final_range": 2
+    },
+    {
+      "packets": 512,
+      "rounds": 26,
+      "schedule_seed": 51512,
+      "profile": "near_half",
+      "spill_fraction_of_packet_mass": 0.00045686960220336914,
+      "l1_fraction_of_packet_mass": 0.0009137392044067383,
+      "max_abs_deviation": 1.001953125,
+      "final_range": 2
+    },
+    {
+      "packets": 512,
+      "rounds": 26,
+      "schedule_seed": 51512,
+      "profile": "ramp",
+      "spill_fraction_of_packet_mass": 0.00079345703125,
+      "l1_fraction_of_packet_mass": 0.0015869140625,
+      "max_abs_deviation": 1.0,
+      "final_range": 2
+    },
+    {
+      "packets": 1024,
+      "rounds": 26,
+      "schedule_seed": 52024,
+      "profile": "singleton",
+      "spill_fraction_of_packet_mass": 0.00091552734375,
+      "l1_fraction_of_packet_mass": 0.0018310546875,
+      "max_abs_deviation": 0.9375,
+      "final_range": 1
+    },
+    {
+      "packets": 1024,
+      "rounds": 26,
+      "schedule_seed": 52024,
+      "profile": "half_extremes",
+      "spill_fraction_of_packet_mass": 0.000701904296875,
+      "l1_fraction_of_packet_mass": 0.00140380859375,
+      "max_abs_deviation": 1.0,
+      "final_range": 2
+    },
+    {
+      "packets": 1024,
+      "rounds": 26,
+      "schedule_seed": 52024,
+      "profile": "alternating_extremes",
+      "spill_fraction_of_packet_mass": 0.000762939453125,
+      "l1_fraction_of_packet_mass": 0.00152587890625,
+      "max_abs_deviation": 1.0,
+      "final_range": 2
+    },
+    {
+      "packets": 1024,
+      "rounds": 26,
+      "schedule_seed": 52024,
+      "profile": "uniform_random",
+      "spill_fraction_of_packet_mass": 0.002336472272872925,
+      "l1_fraction_of_packet_mass": 0.00467294454574585,
+      "max_abs_deviation": 1.1767578125,
+      "final_range": 2
+    },
+    {
+      "packets": 1024,
+      "rounds": 26,
+      "schedule_seed": 52024,
+      "profile": "bernoulli_extremes",
+      "spill_fraction_of_packet_mass": 0.00295257568359375,
+      "l1_fraction_of_packet_mass": 0.0059051513671875,
+      "max_abs_deviation": 1.25,
+      "final_range": 2
+    },
+    {
+      "packets": 1024,
+      "rounds": 26,
+      "schedule_seed": 52024,
+      "profile": "near_half",
+      "spill_fraction_of_packet_mass": 0.0003810971975326538,
+      "l1_fraction_of_packet_mass": 0.0007621943950653076,
+      "max_abs_deviation": 1.0009765625,
+      "final_range": 2
+    },
+    {
+      "packets": 1024,
+      "rounds": 26,
+      "schedule_seed": 52024,
+      "profile": "ramp",
+      "spill_fraction_of_packet_mass": 0.000701904296875,
+      "l1_fraction_of_packet_mass": 0.00140380859375,
+      "max_abs_deviation": 1.0,
+      "final_range": 2
+    }
+  ]
+}

@@ -317,3 +317,24 @@ this exact rounding floor, and then search for the largest packet size whose
 finite fragment pieces still admit a cheap deterministic repair. Port
 compatibility is no longer the main obstacle; precision versus repair depth
 is.
+
+### Exact integer-cycle check (14 October 2026)
+
+The preceding `0.102` estimate is a worst-case perturbation bound, not a
+measured floor. To check its scale, `integer-rounding-screen.py` applies the
+exact oriented update `(a,b) -> (ceil((a+b)/2), floor((a+b)/2))` to seven
+threshold-count profiles under the reproducible 26-round schedules from
+`matching_cycle_screen.py`. For packet counts 64 through 1024, all tested
+profiles ended with coordinate range at most 2. The largest observed
+positive-spill fraction was about `0.0039` (uniform random at 256 packets),
+versus the crude bound `0.102`; the singleton profile also mixed to a spill
+fraction below `0.004` in these schedules. Data are in
+`integer-rounding-screen.json`.
+
+This is finite numerical evidence only. It neither bounds all initial profiles
+nor establishes an unbounded family of schedules. It does remove the measured
+10% leakage as a reason to reject packet size 64: the next mathematical gate is
+a pathwise or profile-aggregate discrepancy theorem for integer merge-and-deal,
+strong enough to close under the coupled rank recurrence. In particular, the
+singleton tail remains present and must be charged explicitly; the screen does
+not solve that tail problem.
