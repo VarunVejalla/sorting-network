@@ -21,6 +21,7 @@ its numbers) · **retired** (superseded; kept in history only).
 | `global-cost-audit/` | notes + scripts | active (another agent) | UB-11 | cost audit and research decisions for the global schedule |
 | `paterson/` | notes + scripts | reference | UB-06 | audit of the completed Paterson construction (requirements versus cost) |
 | `expanders/` | separate Lake package | reference | UB-06 | optional expander-certificate package (own trust boundary) |
+| `packets/` | Lean interface + analysis | active | UB-25 | merge-and-deal packet balancing; first check is the exact threshold-count identity and fixed output layout |
 
 ## Policy for Lean forks
 
