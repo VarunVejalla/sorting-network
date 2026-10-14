@@ -1,0 +1,285 @@
+{
+  "status": "exact finite allocation-mass check plus conditional analytic budget",
+  "depth_range": [
+    7,
+    40
+  ],
+  "checked_ordinary_stages": 1650,
+  "conditional_cycle_recurrence": "sqrt(V_mix) <= rho*sqrt(V_in) + (s/2)*sqrt(N/m)",
+  "conditional_multi_threshold_recurrence": "sqrt(W_mix) <= rho*sqrt(W_in) + (s/2)*sqrt((N/m)*K)",
+  "port_repartition_term": "not bounded; prevents a closed stage recurrence",
+  "results": [
+    {
+      "depth": 7,
+      "ordinary_stages_checked": 0,
+      "active_packet_count_per_stage": "68719476736",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 0.0
+    },
+    {
+      "depth": 8,
+      "ordinary_stages_checked": 2,
+      "active_packet_count_per_stage": "4398046511104",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 0.203125
+    },
+    {
+      "depth": 9,
+      "ordinary_stages_checked": 5,
+      "active_packet_count_per_stage": "281474976710656",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 0.5078125
+    },
+    {
+      "depth": 10,
+      "ordinary_stages_checked": 8,
+      "active_packet_count_per_stage": "18014398509481984",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 0.8125
+    },
+    {
+      "depth": 11,
+      "ordinary_stages_checked": 11,
+      "active_packet_count_per_stage": "1152921504606846976",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 1.1171875
+    },
+    {
+      "depth": 12,
+      "ordinary_stages_checked": 14,
+      "active_packet_count_per_stage": "73786976294838206464",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 1.421875
+    },
+    {
+      "depth": 13,
+      "ordinary_stages_checked": 17,
+      "active_packet_count_per_stage": "4722366482869645213696",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 1.7265625
+    },
+    {
+      "depth": 14,
+      "ordinary_stages_checked": 20,
+      "active_packet_count_per_stage": "302231454903657293676544",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 2.03125
+    },
+    {
+      "depth": 15,
+      "ordinary_stages_checked": 23,
+      "active_packet_count_per_stage": "19342813113834066795298816",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 2.3359375
+    },
+    {
+      "depth": 16,
+      "ordinary_stages_checked": 26,
+      "active_packet_count_per_stage": "1237940039285380274899124224",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 2.640625
+    },
+    {
+      "depth": 17,
+      "ordinary_stages_checked": 29,
+      "active_packet_count_per_stage": "79228162514264337593543950336",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 2.9453125
+    },
+    {
+      "depth": 18,
+      "ordinary_stages_checked": 32,
+      "active_packet_count_per_stage": "5070602400912917605986812821504",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 3.25
+    },
+    {
+      "depth": 19,
+      "ordinary_stages_checked": 35,
+      "active_packet_count_per_stage": "324518553658426726783156020576256",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 3.5546875
+    },
+    {
+      "depth": 20,
+      "ordinary_stages_checked": 38,
+      "active_packet_count_per_stage": "20769187434139310514121985316880384",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 3.859375
+    },
+    {
+      "depth": 21,
+      "ordinary_stages_checked": 41,
+      "active_packet_count_per_stage": "1329227995784915872903807060280344576",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 4.1640625
+    },
+    {
+      "depth": 22,
+      "ordinary_stages_checked": 44,
+      "active_packet_count_per_stage": "85070591730234615865843651857942052864",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 4.46875
+    },
+    {
+      "depth": 23,
+      "ordinary_stages_checked": 47,
+      "active_packet_count_per_stage": "5444517870735015415413993718908291383296",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 4.7734375
+    },
+    {
+      "depth": 24,
+      "ordinary_stages_checked": 50,
+      "active_packet_count_per_stage": "348449143727040986586495598010130648530944",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 5.078125
+    },
+    {
+      "depth": 25,
+      "ordinary_stages_checked": 53,
+      "active_packet_count_per_stage": "22300745198530623141535718272648361505980416",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 5.3828125
+    },
+    {
+      "depth": 26,
+      "ordinary_stages_checked": 56,
+      "active_packet_count_per_stage": "1427247692705959881058285969449495136382746624",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 5.6875
+    },
+    {
+      "depth": 27,
+      "ordinary_stages_checked": 59,
+      "active_packet_count_per_stage": "91343852333181432387730302044767688728495783936",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 5.9921875
+    },
+    {
+      "depth": 28,
+      "ordinary_stages_checked": 62,
+      "active_packet_count_per_stage": "5846006549323611672814739330865132078623730171904",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 6.296875
+    },
+    {
+      "depth": 29,
+      "ordinary_stages_checked": 65,
+      "active_packet_count_per_stage": "374144419156711147060143317175368453031918731001856",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 6.6015625
+    },
+    {
+      "depth": 30,
+      "ordinary_stages_checked": 68,
+      "active_packet_count_per_stage": "23945242826029513411849172299223580994042798784118784",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 6.90625
+    },
+    {
+      "depth": 31,
+      "ordinary_stages_checked": 71,
+      "active_packet_count_per_stage": "1532495540865888858358347027150309183618739122183602176",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 7.2109375
+    },
+    {
+      "depth": 32,
+      "ordinary_stages_checked": 74,
+      "active_packet_count_per_stage": "98079714615416886934934209737619787751599303819750539264",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 7.515625
+    },
+    {
+      "depth": 33,
+      "ordinary_stages_checked": 77,
+      "active_packet_count_per_stage": "6277101735386680763835789423207666416102355444464034512896",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 7.8203125
+    },
+    {
+      "depth": 34,
+      "ordinary_stages_checked": 80,
+      "active_packet_count_per_stage": "401734511064747568885490523085290650630550748445698208825344",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 8.125
+    },
+    {
+      "depth": 35,
+      "ordinary_stages_checked": 83,
+      "active_packet_count_per_stage": "25711008708143844408671393477458601640355247900524685364822016",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 8.4296875
+    },
+    {
+      "depth": 36,
+      "ordinary_stages_checked": 86,
+      "active_packet_count_per_stage": "1645504557321206042154969182557350504982735865633579863348609024",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 8.734375
+    },
+    {
+      "depth": 37,
+      "ordinary_stages_checked": 89,
+      "active_packet_count_per_stage": "105312291668557186697918027683670432318895095400549111254310977536",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 9.0390625
+    },
+    {
+      "depth": 38,
+      "ordinary_stages_checked": 92,
+      "active_packet_count_per_stage": "6739986666787659948666753771754907668409286105635143120275902562304",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 9.34375
+    },
+    {
+      "depth": 39,
+      "ordinary_stages_checked": 95,
+      "active_packet_count_per_stage": "431359146674410236714672241392314090778194310760649159697657763987456",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 9.6484375
+    },
+    {
+      "depth": 40,
+      "ordinary_stages_checked": 98,
+      "active_packet_count_per_stage": "27606985387162255149739023449108101809804435888681546220650096895197184",
+      "one_threshold_additive_L2_coefficient": 1.625,
+      "one_threshold_fresh_spill_fraction_bound": 0.1015625,
+      "naive_stage_sum_spill_fraction_bound": 9.953125
+    }
+  ]
+}

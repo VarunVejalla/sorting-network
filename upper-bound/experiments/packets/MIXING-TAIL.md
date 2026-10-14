@@ -453,3 +453,71 @@ thresholds can honestly be reported yet. The next UB-25 deliverable should be
 the explicit state, active threshold set, and one-stage recurrence; then the
 formula above can be instantiated against the actual scheduler levels rather
 than guessed.
+
+### Aggregate two-scale state on the actual active bags
+
+The rank-profile candidate should separate coarse bag means from within-bag
+packet variance. For one Boolean threshold `theta`, let `c_b` be the number of
+64-wire packets in active bag `b`, `x_{b,p}` its packet counts, and
+`mu_b = (1/c_b) sum_p x_{b,p}`. Track
+
+```text
+M_t(theta) = vector of bag-mean errors mu_b - target_b(theta),
+V_t(theta) = sum_b sum_p (x_{b,p} - mu_b)^2.
+```
+
+`M` is a candidate rank-scale error: for a bag with native rank interval `I_b`, use target density `pi_b(theta) = 64*|I_b intersect [0,H_theta)|/|I_b|`, where `H_theta` is the global zero-prefix length. This interpretation still requires that the live packet slots represent that interval density. `V` carries local packet irregularity.
+For `K_t` simultaneously tracked Boolean thresholds, define
+`W_t = sum_theta V_t(theta)`. In one merge-and-deal cycle per active bag, if
+all active packet counts have a common certified spectral factor `rho`, then
+Minkowski and the per-bag rounded-cycle estimate give the aggregate fine-scale
+recurrence
+
+```text
+sqrt(W_mix) <= rho*sqrt(W_t) + (s/2)*sqrt(C_t*K_t),
+C_t = sum_b c_b.
+```
+
+The source allocation has `sum_b |regs(b)| = N` at every ordinary stage, so
+for 64-wire packets `C_t=N/64`. The exact-rational screen checked this
+partition identity at all 1,650 ordinary stages for `7<=d<=40`. With `s=26`,
+
+```text
+sqrt(W_mix) <= rho*sqrt(W_t) + (13/8)*sqrt(N*K_t).
+```
+
+By Cauchy, the aggregate positive spill is at most
+`(rho/2)*sqrt(C_t*K_t*W_t) + (s/4)*C_t*K_t`. The fresh additive part is
+`(s/4)*C_t*K_t = 10.15625% * N*K_t` before any port transfer. This recovers
+the coarse floor but now sums over all active bags without an erroneous extra
+factor for the number of bags. The heuristic/exact finite `R(c)` table cannot
+replace this at actual scheduler widths: active bags have unbounded packet
+counts as `d` grows.
+
+The port step needs two explicit terms. If whole source packets could be
+assigned to destination bags with a known incidence matrix `A_t`, bag means
+would satisfy `mu_(t+1) = A_t mu_mix + xi_t`, where `xi_t` records the
+within-bag deviations of the selected source fragments and the repair of
+partial packets. Repacking also changes within-bag variance by a port defect
+`Pi_t`. The candidate full recurrence is therefore
+
+```text
+M_(t+1) = A_t M_mix + target_drift_t + xi_t,
+sqrt(W_(t+1)) <= rho*sqrt(W_t) + (13/8)*sqrt(N*K_t) + Pi_t.
+```
+
+This is a usable invariant interface, but it is not closed: the checked
+`parentPart`/`childPart` flow gives wire counts, not the packet incidence
+matrix, sorted-fragment labels, `xi_t`, or a bound for `Pi_t`. The finite
+alignment calculation verifies only that most cuts are packet aligned. If one
+simply sums the coarse per-stage spill over the 98 interior stages at `d=40`,
+the allowance is `9.953125*N` per threshold, already larger than the whole
+wire mass; boundedness must come from contraction of `M` and control of port
+rebinning, not from adding stage errors.
+
+`aggregate-energy-budget.py` and its JSON check the exact active-mass identity
+and reproduce these conditional constants. They do not establish the
+incidence matrix or the two-scale recurrence. The next concrete scheduler
+lemma is to construct that matrix (including the boundary fragments) for one
+ordinary transition and bound `xi_t` and `Pi_t`; only then is there a numeric
+rank-profile slack to test.
