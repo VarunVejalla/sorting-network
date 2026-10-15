@@ -45,6 +45,15 @@ wire. The earlier attempts to identify an infinite extended output sequence
 are no longer needed for correctness, although the independent extension
 lemma remains proved.
 
+The parent-port correction has a new checked interface:
+`parallelDownSetEndpointRepair_exists` takes the packet-grid shift, a child
+cut length divisible by 64 and at least 64, and an endpoint-in-register bound.
+It constructs all 64 disjoint endpoint repairs in six layers and proves each
+repaired support is sorted from the sender's packet-sorted invariant. This
+formalizes the per-cut correction family; it does not yet show that the
+resulting partial supports plus aligned interior cells form the complete
+receiver packet layout for every actual `FlowSizes` node.
+
 ## Reproduction
 
 From this worktree's repository root on Windows:

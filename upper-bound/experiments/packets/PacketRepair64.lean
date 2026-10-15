@@ -210,6 +210,96 @@ theorem rankInterval_endpoint_repair_exists {N : Nat}
   obtain ⟨hsA, hsB⟩ := packetSortedOn_rankInterval_endpoints s v hp lo hi hspan hlo hhi
   exact repairOrderedHalfPair_sorts A B hA hB hsep v hsA hsB
 
+/-- The two half-packets at the ends of child cut `j` in a shifted parent
+down-port. The cut has length `τ`; the two 32-wire fragments are its first
+and last halves. -/
+def downSetEndpointLeft {N : Nat} (s : Finset (Fin N)) (π τ : Nat)
+    (j : Fin 64) : Finset (Fin N) :=
+  Chvatal.blockOf s (π / 2 + j.val * τ) (π / 2 + j.val * τ + 32)
+
+def downSetEndpointRight {N : Nat} (s : Finset (Fin N)) (π τ : Nat)
+    (j : Fin 64) : Finset (Fin N) :=
+  Chvatal.blockOf s
+    (π / 2 + (j.val + 1) * τ - 32) (π / 2 + (j.val + 1) * τ)
+
+theorem downSetEndpointLeft_card {N : Nat} (s : Finset (Fin N)) (π τ : Nat)
+    (j : Fin 64) (hτlarge : 64 ≤ τ)
+    (hwithin : π / 2 + 64 * τ ≤ s.card) :
+    (downSetEndpointLeft s π τ j).card = 32 := by
+  unfold downSetEndpointLeft
+  have hj : j.val ≤ 63 := by omega
+  have hmul : j.val * τ ≤ 63 * τ := Nat.mul_le_mul_right τ hj
+  rw [Chvatal.blockOf_card (by
+    omega)]
+  omega
+
+theorem downSetEndpointRight_card {N : Nat} (s : Finset (Fin N)) (π τ : Nat)
+    (j : Fin 64) (hτ : 64 ∣ τ)
+    (hbase : (π / 2) % 64 = 32)
+    (hwithin : π / 2 + 64 * τ ≤ s.card) :
+    (downSetEndpointRight s π τ j).card = 32 := by
+  unfold downSetEndpointRight
+  have hres : (π / 2 + (j.val + 1) * τ) % 64 = 32 :=
+    by rw [(downSet_cut_residues (π := π) (τ := τ) (j := j.val) hτ).2, hbase]
+  have hresLower :
+      (π / 2 + (j.val + 1) * τ - 32) % 64 = 0 := by
+    have hmod := Nat.mod_add_div (π / 2 + (j.val + 1) * τ) 64
+    rw [hres] at hmod
+    omega
+  have hj : j.val + 1 ≤ 64 := by omega
+  have hmul : (j.val + 1) * τ ≤ 64 * τ := Nat.mul_le_mul_right τ hj
+  have hend : π / 2 + (j.val + 1) * τ ≤ s.card := by omega
+  rw [Chvatal.blockOf_card (by omega)]
+  omega
+
+theorem downSetEndpoint_separated {N : Nat} (s : Finset (Fin N)) (π τ : Nat)
+    (j : Fin 64) (hτlarge : 64 ≤ τ) :
+    ∀ x ∈ downSetEndpointLeft s π τ j,
+      ∀ y ∈ downSetEndpointRight s π τ j, x < y := by
+  intro x hx y hy
+  have hstep : (j.val + 1) * τ = j.val * τ + τ := by
+    rw [Nat.add_mul, Nat.one_mul]
+  unfold downSetEndpointLeft at hx
+  unfold downSetEndpointRight at hy
+  apply blockOf_lt_of_separated s
+    (by omega : π / 2 + j.val * τ + 32 ≤ π / 2 + (j.val + 1) * τ - 32)
+    hx hy
+
+theorem downSetEndpointSupport_disjoint {N : Nat} (s : Finset (Fin N))
+    (π τ : Nat) (j k : Fin 64) (hτlarge : 64 ≤ τ) (hjk : j ≠ k) :
+    Disjoint
+      (downSetEndpointLeft s π τ j ∪ downSetEndpointRight s π τ j)
+      (downSetEndpointLeft s π τ k ∪ downSetEndpointRight s π τ k) := by
+  have hsub (i : Fin 64) :
+      downSetEndpointLeft s π τ i ∪ downSetEndpointRight s π τ i ⊆
+        Chvatal.downSet s π τ i.val := by
+    intro w hw
+    have hstep : (i.val + 1) * τ = i.val * τ + τ := by
+      rw [Nat.add_mul, Nat.one_mul]
+    rcases Finset.mem_union.mp hw with hl | hr
+    · unfold downSetEndpointLeft at hl
+      unfold Chvatal.downSet
+      apply Finset.mem_filter.mpr
+      have h := Chvatal.mem_blockOf.mp hl
+      refine ⟨h.1, h.2.1, ?_⟩
+      have hi := i.isLt
+      omega
+    · unfold downSetEndpointRight at hr
+      unfold Chvatal.downSet
+      apply Finset.mem_filter.mpr
+      have h := Chvatal.mem_blockOf.mp hr
+      refine ⟨h.1, ?_, h.2.2⟩
+      have hi := i.isLt
+      omega
+  have hneq : j.val ≠ k.val := by intro h; apply hjk; exact Fin.ext h
+  rcases lt_or_gt_of_ne hneq with hlt | hgt
+  · exact (Chvatal.disjoint_downSet (s := s) (π := π) (τ := τ)
+      (j := j.val) (j' := k.val) hlt).mono
+      (hsub j) (hsub k)
+  · exact (Chvatal.disjoint_downSet (s := s) (π := π) (τ := τ)
+      (j := k.val) (j' := j.val) hgt).symm.mono
+      (hsub j) (hsub k)
+
 /-- Both halves chosen by the actual shifted up-fringe lie within individual
 source packets. The source packet invariant therefore sorts both runs. -/
 theorem packetSortedOn_upFringe_endpoints {N : Nat} {α : Type} [Preorder α]
@@ -339,5 +429,67 @@ theorem parallelHalfPairRepair_sorts_pair {ι : Type} [DecidableEq ι]
   intro x y hx hy hxy
   rw [heq x hx, heq y hy]
   exact hs hx hy hxy
+
+/-- All 64 child cuts of a shifted parent can repair their endpoint
+half-packets concurrently. The supports are disjoint, the depth is six, and
+each repaired support is sorted whenever the parent packets were sorted. -/
+theorem parallelDownSetEndpointRepair_exists {N : Nat} {α : Type}
+    [LinearOrder α] (s : Finset (Fin N)) (π τ : Nat)
+    (hτ : 64 ∣ τ) (hτlarge : 64 ≤ τ)
+    (hbase : (π / 2) % 64 = 32)
+    (hwithin : π / 2 + 64 * τ ≤ s.card) :
+    ∃ net : ComparatorNetwork N, net.depth ≤ 6 ∧
+      ∀ v : Fin N → α, PacketSortedOn s v → ∀ j : Fin 64,
+        RankSortedOn
+          (downSetEndpointLeft s π τ j ∪ downSetEndpointRight s π τ j)
+          (net.exec v) := by
+  let A := downSetEndpointLeft s π τ
+  let B := downSetEndpointRight s π τ
+  have hA : ∀ j : Fin 64, (A j).card = 32 := by
+    intro j
+    exact downSetEndpointLeft_card s π τ j hτlarge hwithin
+  have hB : ∀ j : Fin 64, (B j).card = 32 := by
+    intro j
+    exact downSetEndpointRight_card s π τ j hτ hbase hwithin
+  have hsep : ∀ j : Fin 64, ∀ x ∈ A j, ∀ y ∈ B j, x < y := by
+    intro j
+    exact downSetEndpoint_separated s π τ j hτlarge
+  have hdis : ∀ j ∈ List.finRange 64, ∀ k ∈ List.finRange 64,
+      j ≠ k → Disjoint (A j ∪ B j) (A k ∪ B k) := by
+    intro j hj k hk hjk
+    exact downSetEndpointSupport_disjoint s π τ j k hτlarge hjk
+  refine ⟨parallelHalfPairRepair (List.finRange 64) A B hA hB hsep, ?_, ?_⟩
+  · exact parallelHalfPairRepair_depth_le (List.finRange 64)
+      (List.nodup_finRange 64) A B hA hB hsep hdis
+  · intro v hpack j
+    apply parallelHalfPairRepair_sorts_pair (List.finRange 64)
+      (List.nodup_finRange 64) A B hA hB hsep hdis v j (by simp)
+    · have hlo := (downSet_cut_residues (π := π) (τ := τ) (j := j.val) hτ).1
+      rw [hbase] at hlo
+      have hruns := packetSortedOn_rankInterval_endpoints s v hpack
+        (π / 2 + j.val * τ) (π / 2 + (j.val + 1) * τ)
+        (by
+          have hstep : (j.val + 1) * τ = j.val * τ + τ := by
+            rw [Nat.add_mul, Nat.one_mul]
+          omega) hlo (by
+            have hhi := (downSet_cut_residues
+              (π := π) (τ := τ) (j := j.val) hτ).2
+            rw [hbase] at hhi
+            exact hhi)
+      simpa [A, downSetEndpointLeft] using hruns.1
+    · have hhi := (downSet_cut_residues (π := π) (τ := τ) (j := j.val) hτ).2
+      rw [hbase] at hhi
+      have hruns := packetSortedOn_rankInterval_endpoints s v hpack
+        (π / 2 + j.val * τ) (π / 2 + (j.val + 1) * τ)
+        (by
+          have hstep : (j.val + 1) * τ = j.val * τ + τ := by
+            rw [Nat.add_mul, Nat.one_mul]
+          omega)
+        (by
+          have hlo := (downSet_cut_residues
+            (π := π) (τ := τ) (j := j.val) hτ).1
+          rw [hbase] at hlo
+          exact hlo) hhi
+      simpa [B, downSetEndpointRight] using hruns.2
 
 end Chvatal.PacketAlignment

@@ -3,6 +3,10 @@ import PacketGenMerge
 import PacketRebinning
 import PacketHalfProfile
 
+/-- info: 'Chvatal.PacketAlignment.parallelDownSetEndpointRepair_exists' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.parallelDownSetEndpointRepair_exists
+
 /-- info: 'Chvatal.PacketAlignment.scheduled_bag_size_form' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.scheduled_bag_size_form
