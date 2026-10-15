@@ -430,6 +430,57 @@ theorem parallelHalfPairRepair_sorts_pair {ι : Type} [DecidableEq ι]
   rw [heq x hx, heq y hy]
   exact hs hx hy hxy
 
+/-- A whole disjoint cohort of shifted sender up-fringes can repair its
+endpoint half-packets in parallel. Each sender contributes one pair; no
+physical order between different senders is needed. -/
+theorem parallelUpFringeEndpointRepair_exists {ι : Type} [DecidableEq ι]
+    {N : Nat} {α : Type} [LinearOrder α]
+    (ids : List ι) (hids : ids.Nodup) (s : ι → Finset (Fin N)) (π : Nat)
+    (hcard : ∀ i, 64 ∣ (s i).card)
+    (heven : 2 ∣ π) (hhalf : (π / 2) % 64 = 32)
+    (hπcard : ∀ i, π ≤ (s i).card)
+    (hsourceDisjoint : ∀ i ∈ ids, ∀ j ∈ ids, i ≠ j → Disjoint (s i) (s j)) :
+    ∃ net : ComparatorNetwork N, net.depth ≤ 6 ∧
+      ∀ v : Fin N → α, (∀ i ∈ ids, PacketSortedOn (s i) v) →
+        ∀ i ∈ ids,
+          RankSortedOn (upFringePairSupport (s i) π) (net.exec v) := by
+  let A (i : ι) := Chvatal.blockOf (s i) (π / 2 - 32) (π / 2)
+  let B (i : ι) := Chvatal.blockOf (s i) ((s i).card - π / 2)
+    ((s i).card - π / 2 + 32)
+  have hA : ∀ i, (A i).card = 32 := by
+    intro i
+    have hp := upFringe_endpoint_pair (s i) π heven (hcard i) hhalf (hπcard i)
+    simpa [A] using hp.2.1
+  have hB : ∀ i, (B i).card = 32 := by
+    intro i
+    have hp := upFringe_endpoint_pair (s i) π heven (hcard i) hhalf (hπcard i)
+    simpa [B] using hp.2.2.1
+  have hsep : ∀ i, ∀ x ∈ A i, ∀ y ∈ B i, x < y := by
+    intro i x hx y hy
+    exact upFringe_endpoint_pair_ordered (s i) π heven hhalf (hπcard i) hx hy
+  have hdis : ∀ i ∈ ids, ∀ j ∈ ids, i ≠ j →
+      Disjoint (A i ∪ B i) (A j ∪ B j) := by
+    intro i hi j hj hne
+    exact (hsourceDisjoint i hi j hj hne).mono
+      (by
+        intro w hw
+        rcases Finset.mem_union.mp hw with hw | hw
+        · exact Chvatal.blockOf_subset hw
+        · exact Chvatal.blockOf_subset hw)
+      (by
+        intro w hw
+        rcases Finset.mem_union.mp hw with hw | hw
+        · exact Chvatal.blockOf_subset hw
+        · exact Chvatal.blockOf_subset hw)
+  refine ⟨parallelHalfPairRepair ids A B hA hB hsep, ?_, ?_⟩
+  · exact parallelHalfPairRepair_depth_le ids hids A B hA hB hsep hdis
+  · intro v hsorted i hi
+    apply parallelHalfPairRepair_sorts_pair ids hids A B hA hB hsep hdis v i hi
+    · exact (packetSortedOn_upFringe_endpoints (s i) v (hsorted i hi) π
+        (hcard i) hhalf (hπcard i)).1
+    · exact (packetSortedOn_upFringe_endpoints (s i) v (hsorted i hi) π
+        (hcard i) hhalf (hπcard i)).2
+
 /-- All 64 child cuts of a shifted parent can repair their endpoint
 half-packets concurrently. The supports are disjoint, the depth is six, and
 each repaired support is sorted whenever the parent packets were sorted. -/
@@ -528,5 +579,63 @@ theorem flowA7_scheduled_parent_endpoint_repair {d : Nat} {α : Type}
     rw [hsize]
     omega
   exact parallelDownSetEndpointRepair_exists s π τ hτ hτlarge hbase hwithin
+
+/-- At an actual receiver, the 64 child senders' shifted up-fringe endpoint
+repairs are also one six-layer disjoint family. The packet divisibility,
+fringe parity, capacity, and sender disjointness all come from the checked
+`FlowSizes7` invariants. -/
+theorem flowA7_receiver_child_up_endpoint_repair {d : Nat} {α : Type}
+    [LinearOrder α] (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t)
+    (ht : t < tf7 d) (b : KBag 64 d) (hchild : b.l < d)
+    (hbad : HalfMisaligned (flowUp7 d hd (b.l + 1) t)) :
+    ∃ net : ComparatorNetwork (64 ^ d), net.depth ≤ 6 ∧
+      ∀ v : Fin (64 ^ d) → α,
+        (∀ j : Fin 64,
+          PacketSortedOn
+            (wireSets (flowSizes7 d hd) t (b.child j.val j.isLt hchild)) v) →
+        ∀ j : Fin 64,
+          RankSortedOn
+            (upFringePairSupport
+              (wireSets (flowSizes7 d hd) t (b.child j.val j.isLt hchild))
+              (flowUp7 d hd (b.l + 1) t)) (net.exec v) := by
+  let F := flowSizes7 d hd
+  let s (j : Fin 64) := wireSets F t (b.child j.val j.isLt hchild)
+  let π := flowUp7 d hd (b.l + 1) t
+  have hcard : ∀ j : Fin 64, 64 ∣ (s j).card := by
+    intro j
+    have hshape := node_shape_refined d hd t (b.l + 1) ht2 ht
+    have hres := refined_packet_residues hd ht2 ht hshape
+    rw [wireSets_card F (Nat.le_of_lt ht)]
+    dsimp [s, F, flowSizes7]
+    exact hres.1
+  have heven : 2 ∣ π := by
+    dsimp [π]
+    exact F.hup_even (b.l + 1) t ht
+  have hπcard : ∀ j : Fin 64, π ≤ (s j).card := by
+    intro j
+    have hsize : (s j).card = π + 64 * flowDown7 d hd (b.l + 1) t := by
+      dsimp [s, F, π]
+      rw [wireSets_card F (Nat.le_of_lt ht)]
+      exact F.hsplit (b.child j.val j.isLt hchild).l t
+        (b.child j.val j.isLt hchild).hl ht
+    omega
+  have hdis : ∀ j ∈ List.finRange 64, ∀ k ∈ List.finRange 64,
+      j ≠ k → Disjoint (s j) (s k) := by
+    intro j hj k hk hne
+    apply wireSets_disjoint F (Nat.le_of_lt ht)
+    intro heq
+    apply hne
+    exact Fin.ext (KBag.child_inj b j.val k.val j.isLt k.isLt hchild heq)
+  have hhalf : (π / 2) % 64 = 32 := hbad.2
+  obtain ⟨net, hdepth, hsort⟩ :=
+    parallelUpFringeEndpointRepair_exists (α := α) (List.finRange 64)
+      (List.nodup_finRange 64) s π hcard heven hhalf hπcard hdis
+  refine ⟨net, hdepth, ?_⟩
+  intro v hv j
+  have hsorted : ∀ i ∈ List.finRange 64, PacketSortedOn (s i) v := by
+    intro i hi
+    simpa [s] using hv i
+  have h := hsort v hsorted j (by simp)
+  simpa [upFringePairSupport, s, π] using h
 
 end Chvatal.PacketAlignment

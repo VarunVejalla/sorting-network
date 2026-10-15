@@ -56,7 +56,11 @@ receiver packet layout for every actual `FlowSizes` node.
 `flowA7_scheduled_parent_endpoint_repair` instantiates this result for every
 ordinary scheduled sender with positive down-flow and a half-misaligned
 up-fringe. The zero-down boundary case has no child cuts and remains a
-separate no-op case.
+separate no-op case. The dual `flowA7_receiver_child_up_endpoint_repair`
+handles all 64 children of a receiver in one disjoint six-layer family when
+their common up-fringe is half-misaligned; it uses the actual scheduled
+packet-cardinality and wire-set disjointness theorems. Both scheduled cases
+still assume each contributing sender has the packet-sorted invariant.
 
 ## Reproduction
 

@@ -11,6 +11,14 @@ import PacketHalfProfile
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_scheduled_parent_endpoint_repair
 
+/-- info: 'Chvatal.PacketAlignment.parallelUpFringeEndpointRepair_exists' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.parallelUpFringeEndpointRepair_exists
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_child_up_endpoint_repair' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_child_up_endpoint_repair
+
 /-- info: 'Chvatal.PacketAlignment.scheduled_bag_size_form' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.scheduled_bag_size_form
