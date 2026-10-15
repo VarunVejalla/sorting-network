@@ -1114,3 +1114,34 @@ from dependent `Fin` proof terms. The focused Lean file passes after adding
 these lemmas. They are the intended adapters for the concrete profile bridge;
 that bridge itself, the sorting induction, and the global UB-25 recurrence
 remain open.
+
+Completion audit (2026-10-15): the later source state closes the correction
+profile bridge and the recursive sorting induction described as open above.
+`oddEvenCrossLayer_exec_first`, `oddEvenCrossLayer_exec_last`,
+`oddEvenCrossLayer_exec_odd`, and `oddEvenCrossLayer_exec_even` identify the
+actual correction output at every wire, including both unpaired endpoints.
+`oddEvenFront_threshold_count_gap` derives the required count gap from the two
+sorted input runs, parity splitting, and count preservation through the
+recursive submerges. `oddEvenFront_shift_from_two_runs` converts it to the
+shifted inequality used by the correction layer. The strong induction
+`oddEvenMergeNet_sorts_two_runs` then proves that the actual comparator network
+sorts any two ascending runs at every power-of-two width. Its depth theorem
+`oddEvenMergeNet_depth_le` proves depth at most the exponent, hence the 64-wire
+instance sorts two 32-wire runs in at most six layers. The correction and
+induction obligations are kernel-checked; `PacketMergeAxioms.lean` guards the
+headline result with only standard Lean axioms. This closes the local merge
+gate, not UB-25's receiver reassembly, matching schedule, coupled recurrence,
+or global limsup proof. The current coefficient near 200 remains conditional.
+
+Next concrete bridge after the merge gate (2026-10-15): instantiate the generic
+layerwise selected-piece error lemma on the actual `wireFlowReceiver` map. For
+each source bag, prove that distinct receivers select disjoint indices among
+the 66 cuts: child receivers select their distinct middle indices
+`receiver.x % 64 + 1`, and the unique parent receiver selects fringe indices
+`0` and `65`. Then handle root and leaf layers explicitly so the selected
+pieces are exactly the registers written by `execPlacement`. The generic
+aggregate estimate already charges each source count error once; what remains
+after incidence is identifying the summed ideal means with the target register
+profile, then proving that profile update contracts the coupled rank and
+discrepancy state. This incidence step is the shortest next proof gate; it is
+not yet checked, and it does not by itself establish the 197.5 coefficient.
