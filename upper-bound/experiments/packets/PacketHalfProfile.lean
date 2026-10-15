@@ -1277,6 +1277,171 @@ theorem wireFlowLayerSelection_active_union_eq_range {d : Nat}
       wireFlowLayerSelection_active_cover source hlo hhi i hi
     exact Finset.mem_biUnion.mpr ⟨receiver, hreceiver, hpiece⟩
 
+/-- A low-frontier source (root or first level) sends exactly its middle 64
+pieces to active children; its parent fringe receiver is inactive. -/
+theorem wireFlowLayerSelection_active_union_low {d : Nat}
+    (source : KBag 64 d) (hlow : source.l ≤ 1)
+    (hchild : source.l + 1 < d) :
+    (Finset.univ.filter (fun b : KBag 64 d => 1 ≤ b.l ∧ b.l < d)).biUnion
+      (fun receiver => wireFlowLayerSelection receiver source) =
+      (range 66).filter (fun i => 1 ≤ i ∧ i ≤ 64) := by
+  classical
+  ext i
+  constructor
+  · intro hi
+    obtain ⟨receiver, hreceiver, hpiece⟩ := Finset.mem_biUnion.mp hi
+    rw [wireFlowLayerSelection_mem] at hpiece
+    rcases hpiece.2 with hfromChild | hfromParent
+    · exact Finset.mem_filter.mpr ⟨hpiece.1, by
+        have hmod := Nat.mod_lt receiver.x (by norm_num : 0 < 64)
+        omega⟩
+    · have hreceiverParent := congrArg KBag.l hfromParent.2.1
+      rw [KBag.parent_l] at hreceiverParent
+      have : receiver.l = 0 := by omega
+      have hactive := (Finset.mem_filter.mp hreceiver).2.1
+      omega
+  · intro hi
+    have hi' := (Finset.mem_filter.mp hi).2
+    have hindex := (Finset.mem_filter.mp hi).1
+    let receiver := source.child (i - 1) (by omega) (by omega)
+    have hreceiverLevel : 1 ≤ receiver.l ∧ receiver.l < d := by
+      change 1 ≤ source.l + 1 ∧ source.l + 1 < d
+      omega
+    have hparent : source = receiver.parent := by
+      dsimp [receiver]
+      exact (KBag.child_parent source (i - 1) (by omega) (by omega)
+        (by norm_num)).symm
+    have hmod : receiver.x % 64 = i - 1 := by
+      change (64 * source.x + (i - 1)) % 64 = i - 1
+      omega
+    have hpiece : i ∈ wireFlowLayerSelection receiver source := by
+      rw [wireFlowLayerSelection_mem]
+      refine ⟨hindex, Or.inl ⟨hreceiverLevel.1, hparent, ?_⟩⟩
+      omega
+    exact Finset.mem_biUnion.mpr ⟨receiver,
+      Finset.mem_filter.mpr ⟨Finset.mem_univ _, hreceiverLevel⟩, hpiece⟩
+
+/-- At the upper frontier, an active source reaches only its two parent-fringe
+pieces; no active receiver exists below those pieces. -/
+theorem wireFlowLayerSelection_active_union_high {d : Nat}
+    (source : KBag 64 d) (hlo : 2 ≤ source.l)
+    (hhigh : d ≤ source.l + 1) :
+    (Finset.univ.filter (fun b : KBag 64 d => 1 ≤ b.l ∧ b.l < d)).biUnion
+      (fun receiver => wireFlowLayerSelection receiver source) = {0, 65} := by
+  classical
+  ext i
+  constructor
+  · intro hi
+    obtain ⟨receiver, hreceiver, hpiece⟩ := Finset.mem_biUnion.mp hi
+    rw [wireFlowLayerSelection_mem] at hpiece
+    rcases hpiece.2 with hfromChild | hfromParent
+    · have hlevel := congrArg KBag.l hfromChild.2.1
+      rw [KBag.parent_l] at hlevel
+      have hactive := (Finset.mem_filter.mp hreceiver).2.2
+      have hsourced : source.l ≤ d := source.hl
+      omega
+    · rcases hfromParent.2.2 with hzero | hlast
+      · simp [hzero]
+      · simp [hlast]
+  · intro hi
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hi
+    rcases hi with hzero | hlast
+    · subst i
+      let receiver := source.parent
+      have hreceiverLevel : 1 ≤ receiver.l ∧ receiver.l < d := by
+        change 1 ≤ source.l - 1 ∧ source.l - 1 < d
+        have hsourced : source.l ≤ d := source.hl
+        omega
+      have hpiece : 0 ∈ wireFlowLayerSelection receiver source := by
+        rw [wireFlowLayerSelection_mem]
+        exact ⟨mem_range.mpr (by omega), Or.inr ⟨by omega, rfl, Or.inl rfl⟩⟩
+      exact Finset.mem_biUnion.mpr ⟨receiver,
+        Finset.mem_filter.mpr ⟨Finset.mem_univ _, hreceiverLevel⟩, hpiece⟩
+    · subst i
+      let receiver := source.parent
+      have hreceiverLevel : 1 ≤ receiver.l ∧ receiver.l < d := by
+        change 1 ≤ source.l - 1 ∧ source.l - 1 < d
+        have hsourced : source.l ≤ d := source.hl
+        omega
+      have hpiece : 65 ∈ wireFlowLayerSelection receiver source := by
+        rw [wireFlowLayerSelection_mem]
+        exact ⟨mem_range.mpr (by omega), Or.inr ⟨by omega, rfl, Or.inr rfl⟩⟩
+      exact Finset.mem_biUnion.mpr ⟨receiver,
+        Finset.mem_filter.mpr ⟨Finset.mem_univ _, hreceiverLevel⟩, hpiece⟩
+
+/-- Complete selector geometry for every source bag once the tree has height
+at least three: low sources send the 64 middle pieces, interior sources send
+all 66, and top-frontier sources send only the two fringes. -/
+theorem wireFlowLayerSelection_active_union_complete {d : Nat}
+    (hd : 3 ≤ d) (source : KBag 64 d) :
+    (source.l ≤ 1 ∧
+      (Finset.univ.filter (fun b : KBag 64 d => 1 ≤ b.l ∧ b.l < d)).biUnion
+        (fun receiver => wireFlowLayerSelection receiver source) =
+          (range 66).filter (fun i => 1 ≤ i ∧ i ≤ 64)) ∨
+    (2 ≤ source.l ∧ source.l + 2 ≤ d ∧
+      (Finset.univ.filter (fun b : KBag 64 d => 1 ≤ b.l ∧ b.l < d)).biUnion
+        (fun receiver => wireFlowLayerSelection receiver source) = range 66) ∨
+    (2 ≤ source.l ∧ d ≤ source.l + 1 ∧
+      (Finset.univ.filter (fun b : KBag 64 d => 1 ≤ b.l ∧ b.l < d)).biUnion
+        (fun receiver => wireFlowLayerSelection receiver source) = {0, 65}) := by
+  by_cases hlow : source.l ≤ 1
+  · exact Or.inl ⟨hlow,
+      wireFlowLayerSelection_active_union_low source hlow (by omega)⟩
+  · have hsource : 2 ≤ source.l := by omega
+    by_cases hmid : source.l + 2 ≤ d
+    · exact Or.inr (Or.inl ⟨hsource, hmid,
+        wireFlowLayerSelection_active_union_eq_range source hsource hmid⟩)
+    · exact Or.inr (Or.inr ⟨hsource, by omega,
+        wireFlowLayerSelection_active_union_high source hsource (by omega)⟩)
+
+/-- Any exact active-selector union identity immediately gives the matching
+additive conservation identity, since selectors for distinct receivers are
+pairwise disjoint. -/
+theorem wireFlowLayerSelection_active_sum_eq_union {d : Nat}
+    {M : Type*} [AddCommMonoid M] (source : KBag 64 d) (pieces : Finset Nat)
+    (hunion : (Finset.univ.filter
+      (fun b : KBag 64 d => 1 ≤ b.l ∧ b.l < d)).biUnion
+        (fun receiver => wireFlowLayerSelection receiver source) = pieces)
+    (f : Nat → M) :
+    (∑ receiver ∈ (Finset.univ : Finset (KBag 64 d)).filter
+      (fun b => 1 ≤ b.l ∧ b.l < d),
+      ∑ i ∈ wireFlowLayerSelection receiver source, f i) =
+      ∑ i ∈ pieces, f i := by
+  classical
+  let active := (Finset.univ : Finset (KBag 64 d)).filter
+    (fun b => 1 ≤ b.l ∧ b.l < d)
+  have hdis : Set.PairwiseDisjoint (↑active : Set (KBag 64 d))
+      (fun receiver => wireFlowLayerSelection receiver source) := by
+    intro receiver hreceiver other hother hne
+    exact wireFlowLayerSelection_pairwise_disjoint source receiver other hne
+  calc
+    (∑ receiver ∈ active,
+      ∑ i ∈ wireFlowLayerSelection receiver source, f i) =
+        ∑ i ∈ active.biUnion (fun receiver => wireFlowLayerSelection receiver source),
+          f i := (Finset.sum_biUnion hdis).symm
+    _ = ∑ i ∈ pieces, f i := by rw [hunion]
+
+theorem wireFlowLayerSelection_active_sum_eq_low {d : Nat}
+    {M : Type*} [AddCommMonoid M] (source : KBag 64 d)
+    (hlow : source.l ≤ 1) (hchild : source.l + 1 < d) (f : Nat → M) :
+    (∑ receiver ∈ (Finset.univ : Finset (KBag 64 d)).filter
+      (fun b => 1 ≤ b.l ∧ b.l < d),
+      ∑ i ∈ wireFlowLayerSelection receiver source, f i) =
+      ∑ i ∈ (range 66).filter (fun i => 1 ≤ i ∧ i ≤ 64), f i :=
+  wireFlowLayerSelection_active_sum_eq_union source _
+    (wireFlowLayerSelection_active_union_low source hlow hchild) f
+
+theorem wireFlowLayerSelection_active_sum_eq_high {d : Nat}
+    {M : Type*} [AddCommMonoid M] (source : KBag 64 d)
+    (hlo : 2 ≤ source.l) (hhigh : d ≤ source.l + 1) (f : Nat → M) :
+    (∑ receiver ∈ (Finset.univ : Finset (KBag 64 d)).filter
+      (fun b => 1 ≤ b.l ∧ b.l < d),
+      ∑ i ∈ wireFlowLayerSelection receiver source, f i) =
+      f 0 + f 65 := by
+  rw [wireFlowLayerSelection_active_sum_eq_union source {0, 65}
+    (wireFlowLayerSelection_active_union_high source hlo hhigh) f]
+  simp
+
 /-- Consequently, summing any additive piece quantity over the active
 receivers preserves the exact full source total on interior bag levels. -/
 theorem wireFlowLayerSelection_active_sum_eq_range {d : Nat}

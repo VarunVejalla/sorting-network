@@ -37,6 +37,30 @@ import PacketHalfProfile
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.wireFlowLayerSelection_active_sum_eq_range
 
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayerSelection_active_union_low' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayerSelection_active_union_low
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayerSelection_active_union_high' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayerSelection_active_union_high
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayerSelection_active_union_complete' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayerSelection_active_union_complete
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayerSelection_active_sum_eq_union' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayerSelection_active_sum_eq_union
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayerSelection_active_sum_eq_low' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayerSelection_active_sum_eq_low
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayerSelection_active_sum_eq_high' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayerSelection_active_sum_eq_high
+
 /-- info: 'Chvatal.PacketAlignment.wireFlowLayerSenderPieceMean_active_sum_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.wireFlowLayerSenderPieceMean_active_sum_eq

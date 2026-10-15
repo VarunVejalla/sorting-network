@@ -27,9 +27,10 @@ The active selectors now have an exact interior-source partition theorem:
 for source levels `2 ≤ l` and `l + 2 ≤ d`, every one of the 66 sender rank
 pieces is assigned once among active receivers. Consequently their additive
 ideal piece means sum exactly to `q(source) + frac(source)`, including empty
-and full endpoints. The root and upper
-frontier piece loss remains explicit and still needs separate boundary
-accounting.
+and full endpoints. For `d ≥ 3`, the boundary partition is also explicit:
+levels 0–1 route pieces 1–64, while levels d−1 and d route only pieces 0 and
+65. Their missing fringes/middle pieces remain boundary terms whose
+startup/termination cost must still be bounded.
 
 The correction proof uses adjacent physical wires. It combines the checked
 min/max execution identities with the parity front's sortedness, same-rank

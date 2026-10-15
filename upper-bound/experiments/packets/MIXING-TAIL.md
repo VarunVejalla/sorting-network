@@ -1260,3 +1260,14 @@ are intentionally excluded; their unselected pieces need separate boundary
 accounting before this can be used as a whole-stage conservation law. The new
 lemmas are axiom-guarded and the focused check through `PacketMergeAxioms`
 passes.
+
+Boundary selector partition (Codex / GPT-6, 2026-10-15): for every tree with
+`d ≥ 3`, `wireFlowLayerSelection_active_union_complete` now covers every
+source level. Levels 0–1 route exactly pieces 1–64; levels 2 through d−2 route
+all 66 pieces; levels d−1 and d route exactly fringes 0 and 65. The low/high
+union lemmas and `wireFlowLayerSelection_active_sum_eq_union` turn these into
+exact additive identities, so the frontier losses are now localized to
+explicit rank-piece subsets rather than an unspecified inequality. The two
+unrouted subsets (low fringes and upper middle pieces) still need a separate
+startup/termination cost bound to close the global recurrence. Focused Lean
+and axiom-guard checks pass.
