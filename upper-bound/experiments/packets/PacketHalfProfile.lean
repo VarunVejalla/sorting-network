@@ -50,6 +50,143 @@ theorem profileInterval_change_le (m X Y a b : Nat) (hab : a ≤ b) (hb : b ≤ 
       rw [Nat.min_eq_right (Nat.le_of_lt hx'), Nat.min_eq_right (Nat.le_of_lt hy')]
       omega
 
+
+def profileIntervalMean (m q : Nat) (frac : Real) (a b : Nat) : Real :=
+  (1 - frac) * profileInterval m q a b +
+    frac * profileInterval m (q + 1) a b
+
+private theorem profileTail_mono_r (m X : Nat) : Monotone (profileTail m X) := by
+  intro a b hab
+  simp only [profileTail]
+  omega
+
+private theorem sum_profileIntervals_partition (m p X : Nat) (cuts : Nat → Nat)
+    (hstart : cuts 0 = 0) (hmono : Monotone cuts) (hend : cuts p = m) :
+    (∑ i ∈ range p, profileInterval m X (cuts i) (cuts (i + 1))) =
+      profileTail m X m - profileTail m X 0 := by
+  unfold profileInterval
+  have htail : Monotone (fun i => profileTail m X (cuts i)) :=
+    (profileTail_mono_r m X).comp hmono
+  rw [Finset.sum_range_tsub htail p]
+  rw [hend, hstart]
+
+private theorem profileInterval_mono_X (m X Y a b : Nat) (hab : a ≤ b) (hb : b ≤ m)
+    (hXY : Y ≤ X) : profileInterval m Y a b ≤ profileInterval m X a b := by
+  rw [profileInterval_formula m Y a b hab hb, profileInterval_formula m X a b hab hb]
+  exact min_le_min le_rfl (Nat.sub_le_sub_right hXY _)
+
+private theorem cuts_le_end (p : Nat) (cuts : Nat → Nat) (hcuts : Monotone cuts)
+    (i : Nat) (hi : i ≤ p) : cuts i ≤ cuts p := hcuts hi
+
+private theorem profileInterval_partition_total (m p X : Nat) (cuts : Nat → Nat)
+    (hstart : cuts 0 = 0) (hcuts : Monotone cuts) (hend : cuts p = m)
+    (hX : X ≤ m) : (∑ i ∈ range p, profileInterval m X (cuts i) (cuts (i + 1))) = X := by
+  rw [sum_profileIntervals_partition m p X cuts hstart hcuts hend]
+  simp only [profileTail]
+  omega
+
+theorem profileInterval_partition_L1_exact (m p X q : Nat) (frac : Real)
+    (cuts : Nat → Nat) (hstart : cuts 0 = 0) (hcuts : Monotone cuts)
+    (hend : cuts p = m) (hX : X ≤ m) (hq : q < m)
+    (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    (∑ i ∈ range p,
+      |(profileInterval m X (cuts i) (cuts (i + 1)) : Real) -
+        profileIntervalMean m q frac (cuts i) (cuts (i + 1))|) =
+      |(X : Real) - (q + frac)| := by
+  have hmean : (∑ i ∈ range p,
+      profileIntervalMean m q frac (cuts i) (cuts (i + 1))) = q + frac := by
+    have hqsum : (∑ i ∈ range p,
+        (profileInterval m q (cuts i) (cuts (i + 1)) : Real)) = q := by
+      exact_mod_cast profileInterval_partition_total m p q cuts hstart hcuts hend (by omega)
+    have hq1sum : (∑ i ∈ range p,
+        (profileInterval m (q + 1) (cuts i) (cuts (i + 1)) : Real)) = q + 1 := by
+      exact_mod_cast profileInterval_partition_total m p (q + 1) cuts hstart hcuts hend (by omega)
+    unfold profileIntervalMean
+    rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum,
+      hqsum, hq1sum]
+    ring
+  have hxsum := profileInterval_partition_total m p X cuts hstart hcuts hend hX
+  have hxsumR : (∑ i ∈ range p,
+      (profileInterval m X (cuts i) (cuts (i + 1)) : Real)) = X := by exact_mod_cast hxsum
+  by_cases hXq : X ≤ q
+  · have hpoint : ∀ i ∈ range p,
+        (profileInterval m X (cuts i) (cuts (i + 1)) : Real) ≤
+          profileIntervalMean m q frac (cuts i) (cuts (i + 1)) := by
+      intro i hi
+      have hi' : i < p := mem_range.mp hi
+      have hab : cuts i ≤ cuts (i + 1) := hcuts (Nat.le_succ i)
+      have hb : cuts (i + 1) ≤ m := by
+        rw [← hend]
+        exact hcuts (by omega)
+      have hbase := profileInterval_mono_X m q X (cuts i) (cuts (i + 1)) hab hb (by omega)
+      have hnext := profileInterval_mono_X m (q + 1) q (cuts i) (cuts (i + 1)) hab hb (by omega)
+      unfold profileIntervalMean
+      have hn : (profileInterval m q (cuts i) (cuts (i + 1)) : Real) ≤
+          profileInterval m (q + 1) (cuts i) (cuts (i + 1)) := by exact_mod_cast hnext
+      have hb' : (profileInterval m X (cuts i) (cuts (i + 1)) : Real) ≤
+          profileInterval m q (cuts i) (cuts (i + 1)) := by exact_mod_cast hbase
+      nlinarith [hfrac0, hfrac1]
+    calc
+      (∑ i ∈ range p,
+          |(profileInterval m X (cuts i) (cuts (i + 1)) : Real) -
+            profileIntervalMean m q frac (cuts i) (cuts (i + 1))|) =
+          ∑ i ∈ range p,
+            (profileIntervalMean m q frac (cuts i) (cuts (i + 1)) -
+              (profileInterval m X (cuts i) (cuts (i + 1)) : Real)) := by
+        apply sum_congr rfl
+        intro i hi
+        rw [abs_of_nonpos (by linarith [hpoint i hi])]
+        ring
+      _ = (∑ i ∈ range p,
+          profileIntervalMean m q frac (cuts i) (cuts (i + 1))) -
+          (∑ i ∈ range p,
+            (profileInterval m X (cuts i) (cuts (i + 1)) : Real)) := by rw [Finset.sum_sub_distrib]
+      _ = |(X : Real) - (q + frac)| := by
+        calc
+          _ = (q + frac) - X := by rw [hmean, hxsumR]
+          _ = |(X : Real) - (q + frac)| := by
+            have hXR : (X : Real) ≤ q := by exact_mod_cast hXq
+            rw [abs_of_nonpos (by linarith [hXR, hfrac0])]
+            ring
+  · have hX' : q + 1 ≤ X := by omega
+    have hpoint : ∀ i ∈ range p,
+        profileIntervalMean m q frac (cuts i) (cuts (i + 1)) ≤
+          (profileInterval m X (cuts i) (cuts (i + 1)) : Real) := by
+      intro i hi
+      have hi' : i < p := mem_range.mp hi
+      have hab : cuts i ≤ cuts (i + 1) := hcuts (Nat.le_succ i)
+      have hb : cuts (i + 1) ≤ m := by
+        rw [← hend]
+        exact hcuts (by omega)
+      have hbase := profileInterval_mono_X m X (q + 1) (cuts i) (cuts (i + 1)) hab hb (by omega)
+      have hnext := profileInterval_mono_X m (q + 1) q (cuts i) (cuts (i + 1)) hab hb (by omega)
+      unfold profileIntervalMean
+      have hn : (profileInterval m q (cuts i) (cuts (i + 1)) : Real) ≤
+          profileInterval m (q + 1) (cuts i) (cuts (i + 1)) := by exact_mod_cast hnext
+      have hb' : (profileInterval m (q + 1) (cuts i) (cuts (i + 1)) : Real) ≤
+          profileInterval m X (cuts i) (cuts (i + 1)) := by exact_mod_cast hbase
+      nlinarith [hfrac0, hfrac1]
+    calc
+      (∑ i ∈ range p,
+          |(profileInterval m X (cuts i) (cuts (i + 1)) : Real) -
+            profileIntervalMean m q frac (cuts i) (cuts (i + 1))|) =
+          ∑ i ∈ range p,
+            ((profileInterval m X (cuts i) (cuts (i + 1)) : Real) -
+              profileIntervalMean m q frac (cuts i) (cuts (i + 1))) := by
+        apply sum_congr rfl
+        intro i hi
+        rw [abs_of_nonneg (by linarith [hpoint i hi])]
+      _ = (∑ i ∈ range p,
+          (profileInterval m X (cuts i) (cuts (i + 1)) : Real)) -
+          (∑ i ∈ range p,
+            profileIntervalMean m q frac (cuts i) (cuts (i + 1))) := by rw [Finset.sum_sub_distrib]
+      _ = |(X : Real) - (q + frac)| := by
+        calc
+          _ = X - (q + frac) := by rw [hxsumR, hmean]
+          _ = |(X : Real) - (q + frac)| := by
+            have hXR : (q : Real) + 1 ≤ X := by exact_mod_cast hX'
+            rw [abs_of_nonneg (by linarith [hXR, hfrac1])]
+
 /-- The actual count in a half-open rank interval of an increasing Boolean
 packet is its ideal profile count. -/
 theorem sortedBool_rankInterval_trueCount {m : Nat} (v : Fin m → Bool)
@@ -87,6 +224,151 @@ theorem sortedBool_rankInterval_trueCount {m : Nat} (v : Fin m → Bool)
   change boolTrueCount C = profileInterval m (boolTrueCount v) a b
   unfold profileInterval profileTail
   rw [hC]
+
+theorem sortedPackets_intervalPartition_L1_exact {c m p q : Nat} (frac : Real)
+    (V : Fin c → Fin m → Bool) (hV : ∀ i, Monotone (V i))
+    (cuts : Nat → Nat) (hstart : cuts 0 = 0) (hcuts : Monotone cuts)
+    (hcutBound : ∀ i, cuts i ≤ m)
+    (hend : cuts p = m) (hq : q < m) (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    (∑ packet : Fin c, ∑ i ∈ range p,
+      |(boolTrueCount (fun j : Fin (cuts (i + 1) - cuts i) =>
+          V packet ⟨cuts i + j.val, by
+            have hab : cuts i ≤ cuts (i + 1) := hcuts (Nat.le_succ i)
+            have hsum := Nat.add_sub_of_le hab
+            calc
+              cuts i + j.val < cuts i + (cuts (i + 1) - cuts i) := Nat.add_lt_add_left j.isLt _
+              _ = cuts (i + 1) := hsum
+              _ ≤ m := hcutBound (i + 1)⟩) : Real) -
+        profileIntervalMean m q frac (cuts i) (cuts (i + 1))|) =
+      ∑ packet : Fin c, |(boolTrueCount (V packet) : Real) - (q + frac)| := by
+  apply Finset.sum_congr rfl
+  intro packet _
+  have hpacket (i : Nat) (hi : i < p) :
+      boolTrueCount (fun j : Fin (cuts (i + 1) - cuts i) =>
+        V packet ⟨cuts i + j.val, by
+          have hab : cuts i ≤ cuts (i + 1) := hcuts (Nat.le_succ i)
+          have hsum := Nat.add_sub_of_le hab
+          calc
+            cuts i + j.val < cuts i + (cuts (i + 1) - cuts i) := Nat.add_lt_add_left j.isLt _
+            _ = cuts (i + 1) := hsum
+            _ ≤ m := hcutBound (i + 1)⟩) =
+        profileInterval m (boolTrueCount (V packet)) (cuts i) (cuts (i + 1)) := by
+    apply sortedBool_rankInterval_trueCount (V packet) (hV packet)
+    · exact hcuts (Nat.le_succ i)
+    · exact hcutBound (i + 1)
+  have hprofile := profileInterval_partition_L1_exact m p
+    (boolTrueCount (V packet)) q frac cuts hstart hcuts hend
+    (by
+      simpa [boolTrueCount] using
+        (Fintype.card_subtype_le (fun k : Fin m => V packet k = true))) hq hfrac0 hfrac1
+  calc
+    _ = ∑ i ∈ range p,
+      |(profileInterval m (boolTrueCount (V packet)) (cuts i) (cuts (i + 1)) : Real) -
+          profileIntervalMean m q frac (cuts i) (cuts (i + 1))| := by
+      apply sum_congr rfl
+      intro i hi
+      rw [hpacket i (mem_range.mp hi)]
+    _ = |(boolTrueCount (V packet) : Real) - (q + frac)| := hprofile
+
+theorem sortedPackets_intervalPartition_L1_sq {c m p q : Nat} (frac : Real)
+    (V : Fin c → Fin m → Bool) (hV : ∀ i, Monotone (V i))
+    (cuts : Nat → Nat) (hstart : cuts 0 = 0) (hcuts : Monotone cuts)
+    (hcutBound : ∀ i, cuts i ≤ m) (hend : cuts p = m) (hq : q < m)
+    (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    ((∑ packet : Fin c, ∑ i ∈ range p,
+      |(boolTrueCount (fun j : Fin (cuts (i + 1) - cuts i) =>
+          V packet ⟨cuts i + j.val, by
+            have hab : cuts i ≤ cuts (i + 1) := hcuts (Nat.le_succ i)
+            have hsum := Nat.add_sub_of_le hab
+            calc
+              cuts i + j.val < cuts i + (cuts (i + 1) - cuts i) := Nat.add_lt_add_left j.isLt _
+              _ = cuts (i + 1) := hsum
+              _ ≤ m := hcutBound (i + 1)⟩) : Real) -
+        profileIntervalMean m q frac (cuts i) (cuts (i + 1))|)^2) ≤
+      (c : Real) * ∑ packet : Fin c,
+        ((boolTrueCount (V packet) : Real) - (q + frac))^2 := by
+  rw [sortedPackets_intervalPartition_L1_exact frac V hV cuts hstart hcuts
+    hcutBound hend hq hfrac0 hfrac1]
+  simpa [sq_abs, mul_comm] using
+    (Finset.sum_mul_sq_le_sq_mul_sq Finset.univ
+      (fun packet : Fin c => |(boolTrueCount (V packet) : Real) - (q + frac)|)
+      (fun _ => (1 : Real)))
+
+theorem sortedPackets_individualIntervalPartitions_L1_exact {c m p q : Nat}
+    (frac : Real) (V : Fin c → Fin m → Bool) (hV : ∀ packet, Monotone (V packet))
+    (cuts : Fin c → Nat → Nat) (hstart : ∀ packet, cuts packet 0 = 0)
+    (hcuts : ∀ packet, Monotone (cuts packet))
+    (hcutBound : ∀ packet i, cuts packet i ≤ m)
+    (hend : ∀ packet, cuts packet p = m) (hq : q < m)
+    (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    (∑ packet : Fin c, ∑ i ∈ range p,
+      |(boolTrueCount (fun j : Fin (cuts packet (i + 1) - cuts packet i) =>
+          V packet ⟨cuts packet i + j.val, by
+            have hab : cuts packet i ≤ cuts packet (i + 1) := hcuts packet (Nat.le_succ i)
+            have hsum := Nat.add_sub_of_le hab
+            calc
+              cuts packet i + j.val < cuts packet i + (cuts packet (i + 1) - cuts packet i) :=
+                Nat.add_lt_add_left j.isLt _
+              _ = cuts packet (i + 1) := hsum
+              _ ≤ m := hcutBound packet (i + 1)⟩) : Real) -
+        profileIntervalMean m q frac (cuts packet i) (cuts packet (i + 1))|) =
+      ∑ packet : Fin c, |(boolTrueCount (V packet) : Real) - (q + frac)| := by
+  apply Finset.sum_congr rfl
+  intro packet _
+  have hpacket (i : Nat) (hi : i < p) :
+      boolTrueCount (fun j : Fin (cuts packet (i + 1) - cuts packet i) =>
+        V packet ⟨cuts packet i + j.val, by
+          have hab : cuts packet i ≤ cuts packet (i + 1) := hcuts packet (Nat.le_succ i)
+          have hsum := Nat.add_sub_of_le hab
+          calc
+            cuts packet i + j.val < cuts packet i + (cuts packet (i + 1) - cuts packet i) :=
+              Nat.add_lt_add_left j.isLt _
+            _ = cuts packet (i + 1) := hsum
+            _ ≤ m := hcutBound packet (i + 1)⟩) =
+        profileInterval m (boolTrueCount (V packet)) (cuts packet i) (cuts packet (i + 1)) := by
+    apply sortedBool_rankInterval_trueCount (V packet) (hV packet)
+    · exact hcuts packet (Nat.le_succ i)
+    · exact hcutBound packet (i + 1)
+  have hprofile := profileInterval_partition_L1_exact m p
+    (boolTrueCount (V packet)) q frac (cuts packet) (hstart packet) (hcuts packet)
+    (hend packet) (by
+      simpa [boolTrueCount] using
+        (Fintype.card_subtype_le (fun k : Fin m => V packet k = true))) hq hfrac0 hfrac1
+  calc
+    _ = ∑ i ∈ range p,
+        |(profileInterval m (boolTrueCount (V packet)) (cuts packet i) (cuts packet (i + 1)) : Real) -
+          profileIntervalMean m q frac (cuts packet i) (cuts packet (i + 1))| := by
+      apply sum_congr rfl
+      intro i hi
+      rw [hpacket i (mem_range.mp hi)]
+    _ = |(boolTrueCount (V packet) : Real) - (q + frac)| := hprofile
+
+theorem sortedPackets_individualIntervalPartitions_L1_sq {c m p q : Nat}
+    (frac : Real) (V : Fin c → Fin m → Bool) (hV : ∀ packet, Monotone (V packet))
+    (cuts : Fin c → Nat → Nat) (hstart : ∀ packet, cuts packet 0 = 0)
+    (hcuts : ∀ packet, Monotone (cuts packet))
+    (hcutBound : ∀ packet i, cuts packet i ≤ m)
+    (hend : ∀ packet, cuts packet p = m) (hq : q < m)
+    (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    ((∑ packet : Fin c, ∑ i ∈ range p,
+      |(boolTrueCount (fun j : Fin (cuts packet (i + 1) - cuts packet i) =>
+          V packet ⟨cuts packet i + j.val, by
+            have hab : cuts packet i ≤ cuts packet (i + 1) := hcuts packet (Nat.le_succ i)
+            have hsum := Nat.add_sub_of_le hab
+            calc
+              cuts packet i + j.val < cuts packet i + (cuts packet (i + 1) - cuts packet i) :=
+                Nat.add_lt_add_left j.isLt _
+              _ = cuts packet (i + 1) := hsum
+              _ ≤ m := hcutBound packet (i + 1)⟩) : Real) -
+        profileIntervalMean m q frac (cuts packet i) (cuts packet (i + 1))|)^2) ≤
+      (c : Real) * ∑ packet : Fin c,
+        ((boolTrueCount (V packet) : Real) - (q + frac))^2 := by
+  rw [sortedPackets_individualIntervalPartitions_L1_exact frac V hV cuts hstart
+    hcuts hcutBound hend hq hfrac0 hfrac1]
+  simpa [sq_abs, mul_comm] using
+    (Finset.sum_mul_sq_le_sq_mul_sq Finset.univ
+      (fun packet : Fin c => |(boolTrueCount (V packet) : Real) - (q + frac)|)
+      (fun _ => (1 : Real)))
 
 
 private theorem sum_profileTail32_differences (m K X : Nat) (hK : 32 * K ≤ m) :

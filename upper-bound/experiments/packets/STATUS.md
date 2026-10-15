@@ -35,9 +35,13 @@ pass. This removes the granularity mismatch in the profile estimate only;
 selected-port discrepancy and destination reassembly recurrence remain open.
 The same module now identifies the count in any fixed half-open rank interval
 of a sorted packet with its ideal profile and proves that this interval count
-is 1-Lipschitz in the total packet count. Applying these local bounds to the
-actual port partition without accumulating a port-count loss is the next
-specific accounting obligation.
+is 1-Lipschitz in the total packet count. More strongly,
+`sortedPackets_individualIntervalPartitions_L1_exact` allows each sender
+packet its own cut sequence and still gives exact aggregate L1 conservation;
+`_L1_sq` gives the cohort-size quadratic bound. This removes port-count
+amplification at the abstract partition interface. Instantiating full rank
+partitions from all actual outgoing WireFlow contributions and carrying
+slice targets through receiver reassembly remain outstanding.
 
 The entries below retain the research history and their original claim levels.
 

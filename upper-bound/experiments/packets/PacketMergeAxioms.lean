@@ -162,3 +162,31 @@ import PacketHalfProfile
 /-- info: 'Chvatal.PacketAlignment.profileInterval_change_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.profileInterval_change_le
+
+/-- info: 'Chvatal.PacketAlignment.profileInterval_partition_L1_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.profileInterval_partition_L1_exact
+
+/-- info: 'Chvatal.PacketAlignment.sortedPackets_intervalPartition_L1_exact' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.sortedPackets_intervalPartition_L1_exact
+
+/-- info: 'Chvatal.PacketAlignment.sortedPackets_intervalPartition_L1_sq' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.sortedPackets_intervalPartition_L1_sq
+
+/-- info: 'Chvatal.PacketAlignment.sortedPackets_individualIntervalPartitions_L1_exact' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.sortedPackets_individualIntervalPartitions_L1_exact
+
+/-- info: 'Chvatal.PacketAlignment.sortedPackets_individualIntervalPartitions_L1_sq' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.sortedPackets_individualIntervalPartitions_L1_sq

@@ -94,6 +94,14 @@ Boolean packet with `profileInterval`; `profileInterval_change_le` proves
 that any one fixed interval's count changes by at most the change in total
 packet count. Thus source-port slices of differing fixed ranks can each be
 compared to their own ideal targets without a factor for interval length.
-Summing this per-interval Lipschitz estimate across the actual partition is
-the next accounting step; the current theorem alone does not prove a global
-no-loss sum or destination recurrence.
+`sortedPackets_individualIntervalPartitions_L1_exact` closes that next
+algebraic step: every packet may have its own monotone rank partition, and
+the aggregate absolute error across all actual slices is still exactly the
+coarse packet-count L1 error. Its squared version bounds aggregate fine
+error by cohort size times coarse squared energy. Thus arbitrary port counts
+and different per-sender cut locations incur no norm-conversion loss,
+provided the routed slices form a full rank partition of each sender packet
+and are compared with the induced ideal slice targets. The remaining gap is
+to verify those partition hypotheses for the actual scheduled senders and
+show destination reassembly/matching uses the corresponding targets to
+contract global rank error.
