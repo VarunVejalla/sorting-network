@@ -1218,3 +1218,17 @@ extra factor for the number of active levels or port fragments. This is the
 exact fresh-error budget to insert into a rank-profile recurrence. Its
 right-hand side still needs a contraction/telescoping argument across stages;
 adding it naively over all stages is not enough.
+
+Target re-encoding (2026-10-15): `realTarget_has_integer_fraction` proves
+that every real target in `[0,m]` for positive capacity `m` has a representation
+`q + frac` with `q < m` and `0 ≤ frac ≤ 1`. At the endpoint `m`, it chooses
+`(m-1)+1`, satisfying the strict integer-count hypothesis used by the sender
+profile theorem. `profileInterval_partition_L1_exact_allow_endpoint` now
+extends the exact error identity to both `q=m, frac=0` and `m=q=0`. This
+endpoint case is threaded through the sender partition, selected-port bound,
+bag-tree incidence estimate, actual-register aggregate, and finite-threshold
+aggregate. Those theorems now require only `q≤|S|` and `q=|S| → frac=0`, so the
+zero-capacity state `q=frac=0` handles empty startup/frontier bags. The
+aggregate interface is therefore applicable from the first stage, subject to
+the required sorted-source and state-profile hypotheses. The scheduler
+invariant and quantitative contraction are still open.

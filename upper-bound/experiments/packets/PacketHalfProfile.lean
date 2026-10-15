@@ -216,6 +216,36 @@ theorem profileIntervalMean_mono_mean (m q₁ q₂ a b : Nat)
         exact_mod_cast hqleReal
       omega
 
+/-- Any real threshold target in a positive-capacity register can be encoded
+as `q + frac` with `q` strictly below capacity and `frac ∈ [0,1]`. The full
+capacity endpoint uses the equivalent representation `(m-1)+1`. -/
+theorem realTarget_has_integer_fraction (m : Nat) (μ : Real)
+    (hm : 0 < m) (hμ0 : 0 ≤ μ) (hμm : μ ≤ (m : Real)) :
+    ∃ q : Nat, q < m ∧ ∃ frac : Real,
+      0 ≤ frac ∧ frac ≤ 1 ∧ (q : Real) + frac = μ := by
+  by_cases htop : μ = (m : Real)
+  · refine ⟨m - 1, by omega, 1, by norm_num, by norm_num, ?_⟩
+    have hcast : ((m - 1 : Nat) : Real) + 1 = (m : Real) := by
+      have hn : m - 1 + 1 = m := Nat.sub_add_cancel (by omega)
+      exact_mod_cast hn
+    rw [htop]
+    exact hcast
+  · have hμlt : μ < (m : Real) := by
+      by_contra h
+      have hmμ : (m : Real) ≤ μ := le_of_not_gt h
+      exact htop (le_antisymm hμm hmμ)
+    have hfloorle : (Nat.floor μ : Real) ≤ μ := Nat.floor_le hμ0
+    have hfloorlt : μ < (Nat.floor μ : Real) + 1 := Nat.lt_floor_add_one μ
+    have hq_lt_real : (Nat.floor μ : Real) < (m : Real) := lt_of_le_of_lt hfloorle hμlt
+    have hq_lt : Nat.floor μ < m := by exact_mod_cast hq_lt_real
+    refine ⟨Nat.floor μ, hq_lt, μ - (Nat.floor μ : Real), ?_, ?_, ?_⟩
+    · dsimp
+      linarith
+    · dsimp
+      linarith
+    · dsimp
+      ring
+
 private theorem cuts_le_end (p : Nat) (cuts : Nat → Nat) (hcuts : Monotone cuts)
     (i : Nat) (hi : i ≤ p) : cuts i ≤ cuts p := hcuts hi
 
@@ -327,6 +357,65 @@ theorem profileInterval_partition_L1_exact (m p X q : Nat) (frac : Real)
           _ = |(X : Real) - (q + frac)| := by
             have hXR : (q : Real) + 1 ≤ X := by exact_mod_cast hX'
             rw [abs_of_nonneg (by linarith [hXR, hfrac1])]
+
+/-- The exact interval-partition error identity also covers the full and empty
+profile endpoints. At positive capacity, `q=m` is represented by the equivalent
+strict form `(m-1)+1`; at zero capacity all terms vanish. -/
+theorem profileInterval_partition_L1_exact_allow_endpoint
+    (m p X q : Nat) (frac : Real) (cuts : Nat → Nat)
+    (hstart : cuts 0 = 0) (hcuts : Monotone cuts) (hend : cuts p = m)
+    (hX : X ≤ m) (hq : q ≤ m) (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1)
+    (hendpoint : q = m → frac = 0) :
+    (∑ i ∈ range p,
+      |(profileInterval m X (cuts i) (cuts (i + 1)) : Real) -
+        profileIntervalMean m q frac (cuts i) (cuts (i + 1))|) =
+      |(X : Real) - (q + frac)| := by
+  by_cases hm : 0 < m
+  · by_cases hq' : q < m
+    · exact profileInterval_partition_L1_exact m p X q frac cuts
+        hstart hcuts hend hX hq' hfrac0 hfrac1
+    · have hqeq : q = m := by omega
+      have hf : frac = 0 := hendpoint hqeq
+      have hcast : ((m - 1 : Nat) : Real) + 1 = (m : Real) := by
+        have hn : m - 1 + 1 = m := Nat.sub_add_cancel (by omega)
+        exact_mod_cast hn
+      have hmeanEq (a b : Nat) :
+          profileIntervalMean m q frac a b =
+            profileIntervalMean m (m - 1) 1 a b := by
+        rw [hqeq, hf]
+        simp only [profileIntervalMean]
+        rw [show m - 1 + 1 = m by omega]
+        ring
+      calc
+        _ = ∑ i ∈ range p,
+            |(profileInterval m X (cuts i) (cuts (i + 1)) : Real) -
+              profileIntervalMean m (m - 1) 1 (cuts i) (cuts (i + 1))| := by
+          apply Finset.sum_congr rfl
+          intro i hi
+          rw [hmeanEq]
+        _ = |(X : Real) - ((m - 1 : Nat) + 1)| :=
+          profileInterval_partition_L1_exact m p X (m - 1) 1 cuts
+            hstart hcuts hend hX (by omega) (by norm_num) (by norm_num)
+        _ = |(X : Real) - (q + frac)| := by
+          rw [hqeq, hf, hcast]
+          simp
+  · have hm0 : m = 0 := by omega
+    have hq0 : q = 0 := by omega
+    have hX0 : X = 0 := by omega
+    have hqeq : q = m := by omega
+    have hf : frac = 0 := hendpoint hqeq
+    have hcut0 (i : Nat) (hi : i ≤ p) : cuts i = 0 := by
+      have hle := hcuts hi
+      rw [hend, hm0] at hle
+      omega
+    calc
+      _ = ∑ i ∈ range p, (0 : Real) := by
+        apply Finset.sum_congr rfl
+        intro i hi
+        have hi' : i < p := Finset.mem_range.mp hi
+        simp [profileInterval, profileTail, profileIntervalMean, hm0, hX0, hq0, hf,
+          hcut0 i (by omega), hcut0 (i + 1) (by omega)]
+      _ = |(X : Real) - (q + frac)| := by simp [hX0, hq0, hf]
 
 /-- The actual count in a half-open rank interval of an increasing Boolean
 packet is its ideal profile count. -/
@@ -735,9 +824,10 @@ theorem sortedSenderOutgoing_profile_error_exact_var
     (hsize : ∀ packet, (S packet).card = up packet + 64 * down packet)
     (hu : ∀ packet, 2 ∣ up packet)
     (hsorted : ∀ packet, Monotone (v packet ∘ (S packet).orderEmbOfFin rfl))
-    (hq : ∀ packet, q packet < (S packet).card)
+    (hq : ∀ packet, q packet ≤ (S packet).card)
     (hfrac0 : ∀ packet, 0 ≤ frac packet)
-    (hfrac1 : ∀ packet, frac packet ≤ 1) :
+    (hfrac1 : ∀ packet, frac packet ≤ 1)
+    (hendpoint : ∀ packet, q packet = (S packet).card → frac packet = 0) :
     (∑ packet : Source, ∑ i ∈ range 66,
       senderOutgoingProfileErrorVar S v up down q frac packet i) =
       ∑ packet : Source,
@@ -770,10 +860,10 @@ theorem sortedSenderOutgoing_profile_error_exact_var
       unfold trueCountOn
       simpa using (Fintype.card_subtype_le
         (fun w : S packet => v packet w.val = true))
-    have hprofile := profileInterval_partition_L1_exact
+    have hprofile := profileInterval_partition_L1_exact_allow_endpoint
       (S packet).card 66 (trueCountOn (S packet) (v packet)) (q packet)
       (frac packet) cuts hstart hcuts hend hX
-      (hq packet) (hfrac0 packet) (hfrac1 packet)
+      (hq packet) (hfrac0 packet) (hfrac1 packet) (hendpoint packet)
     calc
       (∑ i ∈ range 66,
           senderOutgoingProfileErrorVar S v up down q frac packet i) =
@@ -804,9 +894,10 @@ theorem selectedSenderOutgoing_profile_error_le_var {c N : Nat}
     (hsize : ∀ packet, (S packet).card = up packet + 64 * down packet)
     (hu : ∀ packet, 2 ∣ up packet)
     (hsorted : ∀ packet, Monotone (v packet ∘ (S packet).orderEmbOfFin rfl))
-    (hq : ∀ packet, q packet < (S packet).card)
+    (hq : ∀ packet, q packet ≤ (S packet).card)
     (hfrac0 : ∀ packet, 0 ≤ frac packet)
     (hfrac1 : ∀ packet, frac packet ≤ 1)
+    (hendpoint : ∀ packet, q packet = (S packet).card → frac packet = 0)
     (selected : Fin c → Finset Nat)
     (hselected : ∀ packet, selected packet ⊆ range 66) :
     (∑ packet : Fin c, ∑ i ∈ selected packet,
@@ -814,7 +905,7 @@ theorem selectedSenderOutgoing_profile_error_le_var {c N : Nat}
       ∑ packet : Fin c,
         |(trueCountOn (S packet) (v packet) : Real) - (q packet + frac packet)| := by
   have hfull := sortedSenderOutgoing_profile_error_exact_var S v up
-    down q frac hsize hu hsorted hq hfrac0 hfrac1
+    down q frac hsize hu hsorted hq hfrac0 hfrac1 hendpoint
   calc
     _ ≤ ∑ packet : Fin c, ∑ i ∈ range 66,
         senderOutgoingProfileErrorVar S v up down q frac packet i := by
@@ -835,9 +926,10 @@ theorem selectedSenderOutgoing_count_error_le_var {c N : Nat}
     (hsize : ∀ packet, (S packet).card = up packet + 64 * down packet)
     (hu : ∀ packet, 2 ∣ up packet)
     (hsorted : ∀ packet, Monotone (v packet ∘ (S packet).orderEmbOfFin rfl))
-    (hq : ∀ packet, q packet < (S packet).card)
+    (hq : ∀ packet, q packet ≤ (S packet).card)
     (hfrac0 : ∀ packet, 0 ≤ frac packet)
     (hfrac1 : ∀ packet, frac packet ≤ 1)
+    (hendpoint : ∀ packet, q packet = (S packet).card → frac packet = 0)
     (selected : Fin c → Finset Nat)
     (hselected : ∀ packet, selected packet ⊆ range 66) :
     |(∑ packet : Fin c, ∑ i ∈ selected packet,
@@ -873,7 +965,7 @@ theorem selectedSenderOutgoing_count_error_le_var {c N : Nat}
         ∑ i ∈ selected packet, |err packet i| :=
     Finset.abs_sum_le_sum_abs _ _
   have hselectedError := selectedSenderOutgoing_profile_error_le_var
-    S v up down q frac hsize hu hsorted hq hfrac0 hfrac1 selected hselected
+    S v up down q frac hsize hu hsorted hq hfrac0 hfrac1 hendpoint selected hselected
   calc
     |(∑ packet : Fin c, ∑ i ∈ selected packet,
         (trueCountOn (senderOutgoingPiece (S packet) (up packet) (down packet) i)
@@ -917,9 +1009,10 @@ theorem wireFlowReceiver_count_error_le {N : Nat}
     (hsize : ∀ source, (S source).card = up source + 64 * down source)
     (hu : ∀ source, 2 ∣ up source)
     (hsorted : ∀ source, Monotone (v source ∘ (S source).orderEmbOfFin rfl))
-    (hq : ∀ source, q source < (S source).card)
+    (hq : ∀ source, q source ≤ (S source).card)
     (hfrac0 : ∀ source, 0 ≤ frac source)
     (hfrac1 : ∀ source, frac source ≤ 1)
+    (hendpoint : ∀ source, q source = (S source).card → frac source = 0)
     (parentPort : Nat) (hport : parentPort < 64) :
     |(∑ source : Fin 65, ∑ i ∈ receiverOutgoingSelection parentPort source,
         (trueCountOn (senderOutgoingPiece (S source) (up source) (down source) i)
@@ -931,7 +1024,7 @@ theorem wireFlowReceiver_count_error_le {N : Nat}
       ∑ source : Fin 65,
         |(trueCountOn (S source) (v source) : Real) - (q source + frac source)| := by
   exact selectedSenderOutgoing_count_error_le_var S v up down q frac hsize hu hsorted
-    hq hfrac0 hfrac1 (receiverOutgoingSelection parentPort)
+    hq hfrac0 hfrac1 hendpoint (receiverOutgoingSelection parentPort)
     (fun source => receiverOutgoingSelection_subset parentPort hport source)
 
 /-- Layerwise sum of receiver discrepancies charges each source rank piece at
@@ -1000,9 +1093,10 @@ theorem sum_receiver_profile_errors_le_source_count_errors
     (hsize : ∀ source, (S source).card = up source + 64 * down source)
     (hu : ∀ source, 2 ∣ up source)
     (hsorted : ∀ source, Monotone (v source ∘ (S source).orderEmbOfFin rfl))
-    (hq : ∀ source, q source < (S source).card)
+    (hq : ∀ source, q source ≤ (S source).card)
     (hfrac0 : ∀ source, 0 ≤ frac source)
     (hfrac1 : ∀ source, frac source ≤ 1)
+    (hendpoint : ∀ source, q source = (S source).card → frac source = 0)
     (selected : Receiver → Source → Finset Nat)
     (hselected : ∀ receiver source, selected receiver source ⊆ range 66)
     (hdisjoint : ∀ source receiver₁ receiver₂, receiver₁ ≠ receiver₂ →
@@ -1031,7 +1125,7 @@ theorem sum_receiver_profile_errors_le_source_count_errors
         |(trueCountOn (S source) (v source) : Real) - (q source + frac source)| := by
       simpa [err, senderOutgoingProfileErrorVar] using
         (sortedSenderOutgoing_profile_error_exact_var S v up down q frac
-          hsize hu hsorted hq hfrac0 hfrac1)
+          hsize hu hsorted hq hfrac0 hfrac1 hendpoint)
 
 /-- Rank pieces sent from `source` to `receiver`: child receivers get the
 middle piece indexed by their child digit, and the parent gets both fringes. -/
@@ -1108,9 +1202,10 @@ theorem wireFlowLayer_profile_error_sum_le {d N : Nat}
     (hu : ∀ source, 2 ∣ up source)
     (hsorted : ∀ source,
       Monotone (v source ∘ (S source).orderEmbOfFin rfl))
-    (hq : ∀ source, q source < (S source).card)
+    (hq : ∀ source, q source ≤ (S source).card)
     (hfrac0 : ∀ source, 0 ≤ frac source)
-    (hfrac1 : ∀ source, frac source ≤ 1) :
+    (hfrac1 : ∀ source, frac source ≤ 1)
+    (hendpoint : ∀ source, q source = (S source).card → frac source = 0) :
     (∑ receiver : KBag 64 d,
       |∑ source : KBag 64 d,
         ∑ i ∈ wireFlowLayerSelection receiver source,
@@ -1125,6 +1220,7 @@ theorem wireFlowLayer_profile_error_sum_le {d N : Nat}
   classical
   exact sum_receiver_profile_errors_le_source_count_errors
     S v up down q frac hsize hu hsorted hq hfrac0 hfrac1
+    hendpoint
     wireFlowLayerSelection
     (fun receiver source => wireFlowLayerSelection_subset receiver source)
     (fun source receiver₁ receiver₂ hne =>
@@ -1325,10 +1421,13 @@ theorem wireFlowReceiver_count_error_actual {d tf : Nat}
     (hsorted : ∀ source, Monotone
       ((fun w => predicate (X F nets input (t + 1) w)) ∘
         (wireSets F t (wireFlowReceiverSource b hchild source)).orderEmbOfFin rfl))
-    (hq : ∀ source, q source <
+    (hq : ∀ source, q source ≤
       (wireSets F t (wireFlowReceiverSource b hchild source)).card)
     (hfrac0 : ∀ source, 0 ≤ frac source)
-    (hfrac1 : ∀ source, frac source ≤ 1) :
+    (hfrac1 : ∀ source, frac source ≤ 1)
+    (hendpoint : ∀ source,
+      q source = (wireSets F t (wireFlowReceiverSource b hchild source)).card →
+        frac source = 0) :
     |(∑ source : Fin 65, ∑ i ∈ receiverOutgoingSelection (b.x % 64) source,
         ((trueCountOn
           (senderOutgoingPiece (wireSets F t (wireFlowReceiverSource b hchild source))
@@ -1367,13 +1466,14 @@ theorem wireFlowReceiver_count_error_actual {d tf : Nat}
   have hsorted' : ∀ source, Monotone (val source ∘ (S source).orderEmbOfFin rfl) := by
     intro source
     exact hsorted source
-  have hq' : ∀ source, q source < (S source).card := hq
+  have hq' : ∀ source, q source ≤ (S source).card := hq
+  have hendpoint' : ∀ source, q source = (S source).card → frac source = 0 := hendpoint
   have hfrac0' : ∀ source, 0 ≤ frac source := hfrac0
   have hfrac1' : ∀ source, frac source ≤ 1 := hfrac1
   have hparentPort : b.x % 64 < 64 := Nat.mod_lt _ (by omega)
   simpa [S, val, up, down] using
     (wireFlowReceiver_count_error_le S val up down q frac hsize hu hsorted'
-      hq' hfrac0' hfrac1' (b.x % 64) hparentPort)
+      hq' hfrac0' hfrac1' hendpoint' (b.x % 64) hparentPort)
 
 /-- The selected interval counts in the previous theorem are exactly the
 threshold count on the receiver's actual `execPlacement` register. This uses
@@ -1671,9 +1771,6 @@ theorem wireFlowReceiverSelectedIdealMean_bounds {d tf : Nat}
     (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
     (receiver : KBag 64 d) (hb : 1 ≤ receiver.l) (hchild : receiver.l < d)
     (q : KBag 64 d → Nat) (frac : KBag 64 d → Real)
-    (hq : ∀ source : Fin 65,
-      q (wireFlowReceiverSource receiver hchild source) <
-        (wireSets F t (wireFlowReceiverSource receiver hchild source)).card)
     (hfrac0 : ∀ source : Fin 65,
       0 ≤ frac (wireFlowReceiverSource receiver hchild source))
     (hfrac1 : ∀ source : Fin 65,
@@ -1855,9 +1952,10 @@ theorem wireFlowLayer_register_error_sum_le_source_count_error {d tf : Nat}
     (hsorted : ∀ source, Monotone
       ((fun w => predicate (X F nets input (t + 1) w)) ∘
         (wireSets F t source).orderEmbOfFin rfl))
-    (hq : ∀ source, q source < (wireSets F t source).card)
+    (hq : ∀ source, q source ≤ (wireSets F t source).card)
     (hfrac0 : ∀ source, 0 ≤ frac source)
-    (hfrac1 : ∀ source, frac source ≤ 1) :
+    (hfrac1 : ∀ source, frac source ≤ 1)
+    (hendpoint : ∀ source, q source = (wireSets F t source).card → frac source = 0) :
     (∑ receiver ∈ (Finset.univ : Finset (KBag 64 d)).filter
       (fun b => 1 ≤ b.l ∧ b.l < d),
       |(trueCountOn
@@ -1885,7 +1983,7 @@ theorem wireFlowLayer_register_error_sum_le_source_count_error {d tf : Nat}
     exact F.hup_even source.l t ht
   have hbound := wireFlowLayer_profile_error_sum_le
     (fun source => wireSets F t source) v (fun source => F.up source.l t)
-    (fun source => F.down source.l t) q frac hsize hu hsorted hq hfrac0 hfrac1
+    (fun source => F.down source.l t) q frac hsize hu hsorted hq hfrac0 hfrac1 hendpoint
   have hsubset : active ⊆ Finset.univ := Finset.filter_subset _ _
   calc
     (∑ receiver ∈ active,
@@ -1930,9 +2028,11 @@ theorem wireFlowLayer_register_error_sum_le_source_count_error_multi
     (hsorted : ∀ θ source, Monotone
       ((fun w => predicate θ (X F nets input (t + 1) w)) ∘
         (wireSets F t source).orderEmbOfFin rfl))
-    (hq : ∀ θ source, q θ source < (wireSets F t source).card)
+    (hq : ∀ θ source, q θ source ≤ (wireSets F t source).card)
     (hfrac0 : ∀ θ source, 0 ≤ frac θ source)
-    (hfrac1 : ∀ θ source, frac θ source ≤ 1) :
+    (hfrac1 : ∀ θ source, frac θ source ≤ 1)
+    (hendpoint : ∀ θ source,
+      q θ source = (wireSets F t source).card → frac θ source = 0) :
     (∑ θ : Θ, ∑ receiver ∈ (Finset.univ : Finset (KBag 64 d)).filter
       (fun b => 1 ≤ b.l ∧ b.l < d),
       |(trueCountOn
@@ -1948,7 +2048,7 @@ theorem wireFlowLayer_register_error_sum_le_source_count_error_multi
   intro θ _
   exact wireFlowLayer_register_error_sum_le_source_count_error
     F nets input t ht (predicate θ) (q θ) (frac θ)
-    (hsorted θ) (hq θ) (hfrac0 θ) (hfrac1 θ)
+    (hsorted θ) (hq θ) (hfrac0 θ) (hfrac1 θ) (hendpoint θ)
 
 /-- The source-profile error bound applies directly to the actual receiver
 register: the selected parent/child piece counts are exactly its Boolean
@@ -1965,10 +2065,13 @@ theorem wireFlowReceiver_register_count_error_actual {d tf : Nat}
     (hsorted : ∀ source, Monotone
       ((fun w => predicate (X F nets input (t + 1) w)) ∘
         (wireSets F t (wireFlowReceiverSource b hchild source)).orderEmbOfFin rfl))
-    (hq : ∀ source, q source <
+    (hq : ∀ source, q source ≤
       (wireSets F t (wireFlowReceiverSource b hchild source)).card)
     (hfrac0 : ∀ source, 0 ≤ frac source)
-    (hfrac1 : ∀ source, frac source ≤ 1) :
+    (hfrac1 : ∀ source, frac source ≤ 1)
+    (hendpoint : ∀ source,
+      q source = (wireSets F t (wireFlowReceiverSource b hchild source)).card →
+        frac source = 0) :
     |(trueCountOn ((execPlacement F nets input (t + 1) (by omega)).regs b)
         predicate : Real) -
       ∑ source : Fin 65, ∑ i ∈ receiverOutgoingSelection (b.x % 64) source,
@@ -1999,7 +2102,7 @@ theorem wireFlowReceiver_register_count_error_actual {d tf : Nat}
     _ ≤ _ := by
       simpa only [Nat.cast_sum] using
         (wireFlowReceiver_count_error_actual F nets input t ht b hb hchild predicate
-          q frac hsorted hq hfrac0 hfrac1)
+          q frac hsorted hq hfrac0 hfrac1 hendpoint)
 
 theorem sortedPackets_intervalPartition_L1_exact {c m p q : Nat} (frac : Real)
     (V : Fin c → Fin m → Bool) (hV : ∀ i, Monotone (V i))

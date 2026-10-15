@@ -101,6 +101,16 @@ import PacketHalfProfile
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.wireFlowLayer_register_error_sum_le_source_count_error_multi
 
+/-- info: 'Chvatal.PacketAlignment.realTarget_has_integer_fraction' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.realTarget_has_integer_fraction
+
+/-- info: 'Chvatal.PacketAlignment.profileInterval_partition_L1_exact_allow_endpoint' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.profileInterval_partition_L1_exact_allow_endpoint
+
 /-- info: 'Chvatal.PacketAlignment.oddEvenMergeNet_sorts_two_runs' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.oddEvenMergeNet_sorts_two_runs
