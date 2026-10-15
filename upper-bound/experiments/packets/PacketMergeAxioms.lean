@@ -207,6 +207,10 @@ import PacketHalfProfile
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.wireFlowReceiver_register_count_error_actual
 
+/-- info: 'Chvatal.PacketAlignment.wireFlowReceiver_register_count_error_reencoded' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowReceiver_register_count_error_reencoded
+
 /-- info: 'Chvatal.PacketAlignment.wireFlowLayer_receiver_signed_error_eq_register' depends on axioms: [propext,
  Classical.choice,
  Quot.sound] -/

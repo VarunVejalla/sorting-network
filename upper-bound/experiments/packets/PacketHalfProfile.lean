@@ -3061,6 +3061,66 @@ theorem wireFlowReceiver_register_count_error_actual {d tf : Nat}
         (wireFlowReceiver_count_error_actual F nets input t ht b hb hchild predicate
           q frac hsorted hq hfrac0 hfrac1 hendpoint)
 
+/-- The receiver discrepancy is directly against a valid re-encoded next-stage
+target, with the same source-error charge as the selected-mean interface. -/
+theorem wireFlowReceiver_register_count_error_reencoded {d tf : Nat}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d)
+    (predicate : Fin (64 ^ d) → Bool)
+    (q : KBag 64 d → Nat) (frac : KBag 64 d → Real)
+    (hsorted : ∀ source : Fin 65, Monotone
+      ((fun w => predicate (X F nets input (t + 1) w)) ∘
+        (wireSets F t (wireFlowReceiverSource b hchild source)).orderEmbOfFin rfl))
+    (hq : ∀ source : Fin 65, q (wireFlowReceiverSource b hchild source) ≤
+      (wireSets F t (wireFlowReceiverSource b hchild source)).card)
+    (hfrac0 : ∀ source : Fin 65,
+      0 ≤ frac (wireFlowReceiverSource b hchild source))
+    (hfrac1 : ∀ source : Fin 65,
+      frac (wireFlowReceiverSource b hchild source) ≤ 1)
+    (hendpoint : ∀ source : Fin 65,
+      q (wireFlowReceiverSource b hchild source) =
+        (wireSets F t (wireFlowReceiverSource b hchild source)).card →
+      frac (wireFlowReceiverSource b hchild source) = 0) :
+    ∃ nextQ : Nat, nextQ ≤
+        ((execPlacement F nets input (t + 1) (by omega)).regs b).card ∧
+      ∃ nextFrac : Real, 0 ≤ nextFrac ∧ nextFrac ≤ 1 ∧
+        (nextQ : Real) + nextFrac =
+          wireFlowReceiverSelectedIdealMean F t q frac b ∧
+        (nextQ = ((execPlacement F nets input (t + 1) (by omega)).regs b).card →
+          nextFrac = 0) ∧
+        |(trueCountOn ((execPlacement F nets input (t + 1) (by omega)).regs b)
+            predicate : Real) - ((nextQ : Real) + nextFrac)| ≤
+          ∑ source : Fin 65,
+            |((trueCountOn (wireSets F t (wireFlowReceiverSource b hchild source))
+                (fun w => predicate (X F nets input (t + 1) w)) : Nat) : Real) -
+              ((q (wireFlowReceiverSource b hchild source) : Real) +
+                frac (wireFlowReceiverSource b hchild source))| := by
+  rcases wireFlowReceiverSelectedIdealMean_has_code F nets input t ht b hb hchild
+      q frac hfrac0 hfrac1 with ⟨nextQ, hnextQ, nextFrac, hnextFrac0,
+        hnextFrac1, hcode, hendpointNext⟩
+  have hmean :
+      (∑ source : Fin 65, ∑ i ∈ receiverOutgoingSelection (b.x % 64) source,
+        profileIntervalMean
+          (wireSets F t (wireFlowReceiverSource b hchild source)).card
+          (q (wireFlowReceiverSource b hchild source))
+          (frac (wireFlowReceiverSource b hchild source))
+          (senderRankCut (F.up (wireFlowReceiverSource b hchild source).l t)
+            (F.down (wireFlowReceiverSource b hchild source).l t) i)
+          (senderRankCut (F.up (wireFlowReceiverSource b hchild source).l t)
+            (F.down (wireFlowReceiverSource b hchild source).l t) (i + 1))) =
+        wireFlowReceiverSelectedIdealMean F t q frac b := by
+    simp [wireFlowReceiverSelectedIdealMean, wireFlowLayerSenderPieceMean, hchild]
+  have herror := wireFlowReceiver_register_count_error_actual F nets input t ht b hb hchild
+    predicate (fun source => q (wireFlowReceiverSource b hchild source))
+    (fun source => frac (wireFlowReceiverSource b hchild source)) hsorted hq hfrac0 hfrac1
+    hendpoint
+  rw [hmean] at herror
+  refine ⟨nextQ, hnextQ, nextFrac, hnextFrac0, hnextFrac1, hcode, hendpointNext, ?_⟩
+  rw [hcode]
+  simpa using herror
+
 theorem sortedPackets_intervalPartition_L1_exact {c m p q : Nat} (frac : Real)
     (V : Fin c → Fin m → Bool) (hV : ∀ i, Monotone (V i))
     (cuts : Nat → Nat) (hstart : cuts 0 = 0) (hcuts : Monotone cuts)
