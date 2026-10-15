@@ -16,7 +16,9 @@ the accepted sorting bound remains 1419.
 | `PacketAlignment.lean` | Scheduled flow residues, fragment counts, separated endpoint supports and sender disjointness. Historical bitonic fallback lemmas remain available. |
 | `PacketRepair64.lean` | An input-independent ordinary network repairs two physically separated 32-wire supports in six layers. Actual shifted down-cut/up-fringe fragments are sorted under `PacketSortedOn`, which orders each packet but imposes no inter-packet value order. Disjoint repair families have depth at most six and act as the corresponding local merger on each pair. |
 | `PacketGenMerge.lean` | An arbitrary injective placement of an ordinary network preserves execution and depth in `Untangle.GenNetwork`. `genMerge_sorts_two_runs` and `genMerge_depth_le` apply at every power-of-two width, including seven layers for 64+64 packets and thirteen for 4096+4096. Dealing has exact floor/ceiling counts, including all value thresholds. Logical packet embeddings can be joined and their fixed parity outputs are disjoint and partition the consumed support. |
-| `PacketRebinning.lean` | The scalar complementary-half rebinning model preserves counts and cannot increase positive/negative spill or squared energy around any common real reference. Applying it to actual source ports requires the cycle/partition realization described in `REBINNING-ENERGY.md`. |
+| `PacketRebinning.lean` | The scalar complementary-half rebinning model preserves counts and cannot increase positive/negative spill or squared energy around any common real reference. |
+| `PacketSenderCycle.lean` | The 65 shifted boundary cells are distinct whole source packets. Actual child and parent repairs consume complementary halves in a fixed cycle and cover exactly those cells. A fixed ordinary six-layer network sorts all 65 repaired pairs and leaves other wires unchanged. `scheduled_senderRepair_exists` instantiates this on actual ordinary scheduled bags with positive down-flow and shifted half-fringes. |
+| `PacketCountBridge.lean` | Enumeration-independent true counts, exact prefix/suffix counts of sorted packets, and pairwise count conservation through parallel execution. `senderRepair_count_exists` gives one fixed six-layer network with sorting, exact cycle counts, sender-centered squared-energy nonincrease for every real reference, and unchanged wires outside the boundary cells. `senderRepair_count_at_threshold` transfers its Boolean count contract to all value thresholds of that same network. This is a local sender result, not a destination or global recurrence. |
 | `PacketMergeAxioms.lean` | Compile-time axiom guards for the headline local results. Only `propext`, `Classical.choice`, and `Quot.sound` are permitted by the checked messages. |
 
 The correction proof uses adjacent physical wires. It combines the checked
@@ -58,9 +60,13 @@ checks all scratch sources.
 4. Close the coupled bag-mean/rank and within-bag variance recurrence across
    the actual selected port fragments and rebinning. The existing tiny-error
    Chvatal invariant cannot simply be reused with the screened packet errors.
-   The new sender-local energy lemma removes a candidate repair defect if
-   the 65-cycle port realization in `REBINNING-ENERGY.md` is established;
-   destination regrouping and coarse target drift remain.
+   The actual 65-cycle and its exact executed count formula are checked for
+   the shifted positive-down sender. They remove its fresh boundary repair
+   energy defect. Adding unchanged packets, destination regrouping, the
+   degenerate cases, and coarse target drift remain.
+   [GRANULARITY-GATE.md](GRANULARITY-GATE.md) records why 4096-packet count
+   variance cannot simply be reused as 64-cell variance, and gives a
+   sorted-profile L1 transfer estimate to investigate instead.
 5. Prove final output order and sorting, apply `Untangle.untangle` to the full
    generalized network, and account for ordinary/frontier/root/terminal depth,
    arbitrary input sizes and the limsup passage.

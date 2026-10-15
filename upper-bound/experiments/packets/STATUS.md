@@ -12,10 +12,15 @@ global sorting bound and the projected coefficient near 200 remain open.
 
 Further checkpoint: `PacketRebinning.lean` proves exact scalar count
 conservation and nonincrease of spill and centered quadratic energy under
-complementary-half rebinning. `REBINNING-ENERGY.md` derives the candidate
-sender-local 65-cycle realization of the actual ports and the resulting
-zero fresh repair-energy term. That scheduled realization and the remaining
-coarse/fine recurrence are not yet formalized.
+complementary-half rebinning. `PacketSenderCycle.lean` and
+`PacketCountBridge.lean` now prove the actual shifted sender's 65-cycle,
+exact executed count identity, simultaneous six-layer sorting, unchanged
+outside wires, and zero fresh sender-relative repair energy. The count
+contract transfers to every value threshold of the same fixed network.
+Whole-source and destination packet partitions, degenerate cases and the
+remaining coarse/fine recurrence are still open. `GRANULARITY-GATE.md`
+isolates the change-of-scale gap between 64-wire repair cells and the
+4096-wire mixing cost model, with a candidate sorted-profile L1 interface.
 
 The entries below retain the research history and their original claim levels.
 

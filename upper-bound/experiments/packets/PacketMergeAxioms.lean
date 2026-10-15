@@ -1,6 +1,7 @@
 import PacketRepair64
 import PacketGenMerge
 import PacketRebinning
+import PacketCountBridge
 
 /-- info: 'Chvatal.PacketAlignment.oddEvenMergeNet_sorts_two_runs' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
@@ -97,3 +98,27 @@ import PacketRebinning
 /-- info: 'Chvatal.PacketAlignment.halfRebin_centered_energy_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.halfRebin_centered_energy_le
+
+/-- info: 'Chvatal.PacketAlignment.senderRepair_exists' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.senderRepair_exists
+
+/-- info: 'Chvatal.PacketAlignment.sorted_bool_halves_trueCount' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.sorted_bool_halves_trueCount
+
+/-- info: 'Chvatal.PacketAlignment.scheduled_senderRepair_exists' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.scheduled_senderRepair_exists
+
+/-- info: 'Chvatal.PacketAlignment.senderRepair_rebin_count' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.senderRepair_rebin_count
+
+/-- info: 'Chvatal.PacketAlignment.senderRepair_count_exists' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.senderRepair_count_exists
+
+/-- info: 'Chvatal.PacketAlignment.senderRepair_count_at_threshold' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.senderRepair_count_at_threshold

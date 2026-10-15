@@ -11,9 +11,10 @@ limsup coefficient is claimed.
 The new [sender-local energy note](REBINNING-ENERGY.md) gives a stronger
 rebinning interface: its scalar model preserves counts and cannot increase
 spill or variance around any common sender reference. Those inequalities
-are kernel checked. The proposed 65-cycle representation of the scheduled
-half-packet pairing, and its use in the global recurrence, remain derived
-arguments rather than checked scheduler results.
+are kernel checked. The 65-cycle representation and exact executed count
+formula for the shifted sender's actual half-packet pairing are now checked
+in `PacketSenderCycle.lean` and `PacketCountBridge.lean`. The complete
+evolving packet partition and its use in the global recurrence remain open.
 
 Status: hand-derived conditional lemma plus a finite floating-point screen.
 No explicit unbounded matching family or sorting-network improvement is

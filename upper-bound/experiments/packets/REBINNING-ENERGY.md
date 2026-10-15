@@ -1,9 +1,11 @@
 # Sender-local half-packet repair and the variance interface
 
 Derived by Codex (GPT-6), 2026-10-15. The scalar inequalities below are
-kernel checked in `PacketRebinning.lean`; the scheduled cycle realization
-and subsequent coarse/fine recurrence are derived arguments awaiting
-formalization. No sorting-network coefficient is proved here.
+kernel checked in `PacketRebinning.lean`. `PacketSenderCycle.lean` and
+`PacketCountBridge.lean` now check the shifted sender's actual support cycle,
+six-layer parallel repair, exact executed count formula, and sender-relative
+energy bound. The destination packet partition and subsequent coarse/fine
+recurrence remain open. No sorting-network coefficient is proved here.
 
 ## A repair potential with no fresh boundary term
 
@@ -45,7 +47,7 @@ These are sender-relative bounds: they remain valid around the sender's old
 mean, including a nonintegral mean. They do not say that regrouping packets
 from different senders preserves the sum of within-destination variances.
 
-## The actual source ports suggest a 65-cycle
+## The actual source ports implement a 65-cycle
 
 Use packet length 64, half-width `h=32`. For a sender of size
 `a = up + 64*down`, write
@@ -83,18 +85,29 @@ the two parent fringe intervals meet halfway through a packet. Positive
 `down<64` is excluded by `64 | down`. Root/empty cases still need their
 actual `FlowSizes` hypotheses instantiated.
 
-This cycle description is **not yet a Lean theorem** about `WireFlow` or
-the complete packet scheduler. It needs exact support coverage, disjointness,
-the count-to-sorted-half identities, and input-independent output labels.
-The checked local generalized merge and ordinary separated-half repair
-theorems provide the comparator primitives.
+The sender-local cycle description is now kernel checked. In
+`PacketSenderCycle.lean`, `senderRepair_support_cycle` and
+`senderRepair_boundary_cover` give exact support identities;
+`senderBoundaryCell_packet` and `senderBoundaryCells_disjoint` identify the
+65 distinct original packets. `scheduled_senderRepair_exists` supplies the
+ordinary scheduled size hypotheses. In `PacketCountBridge.lean`,
+`senderRepair_rebin_count` proves the exact count identity, and
+`senderRepair_count_exists` packages the input-independent six-layer network
+with sorting, count and energy conclusions. Its count theorem is for Boolean
+inputs satisfying the packet invariant. A combined evolving packet placement,
+whole-source partition and degenerate
+cases still need to be composed; this is not the complete packet scheduler.
+`senderRepair_count_at_threshold` already transfers the Boolean count
+contract to every value threshold of the same fixed network.
 
 ## Consequence to test in the coupled recurrence
 
 After mixing a sender, use its mean `mu_s` as the reference. If its outgoing
 rebinning has the permutation representation above, its total centered
 packet energy does not increase. Therefore the pure half-packet repair part
-of the previously unspecified port defect has a candidate bound **zero**.
+of the previously unspecified port defect has checked bound **zero** on the
+65 affected cells of a shifted positive-down sender, under its packet-sorted
+premise. Unaffected whole packets still need to be added to the partition.
 The change of reference when packets enter destination bags remains.
 
 Let destination `b` receive `k_sb` packets from sender `s`. For an outgoing
@@ -121,8 +134,9 @@ sqrt(V_new) <= sqrt(V_sender_rebin) + sqrt(V_between),
 V_between   = sum_(s,b) k_sb*(mu_s - bar_mu_b)^2.
 ```
 
-Here `V_sender_rebin <= V_after_mix` is the checked scalar result **if** the
-scheduled rebinning representation is proved. The selected-packet mean
+Here the affected-cell part of `V_sender_rebin <= V_after_mix` follows from
+the executed sender repair theorem; the complete source partition and
+destination incidence are still to be supplied. The selected-packet mean
 errors `xi_b` remain; they are not zero merely because full packets are
 transported. Their bounds should use source-centered energy and the exact
 packet incidence matrix. Controlling `V_between`, target drift, and coarse
