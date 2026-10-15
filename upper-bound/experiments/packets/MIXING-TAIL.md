@@ -1314,6 +1314,9 @@ or `64^(h+1) * (64^r - 1)` with `2 <= r <= 6`. In the bottom-rising case the
 refined shape now retains both the actual bottom-frontier index and its
 relation to the size exponent; combining these with `omega7_bounds` proves the
 same 2-to-6 gap bound previously explicit only for bottom-descending bags.
+`flowA7_scheduled_packet_factorization` then divides by the packet width and
+states this directly for actual packet counts: a power of 64 or exactly
+`64^h * (64^r - 1)`.
 Thus packet counts are either exact powers of 64 or at least `1 - 64^-2` of
 the next power cohort. This identifies the finite padding range a uniform
 matching-family construction must handle. It does not construct matchings on

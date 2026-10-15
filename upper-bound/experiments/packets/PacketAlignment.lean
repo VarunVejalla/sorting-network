@@ -303,6 +303,42 @@ theorem refined_packet_residues {d t i a u n : Nat}
         exact Nat.dvd_sub hp1 hp2
       · exact residue_half_diff g h hgh
 
+/-- Actual packet counts (wire count divided by packet width 64) are powers of
+64 or one of the five bounded-cofactor families `64^h * (64^r - 1)`. -/
+theorem flowA7_scheduled_packet_factorization (d : Nat) (hd : 7 ≤ d) (t i : Nat)
+    (ht2 : 2 ≤ t) (ht : t < tf7 d) :
+    flowA7 d hd i t = 0 ∨
+      (∃ e, flowA7 d hd i t / 64 = 64 ^ e) ∨
+      (∃ h r, 2 ≤ r ∧ r ≤ 6 ∧
+        flowA7 d hd i t / 64 = 64 ^ h * (64 ^ r - 1)) := by
+  have hdiv : 64 ∣ flowA7 d hd i t :=
+    (refined_packet_residues hd ht2 ht
+      (node_shape_refined d hd t i ht2 ht)).1
+  rcases flowA7_scheduled_bag_size_form d hd t i ht2 ht with hz | hp | hnear
+  · exact Or.inl hz
+  · rcases hp with ⟨e, he⟩
+    have hepos : 0 < e := by
+      by_contra hn
+      have he0 : e = 0 := by omega
+      rw [he0] at he
+      simp at he
+      rw [he] at hdiv
+      norm_num at hdiv
+    obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : e ≠ 0)
+    right; left
+    refine ⟨k, ?_⟩
+    rw [he, pow_succ]
+    simp
+  · rcases hnear with ⟨h, r, hrlo, hrhi, he⟩
+    right; right
+    refine ⟨h, r, hrlo, hrhi, ?_⟩
+    have hfactor : 64 ^ (h + 1) * (64 ^ r - 1) =
+        64 * (64 ^ h * (64 ^ r - 1)) := by
+      rw [show h + 1 = Nat.succ h by omega, pow_succ]
+      ring
+    rw [he, hfactor]
+    simp
+
 /-- A live half-fringe cuts the 64-wire packet grid exactly in half. -/
 def HalfMisaligned (u : Nat) : Prop := 0 < u ∧ u / 2 % 64 = 32
 

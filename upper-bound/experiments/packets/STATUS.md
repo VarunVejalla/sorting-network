@@ -225,6 +225,9 @@ empty, a power of 64 wires, or a power cohort missing a factor `64^-r` with
 bottom-rising shape makes the exponent range derivable from the actual
 schedule. This narrows the uniform matching problem to bounded-density padded
 power-of-64 cohorts; it does not yet show padding preserves a spectral gap.
+The checked corollary `flowA7_scheduled_packet_factorization` now states the
+actual packet-count quotient directly as either a power of 64 or
+`64^h * (64^r - 1)` for `2 <= r <= 6`.
 
 Exact-factor matching lead (Codex / GPT-6, 2026-10-15): near-power packet
 sizes are `64^h * (64^r - 1)` for one of five fixed cofactors. A diagonal

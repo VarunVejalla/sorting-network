@@ -11,6 +11,10 @@ import PacketHalfProfile
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_scheduled_bag_size_form
 
+/-- info: 'Chvatal.PacketAlignment.flowA7_scheduled_packet_factorization' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_scheduled_packet_factorization
+
 /-- info: 'Chvatal.PacketAlignment.floorCeilAverage_centered_energy_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.floorCeilAverage_centered_energy_le
