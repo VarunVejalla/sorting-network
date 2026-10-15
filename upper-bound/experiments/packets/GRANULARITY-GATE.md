@@ -136,3 +136,5 @@ receiver's combined selected threshold count relative to the sum of its
 selected ideal interval counts by the total coarse sender error. The estimate
 has no port-count factor. The destination-target identification and the
 multi-run merge/deal contraction are still open.
+
+Dynamic receiver target (2026-10-15): the checked `wireFlowLayer_reencoded_profile_recurrence` chooses the selected interval-mean sum as the next target profile for every active receiver and every threshold. It proves the codes remain monotone and within receiver capacity, and the summed actual register error is charged to source coarse errors exactly once. Thus target identification is no longer a mismatch with a preselected target; the remaining main gap is proving sortedness of the source registers at each cycle and proving the reassembly/mixing contraction for the resulting dynamic profile.

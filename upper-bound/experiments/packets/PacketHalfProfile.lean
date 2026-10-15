@@ -2834,14 +2834,59 @@ theorem wireFlowReceiverSelectedIdealMean_has_code {d tf : Nat}
     · intro htop
       omega
 
+/-- Choose coherent next-stage target codes simultaneously for every value
+threshold and every active receiver. -/
+theorem wireFlowLayer_selected_means_have_codes {d tf : Nat} {Θ : Type}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (q : Θ → KBag 64 d → Nat) (frac : Θ → KBag 64 d → Real)
+    (hfrac0 : ∀ θ source, 0 ≤ frac θ source)
+    (hfrac1 : ∀ θ source, frac θ source ≤ 1) :
+    ∃ qNext : Θ → KBag 64 d → Nat, ∃ fracNext : Θ → KBag 64 d → Real,
+      ∀ θ receiver, 1 ≤ receiver.l → receiver.l < d →
+        qNext θ receiver ≤
+            ((execPlacement F nets input (t + 1) (by omega)).regs receiver).card ∧
+          0 ≤ fracNext θ receiver ∧ fracNext θ receiver ≤ 1 ∧
+          (qNext θ receiver : Real) + fracNext θ receiver =
+            wireFlowReceiverSelectedIdealMean F t (q θ) (frac θ) receiver ∧
+          (qNext θ receiver =
+            ((execPlacement F nets input (t + 1) (by omega)).regs receiver).card →
+              fracNext θ receiver = 0) := by
+  classical
+  let Active : KBag 64 d → Prop := fun receiver => 1 ≤ receiver.l ∧ receiver.l < d
+  have hcodes : ∀ θ receiver, Active receiver →
+      ∃ nextQ : Nat, nextQ ≤
+          ((execPlacement F nets input (t + 1) (by omega)).regs receiver).card ∧
+        ∃ nextFrac : Real, 0 ≤ nextFrac ∧ nextFrac ≤ 1 ∧
+          (nextQ : Real) + nextFrac =
+            wireFlowReceiverSelectedIdealMean F t (q θ) (frac θ) receiver ∧
+          (nextQ =
+            ((execPlacement F nets input (t + 1) (by omega)).regs receiver).card →
+              nextFrac = 0) := by
+    intro θ receiver hactive
+    exact wireFlowReceiverSelectedIdealMean_has_code F nets input t ht receiver
+      hactive.1 hactive.2 (q θ) (frac θ)
+      (fun source => hfrac0 θ (wireFlowReceiverSource receiver hactive.2 source))
+      (fun source => hfrac1 θ (wireFlowReceiverSource receiver hactive.2 source))
+  choose qCode hqCode fracCode hfracCode0 hfracCode1 hcode hendpointCode using hcodes
+  refine ⟨fun θ receiver => if h : Active receiver then qCode θ receiver h else 0,
+    fun θ receiver => if h : Active receiver then fracCode θ receiver h else 0, ?_⟩
+  intro θ receiver hb hchild
+  have hactive : Active receiver := ⟨hb, hchild⟩
+  simpa [Active, hactive] using
+    ⟨hqCode θ receiver hactive, hfracCode0 θ receiver hactive,
+      hfracCode1 θ receiver hactive, hcode θ receiver hactive,
+      hendpointCode θ receiver hactive⟩
+
 /-- If every source bag's real threshold target is monotone between two value
 thresholds, then the receiver's selected ideal target is monotone as well.
 Thus the port rule preserves coherence of the target profile. -/
-theorem wireFlowReceiverSelectedIdealMean_mono {d tf : Nat}
+theorem wireFlowReceiverSelectedIdealMean_mono {d tf : Nat} {Θ : Type}
     (F : FlowSizes d tf) (t : Nat) (ht : t < tf)
     (receiver : KBag 64 d) (hchild : receiver.l < d)
-    (q : Nat → KBag 64 d → Nat) (frac : Nat → KBag 64 d → Real)
-    (θ₁ θ₂ : Nat)
+    (q : Θ → KBag 64 d → Nat) (frac : Θ → KBag 64 d → Real)
+    (θ₁ θ₂ : Θ)
     (hfrac₁0 : ∀ source : Fin 65,
       0 ≤ frac θ₁ (wireFlowReceiverSource receiver hchild source))
     (hfrac₁1 : ∀ source : Fin 65,
@@ -2971,6 +3016,47 @@ theorem wireFlowLayer_register_error_sum_le_source_count_error {d tf : Nat}
       simpa [v, wireFlowLayerSenderPieceError, wireFlowLayerSenderPieceCount,
         wireFlowLayerSenderPieceMean, profileIntervalMean] using hbound
 
+/-- If the incoming real threshold targets are monotone, the simultaneously
+chosen next-stage codes remain monotone after re-encoding. -/
+theorem wireFlowLayer_selected_means_have_monotone_codes {d tf : Nat} {Θ : Type}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (q : Θ → KBag 64 d → Nat) (frac : Θ → KBag 64 d → Real)
+    (hfrac0 : ∀ θ source, 0 ≤ frac θ source)
+    (hfrac1 : ∀ θ source, frac θ source ≤ 1)
+    (hmono : ∀ θ₁ θ₂ source,
+      (q θ₁ source : Real) + frac θ₁ source ≤
+        (q θ₂ source : Real) + frac θ₂ source) :
+    ∃ qNext : Θ → KBag 64 d → Nat, ∃ fracNext : Θ → KBag 64 d → Real,
+      (∀ θ receiver, 1 ≤ receiver.l → receiver.l < d →
+        qNext θ receiver ≤
+            ((execPlacement F nets input (t + 1) (by omega)).regs receiver).card ∧
+          0 ≤ fracNext θ receiver ∧ fracNext θ receiver ≤ 1 ∧
+          (qNext θ receiver : Real) + fracNext θ receiver =
+            wireFlowReceiverSelectedIdealMean F t (q θ) (frac θ) receiver ∧
+          (qNext θ receiver =
+            ((execPlacement F nets input (t + 1) (by omega)).regs receiver).card →
+              fracNext θ receiver = 0)) ∧
+      (∀ θ₁ θ₂ receiver, 1 ≤ receiver.l → receiver.l < d →
+        (qNext θ₁ receiver : Real) + fracNext θ₁ receiver ≤
+          (qNext θ₂ receiver : Real) + fracNext θ₂ receiver) := by
+  obtain ⟨qNext, fracNext, hcodes⟩ :=
+    wireFlowLayer_selected_means_have_codes F nets input t ht q frac hfrac0 hfrac1
+  refine ⟨qNext, fracNext, hcodes, ?_⟩
+  intro θ₁ θ₂ receiver hb hchild
+  have hmean := wireFlowReceiverSelectedIdealMean_mono F t ht receiver hchild
+    q frac θ₁ θ₂
+    (fun source => hfrac0 θ₁ (wireFlowReceiverSource receiver hchild source))
+    (fun source => hfrac1 θ₁ (wireFlowReceiverSource receiver hchild source))
+    (fun source => hfrac0 θ₂ (wireFlowReceiverSource receiver hchild source))
+    (fun source => hfrac1 θ₂ (wireFlowReceiverSource receiver hchild source))
+    (fun source => hmono θ₁ θ₂ (wireFlowReceiverSource receiver hchild source))
+  have hcode₁ := (hcodes θ₁ receiver hb hchild).2.2.2.1
+  have hcode₂ := (hcodes θ₂ receiver hb hchild).2.2.2.1
+  rw [hcode₁, hcode₂]
+  exact hmean
+
 /-- The no-amplification estimate holds simultaneously for any finite family
 of value thresholds. Summing over all active receivers and thresholds charges
 each source bag's coarse error once per threshold, with no factor for the
@@ -3006,6 +3092,79 @@ theorem wireFlowLayer_register_error_sum_le_source_count_error_multi
   exact wireFlowLayer_register_error_sum_le_source_count_error
     F nets input t ht (predicate θ) (q θ) (frac θ)
     (hsorted θ) (hq θ) (hfrac0 θ) (hfrac1 θ) (hendpoint θ)
+
+/-- One complete layer interface: choose a monotone next threshold profile on
+every active receiver, and bound its total register discrepancy by the prior
+source-profile error with no port or receiver-level multiplicity. -/
+theorem wireFlowLayer_reencoded_profile_recurrence {d tf : Nat} {Θ : Type}
+    [Fintype Θ] [DecidableEq Θ]
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (predicate : Θ → Fin (64 ^ d) → Bool)
+    (q : Θ → KBag 64 d → Nat) (frac : Θ → KBag 64 d → Real)
+    (hsorted : ∀ θ source, Monotone
+      ((fun w => predicate θ (X F nets input (t + 1) w)) ∘
+        (wireSets F t source).orderEmbOfFin rfl))
+    (hq : ∀ θ source, q θ source ≤ (wireSets F t source).card)
+    (hfrac0 : ∀ θ source, 0 ≤ frac θ source)
+    (hfrac1 : ∀ θ source, frac θ source ≤ 1)
+    (hendpoint : ∀ θ source,
+      q θ source = (wireSets F t source).card → frac θ source = 0)
+    (hmono : ∀ θ₁ θ₂ source,
+      (q θ₁ source : Real) + frac θ₁ source ≤
+        (q θ₂ source : Real) + frac θ₂ source) :
+    ∃ qNext : Θ → KBag 64 d → Nat, ∃ fracNext : Θ → KBag 64 d → Real,
+      (∀ θ receiver, 1 ≤ receiver.l → receiver.l < d →
+        qNext θ receiver ≤
+            ((execPlacement F nets input (t + 1) (by omega)).regs receiver).card ∧
+          0 ≤ fracNext θ receiver ∧ fracNext θ receiver ≤ 1 ∧
+          (qNext θ receiver : Real) + fracNext θ receiver =
+            wireFlowReceiverSelectedIdealMean F t (q θ) (frac θ) receiver ∧
+          (qNext θ receiver =
+            ((execPlacement F nets input (t + 1) (by omega)).regs receiver).card →
+              fracNext θ receiver = 0)) ∧
+      (∀ θ₁ θ₂ receiver, 1 ≤ receiver.l → receiver.l < d →
+        (qNext θ₁ receiver : Real) + fracNext θ₁ receiver ≤
+          (qNext θ₂ receiver : Real) + fracNext θ₂ receiver) ∧
+      (∑ θ : Θ, ∑ receiver ∈ (Finset.univ : Finset (KBag 64 d)).filter
+          (fun b => 1 ≤ b.l ∧ b.l < d),
+        |(trueCountOn
+            ((execPlacement F nets input (t + 1) (by omega)).regs receiver)
+            (predicate θ) : Real) -
+          ((qNext θ receiver : Real) + fracNext θ receiver)|) ≤
+        ∑ θ : Θ, ∑ source : KBag 64 d,
+          |(trueCountOn (wireSets F t source)
+              (fun w => predicate θ (X F nets input (t + 1) w)) : Real) -
+            (q θ source + frac θ source)| := by
+  obtain ⟨qNext, fracNext, hcodes, hmonoNext⟩ :=
+    wireFlowLayer_selected_means_have_monotone_codes F nets input t ht q frac
+      hfrac0 hfrac1 hmono
+  have herror := wireFlowLayer_register_error_sum_le_source_count_error_multi
+    F nets input t ht predicate q frac hsorted hq hfrac0 hfrac1 hendpoint
+  have heq :
+      (∑ θ : Θ, ∑ receiver ∈ (Finset.univ : Finset (KBag 64 d)).filter
+          (fun b => 1 ≤ b.l ∧ b.l < d),
+        |(trueCountOn
+            ((execPlacement F nets input (t + 1) (by omega)).regs receiver)
+            (predicate θ) : Real) -
+          ((qNext θ receiver : Real) + fracNext θ receiver)|) =
+      ∑ θ : Θ, ∑ receiver ∈ (Finset.univ : Finset (KBag 64 d)).filter
+          (fun b => 1 ≤ b.l ∧ b.l < d),
+        |(trueCountOn
+            ((execPlacement F nets input (t + 1) (by omega)).regs receiver)
+            (predicate θ) : Real) -
+          wireFlowReceiverSelectedIdealMean F t (q θ) (frac θ) receiver| := by
+    apply Finset.sum_congr rfl
+    intro θ _
+    apply Finset.sum_congr rfl
+    intro receiver hreceiver
+    have hactive := (Finset.mem_filter.mp hreceiver).2
+    have hcode := (hcodes θ receiver hactive.1 hactive.2).2.2.2.1
+    rw [hcode]
+  refine ⟨qNext, fracNext, hcodes, hmonoNext, ?_⟩
+  rw [heq]
+  exact herror
 
 /-- The source-profile error bound applies directly to the actual receiver
 register: the selected parent/child piece counts are exactly its Boolean

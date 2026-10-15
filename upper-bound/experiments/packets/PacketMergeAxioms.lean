@@ -237,6 +237,14 @@ import PacketHalfProfile
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.wireFlowReceiverSelectedIdealMean_has_code
 
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_selected_means_have_codes' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_selected_means_have_codes
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_selected_means_have_monotone_codes' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_selected_means_have_monotone_codes
+
 /-- info: 'Chvatal.PacketAlignment.profileIntervalMean_between' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.profileIntervalMean_between
@@ -256,6 +264,10 @@ import PacketHalfProfile
  Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.wireFlowLayer_register_error_sum_le_source_count_error_multi
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_reencoded_profile_recurrence' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_reencoded_profile_recurrence
 
 /-- info: 'Chvatal.PacketAlignment.realTarget_has_integer_fraction' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
