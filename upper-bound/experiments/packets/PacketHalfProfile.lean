@@ -630,10 +630,10 @@ theorem selectedSenderOutgoing_profile_error_le {c N m q : Nat} (frac : Real)
         |(trueCountOn (S packet) (v packet) : Real) - (q + frac)| := by
       simpa [senderOutgoingProfileError, hcard] using hfull
 
-noncomputable def senderOutgoingProfileErrorVar {c N : Nat}
-    (S : Fin c → Finset (Fin N)) (v : Fin c → Fin N → Bool)
-    (up down q : Fin c → Nat) (frac : Fin c → Real)
-    (packet : Fin c) (i : Nat) : Real :=
+noncomputable def senderOutgoingProfileErrorVar {Source : Type} {N : Nat}
+    (S : Source → Finset (Fin N)) (v : Source → Fin N → Bool)
+    (up down q : Source → Nat) (frac : Source → Real)
+    (packet : Source) (i : Nat) : Real :=
   |(trueCountOn (senderOutgoingPiece (S packet) (up packet) (down packet) i)
       (v packet) : Real) -
     profileIntervalMean (S packet).card (q packet) (frac packet)
@@ -644,20 +644,21 @@ noncomputable def senderOutgoingProfileErrorVar {c N : Nat}
 sizes and a separate fractional ideal count for each sender. This is the
 shape needed when a receiver combines its larger parent bag with smaller child
 bags. -/
-theorem sortedSenderOutgoing_profile_error_exact_var {c N : Nat}
-    (S : Fin c → Finset (Fin N)) (v : Fin c → Fin N → Bool)
-    (up down q : Fin c → Nat) (frac : Fin c → Real)
+theorem sortedSenderOutgoing_profile_error_exact_var
+    {Source : Type} [Fintype Source] [DecidableEq Source] {N : Nat}
+    (S : Source → Finset (Fin N)) (v : Source → Fin N → Bool)
+    (up down q : Source → Nat) (frac : Source → Real)
     (hsize : ∀ packet, (S packet).card = up packet + 64 * down packet)
     (hu : ∀ packet, 2 ∣ up packet)
     (hsorted : ∀ packet, Monotone (v packet ∘ (S packet).orderEmbOfFin rfl))
     (hq : ∀ packet, q packet < (S packet).card)
     (hfrac0 : ∀ packet, 0 ≤ frac packet)
     (hfrac1 : ∀ packet, frac packet ≤ 1) :
-    (∑ packet : Fin c, ∑ i ∈ range 66,
+    (∑ packet : Source, ∑ i ∈ range 66,
       senderOutgoingProfileErrorVar S v up down q frac packet i) =
-      ∑ packet : Fin c,
+      ∑ packet : Source,
         |(trueCountOn (S packet) (v packet) : Real) - (q packet + frac packet)| := by
-  have hlocal (packet : Fin c) :
+  have hlocal (packet : Source) :
       (∑ i ∈ range 66,
         senderOutgoingProfileErrorVar S v up down q frac packet i) =
         |(trueCountOn (S packet) (v packet) : Real) - (q packet + frac packet)| := by
@@ -703,9 +704,9 @@ theorem sortedSenderOutgoing_profile_error_exact_var {c N : Nat}
       _ = |(trueCountOn (S packet) (v packet) : Real) -
             (q packet + frac packet)| := hprofile
   calc
-    (∑ packet : Fin c, ∑ i ∈ range 66,
+    (∑ packet : Source, ∑ i ∈ range 66,
         senderOutgoingProfileErrorVar S v up down q frac packet i) =
-      ∑ packet : Fin c,
+      ∑ packet : Source,
         |(trueCountOn (S packet) (v packet) : Real) - (q packet + frac packet)| := by
       apply Finset.sum_congr rfl
       intro packet _
@@ -851,45 +852,47 @@ theorem wireFlowReceiver_count_error_le {N : Nat}
 
 /-- Layerwise sum of receiver discrepancies charges each source rank piece at
 most once when routed selections are pairwise disjoint. -/
-theorem sum_receiver_selected_errors_le_source_pieces {r c : Nat}
-    (err : Fin c → Nat → Real) (selected : Fin r → Fin c → Finset Nat)
+theorem sum_receiver_selected_errors_le_source_pieces
+    {Receiver Source : Type} [Fintype Receiver] [Fintype Source]
+    [DecidableEq Receiver] [DecidableEq Source]
+    (err : Source → Nat → Real) (selected : Receiver → Source → Finset Nat)
     (hselected : ∀ receiver source, selected receiver source ⊆ range 66)
     (hdisjoint : ∀ source receiver₁ receiver₂, receiver₁ ≠ receiver₂ →
       Disjoint (selected receiver₁ source) (selected receiver₂ source)) :
-    (∑ receiver : Fin r,
-      |∑ source : Fin c, ∑ i ∈ selected receiver source, err source i|) ≤
-      ∑ source : Fin c, ∑ i ∈ range 66, |err source i| := by
+    (∑ receiver : Receiver,
+      |∑ source : Source, ∑ i ∈ selected receiver source, err source i|) ≤
+      ∑ source : Source, ∑ i ∈ range 66, |err source i| := by
   classical
-  have htriangle (receiver : Fin r) :
-      |∑ source : Fin c, ∑ i ∈ selected receiver source, err source i| ≤
-        ∑ source : Fin c, ∑ i ∈ selected receiver source, |err source i| := by
+  have htriangle (receiver : Receiver) :
+      |∑ source : Source, ∑ i ∈ selected receiver source, err source i| ≤
+        ∑ source : Source, ∑ i ∈ selected receiver source, |err source i| := by
     calc
-      |∑ source : Fin c, ∑ i ∈ selected receiver source, err source i| ≤
-          ∑ source : Fin c, |∑ i ∈ selected receiver source, err source i| :=
+      |∑ source : Source, ∑ i ∈ selected receiver source, err source i| ≤
+          ∑ source : Source, |∑ i ∈ selected receiver source, err source i| :=
         Finset.abs_sum_le_sum_abs _ _
-      _ ≤ ∑ source : Fin c, ∑ i ∈ selected receiver source, |err source i| := by
+      _ ≤ ∑ source : Source, ∑ i ∈ selected receiver source, |err source i| := by
         apply Finset.sum_le_sum
         intro source _
         exact Finset.abs_sum_le_sum_abs _ _
   calc
-    _ ≤ ∑ receiver : Fin r,
-        ∑ source : Fin c, ∑ i ∈ selected receiver source, |err source i| := by
+    _ ≤ ∑ receiver : Receiver,
+        ∑ source : Source, ∑ i ∈ selected receiver source, |err source i| := by
       apply Finset.sum_le_sum
       intro receiver _
       exact htriangle receiver
-    _ = ∑ source : Fin c,
-        ∑ receiver : Fin r, ∑ i ∈ selected receiver source, |err source i| := by
+    _ = ∑ source : Source,
+        ∑ receiver : Receiver, ∑ i ∈ selected receiver source, |err source i| := by
       rw [Finset.sum_comm]
-    _ ≤ ∑ source : Fin c, ∑ i ∈ range 66, |err source i| := by
+    _ ≤ ∑ source : Source, ∑ i ∈ range 66, |err source i| := by
       apply Finset.sum_le_sum
       intro source _
-      let pieces := Finset.univ.biUnion (fun receiver : Fin r => selected receiver source)
-      have hpair : Set.PairwiseDisjoint (↑(Finset.univ : Finset (Fin r)))
+      let pieces := Finset.univ.biUnion (fun receiver : Receiver => selected receiver source)
+      have hpair : Set.PairwiseDisjoint (↑(Finset.univ : Finset (Receiver)))
           (fun receiver => selected receiver source) := by
         intro receiver _ receiver' _ hne
         exact hdisjoint source receiver receiver' hne
       have hpieces :
-          (∑ receiver : Fin r, ∑ i ∈ selected receiver source, |err source i|) =
+          (∑ receiver : Receiver, ∑ i ∈ selected receiver source, |err source i|) =
             ∑ i ∈ pieces, |err source i| := by
         dsimp [pieces]
         rw [← Finset.sum_biUnion hpair]
@@ -905,21 +908,23 @@ theorem sum_receiver_selected_errors_le_source_pieces {r c : Nat}
 /-- If receivers partition each sender's 66 outgoing rank pieces, the sum of
 their absolute profile discrepancies is bounded by one coarse count error per
 sender, regardless of how the pieces are grouped into receivers. -/
-theorem sum_receiver_profile_errors_le_source_count_errors {r c N : Nat}
-    (S : Fin c → Finset (Fin N)) (v : Fin c → Fin N → Bool)
-    (up down q : Fin c → Nat) (frac : Fin c → Real)
+theorem sum_receiver_profile_errors_le_source_count_errors
+    {Receiver Source : Type} [Fintype Receiver] [Fintype Source]
+    [DecidableEq Receiver] [DecidableEq Source] {N : Nat}
+    (S : Source → Finset (Fin N)) (v : Source → Fin N → Bool)
+    (up down q : Source → Nat) (frac : Source → Real)
     (hsize : ∀ source, (S source).card = up source + 64 * down source)
     (hu : ∀ source, 2 ∣ up source)
     (hsorted : ∀ source, Monotone (v source ∘ (S source).orderEmbOfFin rfl))
     (hq : ∀ source, q source < (S source).card)
     (hfrac0 : ∀ source, 0 ≤ frac source)
     (hfrac1 : ∀ source, frac source ≤ 1)
-    (selected : Fin r → Fin c → Finset Nat)
+    (selected : Receiver → Source → Finset Nat)
     (hselected : ∀ receiver source, selected receiver source ⊆ range 66)
     (hdisjoint : ∀ source receiver₁ receiver₂, receiver₁ ≠ receiver₂ →
       Disjoint (selected receiver₁ source) (selected receiver₂ source)) :
-    (∑ receiver : Fin r,
-      |∑ source : Fin c,
+    (∑ receiver : Receiver,
+      |∑ source : Source,
         ∑ i ∈ selected receiver source,
           ((trueCountOn
             (senderOutgoingPiece (S source) (up source) (down source) i)
@@ -927,22 +932,119 @@ theorem sum_receiver_profile_errors_le_source_count_errors {r c N : Nat}
           profileIntervalMean (S source).card (q source) (frac source)
             (senderRankCut (up source) (down source) i)
             (senderRankCut (up source) (down source) (i + 1)))|) ≤
-      ∑ source : Fin c,
+      ∑ source : Source,
         |(trueCountOn (S source) (v source) : Real) - (q source + frac source)| := by
-  let err : Fin c → Nat → Real := fun source i =>
+  let err : Source → Nat → Real := fun source i =>
     (trueCountOn (senderOutgoingPiece (S source) (up source) (down source) i)
       (v source) : Real) -
       profileIntervalMean (S source).card (q source) (frac source)
         (senderRankCut (up source) (down source) i)
         (senderRankCut (up source) (down source) (i + 1))
   calc
-    _ ≤ ∑ source : Fin c, ∑ i ∈ range 66, |err source i| :=
+    _ ≤ ∑ source : Source, ∑ i ∈ range 66, |err source i| :=
       sum_receiver_selected_errors_le_source_pieces err selected hselected hdisjoint
-    _ = ∑ source : Fin c,
+    _ = ∑ source : Source,
         |(trueCountOn (S source) (v source) : Real) - (q source + frac source)| := by
       simpa [err, senderOutgoingProfileErrorVar] using
         (sortedSenderOutgoing_profile_error_exact_var S v up down q frac
           hsize hu hsorted hq hfrac0 hfrac1)
+
+/-- Rank pieces sent from `source` to `receiver`: child receivers get the
+middle piece indexed by their child digit, and the parent gets both fringes. -/
+def wireFlowLayerSelection {d : Nat} (receiver source : KBag 64 d) : Finset Nat :=
+  (range 66).filter (fun i =>
+    (1 ≤ receiver.l ∧ source = receiver.parent ∧ i = receiver.x % 64 + 1) ∨
+    (1 ≤ source.l ∧ receiver = source.parent ∧ (i = 0 ∨ i = 65)))
+
+theorem wireFlowLayerSelection_mem {d : Nat} (receiver source : KBag 64 d)
+    (i : Nat) :
+    i ∈ wireFlowLayerSelection receiver source ↔
+      i ∈ range 66 ∧
+        ((1 ≤ receiver.l ∧ source = receiver.parent ∧ i = receiver.x % 64 + 1) ∨
+          (1 ≤ source.l ∧ receiver = source.parent ∧ (i = 0 ∨ i = 65))) := by
+  simp only [wireFlowLayerSelection, Finset.mem_filter]
+
+theorem wireFlowLayerSelection_subset {d : Nat} (receiver source : KBag 64 d) :
+    wireFlowLayerSelection receiver source ⊆ range 66 := by
+  intro i hi
+  rw [wireFlowLayerSelection_mem] at hi
+  exact hi.1
+
+/-- Distinct receivers select disjoint rank-piece indices from a fixed
+source bag. Child digits are unique; the parent's fringe indices are outside
+the child-index range. -/
+theorem wireFlowLayerSelection_pairwise_disjoint {d : Nat}
+    (source receiver₁ receiver₂ : KBag 64 d) (hne : receiver₁ ≠ receiver₂) :
+    Disjoint (wireFlowLayerSelection receiver₁ source)
+      (wireFlowLayerSelection receiver₂ source) := by
+  classical
+  apply Finset.disjoint_left.2
+  intro i hi₁ hi₂
+  rw [wireFlowLayerSelection_mem] at hi₁ hi₂
+  rcases hi₁.2 with hp₁ | hc₁ <;> rcases hi₂.2 with hp₂ | hc₂
+  · have hparent : receiver₁.parent = receiver₂.parent :=
+      hp₁.2.1.symm.trans hp₂.2.1
+    have hport : receiver₁.x % 64 = receiver₂.x % 64 := by omega
+    have hpX₁ : source.x = receiver₁.x / 64 := by
+      have h := congrArg KBag.x hp₁.2.1
+      simpa [KBag.parent] using h
+    have hpX₂ : source.x = receiver₂.x / 64 := by
+      have h := congrArg KBag.x hp₂.2.1
+      simpa [KBag.parent] using h
+    have hx₁ : receiver₁.x = 64 * source.x + receiver₁.x % 64 := by
+      have h := Nat.mod_add_div receiver₁.x 64
+      omega
+    have hx₂ : receiver₂.x = 64 * source.x + receiver₂.x % 64 := by
+      have h := Nat.mod_add_div receiver₂.x 64
+      omega
+    have hl : receiver₁.l = receiver₂.l := by
+      have h := congrArg KBag.l hparent
+      rw [KBag.parent_l, KBag.parent_l] at h
+      omega
+    apply hne
+    exact KBag.ext hl (by rw [hx₁, hx₂, hport])
+  · have hport : 0 < receiver₁.x % 64 + 1 ∧ receiver₁.x % 64 + 1 ≤ 64 := by
+      have hmod := Nat.mod_lt receiver₁.x (by norm_num : 0 < 64)
+      omega
+    rcases hc₂.2.2 with hiZero | hiLast <;> omega
+  · have hport : 0 < receiver₂.x % 64 + 1 ∧ receiver₂.x % 64 + 1 ≤ 64 := by
+      have hmod := Nat.mod_lt receiver₂.x (by norm_num : 0 < 64)
+      omega
+    rcases hc₁.2.2 with hiZero | hiLast <;> omega
+  · exact hne (hc₁.2.1.trans hc₂.2.1.symm)
+
+/-- Actual bag-indexed incidence bound: summing the absolute routed-profile
+errors over every receiver in the 64-ary tree charges each sender's coarse
+count error only once. The hypotheses carry the source sorting and ideal-count
+invariants; the routing disjointness itself is proved above. -/
+theorem wireFlowLayer_profile_error_sum_le {d N : Nat}
+    (S : KBag 64 d → Finset (Fin N)) (v : KBag 64 d → Fin N → Bool)
+    (up down q : KBag 64 d → Nat) (frac : KBag 64 d → Real)
+    (hsize : ∀ source, (S source).card = up source + 64 * down source)
+    (hu : ∀ source, 2 ∣ up source)
+    (hsorted : ∀ source,
+      Monotone (v source ∘ (S source).orderEmbOfFin rfl))
+    (hq : ∀ source, q source < (S source).card)
+    (hfrac0 : ∀ source, 0 ≤ frac source)
+    (hfrac1 : ∀ source, frac source ≤ 1) :
+    (∑ receiver : KBag 64 d,
+      |∑ source : KBag 64 d,
+        ∑ i ∈ wireFlowLayerSelection receiver source,
+          ((trueCountOn
+            (senderOutgoingPiece (S source) (up source) (down source) i)
+            (v source) : Real) -
+          profileIntervalMean (S source).card (q source) (frac source)
+            (senderRankCut (up source) (down source) i)
+            (senderRankCut (up source) (down source) (i + 1)))|) ≤
+      ∑ source : KBag 64 d,
+        |(trueCountOn (S source) (v source) : Real) - (q source + frac source)| := by
+  classical
+  exact sum_receiver_profile_errors_le_source_count_errors
+    S v up down q frac hsize hu hsorted hq hfrac0 hfrac1
+    wireFlowLayerSelection
+    (fun receiver source => wireFlowLayerSelection_subset receiver source)
+    (fun source receiver₁ receiver₂ hne =>
+      wireFlowLayerSelection_pairwise_disjoint source receiver₁ receiver₂ hne)
 
 def wireFlowReceiverSource {d : Nat} (b : KBag 64 d) (hchild : b.l < d)
     (source : Fin 65) : KBag 64 d :=

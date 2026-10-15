@@ -1133,15 +1133,18 @@ headline result with only standard Lean axioms. This closes the local merge
 gate, not UB-25's receiver reassembly, matching schedule, coupled recurrence,
 or global limsup proof. The current coefficient near 200 remains conditional.
 
-Next concrete bridge after the merge gate (2026-10-15): instantiate the generic
-layerwise selected-piece error lemma on the actual `wireFlowReceiver` map. For
-each source bag, prove that distinct receivers select disjoint indices among
-the 66 cuts: child receivers select their distinct middle indices
-`receiver.x % 64 + 1`, and the unique parent receiver selects fringe indices
-`0` and `65`. Then handle root and leaf layers explicitly so the selected
-pieces are exactly the registers written by `execPlacement`. The generic
-aggregate estimate already charges each source count error once; what remains
-after incidence is identifying the summed ideal means with the target register
-profile, then proving that profile update contracts the coupled rank and
-discrepancy state. This incidence step is the shortest next proof gate; it is
-not yet checked, and it does not by itself establish the 197.5 coefficient.
+Incidence progress (2026-10-15): `PacketHalfProfile.lean` now defines the
+actual bag-to-bag piece selector on `KBag 64 d`. For each fixed source bag,
+distinct receivers select disjoint indices: child receivers take their unique
+middle index `receiver.x % 64 + 1`, while the source's parent takes fringe
+indices `0` and `65`; the root is explicitly excluded from the parent-fringe
+case. The generic finite aggregation theorem and its exact sorted-sender L1
+identity have been generalized from `Fin` indices to arbitrary finite types.
+`wireFlowLayer_profile_error_sum_le` instantiates them on the complete finite
+64-ary bag tree, proving that the sum of absolute routed piece-profile errors
+over all receivers is at most one coarse count error per source bag. The focused
+scratch chain through `PacketMergeAxioms` passes. This is the incidence and
+no-amplification gate, but it does not yet identify the all-bag sum with the
+active `execPlacement` registers at root/leaf boundaries, identify summed ideal
+means with the next target profile, or prove contraction of the coupled rank
+and discrepancy state. The coefficient near 200 remains conditional.
