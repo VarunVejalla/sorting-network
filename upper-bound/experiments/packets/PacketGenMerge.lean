@@ -253,6 +253,78 @@ theorem genMerge128_dealt_centered_energy_le {N : Nat}
     (boolTrueCount (fun i : Fin 64 => v (e (Fin.castAdd 64 i))))
     (boolTrueCount (fun i : Fin 64 => v (e (Fin.natAdd 64 i)))) μ
 
+/-- Exact energy drop of one pair: it is half the decrease in squared count
+gap. The target cancels because merge-and-deal preserves the pair sum. -/
+theorem floorCeilAverage_energy_drop (x y : Nat) (μ : Real) :
+    let a := (x + y) / 2
+    let b := (x + y + 1) / 2
+    (((x : Real) - μ) ^ 2 + ((y : Real) - μ) ^ 2) -
+      (((a : Real) - μ) ^ 2 + ((b : Real) - μ) ^ 2) =
+      (((x : Real) - y) ^ 2 - ((a : Real) - b) ^ 2) / 2 := by
+  dsimp
+  have hsumNat : (x + y) / 2 + (x + y + 1) / 2 = x + y := by omega
+  have hsum : (((x + y) / 2 : Nat) : Real) +
+      (((x + y + 1) / 2 : Nat) : Real) = (x : Real) + y := by
+    exact_mod_cast hsumNat
+  have hb : (((x + y + 1) / 2 : Nat) : Real) =
+      (x : Real) + y - ((x + y) / 2 : Nat) := by linarith
+  rw [hb]
+  ring
+
+/-- The exact pair-drop identity loses at most one half unit to integer
+rounding, so its decrease dominates half the input squared gap minus 1/2. -/
+theorem floorCeilAverage_energy_drop_ge (x y : Nat) (μ : Real) :
+    let a := (x + y) / 2
+    let b := (x + y + 1) / 2
+    (((x : Real) - μ) ^ 2 + ((y : Real) - μ) ^ 2) -
+      (((a : Real) - μ) ^ 2 + ((b : Real) - μ) ^ 2) ≥
+        (((x : Real) - y) ^ 2 - 1) / 2 := by
+  dsimp
+  have hdrop := floorCeilAverage_energy_drop x y μ
+  have hfloorle : (x + y) / 2 ≤ (x + y + 1) / 2 := by omega
+  have hceille : (x + y + 1) / 2 ≤ (x + y) / 2 + 1 := by omega
+  have hzlo : (-1 : Real) ≤
+      (((x + y) / 2 : Nat) : Real) - ((x + y + 1) / 2 : Nat) := by
+    have hc : (((x + y + 1) / 2 : Nat) : Real) ≤
+        (((x + y) / 2 : Nat) : Real) + 1 := by exact_mod_cast hceille
+    linarith
+  have hzhi : (((x + y) / 2 : Nat) : Real) -
+      ((x + y + 1) / 2 : Nat) ≤ 0 := by
+    have hc : (((x + y) / 2 : Nat) : Real) ≤
+        (((x + y + 1) / 2 : Nat) : Real) := by exact_mod_cast hfloorle
+    linarith
+  have hfactor : 0 ≤
+      ((((x + y) / 2 : Nat) : Real) - ((x + y + 1) / 2 : Nat) + 1) *
+        (-((((x + y) / 2 : Nat) : Real) - ((x + y + 1) / 2 : Nat))) :=
+    mul_nonneg (by linarith) (by linarith)
+  rw [hdrop]
+  nlinarith [hfactor]
+
+/-- The actual 128-wire merge-and-deal network decreases centered threshold
+energy by at least half the input squared count gap, up to a 1/2 rounding
+allowance. -/
+theorem genMerge128_dealt_energy_drop_ge {N : Nat}
+    (e : Fin 128 ↪ Fin N) (v : Fin N → Bool)
+    (hA : Monotone (fun i : Fin 64 => v (e (Fin.castAdd 64 i))))
+    (hB : Monotone (fun i : Fin 64 => v (e (Fin.natAdd 64 i)))) (μ : Real) :
+    let x := boolTrueCount (fun i : Fin 64 => v (e (Fin.castAdd 64 i)))
+    let y := boolTrueCount (fun i : Fin 64 => v (e (Fin.natAdd 64 i)))
+    let x' := boolTrueCount (fun i : Fin 64 =>
+      (genScatter (oddEvenMergeNet 7) e).exec v (e (evenWire 64 i)))
+    let y' := boolTrueCount (fun i : Fin 64 =>
+      (genScatter (oddEvenMergeNet 7) e).exec v (e (oddWire 64 i)))
+    ((x : Real) - μ) ^ 2 + ((y : Real) - μ) ^ 2 -
+      ((x' : Real) - μ) ^ 2 - ((y' : Real) - μ) ^ 2 ≥
+        (((x : Real) - y) ^ 2 - 1) / 2 := by
+  dsimp
+  have hcounts := genMerge128_dealt_counts e v hA hB
+  rcases hcounts with ⟨he, ho⟩
+  have hpair := floorCeilAverage_energy_drop_ge
+    (boolTrueCount (fun i : Fin 64 => v (e (Fin.castAdd 64 i))))
+    (boolTrueCount (fun i : Fin 64 => v (e (Fin.natAdd 64 i)))) μ
+  rw [he, ho]
+  nlinarith [hpair]
+
 theorem genScatter_exec_threshold {m N : Nat} {α : Type} [LinearOrder α]
     (net : ComparatorNetwork m) (e : Fin m ↪ Fin N) (v : Fin N → α) (t : α) :
     (genScatter net e).exec (fun w => decide (t ≤ v w)) =
