@@ -1299,3 +1299,5 @@ the total bound `(64/63) * 64^(d−4)`, a fraction `(64/63)/64^4` of `64^d`
 frontier residual, but not its incorporation into the rank/variance recurrence,
 nor the sortedness invariant needed by the layer theorem. Focused chain and
 axiom guards through `PacketMergeAxioms` pass.
+
+Pairwise mixing energy (Codex / GPT-6, 2026-10-15): loorCeilAverage_centered_energy_le proves that one sorted 64+64 merge-and-deal pair replaces threshold counts x,y by floor((x+y)/2) and ceil((x+y)/2) without increasing their combined squared deviation from any real target. This is the exact integer version of pair averaging and isolates rounding to a difference of at most one. It supplies the local energy lemma for a matching-cycle argument; the uniform expander/matching family and its global contraction are still unproved. The focused chain and axiom guard pass.

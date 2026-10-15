@@ -102,3 +102,6 @@ interfaces; this README supersedes its historical statements that the
 64-wire odd-even sorting theorem remains open.
 
 Temporal frontier accounting (2026-10-15): the actual schedule eliminates the entire high-frontier omitted-middle error at every ordinary stage; level d-1 is inactive and the leaf down-flow is zero. The remaining level-1 up-flow has a formal per-bag time sum bounded by (64/63) * 64^(d-5), from a ratio-1/64 capacity tail. Across 64 level-1 bags this predicts total charge (64/63) * 64^(d-4), about 6.05e-8 of all 64^d wires; the bag-cardinality multiplier is formalized in Lean. This proves a small boundary budget, not a recurrence: sortedness preservation and rank/variance contraction remain open. See MIXING-TAIL.md.
+
+
+PacketGenMerge.lean now has a checked pairwise energy theorem: a merge-and-deal pair cannot increase the two threshold counts' centered squared error from any real target. This closes a local mixing inequality; uniform global contraction still requires a bounded-degree matching/expander family.

@@ -161,6 +161,77 @@ theorem genMerge128_dealt_counts {N : Nat} (e : Fin 128 ↪ Fin N) (v : Fin N �
   rw [hsum] at hc
   simpa only [genScatter_exec_inside, Function.comp_apply] using hc
 
+/-- One merge-and-deal step cannot increase the two packets' squared count
+deviation from any shared real target: it replaces their counts by floor and
+ceiling of their average. This isolates the exact rounding residue of a pair. -/
+theorem floorCeilAverage_centered_energy_le (x y : Nat) (μ : Real) :
+    let a := (x + y) / 2
+    let b := (x + y + 1) / 2
+    ((a : Real) - μ) ^ 2 + ((b : Real) - μ) ^ 2 ≤
+      ((x : Real) - μ) ^ 2 + ((y : Real) - μ) ^ 2 := by
+  dsimp
+  have hab : (x + y) / 2 + (x + y + 1) / 2 = x + y := by omega
+  have hfloorle : (x + y) / 2 ≤ (x + y + 1) / 2 := by omega
+  have hceille : (x + y + 1) / 2 ≤ (x + y) / 2 + 1 := by omega
+  have hsum : (((x + y) / 2 : Nat) : Real) +
+      (((x + y + 1) / 2 : Nat) : Real) = (x : Real) + y := by
+    exact_mod_cast hab
+  have hout0 : (0 : Real) ≤
+      (((x + y + 1) / 2 : Nat) : Real) - ((x + y) / 2 : Nat) := by
+    have hcast : (((x + y) / 2 : Nat) : Real) ≤
+        (((x + y + 1) / 2 : Nat) : Real) := by exact_mod_cast hfloorle
+    linarith
+  have hout1 :
+      (((x + y + 1) / 2 : Nat) : Real) - ((x + y) / 2 : Nat) ≤ 1 := by
+    have hcast : (((x + y + 1) / 2 : Nat) : Real) ≤
+        (((x + y) / 2 : Nat) + 1) := by exact_mod_cast hceille
+    linarith
+  have hsq :
+      ((((x + y) / 2 : Nat) : Real) ^ 2 +
+        (((x + y + 1) / 2 : Nat) : Real) ^ 2) ≤
+      (x : Real) ^ 2 + (y : Real) ^ 2 := by
+    by_cases hxy : x = y
+    · subst y
+      have ha : (x + x) / 2 = x := by omega
+      have hb : (x + x + 1) / 2 = x := by omega
+      simp [ha, hb]
+    · by_cases hlt : x < y
+      · have hin : (1 : Real) ≤ (y - x : Nat) := by
+          exact_mod_cast (show 1 ≤ y - x by omega)
+        let outGap : Real :=
+          (((x + y + 1) / 2 : Nat) : Real) - ((x + y) / 2 : Nat)
+        let inGap : Real := (y - x : Nat)
+        have hgapOrd : outGap ≤ inGap := by
+          dsimp [outGap, inGap]
+          exact le_trans hout1 hin
+        have hfactor : 0 ≤ (inGap - outGap) * (inGap + outGap) :=
+          mul_nonneg (sub_nonneg.mpr hgapOrd) (by linarith [hin, hout0])
+        have hgap : outGap ^ 2 ≤ inGap ^ 2 := by nlinarith [hfactor]
+        have hcast : inGap = (y : Real) - x := by
+          dsimp [inGap]
+          rw [Nat.cast_sub (by omega)]
+        dsimp [outGap] at hgap
+        nlinarith [hgap, hsum, hcast]
+      · have hlt' : y < x := by omega
+        have hin : (1 : Real) ≤ (x - y : Nat) := by
+          exact_mod_cast (show 1 ≤ x - y by omega)
+        let outGap : Real :=
+          (((x + y + 1) / 2 : Nat) : Real) - ((x + y) / 2 : Nat)
+        let inGap : Real := (x - y : Nat)
+        have hgapOrd : outGap ≤ inGap := by
+          dsimp [outGap, inGap]
+          exact le_trans hout1 hin
+        have hfactor : 0 ≤ (inGap - outGap) * (inGap + outGap) :=
+          mul_nonneg (sub_nonneg.mpr hgapOrd) (by linarith [hin, hout0])
+        have hgap : outGap ^ 2 ≤ inGap ^ 2 := by nlinarith [hfactor]
+        have hcast : inGap = (x : Real) - y := by
+          dsimp [inGap]
+          rw [Nat.cast_sub (by omega)]
+        dsimp [outGap] at hgap
+        nlinarith [hgap, hsum, hcast]
+  have hcross := congrArg (fun z : Real => -2 * μ * z) hsum
+  nlinarith [hsq, hsum, hcross]
+
 theorem genScatter_exec_threshold {m N : Nat} {α : Type} [LinearOrder α]
     (net : ComparatorNetwork m) (e : Fin m ↪ Fin N) (v : Fin N → α) (t : α) :
     (genScatter net e).exec (fun w => decide (t ≤ v w)) =
