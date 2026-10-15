@@ -1319,3 +1319,19 @@ the next power cohort. This identifies the finite padding range a uniform
 matching-family construction must handle. It does not construct matchings on
 padded cohorts or show dummy packets preserve contraction; adding/deleting
 vertices may invalidate the spectral bound.
+
+Exact-factor mixing route (Codex / GPT-6, 2026-10-15): the non-power packet
+counts from `flowA7_scheduled_bag_size_form` factor exactly as
+`64^h * (64^r - 1)`, with only five possible cofactors (`r=2,...,6`). This is
+stronger than treating them as arbitrary padded powers. A candidate construction
+is a Cartesian-product matching family: use one matching involution on each
+factor and pair `(a,b)` with `(M_A(a), M_B(b))`. This is again an involution,
+so each round is an ordinary disjoint comparator matching; the averaging
+operators on the product factor as a tensor product. If both factor schedules
+contract in the same R rounds (pad the shorter schedule by identity matchings),
+the product schedule contracts in R rounds too. Thus no extra asymptotic
+rounds are inherently needed for the bounded cofactor. The open mathematical
+gates are a uniform expander/matching schedule on powers `64^h`, and certified
+short schedules for the five fixed odd cofactors. The tensor-product statement
+also needs a Lean proof that the integer floor/ceiling merge-deal rounding
+preserves the desired energy bound.
