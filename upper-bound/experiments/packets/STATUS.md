@@ -68,6 +68,14 @@ and incurs no factor for the number of incoming pieces. This is the error term
 to feed into a local multi-run merge/deal estimate; identifying the selected
 ideal sum with the correct destination target is still open.
 
+Receiver-shape specialization (2026-10-15):
+`wireFlowReceiver_count_error_le` encodes the scheduler's selection pattern
+with 65 sources: one parent contribution at a chosen down-block index and both
+up-fringe halves from each of 64 children. It inherits the no-port-loss count
+bound for unequal source sizes and means. This is a shape-specific interface,
+not yet a theorem identifying the abstract source sets and values with actual
+`execPlacement` contributions; the port-to-execution adapter remains open.
+
 The entries below retain the research history and their original claim levels.
 
 Resumed by Codex (GPT-6), 2026-10-14. Branch/worktree:

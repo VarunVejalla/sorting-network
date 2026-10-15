@@ -236,3 +236,7 @@ import PacketHalfProfile
  Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.selectedSenderOutgoing_count_error_le_var
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowReceiver_count_error_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.wireFlowReceiver_count_error_le

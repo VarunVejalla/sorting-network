@@ -740,6 +740,47 @@ theorem selectedSenderOutgoing_count_error_le_var {c N : Nat}
         |(trueCountOn (S packet) (v packet) : Real) - (q packet + frac packet)| := by
       simpa [err, senderOutgoingProfileErrorVar] using hselectedError
 
+/-- Selection pattern matching one `WireFlow` receiver when its sources are
+indexed by the parent followed by its 64 children: take the receiver's one
+down block from the parent, and both up-fringe halves from each child. -/
+def receiverOutgoingSelection (parentPort : Nat) : Fin 65 → Finset Nat :=
+  fun source => if source.val = 0 then {parentPort + 1} else {0, 65}
+
+theorem receiverOutgoingSelection_subset (parentPort : Nat) (hport : parentPort < 64)
+    (source : Fin 65) : receiverOutgoingSelection parentPort source ⊆ range 66 := by
+  by_cases hsource : source.val = 0
+  · simp [receiverOutgoingSelection, hsource]
+    omega
+  · rw [Finset.subset_iff]
+    intro i hi
+    simp [receiverOutgoingSelection, hsource] at hi
+    rcases hi with rfl | rfl <;> simp
+/-- The parent-plus-children-shaped selection has the same no-amplification
+count bound. Instantiating its source data with actual `execPlacement` sets is
+still a separate adapter obligation. -/
+theorem wireFlowReceiver_count_error_le {N : Nat}
+    (S : Fin 65 → Finset (Fin N)) (v : Fin 65 → Fin N → Bool)
+    (up down q : Fin 65 → Nat) (frac : Fin 65 → Real)
+    (hsize : ∀ source, (S source).card = up source + 64 * down source)
+    (hu : ∀ source, 2 ∣ up source)
+    (hsorted : ∀ source, Monotone (v source ∘ (S source).orderEmbOfFin rfl))
+    (hq : ∀ source, q source < (S source).card)
+    (hfrac0 : ∀ source, 0 ≤ frac source)
+    (hfrac1 : ∀ source, frac source ≤ 1)
+    (parentPort : Nat) (hport : parentPort < 64) :
+    |(∑ source : Fin 65, ∑ i ∈ receiverOutgoingSelection parentPort source,
+        (trueCountOn (senderOutgoingPiece (S source) (up source) (down source) i)
+          (v source) : Real)) -
+      ∑ source : Fin 65, ∑ i ∈ receiverOutgoingSelection parentPort source,
+        profileIntervalMean (S source).card (q source) (frac source)
+          (senderRankCut (up source) (down source) i)
+          (senderRankCut (up source) (down source) (i + 1))| ≤
+      ∑ source : Fin 65,
+        |(trueCountOn (S source) (v source) : Real) - (q source + frac source)| := by
+  exact selectedSenderOutgoing_count_error_le_var S v up down q frac hsize hu hsorted
+    hq hfrac0 hfrac1 (receiverOutgoingSelection parentPort)
+    (fun source => receiverOutgoingSelection_subset parentPort hport source)
+
 
 theorem sortedPackets_intervalPartition_L1_exact {c m p q : Nat} (frac : Real)
     (V : Fin c → Fin m → Bool) (hV : ∀ i, Monotone (V i))
