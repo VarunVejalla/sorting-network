@@ -237,3 +237,5 @@ averages. Sequential coordinate schedules do realize tensor averaging, at the
 cost of adding their rounds. A synchronized diagonal contraction without that
 cost is only a conjectural route. Exact factorization is useful, but no
 matching family or product spectral estimate is proved.
+
+Receiver target re-encoding (Codex / GPT-6, 2026-10-15): `wireFlowReceiverSelectedIdealMean_has_code` composes the actual receiver-capacity bound with `realTarget_has_integer_fraction`. It proves each selected receiver mean can be carried as a legal next-stage `q + frac`, including zero-capacity receivers (`q=frac=0`) and the strict endpoint convention. Together with the actual-register discrepancy bound and threshold monotonicity theorem, this closes the target representation/coherence adapter. It still does not prove the receiver registers are sorted or that merge/deal contracts the new profile.

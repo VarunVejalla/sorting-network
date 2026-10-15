@@ -2794,6 +2794,46 @@ theorem wireFlowReceiverSelectedIdealMean_bounds {d tf : Nat}
         exact (hpieceBounds source i hi).2
       _ = _ := hwidthReal
 
+/-- The receiver's selected ideal mean can be installed as a legal next-stage
+`q + frac` target, including the zero-capacity endpoint case. -/
+theorem wireFlowReceiverSelectedIdealMean_has_code {d tf : Nat}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (receiver : KBag 64 d) (hb : 1 ≤ receiver.l) (hchild : receiver.l < d)
+    (q : KBag 64 d → Nat) (frac : KBag 64 d → Real)
+    (hfrac0 : ∀ source : Fin 65,
+      0 ≤ frac (wireFlowReceiverSource receiver hchild source))
+    (hfrac1 : ∀ source : Fin 65,
+      frac (wireFlowReceiverSource receiver hchild source) ≤ 1) :
+    ∃ nextQ : Nat, nextQ ≤
+        ((execPlacement F nets input (t + 1) (by omega)).regs receiver).card ∧
+      ∃ nextFrac : Real, 0 ≤ nextFrac ∧ nextFrac ≤ 1 ∧
+        (nextQ : Real) + nextFrac =
+          wireFlowReceiverSelectedIdealMean F t q frac receiver ∧
+        (nextQ = ((execPlacement F nets input (t + 1) (by omega)).regs receiver).card →
+          nextFrac = 0) := by
+  let m := ((execPlacement F nets input (t + 1) (by omega)).regs receiver).card
+  let μ := wireFlowReceiverSelectedIdealMean F t q frac receiver
+  have hbnds := wireFlowReceiverSelectedIdealMean_bounds F nets input t ht
+    receiver hb hchild q frac hfrac0 hfrac1
+  by_cases hm : m = 0
+  · have hμ : μ = 0 := by
+      have hμm : μ ≤ 0 := by simpa [μ, m, hm] using hbnds.2
+      exact le_antisymm hμm (by simpa [μ] using hbnds.1)
+    refine ⟨0, by simp [m, hm], 0, by norm_num, by norm_num, ?_, ?_⟩
+    · simpa [μ] using hμ.symm
+    · intro _
+      rfl
+  · have hmpos : 0 < m := Nat.pos_of_ne_zero hm
+    obtain ⟨nextQ, hq, nextFrac, hf0, hf1, hmean⟩ :=
+      realTarget_has_integer_fraction m μ hmpos (by simpa [μ] using hbnds.1)
+        (by simpa [m, μ] using hbnds.2)
+    refine ⟨nextQ, by omega, nextFrac, hf0, hf1, ?_, ?_⟩
+    · simpa [μ] using hmean
+    · intro htop
+      omega
+
 /-- If every source bag's real threshold target is monotone between two value
 thresholds, then the receiver's selected ideal target is monotone as well.
 Thus the port rule preserves coherence of the target profile. -/

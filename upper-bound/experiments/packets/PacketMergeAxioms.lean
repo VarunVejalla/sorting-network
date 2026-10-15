@@ -229,6 +229,10 @@ import PacketHalfProfile
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.wireFlowReceiverSelectedIdealMean_bounds
 
+/-- info: 'Chvatal.PacketAlignment.wireFlowReceiverSelectedIdealMean_has_code' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowReceiverSelectedIdealMean_has_code
+
 /-- info: 'Chvatal.PacketAlignment.profileIntervalMean_between' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.profileIntervalMean_between
