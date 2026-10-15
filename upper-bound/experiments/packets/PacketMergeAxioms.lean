@@ -7,6 +7,10 @@ import PacketHalfProfile
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.floorCeilAverage_centered_energy_le
 
+/-- info: 'Chvatal.PacketAlignment.genMerge128_dealt_centered_energy_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genMerge128_dealt_centered_energy_le
+
 /-- info: 'Chvatal.PacketAlignment.senderRankCut_fringe_mean_sum_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.senderRankCut_fringe_mean_sum_le

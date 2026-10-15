@@ -232,6 +232,27 @@ theorem floorCeilAverage_centered_energy_le (x y : Nat) (μ : Real) :
   have hcross := congrArg (fun z : Real => -2 * μ * z) hsum
   nlinarith [hsq, hsum, hcross]
 
+/-- The actual generalized 128-wire merge-and-deal network contracts the
+two input packet counts' centered quadratic energy at every Boolean threshold. -/
+theorem genMerge128_dealt_centered_energy_le {N : Nat}
+    (e : Fin 128 ↪ Fin N) (v : Fin N → Bool)
+    (hA : Monotone (fun i : Fin 64 => v (e (Fin.castAdd 64 i))))
+    (hB : Monotone (fun i : Fin 64 => v (e (Fin.natAdd 64 i)))) (μ : Real) :
+    let x := boolTrueCount (fun i : Fin 64 => v (e (Fin.castAdd 64 i)))
+    let y := boolTrueCount (fun i : Fin 64 => v (e (Fin.natAdd 64 i)))
+    let x' := boolTrueCount (fun i : Fin 64 =>
+      (genScatter (oddEvenMergeNet 7) e).exec v (e (evenWire 64 i)))
+    let y' := boolTrueCount (fun i : Fin 64 =>
+      (genScatter (oddEvenMergeNet 7) e).exec v (e (oddWire 64 i)))
+    ((x' : Real) - μ) ^ 2 + ((y' : Real) - μ) ^ 2 ≤
+      ((x : Real) - μ) ^ 2 + ((y : Real) - μ) ^ 2 := by
+  dsimp
+  have hcounts := genMerge128_dealt_counts e v hA hB
+  rcases hcounts with ⟨he, ho⟩
+  simpa [he, ho] using floorCeilAverage_centered_energy_le
+    (boolTrueCount (fun i : Fin 64 => v (e (Fin.castAdd 64 i))))
+    (boolTrueCount (fun i : Fin 64 => v (e (Fin.natAdd 64 i)))) μ
+
 theorem genScatter_exec_threshold {m N : Nat} {α : Type} [LinearOrder α]
     (net : ComparatorNetwork m) (e : Fin m ↪ Fin N) (v : Fin N → α) (t : α) :
     (genScatter net e).exec (fun w => decide (t ≤ v w)) =
