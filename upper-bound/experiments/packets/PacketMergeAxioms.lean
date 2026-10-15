@@ -3,6 +3,10 @@ import PacketGenMerge
 import PacketRebinning
 import PacketHalfProfile
 
+/-- info: 'Chvatal.PacketAlignment.profileIntervalMean_partition_sum' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.profileIntervalMean_partition_sum
+
 /-- info: 'Chvatal.PacketAlignment.sum_receiver_selected_errors_le_source_pieces' depends on axioms: [propext,
  Classical.choice,
  Quot.sound] -/
@@ -20,6 +24,26 @@ import PacketHalfProfile
  Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.wireFlowLayerSelection_pairwise_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayerSelection_active_cover' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayerSelection_active_cover
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayerSelection_active_union_eq_range' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayerSelection_active_union_eq_range
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayerSelection_active_sum_eq_range' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayerSelection_active_sum_eq_range
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayerSenderPieceMean_active_sum_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayerSenderPieceMean_active_sum_eq
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayerSenderPieceMean_active_sum_eq_target' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayerSenderPieceMean_active_sum_eq_target
 
 /-- info: 'Chvatal.PacketAlignment.wireFlowLayer_profile_error_sum_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in

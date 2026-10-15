@@ -256,6 +256,33 @@ private theorem profileInterval_partition_total (m p X : Nat) (cuts : Nat → Na
   simp only [profileTail]
   omega
 
+/-- The interpolated ideal means of a partition sum to the chosen fractional
+target, including both the full-capacity and zero-capacity endpoint cases. -/
+theorem profileIntervalMean_partition_sum (m p q : Nat) (frac : Real)
+    (cuts : Nat → Nat) (hstart : cuts 0 = 0) (hcuts : Monotone cuts)
+    (hend : cuts p = m) (hq : q ≤ m) (hfrac0 : 0 ≤ frac)
+    (hfrac1 : frac ≤ 1) (hendpoint : q = m → frac = 0) :
+    (∑ i ∈ range p,
+      profileIntervalMean m q frac (cuts i) (cuts (i + 1))) = q + frac := by
+  by_cases hq' : q < m
+  · have hqsum : (∑ i ∈ range p,
+        (profileInterval m q (cuts i) (cuts (i + 1)) : Real)) = q := by
+      exact_mod_cast profileInterval_partition_total m p q cuts hstart hcuts hend (by omega)
+    have hq1sum : (∑ i ∈ range p,
+        (profileInterval m (q + 1) (cuts i) (cuts (i + 1)) : Real)) = q + 1 := by
+      exact_mod_cast profileInterval_partition_total m p (q + 1) cuts hstart hcuts hend (by omega)
+    unfold profileIntervalMean
+    rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum,
+      hqsum, hq1sum]
+    ring
+  · have hqeq : q = m := by omega
+    have hf : frac = 0 := hendpoint hqeq
+    subst q
+    rw [hf]
+    unfold profileIntervalMean
+    simp only [sub_zero, one_mul, zero_mul, add_zero]
+    exact_mod_cast profileInterval_partition_total m p m cuts hstart hcuts hend (by omega)
+
 theorem profileInterval_partition_L1_exact (m p X q : Nat) (frac : Real)
     (cuts : Nat → Nat) (hstart : cuts 0 = 0) (hcuts : Monotone cuts)
     (hend : cuts p = m) (hX : X ≤ m) (hq : q < m)
@@ -1191,6 +1218,89 @@ theorem wireFlowLayerSelection_pairwise_disjoint {d : Nat}
     rcases hc₁.2.2 with hiZero | hiLast <;> omega
   · exact hne (hc₁.2.1.trans hc₂.2.1.symm)
 
+/-- Every piece of an interior source bag is routed to exactly one active
+receiver: pieces 1 through 64 go to its children, and the two fringe pieces
+go to its parent. The two level restrictions exclude the root and top frontier. -/
+theorem wireFlowLayerSelection_active_cover {d : Nat}
+    (source : KBag 64 d) (hlo : 2 ≤ source.l)
+    (hhi : source.l + 2 ≤ d) (i : Nat) (hi : i ∈ range 66) :
+    ∃ receiver ∈ (Finset.univ : Finset (KBag 64 d)).filter
+      (fun b => 1 ≤ b.l ∧ b.l < d),
+      i ∈ wireFlowLayerSelection receiver source := by
+  rw [mem_range] at hi
+  rcases eq_or_lt_of_le (show i ≤ 65 by omega) with hlast | hlt
+  · subst i
+    refine ⟨source.parent, Finset.mem_filter.mpr ⟨Finset.mem_univ _, ?_⟩, ?_⟩
+    · simp [KBag.parent_l]
+      omega
+    · rw [wireFlowLayerSelection_mem]
+      refine ⟨mem_range.mpr (by omega), Or.inr ⟨by omega, rfl, Or.inr rfl⟩⟩
+  · by_cases hzero : i = 0
+    · subst i
+      refine ⟨source.parent, Finset.mem_filter.mpr ⟨Finset.mem_univ _, ?_⟩, ?_⟩
+      · simp [KBag.parent_l]
+        omega
+      · rw [wireFlowLayerSelection_mem]
+        refine ⟨mem_range.mpr (by omega), Or.inr ⟨by omega, rfl, Or.inl rfl⟩⟩
+    · have hidx : 1 ≤ i ∧ i ≤ 64 := by omega
+      let receiver := source.child (i - 1) (by omega) (by omega)
+      refine ⟨receiver, Finset.mem_filter.mpr ⟨Finset.mem_univ _, ?_⟩, ?_⟩
+      · change 1 ≤ source.l + 1 ∧ source.l + 1 < d
+        omega
+      · rw [wireFlowLayerSelection_mem]
+        have hlevel : 1 ≤ receiver.l := by
+          simp [receiver, KBag.child_l]
+        have hparent : source = receiver.parent := by
+          dsimp [receiver]
+          exact (KBag.child_parent source (i - 1) (by omega) (by omega)
+            (by norm_num)).symm
+        have hmod : receiver.x % 64 = i - 1 := by
+          change (64 * source.x + (i - 1)) % 64 = i - 1
+          omega
+        have hindex : i = receiver.x % 64 + 1 := by omega
+        refine ⟨mem_range.mpr (by omega), Or.inl ⟨hlevel, hparent, hindex⟩⟩
+
+/-- On interior source levels, the active receiver selectors partition the
+whole 66-piece sender profile, not merely a subset of it. -/
+theorem wireFlowLayerSelection_active_union_eq_range {d : Nat}
+    (source : KBag 64 d) (hlo : 2 ≤ source.l) (hhi : source.l + 2 ≤ d) :
+    (Finset.univ.filter (fun b : KBag 64 d => 1 ≤ b.l ∧ b.l < d)).biUnion
+      (fun receiver => wireFlowLayerSelection receiver source) = range 66 := by
+  classical
+  ext i
+  constructor
+  · intro hi
+    obtain ⟨receiver, hreceiver, hpiece⟩ := Finset.mem_biUnion.mp hi
+    exact wireFlowLayerSelection_subset receiver source hpiece
+  · intro hi
+    obtain ⟨receiver, hreceiver, hpiece⟩ :=
+      wireFlowLayerSelection_active_cover source hlo hhi i hi
+    exact Finset.mem_biUnion.mpr ⟨receiver, hreceiver, hpiece⟩
+
+/-- Consequently, summing any additive piece quantity over the active
+receivers preserves the exact full source total on interior bag levels. -/
+theorem wireFlowLayerSelection_active_sum_eq_range {d : Nat}
+    {M : Type*} [AddCommMonoid M] (source : KBag 64 d)
+    (hlo : 2 ≤ source.l) (hhi : source.l + 2 ≤ d) (f : Nat → M) :
+    (∑ receiver ∈ (Finset.univ : Finset (KBag 64 d)).filter
+      (fun b => 1 ≤ b.l ∧ b.l < d),
+      ∑ i ∈ wireFlowLayerSelection receiver source, f i) =
+      ∑ i ∈ range 66, f i := by
+  classical
+  let active := (Finset.univ : Finset (KBag 64 d)).filter
+    (fun b => 1 ≤ b.l ∧ b.l < d)
+  have hdis : Set.PairwiseDisjoint (↑active : Set (KBag 64 d))
+      (fun receiver => wireFlowLayerSelection receiver source) := by
+    intro receiver hreceiver other hother hne
+    exact wireFlowLayerSelection_pairwise_disjoint source receiver other hne
+  calc
+    (∑ receiver ∈ active,
+      ∑ i ∈ wireFlowLayerSelection receiver source, f i) =
+        ∑ i ∈ active.biUnion (fun receiver => wireFlowLayerSelection receiver source),
+          f i := (Finset.sum_biUnion hdis).symm
+    _ = ∑ i ∈ range 66, f i := by
+      rw [wireFlowLayerSelection_active_union_eq_range source hlo hhi]
+
 /-- Actual bag-indexed incidence bound: summing the absolute routed-profile
 errors over every receiver in the 64-ary tree charges each sender's coarse
 count error only once. The hypotheses carry the source sorting and ideal-count
@@ -1689,6 +1799,49 @@ def wireFlowLayerSenderPieceMean {d tf : Nat}
   profileIntervalMean (wireSets F t source).card (q source) (frac source)
     (senderRankCut (F.up source.l t) (F.down source.l t) i)
     (senderRankCut (F.up source.l t) (F.down source.l t) (i + 1))
+
+/-- For every interior source bag, summing its ideal rank-piece means over
+the active destinations recovers the entire source mean profile. This exact
+conservation law is stronger than the one-sided no-amplification estimate. -/
+theorem wireFlowLayerSenderPieceMean_active_sum_eq {d tf : Nat}
+    (F : FlowSizes d tf) (t : Nat) (q : KBag 64 d → Nat)
+    (frac : KBag 64 d → Real) (source : KBag 64 d)
+    (hlo : 2 ≤ source.l) (hhi : source.l + 2 ≤ d) :
+    (∑ receiver ∈ (Finset.univ : Finset (KBag 64 d)).filter
+      (fun b => 1 ≤ b.l ∧ b.l < d),
+      ∑ i ∈ wireFlowLayerSelection receiver source,
+        wireFlowLayerSenderPieceMean F t q frac source i) =
+      ∑ i ∈ range 66, wireFlowLayerSenderPieceMean F t q frac source i := by
+  exact wireFlowLayerSelection_active_sum_eq_range source hlo hhi
+    (wireFlowLayerSenderPieceMean F t q frac source)
+
+/-- The active destinations receive exactly the source's fractional target
+mass, once all source rank pieces are accounted for. -/
+theorem wireFlowLayerSenderPieceMean_active_sum_eq_target {d tf : Nat}
+    (F : FlowSizes d tf) (t : Nat) (q : KBag 64 d → Nat)
+    (frac : KBag 64 d → Real) (source : KBag 64 d)
+    (hsize : (wireSets F t source).card =
+      F.up source.l t + 64 * F.down source.l t)
+    (hq : q source ≤ (wireSets F t source).card)
+    (hfrac0 : 0 ≤ frac source) (hfrac1 : frac source ≤ 1)
+    (hendpoint : q source = (wireSets F t source).card → frac source = 0)
+    (hlo : 2 ≤ source.l) (hhi : source.l + 2 ≤ d) :
+    (∑ receiver ∈ (Finset.univ : Finset (KBag 64 d)).filter
+      (fun b => 1 ≤ b.l ∧ b.l < d),
+      ∑ i ∈ wireFlowLayerSelection receiver source,
+        wireFlowLayerSenderPieceMean F t q frac source i) =
+      (q source : Real) + frac source := by
+  rw [wireFlowLayerSenderPieceMean_active_sum_eq F t q frac source hlo hhi]
+  have hstart := senderRankCut_start (F.up source.l t) (F.down source.l t)
+  have hcuts := senderRankCut_mono (F.up source.l t) (F.down source.l t)
+  have hend : senderRankCut (F.up source.l t) (F.down source.l t) 66 =
+      (wireSets F t source).card := by
+    rw [senderRankCut_end, hsize]
+  simpa [wireFlowLayerSenderPieceMean] using
+    (profileIntervalMean_partition_sum (wireSets F t source).card 66
+      (q source) (frac source)
+      (senderRankCut (F.up source.l t) (F.down source.l t))
+      hstart hcuts hend hq hfrac0 hfrac1 hendpoint)
 
 /-- Signed discrepancy contributed by one routed sender piece. -/
 noncomputable def wireFlowLayerSenderPieceError {d tf : Nat}

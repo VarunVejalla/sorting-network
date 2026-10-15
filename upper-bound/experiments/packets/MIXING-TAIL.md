@@ -1245,3 +1245,18 @@ individual output packet against each other. The next sortedness proof must
 track placement through destination reassembly/merge and show how its outputs
 reunite the crossed halves. This is the concrete scheduler invariant gap;
 sender repair alone does not close it.
+
+Interior-selector conservation (Codex / GPT-6, 2026-10-15):
+`wireFlowLayerSelection_active_cover` proves every one of a source bag's 66
+pieces reaches an active receiver when `2 ≤ source.l` and
+`source.l + 2 ≤ d`. Pieces 1–64 go to the child indexed by the piece, and
+fringes 0 and 65 go to the parent. Pairwise disjointness upgrades this to the
+exact union identity and `wireFlowLayerSelection_active_sum_eq_range` for any
+additive piece quantity. Its actual-target specialization,
+`wireFlowLayerSenderPieceMean_active_sum_eq_target`, says the ideal target mass
+is conserved exactly as `q(source) + frac(source)`, including empty and full
+endpoints. Root and upper-frontier levels
+are intentionally excluded; their unselected pieces need separate boundary
+accounting before this can be used as a whole-stage conservation law. The new
+lemmas are axiom-guarded and the focused check through `PacketMergeAxioms`
+passes.
