@@ -154,3 +154,11 @@ import PacketHalfProfile
 /-- info: 'Chvatal.PacketAlignment.sortedPackets_halfProfile_L1_sq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.sortedPackets_halfProfile_L1_sq
+
+/-- info: 'Chvatal.PacketAlignment.sortedBool_rankInterval_trueCount' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.sortedBool_rankInterval_trueCount
+
+/-- info: 'Chvatal.PacketAlignment.profileInterval_change_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.profileInterval_change_le

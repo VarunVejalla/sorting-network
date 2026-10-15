@@ -33,6 +33,11 @@ squared-error transfer for actual 32-wire halves of sorted packets, matching
 the units consumed by local repair. The focused Lean check and axiom guards
 pass. This removes the granularity mismatch in the profile estimate only;
 selected-port discrepancy and destination reassembly recurrence remain open.
+The same module now identifies the count in any fixed half-open rank interval
+of a sorted packet with its ideal profile and proves that this interval count
+is 1-Lipschitz in the total packet count. Applying these local bounds to the
+actual port partition without accumulating a port-count loss is the next
+specific accounting obligation.
 
 The entries below retain the research history and their original claim levels.
 

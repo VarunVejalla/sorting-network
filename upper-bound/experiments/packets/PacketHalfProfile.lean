@@ -21,6 +21,74 @@ private theorem profileTail_interval_count32 (m X a b : Nat)
     · simp only [profileTail, Nat.min_def]
       split_ifs <;> omega
 
+/-- Ideal count in any fixed rank interval of a sorted packet. -/
+def profileInterval (m X a b : Nat) : Nat :=
+  profileTail m X b - profileTail m X a
+
+theorem profileInterval_formula (m X a b : Nat) (hab : a ≤ b) (hb : b ≤ m) :
+    profileInterval m X a b = min (b - a) (X - (m - b)) := by
+  unfold profileInterval
+  exact profileTail_interval_count32 m X a b hab hb
+
+/-- A fixed rank interval's ideal count changes by at most the change in
+the packet's total count. This is the local estimate needed when ports select
+different fixed rank intervals from a cohort. -/
+theorem profileInterval_change_le (m X Y a b : Nat) (hab : a ≤ b) (hb : b ≤ m)
+    (hYX : Y ≤ X) : profileInterval m X a b - profileInterval m Y a b ≤ X - Y := by
+  rw [profileInterval_formula m X a b hab hb,
+    profileInterval_formula m Y a b hab hb]
+  by_cases hy : b - a ≤ Y - (m - b)
+  · have hx : b - a ≤ X - (m - b) := by omega
+    rw [Nat.min_eq_left hy, Nat.min_eq_left hx]
+    omega
+  · by_cases hx : b - a ≤ X - (m - b)
+    · have hy' : Y - (m - b) < b - a := by omega
+      rw [Nat.min_eq_left hx, Nat.min_eq_right (Nat.le_of_lt hy')]
+      omega
+    · have hx' : X - (m - b) < b - a := by omega
+      have hy' : Y - (m - b) < b - a := by omega
+      rw [Nat.min_eq_right (Nat.le_of_lt hx'), Nat.min_eq_right (Nat.le_of_lt hy')]
+      omega
+
+/-- The actual count in a half-open rank interval of an increasing Boolean
+packet is its ideal profile count. -/
+theorem sortedBool_rankInterval_trueCount {m : Nat} (v : Fin m → Bool)
+    (hv : Monotone v) (a b : Nat) (hab : a ≤ b) (hb : b ≤ m) :
+    boolTrueCount (fun j : Fin (b - a) => v ⟨a + j.val, by have hj := j.isLt; omega⟩) =
+      profileInterval m (boolTrueCount v) a b := by
+  let hsumB : b + (m - b) = m := Nat.add_sub_of_le hb
+  let hsumA : a + (m - a) = m := Nat.add_sub_of_le (le_trans hab hb)
+  let hsum : a + (b - a) = b := Nat.add_sub_of_le hab
+  let A : Fin a → Bool := fun i => v (Fin.cast hsumA (Fin.castAdd (m - a) i))
+  let B : Fin b → Bool := fun i => v (Fin.cast hsumB (Fin.castAdd (m - b) i))
+  let C : Fin (b - a) → Bool := fun j => v ⟨a + j.val, by have hj := j.isLt; omega⟩
+  have he : Fin.append A C = B ∘ Fin.cast hsum := by
+    funext k
+    refine Fin.addCases (fun i => ?_) (fun j => ?_) k
+    · simp only [Fin.append_left, Function.comp_apply]
+      apply congrArg v
+      apply Fin.ext
+      simp only [A, B, Fin.val_cast, Fin.val_castAdd, Fin.val_mk]
+    · simp only [Fin.append_right, Function.comp_apply]
+      apply congrArg v
+      apply Fin.ext
+      simp only [B, C, Fin.val_cast, Fin.val_castAdd, Fin.val_natAdd, Fin.val_mk]
+  have hcounts : boolTrueCount B = boolTrueCount A + boolTrueCount C := by
+    calc
+      boolTrueCount B = boolTrueCount (B ∘ Fin.cast hsum) := (boolTrueCount_finCast hsum B).symm
+      _ = boolTrueCount (Fin.append A C) := congrArg boolTrueCount he.symm
+      _ = boolTrueCount A + boolTrueCount C := boolTrueCount_append_general A C
+  have hA := sortedBool_prefix_trueCount v hv (le_trans hab hb)
+  have hB := sortedBool_prefix_trueCount v hv hb
+  change boolTrueCount A = _ at hA
+  change boolTrueCount B = _ at hB
+  have hC : boolTrueCount C =
+      (boolTrueCount v - (m - b)) - (boolTrueCount v - (m - a)) := by omega
+  change boolTrueCount C = profileInterval m (boolTrueCount v) a b
+  unfold profileInterval profileTail
+  rw [hC]
+
+
 private theorem sum_profileTail32_differences (m K X : Nat) (hK : 32 * K ≤ m) :
     (∑ i ∈ range K,
       (profileTail m X (32 * (i + 1)) - profileTail m X (32 * i))) =

@@ -87,3 +87,13 @@ count energy. The focused Lean check and axiom guards pass. This closes the
 cell-size mismatch in the profile comparison; it still does not show that
 the scheduler's selected fragments are compared against those targets, or
 that destination reassembly preserves the target profile.
+
+The interval extension is also checked: `sortedBool_rankInterval_trueCount`
+identifies the actual count in every half-open interval `[a,b)` of a sorted
+Boolean packet with `profileInterval`; `profileInterval_change_le` proves
+that any one fixed interval's count changes by at most the change in total
+packet count. Thus source-port slices of differing fixed ranks can each be
+compared to their own ideal targets without a factor for interval length.
+Summing this per-interval Lipschitz estimate across the actual partition is
+the next accounting step; the current theorem alone does not prove a global
+no-loss sum or destination recurrence.
