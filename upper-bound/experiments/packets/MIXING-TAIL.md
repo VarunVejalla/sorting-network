@@ -1148,3 +1148,12 @@ no-amplification gate, but it does not yet identify the all-bag sum with the
 active `execPlacement` registers at root/leaf boundaries, identify summed ideal
 means with the next target profile, or prove contraction of the coupled rank
 and discrepancy state. The coefficient near 200 remains conditional.
+
+Neighbor-map adapter (2026-10-15): `wireFlowLayerSelection_receiverSource`
+proves that for an active receiver with `1 ≤ b.l` and `b.l < d`, its global
+bag selector on each `wireFlowReceiverSource b ... source` equals the existing
+local `receiverOutgoingSelection`. This is kernel-checked and axiom-guarded.
+It gives termwise agreement on the 65 actual neighbors. The finite sum still
+ranges over all KBag sources, so a support/reindexing argument and explicit
+boundary treatment are required before applying the register identity to the
+aggregate theorem.

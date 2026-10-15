@@ -1064,6 +1064,67 @@ theorem wireFlowReceiverSource_child {d : Nat} (b : KBag 64 d) (hchild : b.l < d
       b.child j.val j.isLt hchild := by
   simp [wireFlowReceiverSource, wireFlowReceiverChildSource]
 
+/-- For each receiver, the global bag selector agrees on its 65 actual
+neighbors with the local parent-plus-children selector used by the register
+identity. -/
+theorem wireFlowLayerSelection_receiverSource {d : Nat}
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d) (source : Fin 65) :
+    wireFlowLayerSelection b (wireFlowReceiverSource b hchild source) =
+      receiverOutgoingSelection (b.x % 64) source := by
+  classical
+  rcases source with ⟨s, hslt⟩
+  by_cases hs : s = 0
+  · subst s
+    have hnotParentParent : b ≠ b.parent.parent := by
+      intro h
+      have hl := congrArg KBag.l h
+      rw [KBag.parent_l, KBag.parent_l] at hl
+      omega
+    ext i
+    rw [wireFlowLayerSelection_mem, wireFlowReceiverSource_parent]
+    simp [receiverOutgoingSelection, Fin.val_mk]
+    constructor
+    · intro h
+      rcases h.2 with hp | hc
+      · exact hp.2
+      · exact False.elim (hnotParentParent hc.2.1)
+    · intro h
+      refine ⟨?_, Or.inl ⟨hb, h⟩⟩
+      have hmod := Nat.mod_lt b.x (by norm_num : 0 < 64)
+      change i < 66
+      omega
+  · have hj : s - 1 < 64 := by omega
+    let j : Fin 64 := ⟨s - 1, hj⟩
+    have hsource : (⟨s, hslt⟩ : Fin 65) = wireFlowReceiverChildSource j := by
+      apply Fin.ext
+      simp [j, wireFlowReceiverChildSource]
+      omega
+    rw [hsource]
+    have hbag := wireFlowReceiverSource_child b hchild j
+    have hchildParent : (b.child j.val j.isLt hchild).parent = b :=
+      KBag.child_parent b j.val j.isLt hchild (by omega)
+    ext i
+    rw [wireFlowLayerSelection_mem, hbag]
+    simp only [receiverOutgoingSelection, wireFlowReceiverChildSource,
+      Fin.val_mk]
+    have hjnz : ¬(j.val + 1 = 0) := by omega
+    rw [if_neg hjnz]
+    simp only [Finset.mem_insert, Finset.mem_singleton]
+    constructor
+    · intro h
+      rcases h.2 with hp | hc
+      · have hl := congrArg KBag.l hp.2.1
+        rw [KBag.child_l, KBag.parent_l] at hl
+        omega
+      · exact hc.2.2
+    · intro h
+      have hmod := Nat.mod_lt b.x (by norm_num : 0 < 64)
+      rcases h with h | h
+      · refine ⟨?_, Or.inr ⟨by simp [KBag.child_l], hchildParent.symm, Or.inl h⟩⟩
+        exact mem_range.mpr (by omega)
+      · refine ⟨?_, Or.inr ⟨by simp [KBag.child_l], hchildParent.symm, Or.inr h⟩⟩
+        exact mem_range.mpr (by omega)
+
 theorem fin65_sum_parent_children {α : Type*} [AddCommMonoid α]
     (f : Fin 65 → α) :
     (∑ source : Fin 65, f source) =
