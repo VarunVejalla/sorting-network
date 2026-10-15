@@ -300,6 +300,34 @@ theorem floorCeilAverage_energy_drop_ge (x y : Nat) (μ : Real) :
   rw [hdrop]
   nlinarith [hfactor]
 
+/-- Counts on the even and odd packet slots after a parallel matching round.
+The input Fin `(m+m)` is laid out as its left and right endpoint lists. -/
+def mergeDealEvenCount {m : Nat} (x : Fin (m + m) → Nat) (i : Fin m) : Nat :=
+  (x (Fin.castAdd m i) + x (Fin.natAdd m i)) / 2
+
+def mergeDealOddCount {m : Nat} (x : Fin (m + m) → Nat) (i : Fin m) : Nat :=
+  (x (Fin.castAdd m i) + x (Fin.natAdd m i) + 1) / 2
+
+/-- Sum the edgewise pair estimate over an arbitrary parallel matching round.
+This is the interface for replacing a spectral edge-disagreement bound by the
+actual merge-and-deal energy decrease. -/
+theorem mergeDealMatching_energy_drop_ge {m : Nat}
+    (x : Fin (m + m) → Nat) (μ : Real) :
+    ((Finset.univ : Finset (Fin m)).sum (fun i =>
+      ((x (Fin.castAdd m i) : Real) - μ) ^ 2 +
+        ((x (Fin.natAdd m i) : Real) - μ) ^ 2)) -
+      ((Finset.univ : Finset (Fin m)).sum (fun i =>
+        ((mergeDealEvenCount (m := m) x i : Real) - μ) ^ 2 +
+          ((mergeDealOddCount (m := m) x i : Real) - μ) ^ 2)) ≥
+      (Finset.univ : Finset (Fin m)).sum (fun i =>
+        (((x (Fin.castAdd m i) : Real) - x (Fin.natAdd m i)) ^ 2 - 1) / 2) := by
+  rw [← Finset.sum_sub_distrib]
+  apply Finset.sum_le_sum
+  intro i hi
+  simpa [mergeDealEvenCount, mergeDealOddCount] using
+    floorCeilAverage_energy_drop_ge (x (Fin.castAdd m i))
+      (x (Fin.natAdd m i)) μ
+
 /-- The actual 128-wire merge-and-deal network decreases centered threshold
 energy by at least half the input squared count gap, up to a 1/2 rounding
 allowance. -/
