@@ -43,6 +43,22 @@ import PacketHalfProfile
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.wireFlowLayer_leaf_middle_error_eq_zero
 
+/-- info: 'Chvatal.PacketAlignment.flowDown7_d_sub_one_eq_zero' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowDown7_d_sub_one_eq_zero
+
+/-- info: 'Chvatal.PacketAlignment.flowUp7_level_one_le_capacity_scale' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowUp7_level_one_le_capacity_scale
+
+/-- info: 'Chvatal.PacketAlignment.flowUp7_level_one_time_sum_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowUp7_level_one_time_sum_le
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_high_frontier_error_sum_eq_zero' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_high_frontier_error_sum_eq_zero
+
 /-- info: 'Chvatal.PacketAlignment.profileIntervalMean_partition_sum' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.profileIntervalMean_partition_sum

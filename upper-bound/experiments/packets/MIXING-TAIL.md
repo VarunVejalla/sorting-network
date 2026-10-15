@@ -1282,3 +1282,20 @@ exactly zero by `hup_root`; the leaf middle error is exactly zero by
 `hdown_leaf`. Thus only level 1's up-flow and level d−1's aggregate down-flow
 remain as nonzero boundary terms. Their time-summed cost and how it feeds the
 rank/variance contraction remain open. Focused check and axiom guards pass.
+
+Temporal frontier charge (Codex / GPT-6, 2026-10-15): the actual §7 schedule
+has `flowDown7 (d−1) t = 0` at every ordinary stage `t < tf7 d`, since
+`omega7 d t < d−1`; the leaf down-flow is already zero. Hence
+`wireFlowLayer_high_frontier_error_sum_eq_zero` proves the whole high-frontier
+omitted-middle error is exactly zero, not merely summably small. For level 1,
+`flowUp7_level_one_le_capacity_scale` bounds each ordinary-stage up-flow by
+`capacity d 1 t / 4096²`, and `flowUp7_level_one_time_sum_le` telescopes the
+ratio-`1/64` capacity schedule to at most `(64/63) * capacity d 1 1 / 4096²`
+per source bag over `t=1..tf7 d−1`. Since `capacity d 1 1 = 64^(d−1)`, this is
+`(64/63) * 64^(d−5)` per level-1 bag; multiplying by the 64 bags gives the
+formal-candidate total `(64/63) * 64^(d−4)`, a fraction `(64/63)/64^4` of
+`64^d`. The final multiplication by 64 has not yet been formalized as a
+Finset cardinality lemma. This closes the scheduler-time budget for the only
+possible frontier residual, but not its incorporation into the rank/variance
+recurrence, nor the sortedness invariant needed by the layer theorem. The
+focused chain through `PacketMergeAxioms` passes.

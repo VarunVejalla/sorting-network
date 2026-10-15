@@ -2351,6 +2351,200 @@ theorem wireFlowLayer_leaf_middle_error_eq_zero {d tf : Nat}
   simpa [hdown, wireFlowLayerSenderPieceError, wireFlowLayerSenderPieceCount,
     wireFlowLayerSenderPieceMean] using hsum
 
+private theorem omega7_lt_d_sub_one (d : Nat) (hd : 7 ≤ d)
+    (t : Nat) (ht : t < tf7 d) : omega7 d t < d - 1 := by
+  by_cases ht0 : t = 0
+  · simp [omega7, ht0]
+    omega
+  · by_cases ht1 : t = 1
+    · simp [omega7, ht0, ht1]
+      omega
+    · have ht2 : 2 ≤ t := by omega
+      have hbound := omega7_bounds d t ht2
+      unfold tf7 at ht
+      omega
+
+/-- In the §7 schedule, level d−1 is already outside the active band at all
+ordinary stages, so it sends no down-flow to the leaves. -/
+theorem flowDown7_d_sub_one_eq_zero (d : Nat) (hd : 7 ≤ d)
+    (t : Nat) (ht : t < tf7 d) : flowDown7 d hd (d - 1) t = 0 := by
+  by_cases ht0 : t = 0
+  · simp [flowDown7, ht0]
+    omega
+  · by_cases ht1 : t = 1
+    · simp [flowDown7, ht0, ht1]
+      omega
+    · have ht2 : 2 ≤ t := by omega
+      have hnot : ¬Active d (d - 1) t := by
+        intro ha
+        have hle := ha.2.2.1
+        have hstrict := omega7_lt_d_sub_one d hd t ht
+        omega
+      have hrat := flowDown_inactive d hnot
+      have hcast := cast_flowDown7 d hd (d - 1) t ht2 ht
+      have hzero : ((flowDown7 d hd (d - 1) t : Nat) : Rat) = 0 := by
+        rw [hcast, hrat]
+      exact_mod_cast hzero
+
+/-- The level-1 parent send at an ordinary stage is at most its capacity
+divided by `4096^2`; this is the geometric envelope for the low-frontier tail. -/
+theorem flowUp7_level_one_le_capacity_scale (d : Nat) (hd : 7 ≤ d)
+    (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d) :
+    ((flowUp7 d hd 1 t : Nat) : Rat) ≤ capacity d 1 t / (4096 : Rat) ^ 2 := by
+  have hcast := cast_flowUp7 d hd 1 t ht2 ht
+  by_cases ha : Active d 1 t
+  · have hω := omega7_bounds d t ht2
+    have hneω : 1 ≠ omega7 d t := by omega
+    by_cases hα : 1 = alpha7 d t
+    · by_cases hstep : alpha7 d t < alpha7 d (t + 1)
+      · have hup := flowUp_top_desc d ha hα hstep
+        rw [hcast.1, hup]
+        exact div_nonneg (capacity_nonneg d 1 t) (by positivity)
+      · have hup := flowUp_top_rise d ha hα hstep
+        rw [hcast.1, hup]
+        have hratio : (1 / 64 : Rat) * capacity d 1 t / (4096 * 64) =
+            capacity d 1 t / (4096 : Rat) ^ 2 := by
+          field_simp
+          ring
+        rw [hratio]
+    · have hup := flowUp_mid d ha hα (fun heq => (hneω heq).elim)
+      rw [hcast.1, hup]
+      have hcoeff : (4095 : Rat) / capacityRatio ≤
+          1 / (4096 : Rat) ^ 2 := by
+        rw [capacityRatio_eq]
+        norm_num
+      have hcap := capacity_nonneg d 1 t
+      calc
+        (4095 : Rat) * capacity d 1 t / capacityRatio =
+            ((4095 : Rat) / capacityRatio) * capacity d 1 t := by ring
+        _ ≤ (1 / (4096 : Rat) ^ 2) * capacity d 1 t :=
+          mul_le_mul_of_nonneg_right hcoeff hcap
+        _ = capacity d 1 t / (4096 : Rat) ^ 2 := by ring
+  · have hup := flowUp_inactive d ha
+    rw [hcast.1, hup]
+    exact div_nonneg (capacity_nonneg d 1 t) (by positivity)
+
+private theorem capacity_level_one_geometric_sum (d n : Nat) :
+    (∑ k ∈ range n, capacity d 1 (k + 1)) =
+      (64 / 63 : Rat) * (capacity d 1 1 - capacity d 1 (n + 1)) := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+      rw [Finset.sum_range_succ, ih]
+      have hstep := capacity_succ_stage d 1 (n + 1)
+      rw [hstep]
+      ring
+
+/-- Summed over every ordinary stage starting at t=1, the level-1 up-flow is
+bounded by a geometric tail with ratio 1/64. -/
+theorem flowUp7_level_one_time_sum_le (d : Nat) (hd : 7 ≤ d) :
+    (∑ k ∈ range (tf7 d - 1),
+      (flowUp7 d hd 1 (k + 1) : Rat)) ≤
+      (64 / 63 : Rat) * (capacity d 1 1 / (4096 : Rat) ^ 2) := by
+  have hterm (k : Nat) (hk : k ∈ range (tf7 d - 1)) :
+      (flowUp7 d hd 1 (k + 1) : Rat) ≤
+        capacity d 1 (k + 1) / (4096 : Rat) ^ 2 := by
+    have ht : k + 1 < tf7 d := by
+      have hk' := mem_range.mp hk
+      unfold tf7 at *
+      omega
+    by_cases ht1 : k + 1 = 1
+    · have hspecial : flowUp7 d hd 1 1 = 64 ^ (d - 5) := by
+        simp [flowUp7]
+      have hcap := capacity_eq_pow d 1 1 (d - 1) (by omega)
+      rw [ht1, hspecial, hcap]
+      have hratio : ((64 ^ (d - 5) : Nat) : Rat) =
+          (64 : Rat) ^ (d - 1) / (4096 : Rat) ^ 2 := by
+        have hexp : d - 1 = (d - 5) + 4 := by omega
+        rw [hexp, pow_add]
+        norm_num
+      rw [hratio, Nat.cast_pow]
+      norm_num
+    · have ht2 : 2 ≤ k + 1 := by omega
+      exact flowUp7_level_one_le_capacity_scale d hd (k + 1) ht2 ht
+  calc
+    _ ≤ ∑ k ∈ range (tf7 d - 1),
+        capacity d 1 (k + 1) / (4096 : Rat) ^ 2 := by
+      apply Finset.sum_le_sum
+      intro k hk
+      exact hterm k hk
+    _ = (∑ k ∈ range (tf7 d - 1), capacity d 1 (k + 1)) /
+          (4096 : Rat) ^ 2 := by
+      calc
+        _ = ∑ k ∈ range (tf7 d - 1),
+            capacity d 1 (k + 1) * ((4096 : Rat) ^ 2)⁻¹ := by
+          apply Finset.sum_congr rfl
+          intro k hk
+          ring
+        _ = (∑ k ∈ range (tf7 d - 1), capacity d 1 (k + 1)) *
+            ((4096 : Rat) ^ 2)⁻¹ := by rw [Finset.sum_mul]
+        _ = _ := by ring
+    _ ≤ (64 / 63 : Rat) * capacity d 1 1 / (4096 : Rat) ^ 2 := by
+      have hgeom := capacity_level_one_geometric_sum d (tf7 d - 1)
+      rw [hgeom]
+      have htfpos : 1 ≤ tf7 d := by unfold tf7; omega
+      rw [Nat.sub_add_cancel htfpos]
+      have hcap := capacity_nonneg d 1 (tf7 d)
+      have hbound : (64 / 63 : Rat) *
+          (capacity d 1 1 - capacity d 1 (tf7 d)) ≤
+          (64 / 63 : Rat) * capacity d 1 1 := by
+        nlinarith [hcap]
+      have hden : 0 < (4096 : Rat) ^ 2 := by positivity
+      rw [div_le_div_iff_of_pos_right hden]
+      field_simp
+      nlinarith [hbound]
+    _ = (64 / 63 : Rat) *
+        (capacity d 1 1 / (4096 : Rat) ^ 2) := by ring
+
+/-- All high-frontier omitted-middle error vanishes in the actual §7 flow:
+level d−1 is inactive, and level d has zero down-flow by construction. -/
+theorem wireFlowLayer_high_frontier_error_sum_eq_zero {d : Nat}
+    (hd : 7 ≤ d) (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf7 d)
+    (predicate : Fin (64 ^ d) → Bool) (q : KBag 64 d → Nat)
+    (frac : KBag 64 d → Real)
+    (hfrac0 : ∀ source, 0 ≤ frac source)
+    (hfrac1 : ∀ source, frac source ≤ 1) :
+    (∑ source ∈ (Finset.univ : Finset (KBag 64 d)).filter
+      (fun b => 2 ≤ b.l ∧ d ≤ b.l + 1),
+      ∑ i ∈ (range 66).filter (fun i => 1 ≤ i ∧ i ≤ 64),
+        |wireFlowLayerSenderPieceError (flowSizes7 d hd) nets input t
+          predicate q frac source i|) = 0 := by
+  let F := flowSizes7 d hd
+  have hle := wireFlowLayer_high_frontier_error_sum_le_down
+    F nets input t ht predicate q frac hfrac0 hfrac1
+  have hdown (source : KBag 64 d)
+      (hsource : source ∈ (Finset.univ : Finset (KBag 64 d)).filter
+        (fun b => 2 ≤ b.l ∧ d ≤ b.l + 1)) : F.down source.l t = 0 := by
+    have hmem := (Finset.mem_filter.mp hsource).2
+    have hlevel : source.l = d - 1 ∨ source.l = d := by
+      have hsourced : source.l ≤ d := source.hl
+      omega
+    change flowDown7 d hd source.l t = 0
+    rcases hlevel with hlevel | hlevel
+    · rw [hlevel]
+      exact flowDown7_d_sub_one_eq_zero d hd t ht
+    · rw [hlevel]
+      exact flowSizes7_down_leaf d hd t ht
+  have hrhs : (∑ source ∈ (Finset.univ : Finset (KBag 64 d)).filter
+      (fun b => 2 ≤ b.l ∧ d ≤ b.l + 1),
+      (64 * F.down source.l t : Real)) = 0 := by
+    apply Finset.sum_eq_zero
+    intro source hsource
+    rw [hdown source hsource]
+    simp
+  have hnonneg : 0 ≤ (∑ source ∈ (Finset.univ : Finset (KBag 64 d)).filter
+      (fun b : KBag 64 d => 2 ≤ b.l ∧ d ≤ b.l + 1),
+      ∑ i ∈ (range 66).filter (fun i => 1 ≤ i ∧ i ≤ 64),
+        |wireFlowLayerSenderPieceError F nets input t predicate q frac source i|) := by
+    apply Finset.sum_nonneg
+    intro source hsource
+    apply Finset.sum_nonneg
+    intro i hi
+    exact abs_nonneg _
+  have hsum := le_antisymm (by simpa [hrhs] using hle) hnonneg
+  simpa [F] using hsum
+
 /-- Sum of the selected ideal means for an active receiver. -/
 noncomputable def wireFlowReceiverSelectedIdealMean {d tf : Nat}
     (F : FlowSizes d tf) (t : Nat) (q : KBag 64 d → Nat)
