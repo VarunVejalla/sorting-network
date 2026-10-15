@@ -59,8 +59,19 @@ deviation is exactly `|X-Y|`; splitting a sorted profile creates no new L1
 perturbation relative to the corresponding ideal sorted profile. The same
 holds for unions of partition pieces assigned to destination ports.
 
-This estimate is a promising replacement for the false change-of-scale
-variance implication. It still needs a common ideal profile compatible with
-the bag/rank invariant, rounding for fractional means, and a bound on how
-destination reassembly transforms that profile. It does not supply the
-unbounded matching family or the global rank contraction.
+`PacketProfile.lean` now kernel-checks the ideal cell-count formula and the
+exact L1 identity for these equal 64-rank cells (`profileCell_formula`,
+`profileCell_L1_exact`). More strongly, `profileCellMean_L1_exact` handles a
+fractional common mean by interpolating the profiles at its floor and ceiling;
+`profileCellMean_cohort_L1_exact` sums this identity over an arbitrary cohort
+of packets, and `profileCellMean_cohort_L1_sq` bounds the squared cohort-wide
+fine-profile error by cohort size times the coarse packet-count energy. This
+is precisely the norm conversion needed to feed the finite matching-cycle
+L2 estimate into an aggregate fine-profile L1 budget, assuming that estimate's
+input/output counts are represented by the sorted packet profiles. The
+aggregate 64-cell profile error equals the aggregate 4096-packet count error
+exactly. Thus, for this profile potential, there is no change-of-scale loss
+before port selection. It still needs to connect to the
+actual sorted packets and a common bag/rank target, and destination reassembly
+must be shown to transform the profile with a controlled error. This does
+not supply the unbounded matching family or global rank contraction.

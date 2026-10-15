@@ -20,7 +20,12 @@ contract transfers to every value threshold of the same fixed network.
 Whole-source and destination packet partitions, degenerate cases and the
 remaining coarse/fine recurrence are still open. `GRANULARITY-GATE.md`
 isolates the change-of-scale gap between 64-wire repair cells and the
-4096-wire mixing cost model, with a candidate sorted-profile L1 interface.
+4096-wire mixing cost model. `PacketProfile.lean` now checks a fractional
+sorted-profile L1 transfer: the aggregate error across 64-wire cells of a
+4096-wire packet equals its coarse count error, with no scale loss. It sums
+over packet cohorts and gives the Cauchy bound by cohort size times coarse
+squared error. Placement of the ideal profile into the global rank target
+and destination recurrence remain open.
 
 The entries below retain the research history and their original claim levels.
 

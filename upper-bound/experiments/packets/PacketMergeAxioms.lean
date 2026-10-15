@@ -1,7 +1,7 @@
 import PacketRepair64
 import PacketGenMerge
 import PacketRebinning
-import PacketCountBridge
+import PacketProfile
 
 /-- info: 'Chvatal.PacketAlignment.oddEvenMergeNet_sorts_two_runs' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
@@ -122,3 +122,19 @@ import PacketCountBridge
 /-- info: 'Chvatal.PacketAlignment.senderRepair_count_at_threshold' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.senderRepair_count_at_threshold
+
+/-- info: 'Chvatal.PacketAlignment.profileCell_L1_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.profileCell_L1_exact
+
+/-- info: 'Chvatal.PacketAlignment.profileCellMean_L1_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.profileCellMean_L1_exact
+
+/-- info: 'Chvatal.PacketAlignment.profileCellMean_cohort_L1_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.profileCellMean_cohort_L1_exact
+
+/-- info: 'Chvatal.PacketAlignment.profileCellMean_cohort_L1_sq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.profileCellMean_cohort_L1_sq
