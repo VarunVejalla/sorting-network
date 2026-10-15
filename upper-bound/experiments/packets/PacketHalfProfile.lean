@@ -1125,12 +1125,98 @@ theorem wireFlowLayerSelection_receiverSource {d : Nat}
       · refine ⟨?_, Or.inr ⟨by simp [KBag.child_l], hchildParent.symm, Or.inr h⟩⟩
         exact mem_range.mpr (by omega)
 
+/-- The source bags incident to an active receiver: its parent followed by its
+64 children (when present). -/
+def wireFlowReceiverNeighborBags {d : Nat} (b : KBag 64 d) (hchild : b.l < d) :
+    Finset (KBag 64 d) :=
+  insert (b.parent (by omega))
+    (Finset.univ.image (fun j : Fin 64 => b.child j.val j.isLt hchild))
+
+theorem wireFlowReceiverNeighborBags_mem {d : Nat}
+    (b : KBag 64 d) (hchild : b.l < d) (source : KBag 64 d) :
+    source ∈ wireFlowReceiverNeighborBags b hchild ↔
+      source = b.parent ∨ ∃ j : Fin 64, source = b.child j.val j.isLt hchild := by
+  simp [wireFlowReceiverNeighborBags, eq_comm]
+
+/-- The global selector vanishes outside the actual parent/children source
+bags of an active receiver. -/
+theorem wireFlowLayerSelection_eq_empty_of_not_neighbor {d : Nat}
+    (b source : KBag 64 d) (hchild : b.l < d)
+    (hnot : source ∉ wireFlowReceiverNeighborBags b hchild) :
+    wireFlowLayerSelection b source = ∅ := by
+  apply Finset.eq_empty_iff_forall_notMem.mpr
+  intro i hi
+  rw [wireFlowLayerSelection_mem] at hi
+  rcases hi.2 with hp | hc
+  · exact hnot ((wireFlowReceiverNeighborBags_mem b hchild source).2 (Or.inl hp.2.1))
+  · have hparent_lt : (source.parent).l < d := by simpa [hc.2.1] using hchild
+    have hpc := KBag.parent_child source hc.1 (by omega) hparent_lt
+    have hsrc : source = b.child (source.x % 64)
+        (Nat.mod_lt _ (by omega)) hchild := by
+      simpa [← hc.2.1] using hpc.symm
+    exact hnot ((wireFlowReceiverNeighborBags_mem b hchild source).2
+      (Or.inr ⟨⟨source.x % 64, Nat.mod_lt _ (by omega)⟩, hsrc⟩))
+
 theorem fin65_sum_parent_children {α : Type*} [AddCommMonoid α]
     (f : Fin 65 → α) :
     (∑ source : Fin 65, f source) =
       f ⟨0, by omega⟩ + ∑ j : Fin 64, f (wireFlowReceiverChildSource j) := by
   rw [Fin.sum_univ_succ]
   congr 1
+
+/-- Reindex the global source sum for one active receiver onto its actual
+parent-plus-children `Fin 65` source map. -/
+theorem wireFlowLayerSelection_receiverSum_eq {d : Nat}
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d)
+    (f : KBag 64 d → Nat → Real) :
+    (∑ source : KBag 64 d,
+      ∑ i ∈ wireFlowLayerSelection b source, f source i) =
+    (∑ source : Fin 65,
+      ∑ i ∈ receiverOutgoingSelection (b.x % 64) source,
+        f (wireFlowReceiverSource b hchild source) i) := by
+  classical
+  let g : KBag 64 d → Real := fun source =>
+    ∑ i ∈ wireFlowLayerSelection b source, f source i
+  let neighbors := wireFlowReceiverNeighborBags b hchild
+  have hzero (source : KBag 64 d) (hnot : source ∉ neighbors) : g source = 0 := by
+    simp [g, wireFlowLayerSelection_eq_empty_of_not_neighbor b source hchild hnot]
+  have hparentNotChild :
+      b.parent ∉ Finset.univ.image (fun j : Fin 64 => b.child j.val j.isLt hchild) := by
+    intro h
+    obtain ⟨j, _, hEq⟩ := Finset.mem_image.mp h
+    have hl := congrArg KBag.l hEq
+    rw [KBag.parent_l, KBag.child_l] at hl
+    omega
+  have hchildInj : Function.Injective (fun j : Fin 64 => b.child j.val j.isLt hchild) := by
+    intro j k hEq
+    apply Fin.ext
+    exact KBag.child_inj b j.val k.val j.isLt k.isLt hchild hEq
+  calc
+    (∑ source : KBag 64 d, g source) =
+        ∑ source ∈ Finset.univ, g source := by simp
+    _ = ∑ source ∈ neighbors, g source := by
+      symm
+      exact Finset.sum_subset (Finset.subset_univ neighbors) (by
+        intro source _ hnot
+        exact hzero source hnot)
+    _ = g b.parent + ∑ j : Fin 64, g (b.child j.val j.isLt hchild) := by
+      simp only [neighbors, wireFlowReceiverNeighborBags]
+      rw [Finset.sum_insert hparentNotChild]
+      rw [Finset.sum_image]
+      exact hchildInj.injOn
+    _ = ∑ source : Fin 65, g (wireFlowReceiverSource b hchild source) := by
+      rw [fin65_sum_parent_children]
+      rw [wireFlowReceiverSource_parent]
+      simp_rw [wireFlowReceiverSource_child]
+    _ = ∑ source : Fin 65,
+        ∑ i ∈ receiverOutgoingSelection (b.x % 64) source,
+          f (wireFlowReceiverSource b hchild source) i := by
+      apply Finset.sum_congr rfl
+      intro source _
+      simp only [g]
+      rw [wireFlowLayerSelection_receiverSource b hb hchild source]
+
+
 
 theorem receiverOutgoingSelection_sum (parentPort : Nat)
     (source : Fin 65) (f : Nat → Nat) :
@@ -1451,7 +1537,6 @@ theorem wireFlowReceiver_register_count_error_actual {d tf : Nat}
       simpa only [Nat.cast_sum] using
         (wireFlowReceiver_count_error_actual F nets input t ht b hb hchild predicate
           q frac hsorted hq hfrac0 hfrac1)
-
 
 theorem sortedPackets_intervalPartition_L1_exact {c m p q : Nat} (frac : Real)
     (V : Fin c → Fin m → Bool) (hV : ∀ i, Monotone (V i))

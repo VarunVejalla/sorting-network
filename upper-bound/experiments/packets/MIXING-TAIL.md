@@ -1157,3 +1157,17 @@ It gives termwise agreement on the 65 actual neighbors. The finite sum still
 ranges over all KBag sources, so a support/reindexing argument and explicit
 boundary treatment are required before applying the register identity to the
 aggregate theorem.
+
+Reindexing progress (2026-10-15): `wireFlowReceiverNeighborBags_mem` names a
+receiver's parent and 64 children. `wireFlowLayerSelection_eq_empty_of_not_neighbor`
+proves that all other source bags contribute no selected pieces, and
+`wireFlowLayerSelection_receiverSum_eq` reindexes the full finite KBag source
+sum exactly to the local `Fin 65` source sum. Together with
+`wireFlowLayerSelection_receiverSource` and
+`wireFlowReceiver_selected_count_eq_register`, the actual interior receiver
+count identity is now modularly connected to the global incidence sum. The
+attempt to package this as one summed actual-register theorem was too expensive
+to elaborate in its initial form and was discarded; the checked component
+lemmas remain. The next formal step is a compact wrapper using named profile
+error/mean functions, followed by identifying the selected means with the
+coupled recurrence's target.

@@ -31,6 +31,22 @@ import PacketHalfProfile
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.wireFlowLayerSelection_receiverSource
 
+/-- info: 'Chvatal.PacketAlignment.wireFlowReceiverNeighborBags_mem' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.wireFlowReceiverNeighborBags_mem
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayerSelection_eq_empty_of_not_neighbor' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.wireFlowLayerSelection_eq_empty_of_not_neighbor
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayerSelection_receiverSum_eq' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.wireFlowLayerSelection_receiverSum_eq
+
 /-- info: 'Chvatal.PacketAlignment.wireFlowReceiver_selected_count_eq_register' depends on axioms: [propext,
  Classical.choice,
  Quot.sound] -/
