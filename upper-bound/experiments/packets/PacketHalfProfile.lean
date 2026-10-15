@@ -112,6 +112,29 @@ def profileIntervalMean (m q : Nat) (frac : Real) (a b : Nat) : Real :=
   (1 - frac) * profileInterval m q a b +
     frac * profileInterval m (q + 1) a b
 
+/-- A fractional ideal profile assigns each rank interval a mean between zero
+and that interval's capacity. This lets selected interval means define a
+valid next receiver threshold target without a separate common-mean ansatz. -/
+theorem profileIntervalMean_bounds (m q a b : Nat) (frac : Real)
+    (hab : a ≤ b) (hb : b ≤ m)
+    (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    0 ≤ profileIntervalMean m q frac a b ∧
+      profileIntervalMean m q frac a b ≤ (b - a : Nat) := by
+  have hx0 : 0 ≤ (profileInterval m q a b : Real) := by
+    rw [profileInterval_formula m q a b hab hb]
+    exact_mod_cast Nat.zero_le (min (b - a) (q - (m - b)))
+  have hy0 : 0 ≤ (profileInterval m (q + 1) a b : Real) := by
+    rw [profileInterval_formula m (q + 1) a b hab hb]
+    exact_mod_cast Nat.zero_le (min (b - a) (q + 1 - (m - b)))
+  have hxle : (profileInterval m q a b : Real) ≤ (b - a : Nat) := by
+    rw [profileInterval_formula m q a b hab hb]
+    exact_mod_cast Nat.min_le_left _ _
+  have hyle : (profileInterval m (q + 1) a b : Real) ≤ (b - a : Nat) := by
+    rw [profileInterval_formula m (q + 1) a b hab hb]
+    exact_mod_cast Nat.min_le_left _ _
+  unfold profileIntervalMean
+  constructor <;> nlinarith
+
 private theorem profileTail_mono_r (m X : Nat) : Monotone (profileTail m X) := by
   intro a b hab
   simp only [profileTail]
@@ -131,6 +154,67 @@ private theorem profileInterval_mono_X (m X Y a b : Nat) (hab : a ≤ b) (hb : b
     (hXY : Y ≤ X) : profileInterval m Y a b ≤ profileInterval m X a b := by
   rw [profileInterval_formula m Y a b hab hb, profileInterval_formula m X a b hab hb]
   exact min_le_min le_rfl (Nat.sub_le_sub_right hXY _)
+
+/-- Interpolation between adjacent integer profiles stays between those
+profiles on every rank interval. -/
+theorem profileIntervalMean_between (m q a b : Nat) (frac : Real)
+    (hab : a ≤ b) (hb : b ≤ m) (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    (profileInterval m q a b : Real) ≤ profileIntervalMean m q frac a b ∧
+      profileIntervalMean m q frac a b ≤
+        (profileInterval m (q + 1) a b : Real) := by
+  have hmono := profileInterval_mono_X m (q + 1) q a b hab hb (by omega)
+  have hdelta : 0 ≤ (profileInterval m (q + 1) a b : Real) -
+      profileInterval m q a b := by exact_mod_cast Nat.zero_le (profileInterval m (q + 1) a b - profileInterval m q a b)
+  have hdelta' : (profileInterval m q a b : Real) ≤
+      profileInterval m (q + 1) a b := by exact_mod_cast hmono
+  unfold profileIntervalMean
+  constructor
+  · have hprod := mul_nonneg hfrac0 hdelta
+    nlinarith
+  · have hprod := mul_nonneg (sub_nonneg.mpr hfrac1) hdelta
+    nlinarith
+
+/-- The interpolated interval target is monotone in its underlying real
+threshold count `q + frac`. The integer boundary case is exact, so changing
+the floor does not introduce a discontinuity. -/
+theorem profileIntervalMean_mono_mean (m q₁ q₂ a b : Nat)
+    (frac₁ frac₂ : Real) (hab : a ≤ b) (hb : b ≤ m)
+    (hfrac₁0 : 0 ≤ frac₁) (hfrac₁1 : frac₁ ≤ 1)
+    (hfrac₂0 : 0 ≤ frac₂) (hfrac₂1 : frac₂ ≤ 1)
+    (hmean : (q₁ : Real) + frac₁ ≤ (q₂ : Real) + frac₂) :
+    profileIntervalMean m q₁ frac₁ a b ≤ profileIntervalMean m q₂ frac₂ a b := by
+  by_cases h₁₂ : q₁ ≤ q₂
+  · by_cases heq : q₁ = q₂
+    · subst q₂
+      have hfrac : frac₁ ≤ frac₂ := by nlinarith
+      have hmono := profileInterval_mono_X m (q₁ + 1) q₁ a b hab hb (by omega)
+      have hdelta : 0 ≤ (profileInterval m (q₁ + 1) a b : Real) -
+          profileInterval m q₁ a b := by exact_mod_cast Nat.zero_le _
+      unfold profileIntervalMean
+      have hprod := mul_nonneg (sub_nonneg.mpr hfrac) hdelta
+      nlinarith [show (profileInterval m q₁ a b : Real) ≤
+        profileInterval m (q₁ + 1) a b by exact_mod_cast hmono]
+    · have hlt : q₁ < q₂ := by omega
+      have hleft := (profileIntervalMean_between m q₁ a b frac₁ hab hb
+        hfrac₁0 hfrac₁1).2
+      have hright := (profileIntervalMean_between m q₂ a b frac₂ hab hb
+        hfrac₂0 hfrac₂1).1
+      have hmidNat := profileInterval_mono_X m q₂ (q₁ + 1) a b hab hb (by omega)
+      have hmid : (profileInterval m (q₁ + 1) a b : Real) ≤
+          (profileInterval m q₂ a b : Real) := by exact_mod_cast hmidNat
+      exact le_trans hleft (le_trans hmid hright)
+  · have hlt : q₂ < q₁ := by omega
+    by_cases hsucc : q₂ + 1 = q₁
+    · have hqreal : (q₁ : Real) = (q₂ : Real) + 1 := by exact_mod_cast hsucc.symm
+      have hf₁ : frac₁ = 0 := by rw [hqreal] at hmean; nlinarith
+      have hf₂ : frac₂ = 1 := by rw [hqreal] at hmean; nlinarith
+      rw [← hsucc, hf₁, hf₂]
+      simp [profileIntervalMean]
+    · have hgap : q₂ + 1 < q₁ := by omega
+      have hqle : q₁ ≤ q₂ + 1 := by
+        have hqleReal : (q₁ : Real) ≤ (q₂ : Real) + 1 := by nlinarith
+        exact_mod_cast hqleReal
+      omega
 
 private theorem cuts_le_end (p : Nat) (cuts : Nat → Nat) (hcuts : Monotone cuts)
     (i : Nat) (hi : i ≤ p) : cuts i ≤ cuts p := hcuts hi
@@ -1486,6 +1570,385 @@ theorem wireFlowReceiver_selected_count_eq_register {d tf : Nat}
       rw [← hchildrenCount]
     _ = trueCountOn ((execPlacement F nets input (t + 1) (by omega)).regs b) predicate :=
       hregisterCount.symm
+
+/-- Actual threshold count in one sender's outgoing rank piece. -/
+noncomputable def wireFlowLayerSenderPieceCount {d tf : Nat}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat)
+    (predicate : Fin (64 ^ d) → Bool) (source : KBag 64 d) (i : Nat) : Nat :=
+  trueCountOn
+    (senderOutgoingPiece (wireSets F t source)
+      (F.up source.l t) (F.down source.l t) i)
+    (fun w => predicate (X F nets input (t + 1) w))
+
+/-- Ideal profile mean assigned to one sender rank piece. -/
+def wireFlowLayerSenderPieceMean {d tf : Nat}
+    (F : FlowSizes d tf) (t : Nat) (q : KBag 64 d → Nat)
+    (frac : KBag 64 d → Real) (source : KBag 64 d) (i : Nat) : Real :=
+  profileIntervalMean (wireSets F t source).card (q source) (frac source)
+    (senderRankCut (F.up source.l t) (F.down source.l t) i)
+    (senderRankCut (F.up source.l t) (F.down source.l t) (i + 1))
+
+/-- Signed discrepancy contributed by one routed sender piece. -/
+noncomputable def wireFlowLayerSenderPieceError {d tf : Nat}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat)
+    (predicate : Fin (64 ^ d) → Bool) (q : KBag 64 d → Nat)
+    (frac : KBag 64 d → Real) (source : KBag 64 d) (i : Nat) : Real :=
+  (wireFlowLayerSenderPieceCount F nets input t predicate source i : Real) -
+    wireFlowLayerSenderPieceMean F t q frac source i
+
+/-- Sum of the selected ideal means for an active receiver. -/
+noncomputable def wireFlowReceiverSelectedIdealMean {d tf : Nat}
+    (F : FlowSizes d tf) (t : Nat) (q : KBag 64 d → Nat)
+    (frac : KBag 64 d → Real) (receiver : KBag 64 d) : Real :=
+  if hchild : receiver.l < d then
+    ∑ source : Fin 65,
+      ∑ i ∈ receiverOutgoingSelection (receiver.x % 64) source,
+        wireFlowLayerSenderPieceMean F t q frac
+          (wireFlowReceiverSource receiver hchild source) i
+  else 0
+
+set_option maxHeartbeats 1000000
+/-- The signed all-bag routed discrepancy at an active receiver equals its
+actual register threshold count minus the selected ideal means. -/
+theorem wireFlowLayer_receiver_signed_error_eq_register {d tf : Nat}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (receiver : KBag 64 d) (hb : 1 ≤ receiver.l) (hchild : receiver.l < d)
+    (predicate : Fin (64 ^ d) → Bool) (q : KBag 64 d → Nat)
+    (frac : KBag 64 d → Real) :
+    (∑ source : KBag 64 d,
+      ∑ i ∈ wireFlowLayerSelection receiver source,
+        wireFlowLayerSenderPieceError F nets input t predicate q frac source i) =
+      (trueCountOn
+          ((execPlacement F nets input (t + 1) (by omega)).regs receiver)
+          predicate : Real) -
+        (wireFlowReceiverSelectedIdealMean F t q frac receiver) := by
+  let pieceCount (source : KBag 64 d) (i : Nat) : Real :=
+    wireFlowLayerSenderPieceCount F nets input t predicate source i
+  let pieceMean (source : KBag 64 d) (i : Nat) : Real :=
+    wireFlowLayerSenderPieceMean F t q frac source i
+  have hcountsNat := wireFlowReceiver_selected_count_eq_register
+    F nets input t ht receiver hb hchild predicate
+  have hcounts :
+      (∑ source : Fin 65,
+        ∑ i ∈ receiverOutgoingSelection (receiver.x % 64) source,
+          pieceCount (wireFlowReceiverSource receiver hchild source) i) =
+        (trueCountOn
+          ((execPlacement F nets input (t + 1) (by omega)).regs receiver)
+          predicate : Real) := by
+    simpa only [pieceCount, Nat.cast_sum] using
+      congrArg (fun n : Nat => (n : Real)) hcountsNat
+  have hpieceSum := wireFlowLayerSelection_receiverSum_eq receiver hb hchild
+    (fun source i => pieceCount source i - pieceMean source i)
+  calc
+    _ = ∑ source : Fin 65,
+        ∑ i ∈ receiverOutgoingSelection (receiver.x % 64) source,
+          (pieceCount (wireFlowReceiverSource receiver hchild source) i -
+            pieceMean (wireFlowReceiverSource receiver hchild source) i) := by
+      simpa [wireFlowLayerSenderPieceError, pieceCount, pieceMean] using hpieceSum
+    _ = (∑ source : Fin 65,
+          ∑ i ∈ receiverOutgoingSelection (receiver.x % 64) source,
+            pieceCount (wireFlowReceiverSource receiver hchild source) i) -
+        ∑ source : Fin 65,
+          ∑ i ∈ receiverOutgoingSelection (receiver.x % 64) source,
+            pieceMean (wireFlowReceiverSource receiver hchild source) i := by
+      simp_rw [Finset.sum_sub_distrib]
+    _ = _ := by
+      rw [hcounts]
+      simp only [pieceMean, wireFlowReceiverSelectedIdealMean, dif_pos hchild]
+set_option maxHeartbeats 200000
+
+/-- The selected ideal means form a valid Boolean threshold target for the
+receiver: they lie between zero and the receiver register capacity. -/
+theorem wireFlowReceiverSelectedIdealMean_bounds {d tf : Nat}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (receiver : KBag 64 d) (hb : 1 ≤ receiver.l) (hchild : receiver.l < d)
+    (q : KBag 64 d → Nat) (frac : KBag 64 d → Real)
+    (hq : ∀ source : Fin 65,
+      q (wireFlowReceiverSource receiver hchild source) <
+        (wireSets F t (wireFlowReceiverSource receiver hchild source)).card)
+    (hfrac0 : ∀ source : Fin 65,
+      0 ≤ frac (wireFlowReceiverSource receiver hchild source))
+    (hfrac1 : ∀ source : Fin 65,
+      frac (wireFlowReceiverSource receiver hchild source) ≤ 1) :
+    0 ≤ wireFlowReceiverSelectedIdealMean F t q frac receiver ∧
+      wireFlowReceiverSelectedIdealMean F t q frac receiver ≤
+        ((execPlacement F nets input (t + 1) (by omega)).regs receiver).card := by
+  classical
+  let sourceBag := wireFlowReceiverSource receiver hchild
+  let selection := receiverOutgoingSelection (receiver.x % 64)
+  have hinv := wireSets_inv F t (Nat.le_of_lt ht)
+  have hsize (source : Fin 65) :
+      (wireSets F t (sourceBag source)).card =
+        F.up (sourceBag source).l t + 64 * F.down (sourceBag source).l t := by
+    rw [hinv.1]
+    exact F.hsplit (sourceBag source).l t (sourceBag source).hl ht
+  have hpieceCard (source : Fin 65) (i : Nat) (hi : i < 66) :
+      (senderOutgoingPiece (wireSets F t (sourceBag source))
+        (F.up (sourceBag source).l t) (F.down (sourceBag source).l t) i).card =
+        senderRankCut (F.up (sourceBag source).l t)
+          (F.down (sourceBag source).l t) (i + 1) -
+        senderRankCut (F.up (sourceBag source).l t)
+          (F.down (sourceBag source).l t) i := by
+    rw [senderOutgoingPiece_eq_blockOf _ _ _ (hsize source)
+      (F.hup_even _ _ ht) i hi]
+    apply blockOf_card
+    rw [hsize source]
+    exact senderRankCut_le _ _ _
+  have hcountNat := wireFlowReceiver_selected_count_eq_register
+    F nets input t ht receiver hb hchild (fun _ => true)
+  have hcountCard :
+      (∑ source : Fin 65, ∑ i ∈ selection source,
+        (senderOutgoingPiece (wireSets F t (sourceBag source))
+          (F.up (sourceBag source).l t) (F.down (sourceBag source).l t) i).card) =
+        ((execPlacement F nets input (t + 1) (by omega)).regs receiver).card := by
+    simpa [trueCountOn_eq_card_filter] using hcountNat
+  have hwidthNat :
+      (∑ source : Fin 65, ∑ i ∈ selection source,
+        (senderRankCut (F.up (sourceBag source).l t)
+          (F.down (sourceBag source).l t) (i + 1) -
+        senderRankCut (F.up (sourceBag source).l t)
+          (F.down (sourceBag source).l t) i)) =
+        ((execPlacement F nets input (t + 1) (by omega)).regs receiver).card := by
+    calc
+      _ = ∑ source : Fin 65, ∑ i ∈ selection source,
+          (senderOutgoingPiece (wireSets F t (sourceBag source))
+            (F.up (sourceBag source).l t) (F.down (sourceBag source).l t) i).card := by
+        apply Finset.sum_congr rfl
+        intro source _
+        apply Finset.sum_congr rfl
+        intro i hi
+        symm
+        exact hpieceCard source i (by
+          have hlt := receiverOutgoingSelection_subset (receiver.x % 64)
+            (Nat.mod_lt _ (by omega)) source hi
+          exact Finset.mem_range.mp hlt)
+      _ = _ := hcountCard
+  have hwidthReal :
+      (∑ source : Fin 65, ∑ i ∈ selection source,
+        ((senderRankCut (F.up (sourceBag source).l t)
+          (F.down (sourceBag source).l t) (i + 1) -
+        senderRankCut (F.up (sourceBag source).l t)
+          (F.down (sourceBag source).l t) i : Nat) : Real)) =
+        (((execPlacement F nets input (t + 1) (by omega)).regs receiver).card : Real) := by
+    simpa only [Nat.cast_sum] using
+      congrArg (fun n : Nat => (n : Real)) hwidthNat
+  have hpieceBounds (source : Fin 65) (i : Nat) (hi : i ∈ selection source) :
+      0 ≤ wireFlowLayerSenderPieceMean F t q frac (sourceBag source) i ∧
+        wireFlowLayerSenderPieceMean F t q frac (sourceBag source) i ≤
+          ((senderRankCut (F.up (sourceBag source).l t)
+            (F.down (sourceBag source).l t) (i + 1) -
+          senderRankCut (F.up (sourceBag source).l t)
+            (F.down (sourceBag source).l t) i : Nat) : Real) := by
+    have hmono := senderRankCut_mono
+      (F.up (sourceBag source).l t) (F.down (sourceBag source).l t)
+    have hcut := hmono (Nat.le_succ i)
+    have hcutEnd := senderRankCut_le (F.up (sourceBag source).l t)
+      (F.down (sourceBag source).l t) (i + 1)
+    rw [← hsize source] at hcutEnd
+    simpa [sourceBag, wireFlowLayerSenderPieceMean] using profileIntervalMean_bounds _ (q (sourceBag source))
+      (senderRankCut (F.up (sourceBag source).l t) (F.down (sourceBag source).l t) i)
+      (senderRankCut (F.up (sourceBag source).l t) (F.down (sourceBag source).l t) (i + 1))
+      (frac (sourceBag source)) hcut hcutEnd (hfrac0 source) (hfrac1 source)
+  constructor
+  · unfold wireFlowReceiverSelectedIdealMean
+    rw [dif_pos hchild]
+    apply Finset.sum_nonneg
+    intro source _
+    apply Finset.sum_nonneg
+    intro i hi
+    exact (hpieceBounds source i hi).1
+  · unfold wireFlowReceiverSelectedIdealMean
+    rw [dif_pos hchild]
+    calc
+      _ ≤ ∑ source : Fin 65, ∑ i ∈ selection source,
+          ((senderRankCut (F.up (sourceBag source).l t)
+            (F.down (sourceBag source).l t) (i + 1) -
+          senderRankCut (F.up (sourceBag source).l t)
+            (F.down (sourceBag source).l t) i : Nat) : Real) := by
+        apply Finset.sum_le_sum
+        intro source _
+        apply Finset.sum_le_sum
+        intro i hi
+        exact (hpieceBounds source i hi).2
+      _ = _ := hwidthReal
+
+/-- If every source bag's real threshold target is monotone between two value
+thresholds, then the receiver's selected ideal target is monotone as well.
+Thus the port rule preserves coherence of the target profile. -/
+theorem wireFlowReceiverSelectedIdealMean_mono {d tf : Nat}
+    (F : FlowSizes d tf) (t : Nat) (ht : t < tf)
+    (receiver : KBag 64 d) (hchild : receiver.l < d)
+    (q : Nat → KBag 64 d → Nat) (frac : Nat → KBag 64 d → Real)
+    (θ₁ θ₂ : Nat)
+    (hfrac₁0 : ∀ source : Fin 65,
+      0 ≤ frac θ₁ (wireFlowReceiverSource receiver hchild source))
+    (hfrac₁1 : ∀ source : Fin 65,
+      frac θ₁ (wireFlowReceiverSource receiver hchild source) ≤ 1)
+    (hfrac₂0 : ∀ source : Fin 65,
+      0 ≤ frac θ₂ (wireFlowReceiverSource receiver hchild source))
+    (hfrac₂1 : ∀ source : Fin 65,
+      frac θ₂ (wireFlowReceiverSource receiver hchild source) ≤ 1)
+    (hmean : ∀ source : Fin 65,
+      (q θ₁ (wireFlowReceiverSource receiver hchild source) : Real) +
+          frac θ₁ (wireFlowReceiverSource receiver hchild source) ≤
+        (q θ₂ (wireFlowReceiverSource receiver hchild source) : Real) +
+          frac θ₂ (wireFlowReceiverSource receiver hchild source)) :
+    wireFlowReceiverSelectedIdealMean F t (q θ₁) (frac θ₁) receiver ≤
+      wireFlowReceiverSelectedIdealMean F t (q θ₂) (frac θ₂) receiver := by
+  classical
+  let sourceBag := wireFlowReceiverSource receiver hchild
+  let selection := receiverOutgoingSelection (receiver.x % 64)
+  have hinv := wireSets_inv F t (Nat.le_of_lt ht)
+  have hsize (source : Fin 65) :
+      (wireSets F t (sourceBag source)).card =
+        F.up (sourceBag source).l t + 64 * F.down (sourceBag source).l t := by
+    rw [hinv.1]
+    exact F.hsplit (sourceBag source).l t (sourceBag source).hl ht
+  have hpiece (source : Fin 65) (i : Nat) :
+      wireFlowLayerSenderPieceMean F t (q θ₁) (frac θ₁) (sourceBag source) i ≤
+        wireFlowLayerSenderPieceMean F t (q θ₂) (frac θ₂) (sourceBag source) i := by
+    have hcuts := senderRankCut_mono
+      (F.up (sourceBag source).l t) (F.down (sourceBag source).l t)
+    have hcut := hcuts (Nat.le_succ i)
+    have hcutEnd := senderRankCut_le (F.up (sourceBag source).l t)
+      (F.down (sourceBag source).l t) (i + 1)
+    rw [← hsize source] at hcutEnd
+    simpa [sourceBag, wireFlowLayerSenderPieceMean] using
+      (profileIntervalMean_mono_mean (wireSets F t (sourceBag source)).card
+        (q θ₁ (sourceBag source)) (q θ₂ (sourceBag source))
+        (senderRankCut (F.up (sourceBag source).l t)
+          (F.down (sourceBag source).l t) i)
+        (senderRankCut (F.up (sourceBag source).l t)
+          (F.down (sourceBag source).l t) (i + 1))
+        (frac θ₁ (sourceBag source)) (frac θ₂ (sourceBag source))
+        hcut hcutEnd (hfrac₁0 source) (hfrac₁1 source)
+        (hfrac₂0 source) (hfrac₂1 source) (hmean source))
+  unfold wireFlowReceiverSelectedIdealMean
+  simp only [dif_pos hchild]
+  apply Finset.sum_le_sum
+  intro source _
+  apply Finset.sum_le_sum
+  intro i _
+  exact hpiece source i
+
+/-- Summed over every interior receiver of a WireFlow layer, the actual
+register discrepancy from its selected ideal port mean is bounded by the
+coarse count error of each sender, once. This is the concrete layerwise
+incidence estimate needed by the bag-mean recurrence. The selected means form
+valid monotone receiver targets under the corresponding source-profile
+hypotheses; contraction of the resulting profile under merge/deal is still
+separate. -/
+theorem wireFlowLayer_register_error_sum_le_source_count_error {d tf : Nat}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (predicate : Fin (64 ^ d) → Bool) (q : KBag 64 d → Nat)
+    (frac : KBag 64 d → Real)
+    (hsorted : ∀ source, Monotone
+      ((fun w => predicate (X F nets input (t + 1) w)) ∘
+        (wireSets F t source).orderEmbOfFin rfl))
+    (hq : ∀ source, q source < (wireSets F t source).card)
+    (hfrac0 : ∀ source, 0 ≤ frac source)
+    (hfrac1 : ∀ source, frac source ≤ 1) :
+    (∑ receiver ∈ (Finset.univ : Finset (KBag 64 d)).filter
+      (fun b => 1 ≤ b.l ∧ b.l < d),
+      |(trueCountOn
+          ((execPlacement F nets input (t + 1) (by omega)).regs receiver)
+          predicate : Real) -
+        wireFlowReceiverSelectedIdealMean F t q frac receiver|) ≤
+      ∑ source : KBag 64 d,
+        |(trueCountOn (wireSets F t source)
+          (fun w => predicate (X F nets input (t + 1) w)) : Real) -
+          (q source + frac source)| := by
+  classical
+  let active : Finset (KBag 64 d) :=
+    (Finset.univ : Finset (KBag 64 d)).filter
+      (fun b => 1 ≤ b.l ∧ b.l < d)
+  let v : KBag 64 d → Fin (64 ^ d) → Bool :=
+    fun _ w => predicate (X F nets input (t + 1) w)
+  have hinv := wireSets_inv F t (Nat.le_of_lt ht)
+  have hsize : ∀ source,
+      (wireSets F t source).card = F.up source.l t + 64 * F.down source.l t := by
+    intro source
+    rw [hinv.1 source]
+    exact F.hsplit source.l t source.hl ht
+  have hu : ∀ source : KBag 64 d, 2 ∣ F.up source.l t := by
+    intro source
+    exact F.hup_even source.l t ht
+  have hbound := wireFlowLayer_profile_error_sum_le
+    (fun source => wireSets F t source) v (fun source => F.up source.l t)
+    (fun source => F.down source.l t) q frac hsize hu hsorted hq hfrac0 hfrac1
+  have hsubset : active ⊆ Finset.univ := Finset.filter_subset _ _
+  calc
+    (∑ receiver ∈ active,
+        |(trueCountOn
+            ((execPlacement F nets input (t + 1) (by omega)).regs receiver)
+            predicate : Real) -
+          wireFlowReceiverSelectedIdealMean F t q frac receiver|) =
+      ∑ receiver ∈ active,
+        |∑ source : KBag 64 d,
+          ∑ i ∈ wireFlowLayerSelection receiver source,
+            wireFlowLayerSenderPieceError F nets input t predicate q frac source i| := by
+      apply Finset.sum_congr rfl
+      intro receiver hreceiver
+      have hactive := (Finset.mem_filter.mp hreceiver).2
+      rw [← wireFlowLayer_receiver_signed_error_eq_register F nets input t ht
+        receiver hactive.1 hactive.2 predicate q frac]
+    _ ≤ ∑ receiver : KBag 64 d,
+        |∑ source : KBag 64 d,
+          ∑ i ∈ wireFlowLayerSelection receiver source,
+            wireFlowLayerSenderPieceError F nets input t predicate q frac source i| :=
+      Finset.sum_le_sum_of_subset_of_nonneg hsubset (by
+        intro receiver _ _
+        exact abs_nonneg _)
+    _ ≤ ∑ source : KBag 64 d,
+        |(trueCountOn (wireSets F t source)
+          (fun w => predicate (X F nets input (t + 1) w)) : Real) -
+          (q source + frac source)| := by
+      simpa [v, wireFlowLayerSenderPieceError, wireFlowLayerSenderPieceCount,
+        wireFlowLayerSenderPieceMean, profileIntervalMean] using hbound
+
+/-- The no-amplification estimate holds simultaneously for any finite family
+of value thresholds. Summing over all active receivers and thresholds charges
+each source bag's coarse error once per threshold, with no factor for the
+number of receiver levels or routed ports. -/
+theorem wireFlowLayer_register_error_sum_le_source_count_error_multi
+    {d tf : Nat} {Θ : Type} [Fintype Θ] [DecidableEq Θ]
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (predicate : Θ → Fin (64 ^ d) → Bool)
+    (q : Θ → KBag 64 d → Nat) (frac : Θ → KBag 64 d → Real)
+    (hsorted : ∀ θ source, Monotone
+      ((fun w => predicate θ (X F nets input (t + 1) w)) ∘
+        (wireSets F t source).orderEmbOfFin rfl))
+    (hq : ∀ θ source, q θ source < (wireSets F t source).card)
+    (hfrac0 : ∀ θ source, 0 ≤ frac θ source)
+    (hfrac1 : ∀ θ source, frac θ source ≤ 1) :
+    (∑ θ : Θ, ∑ receiver ∈ (Finset.univ : Finset (KBag 64 d)).filter
+      (fun b => 1 ≤ b.l ∧ b.l < d),
+      |(trueCountOn
+          ((execPlacement F nets input (t + 1) (by omega)).regs receiver)
+          (predicate θ) : Real) -
+        wireFlowReceiverSelectedIdealMean F t (q θ) (frac θ) receiver|) ≤
+      ∑ θ : Θ, ∑ source : KBag 64 d,
+        |(trueCountOn (wireSets F t source)
+          (fun w => predicate θ (X F nets input (t + 1) w)) : Real) -
+          (q θ source + frac θ source)| := by
+  classical
+  apply Finset.sum_le_sum
+  intro θ _
+  exact wireFlowLayer_register_error_sum_le_source_count_error
+    F nets input t ht (predicate θ) (q θ) (frac θ)
+    (hsorted θ) (hq θ) (hfrac0 θ) (hfrac1 θ)
 
 /-- The source-profile error bound applies directly to the actual receiver
 register: the selected parent/child piece counts are exactly its Boolean

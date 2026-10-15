@@ -59,6 +59,48 @@ import PacketHalfProfile
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.wireFlowReceiver_register_count_error_actual
 
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_receiver_signed_error_eq_register' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_receiver_signed_error_eq_register
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_register_error_sum_le_source_count_error' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_register_error_sum_le_source_count_error
+
+/-- info: 'Chvatal.PacketAlignment.profileIntervalMean_bounds' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.profileIntervalMean_bounds
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowReceiverSelectedIdealMean_bounds' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.wireFlowReceiverSelectedIdealMean_bounds
+
+/-- info: 'Chvatal.PacketAlignment.profileIntervalMean_between' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.profileIntervalMean_between
+
+/-- info: 'Chvatal.PacketAlignment.profileIntervalMean_mono_mean' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.profileIntervalMean_mono_mean
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowReceiverSelectedIdealMean_mono' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.wireFlowReceiverSelectedIdealMean_mono
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_register_error_sum_le_source_count_error_multi' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_register_error_sum_le_source_count_error_multi
+
 /-- info: 'Chvatal.PacketAlignment.oddEvenMergeNet_sorts_two_runs' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.oddEvenMergeNet_sorts_two_runs

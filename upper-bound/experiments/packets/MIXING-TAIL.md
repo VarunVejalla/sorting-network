@@ -1171,3 +1171,50 @@ to elaborate in its initial form and was discarded; the checked component
 lemmas remain. The next formal step is a compact wrapper using named profile
 error/mean functions, followed by identifying the selected means with the
 coupled recurrence's target.
+
+Actual-register incidence bridge (2026-10-15): `wireFlowLayerSenderPieceCount`,
+`wireFlowLayerSenderPieceMean`, and `wireFlowLayerSenderPieceError` package the
+actual Boolean counts and ideal means on each sender's routed rank piece.
+`wireFlowLayer_receiver_signed_error_eq_register` proves that the all-bag
+signed error at any interior receiver is exactly its actual `execPlacement`
+register threshold count minus the selected ideal means. The aggregate theorem
+`wireFlowLayer_register_error_sum_le_source_count_error` then sums the absolute
+discrepancy over every active receiver of the layer and bounds it by the sum of
+coarse sender count errors, charging each source once. The prior oversized
+wrapper was replaced by this modular theorem; both results are axiom-guarded.
+This closes actual-register incidence accounting at one layer. The remaining
+recurrence gap is to make these per-threshold targets coherent as a receiver
+profile and establish the coupled rank and discrepancy contraction.
+
+Selected-target capacity (2026-10-15): `profileIntervalMean_bounds` proves
+that every ideal sender-piece mean lies between zero and that rank interval's
+capacity. `wireFlowReceiverSelectedIdealMean_bounds` uses the exact
+parent/child selected-piece count identity to prove that the sum of selected
+means lies between zero and the actual receiver register size. Thus the
+selected mean is a valid real-valued threshold target for the next receiver;
+this does not assume a common mean across heterogeneous source bags. The
+remaining issue is to show that these targets, simultaneously over all value
+thresholds, define the required monotone rank profile and that the induced
+profile/variance update contracts.
+
+Threshold-profile coherence interface (2026-10-15):
+`profileIntervalMean_between` and `profileIntervalMean_mono_mean` show that
+linear interpolation between adjacent integer source profiles is monotone in
+the underlying real target `q + frac`; the floor-change boundary is exact.
+`wireFlowReceiverSelectedIdealMean_mono` sums this property over the actual
+selected parent/child intervals. Therefore, if every source's target profile
+is monotone over value thresholds, the receiver's selected target profile is
+also monotone. This supplies the state-coherence part of the induction
+interface. It does not prove that the actual scheduler preserves source
+sortedness or that the resulting profile has a contracting rank energy.
+
+Finite-threshold aggregate (2026-10-15):
+`wireFlowLayer_register_error_sum_le_source_count_error_multi` lifts the
+one-threshold incidence estimate to any finite family of Boolean thresholds.
+The total actual receiver discrepancy, summed over every interior bag at
+every active bag level and over the chosen thresholds, is bounded by the
+source coarse-count discrepancy summed over those same thresholds, with no
+extra factor for the number of active levels or port fragments. This is the
+exact fresh-error budget to insert into a rank-profile recurrence. Its
+right-hand side still needs a contraction/telescoping argument across stages;
+adding it naively over all stages is not enough.
