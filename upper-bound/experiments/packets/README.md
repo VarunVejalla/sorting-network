@@ -53,6 +53,10 @@ repaired support is sorted from the sender's packet-sorted invariant. This
 formalizes the per-cut correction family; it does not yet show that the
 resulting partial supports plus aligned interior cells form the complete
 receiver packet layout for every actual `FlowSizes` node.
+`flowA7_scheduled_parent_endpoint_repair` instantiates this result for every
+ordinary scheduled sender with positive down-flow and a half-misaligned
+up-fringe. The zero-down boundary case has no child cuts and remains a
+separate no-op case.
 
 ## Reproduction
 

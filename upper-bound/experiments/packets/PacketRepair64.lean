@@ -492,4 +492,41 @@ theorem parallelDownSetEndpointRepair_exists {N : Nat} {α : Type}
           exact hlo) hhi
       simpa [B, downSetEndpointRight] using hruns.2
 
+/-- Instantiate the parent-cut correction on an actual ordinary `FlowSizes7`
+sender. The refined node classification supplies packet divisibility of the
+child flow; `hsplit` supplies the exact sender capacity. -/
+theorem flowA7_scheduled_parent_endpoint_repair {d : Nat} {α : Type}
+    [LinearOrder α] (hd : 7 ≤ d)
+    (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (q : KBag 64 d) (hτpos : 0 < flowDown7 d hd q.l t)
+    (hbad : HalfMisaligned (flowUp7 d hd q.l t)) :
+    ∃ net : ComparatorNetwork (64 ^ d), net.depth ≤ 6 ∧
+      ∀ v : Fin (64 ^ d) → α, PacketSortedOn (wireSets (flowSizes7 d hd) t q) v →
+        ∀ j : Fin 64,
+          RankSortedOn
+            (downSetEndpointLeft (wireSets (flowSizes7 d hd) t q)
+                (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j ∪
+              downSetEndpointRight (wireSets (flowSizes7 d hd) t q)
+                (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j)
+            (net.exec v) := by
+  let F := flowSizes7 d hd
+  let s := wireSets F t q
+  let π := flowUp7 d hd q.l t
+  let τ := flowDown7 d hd q.l t
+  have hshape := node_shape_refined d hd t q.l ht2 ht
+  have hres := refined_packet_residues hd ht2 ht hshape
+  have hτ : 64 ∣ τ := by
+    dsimp [τ]
+    exact hres.2.1
+  have hτlarge : 64 ≤ τ := Nat.le_of_dvd (by simpa [τ] using hτpos) hτ
+  have hbase : (π / 2) % 64 = 32 := hbad.2
+  have hsize : s.card = π + 64 * τ := by
+    dsimp [s, F, π, τ]
+    rw [wireSets_card _ (Nat.le_of_lt ht) q]
+    exact F.hsplit q.l t q.hl ht
+  have hwithin : π / 2 + 64 * τ ≤ s.card := by
+    rw [hsize]
+    omega
+  exact parallelDownSetEndpointRepair_exists s π τ hτ hτlarge hbase hwithin
+
 end Chvatal.PacketAlignment
