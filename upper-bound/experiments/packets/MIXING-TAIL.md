@@ -1,5 +1,20 @@
 # Rounded matching-cycle bulk and tail interface
 
+Current proof status (2026-10-15): see [README.md](README.md). The complete
+odd-even merge sorting induction, fixed-support six-layer repair, parallel
+repairs, and support-independent generalized packet merge/deal adapter are
+now kernel checked. Historical statements below that call the 64-wire merge
+proof open are superseded. The unbounded mixing/discrepancy family, evolving
+packet/port placement and global rank recurrence are still open; no improved
+limsup coefficient is claimed.
+
+The new [sender-local energy note](REBINNING-ENERGY.md) gives a stronger
+rebinning interface: its scalar model preserves counts and cannot increase
+spill or variance around any common sender reference. Those inequalities
+are kernel checked. The proposed 65-cycle representation of the scheduled
+half-packet pairing, and its use in the global recurrence, remain derived
+arguments rather than checked scheduler results.
+
 Status: hand-derived conditional lemma plus a finite floating-point screen.
 No explicit unbounded matching family or sorting-network improvement is
 proved.
@@ -117,6 +132,96 @@ threshold, and (iii) receives those differently sized runs with a priced
 merge/repacking network. No such contract follows from the current
 `StageKernel`; replacing its stranger estimates with the spectral estimates
 alone would leave the placement and sortedness obligations unproved.
+
+## Fixed-label placement gate (2026-10-14)
+
+The direct application of the six-layer 32+32 merge to each proposed fragment
+pair is not yet justified by `wireSets_succ_eq`. That identity gives a union of
+the parent's `downSet` and the children's `upSet`s; `execPlacement_succ_regs`
+then gives the corresponding union of their key images. The packet lemmas
+establish that each contributing fragment is sorted in its own sender's wire
+order, but do not establish that a pair occupies the lower/upper 32 positions
+of a fixed 64-wire block in the receiver's physical wire order.
+
+This distinction is essential: for example, source wire sets `{0,2}` and
+`{1,3}` can each carry increasing values (`0,3` and `1,2` respectively), while
+their union in physical wire order carries `0,1,3,2`, which is not a single
+sorted run. Thus set union, rank-interval alignment, and per-source sortedness
+alone do not give the input layout assumed by `bitonicMerge64`. A fixed
+comparator network could still route/merge these fragments, but its cost and
+correctness need a separate proof.
+
+There is a fixed-label fallback for the local pairing step. Once two disjoint
+32-wire fragments are selected by a deterministic rule from the flow sets,
+their union is a fixed 64-wire Finset. Embed the ordinary 64-wire bitonic
+sorter into that union in increasing physical-wire order. This needs no
+assumption about how the two fragments interleave and sorts all 64 values;
+the mapping is input-independent. Its depth is at most 21 (`6*7/2`), rather
+than the six layers of the bitonic merge that presumes two contiguous sorted
+halves. Pairwise-disjoint fragment unions can be processed in parallel, subject
+to proving the actual pairing partitions all half-fragments and the whole
+packets are left compatible with the next operation.
+
+The generic Lean adapter is now in `PacketAlignment.lean`:
+`bitonicSort64_scatter_sorts` proves sorted output on any increasing embedding
+of 64 physical wires, and `bitonicSort64_scatter_depth_le` proves the 21-layer
+bound. This certifies the local construction independently of any contiguous
+layout. It does not yet instantiate that embedding for all fragments of an
+actual receiver or prove the embeddings are pairwise disjoint.
+
+The natural pairing is sender-local and is now captured by additional generic
+Lean lemmas. For a shifted parent down-cut, pair the 32 ranks at the left end
+with the 32 at the right end (`rankInterval_endpoint_pair`). For each shifted
+child up-fringe, pair the final 32 ranks of its prefix with the first 32 ranks
+of its suffix (`upFringe_endpoint_pair`, `upFringePairSupport_card`). Each such
+pair support has exactly 64 wires. `scheduledUpFringePairSupport_disjoint`
+proves that supports belonging to distinct scheduled senders are disjoint,
+using the checked `wireSets_disjoint`; hence all 64 child pairs can execute in
+parallel. The receiver misalignment exclusivity says the active alternative
+is either these 64 child pairs or the single parent-cut pair.
+
+This closes the combinatorial pairing choice and pairwise support-disjointness
+at the reusable lemma level. The endpoint-pair lemmas still take the flow
+shape premises as hypotheses; a single theorem instantiating them for every
+ordinary receiver is not yet present. More seriously, this does not compose
+with the next 13-layer matching operation: that operation expects two sorted
+packets in its ordered lane layout, while these fixed supports can be
+interleaved in physical wire order.
+
+There is a sound general-support transition, but its price is high. For any
+two disjoint 64-wire supports, sort their 128-wire union in physical order and
+define the next two supports to be its even- and odd-ranked wires. The new
+packets are sorted and interleave rank-by-rank, so the construction composes
+with another arbitrary support matching. `PacketAlignment.lean` now proves
+`bitonicSort128_scatter_sorts`, its 28-layer bound, and
+`bitonicSort128_scatter_parity_profile`, which certifies the interleaving
+profile. This is input-independent and gives an invariant interface for a
+redesigned support schedule. Replacing each 13-layer matching operation by a
+28-layer sorter changes 338 cycle layers to 728; retaining the 57-layer
+reassembly budget gives a conditional 785-layer total, coefficient 392.5 at
+two bits per cycle. It is a correctness fallback, not a route to 200.
+
+The practical next research gate is to find a cheaper merge-and-deal network
+for two arbitrary interleaved sorted supports and prove that its output
+supports feed the next matching round, or else redesign the initial port
+layout so the ordinary 13-layer operation remains applicable.
+
+This fallback closes only local label placement. If it replaces the six-layer
+pair repair inside the 395-layer gate (338 mixing + 57 reassembly), the
+conditional total becomes 410 layers, or coefficient 205 at two bits per
+cycle. So the straightforward robust fix misses the 200 target, before other
+costs. The six-layer saving requires an actual layout-aware merge network for
+the interleaved supports, or a port design that places each pair in ordered
+halves. In addition, the following mixing cycle must consume the resulting
+abstract packet sets at fixed labels; local sorting alone does not establish
+that global adapter.
+
+The next decisive gate is therefore to prove the fixed deterministic pairing
+and test whether a comparator network can merge each pair at a price below 6
+layers (or redesign packet supports to be physically ordered), then show the
+next matching operation is compatible with those supports. If not, the
+current 197.5 gate is not salvageable by simply adding a routing lemma; a
+layout-aware port construction is needed.
 
 This changes the early gate: before spending effort on an unbounded spectral
 matching-family certificate, first find a finite scheduler-shaped port
@@ -521,3 +626,490 @@ incidence matrix or the two-scale recurrence. The next concrete scheduler
 lemma is to construct that matrix (including the boundary fragments) for one
 ordinary transition and bound `xi_t` and `Pi_t`; only then is there a numeric
 rank-profile slack to test.
+
+### One actual port transition: `d=20, t=20, level=7`
+
+For this concrete ordinary transition, `WireFlow.blockOf` selects contiguous
+intervals in each source register's wire-rank coordinate, and all relevant
+endpoints are multiples of 64. The level-7 receiver at time 21 has
+`1,152,921,504,590,069,760` 64-wire packets. Its exact incoming packet map is:
+
+* one parent interval starting at source rank `34,351,349,760`, with
+  `18,014,397,435,740,160` wires = `281,474,959,933,440` packets;
+* two end intervals from each of 64 children, each of length
+  `576,320,014,815,068,160` wires = `9,005,000,231,485,440` packets.
+  For each child, these are its first and last intervals of that length in
+  source wire-rank order.
+
+The exact count is `281,474,959,933,440 + 128 * 9,005,000,231,485,440 =
+1,152,921,504,590,069,760`, so the receiver's packet slots have an exact
+0/1 incidence map from source packet slots; no partial-packet repair is needed
+in this instance. But packet alignment does not make the mean-error term
+`xi_t` vanish: it is the deviation of the selected parent block and child
+fringes from their respective source-bag means. Nor does the map contract that
+error: it aggregates 129 source runs whose threshold profiles can differ.
+This one instance therefore closes the combinatorial map at one bulk port,
+but not the needed `xi_t`/`Pi_t` bounds, a uniform frontier lemma, or the
+rank-profile recurrence. The next gate is to prove uniform alignment from the
+`NodeShape` cases and bound selected-fragment discrepancy for the actual
+129-run incidence pattern.
+
+### Uniform 64-wire alignment from `NodeShape`
+
+The shape formulas give a short symbolic residue proof for every ordinary
+scheduled node. In each case, `a` (bag size) and `n` (down-block length) are
+multiples of 64, while `u/2` (half-fringe length) is 0 or 32 modulo 64:
+
+| Shape | `a`, `n` divisibility | `u/2 mod 64` |
+| --- | --- | --- |
+| `off` | both zero | 0 |
+| `topDesc g` | `a=64^(g+1)`, `n=64^g`; scheduled `g≥2` | 0 |
+| `topRise f` | all terms contain `64^(1+f)` | 0 |
+| `mid g` | `a=64^(7+g)-64^(1+g)`, `n=16777215*64^(2+g)` | 32 if `g=0`, otherwise 0 |
+| `botDesc g h` | `g≥h+2`, so both powers in `a,n` have exponent at least 2 | 32 if `h=0`, otherwise 0 |
+| `botRise g h` | `h≤g`, so both powers in `a` have exponent at least 1; `n=0` | 32 if `h=0<g`, otherwise 0 |
+
+The only extra schedule argument is for `topDesc`: if `i=0`, `exp_top`
+gives `d≥t+5`, hence `g≥2` from `d+2i=t+3+g`; if `i>0`, parity and
+`Inner` give `alpha+2≤i`, so `exp_nontop` gives `g≥6`. Every scheduled
+source bag is therefore an integral sequence of 64-wire packets. A down
+interval starts at `u/2 + j*n`, so it is packet-aligned or shifted by 32 and
+has exactly two 32-wire boundary fragments. The up prefix and suffix have the
+same alternatives because `a` is packet-aligned. Thus every individual port
+interval has at most two half-packet boundary fragments, uniformly in `d`.
+Adding these independent worst cases gives at most 130 fragments per
+receiver (two from the parent plus two from each child fringe). The finite
+screen's sharper maximum of 128 uses a schedule-level incompatibility between
+the parent and child misalignment cases; that incompatibility still needs a
+uniform proof before retaining the proposed 64-pair repair bound.
+
+The first two special stages are aligned directly from their definitions:
+the initial root down-flow is `64^(d-1)`, and the nonzero `t=1` flows contain
+`64^(d-5)`, `64^(d-2)`, or `64^(d-6)` factors (`d≥7`). The finite exact
+schedule check remains corroboration: 46,926 receiver instances for
+`7≤d≤40` had aligned bag/down sizes and half-fringe residues only 0 or 32;
+the observed maximum was 128 fragments per receiver. This symbolic result is
+a hand derivation from `NodeShape`, not yet a Lean theorem. It does not prove
+sortedness of packet runs or bound selected-fragment discrepancy `xi_t` and
+rebinning variance `Pi_t`.
+
+### Why parent and child misalignment cannot coincide
+
+For a positive scheduled sender, every 32-mod-64 half-fringe case has the
+same exponent signature `d + 2*i = t + 9`, where `i` is the sender level.
+In `mid`, this is exactly `g=0`; in `botDesc`, it is `h=0`; in `botRise`, it
+is `h=0<g`. The other shapes have aligned half-fringes. Thus if the parent
+sender at level `L-1` is misaligned, `d+2*(L-1)=t+9`; if the child senders
+at level `L+1` are misaligned, `d+2*(L+1)=t+9`. These equations differ by
+4 on the left and cannot both hold. The special `t=0,1` sends are aligned
+directly. Therefore the parent contributes at most two half-packet fragments
+or the 64 children contribute 128, but never both: the uniform receiver
+maximum is 128, repairable as 64 pairs.
+
+An independent exact search through `d=80` also found no simultaneous
+misalignment (442,526 receiver instances); this is supporting finite evidence.
+
+The arithmetic core and its schedule adapter are formalized in the scratch
+module `PacketAlignment.lean`. Its refined copy of the `shape_rat` case split
+retains the `botRise` exponent witness, and `node_shape_refined` specializes
+that classification to the actual integer flows. The checked theorem
+`scheduled_receiver_no_simultaneous_misalignment` proves that the actual
+parent and child flow fringes cannot both be live and 32-mod-64 shifted at any
+ordinary stage. `refined_packet_residues` proves the per-shape packet
+divisibility and half-fringe residues. `blockOf_rank_image` proves that the
+concrete `Finset` wire block maps under `rankIn` onto exactly its half-open
+interval of rank labels; `downSet_rank_image` and `upSet_rank_images` expose
+this for the actual `WireFlow` ports. `downSet_boundary_fragments` proves that
+each positive packet-multiple child cut has zero partial rank-packets when
+aligned and exactly two when shifted by 32. `upSet_boundary_fragments` proves
+the two parent-fringe intervals together contribute zero or two. Finally,
+`receiver_fragment_budget` and its scheduled specialization combine the
+two-piece parent charge with the 64 two-piece child charges to obtain 128,
+using the proved incompatibility.
+
+This closes the rank-coordinate fragment-count interface for `blockOf` and
+the port interval formulas. A value interface is now in the scratch module:
+`RankSortedOn` expresses that values increase with wire index on a source
+bag; its subset theorem shows each `downSet` and `upSet` remains a sorted
+run, and `rankSortedOn_parentPart` / `rankSortedOn_childPort` apply this to
+the actual parent and each child contribution. This is conditional on the
+source bag already being sorted; the full scheduler has not yet established
+that invariant for the packet merge-and-deal labels.
+
+The local repair lemma is now checked: `bitonicMerge64_sorts_two_runs` proves
+that the 64-wire bitonic merge sorts any input whose lower 32 wires are
+nondecreasing and whose upper 32 are nonincreasing, precisely the layout
+obtained by reversing the second of two ascending 32-wire fragments. Its
+depth is at most 6 by `bitonicMerge64_depth_le`. The 128-fragment case can
+therefore be repaired by 64 such pairwise merges, and the parent-only case
+by one, if a fixed placement pairs the fragments into these layouts. The
+global parallel placement, label composition, and proof that it is compatible
+with the full scheduler are still open. The scheduler source-order invariant,
+selected-fragment discrepancy, and rebinning-variance recurrence also remain
+open. No improved sorting-depth coefficient follows from this local result
+alone.
+
+### Heuristic screen for arbitrary two-chain support words (2026-10-14)
+
+To test whether a much cheaper support-aware replacement is plausible, the
+script `two_chain_greedy.py` fixes a physical support word over two chains,
+enumerates all `(a+1)(b+1)` legal Boolean inputs (one threshold per sorted
+chain), and greedily chooses disjoint comparator layers maximizing aggregate
+inversion reduction. This is only a heuristic network search; it proves
+neither minimality nor a uniform theorem.
+
+The search sorts every legal state in the reported cases, but it does not
+beat the generic bitonic-sort fallback. Representative greedy depths are 8
+for `AB` repeated 8 times at width 16, 14 for `AAAABBBB` repeated twice, and
+16 for `AB` repeated 16 times at width 32. A fully contiguous `A^m B^m`
+support is much easier (depth 4 at width 16 and 5 at width 32), consistent
+with the existing merge layout. Sparse unbalanced words can be worse still,
+but those are not the equal-cardinality packet pairs needed here. These data
+show that arbitrary support interleaving is a real obstacle to transferring
+the 13-layer contiguous merge-and-deal; they do not establish a lower bound.
+
+For the actual equal 64-wire pair, the checked 28-layer full-sort-plus-even/
+odd-deal construction remains the only proved support-independent adapter
+here. The heuristic screen gives no reason to expect a simple uniform
+support-aware network to close the depth gap. A worthwhile next gate is a
+formal characterization of the actual packet support words from scheduled
+rank intervals: if they reduce to a small family (for example, bounded-run
+or periodic words), synthesize and prove a network for that family. If the
+family contains arbitrary alternating patterns, this search direction has
+not found a plausible route to the required per-edge depth.
+
+### The scheduled repair pairs are not arbitrary interleavings
+
+The preceding screen was too broad for the actual endpoint-repair pairs. In
+`PacketAlignment.lean`, `rankInterval_endpoint_pair_ordered` now proves that
+the two 32-wire pieces taken from the ends of one rank interval are strictly
+ordered by physical wire index. `upFringe_endpoint_pair_ordered` proves the
+same for the two endpoint pieces of one sender's shifted up-fringe. The proof
+uses only that `rankIn` is strictly increasing on the sender support and that
+the two rank intervals are separated. Thus, on the 64-wire union, the input
+support word is exactly `A^32 B^32` in increasing wire order, even if the
+selected wires are sparse in the ambient `Fin (64^d)`.
+
+This is precisely the order-preserving embedding needed to scatter a merge
+network onto the fixed supports. The 28-layer sorter remains useful for
+arbitrary 128-wire packet pairs, but it is unnecessary for these 64-wire
+repair pairs. A Batcher odd-even merge of two ascending runs has the right
+input orientation and recursively uses depth `log2(64)=6`; unlike the existing
+bitonic merge theorem, it does not require reversing the second run. Formal
+construction/correctness of that odd-even merge and its parity-deal adapter
+are the next proof gate. If those pass, the earlier six-layer repair estimate
+has a sound local fixed-label basis, though the full scheduler's packet
+profile and discrepancy/variance proof still remain open.
+
+### Odd-even merge network formalization (2026-10-14)
+
+The width-64 candidate is now constructed in scratch Lean as
+`oddEvenMergeNet 6` in `OddEvenMerge64.lean`. The recursive definition embeds
+the two smaller merges on even and odd physical positions, then appends the
+parallel correction comparators `(1,2), (3,4), ..., (61,62)`. A kernel-checked
+induction proves `oddEvenMergeNet_depth_le`; hence the 64-wire network has
+depth at most 6. Given a sorted output, `oddEvenMergeNet64_parity_profile`
+proves the adjacent even/odd rank interleaving needed for the dealt packets.
+
+The independent screen `odd_even_merge64_screen.py` checks all 33² Boolean
+threshold pairs from two ascending 32-wire inputs. It confirms sorting for
+all cases, with 161 comparators arranged in six disjoint layers. The full
+sorting theorem for two arbitrary ascending runs is still open in Lean, so
+this finite screen is not yet a formal merge-and-deal theorem. Direct
+exhaustive kernel reduction was too costly; next is a structural induction
+over the even/odd submerges, or a compact verified Boolean simulation that
+can feed the restricted zero-one argument.
+
+### Odd-even merge network formalization (2026-10-14)
+
+The width-64 candidate is now constructed in scratch Lean as
+`oddEvenMergeNet 6` in `OddEvenMerge64.lean`. The recursive definition embeds
+the two smaller merges on even and odd physical positions, then appends the
+parallel correction comparators `(1,2), (3,4), ..., (61,62)`. A kernel-checked
+induction proves `oddEvenMergeNet_depth_le`; hence the 64-wire network has
+depth at most 6. Given a sorted output, `oddEvenMergeNet64_parity_profile`
+proves the adjacent even/odd rank interleaving needed for the dealt packets.
+
+The independent screen `odd_even_merge64_screen.py` checks all 33² Boolean
+threshold pairs from two ascending 32-wire inputs. It confirms sorting for
+all cases, with 161 comparators arranged in six disjoint layers. The full
+sorting theorem for two arbitrary ascending runs is still open in Lean, so
+this finite screen is not yet a formal merge-and-deal theorem. Direct
+exhaustive kernel reduction was too costly; next is a structural induction
+over the even/odd submerges, or a compact verified Boolean simulation that
+can feed the restricted zero-one argument.
+
+The structural induction has now been reduced to a sharper interface. The
+recursive even and odd submerges each receive two sorted runs, so the induction
+hypothesis sorts their outputs. Their inputs are coordinatewise ordered (even
+wire values are at most the following odd wire values within each original
+ascending run); comparator-network execution preserves this pointwise order.
+The latter fact is kernel checked as `exec_mono_input` in `OddEvenMerge64.lean`.
+The parity-subnetwork execution identities are now kernel checked as
+`oddEvenFront_exec_even` and `oddEvenFront_exec_odd`; the recursive network's
+front/correction decomposition is `oddEvenMergeNet_exec_succ_succ`. The
+remaining Lean work is to show sorted parity outputs plus that pointwise
+relation make the final odd/even correction layer globally sorted. No full
+merge correctness theorem has been proved yet; the six-layer depth and threshold
+simulation remain the strongest checked evidence.
+
+### Correction-layer invariant (2026-10-14)
+
+The final correction layer needs more than sorted even/odd outputs and
+`E_i <= O_i`. Between neighboring correction comparators its output has
+`max(O_(i-1), E_i)` followed by `min(O_i, E_(i+1))`; ordering these requires
+the shifted inequality `O_(i-1) <= E_(i+1)`. The abstract Lean lemmas
+`correction_pair_ordered` and `correction_pairs_interleave` now verify that
+these same-pair and between-pair conditions suffice. The critical remaining
+inductive obligation is to derive the shifted inequality for the recursively
+merged parity outputs from the two-run input hypothesis. Until that is proved
+and connected to the actual correction network execution, merge correctness
+remains open.
+
+The shifted inequality has a promising Boolean counting proof. If the sorted
+Boolean parity outputs are `E` and `O`, failure of `O_(i-1) <= E_(i+1)` forces
+`O_(i-1) = true` and `E_(i+1) = false`. Then `O` has at least `m-i+1` true
+entries and `E` at most `m-i-2`, so `trueCount(O) >= trueCount(E)+3`. But before
+the recursive merge, the even and odd subsequences of two ascending runs have
+true counts differing by at most two: each run contributes a parity imbalance
+of at most one. Comparator execution preserves Boolean-value counts, so that
+gap survives the recursive submerge. Thus `trueCount(O) <= trueCount(E)+2`,
+ruling out failure. This reduces the shifted invariant to three Lean components:
+count preservation for networks, the at-most-two parity count bound for two
+monotone Boolean runs, and the sorted-Boolean suffix/prefix counting argument.
+This derivation has not yet been formalized; it is a proof plan, not a checked
+theorem.
+
+Update: `boolTrueCount_exec` in `OddEvenMerge64.lean` now kernel-checks the
+network count-preservation component for every Boolean comparator network. The
+at-most-two parity count bound and the sorted-Boolean suffix/prefix argument
+remain to be formalized; the shifted invariant is not yet proved.
+
+Update: the at-most-two parity-count estimate is now kernel checked as
+`two_monotone_runs_parity_count_gap` in `OddEvenMerge64.lean`. It is stated for
+the sum of the two runs' even/odd subsequence counts, matching the physical
+parity split when the run length is even. The count preservation lemma
+`boolTrueCount_exec` is also kernel checked. The remaining step for the shifted
+invariant is to relate these input counts to the recursively sorted parity
+outputs, then formalize the sorted-Boolean suffix/prefix contradiction.
+
+Update: `oddEvenFront_preserves_parity_count_gap` now kernel-checks that any
+at-most-two true-count gap between the input even/odd parity subsequences is
+preserved on the recursive submerge outputs. It uses the checked parity
+execution identities and `boolTrueCount_exec`. The remaining bridge is to
+instantiate the two-run count lemma on the actual two halves of a `twoRuns`
+input and identify those summed counts with the full even/odd projections.
+
+### Global depth accounting for the width-64 merge (2026-10-14)
+
+The 6-layer `oddEvenMergeNet 6` is a candidate for the *local 32+32 fragment
+repair*, not a drop-in replacement for one 13-layer merge-and-deal round on
+4096-wire packets. A 13-layer round acts on the entire two 4096-wire packets;
+the width-64 network only sees one pair of 32-wire fragments. Replacing the
+whole round would require a blocked recursive merge/deal construction and a
+proof that its output packet labels compose through all 26 matching rounds.
+No such construction is present, so that substitution cannot currently be
+credited with a depth saving.
+
+For the existing conditional gate, 26 full-packet rounds cost `26*13 = 338`
+layers and the assumed receiver reassembly costs 57, giving 395 layers, or
+197.5 at two bits of scale per cycle. The width-64 merge can make the
+six-layer fragment-pair step in that reassembly estimate plausible only when
+the actual receiver fragments are paired as ordered `A^32 B^32` supports,
+processed disjointly, and repacked into the next required runs. Thus it
+validates a local ingredient of the 57-layer allowance; it does not lower 395
+by itself. If the six-layer operation turns out to be an additional stage
+outside that allowance, the total is 401 and the coefficient is 200.5, already
+over the target. Using the robust 21-layer arbitrary-support sorter in place
+of that six-layer step gives 410 / 2 = 205, as previously recorded.
+
+The immediate global gate is therefore not more optimization of the local
+network: prove its two-run sorting theorem and parity/deal profile, instantiate
+the deterministic fragment pairing for every ordinary receiver, then show
+the resulting supports meet the inputs of the next scheduled round. Only if
+those fit within the stated 57 layers does the candidate retain the
+sub-200 conditional coefficient; the unresolved matching-family, tail, and
+rank-recurrence obligations remain after that.
+
+Update (2026-10-14): the finite-index count split is now kernel checked as
+`boolTrueCount_append` in `OddEvenMerge64.lean`, using the subtype-of-sum
+equivalence and `finSumFinEquiv`. This closes the cardinality reindexing gap
+for decomposing a concatenated Boolean vector into its two runs. The merge
+sorting theorem is still open: the recursive step must identify the full
+even/odd projections with appendings of the source-run projections, then use
+the preserved count gap to discharge the shifted correction inequality.
+
+The scheduled support side is partly ready: `rankInterval_endpoint_pair_ordered`
+and `upFringe_endpoint_pair_ordered` establish the required physical order of
+each pair of 32-wire fragments, and `scheduledUpFringePairSupport_disjoint`
+allows distinct child repairs to run in parallel. These facts supply the
+ordered support and disjointness premises, but the width-64 merge theorem has
+not yet been proved and there is no receiver theorem assembling all pairs and
+proving the resulting labels feed the next scheduled round.
+
+Update (2026-10-14): `evenProjection_append` and `oddProjection_append` now
+prove the projection identities for arbitrary equal-length runs, and
+`boolTrueCount_evenProjection_add` / `boolTrueCount_oddProjection_add` give
+the corresponding exact count decompositions. `evenEmbed_eq_evenIndexFull`
+and `oddEmbed_eq_oddIndexFull` identify these index maps with the recursive
+power-of-two parity embeddings, with explicit `Fin.cast`s. Thus the index and
+cardinality reindexing pieces are checked. The follow-up theorem
+`concatenated_two_run_parity_count_gap` now transports the monotone-run
+imbalance to the full even/odd projections of the concatenated input: even
+has no more true entries than odd, while odd exceeds even by at most two.
+This is stronger in one direction than the symmetric ±2 invariant required
+by `oddEvenFront_preserves_parity_count_gap`, and supplies its missing
+threshold-count premise after the recursive parity embeddings are identified.
+The finite-count step is now kernel checked as
+`monotone_bool_shift_of_count_gap`: for equal-length monotone Boolean
+sequences `E,O`, pointwise `E≤O` and `count(O)≤count(E)+2` imply
+`O(i-1)≤E(i+1)` at every valid index. Its proof injects the true support of
+`E`, together with the three positions `i-1,i,i+1`, into the true support of
+`O`; a crossing would therefore force a surplus of at least three. The value-level lift `monotone_value_shift_of_threshold_counts` converts
+thresholdwise count bounds into the corresponding value inequality, and
+`oddEvenFront_shift` states that result directly for the recursive front's
+even/odd outputs. Its hypotheses are now an explicit interface. They have not
+yet been derived from the two sorted input runs, nor has the resulting local
+inequality been composed with the correction layer into a full sortedness
+theorem. The pointwise-order hypothesis is now discharged at the reusable
+submerge level: `two_monotone_runs_even_le_odd` compares the parity inputs
+inside each of the two sorted source runs, and
+`common_submerge_even_le_odd` transports that inequality through a common
+comparator network using `exec_mono_input`. The remaining recursive proof
+now has its input-side induction lemma:
+`two_monotone_runs_parity_segments_sorted` proves that each parity projection
+of two sorted source runs is itself two sorted runs. Thus the recursive
+sorting induction can be applied to each parity submerge. The actual
+power-of-two induction theorem is not yet established; it must still transport
+the threshold count gap to the recursive embedding indices and prove that the
+correction layer produces a globally monotone output. The full 64-wire merge
+theorem remains open.
+
+Update (2026-10-15): `recursive_parity_outputs_sorted` now kernel-checks the
+generic recursive induction step: if the same submerge network maps every
+concatenation of two sorted runs to a sorted output, then applying it to each
+full even/odd projection of two sorted source runs yields sorted recursive
+outputs. The proof combines the checked parity-segment lemma with that
+induction hypothesis. This isolates the recursive sorting part, but is not yet
+instantiated to `oddEvenMergeNet`; the remaining work is to align the actual
+recursive embeddings and count-gap invariant, then prove the correction layer
+makes the interleaving globally sorted.
+
+Further update (2026-10-15): `oddEvenFront_recursive_outputs_sorted` packages
+the actual network's scatter embeddings and execution identities with its
+recursive sorting hypothesis. It proves both parity outputs of the front are
+sorted when each actual embedded parity input splits into two sorted runs.
+Those four run-monotonicity premises have not yet been derived from the
+original two sorted runs; nor are the shifted count hypotheses yet composed
+with the correction layer. Thus this closes the network-output identification
+step, but not the full induction step.
+
+Further update (2026-10-15): `oddEven_parity_inputs_sorted` proves the four
+actual parity-input run monotonicity facts by explicit power-of-two casts and
+wire-index equalities: each parity sequence restricted to either source half
+is the corresponding every-other-wire subsequence of that sorted half.
+`oddEvenFront_recursive_outputs_sorted_of_two_runs` composes this with the
+actual-network recursive step. Thus, assuming the level-`k+1` merge induction
+hypothesis, the two parity outputs before correction are now proved monotone
+from the original two sorted runs. The remaining merge proof is the threshold
+count gap and same-rank comparison for those outputs, followed by applying the
+correction layer and proving the complete output monotone.
+
+Further update (2026-10-15): `oddEvenFront_same_rank_order` now proves the
+actual front's same-rank inequality from the two sorted source runs. It shows
+even and odd inputs are ordered within the relevant source half, then
+transports that pointwise order through the shared recursive comparator
+network. `oddEvenFront_shift_of_two_runs` packages this with the recursive
+sortedness induction and the existing threshold-count argument: if the odd
+front outputs have at most two more entries above each threshold than the even
+outputs, the required two-position shifted inequality follows. The actual
+threshold count-gap premise is still to be derived, and the correction layer
+has not yet been composed into a global sortedness theorem.
+
+Further update (2026-10-15): the same-rank front inequality is now
+kernel-checked as `oddEvenFront_same_rank_order`, derived from the two sorted
+source halves and monotonicity of the shared recursive submerge. The
+conditional aggregator `oddEvenFront_shift_of_two_runs` combines that order,
+recursive output monotonicity, and the shifted threshold lemma. Deriving the
+required threshold-count bound for the actual front outputs remains open; the
+present result does not yet complete the correction-layer proof.
+
+Further update (2026-10-15): `oddEvenFront_threshold_count_gap` now derives the
+actual recursive front's threshold-count bound from the original two sorted
+runs. It thresholdizes the input, applies the proved even/odd parity-count gap,
+and uses threshold commutation plus parity-count preservation through the
+recursive submerge. `oddEvenFront_shift_from_two_runs` packages this with the
+recursive sortedness and same-rank hypotheses to obtain the needed shifted
+inequality directly from the original runs. These results close the front's
+count-gap and shift obligations under the recursive merge induction
+hypothesis. The correction-layer composition and resulting full merge
+sortedness theorem remain open.
+
+Further update (2026-10-15): `correction_output_monotone` packages the local
+correction facts into global monotonicity of the alternating corrected-value
+sequence. Its adjacent steps are exactly the pair-order and pair-interleaving
+bounds. This closes the value-level sorting argument for the idealized
+correction formulas. The remaining formal bridge is to prove that execution of
+the concrete `oddEvenCrossLayer` has those per-wire corrected values; after
+that, the two-run hypotheses and recursive induction can be composed into the
+actual merge theorem.
+
+Further update (2026-10-15): the concrete correction layer is now factored
+through named comparators, and `foldl_parallel_at_comparator` proves that a
+wire touched by a disjoint layer receives exactly the value of its unique
+comparator on the original input. The checked `oddEvenCrossLayer_exec_odd`
+and `oddEvenCrossLayer_exec_even` identify the actual odd-wire minimum and
+noninitial even-wire maximum with the parity inputs. This closes the main
+per-wire execution bridge. The untouched endpoint wires and the adjacent-wire
+case split still need to be composed with the front's same-rank and shifted
+inequalities before the full 64-wire merge theorem is complete.
+
+Correction to that update: `oddEvenCrossLayer_exec_first` and
+`oddEvenCrossLayer_exec_last` now also prove the two untouched endpoint
+identities. The remaining step is the finite adjacent-wire case split that
+combines these endpoint facts and the min/max formulas with the front profile;
+the full merge theorem is still not proved.
+
+Endpoint composition route (2026-10-15): extend the front's finite even and
+odd profiles to Nat by assigning every rank beyond the final one the last
+odd value. The extension makes the otherwise unpaired final odd wire equal to
+the idealized correctedRight value at that rank. The actual correction
+formulas then match the alternating correctedLeft/correctedRight sequence
+on every physical wire. The existing correction_output_monotone theorem can
+therefore discharge all adjacent comparisons at once, provided the extension
+is shown monotone and its corrected-pair inequalities are split into the
+interior shifted case, the final-rank endpoint case, and the constant tail.
+This is a proof plan only; the Lean composition and recursive sorting theorem
+remain open.
+
+Lean progress (2026-10-15): correction_tail_extension_monotone now
+formalizes the extension argument. Given monotone finite parity profiles, the
+same-rank order, and the interior two-place shift, it proves the idealized
+corrected sequence monotone across the terminal pair and constant tail. The
+focused lake env lean ..\\experiments\\packets\\OddEvenMerge64.lean check
+passes. The remaining bridge is to identify each concrete correction-layer
+wire with this extended sequence, then compose the result with
+oddEvenFront_shift_from_two_runs in the recursive sorting induction; the
+64-wire sorting theorem is still open.
+
+Correction-layer bridge follow-up (2026-10-15): `correction_tail_extension_monotone`
+is kernel checked and supplies monotonicity for the idealized output extended
+through the final odd wire. I tried to state a pointwise equality between that
+sequence and `(oddEvenCrossLayer k).exec`; the even/interior-odd/final-odd
+case split is mathematically direct, but my dependent `Fin` index rewrites did
+not close. The attempted theorem was removed, leaving the focused file clean.
+The next formal step is to define the physical-rank-to-parity-rank maps as
+separate checked equalities, then prove the profile equality from those
+identities without unfolding dependent `Fin` proofs in the main theorem. Until
+that equality and the recursive sorting induction are checked, neither the
+six-layer odd-even merge claim nor the resulting 197.5 coefficient is a
+formal UB-25 contribution. Even after the merge proof, the global matching,
+exceptional-tail, and coupled rank/discrepancy recurrence remain major open
+obligations.
+Index-map progress (2026-10-15): `evenEmbed_of_evenIndex` and
+`oddEmbed_of_oddIndex` now kernel-check the physical-wire to parity-rank
+identities directly, with the divisibility and quotient arithmetic isolated
+from dependent `Fin` proof terms. The focused Lean file passes after adding
+these lemmas. They are the intended adapters for the concrete profile bridge;
+that bridge itself, the sorting induction, and the global UB-25 recurrence
+remain open.

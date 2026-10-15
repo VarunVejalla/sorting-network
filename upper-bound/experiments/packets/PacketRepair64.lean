@@ -1,0 +1,343 @@
+import OddEvenMerge64
+import PacketAlignment
+import AKS.Chvatal.StageNet
+
+/-! Fixed-label repair of two separated ascending half-packets, using
+Batcher's six-layer odd-even merge. This file uses the best package's
+comparator-network model; `check-lean.ps1` builds the scratch imports. -/
+
+namespace Chvatal.PacketAlignment
+
+open Classical
+
+/-- Concatenate the increasing enumerations of two physically separated
+32-wire supports. The placement depends only on the supports. -/
+noncomputable def orderedHalfPairEmbedding {N : Nat}
+    (A B : Finset (Fin N)) (hA : A.card = 32) (hB : B.card = 32)
+    (hsep : ∀ a ∈ A, ∀ b ∈ B, a < b) : Fin 64 ↪o Fin N :=
+  OrderEmbedding.ofStrictMono
+    (fun i : Fin 64 => Fin.addCases (fun a : Fin 32 => A.orderEmbOfFin hA a)
+      (fun b : Fin 32 => B.orderEmbOfFin hB b) i) (by
+      intro i j hij
+      rcases hi : (finSumFinEquiv : Fin 32 ⊕ Fin 32 ≃ Fin 64).symm i with a | a <;>
+        rcases hj : (finSumFinEquiv : Fin 32 ⊕ Fin 32 ≃ Fin 64).symm j with b | b
+      · have hie : i = Fin.castAdd 32 a := by
+          simpa only [Equiv.apply_symm_apply, finSumFinEquiv_apply_left, finSumFinEquiv_apply_right] using (congrArg (finSumFinEquiv : Fin 32 ⊕ Fin 32 ≃ Fin 64) hi)
+        have hje : j = Fin.castAdd 32 b := by
+          simpa only [Equiv.apply_symm_apply, finSumFinEquiv_apply_left, finSumFinEquiv_apply_right] using (congrArg (finSumFinEquiv : Fin 32 ⊕ Fin 32 ≃ Fin 64) hj)
+        rw [hie, hje] at hij ⊢
+        simp only [Fin.addCases_left]
+        exact (A.orderEmbOfFin hA).strictMono (by simpa using hij)
+      · have hie : i = Fin.castAdd 32 a := by
+          simpa only [Equiv.apply_symm_apply, finSumFinEquiv_apply_left, finSumFinEquiv_apply_right] using (congrArg (finSumFinEquiv : Fin 32 ⊕ Fin 32 ≃ Fin 64) hi)
+        have hje : j = Fin.natAdd 32 b := by
+          simpa only [Equiv.apply_symm_apply, finSumFinEquiv_apply_left, finSumFinEquiv_apply_right] using (congrArg (finSumFinEquiv : Fin 32 ⊕ Fin 32 ≃ Fin 64) hj)
+        rw [hie, hje]
+        simp only [Fin.addCases_left, Fin.addCases_right]
+        exact hsep _ (A.orderEmbOfFin_mem hA a) _ (B.orderEmbOfFin_mem hB b)
+      · have hie : i = Fin.natAdd 32 a := by
+          simpa only [Equiv.apply_symm_apply, finSumFinEquiv_apply_left, finSumFinEquiv_apply_right] using (congrArg (finSumFinEquiv : Fin 32 ⊕ Fin 32 ≃ Fin 64) hi)
+        have hje : j = Fin.castAdd 32 b := by
+          simpa only [Equiv.apply_symm_apply, finSumFinEquiv_apply_left, finSumFinEquiv_apply_right] using (congrArg (finSumFinEquiv : Fin 32 ⊕ Fin 32 ≃ Fin 64) hj)
+        have hv := Fin.lt_def.mp hij
+        rw [hie, hje] at hv
+        have ha := a.isLt
+        have hb := b.isLt
+        simp only [Fin.val_natAdd, Fin.val_castAdd] at hv
+        omega
+      · have hie : i = Fin.natAdd 32 a := by
+          simpa only [Equiv.apply_symm_apply, finSumFinEquiv_apply_left, finSumFinEquiv_apply_right] using (congrArg (finSumFinEquiv : Fin 32 ⊕ Fin 32 ≃ Fin 64) hi)
+        have hje : j = Fin.natAdd 32 b := by
+          simpa only [Equiv.apply_symm_apply, finSumFinEquiv_apply_left, finSumFinEquiv_apply_right] using (congrArg (finSumFinEquiv : Fin 32 ⊕ Fin 32 ≃ Fin 64) hj)
+        rw [hie, hje] at hij ⊢
+        simp only [Fin.addCases_right]
+        apply (B.orderEmbOfFin hB).strictMono
+        have hv := Fin.lt_def.mp hij
+        apply Fin.mk_lt_mk.mpr
+        simp only [Fin.val_natAdd] at hv
+        omega)
+
+@[simp] theorem orderedHalfPairEmbedding_left {N : Nat}
+    (A B : Finset (Fin N)) (hA : A.card = 32) (hB : B.card = 32)
+    (hsep : ∀ a ∈ A, ∀ b ∈ B, a < b) (i : Fin 32) :
+    orderedHalfPairEmbedding A B hA hB hsep (Fin.castAdd 32 i) =
+      A.orderEmbOfFin hA i := by
+  simp [orderedHalfPairEmbedding]
+
+@[simp] theorem orderedHalfPairEmbedding_right {N : Nat}
+    (A B : Finset (Fin N)) (hA : A.card = 32) (hB : B.card = 32)
+    (hsep : ∀ a ∈ A, ∀ b ∈ B, a < b) (i : Fin 32) :
+    orderedHalfPairEmbedding A B hA hB hsep (Fin.natAdd 32 i) =
+      B.orderEmbOfFin hB i := by
+  change @Fin.addCases 32 32 (fun _ => Fin N) (fun a => A.orderEmbOfFin hA a)
+    (fun b => B.orderEmbOfFin hB b) (Fin.natAdd 32 i) = B.orderEmbOfFin hB i
+  rw [Fin.addCases_right]
+
+theorem orderedHalfPairEmbedding_range {N : Nat}
+    (A B : Finset (Fin N)) (hA : A.card = 32) (hB : B.card = 32)
+    (hsep : ∀ a ∈ A, ∀ b ∈ B, a < b) :
+    Set.range (orderedHalfPairEmbedding A B hA hB hsep) =
+      {w | w ∈ A ∪ B} := by
+  ext w
+  constructor
+  · rintro ⟨i, rfl⟩
+    change orderedHalfPairEmbedding A B hA hB hsep i ∈ A ∪ B
+    refine Fin.addCases (m := 32) (n := 32) (fun a => ?_) (fun b => ?_) i
+    · rw [orderedHalfPairEmbedding_left]
+      exact Finset.mem_union_left _ (A.orderEmbOfFin_mem hA a)
+    · rw [orderedHalfPairEmbedding_right]
+      exact Finset.mem_union_right _ (B.orderEmbOfFin_mem hB b)
+  · intro hw
+    rcases Finset.mem_union.mp hw with ha | hb
+    · let a := (A.orderIsoOfFin hA).symm ⟨w, ha⟩
+      refine ⟨Fin.castAdd 32 a, ?_⟩
+      rw [orderedHalfPairEmbedding_left]
+      change ↑(A.orderIsoOfFin hA ((A.orderIsoOfFin hA).symm ⟨w, ha⟩)) = w
+      simp
+    · let b := (B.orderIsoOfFin hB).symm ⟨w, hb⟩
+      refine ⟨Fin.natAdd 32 b, ?_⟩
+      rw [orderedHalfPairEmbedding_right]
+      change ↑(B.orderIsoOfFin hB ((B.orderIsoOfFin hB).symm ⟨w, hb⟩)) = w
+      simp
+
+/-- A fixed comparator network on the union of two separated half-packets. -/
+noncomputable def repairOrderedHalfPair {N : Nat}
+    (A B : Finset (Fin N)) (hA : A.card = 32) (hB : B.card = 32)
+    (hsep : ∀ a ∈ A, ∀ b ∈ B, a < b) : ComparatorNetwork N :=
+  (oddEvenMergeNet 6).scatterEmbed N (orderedHalfPairEmbedding A B hA hB hsep)
+
+theorem repairOrderedHalfPair_depth_le {N : Nat}
+    (A B : Finset (Fin N)) (hA : A.card = 32) (hB : B.card = 32)
+    (hsep : ∀ a ∈ A, ∀ b ∈ B, a < b) :
+    (repairOrderedHalfPair A B hA hB hsep).depth ≤ 6 :=
+  oddEvenMergeNet64_scatter_depth_le _
+
+theorem repairOrderedHalfPair_sorts {N : Nat} {α : Type} [LinearOrder α]
+    (A B : Finset (Fin N)) (hA : A.card = 32) (hB : B.card = 32)
+    (hsep : ∀ a ∈ A, ∀ b ∈ B, a < b) (v : Fin N → α)
+    (hsA : RankSortedOn A v) (hsB : RankSortedOn B v) :
+    RankSortedOn (A ∪ B) ((repairOrderedHalfPair A B hA hB hsep).exec v) := by
+  let e := orderedHalfPairEmbedding A B hA hB hsep
+  have ha : Monotone (fun i : Fin 32 => v (e (Fin.castAdd 32 i))) := by
+    intro i j hij
+    simp only [e, orderedHalfPairEmbedding_left]
+    apply hsA (A.orderEmbOfFin_mem hA i) (A.orderEmbOfFin_mem hA j)
+    exact Fin.le_def.mp ((A.orderEmbOfFin hA).monotone hij)
+  have hb : Monotone (fun i : Fin 32 => v (e (Fin.natAdd 32 i))) := by
+    intro i j hij
+    simp only [e, orderedHalfPairEmbedding_right]
+    apply hsB (B.orderEmbOfFin_mem hB i) (B.orderEmbOfFin_mem hB j)
+    exact Fin.le_def.mp ((B.orderEmbOfFin hB).monotone hij)
+  have hs := oddEvenMergeNet64_scatter_sorts e v ha hb
+  intro x y hx hy hxy
+  have hx' : x ∈ Set.range e := by
+    rw [show Set.range e = {w | w ∈ A ∪ B} from orderedHalfPairEmbedding_range A B hA hB hsep]
+    exact hx
+  have hy' : y ∈ Set.range e := by
+    rw [show Set.range e = {w | w ∈ A ∪ B} from orderedHalfPairEmbedding_range A B hA hB hsep]
+    exact hy
+  obtain ⟨i, rfl⟩ := hx'
+  obtain ⟨j, rfl⟩ := hy'
+  exact hs (e.le_iff_le.mp (Fin.le_def.mpr hxy))
+
+theorem repairOrderedHalfPair_exec_outside {N : Nat} {α : Type} [LinearOrder α]
+    (A B : Finset (Fin N)) (hA : A.card = 32) (hB : B.card = 32)
+    (hsep : ∀ a ∈ A, ∀ b ∈ B, a < b) (v : Fin N → α)
+    (w : Fin N) (hw : w ∉ A ∪ B) :
+    (repairOrderedHalfPair A B hA hB hsep).exec v w = v w := by
+  exact ComparatorNetwork.scatterEmbed_exec_outside (oddEvenMergeNet 6) N
+    (orderedHalfPairEmbedding A B hA hB hsep) v w (by
+      rw [orderedHalfPairEmbedding_range]
+      exact hw)
+
+/-- The packet invariant only orders values inside each 64-rank cell of a
+support. It imposes no value order between different packets. -/
+def PacketSortedOn {N : Nat} {α : Type} [Preorder α]
+    (s : Finset (Fin N)) (v : Fin N → α) : Prop :=
+  ∀ p : Nat, RankSortedOn (Chvatal.blockOf s (64 * p) (64 * (p + 1))) v
+
+/-- Either aligned half of one packet is an ascending run under the packet
+invariant; sorting the whole sender bag is unnecessary. -/
+theorem packetSortedOn_halfPacket {N : Nat} {α : Type} [Preorder α]
+    (s : Finset (Fin N)) (v : Fin N → α) (hpack : PacketSortedOn s v)
+    (lo : Nat) (hres : lo % 64 = 0 ∨ lo % 64 = 32) :
+    RankSortedOn (Chvatal.blockOf s lo (lo + 32)) v := by
+  apply rankSortedOn_subset (s := Chvatal.blockOf s
+    (64 * (lo / 64)) (64 * (lo / 64 + 1))) ?_ (hpack (lo / 64))
+  intro w hw
+  have h := Chvatal.mem_blockOf.mp hw
+  apply Chvatal.mem_blockOf.mpr
+  have hdiv := Nat.mod_add_div lo 64
+  rcases hres with hres | hres <;> rw [hres] at hdiv <;>
+    exact ⟨h.1, by omega, by omega⟩
+
+/-- The actual two half-packet ends of a shifted down-cut are sorted even
+when the sender's packets have unrelated value ranges. -/
+theorem packetSortedOn_rankInterval_endpoints {N : Nat} {α : Type} [Preorder α]
+    (s : Finset (Fin N)) (v : Fin N → α) (hpack : PacketSortedOn s v)
+    (lo hi : Nat) (hspan : 64 ≤ hi - lo)
+    (hlo : lo % 64 = 32) (hhi : hi % 64 = 32) :
+    RankSortedOn (Chvatal.blockOf s lo (lo + 32)) v ∧
+      RankSortedOn (Chvatal.blockOf s (hi - 32) hi) v := by
+  constructor
+  · exact packetSortedOn_halfPacket s v hpack lo (Or.inr hlo)
+  · have hhi32 : 32 ≤ hi := by omega
+    have hres : (hi - 32) % 64 = 0 := by omega
+    have heq : hi - 32 + 32 = hi := by omega
+    simpa only [heq] using
+      packetSortedOn_halfPacket s v hpack (hi - 32) (Or.inl hres)
+
+/-- There is one input-independent six-layer repair for these two separated
+half-packets. Its correctness assumes sorted packets, not a sorted bag. -/
+theorem rankInterval_endpoint_repair_exists {N : Nat}
+    (s : Finset (Fin N)) (lo hi : Nat) (hspan : 64 ≤ hi - lo)
+    (hcard : hi ≤ s.card) (hlo : lo % 64 = 32) (hhi : hi % 64 = 32) :
+    ∃ net : ComparatorNetwork N, net.depth ≤ 6 ∧
+      ∀ {α : Type} [LinearOrder α] (v : Fin N → α), PacketSortedOn s v →
+        RankSortedOn (Chvatal.blockOf s lo (lo + 32) ∪
+          Chvatal.blockOf s (hi - 32) hi) (net.exec v) := by
+  let A := Chvatal.blockOf s lo (lo + 32)
+  let B := Chvatal.blockOf s (hi - 32) hi
+  have hc := rankInterval_endpoint_pair s lo hi hspan hcard
+  have hA : A.card = 32 := hc.2.1
+  have hB : B.card = 32 := hc.2.2.1
+  have hsep : ∀ a ∈ A, ∀ b ∈ B, a < b := by
+    intro a ha b hb
+    exact rankInterval_endpoint_pair_ordered s lo hi hspan ha hb
+  refine ⟨repairOrderedHalfPair A B hA hB hsep,
+    repairOrderedHalfPair_depth_le A B hA hB hsep, ?_⟩
+  intro α _ v hp
+  obtain ⟨hsA, hsB⟩ := packetSortedOn_rankInterval_endpoints s v hp lo hi hspan hlo hhi
+  exact repairOrderedHalfPair_sorts A B hA hB hsep v hsA hsB
+
+/-- Both halves chosen by the actual shifted up-fringe lie within individual
+source packets. The source packet invariant therefore sorts both runs. -/
+theorem packetSortedOn_upFringe_endpoints {N : Nat} {α : Type} [Preorder α]
+    (s : Finset (Fin N)) (v : Fin N → α) (hpack : PacketSortedOn s v)
+    (π : Nat) (hcard64 : 64 ∣ s.card) (hhalf32 : (π / 2) % 64 = 32)
+    (hπcard : π ≤ s.card) :
+    RankSortedOn (Chvatal.blockOf s (π / 2 - 32) (π / 2)) v ∧
+      RankSortedOn (Chvatal.blockOf s (s.card - π / 2) (s.card - π / 2 + 32)) v := by
+  have hhalf : 32 ≤ π / 2 := by omega
+  have hc0 : s.card % 64 = 0 := Nat.mod_eq_zero_of_dvd hcard64
+  have hresA : (π / 2 - 32) % 64 = 0 := by omega
+  have hresB : (s.card - π / 2) % 64 = 32 := by omega
+  constructor
+  · have heq : π / 2 - 32 + 32 = π / 2 := by omega
+    simpa only [heq] using
+      packetSortedOn_halfPacket s v hpack (π / 2 - 32) (Or.inl hresA)
+  · exact packetSortedOn_halfPacket s v hpack (s.card - π / 2) (Or.inr hresB)
+
+/-- The shifted up-fringe has a single fixed six-layer repair of its two
+boundary half-packets. Values outside the pair support are unchanged. -/
+theorem upFringe_endpoint_repair_exists {N : Nat}
+    (s : Finset (Fin N)) (π : Nat) (hπeven : 2 ∣ π) (hcard64 : 64 ∣ s.card)
+    (hhalf32 : (π / 2) % 64 = 32) (hπcard : π ≤ s.card) :
+    ∃ net : ComparatorNetwork N, net.depth ≤ 6 ∧
+      (∀ {α : Type} [LinearOrder α] (v : Fin N → α), PacketSortedOn s v →
+        RankSortedOn (upFringePairSupport s π) (net.exec v)) ∧
+      (∀ {α : Type} [LinearOrder α] (v : Fin N → α) (w : Fin N),
+        w ∉ upFringePairSupport s π → net.exec v w = v w) := by
+  let A := Chvatal.blockOf s (π / 2 - 32) (π / 2)
+  let B := Chvatal.blockOf s (s.card - π / 2) (s.card - π / 2 + 32)
+  have hc := upFringe_endpoint_pair s π hπeven hcard64 hhalf32 hπcard
+  have hA : A.card = 32 := hc.2.1
+  have hB : B.card = 32 := hc.2.2.1
+  have hsep : ∀ a ∈ A, ∀ b ∈ B, a < b := by
+    intro a ha b hb
+    exact upFringe_endpoint_pair_ordered s π hπeven hhalf32 hπcard ha hb
+  refine ⟨repairOrderedHalfPair A B hA hB hsep,
+    repairOrderedHalfPair_depth_le A B hA hB hsep, ?_, ?_⟩
+  · intro α _ v hp
+    obtain ⟨hsA, hsB⟩ := packetSortedOn_upFringe_endpoints s v hp π hcard64 hhalf32 hπcard
+    exact repairOrderedHalfPair_sorts A B hA hB hsep v hsA hsB
+  · intro α _ v w hw
+    exact repairOrderedHalfPair_exec_outside A B hA hB hsep v w hw
+
+/-- All pair repairs can be listed sequentially while their disjoint wire
+supports make the greedy network depth equal to at most six layers. -/
+noncomputable def parallelHalfPairRepair {ι : Type} {N : Nat}
+    (ids : List ι) (A B : ι → Finset (Fin N))
+    (hA : ∀ a, (A a).card = 32) (hB : ∀ a, (B a).card = 32)
+    (hsep : ∀ a, ∀ x ∈ A a, ∀ y ∈ B a, x < y) : ComparatorNetwork N :=
+  ⟨ids.flatMap fun a => (repairOrderedHalfPair (A a) (B a) (hA a) (hB a) (hsep a)).comparators⟩
+
+private theorem pairEmbedding_mem {N : Nat}
+    (A B : Finset (Fin N)) (hA : A.card = 32) (hB : B.card = 32)
+    (hsep : ∀ a ∈ A, ∀ b ∈ B, a < b) (i : Fin 64) :
+    orderedHalfPairEmbedding A B hA hB hsep i ∈ A ∪ B := by
+  have hi : orderedHalfPairEmbedding A B hA hB hsep i ∈
+      Set.range (orderedHalfPairEmbedding A B hA hB hsep) := ⟨i, rfl⟩
+  rwa [orderedHalfPairEmbedding_range] at hi
+
+theorem parallelHalfPairRepair_depth_le {ι : Type} {N : Nat}
+    (ids : List ι) (hids : ids.Nodup) (A B : ι → Finset (Fin N))
+    (hA : ∀ a, (A a).card = 32) (hB : ∀ a, (B a).card = 32)
+    (hsep : ∀ a, ∀ x ∈ A a, ∀ y ∈ B a, x < y)
+    (hdis : ∀ a ∈ ids, ∀ b ∈ ids, a ≠ b → Disjoint (A a ∪ B a) (A b ∪ B b)) :
+    (parallelHalfPairRepair ids A B hA hB hsep).depth ≤ 6 := by
+  apply depth_flatMap_disjoint ids
+    (fun a => (repairOrderedHalfPair (A a) (B a) (hA a) (hB a) (hsep a)).comparators) 6
+  · intro a _
+    exact repairOrderedHalfPair_depth_le _ _ _ _ _
+  · have hp := (List.nodup_iff_pairwise_ne).mp hids
+    apply List.pairwise_iff_getElem.mpr
+    intro i j hi hj hij
+    have hne : ids[i] ≠ ids[j] := List.pairwise_iff_getElem.mp hp i j hi hj hij
+    have hd := hdis ids[i] (List.getElem_mem hi) ids[j] (List.getElem_mem hj) hne
+    intro c hc d hd'
+    obtain ⟨c', _, rfl⟩ := List.mem_map.mp hc
+    obtain ⟨d', _, rfl⟩ := List.mem_map.mp hd'
+    have hn : ∀ x y,
+        orderedHalfPairEmbedding (A ids[i]) (B ids[i]) (hA ids[i]) (hB ids[i]) (hsep ids[i]) x ≠
+          orderedHalfPairEmbedding (A ids[j]) (B ids[j]) (hA ids[j]) (hB ids[j]) (hsep ids[j]) y := by
+      intro x y heq
+      exact Finset.disjoint_left.mp hd (pairEmbedding_mem _ _ _ _ _ x)
+        (heq ▸ pairEmbedding_mem _ _ _ _ _ y)
+    exact ⟨⟨hn _ _, hn _ _⟩, ⟨hn _ _, hn _ _⟩⟩
+
+theorem parallelHalfPairRepair_exec_inside {ι : Type} [DecidableEq ι]
+    {N : Nat} {α : Type} [LinearOrder α]
+    (ids : List ι) (hids : ids.Nodup) (A B : ι → Finset (Fin N))
+    (hA : ∀ a, (A a).card = 32) (hB : ∀ a, (B a).card = 32)
+    (hsep : ∀ a, ∀ x ∈ A a, ∀ y ∈ B a, x < y)
+    (hdis : ∀ a ∈ ids, ∀ b ∈ ids, a ≠ b → Disjoint (A a ∪ B a) (A b ∪ B b))
+    (v : Fin N → α) (a : ι) (ha : a ∈ ids) (i : Fin 64) :
+    (parallelHalfPairRepair ids A B hA hB hsep).exec v
+        (orderedHalfPairEmbedding (A a) (B a) (hA a) (hB a) (hsep a) i) =
+      (oddEvenMergeNet 6).exec
+        (v ∘ orderedHalfPairEmbedding (A a) (B a) (hA a) (hB a) (hsep a)) i := by
+  unfold parallelHalfPairRepair repairOrderedHalfPair
+  rw [ComparatorNetwork.exec_flatMap]
+  apply Chvatal.flatMap_scatter_exec_inside (m := fun _ : ι => 64)
+    (fun a => orderedHalfPairEmbedding (A a) (B a) (hA a) (hB a) (hsep a))
+    (fun _ => oddEvenMergeNet 6) ids v hids ?_ a ha i
+  intro x hx y hy hne p q heq
+  exact Finset.disjoint_left.mp (hdis x hx y hy hne) (pairEmbedding_mem _ _ _ _ _ p)
+    (heq ▸ pairEmbedding_mem _ _ _ _ _ q)
+
+theorem parallelHalfPairRepair_sorts_pair {ι : Type} [DecidableEq ι]
+    {N : Nat} {α : Type} [LinearOrder α]
+    (ids : List ι) (hids : ids.Nodup) (A B : ι → Finset (Fin N))
+    (hA : ∀ a, (A a).card = 32) (hB : ∀ a, (B a).card = 32)
+    (hsep : ∀ a, ∀ x ∈ A a, ∀ y ∈ B a, x < y)
+    (hdis : ∀ a ∈ ids, ∀ b ∈ ids, a ≠ b → Disjoint (A a ∪ B a) (A b ∪ B b))
+    (v : Fin N → α) (a : ι) (ha : a ∈ ids)
+    (hsA : RankSortedOn (A a) v) (hsB : RankSortedOn (B a) v) :
+    RankSortedOn (A a ∪ B a) ((parallelHalfPairRepair ids A B hA hB hsep).exec v) := by
+  have hs := repairOrderedHalfPair_sorts (A a) (B a) (hA a) (hB a) (hsep a) v hsA hsB
+  have heq : ∀ w ∈ A a ∪ B a,
+      (parallelHalfPairRepair ids A B hA hB hsep).exec v w =
+        (repairOrderedHalfPair (A a) (B a) (hA a) (hB a) (hsep a)).exec v w := by
+    intro w hw
+    have hw' : w ∈ Set.range (orderedHalfPairEmbedding (A a) (B a) (hA a) (hB a) (hsep a)) := by
+      rw [orderedHalfPairEmbedding_range]
+      exact hw
+    obtain ⟨i, rfl⟩ := hw'
+    rw [parallelHalfPairRepair_exec_inside ids hids A B hA hB hsep hdis v a ha i]
+    exact (ComparatorNetwork.scatterEmbed_exec_inside _ _ _ _ _).symm
+  intro x y hx hy hxy
+  rw [heq x hx, heq y hy]
+  exact hs hx hy hxy
+
+end Chvatal.PacketAlignment

@@ -1,5 +1,14 @@
 # UB-25 local merge-and-deal screen
 
+Update (2026-10-15): the local count law is now kernel checked in
+`PacketGenMerge.lean` for arbitrary injective packet placement in the
+generalized-comparator model: sorted 64-wire packets merge in seven layers,
+with sorted parity outputs and exact floor/ceiling true counts (the opposite
+orientation for zero counts). `joinPacketEmbedding` and the fixed dealt
+embeddings supply a composable local support interface. See [README.md](README.md)
+for the current proof map and the still-open global placement/untangling and
+rank-recurrence obligations. The paragraphs below record the original screen.
+
 Claim level: `hand-proof` for the Boolean count identity conditional on the
 existing bitonic-merge theorem; `simulation` for the independent finite check.
 No whole sorting-network improvement is claimed.
