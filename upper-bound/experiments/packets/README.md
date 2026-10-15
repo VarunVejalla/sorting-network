@@ -61,6 +61,13 @@ handles all 64 children of a receiver in one disjoint six-layer family when
 their common up-fringe is half-misaligned; it uses the actual scheduled
 packet-cardinality and wire-set disjointness theorems. Both scheduled cases
 still assume each contributing sender has the packet-sorted invariant.
+For parent down-ports, `downSetEndpoint_partition` and
+`parallelDownSetEndpointRepair_packetLayout` now prove that the corrected
+endpoint pair plus the untouched interior cells form a partition into sorted
+64-wire packets. `flowA7_scheduled_parent_endpoint_packetLayout` carries this
+through to actual ordinary senders. The child up-port has not yet been given
+the corresponding full packet-partition theorem, and the parent/child packet
+families have not yet been united into the receiver's complete layout.
 
 ## Reproduction
 

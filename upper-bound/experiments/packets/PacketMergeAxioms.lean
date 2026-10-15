@@ -7,9 +7,21 @@ import PacketHalfProfile
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.parallelDownSetEndpointRepair_exists
 
+/-- info: 'Chvatal.PacketAlignment.parallelDownSetEndpointRepair_packetLayout' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.parallelDownSetEndpointRepair_packetLayout
+
+/-- info: 'Chvatal.PacketAlignment.downSetEndpoint_partition' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.downSetEndpoint_partition
+
 /-- info: 'Chvatal.PacketAlignment.flowA7_scheduled_parent_endpoint_repair' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_scheduled_parent_endpoint_repair
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_scheduled_parent_endpoint_packetLayout' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_scheduled_parent_endpoint_packetLayout
 
 /-- info: 'Chvatal.PacketAlignment.parallelUpFringeEndpointRepair_exists' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
