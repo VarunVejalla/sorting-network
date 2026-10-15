@@ -1292,10 +1292,10 @@ omitted-middle error is exactly zero, not merely summably small. For level 1,
 `capacity d 1 t / 4096²`, and `flowUp7_level_one_time_sum_le` telescopes the
 ratio-`1/64` capacity schedule to at most `(64/63) * capacity d 1 1 / 4096²`
 per source bag over `t=1..tf7 d−1`. Since `capacity d 1 1 = 64^(d−1)`, this is
-`(64/63) * 64^(d−5)` per level-1 bag; multiplying by the 64 bags gives the
-formal-candidate total `(64/63) * 64^(d−4)`, a fraction `(64/63)/64^4` of
-`64^d`. The final multiplication by 64 has not yet been formalized as a
-Finset cardinality lemma. This closes the scheduler-time budget for the only
-possible frontier residual, but not its incorporation into the rank/variance
-recurrence, nor the sortedness invariant needed by the layer theorem. The
-focused chain through `PacketMergeAxioms` passes.
+`(64/63) * 64^(d−5)` per level-1 bag. `wireFlowLayer_level_one_bags_card_le_64`
+and `flowUp7_level_one_aggregate_time_sum_le` formalize the multiplier 64 and
+the total bound `(64/63) * 64^(d−4)`, a fraction `(64/63)/64^4` of `64^d`
+(about `6.05e−8`). This closes the scheduler-time budget for the only possible
+frontier residual, but not its incorporation into the rank/variance recurrence,
+nor the sortedness invariant needed by the layer theorem. Focused chain and
+axiom guards through `PacketMergeAxioms` pass.

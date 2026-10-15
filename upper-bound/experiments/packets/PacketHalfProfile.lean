@@ -2435,6 +2435,24 @@ private theorem capacity_level_one_geometric_sum (d n : Nat) :
       rw [hstep]
       ring
 
+theorem wireFlowLayer_level_one_bags_card_le_64 (d : Nat) :
+    ((Finset.univ : Finset (KBag 64 d)).filter (fun b => b.l = 1)).card ≤ 64 := by
+  calc
+    _ ≤ (Finset.range 64).card := by
+      apply Finset.card_le_card_of_injOn
+        (fun b : KBag 64 d => b.x)
+      · intro b hb
+        have hl := (Finset.mem_filter.mp hb).2
+        simp only [Finset.mem_range]
+        simpa [hl] using b.hx
+      · intro a ha b hb hab
+        apply KBag.ext
+        · have ha' := (Finset.mem_filter.mp ha).2
+          have hb' := (Finset.mem_filter.mp hb).2
+          omega
+        · exact hab
+    _ = 64 := by simp
+
 /-- Summed over every ordinary stage starting at t=1, the level-1 up-flow is
 bounded by a geometric tail with ratio 1/64. -/
 theorem flowUp7_level_one_time_sum_le (d : Nat) (hd : 7 ≤ d) :
@@ -2495,6 +2513,60 @@ theorem flowUp7_level_one_time_sum_le (d : Nat) (hd : 7 ≤ d) :
       nlinarith [hbound]
     _ = (64 / 63 : Rat) *
         (capacity d 1 1 / (4096 : Rat) ^ 2) := by ring
+
+/-- The level-1 up-flow capacity, summed over all its bags and ordinary
+stages, is at most 64 copies of the per-bag geometric tail. -/
+theorem flowUp7_level_one_aggregate_time_sum_le (d : Nat) (hd : 7 ≤ d) :
+    (∑ source ∈ (Finset.univ : Finset (KBag 64 d)).filter
+        (fun b => b.l = 1),
+      ∑ k ∈ range (tf7 d - 1),
+        (flowUp7 d hd source.l (k + 1) : Rat)) ≤
+      64 * ((64 / 63 : Rat) *
+        (capacity d 1 1 / (4096 : Rat) ^ 2)) := by
+  let sources := (Finset.univ : Finset (KBag 64 d)).filter (fun b => b.l = 1)
+  have hlevel (source : KBag 64 d) (hs : source ∈ sources) : source.l = 1 := by
+    exact (Finset.mem_filter.mp hs).2
+  have hrewrite :
+      (∑ source ∈ sources,
+        ∑ k ∈ range (tf7 d - 1),
+          (flowUp7 d hd source.l (k + 1) : Rat)) =
+      (sources.card : Rat) *
+        (∑ k ∈ range (tf7 d - 1),
+          (flowUp7 d hd 1 (k + 1) : Rat)) := by
+    calc
+      _ = ∑ source ∈ sources,
+          (∑ k ∈ range (tf7 d - 1),
+            (flowUp7 d hd 1 (k + 1) : Rat)) := by
+        apply Finset.sum_congr rfl
+        intro source hs
+        apply Finset.sum_congr rfl
+        intro k hk
+        rw [hlevel source hs]
+      _ = (sources.card : Rat) *
+          (∑ k ∈ range (tf7 d - 1),
+            (flowUp7 d hd 1 (k + 1) : Rat)) := by
+        simp [Finset.sum_const]
+  have hcard : (sources.card : Rat) ≤ 64 := by
+    have h := wireFlowLayer_level_one_bags_card_le_64 d
+    exact_mod_cast h
+  have htime := flowUp7_level_one_time_sum_le d hd
+  have htime_nonneg : 0 ≤
+      (∑ k ∈ range (tf7 d - 1),
+        (flowUp7 d hd 1 (k + 1) : Rat)) := by
+    apply Finset.sum_nonneg
+    intro k hk
+    positivity
+  rw [hrewrite]
+  calc
+    (sources.card : Rat) *
+        (∑ k ∈ range (tf7 d - 1),
+          (flowUp7 d hd 1 (k + 1) : Rat)) ≤
+        64 * (∑ k ∈ range (tf7 d - 1),
+          (flowUp7 d hd 1 (k + 1) : Rat)) :=
+      mul_le_mul_of_nonneg_right hcard htime_nonneg
+    _ ≤ 64 * ((64 / 63 : Rat) *
+          (capacity d 1 1 / (4096 : Rat) ^ 2)) :=
+      mul_le_mul_of_nonneg_left htime (by norm_num)
 
 /-- All high-frontier omitted-middle error vanishes in the actual §7 flow:
 level d−1 is inactive, and level d has zero down-flow by construction. -/

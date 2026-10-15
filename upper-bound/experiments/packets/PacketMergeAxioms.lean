@@ -55,6 +55,14 @@ import PacketHalfProfile
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowUp7_level_one_time_sum_le
 
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_level_one_bags_card_le_64' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_level_one_bags_card_le_64
+
+/-- info: 'Chvatal.PacketAlignment.flowUp7_level_one_aggregate_time_sum_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowUp7_level_one_aggregate_time_sum_le
+
 /-- info: 'Chvatal.PacketAlignment.wireFlowLayer_high_frontier_error_sum_eq_zero' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.wireFlowLayer_high_frontier_error_sum_eq_zero
