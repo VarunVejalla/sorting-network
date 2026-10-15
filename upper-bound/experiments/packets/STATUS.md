@@ -42,6 +42,12 @@ packet its own cut sequence and still gives exact aggregate L1 conservation;
 amplification at the abstract partition interface. Instantiating full rank
 partitions from all actual outgoing WireFlow contributions and carrying
 slice targets through receiver reassembly remain outstanding.
+The new `trueCountOn_blockOf_profile` and
+`sortedSenderOutgoing_profile_error_exact` results close that sender-side
+instance: the 64 child down-blocks plus both parent-fringe halves are the
+actual 66 rank intervals, and their aggregate L1 profile error is exactly
+the coarse sender-count L1 error, with no port-count factor. Receiver-side
+target summation, matching contraction and reassembly remain open.
 
 The entries below retain the research history and their original claim levels.
 

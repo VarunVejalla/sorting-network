@@ -190,3 +190,25 @@ import PacketHalfProfile
  Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.sortedPackets_individualIntervalPartitions_L1_sq
+
+/-- info: 'Chvatal.PacketAlignment.trueCountOn_blockOf_profile' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.trueCountOn_blockOf_profile
+
+/-- info: 'Chvatal.PacketAlignment.sortedWireBags_intervalPartition_L1_exact' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.sortedWireBags_intervalPartition_L1_exact
+
+/-- info: 'Chvatal.PacketAlignment.sortedSenderOutgoing_profile_error_exact' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.sortedSenderOutgoing_profile_error_exact
+
+/-- info: 'Chvatal.PacketAlignment.senderOutgoingPieces_are_WireFlow_ports' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.senderOutgoingPieces_are_WireFlow_ports

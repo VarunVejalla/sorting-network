@@ -1,4 +1,5 @@
 import PacketProfile
+import AKS.Chvatal.ExecPlacement
 
 /-! The actual repair atoms are 32-wire rank intervals. This file carries the
 sorted-profile scale transfer down to that fragment size. -/
@@ -50,6 +51,62 @@ theorem profileInterval_change_le (m X Y a b : Nat) (hab : a ≤ b) (hb : b ≤ 
       rw [Nat.min_eq_right (Nat.le_of_lt hx'), Nat.min_eq_right (Nat.le_of_lt hy')]
       omega
 
+private def blockRankEmbedding {N : Nat} (s : Finset (Fin N))
+    (lo hi : Nat) (hlo : lo ≤ hi) (hhi : hi ≤ s.card) : Fin (hi - lo) ↪ Fin N where
+  toFun j := s.orderEmbOfFin rfl ⟨lo + j.val, by
+    have hsum := Nat.add_sub_of_le hlo
+    have hlt : lo + j.val < hi := by
+      calc
+        lo + j.val < lo + (hi - lo) := Nat.add_lt_add_left j.isLt _
+        _ = hi := hsum
+    exact lt_of_lt_of_le hlt hhi⟩
+  inj' := by
+    intro i j h
+    apply Fin.ext
+    have he := (s.orderEmbOfFin rfl).injective h
+    have hv := congrArg Fin.val he
+    simp only [Fin.val_mk] at hv
+    omega
+
+private theorem blockRankEmbedding_range {N : Nat} (s : Finset (Fin N))
+    (lo hi : Nat) (hlo : lo ≤ hi) (hhi : hi ≤ s.card) :
+    Set.range (blockRankEmbedding s lo hi hlo hhi) = {w | w ∈ blockOf s lo hi} := by
+  ext w
+  constructor
+  · rintro ⟨j, rfl⟩
+    change blockRankEmbedding s lo hi hlo hhi j ∈ blockOf s lo hi
+    rw [mem_blockOf_iff]
+    refine ⟨⟨lo + j.val, by
+      have hsum := Nat.add_sub_of_le hlo
+      have hlt : lo + j.val < hi := by
+        calc
+          lo + j.val < lo + (hi - lo) := Nat.add_lt_add_left j.isLt _
+          _ = hi := hsum
+      exact lt_of_lt_of_le hlt hhi⟩, ?_, ?_, rfl⟩
+    · change lo ≤ lo + j.val
+      exact Nat.le_add_right _ _
+    · change lo + j.val < hi
+      have hsum := Nat.add_sub_of_le hlo
+      calc
+        lo + j.val < lo + (hi - lo) := Nat.add_lt_add_left j.isLt _
+        _ = hi := hsum
+  · intro hw
+    change w ∈ blockOf s lo hi at hw
+    rw [mem_blockOf_iff] at hw
+    rcases hw with ⟨r, hrlo, hrhi, rfl⟩
+    let j : Fin (hi - lo) := ⟨r.val - lo, by omega⟩
+    refine ⟨j, ?_⟩
+    change s.orderEmbOfFin rfl ⟨lo + j.val, by
+      have hsum := Nat.add_sub_of_le hlo
+      have hlt : lo + j.val < hi := by
+        calc
+          lo + j.val < lo + (hi - lo) := Nat.add_lt_add_left j.isLt _
+          _ = hi := hsum
+      exact lt_of_lt_of_le hlt hhi⟩ = s.orderEmbOfFin rfl r
+    apply congrArg (s.orderEmbOfFin rfl)
+    apply Fin.ext
+    dsimp [j]
+    omega
 
 def profileIntervalMean (m q : Nat) (frac : Real) (a b : Nat) : Real :=
   (1 - frac) * profileInterval m q a b +
@@ -224,6 +281,248 @@ theorem sortedBool_rankInterval_trueCount {m : Nat} (v : Fin m → Bool)
   change boolTrueCount C = profileInterval m (boolTrueCount v) a b
   unfold profileInterval profileTail
   rw [hC]
+
+/-- Actual values on a `WireFlow` rank block have exactly the ideal sorted
+profile count. This connects the abstract profile lemma to concrete `blockOf`
+ports without choosing or reordering their physical wire labels. -/
+theorem trueCountOn_blockOf_profile {N : Nat} (s : Finset (Fin N))
+    (v : Fin N → Bool) (hv : Monotone (v ∘ s.orderEmbOfFin rfl)) (lo hi : Nat)
+    (hlo : lo ≤ hi) (hhi : hi ≤ s.card) :
+    trueCountOn (blockOf s lo hi) v = profileInterval s.card (trueCountOn s v) lo hi := by
+  let e := blockRankEmbedding s lo hi hlo hhi
+  have hcount := boolTrueCount_embedding (blockOf s lo hi) e
+    (blockRankEmbedding_range s lo hi hlo hhi) v
+  have hinterval := sortedBool_rankInterval_trueCount (v ∘ s.orderEmbOfFin rfl) hv lo hi hlo hhi
+  have htotal := boolTrueCount_orderEmb s rfl v
+  have heq : v ∘ e = fun j : Fin (hi - lo) =>
+      (v ∘ s.orderEmbOfFin rfl) ⟨lo + j.val, by
+        have hsum := Nat.add_sub_of_le hlo
+        calc
+          lo + j.val < lo + (hi - lo) := Nat.add_lt_add_left j.isLt _
+          _ = hi := hsum
+          _ ≤ s.card := hhi⟩ := by
+    funext j
+    rfl
+  rw [← hcount, heq, hinterval, ← htotal]
+
+theorem sortedWireBags_intervalPartition_L1_exact {c N m p q : Nat} (frac : Real)
+    (S : Fin c → Finset (Fin N)) (v : Fin c → Fin N → Bool)
+    (hcard : ∀ packet, (S packet).card = m)
+    (hsorted : ∀ packet, Monotone (v packet ∘ (S packet).orderEmbOfFin rfl))
+    (cuts : Fin c → Nat → Nat) (hstart : ∀ packet, cuts packet 0 = 0)
+    (hcuts : ∀ packet, Monotone (cuts packet))
+    (hcutBound : ∀ packet i, cuts packet i ≤ m)
+    (hend : ∀ packet, cuts packet p = m) (hq : q < m)
+    (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    (∑ packet : Fin c, ∑ i ∈ range p,
+      |(trueCountOn (blockOf (S packet) (cuts packet i) (cuts packet (i + 1)))
+          (v packet) : Real) -
+        profileIntervalMean m q frac (cuts packet i) (cuts packet (i + 1))|) =
+      ∑ packet : Fin c, |(trueCountOn (S packet) (v packet) : Real) - (q + frac)| := by
+  let V : Fin c → Fin m → Bool := fun packet i =>
+    v packet ((S packet).orderEmbOfFin rfl (Fin.cast (hcard packet).symm i))
+  have hV : ∀ packet, Monotone (V packet) := by
+    intro packet i j hij
+    apply hsorted packet
+    apply Fin.le_iff_val_le_val.mpr
+    exact Fin.le_iff_val_le_val.mp hij
+  have htotal (packet : Fin c) : boolTrueCount (V packet) = trueCountOn (S packet) (v packet) := by
+    calc
+      boolTrueCount (V packet) = boolTrueCount (v packet ∘ (S packet).orderEmbOfFin rfl) := by
+        dsimp [V]
+        exact boolTrueCount_finCast (hcard packet).symm (v packet ∘ (S packet).orderEmbOfFin rfl)
+      _ = trueCountOn (S packet) (v packet) := boolTrueCount_orderEmb (S packet) rfl (v packet)
+  calc
+    _ = ∑ packet : Fin c, ∑ i ∈ range p,
+        |(boolTrueCount (fun j : Fin (cuts packet (i + 1) - cuts packet i) =>
+            V packet ⟨cuts packet i + j.val, by
+              have hab : cuts packet i ≤ cuts packet (i + 1) := hcuts packet (Nat.le_succ i)
+              have hsum := Nat.add_sub_of_le hab
+              calc
+                cuts packet i + j.val < cuts packet i + (cuts packet (i + 1) - cuts packet i) :=
+                  Nat.add_lt_add_left j.isLt _
+                _ = cuts packet (i + 1) := hsum
+                _ ≤ m := hcutBound packet (i + 1)⟩) : Real) -
+          profileIntervalMean m q frac (cuts packet i) (cuts packet (i + 1))| := by
+      apply Finset.sum_congr rfl
+      intro packet _
+      apply Finset.sum_congr rfl
+      intro i hi
+      have hcutCard : cuts packet (i + 1) ≤ (S packet).card := by
+        rw [hcard packet]
+        exact hcutBound packet (i + 1)
+      have hblock := trueCountOn_blockOf_profile (S packet) (v packet)
+        (hsorted packet) (cuts packet i) (cuts packet (i + 1))
+        (hcuts packet (Nat.le_succ i)) hcutCard
+      have hinterval := sortedBool_rankInterval_trueCount (V packet) (hV packet)
+        (cuts packet i) (cuts packet (i + 1)) (hcuts packet (Nat.le_succ i))
+        (hcutBound packet (i + 1))
+      rw [hcard packet] at hblock
+      rw [hblock, ← htotal packet, ← hinterval]
+    _ = ∑ packet : Fin c, |(trueCountOn (S packet) (v packet) : Real) - (q + frac)| := by
+      apply Finset.sum_congr rfl
+      intro packet _
+      have hVbound : boolTrueCount (V packet) ≤ m := by
+        simpa [boolTrueCount] using
+          (Fintype.card_subtype_le (fun i : Fin m => V packet i = true))
+      have hprofile := profileInterval_partition_L1_exact m p
+        (boolTrueCount (V packet)) q frac (cuts packet) (hstart packet) (hcuts packet)
+        (hend packet) hVbound hq hfrac0 hfrac1
+      have hinterval' (i : Nat) (hi : i < p) :
+          boolTrueCount (fun j : Fin (cuts packet (i + 1) - cuts packet i) =>
+            V packet ⟨cuts packet i + j.val, by
+              have hab : cuts packet i ≤ cuts packet (i + 1) := hcuts packet (Nat.le_succ i)
+              have hsum := Nat.add_sub_of_le hab
+              calc
+                cuts packet i + j.val < cuts packet i + (cuts packet (i + 1) - cuts packet i) :=
+                  Nat.add_lt_add_left j.isLt _
+                _ = cuts packet (i + 1) := hsum
+                _ ≤ m := hcutBound packet (i + 1)⟩) =
+            profileInterval m (boolTrueCount (V packet)) (cuts packet i) (cuts packet (i + 1)) :=
+        sortedBool_rankInterval_trueCount (V packet) (hV packet)
+          (cuts packet i) (cuts packet (i + 1)) (hcuts packet (Nat.le_succ i))
+          (hcutBound packet (i + 1))
+      calc
+        _ = ∑ i ∈ range p,
+            |(profileInterval m (boolTrueCount (V packet)) (cuts packet i) (cuts packet (i + 1)) : Real) -
+              profileIntervalMean m q frac (cuts packet i) (cuts packet (i + 1))| := by
+          apply Finset.sum_congr rfl
+          intro i hi
+          rw [hinterval' i (mem_range.mp hi)]
+        _ = |(boolTrueCount (V packet) : Real) - (q + frac)| := hprofile
+        _ = |(trueCountOn (S packet) (v packet) : Real) - (q + frac)| := by
+          rw [htotal packet]
+
+/-- The 66 consecutive rank pieces that a sender routes: two separate
+halves of its parent fringe and one middle block for each child. -/
+def senderRankCut (up down i : Nat) : Nat :=
+  if i = 0 then 0 else if i ≤ 65 then up / 2 + (i - 1) * down else up + 64 * down
+
+theorem senderRankCut_le (up down i : Nat) : senderRankCut up down i ≤ up + 64 * down := by
+  unfold senderRankCut
+  split_ifs with hi0 hi65
+  · omega
+  · have hmul : (i - 1) * down ≤ 64 * down := Nat.mul_le_mul_right down (by omega)
+    omega
+  · rfl
+
+theorem senderRankCut_mono (up down : Nat) : Monotone (senderRankCut up down) := by
+  intro i j hij
+  by_cases hi0 : i = 0
+  · simp [senderRankCut, hi0]
+  · by_cases hj65 : j ≤ 65
+    · have hi65 : i ≤ 65 := le_trans hij hj65
+      have hj0 : j ≠ 0 := by
+        intro hj
+        subst j
+        exact hi0 (by omega)
+      have hsub : i - 1 ≤ j - 1 := by omega
+      have hmul := Nat.mul_le_mul_right down hsub
+      simp [senderRankCut, hi0, hi65, hj65, hj0]
+      exact hmul
+    · have hle := senderRankCut_le up down i
+      have hj0 : j ≠ 0 := by
+        intro hj
+        subst j
+        exact hi0 (by omega)
+      have hcutj : senderRankCut up down j = up + 64 * down := by
+        simp [senderRankCut, hj0, hj65]
+      rw [hcutj]
+      exact hle
+
+theorem senderRankCut_start (up down : Nat) : senderRankCut up down 0 = 0 := by
+  simp [senderRankCut]
+
+theorem senderRankCut_end (up down : Nat) : senderRankCut up down 66 = up + 64 * down := by
+  simp [senderRankCut]
+
+def senderOutgoingPiece {N : Nat} (s : Finset (Fin N)) (up down i : Nat) :
+    Finset (Fin N) :=
+  if i = 0 then blockOf s 0 (up / 2)
+  else if i ≤ 64 then downSet s up down (i - 1)
+  else blockOf s (s.card - up / 2) s.card
+
+theorem senderOutgoingPiece_eq_blockOf {N : Nat} (s : Finset (Fin N)) (up down : Nat)
+    (hs : s.card = up + 64 * down) (hu : 2 ∣ up) (i : Nat) (hi : i < 66) :
+    senderOutgoingPiece s up down i =
+      blockOf s (senderRankCut up down i) (senderRankCut up down (i + 1)) := by
+  by_cases hi0 : i = 0
+  · subst i
+    simp [senderOutgoingPiece, senderRankCut]
+  · by_cases hi64 : i ≤ 64
+    · have hnext : i + 1 ≤ 65 := by omega
+      have hcut : senderRankCut up down i = up / 2 + (i - 1) * down := by
+        simp [senderRankCut, hi0, Nat.not_lt.mpr (by omega : i ≤ 65)]
+      have hcutNext : senderRankCut up down (i + 1) = up / 2 + i * down := by
+        simp [senderRankCut, hnext]
+      unfold senderOutgoingPiece
+      rw [if_neg hi0, if_pos hi64]
+      unfold downSet
+      rw [hcut, hcutNext]
+      have hiPos : 1 ≤ i := by omega
+      rw [Nat.sub_add_cancel hiPos]
+    · have hi65 : i = 65 := by omega
+      subst i
+      have hlast : s.card - up / 2 = up / 2 + 64 * down := by omega
+      have hc65 : senderRankCut up down 65 = up / 2 + 64 * down := by
+        simp [senderRankCut]
+      have hc66 : senderRankCut up down 66 = s.card := by
+        rw [senderRankCut_end, hs]
+      unfold senderOutgoingPiece
+      rw [if_neg (by omega : ¬65 = 0), if_neg (by omega : ¬65 ≤ 64), hlast, hc65, hc66]
+
+theorem senderOutgoingPieces_are_WireFlow_ports {N : Nat} (s : Finset (Fin N))
+    (up down : Nat) :
+    senderOutgoingPiece s up down 0 ∪ senderOutgoingPiece s up down 65 = upSet s up ∧
+      ∀ j < 64, senderOutgoingPiece s up down (j + 1) = downSet s up down j := by
+  constructor
+  · simp [senderOutgoingPiece, upSet]
+  · intro j hj
+    have hj1 : j + 1 ≤ 64 := by omega
+    simp [senderOutgoingPiece, show j + 1 ≠ 0 by omega, hj1, Nat.succ_sub_one]
+
+theorem sortedSenderOutgoing_profile_error_exact {c N m q : Nat} (frac : Real)
+    (S : Fin c → Finset (Fin N)) (v : Fin c → Fin N → Bool)
+    (up down : Fin c → Nat)
+    (hcard : ∀ packet, (S packet).card = m)
+    (hsize : ∀ packet, (S packet).card = up packet + 64 * down packet)
+    (hu : ∀ packet, 2 ∣ up packet)
+    (hsorted : ∀ packet, Monotone (v packet ∘ (S packet).orderEmbOfFin rfl))
+    (hq : q < m) (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    (∑ packet : Fin c, ∑ i ∈ range 66,
+      |(trueCountOn (senderOutgoingPiece (S packet) (up packet) (down packet) i)
+          (v packet) : Real) -
+        profileIntervalMean m q frac
+          (senderRankCut (up packet) (down packet) i)
+          (senderRankCut (up packet) (down packet) (i + 1))|) =
+      ∑ packet : Fin c, |(trueCountOn (S packet) (v packet) : Real) - (q + frac)| := by
+  let cuts : Fin c → Nat → Nat := fun packet i => senderRankCut (up packet) (down packet) i
+  have hstart : ∀ packet, cuts packet 0 = 0 := by intro packet; exact senderRankCut_start _ _
+  have hcuts : ∀ packet, Monotone (cuts packet) := by intro packet; exact senderRankCut_mono _ _
+  have hcutBound : ∀ packet i, cuts packet i ≤ m := by
+    intro packet i
+    calc
+      cuts packet i ≤ up packet + 64 * down packet := senderRankCut_le _ _ _
+      _ = m := by rw [← hsize packet, hcard packet]
+  have hend : ∀ packet, cuts packet 66 = m := by
+    intro packet
+    change senderRankCut (up packet) (down packet) 66 = m
+    rw [senderRankCut_end, ← hsize packet, hcard packet]
+  have hgeneric := sortedWireBags_intervalPartition_L1_exact frac S v hcard hsorted
+    cuts hstart hcuts hcutBound hend hq hfrac0 hfrac1
+  calc
+    _ = ∑ packet : Fin c, ∑ i ∈ range 66,
+        |(trueCountOn (blockOf (S packet) (cuts packet i) (cuts packet (i + 1)))
+            (v packet) : Real) -
+          profileIntervalMean m q frac (cuts packet i) (cuts packet (i + 1))| := by
+      apply Finset.sum_congr rfl
+      intro packet _
+      apply Finset.sum_congr rfl
+      intro i hi
+      rw [senderOutgoingPiece_eq_blockOf (S packet) (up packet) (down packet)
+        (hsize packet) (hu packet) i (mem_range.mp hi)]
+    _ = ∑ packet : Fin c, |(trueCountOn (S packet) (v packet) : Real) - (q + frac)| := hgeneric
+
 
 theorem sortedPackets_intervalPartition_L1_exact {c m p q : Nat} (frac : Real)
     (V : Fin c → Fin m → Bool) (hV : ∀ i, Monotone (V i))

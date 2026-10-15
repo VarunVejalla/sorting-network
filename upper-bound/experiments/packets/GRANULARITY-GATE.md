@@ -105,3 +105,16 @@ and are compared with the induced ideal slice targets. The remaining gap is
 to verify those partition hypotheses for the actual scheduled senders and
 show destination reassembly/matching uses the corresponding targets to
 contract global rank error.
+The abstract partition theorem now has a concrete sender instance.
+`trueCountOn_blockOf_profile` turns any sorted Boolean threshold on a wire
+bag into the ideal count on each actual rank block. `senderOutgoingPiece`
+splits the sender's up-fringe into its two disjoint intervals and lists its
+64 down blocks; `senderOutgoingPieces_are_WireFlow_ports` identifies those
+pieces with the actual `upSet` and `downSet` ports. The checked
+`sortedSenderOutgoing_profile_error_exact` theorem then gives exact aggregate
+L1 transfer across all 66 routed pieces for cohorts with a common bag size,
+even when each sender has its own up/down parameters. Therefore the full
+sender's routing introduces no port-count loss in the threshold profile
+error. The remaining issue is receiver-side selection and reassembly: prove
+that the selected pieces' ideal profiles add to the required receiver rank
+target and that merge-and-deal contracts the resulting global rank error.
