@@ -212,3 +212,27 @@ import PacketHalfProfile
  Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.senderOutgoingPieces_are_WireFlow_ports
+
+/-- info: 'Chvatal.PacketAlignment.selectedSenderOutgoing_profile_error_le' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.selectedSenderOutgoing_profile_error_le
+
+/-- info: 'Chvatal.PacketAlignment.sortedSenderOutgoing_profile_error_exact_var' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.sortedSenderOutgoing_profile_error_exact_var
+
+/-- info: 'Chvatal.PacketAlignment.selectedSenderOutgoing_profile_error_le_var' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.selectedSenderOutgoing_profile_error_le_var
+
+/-- info: 'Chvatal.PacketAlignment.selectedSenderOutgoing_count_error_le_var' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.selectedSenderOutgoing_count_error_le_var

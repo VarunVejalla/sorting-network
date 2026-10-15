@@ -49,6 +49,25 @@ actual 66 rank intervals, and their aggregate L1 profile error is exactly
 the coarse sender-count L1 error, with no port-count factor. Receiver-side
 target summation, matching contraction and reassembly remain open.
 
+Heterogeneous sender follow-up (2026-10-15): `PacketHalfProfile.lean` now
+also proves `sortedSenderOutgoing_profile_error_exact_var` and
+`selectedSenderOutgoing_profile_error_le_var`. The source bags may have
+different sizes, and each sender may use its own fractional ideal count; the
+66-piece L1 identity and selected-subset bound still hold exactly. This fits
+the parent/child size asymmetry in actual `WireFlow`. The receiver's required
+ideal profile is still not identified with the sum of selected source ideals,
+and no reassembly contraction follows yet. The full scratch chain and axiom
+guards are checked by `check-lean.ps1`.
+
+Receiver-input count bridge (2026-10-15):
+`selectedSenderOutgoing_count_error_le_var` proves that, for any receiver
+selection of source rank pieces, its combined Boolean threshold count differs
+from the sum of the selected source-ideal interval counts by at most the total
+coarse sender count error. It allows heterogeneous bag sizes and sender means
+and incurs no factor for the number of incoming pieces. This is the error term
+to feed into a local multi-run merge/deal estimate; identifying the selected
+ideal sum with the correct destination target is still open.
+
 The entries below retain the research history and their original claim levels.
 
 Resumed by Codex (GPT-6), 2026-10-14. Branch/worktree:

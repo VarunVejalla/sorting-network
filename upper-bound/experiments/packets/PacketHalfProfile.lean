@@ -523,6 +523,223 @@ theorem sortedSenderOutgoing_profile_error_exact {c N m q : Nat} (frac : Real)
         (hsize packet) (hu packet) i (mem_range.mp hi)]
     _ = ∑ packet : Fin c, |(trueCountOn (S packet) (v packet) : Real) - (q + frac)| := hgeneric
 
+noncomputable def senderOutgoingProfileError {c N : Nat} (S : Fin c → Finset (Fin N))
+    (v : Fin c → Fin N → Bool) (up down : Fin c → Nat)
+    (q : Nat) (frac : Real) (packet : Fin c) (i : Nat) : Real :=
+  |(trueCountOn (senderOutgoingPiece (S packet) (up packet) (down packet) i)
+      (v packet) : Real) -
+    profileIntervalMean (S packet).card q frac
+      (senderRankCut (up packet) (down packet) i)
+      (senderRankCut (up packet) (down packet) (i + 1))|
+
+/-- Selecting any subset of the routed pieces for a receiver cannot amplify
+the aggregate profile error: it is bounded by the sender cohort's original
+coarse count error, independently of how many pieces are selected. -/
+theorem selectedSenderOutgoing_profile_error_le {c N m q : Nat} (frac : Real)
+    (S : Fin c → Finset (Fin N)) (v : Fin c → Fin N → Bool)
+    (up down : Fin c → Nat)
+    (hcard : ∀ packet, (S packet).card = m)
+    (hsize : ∀ packet, (S packet).card = up packet + 64 * down packet)
+    (hu : ∀ packet, 2 ∣ up packet)
+    (hsorted : ∀ packet, Monotone (v packet ∘ (S packet).orderEmbOfFin rfl))
+    (hq : q < m) (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1)
+    (selected : Fin c → Finset Nat)
+    (hselected : ∀ packet, selected packet ⊆ range 66) :
+    (∑ packet : Fin c, ∑ i ∈ selected packet,
+      senderOutgoingProfileError S v up down q frac packet i) ≤
+      ∑ packet : Fin c, |(trueCountOn (S packet) (v packet) : Real) - (q + frac)| := by
+  have hfull := sortedSenderOutgoing_profile_error_exact frac S v up down
+    hcard hsize hu hsorted hq hfrac0 hfrac1
+  calc
+    _ ≤ ∑ packet : Fin c, ∑ i ∈ range 66,
+        senderOutgoingProfileError S v up down q frac packet i := by
+      apply Finset.sum_le_sum
+      intro packet _
+      exact Finset.sum_le_sum_of_subset_of_nonneg (hselected packet) (by
+        intro i hi hnot
+        exact abs_nonneg _)
+    _ = ∑ packet : Fin c,
+        |(trueCountOn (S packet) (v packet) : Real) - (q + frac)| := by
+      simpa [senderOutgoingProfileError, hcard] using hfull
+
+noncomputable def senderOutgoingProfileErrorVar {c N : Nat}
+    (S : Fin c → Finset (Fin N)) (v : Fin c → Fin N → Bool)
+    (up down q : Fin c → Nat) (frac : Fin c → Real)
+    (packet : Fin c) (i : Nat) : Real :=
+  |(trueCountOn (senderOutgoingPiece (S packet) (up packet) (down packet) i)
+      (v packet) : Real) -
+    profileIntervalMean (S packet).card (q packet) (frac packet)
+      (senderRankCut (up packet) (down packet) i)
+      (senderRankCut (up packet) (down packet) (i + 1))|
+
+/-- The no-loss sender partition identity also holds for unequal source bag
+sizes and a separate fractional ideal count for each sender. This is the
+shape needed when a receiver combines its larger parent bag with smaller child
+bags. -/
+theorem sortedSenderOutgoing_profile_error_exact_var {c N : Nat}
+    (S : Fin c → Finset (Fin N)) (v : Fin c → Fin N → Bool)
+    (up down q : Fin c → Nat) (frac : Fin c → Real)
+    (hsize : ∀ packet, (S packet).card = up packet + 64 * down packet)
+    (hu : ∀ packet, 2 ∣ up packet)
+    (hsorted : ∀ packet, Monotone (v packet ∘ (S packet).orderEmbOfFin rfl))
+    (hq : ∀ packet, q packet < (S packet).card)
+    (hfrac0 : ∀ packet, 0 ≤ frac packet)
+    (hfrac1 : ∀ packet, frac packet ≤ 1) :
+    (∑ packet : Fin c, ∑ i ∈ range 66,
+      senderOutgoingProfileErrorVar S v up down q frac packet i) =
+      ∑ packet : Fin c,
+        |(trueCountOn (S packet) (v packet) : Real) - (q packet + frac packet)| := by
+  have hlocal (packet : Fin c) :
+      (∑ i ∈ range 66,
+        senderOutgoingProfileErrorVar S v up down q frac packet i) =
+        |(trueCountOn (S packet) (v packet) : Real) - (q packet + frac packet)| := by
+    let cuts : Nat → Nat := senderRankCut (up packet) (down packet)
+    have hstart : cuts 0 = 0 := senderRankCut_start _ _
+    have hcuts : Monotone cuts := senderRankCut_mono _ _
+    have hbound : ∀ i, cuts i ≤ (S packet).card := by
+      intro i
+      calc
+        cuts i ≤ up packet + 64 * down packet := senderRankCut_le _ _ _
+        _ = (S packet).card := (hsize packet).symm
+    have hend : cuts 66 = (S packet).card := by
+      change senderRankCut (up packet) (down packet) 66 = _
+      rw [senderRankCut_end, hsize packet]
+    have hcount (i : Nat) (hi : i < 66) :
+        trueCountOn (senderOutgoingPiece (S packet) (up packet) (down packet) i)
+            (v packet) =
+          profileInterval (S packet).card (trueCountOn (S packet) (v packet))
+            (cuts i) (cuts (i + 1)) := by
+      rw [senderOutgoingPiece_eq_blockOf (S packet) (up packet) (down packet)
+        (hsize packet) (hu packet) i hi]
+      exact trueCountOn_blockOf_profile (S packet) (v packet) (hsorted packet)
+        (cuts i) (cuts (i + 1)) (hcuts (Nat.le_succ i)) (hbound (i + 1))
+    have hX : trueCountOn (S packet) (v packet) ≤ (S packet).card := by
+      unfold trueCountOn
+      simpa using (Fintype.card_subtype_le
+        (fun w : S packet => v packet w.val = true))
+    have hprofile := profileInterval_partition_L1_exact
+      (S packet).card 66 (trueCountOn (S packet) (v packet)) (q packet)
+      (frac packet) cuts hstart hcuts hend hX
+      (hq packet) (hfrac0 packet) (hfrac1 packet)
+    calc
+      (∑ i ∈ range 66,
+          senderOutgoingProfileErrorVar S v up down q frac packet i) =
+        ∑ i ∈ range 66,
+          |(profileInterval (S packet).card (trueCountOn (S packet) (v packet))
+              (cuts i) (cuts (i + 1)) : Real) -
+            profileIntervalMean (S packet).card (q packet) (frac packet)
+              (cuts i) (cuts (i + 1))| := by
+          apply Finset.sum_congr rfl
+          intro i hi
+          rw [senderOutgoingProfileErrorVar, hcount i (mem_range.mp hi)]
+      _ = |(trueCountOn (S packet) (v packet) : Real) -
+            (q packet + frac packet)| := hprofile
+  calc
+    (∑ packet : Fin c, ∑ i ∈ range 66,
+        senderOutgoingProfileErrorVar S v up down q frac packet i) =
+      ∑ packet : Fin c,
+        |(trueCountOn (S packet) (v packet) : Real) - (q packet + frac packet)| := by
+      apply Finset.sum_congr rfl
+      intro packet _
+      exact hlocal packet
+
+/-- Selecting any actual sender pieces still cannot amplify error when the
+source bags have different sizes and ideal means. -/
+theorem selectedSenderOutgoing_profile_error_le_var {c N : Nat}
+    (S : Fin c → Finset (Fin N)) (v : Fin c → Fin N → Bool)
+    (up down q : Fin c → Nat) (frac : Fin c → Real)
+    (hsize : ∀ packet, (S packet).card = up packet + 64 * down packet)
+    (hu : ∀ packet, 2 ∣ up packet)
+    (hsorted : ∀ packet, Monotone (v packet ∘ (S packet).orderEmbOfFin rfl))
+    (hq : ∀ packet, q packet < (S packet).card)
+    (hfrac0 : ∀ packet, 0 ≤ frac packet)
+    (hfrac1 : ∀ packet, frac packet ≤ 1)
+    (selected : Fin c → Finset Nat)
+    (hselected : ∀ packet, selected packet ⊆ range 66) :
+    (∑ packet : Fin c, ∑ i ∈ selected packet,
+      senderOutgoingProfileErrorVar S v up down q frac packet i) ≤
+      ∑ packet : Fin c,
+        |(trueCountOn (S packet) (v packet) : Real) - (q packet + frac packet)| := by
+  have hfull := sortedSenderOutgoing_profile_error_exact_var S v up
+    down q frac hsize hu hsorted hq hfrac0 hfrac1
+  calc
+    _ ≤ ∑ packet : Fin c, ∑ i ∈ range 66,
+        senderOutgoingProfileErrorVar S v up down q frac packet i := by
+      apply Finset.sum_le_sum
+      intro packet _
+      exact Finset.sum_le_sum_of_subset_of_nonneg (hselected packet) (by
+        intro i hi hnot
+        exact abs_nonneg _)
+    _ = ∑ packet : Fin c,
+        |(trueCountOn (S packet) (v packet) : Real) - (q packet + frac packet)| := hfull
+
+/-- The combined threshold count entering a receiver differs from the sum of
+its selected source-ideal interval counts by at most the senders' total coarse
+count error. This is the aggregate form consumed by a later merge/deal bound. -/
+theorem selectedSenderOutgoing_count_error_le_var {c N : Nat}
+    (S : Fin c → Finset (Fin N)) (v : Fin c → Fin N → Bool)
+    (up down q : Fin c → Nat) (frac : Fin c → Real)
+    (hsize : ∀ packet, (S packet).card = up packet + 64 * down packet)
+    (hu : ∀ packet, 2 ∣ up packet)
+    (hsorted : ∀ packet, Monotone (v packet ∘ (S packet).orderEmbOfFin rfl))
+    (hq : ∀ packet, q packet < (S packet).card)
+    (hfrac0 : ∀ packet, 0 ≤ frac packet)
+    (hfrac1 : ∀ packet, frac packet ≤ 1)
+    (selected : Fin c → Finset Nat)
+    (hselected : ∀ packet, selected packet ⊆ range 66) :
+    |(∑ packet : Fin c, ∑ i ∈ selected packet,
+        (trueCountOn (senderOutgoingPiece (S packet) (up packet) (down packet) i)
+          (v packet) : Real)) -
+      ∑ packet : Fin c, ∑ i ∈ selected packet,
+        profileIntervalMean (S packet).card (q packet) (frac packet)
+          (senderRankCut (up packet) (down packet) i)
+          (senderRankCut (up packet) (down packet) (i + 1))| ≤
+      ∑ packet : Fin c,
+        |(trueCountOn (S packet) (v packet) : Real) - (q packet + frac packet)| := by
+  let err : Fin c → Nat → Real := fun packet i =>
+    (trueCountOn (senderOutgoingPiece (S packet) (up packet) (down packet) i)
+      (v packet) : Real) -
+      profileIntervalMean (S packet).card (q packet) (frac packet)
+        (senderRankCut (up packet) (down packet) i)
+        (senderRankCut (up packet) (down packet) (i + 1))
+  have hdiff :
+      (∑ packet : Fin c, ∑ i ∈ selected packet,
+        (trueCountOn (senderOutgoingPiece (S packet) (up packet) (down packet) i)
+          (v packet) : Real)) -
+        ∑ packet : Fin c, ∑ i ∈ selected packet,
+          profileIntervalMean (S packet).card (q packet) (frac packet)
+            (senderRankCut (up packet) (down packet) i)
+            (senderRankCut (up packet) (down packet) (i + 1)) =
+      ∑ packet : Fin c, ∑ i ∈ selected packet, err packet i := by
+    rw [← Finset.sum_sub_distrib]
+    apply Finset.sum_congr rfl
+    intro packet _
+    rw [← Finset.sum_sub_distrib]
+  have hinner (packet : Fin c) :
+      |∑ i ∈ selected packet, err packet i| ≤
+        ∑ i ∈ selected packet, |err packet i| :=
+    Finset.abs_sum_le_sum_abs _ _
+  have hselectedError := selectedSenderOutgoing_profile_error_le_var
+    S v up down q frac hsize hu hsorted hq hfrac0 hfrac1 selected hselected
+  calc
+    |(∑ packet : Fin c, ∑ i ∈ selected packet,
+        (trueCountOn (senderOutgoingPiece (S packet) (up packet) (down packet) i)
+          (v packet) : Real)) -
+      ∑ packet : Fin c, ∑ i ∈ selected packet,
+        profileIntervalMean (S packet).card (q packet) (frac packet)
+          (senderRankCut (up packet) (down packet) i)
+          (senderRankCut (up packet) (down packet) (i + 1))| =
+      |∑ packet : Fin c, ∑ i ∈ selected packet, err packet i| := by rw [hdiff]
+    _ ≤ ∑ packet : Fin c, |∑ i ∈ selected packet, err packet i| :=
+      Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ packet : Fin c, ∑ i ∈ selected packet, |err packet i| := by
+      apply Finset.sum_le_sum
+      intro packet _
+      exact hinner packet
+    _ ≤ ∑ packet : Fin c,
+        |(trueCountOn (S packet) (v packet) : Real) - (q packet + frac packet)| := by
+      simpa [err, senderOutgoingProfileErrorVar] using hselectedError
+
 
 theorem sortedPackets_intervalPartition_L1_exact {c m p q : Nat} (frac : Real)
     (V : Fin c → Fin m → Bool) (hV : ∀ i, Monotone (V i))

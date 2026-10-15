@@ -118,3 +118,21 @@ sender's routing introduces no port-count loss in the threshold profile
 error. The remaining issue is receiver-side selection and reassembly: prove
 that the selected pieces' ideal profiles add to the required receiver rank
 target and that merge-and-deal contracts the resulting global rank error.
+The checked `selectedSenderOutgoing_profile_error_le` makes the first part
+of selection quantitative: any subset of routed pieces has aggregate
+absolute source-profile error at most the cohort's coarse sender-count L1
+error. This bound is independent of how many pieces the receiver selects.
+It controls deviations around the senders' ideal targets; the unresolved
+term is the difference between the sum of those selected ideal targets and
+the receiver's required target profile.
+
+The size and mean restrictions are now removed. The checked
+`sortedSenderOutgoing_profile_error_exact_var` and
+`selectedSenderOutgoing_profile_error_le_var` permit a different source
+length and fractional ideal count for every sender, matching the actual
+parent/child size asymmetry in `WireFlow`. More directly,
+`selectedSenderOutgoing_count_error_le_var` bounds the absolute error of the
+receiver's combined selected threshold count relative to the sum of its
+selected ideal interval counts by the total coarse sender error. The estimate
+has no port-count factor. The destination-target identification and the
+multi-run merge/deal contraction are still open.
