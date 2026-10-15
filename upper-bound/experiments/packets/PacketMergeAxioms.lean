@@ -1,7 +1,7 @@
 import PacketRepair64
 import PacketGenMerge
 import PacketRebinning
-import PacketProfile
+import PacketHalfProfile
 
 /-- info: 'Chvatal.PacketAlignment.oddEvenMergeNet_sorts_two_runs' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
@@ -138,3 +138,19 @@ import PacketProfile
 /-- info: 'Chvatal.PacketAlignment.profileCellMean_cohort_L1_sq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.profileCellMean_cohort_L1_sq
+
+/-- info: 'Chvatal.PacketAlignment.sortedPackets_cellProfile_L1_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.sortedPackets_cellProfile_L1_exact
+
+/-- info: 'Chvatal.PacketAlignment.sortedPackets_cellProfile_L1_sq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.sortedPackets_cellProfile_L1_sq
+
+/-- info: 'Chvatal.PacketAlignment.sortedPackets_halfProfile_L1_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.sortedPackets_halfProfile_L1_exact
+
+/-- info: 'Chvatal.PacketAlignment.sortedPackets_halfProfile_L1_sq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.sortedPackets_halfProfile_L1_sq

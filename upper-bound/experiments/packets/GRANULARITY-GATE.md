@@ -61,17 +61,29 @@ holds for unions of partition pieces assigned to destination ports.
 
 `PacketProfile.lean` now kernel-checks the ideal cell-count formula and the
 exact L1 identity for these equal 64-rank cells (`profileCell_formula`,
-`profileCell_L1_exact`). More strongly, `profileCellMean_L1_exact` handles a
-fractional common mean by interpolating the profiles at its floor and ceiling;
-`profileCellMean_cohort_L1_exact` sums this identity over an arbitrary cohort
-of packets, and `profileCellMean_cohort_L1_sq` bounds the squared cohort-wide
-fine-profile error by cohort size times the coarse packet-count energy. This
-is precisely the norm conversion needed to feed the finite matching-cycle
-L2 estimate into an aggregate fine-profile L1 budget, assuming that estimate's
-input/output counts are represented by the sorted packet profiles. The
-aggregate 64-cell profile error equals the aggregate 4096-packet count error
-exactly. Thus, for this profile potential, there is no change-of-scale loss
-before port selection. It still needs to connect to the
-actual sorted packets and a common bag/rank target, and destination reassembly
-must be shown to transform the profile with a controlled error. This does
-not supply the unbounded matching family or global rank contraction.
+`profileCell_L1_exact`). `sortedBool_prefix_trueCount` and
+`sortedBool_profileCell_trueCount` connect that formula to the actual cells
+of any sorted Boolean packet. For any cohort of such packets,
+`sortedPackets_cellProfile_L1_exact` handles a fractional common mean by
+interpolating the profiles at its floor and ceiling: the aggregate absolute
+error across all actual 64-wire cells equals the aggregate coarse packet-count
+error exactly. `sortedPackets_cellProfile_L1_sq` then bounds the squared
+fine-profile error by cohort size times the coarse squared count error. This
+is the norm conversion needed to feed the finite matching-cycle L2 estimate
+into an aggregate fine-profile budget, with no change-of-scale loss for
+sorted packets. The scheduler still needs to carry this ideal profile through
+its selected ports and destination reassembly, and the profile target must
+match the global bag/rank invariant. This does not supply the unbounded
+matching family or global rank contraction.
+
+The repair support uses two 32-wire halves, so the profile transfer is now
+also formalized at that exact granularity in `PacketHalfProfile.lean`.
+`sortedBool_profileHalf_trueCount` identifies every actual 32-wire rank
+fragment of a sorted `32*K`-wire Boolean packet with its ideal clamp profile.
+For any cohort, `sortedPackets_halfProfile_L1_exact` gives exact equality
+between aggregate fragment-profile L1 discrepancy and coarse packet-count
+L1 discrepancy; the squared aggregate is at most cohort size times coarse
+count energy. The focused Lean check and axiom guards pass. This closes the
+cell-size mismatch in the profile comparison; it still does not show that
+the scheduler's selected fragments are compared against those targets, or
+that destination reassembly preserves the target profile.

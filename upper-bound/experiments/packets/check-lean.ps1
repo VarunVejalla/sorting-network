@@ -1,5 +1,5 @@
 param([switch]$InLake,
-    [ValidateSet('OddEvenMerge64', 'PacketAlignment', 'PacketRepair64', 'PacketGenMerge', 'PacketRebinning', 'PacketSenderCycle', 'PacketCountBridge', 'PacketProfile', 'PacketMergeAxioms')]
+    [ValidateSet('OddEvenMerge64', 'PacketAlignment', 'PacketRepair64', 'PacketGenMerge', 'PacketRebinning', 'PacketSenderCycle', 'PacketCountBridge', 'PacketProfile', 'PacketHalfProfile', 'PacketMergeAxioms')]
     [string]$From = 'OddEvenMerge64')
 
 $ErrorActionPreference = 'Stop'
@@ -23,7 +23,7 @@ New-Item -ItemType Directory -Force $packetBuild | Out-Null
 $env:LEAN_PATH = $packetBuild + ';' + $env:LEAN_PATH
 
 $packetStarted = $false
-foreach ($packetModule in @('OddEvenMerge64', 'PacketAlignment', 'PacketRepair64', 'PacketGenMerge', 'PacketRebinning', 'PacketSenderCycle', 'PacketCountBridge', 'PacketProfile', 'PacketMergeAxioms')) {
+foreach ($packetModule in @('OddEvenMerge64', 'PacketAlignment', 'PacketRepair64', 'PacketGenMerge', 'PacketRebinning', 'PacketSenderCycle', 'PacketCountBridge', 'PacketProfile', 'PacketHalfProfile', 'PacketMergeAxioms')) {
     if ($packetModule -eq $From) { $packetStarted = $true }
     if (-not $packetStarted) { continue }
     $packetSource = Join-Path $packetSources ($packetModule + '.lean')
