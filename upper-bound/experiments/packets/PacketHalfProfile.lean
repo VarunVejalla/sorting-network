@@ -305,6 +305,74 @@ theorem trueCountOn_blockOf_profile {N : Nat} (s : Finset (Fin N))
     rfl
   rw [← hcount, heq, hinterval, ← htotal]
 
+theorem trueCountOn_eq_card_filter {N : Nat} (s : Finset (Fin N)) (v : Fin N → Bool) :
+    trueCountOn s v = (s.filter (fun w => v w = true)).card := by
+  classical
+  let e : {w : s // v w.val = true} ≃
+      {w // w ∈ s.filter (fun x => v x = true)} :=
+    { toFun := fun w => ⟨w.val.val, by simp [w.val.property, w.property]⟩
+      invFun := fun w => ⟨⟨w.val, (Finset.mem_filter.mp w.property).1⟩,
+        (Finset.mem_filter.mp w.property).2⟩
+      left_inv := by intro w; cases w; rfl
+      right_inv := by intro w; cases w; rfl }
+  unfold trueCountOn
+  rw [Fintype.card_congr e]
+  exact Fintype.card_coe (s.filter (fun x => v x = true))
+
+/-- Injective relabeling preserves the Boolean count. -/
+theorem trueCountOn_image {m N : Nat} (s : Finset (Fin m)) (f : Fin m → Fin N)
+    (hf : Function.Injective f) (v : Fin N → Bool) :
+    trueCountOn (s.image f) v = trueCountOn s (v ∘ f) := by
+  let e : Fin s.card ↪ Fin N :=
+    ⟨fun i => f (s.orderEmbOfFin rfl i), fun i j hij => by
+      apply (s.orderEmbOfFin rfl).injective
+      exact hf hij⟩
+  have hrange : Set.range e = {w | w ∈ s.image f} := by
+    ext w
+    simp only [Set.mem_range, Set.mem_setOf_eq, Finset.mem_image]
+    constructor
+    · rintro ⟨i, rfl⟩
+      exact ⟨s.orderEmbOfFin rfl i, Finset.orderEmbOfFin_mem _ rfl _, rfl⟩
+    · rintro ⟨x, hx, rfl⟩
+      obtain ⟨i, rfl⟩ := exists_orderEmb_eq hx
+      exact ⟨i, rfl⟩
+  calc
+    trueCountOn (s.image f) v = boolTrueCount (v ∘ e) :=
+      (boolTrueCount_embedding (s.image f) e hrange v).symm
+    _ = boolTrueCount ((v ∘ f) ∘ s.orderEmbOfFin rfl) := by rfl
+    _ = trueCountOn s (v ∘ f) := boolTrueCount_orderEmb s rfl (v ∘ f)
+
+/-- Threshold counts add across disjoint finite supports. -/
+theorem trueCountOn_union_disjoint {N : Nat} (A B : Finset (Fin N))
+    (hdis : Disjoint A B) (v : Fin N → Bool) :
+    trueCountOn (A ∪ B) v = trueCountOn A v + trueCountOn B v := by
+  let p : Fin N → Prop := fun w => v w = true
+  have hfilter : (A ∪ B).filter p = A.filter p ∪ B.filter p := by
+    ext w
+    simp only [Finset.mem_filter, Finset.mem_union]
+    tauto
+  have hdis' : Disjoint (A.filter p) (B.filter p) :=
+    hdis.mono (Finset.filter_subset _ _) (Finset.filter_subset _ _)
+  calc
+    trueCountOn (A ∪ B) v = ((A ∪ B).filter p).card := trueCountOn_eq_card_filter _ _
+    _ = (A.filter p).card + (B.filter p).card := by
+      rw [hfilter, Finset.card_union_of_disjoint hdis']
+    _ = trueCountOn A v + trueCountOn B v := by
+      rw [← trueCountOn_eq_card_filter A v, ← trueCountOn_eq_card_filter B v]
+
+theorem trueCountOn_biUnion {ι : Type*} {N : Nat} [DecidableEq ι] (I : Finset ι)
+    (A : ι → Finset (Fin N))
+    (hdis : ∀ i ∈ I, ∀ j ∈ I, i ≠ j → Disjoint (A i) (A j))
+    (v : Fin N → Bool) :
+    trueCountOn (I.biUnion A) v = ∑ i ∈ I, trueCountOn (A i) v := by
+  have hdis' : ∀ i ∈ I, ∀ j ∈ I, i ≠ j →
+      Disjoint ((A i).filter (fun w => v w = true))
+        ((A j).filter (fun w => v w = true)) := by
+    intro i hi j hj hij
+    exact (hdis i hi j hj hij).mono (Finset.filter_subset _ _) (Finset.filter_subset _ _)
+  rw [trueCountOn_eq_card_filter, Finset.filter_biUnion, Finset.card_biUnion hdis']
+  simp_rw [← trueCountOn_eq_card_filter]
+
 theorem sortedWireBags_intervalPartition_L1_exact {c N m p q : Nat} (frac : Real)
     (S : Fin c → Finset (Fin N)) (v : Fin c → Fin N → Bool)
     (hcard : ∀ packet, (S packet).card = m)
@@ -781,6 +849,101 @@ theorem wireFlowReceiver_count_error_le {N : Nat}
     hq hfrac0 hfrac1 (receiverOutgoingSelection parentPort)
     (fun source => receiverOutgoingSelection_subset parentPort hport source)
 
+/-- Layerwise sum of receiver discrepancies charges each source rank piece at
+most once when routed selections are pairwise disjoint. -/
+theorem sum_receiver_selected_errors_le_source_pieces {r c : Nat}
+    (err : Fin c → Nat → Real) (selected : Fin r → Fin c → Finset Nat)
+    (hselected : ∀ receiver source, selected receiver source ⊆ range 66)
+    (hdisjoint : ∀ source receiver₁ receiver₂, receiver₁ ≠ receiver₂ →
+      Disjoint (selected receiver₁ source) (selected receiver₂ source)) :
+    (∑ receiver : Fin r,
+      |∑ source : Fin c, ∑ i ∈ selected receiver source, err source i|) ≤
+      ∑ source : Fin c, ∑ i ∈ range 66, |err source i| := by
+  classical
+  have htriangle (receiver : Fin r) :
+      |∑ source : Fin c, ∑ i ∈ selected receiver source, err source i| ≤
+        ∑ source : Fin c, ∑ i ∈ selected receiver source, |err source i| := by
+    calc
+      |∑ source : Fin c, ∑ i ∈ selected receiver source, err source i| ≤
+          ∑ source : Fin c, |∑ i ∈ selected receiver source, err source i| :=
+        Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ source : Fin c, ∑ i ∈ selected receiver source, |err source i| := by
+        apply Finset.sum_le_sum
+        intro source _
+        exact Finset.abs_sum_le_sum_abs _ _
+  calc
+    _ ≤ ∑ receiver : Fin r,
+        ∑ source : Fin c, ∑ i ∈ selected receiver source, |err source i| := by
+      apply Finset.sum_le_sum
+      intro receiver _
+      exact htriangle receiver
+    _ = ∑ source : Fin c,
+        ∑ receiver : Fin r, ∑ i ∈ selected receiver source, |err source i| := by
+      rw [Finset.sum_comm]
+    _ ≤ ∑ source : Fin c, ∑ i ∈ range 66, |err source i| := by
+      apply Finset.sum_le_sum
+      intro source _
+      let pieces := Finset.univ.biUnion (fun receiver : Fin r => selected receiver source)
+      have hpair : Set.PairwiseDisjoint (↑(Finset.univ : Finset (Fin r)))
+          (fun receiver => selected receiver source) := by
+        intro receiver _ receiver' _ hne
+        exact hdisjoint source receiver receiver' hne
+      have hpieces :
+          (∑ receiver : Fin r, ∑ i ∈ selected receiver source, |err source i|) =
+            ∑ i ∈ pieces, |err source i| := by
+        dsimp [pieces]
+        rw [← Finset.sum_biUnion hpair]
+      have hsub : pieces ⊆ range 66 := by
+        intro i hi
+        obtain ⟨receiver, _, hi⟩ := Finset.mem_biUnion.mp hi
+        exact hselected receiver source hi
+      rw [hpieces]
+      exact Finset.sum_le_sum_of_subset_of_nonneg hsub (by
+        intro i _ _
+        exact abs_nonneg _)
+
+/-- If receivers partition each sender's 66 outgoing rank pieces, the sum of
+their absolute profile discrepancies is bounded by one coarse count error per
+sender, regardless of how the pieces are grouped into receivers. -/
+theorem sum_receiver_profile_errors_le_source_count_errors {r c N : Nat}
+    (S : Fin c → Finset (Fin N)) (v : Fin c → Fin N → Bool)
+    (up down q : Fin c → Nat) (frac : Fin c → Real)
+    (hsize : ∀ source, (S source).card = up source + 64 * down source)
+    (hu : ∀ source, 2 ∣ up source)
+    (hsorted : ∀ source, Monotone (v source ∘ (S source).orderEmbOfFin rfl))
+    (hq : ∀ source, q source < (S source).card)
+    (hfrac0 : ∀ source, 0 ≤ frac source)
+    (hfrac1 : ∀ source, frac source ≤ 1)
+    (selected : Fin r → Fin c → Finset Nat)
+    (hselected : ∀ receiver source, selected receiver source ⊆ range 66)
+    (hdisjoint : ∀ source receiver₁ receiver₂, receiver₁ ≠ receiver₂ →
+      Disjoint (selected receiver₁ source) (selected receiver₂ source)) :
+    (∑ receiver : Fin r,
+      |∑ source : Fin c,
+        ∑ i ∈ selected receiver source,
+          ((trueCountOn
+            (senderOutgoingPiece (S source) (up source) (down source) i)
+            (v source) : Real) -
+          profileIntervalMean (S source).card (q source) (frac source)
+            (senderRankCut (up source) (down source) i)
+            (senderRankCut (up source) (down source) (i + 1)))|) ≤
+      ∑ source : Fin c,
+        |(trueCountOn (S source) (v source) : Real) - (q source + frac source)| := by
+  let err : Fin c → Nat → Real := fun source i =>
+    (trueCountOn (senderOutgoingPiece (S source) (up source) (down source) i)
+      (v source) : Real) -
+      profileIntervalMean (S source).card (q source) (frac source)
+        (senderRankCut (up source) (down source) i)
+        (senderRankCut (up source) (down source) (i + 1))
+  calc
+    _ ≤ ∑ source : Fin c, ∑ i ∈ range 66, |err source i| :=
+      sum_receiver_selected_errors_le_source_pieces err selected hselected hdisjoint
+    _ = ∑ source : Fin c,
+        |(trueCountOn (S source) (v source) : Real) - (q source + frac source)| := by
+      simpa [err, senderOutgoingProfileErrorVar] using
+        (sortedSenderOutgoing_profile_error_exact_var S v up down q frac
+          hsize hu hsorted hq hfrac0 hfrac1)
+
 def wireFlowReceiverSource {d : Nat} (b : KBag 64 d) (hchild : b.l < d)
     (source : Fin 65) : KBag 64 d :=
   if h : source.val = 0 then b.parent
@@ -798,6 +961,21 @@ theorem wireFlowReceiverSource_child {d : Nat} (b : KBag 64 d) (hchild : b.l < d
     wireFlowReceiverSource b hchild (wireFlowReceiverChildSource j) =
       b.child j.val j.isLt hchild := by
   simp [wireFlowReceiverSource, wireFlowReceiverChildSource]
+
+theorem fin65_sum_parent_children {α : Type*} [AddCommMonoid α]
+    (f : Fin 65 → α) :
+    (∑ source : Fin 65, f source) =
+      f ⟨0, by omega⟩ + ∑ j : Fin 64, f (wireFlowReceiverChildSource j) := by
+  rw [Fin.sum_univ_succ]
+  congr 1
+
+theorem receiverOutgoingSelection_sum (parentPort : Nat)
+    (source : Fin 65) (f : Nat → Nat) :
+    (∑ i ∈ receiverOutgoingSelection parentPort source, f i) =
+      if source.val = 0 then f (parentPort + 1) else f 0 + f 65 := by
+  by_cases hs : source.val = 0
+  · simp [receiverOutgoingSelection, hs]
+  · simp [receiverOutgoingSelection, hs]
 
 /-- Instantiate the parent/children profile estimate on the actual source
 wire sets and flow sizes from `WireFlow`. The sortedness premise says each
@@ -863,6 +1041,253 @@ theorem wireFlowReceiver_count_error_actual {d tf : Nat}
   simpa [S, val, up, down] using
     (wireFlowReceiver_count_error_le S val up down q frac hsize hu hsorted'
       hq' hfrac0' hfrac1' (b.x % 64) hparentPort)
+
+/-- The selected interval counts in the previous theorem are exactly the
+threshold count on the receiver's actual `execPlacement` register. This uses
+the parent/child port decomposition, injectivity of execution, and disjoint
+source bags; it removes the selected-sum versus receiver-count gap. -/
+theorem wireFlowReceiver_selected_count_eq_register {d tf : Nat}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d)
+    (predicate : Fin (64 ^ d) → Bool) :
+    (∑ source : Fin 65, ∑ i ∈ receiverOutgoingSelection (b.x % 64) source,
+      trueCountOn
+        (senderOutgoingPiece (wireSets F t (wireFlowReceiverSource b hchild source))
+          (F.up (wireFlowReceiverSource b hchild source).l t)
+          (F.down (wireFlowReceiverSource b hchild source).l t) i)
+        (fun w => predicate (X F nets input (t + 1) w))) =
+       trueCountOn ((execPlacement F nets input (t + 1) (by omega)).regs b) predicate := by
+  let Xout := X F nets input (t + 1)
+  let sourceBag := wireFlowReceiverSource b hchild
+  let senderSet (source : Fin 65) := wireSets F t (sourceBag source)
+  let senderUp (source : Fin 65) := F.up (sourceBag source).l t
+  let senderDown (source : Fin 65) := F.down (sourceBag source).l t
+  let value (w : Fin (64 ^ d)) := predicate (Xout w)
+  let source0 : Fin 65 := ⟨0, by omega⟩
+  have hsource0 : sourceBag source0 = b.parent := by
+    exact wireFlowReceiverSource_parent b hchild
+  have hXinj : Function.Injective Xout := X_injective F nets input (t + 1)
+  have hinv := wireSets_inv F t (Nat.le_of_lt ht)
+  have hparentPort : b.x % 64 < 64 := Nat.mod_lt _ (by omega)
+  have hparentPiece :
+      senderOutgoingPiece (wireSets F t b.parent) (F.up b.parent.l t)
+          (F.down b.parent.l t) (b.x % 64 + 1) =
+        downSet (wireSets F t b.parent) (F.up b.parent.l t)
+          (F.down b.parent.l t) (b.x % 64) :=
+    (senderOutgoingPieces_are_WireFlow_ports (wireSets F t b.parent)
+      (F.up b.parent.l t) (F.down b.parent.l t)).2 _ hparentPort
+  have hparentSelected :
+      (∑ i ∈ receiverOutgoingSelection (b.x % 64) source0,
+        trueCountOn (senderOutgoingPiece (senderSet source0) (senderUp source0)
+          (senderDown source0) i) value) =
+        trueCountOn (fromParentK F nets input t b) predicate := by
+    have hsourceZero : wireFlowReceiverSource b hchild 0 = b.parent := by
+      simpa [source0] using hsource0
+    simp only [receiverOutgoingSelection, source0, Fin.val_mk, if_pos rfl,
+      Finset.sum_singleton]
+    dsimp [senderSet, senderUp, senderDown, sourceBag]
+    simp only [Finset.sum_singleton]
+    rw [hsourceZero, hparentPiece]
+    symm
+    simp [fromParentK, hb, KBag.parent_l, Xout]
+    rw [trueCountOn_image _ Xout hXinj predicate]
+    rfl
+  have hsourceSize (source : Fin 65) :
+      (senderSet source).card = senderUp source + 64 * senderDown source := by
+    calc
+      (senderSet source).card = F.a (sourceBag source).l t := hinv.1 (sourceBag source)
+      _ = senderUp source + 64 * senderDown source :=
+        F.hsplit _ _ (sourceBag source).hl ht
+  have hchildPieceDisjoint (j : Fin 64) :
+      Disjoint
+        (senderOutgoingPiece (wireSets F t (b.child j.val j.isLt hchild))
+          (F.up (b.l + 1) t) (F.down (b.l + 1) t) 0)
+        (senderOutgoingPiece (wireSets F t (b.child j.val j.isLt hchild))
+          (F.up (b.l + 1) t) (F.down (b.l + 1) t) 65) := by
+    let s := wireSets F t (b.child j.val j.isLt hchild)
+    let up := F.up (b.l + 1) t
+    let down := F.down (b.l + 1) t
+    have hsize : s.card = up + 64 * down := by
+      simpa [s, up, down, KBag.child_l] using
+        (hinv.1 (b.child j.val j.isLt hchild)).trans
+          (F.hsplit (b.l + 1) t (by omega) ht)
+    have heven : 2 ∣ up := F.hup_even _ _ ht
+    rw [senderOutgoingPiece_eq_blockOf s up down hsize heven 0 (by omega),
+      senderOutgoingPiece_eq_blockOf s up down hsize heven 65 (by omega)]
+    have hcut : senderRankCut up down 1 ≤ senderRankCut up down 65 := by
+      simp [senderRankCut]
+    exact disjoint_blockOf hcut
+  have hchildCount (j : Fin 64) :
+      (∑ i ∈ receiverOutgoingSelection (b.x % 64)
+          (wireFlowReceiverChildSource j),
+        trueCountOn
+          (senderOutgoingPiece (senderSet (wireFlowReceiverChildSource j))
+            (senderUp (wireFlowReceiverChildSource j))
+            (senderDown (wireFlowReceiverChildSource j)) i) value) =
+        trueCountOn
+          ((upSet (wireSets F t (b.child j.val j.isLt hchild))
+              (F.up (b.l + 1) t)).image Xout) predicate := by
+    let childSource := wireFlowReceiverChildSource j
+    have hchildSourceNe : childSource ≠ 0 := by
+      intro h
+      have hv := congrArg Fin.val h
+      simp [childSource, wireFlowReceiverChildSource] at hv
+    have hbag : sourceBag childSource = b.child j.val j.isLt hchild :=
+      wireFlowReceiverSource_child b hchild j
+    have hports := senderOutgoingPieces_are_WireFlow_ports
+      (wireSets F t (b.child j.val j.isLt hchild)) (F.up (b.l + 1) t)
+      (F.down (b.l + 1) t)
+    have hdisImage : Disjoint
+        ((senderOutgoingPiece (wireSets F t (b.child j.val j.isLt hchild))
+          (F.up (b.l + 1) t) (F.down (b.l + 1) t) 0).image Xout)
+        ((senderOutgoingPiece (wireSets F t (b.child j.val j.isLt hchild))
+          (F.up (b.l + 1) t) (F.down (b.l + 1) t) 65).image Xout) := by
+      rw [Finset.disjoint_image hXinj]
+      exact hchildPieceDisjoint j
+    calc
+      _ = trueCountOn
+          (senderOutgoingPiece (wireSets F t (b.child j.val j.isLt hchild))
+            (F.up (b.l + 1) t) (F.down (b.l + 1) t) 0) value +
+          trueCountOn
+          (senderOutgoingPiece (wireSets F t (b.child j.val j.isLt hchild))
+            (F.up (b.l + 1) t) (F.down (b.l + 1) t) 65) value := by
+        simp [receiverOutgoingSelection, childSource, hchildSourceNe,
+          wireFlowReceiverSource_child, sourceBag, senderSet, senderUp, senderDown,
+          value, KBag.child_l]
+      _ = trueCountOn
+          ((senderOutgoingPiece (wireSets F t (b.child j.val j.isLt hchild))
+              (F.up (b.l + 1) t) (F.down (b.l + 1) t) 0 ∪
+            senderOutgoingPiece (wireSets F t (b.child j.val j.isLt hchild))
+              (F.up (b.l + 1) t) (F.down (b.l + 1) t) 65).image Xout) predicate := by
+        rw [Finset.image_union,
+          trueCountOn_union_disjoint _ _ hdisImage predicate]
+        rw [trueCountOn_image _ Xout hXinj, trueCountOn_image _ Xout hXinj]
+        rfl
+      _ = trueCountOn
+          ((upSet (wireSets F t (b.child j.val j.isLt hchild))
+              (F.up (b.l + 1) t)).image Xout) predicate := by
+        rw [hports.1]
+  have hchildPairDisjoint (j k : Fin 64) (hjk : j ≠ k) :
+      Disjoint
+        ((upSet (wireSets F t (b.child j.val j.isLt hchild))
+          (F.up (b.l + 1) t)).image Xout)
+        ((upSet (wireSets F t (b.child k.val k.isLt hchild))
+          (F.up (b.l + 1) t)).image Xout) := by
+    rw [Finset.disjoint_image hXinj]
+    apply Disjoint.mono upSet_subset upSet_subset
+    apply hinv.2.1
+    intro he
+    apply hjk
+    exact Fin.ext (KBag.child_inj b j.val k.val j.isLt k.isLt hchild he)
+  have hchildrenCount :
+      trueCountOn (fromChildrenK F nets input t b) predicate =
+        ∑ j : Fin 64,
+          trueCountOn
+            ((upSet (wireSets F t (b.child j.val j.isLt hchild))
+                (F.up (b.l + 1) t)).image Xout) predicate := by
+    unfold fromChildrenK
+    rw [dif_pos hchild]
+    rw [trueCountOn_biUnion Finset.univ
+      (fun j : Fin 64 =>
+        (upSet (wireSets F t (b.child j.val j.isLt hchild))
+          (F.up (b.l + 1) t)).image Xout)
+      (by
+        intro j _ k _ hjk
+        exact hchildPairDisjoint j k hjk) predicate]
+  have hparentChildDisjoint :
+      Disjoint (fromParentK F nets input t b) (fromChildrenK F nets input t b) := by
+    unfold fromParentK fromChildrenK
+    rw [dif_pos hchild, Finset.disjoint_biUnion_right]
+    intro j hj
+    rw [Finset.disjoint_image hXinj]
+    apply Disjoint.mono downSet_subset upSet_subset
+    apply hinv.2.1
+    intro he
+    have hl := congrArg KBag.l he
+    rw [KBag.parent_l, KBag.child_l] at hl
+    omega
+  have hregisterCount :
+      trueCountOn ((execPlacement F nets input (t + 1) (by omega)).regs b) predicate =
+        trueCountOn (fromParentK F nets input t b) predicate +
+          trueCountOn (fromChildrenK F nets input t b) predicate := by
+    rw [execPlacement_succ_regs F nets input t ht b hb]
+    exact trueCountOn_union_disjoint _ _ hparentChildDisjoint predicate
+  let pieceCount (source : Fin 65) :=
+    ∑ i ∈ receiverOutgoingSelection (b.x % 64) source,
+      trueCountOn (senderOutgoingPiece (senderSet source) (senderUp source)
+        (senderDown source) i) value
+  have hsum := fin65_sum_parent_children pieceCount
+  calc
+    (∑ source : Fin 65, ∑ i ∈ receiverOutgoingSelection (b.x % 64) source,
+        trueCountOn
+          (senderOutgoingPiece (senderSet source) (senderUp source) (senderDown source) i)
+          value) =
+      trueCountOn (fromParentK F nets input t b) predicate +
+        trueCountOn (fromChildrenK F nets input t b) predicate := by
+      rw [hsum]
+      change pieceCount source0 + ∑ j : Fin 64, pieceCount (wireFlowReceiverChildSource j) = _
+      rw [show pieceCount source0 =
+        trueCountOn (fromParentK F nets input t b) predicate from hparentSelected]
+      simp_rw [show ∀ j : Fin 64,
+        pieceCount (wireFlowReceiverChildSource j) =
+          trueCountOn ((upSet (wireSets F t (b.child j.val j.isLt hchild))
+            (F.up (b.l + 1) t)).image Xout) predicate from hchildCount]
+      rw [← hchildrenCount]
+    _ = trueCountOn ((execPlacement F nets input (t + 1) (by omega)).regs b) predicate :=
+      hregisterCount.symm
+
+/-- The source-profile error bound applies directly to the actual receiver
+register: the selected parent/child piece counts are exactly its Boolean
+threshold count. This packages the source-side discrepancy at the receiver
+boundary; matching the selected profile means to a common downstream target
+is still a separate recurrence obligation. -/
+theorem wireFlowReceiver_register_count_error_actual {d tf : Nat}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d)
+    (predicate : Fin (64 ^ d) → Bool)
+    (q : Fin 65 → Nat) (frac : Fin 65 → Real)
+    (hsorted : ∀ source, Monotone
+      ((fun w => predicate (X F nets input (t + 1) w)) ∘
+        (wireSets F t (wireFlowReceiverSource b hchild source)).orderEmbOfFin rfl))
+    (hq : ∀ source, q source <
+      (wireSets F t (wireFlowReceiverSource b hchild source)).card)
+    (hfrac0 : ∀ source, 0 ≤ frac source)
+    (hfrac1 : ∀ source, frac source ≤ 1) :
+    |(trueCountOn ((execPlacement F nets input (t + 1) (by omega)).regs b)
+        predicate : Real) -
+      ∑ source : Fin 65, ∑ i ∈ receiverOutgoingSelection (b.x % 64) source,
+        profileIntervalMean
+          (wireSets F t (wireFlowReceiverSource b hchild source)).card
+          (q source) (frac source)
+          (senderRankCut (F.up (wireFlowReceiverSource b hchild source).l t)
+            (F.down (wireFlowReceiverSource b hchild source).l t) i)
+          (senderRankCut (F.up (wireFlowReceiverSource b hchild source).l t)
+            (F.down (wireFlowReceiverSource b hchild source).l t) (i + 1))| ≤
+      ∑ source : Fin 65,
+        |(trueCountOn (wireSets F t (wireFlowReceiverSource b hchild source))
+          (fun w => predicate (X F nets input (t + 1) w)) : Real) -
+          (q source + frac source)| := by
+  have hcount := (wireFlowReceiver_selected_count_eq_register
+    F nets input t ht b hb hchild predicate).symm
+  calc
+    |(trueCountOn ((execPlacement F nets input (t + 1) (by omega)).regs b)
+        predicate : Real) - _| =
+      |((∑ source : Fin 65, ∑ i ∈ receiverOutgoingSelection (b.x % 64) source,
+          trueCountOn
+            (senderOutgoingPiece
+              (wireSets F t (wireFlowReceiverSource b hchild source))
+              (F.up (wireFlowReceiverSource b hchild source).l t)
+              (F.down (wireFlowReceiverSource b hchild source).l t) i)
+            (fun w => predicate (X F nets input (t + 1) w)) : Nat) : Real) - _| := by
+        rw [hcount]
+    _ ≤ _ := by
+      simpa only [Nat.cast_sum] using
+        (wireFlowReceiver_count_error_actual F nets input t ht b hb hchild predicate
+          q frac hsorted hq hfrac0 hfrac1)
 
 
 theorem sortedPackets_intervalPartition_L1_exact {c m p q : Nat} (frac : Real)

@@ -79,9 +79,23 @@ Actual source-set instantiation (2026-10-15):
 `wireSets F t` via the receiver's parent and children, and derives source
 capacities and even up-flows from `FlowSizes` and `wireSets_inv`. It applies to
 post-stage Boolean thresholds `predicate ∘ X(t+1)`, assuming the sender values
-are rank-sorted. Its conclusion bounds the sum of selected piece counts; the
-remaining adapter is to identify that sum with `trueCountOn` of the actual
-`execPlacement` receiver register using disjoint image/count additivity.
+are rank-sorted. The subsequent `wireFlowReceiver_selected_count_eq_register`
+proves that these selected counts equal the threshold count on the actual
+`execPlacement` receiver register, using injectivity and disjoint source bags.
+The corollary `wireFlowReceiver_register_count_error_actual` therefore bounds
+the receiver's discrepancy from the selected source-profile means by the sum
+of the 65 source count errors. This is kernel-checked. The next unresolved
+step is to identify or bound that selected ideal total against the receiver's
+target profile in a coupled recurrence; sender rank-sortedness and any
+multi-run merge/deal contraction also remain separate obligations.
+
+Layerwise aggregation (2026-10-15): `sum_receiver_selected_errors_le_source_pieces`
+and `sum_receiver_profile_errors_le_source_count_errors` prove an abstract
+finite-layer contraction: if each source rank piece is routed to at most one
+receiver, the sum of receiver absolute errors is at most one coarse count error
+per source. This removes multiplicity loss in the mathematical recurrence,
+conditional on a scheduler incidence partition. It does not yet instantiate
+the actual all-receiver WireFlow schedule or establish the target-mean update.
 
 The entries below retain the research history and their original claim levels.
 

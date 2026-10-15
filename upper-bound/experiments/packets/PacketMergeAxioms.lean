@@ -3,6 +3,30 @@ import PacketGenMerge
 import PacketRebinning
 import PacketHalfProfile
 
+/-- info: 'Chvatal.PacketAlignment.sum_receiver_selected_errors_le_source_pieces' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.sum_receiver_selected_errors_le_source_pieces
+
+/-- info: 'Chvatal.PacketAlignment.sum_receiver_profile_errors_le_source_count_errors' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.sum_receiver_profile_errors_le_source_count_errors
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowReceiver_selected_count_eq_register' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.wireFlowReceiver_selected_count_eq_register
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowReceiver_register_count_error_actual' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.wireFlowReceiver_register_count_error_actual
+
 /-- info: 'Chvatal.PacketAlignment.oddEvenMergeNet_sorts_two_runs' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.oddEvenMergeNet_sorts_two_runs
