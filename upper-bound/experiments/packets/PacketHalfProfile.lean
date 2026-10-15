@@ -781,6 +781,89 @@ theorem wireFlowReceiver_count_error_le {N : Nat}
     hq hfrac0 hfrac1 (receiverOutgoingSelection parentPort)
     (fun source => receiverOutgoingSelection_subset parentPort hport source)
 
+def wireFlowReceiverSource {d : Nat} (b : KBag 64 d) (hchild : b.l < d)
+    (source : Fin 65) : KBag 64 d :=
+  if h : source.val = 0 then b.parent
+  else b.child (source.val - 1) (by have hs := source.isLt; omega) hchild
+
+def wireFlowReceiverChildSource (j : Fin 64) : Fin 65 :=
+  ⟨j.val + 1, by have hj := j.isLt; omega⟩
+
+theorem wireFlowReceiverSource_parent {d : Nat} (b : KBag 64 d) (hchild : b.l < d) :
+    wireFlowReceiverSource b hchild ⟨0, by omega⟩ = b.parent := by
+  simp [wireFlowReceiverSource]
+
+theorem wireFlowReceiverSource_child {d : Nat} (b : KBag 64 d) (hchild : b.l < d)
+    (j : Fin 64) :
+    wireFlowReceiverSource b hchild (wireFlowReceiverChildSource j) =
+      b.child j.val j.isLt hchild := by
+  simp [wireFlowReceiverSource, wireFlowReceiverChildSource]
+
+/-- Instantiate the parent/children profile estimate on the actual source
+wire sets and flow sizes from `WireFlow`. The sortedness premise says each
+sender's post-stage Boolean values are in rank order. The theorem bounds the
+sum of selected incoming-piece counts; identifying that sum with a count on
+`execPlacement.regs` still requires the disjoint-image adapter. -/
+theorem wireFlowReceiver_count_error_actual {d tf : Nat}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d)
+    (predicate : Fin (64 ^ d) → Bool)
+    (q : Fin 65 → Nat) (frac : Fin 65 → Real)
+    (hsorted : ∀ source, Monotone
+      ((fun w => predicate (X F nets input (t + 1) w)) ∘
+        (wireSets F t (wireFlowReceiverSource b hchild source)).orderEmbOfFin rfl))
+    (hq : ∀ source, q source <
+      (wireSets F t (wireFlowReceiverSource b hchild source)).card)
+    (hfrac0 : ∀ source, 0 ≤ frac source)
+    (hfrac1 : ∀ source, frac source ≤ 1) :
+    |(∑ source : Fin 65, ∑ i ∈ receiverOutgoingSelection (b.x % 64) source,
+        ((trueCountOn
+          (senderOutgoingPiece (wireSets F t (wireFlowReceiverSource b hchild source))
+            (F.up (wireFlowReceiverSource b hchild source).l t)
+            (F.down (wireFlowReceiverSource b hchild source).l t) i)
+          (fun w => predicate (X F nets input (t + 1) w))) : Real) -
+      ∑ source : Fin 65, ∑ i ∈ receiverOutgoingSelection (b.x % 64) source,
+        profileIntervalMean
+          (wireSets F t (wireFlowReceiverSource b hchild source)).card
+          (q source) (frac source)
+          (senderRankCut (F.up (wireFlowReceiverSource b hchild source).l t)
+            (F.down (wireFlowReceiverSource b hchild source).l t) i)
+          (senderRankCut (F.up (wireFlowReceiverSource b hchild source).l t)
+            (F.down (wireFlowReceiverSource b hchild source).l t) (i + 1)))| ≤
+      ∑ source : Fin 65,
+        |(trueCountOn (wireSets F t (wireFlowReceiverSource b hchild source))
+          (fun w => predicate (X F nets input (t + 1) w)) : Real) -
+          (q source + frac source)| := by
+  let S : Fin 65 → Finset (Fin (64 ^ d)) :=
+    fun source => wireSets F t (wireFlowReceiverSource b hchild source)
+  let val : Fin 65 → Fin (64 ^ d) → Bool :=
+    fun _ w => predicate (X F nets input (t + 1) w)
+  let up : Fin 65 → Nat := fun source =>
+    F.up (wireFlowReceiverSource b hchild source).l t
+  let down : Fin 65 → Nat := fun source =>
+    F.down (wireFlowReceiverSource b hchild source).l t
+  have hinv := wireSets_inv F t (Nat.le_of_lt ht)
+  have hsize : ∀ source, (S source).card = up source + 64 * down source := by
+    intro source
+    change (wireSets F t (wireFlowReceiverSource b hchild source)).card = _
+    rw [hinv.1 (wireFlowReceiverSource b hchild source)]
+    exact F.hsplit _ _ (wireFlowReceiverSource b hchild source).hl ht
+  have hu : ∀ source, 2 ∣ up source := by
+    intro source
+    exact F.hup_even _ _ ht
+  have hsorted' : ∀ source, Monotone (val source ∘ (S source).orderEmbOfFin rfl) := by
+    intro source
+    exact hsorted source
+  have hq' : ∀ source, q source < (S source).card := hq
+  have hfrac0' : ∀ source, 0 ≤ frac source := hfrac0
+  have hfrac1' : ∀ source, frac source ≤ 1 := hfrac1
+  have hparentPort : b.x % 64 < 64 := Nat.mod_lt _ (by omega)
+  simpa [S, val, up, down] using
+    (wireFlowReceiver_count_error_le S val up down q frac hsize hu hsorted'
+      hq' hfrac0' hfrac1' (b.x % 64) hparentPort)
+
 
 theorem sortedPackets_intervalPartition_L1_exact {c m p q : Nat} (frac : Real)
     (V : Fin c → Fin m → Bool) (hV : ∀ i, Monotone (V i))

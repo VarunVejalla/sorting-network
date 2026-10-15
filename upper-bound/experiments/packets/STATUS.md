@@ -72,9 +72,16 @@ Receiver-shape specialization (2026-10-15):
 `wireFlowReceiver_count_error_le` encodes the scheduler's selection pattern
 with 65 sources: one parent contribution at a chosen down-block index and both
 up-fringe halves from each of 64 children. It inherits the no-port-loss count
-bound for unequal source sizes and means. This is a shape-specific interface,
-not yet a theorem identifying the abstract source sets and values with actual
-`execPlacement` contributions; the port-to-execution adapter remains open.
+bound for unequal source sizes and means.
+
+Actual source-set instantiation (2026-10-15):
+`wireFlowReceiver_count_error_actual` chooses those 65 sources from the real
+`wireSets F t` via the receiver's parent and children, and derives source
+capacities and even up-flows from `FlowSizes` and `wireSets_inv`. It applies to
+post-stage Boolean thresholds `predicate ∘ X(t+1)`, assuming the sender values
+are rank-sorted. Its conclusion bounds the sum of selected piece counts; the
+remaining adapter is to identify that sum with `trueCountOn` of the actual
+`execPlacement` receiver register using disjoint image/count additivity.
 
 The entries below retain the research history and their original claim levels.
 
