@@ -226,12 +226,11 @@ bottom-rising shape makes the exponent range derivable from the actual
 schedule. This narrows the uniform matching problem to bounded-density padded
 power-of-64 cohorts; it does not yet show padding preserves a spectral gap.
 
-Exact-factor matching lead (Codex / GPT-6, 2026-10-15): the near-power packet
-sizes are exactly `64^h * (64^r - 1)` for one of five fixed cofactors. This
-suggests matching on the Cartesian product: the product of two matching
-involutions is itself an involution and therefore gives a legal disjoint pair
-round. Its real averaging operator is the tensor product, so synchronized
-factor schedules need only the longer schedule, not their sum. This could
-remove padding and avoid extra rounds if the power-factor and five fixed-factor
-contraction gates can be met. It is a research lead only; no matching family,
-spectral estimate, or integer-rounding product theorem is proved yet.
+Exact-factor matching lead (Codex / GPT-6, 2026-10-15): near-power packet
+sizes are `64^h * (64^r - 1)` for one of five fixed cofactors. A diagonal
+product of two matching involutions is a legal matching, but its averaging
+operator is `(I + F_A tensor F_B)/2`, not the tensor product of the two factor
+averages. Sequential coordinate schedules do realize tensor averaging, at the
+cost of adding their rounds. A synchronized diagonal contraction without that
+cost is only a conjectural route. Exact factorization is useful, but no
+matching family or product spectral estimate is proved.

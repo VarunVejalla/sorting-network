@@ -1323,15 +1323,14 @@ vertices may invalidate the spectral bound.
 Exact-factor mixing route (Codex / GPT-6, 2026-10-15): the non-power packet
 counts from `flowA7_scheduled_bag_size_form` factor exactly as
 `64^h * (64^r - 1)`, with only five possible cofactors (`r=2,...,6`). This is
-stronger than treating them as arbitrary padded powers. A candidate construction
-is a Cartesian-product matching family: use one matching involution on each
-factor and pair `(a,b)` with `(M_A(a), M_B(b))`. This is again an involution,
-so each round is an ordinary disjoint comparator matching; the averaging
-operators on the product factor as a tensor product. If both factor schedules
-contract in the same R rounds (pad the shorter schedule by identity matchings),
-the product schedule contracts in R rounds too. Thus no extra asymptotic
-rounds are inherently needed for the bounded cofactor. The open mathematical
-gates are a uniform expander/matching schedule on powers `64^h`, and certified
-short schedules for the five fixed odd cofactors. The tensor-product statement
-also needs a Lean proof that the integer floor/ceiling merge-deal rounding
-preserves the desired energy bound.
+stronger than treating them as arbitrary padded powers. A candidate
+Cartesian-product matching pairs `(a,b)` with `(M_A(a), M_B(b))`. This is an
+involution and hence a legal disjoint matching. However, its averaging
+operator is `(I + F_A tensor F_B)/2`, not the tensor product of the
+factor-averaging operators, so it does not automatically inherit both
+contractions in the same R rounds. Applying the A- and B-coordinate matching
+schedules successively realizes tensor averaging but costs the sum of their
+rounds. Avoiding that extra cost requires a separate proof that a synchronized
+diagonal schedule contracts the product. The exact factorization remains
+useful: only five odd cofactors occur, while `64^h` is the unbounded factor.
+No product contraction is proved.
