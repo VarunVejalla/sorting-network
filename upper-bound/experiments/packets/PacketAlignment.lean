@@ -76,7 +76,8 @@ inductive RefinedNodeShape (d t i : Nat) : Nat → Nat → Nat → Prop
       RefinedNodeShape d t i (64 ^ (g + 1) - 64 ^ (h + 1))
         (2 * (4095 * 32 * 64 ^ h)) (64 ^ g - 64 ^ (h + 2))
   | botRise (g h : Nat) (hgh : h ≤ g)
-      (e : d + 2 * i = t + 9 + h) :
+      (e : d + 2 * i = t + 9 + h) (hd : d = i + (g + 1))
+      (hi : i = omega7 d t) :
       RefinedNodeShape d t i (64 ^ (g + 1) - 64 ^ (h + 1))
         (64 ^ (g + 1) - 64 ^ (h + 1)) 0
 
@@ -149,7 +150,7 @@ theorem shape_rat_refined (d : Nat) (hd : 7 ≤ d) (t i : Nat)
         push_cast at hsend ⊢
         ring_nf at hsend ⊢
         linarith
-      · refine ⟨_, _, _, hA, ?_, ?_, .botRise g h (by omega) hh⟩
+      · refine ⟨_, _, _, hA, ?_, ?_, .botRise g h (by omega) hh hgi hω⟩
         · rw [flowUp_bot_rise d hact hα hω hs, hA]
         · rw [flowDown_bot_rise d hact hα hω hs]; simp
     · obtain ⟨g, hg⟩ : ∃ g, d + 2 * i = t + 9 + g :=
@@ -172,6 +173,53 @@ theorem node_shape_refined (d : Nat) (hd : 7 ≤ d) (t i : Nat)
   simp only [if_neg (show t ≠ 0 by omega), if_neg (show t ≠ 1 by omega),
     floor_of_eq _ _ ha, floor_of_eq _ _ hu, floor_of_eq _ _ hn]
   exact hshape
+
+/-- Every ordinary scheduled bag has either a power-of-64 wire count, or is
+within a `64^-2` to `64^-6` relative padding of one.  The latter family has
+the exact form `64^(h+1) * (64^r - 1)`. -/
+theorem scheduled_bag_size_form {d t i a u n : Nat}
+    (hd : 7 ≤ d) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (shape : RefinedNodeShape d t i a u n) :
+    a = 0 ∨ (∃ e, a = 64 ^ e) ∨
+      (∃ h r, 2 ≤ r ∧ r ≤ 6 ∧ a = 64 ^ (h + 1) * (64 ^ r - 1)) := by
+  cases shape with
+  | off => exact Or.inl rfl
+  | topDesc g _ _ _ => exact Or.inr (Or.inl ⟨g + 1, rfl⟩)
+  | topRise f _ _ => exact Or.inr (Or.inl ⟨6 + f, rfl⟩)
+  | mid g _ _ =>
+      right; right
+      refine ⟨g, 6, by omega, by omega, ?_⟩
+      have he : 7 + g = (g + 1) + 6 := by omega
+      have he2 : 1 + g = g + 1 := by omega
+      rw [he, he2, pow_add]
+      change 64 ^ (g + 1) * 64 ^ 6 - 64 ^ (g + 1) =
+        64 ^ (g + 1) * (64 ^ 6 - 1)
+      norm_num
+      omega
+  | botDesc g h hgh hg _ _ =>
+      right; right
+      refine ⟨h, g - h, ?_, ?_, ?_⟩
+      · omega
+      · omega
+      · have he : g + 1 = (h + 1) + (g - h) := by omega
+        rw [he, pow_add]
+        simpa using (Nat.mul_sub_left_distrib (64 ^ (h + 1)) (64 ^ (g - h)) 1).symm
+  | botRise g h hgh he hdrel hi =>
+      right; right
+      have hb := omega7_bounds d t ht2
+      have hgap : 2 ≤ g - h ∧ g - h ≤ 6 := by omega
+      refine ⟨h, g - h, hgap.1, hgap.2, ?_⟩
+      have he' : g + 1 = (h + 1) + (g - h) := by omega
+      rw [he', pow_add]
+      simpa using (Nat.mul_sub_left_distrib (64 ^ (h + 1)) (64 ^ (g - h)) 1).symm
+
+/-- The packet-size classification for the actual integer scheduler flow. -/
+theorem flowA7_scheduled_bag_size_form (d : Nat) (hd : 7 ≤ d) (t i : Nat)
+    (ht2 : 2 ≤ t) (ht : t < tf7 d) :
+    flowA7 d hd i t = 0 ∨ (∃ e, flowA7 d hd i t = 64 ^ e) ∨
+      (∃ h r, 2 ≤ r ∧ r ≤ 6 ∧
+        flowA7 d hd i t = 64 ^ (h + 1) * (64 ^ r - 1)) := by
+  exact scheduled_bag_size_form hd ht2 ht (node_shape_refined d hd t i ht2 ht)
 
 /-- Every ordinary scheduled shape has packet-multiple bag/down sizes and a
 half-fringe residue of either zero or one half-packet. -/
@@ -245,7 +293,7 @@ theorem refined_packet_residues {d t i a u n : Nat}
         rcases residue_4095_half h with hh | hh
         · exact Or.inr hh
         · exact Or.inl hh
-  | botRise g h hgh he =>
+  | botRise g h hgh he _ _ =>
       change 64 ∣ 64 ^ (g + 1) - 64 ^ (h + 1) ∧ 64 ∣ 0 ∧
         ((64 ^ (g + 1) - 64 ^ (h + 1)) / 2 % 64 = 0 ∨
          (64 ^ (g + 1) - 64 ^ (h + 1)) / 2 % 64 = 32)
@@ -294,7 +342,7 @@ theorem halfMisalignment_exponent {d t i a u n : Nat}
         have hmod : 4095 * 32 * 64 ^ h % 64 = 0 := Nat.mod_eq_zero_of_dvd hdiv
         omega
       omega
-  | botRise g h hgh he =>
+  | botRise g h hgh he _ _ =>
       simp [HalfMisaligned] at bad
       have hh0 : h = 0 := by
         by_contra hne

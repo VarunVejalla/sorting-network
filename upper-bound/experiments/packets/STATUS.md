@@ -217,3 +217,11 @@ Receiver pairing follow-up (2026-10-14): the boundary supports now have generic 
 General-support next-cycle adapter (2026-10-14): bitonicSort128_scatter_sorts and bitonicSort128_scatter_depth_le certify a fixed 28-layer sort on any 128-wire union. After sorting, assigning even/odd physical ranks to the next two packet supports yields sorted packets with pairwise interleaving; sorted128_even_odd_interleave and bitonicSort128_scatter_parity_profile prove this profile. This creates a composable support transition for arbitrary disjoint packet supports, if the scheduler is redesigned to track those supports. It costs 28 rather than 13 layers per matching edge: 26 rounds cost 728 instead of 338, so with the same 57 reassembly layers the conditional estimate is 785 layers / coefficient 392.5. It is a sound invariant fallback, not competitive with 200. The open target is a cheaper support-aware merge-and-deal.
 
 Scheduled support characterization (2026-10-14): rankInterval_endpoint_pair_ordered and upFringe_endpoint_pair_ordered now prove that the actual paired 32-wire endpoint fragments are ordered by physical wire index because they are separated rank intervals in the same sender support. Each 64-wire union therefore has ordered `A^32 B^32` support and admits an order-preserving scatter embedding. This removes arbitrary interleaving as an obstacle for the local repair pair; a 6-layer odd-even merge of two ascending runs is the new candidate adapter. Its Lean network/correctness and parity-deal composition remain to prove. The characterization is focused on the repair pairs, not arbitrary 64-wire packet matchings.
+
+Scheduled cohort classification (Codex / GPT-6, 2026-10-15): added
+`scheduled_bag_size_form`, which classifies each ordinary scheduled bag as
+empty, a power of 64 wires, or a power cohort missing a factor `64^-r` with
+`2 <= r <= 6`. Restoring the dropped bottom-frontier index in the refined
+bottom-rising shape makes the exponent range derivable from the actual
+schedule. This narrows the uniform matching problem to bounded-density padded
+power-of-64 cohorts; it does not yet show padding preserves a spectral gap.

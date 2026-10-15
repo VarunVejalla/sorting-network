@@ -1307,3 +1307,15 @@ Network-instantiated pair energy (Codex / GPT-6, 2026-10-15): genMerge128_dealt_
 Exact pairwise energy decrement (Codex / GPT-6, 2026-10-15): floorCeilAverage_energy_drop proves input centered energy minus output centered energy equals ((x-y)^2-(a-b)^2)/2, where a=floor((x+y)/2) and b=ceil((x+y)/2). Since |a-b|<=1, floorCeilAverage_energy_drop_ge gives a gain of at least ((x-y)^2-1)/2. genMerge128_dealt_energy_drop_ge instantiates this for the actual generalized odd-even merge/deal network at every Boolean threshold. This packages graph-edge disagreement as the source of contraction, with an explicit 1/2 rounding cost per matching edge. It does not yet prove a uniform matching-family spectral gap or sum this cost through the scheduler.
 
 Parallel matching sum (Codex / GPT-6, 2026-10-15): mergeDealMatching_energy_drop_ge sums the edgewise decrement over any finite parallel matching represented by left/right endpoint lists. The aggregate centered-energy decrease is at least half the sum of squared endpoint disagreements minus one half per matched pair. It is axiom-guarded and uses the exact packet-count floor/ceiling rebinning. This gives a direct finite interface to a graph Poincare/spectral inequality; the next missing step is to provide a uniformly expanding matching family at each live packet count and control rounding across successive rounds.
+
+Scheduled cohort sizes (Codex / GPT-6, 2026-10-15): `scheduled_bag_size_form`
+classifies every ordinary scheduled bag as empty, an exact power of 64 wires,
+or `64^(h+1) * (64^r - 1)` with `2 <= r <= 6`. In the bottom-rising case the
+refined shape now retains both the actual bottom-frontier index and its
+relation to the size exponent; combining these with `omega7_bounds` proves the
+same 2-to-6 gap bound previously explicit only for bottom-descending bags.
+Thus packet counts are either exact powers of 64 or at least `1 - 64^-2` of
+the next power cohort. This identifies the finite padding range a uniform
+matching-family construction must handle. It does not construct matchings on
+padded cohorts or show dummy packets preserve contraction; adding/deleting
+vertices may invalidate the spectral bound.

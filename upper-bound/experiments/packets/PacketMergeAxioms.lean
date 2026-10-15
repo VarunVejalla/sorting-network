@@ -3,6 +3,14 @@ import PacketGenMerge
 import PacketRebinning
 import PacketHalfProfile
 
+/-- info: 'Chvatal.PacketAlignment.scheduled_bag_size_form' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.scheduled_bag_size_form
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_scheduled_bag_size_form' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_scheduled_bag_size_form
+
 /-- info: 'Chvatal.PacketAlignment.floorCeilAverage_centered_energy_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.floorCeilAverage_centered_energy_le
