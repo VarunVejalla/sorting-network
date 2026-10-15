@@ -53,7 +53,10 @@ checks all scratch sources.
    resulting packets partition its registers with the required capacities.
 2. Carry the logical packet embeddings through matching rounds and positional
    port cuts. `PacketSortedOn` on the physical rank grid is a sufficient local
-   premise, not yet an invariant of that combined scheduler. The generalized
+   premise, not yet an invariant of that combined scheduler. In particular,
+   the six-layer repair sorts crossed supports `suffix_i ∪ prefix_(i+1)`, so
+   it does not by itself order the two halves of each same-grid packet after
+   execution. The generalized
    join/deal interface avoids a physical interleaving cost, but it still needs
    a full evolving placement map compatible with the scheduled flow.
 3. Supply an unbounded matching family and a uniform rounded-discrepancy bound,

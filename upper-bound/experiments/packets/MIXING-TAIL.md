@@ -1232,3 +1232,16 @@ zero-capacity state `q=frac=0` handles empty startup/frontier bags. The
 aggregate interface is therefore applicable from the first stage, subject to
 the required sorted-source and state-profile hypotheses. The scheduler
 invariant and quantitative contraction are still open.
+
+Sender-repair invariant audit (Codex / GPT-6, 2026-10-15): a tempting shortcut
+is to claim that the six-layer repair preserves `PacketSortedOn` on the same
+64-rank grid. It does not follow from the local theorem. `senderBoundaryCell i`
+is `prefix_i ∪ suffix_i`, while `senderRepair_support_cycle` says repair pair
+`i` sorts `suffix_i ∪ prefix_(i+1)`. Thus the two halves of one rank-grid packet
+are produced by different repair pairs. What is proved is that each crossed
+repair support is rank-sorted and the union of all touched supports is exactly
+the union of boundary cells; neither statement orders the two halves of an
+individual output packet against each other. The next sortedness proof must
+track placement through destination reassembly/merge and show how its outputs
+reunite the crossed halves. This is the concrete scheduler invariant gap;
+sender repair alone does not close it.
