@@ -1271,3 +1271,14 @@ explicit rank-piece subsets rather than an unspecified inequality. The two
 unrouted subsets (low fringes and upper middle pieces) still need a separate
 startup/termination cost bound to close the global recurrence. Focused Lean
 and axiom-guard checks pass.
+
+Frontier error budget (Codex / GPT-6, 2026-10-15): each actual sender piece's
+Boolean threshold count and ideal mean lie in its rank capacity. Theorems
+`wireFlowLayer_low_frontier_error_sum_le_up` and
+`wireFlowLayer_high_frontier_error_sum_le_down` aggregate the absolute errors
+of all omitted pieces over the actual source bags: low fringes cost at most
+`∑ up`, and high middle pieces at most `∑ 64 * down`. The root fringe error is
+exactly zero by `hup_root`; the leaf middle error is exactly zero by
+`hdown_leaf`. Thus only level 1's up-flow and level d−1's aggregate down-flow
+remain as nonzero boundary terms. Their time-summed cost and how it feeds the
+rank/variance contraction remain open. Focused check and axiom guards pass.

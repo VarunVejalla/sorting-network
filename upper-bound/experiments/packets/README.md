@@ -32,6 +32,12 @@ levels 0–1 route pieces 1–64, while levels d−1 and d route only pieces 0 a
 65. Their missing fringes/middle pieces remain boundary terms whose
 startup/termination cost must still be bounded.
 
+The actual omitted-profile error is now bounded by the same capacities:
+summed low-fringe error is at most the sum of source up-flows, and summed
+upper-middle error at most the sum of `64 * down`. Root fringes and leaf
+middle pieces have zero error by the flow boundary conditions, leaving only
+level 1 and level `d−1` terms to charge over time.
+
 The correction proof uses adjacent physical wires. It combines the checked
 min/max execution identities with the parity front's sortedness, same-rank
 order and two-position shift. The terminal pair uses the unchanged final odd

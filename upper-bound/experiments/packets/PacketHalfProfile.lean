@@ -704,6 +704,90 @@ theorem senderRankCut_start (up down : Nat) : senderRankCut up down 0 = 0 := by
 theorem senderRankCut_end (up down : Nat) : senderRankCut up down 66 = up + 64 * down := by
   simp [senderRankCut]
 
+/-- The two omitted frontier fringe targets have total mass at most the
+sender's up-flow capacity. -/
+theorem senderRankCut_fringe_mean_sum_le (up down q : Nat) (frac : Real)
+    (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    (∑ i ∈ ({0, 65} : Finset Nat),
+      profileIntervalMean (up + 64 * down) q frac
+        (senderRankCut up down i) (senderRankCut up down (i + 1))) ≤ up := by
+  have hmean (i : Nat) (hi : i ∈ ({0, 65} : Finset Nat)) :
+      profileIntervalMean (up + 64 * down) q frac
+        (senderRankCut up down i) (senderRankCut up down (i + 1)) ≤
+        ((senderRankCut up down (i + 1) - senderRankCut up down i : Nat) : Real) := by
+    have hi_lt : i < 66 := by simp at hi; omega
+    have hmono := senderRankCut_mono up down (Nat.le_succ i)
+    have hbound := senderRankCut_le up down (i + 1)
+    exact (profileIntervalMean_bounds (up + 64 * down) q
+      (senderRankCut up down i) (senderRankCut up down (i + 1)) frac
+      hmono hbound hfrac0 hfrac1).2
+  calc
+    _ ≤ ∑ i ∈ ({0, 65} : Finset Nat),
+        ((senderRankCut up down (i + 1) - senderRankCut up down i : Nat) : Real) := by
+      apply Finset.sum_le_sum
+      intro i hi
+      exact hmean i hi
+    _ = up := by
+      have hwidth : ∑ i ∈ ({0, 65} : Finset Nat),
+          (senderRankCut up down (i + 1) - senderRankCut up down i) = up := by
+        norm_num [senderRankCut]
+        omega
+      exact_mod_cast hwidth
+
+/-- The 64 omitted upper-frontier middle targets have total mass at most
+the sender's aggregate down-flow capacity. -/
+theorem senderRankCut_middle_mean_sum_le (up down q : Nat) (frac : Real)
+    (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    (∑ i ∈ (range 66).filter (fun i => 1 ≤ i ∧ i ≤ 64),
+      profileIntervalMean (up + 64 * down) q frac
+        (senderRankCut up down i) (senderRankCut up down (i + 1))) ≤ 64 * down := by
+  let middle := (range 66).filter (fun i => 1 ≤ i ∧ i ≤ 64)
+  have hwidth (i : Nat) (hi : i ∈ middle) :
+      senderRankCut up down (i + 1) - senderRankCut up down i = down := by
+    have hx := (Finset.mem_filter.mp hi).1
+    have hb := (Finset.mem_filter.mp hi).2
+    have hi0 : i ≠ 0 := by omega
+    have hi64 : i ≤ 64 := hb.2
+    have hnext : i + 1 ≤ 65 := by omega
+    have hcut : senderRankCut up down i = up / 2 + (i - 1) * down := by
+      simp [senderRankCut, hi0, show i ≤ 65 by omega]
+    have hcutNext : senderRankCut up down (i + 1) = up / 2 + i * down := by
+      simp [senderRankCut, hnext]
+    rw [hcut, hcutNext]
+    have hmul : i * down = (i - 1) * down + down := by
+      calc
+        i * down = ((i - 1) + 1) * down := by rw [Nat.sub_add_cancel hb.1]
+        _ = (i - 1) * down + down := by rw [Nat.add_mul]; simp
+    rw [hmul]
+    omega
+  have hmean (i : Nat) (hi : i ∈ middle) :
+      profileIntervalMean (up + 64 * down) q frac
+        (senderRankCut up down i) (senderRankCut up down (i + 1)) ≤ down := by
+    have hmono := senderRankCut_mono up down (Nat.le_succ i)
+    have hbound := senderRankCut_le up down (i + 1)
+    have hbounds := profileIntervalMean_bounds (up + 64 * down) q
+      (senderRankCut up down i) (senderRankCut up down (i + 1)) frac
+      hmono hbound hfrac0 hfrac1
+    calc
+      profileIntervalMean (up + 64 * down) q frac
+          (senderRankCut up down i) (senderRankCut up down (i + 1)) ≤
+        ((senderRankCut up down (i + 1) - senderRankCut up down i : Nat) : Real) :=
+          hbounds.2
+      _ = down := by exact_mod_cast hwidth i hi
+  have hcard : middle.card = 64 := by
+    have hset : middle = Finset.Icc 1 64 := by
+      ext i
+      simp [middle, Finset.mem_filter, Finset.mem_range, Finset.mem_Icc]
+      omega
+    rw [hset]
+    simp
+  calc
+    _ ≤ ∑ i ∈ middle, (down : Real) := by
+      apply Finset.sum_le_sum
+      intro i hi
+      exact hmean i hi
+    _ = (64 : Real) * down := by simp [hcard]
+
 def senderOutgoingPiece {N : Nat} (s : Finset (Fin N)) (up down i : Nat) :
     Finset (Fin N) :=
   if i = 0 then blockOf s 0 (up / 2)
@@ -738,6 +822,115 @@ theorem senderOutgoingPiece_eq_blockOf {N : Nat} (s : Finset (Fin N)) (up down :
         rw [senderRankCut_end, hs]
       unfold senderOutgoingPiece
       rw [if_neg (by omega : ¬65 = 0), if_neg (by omega : ¬65 ≤ 64), hlast, hc65, hc66]
+
+theorem senderOutgoingPiece_card_eq_interval {N : Nat}
+    (s : Finset (Fin N)) (up down : Nat)
+    (hs : s.card = up + 64 * down) (hu : 2 ∣ up) (i : Nat) (hi : i < 66) :
+    (senderOutgoingPiece s up down i).card =
+      senderRankCut up down (i + 1) - senderRankCut up down i := by
+  rw [senderOutgoingPiece_eq_blockOf s up down hs hu i hi]
+  exact blockOf_card (by rw [hs]; exact senderRankCut_le up down (i + 1))
+
+/-- A routed piece's actual Boolean count and its ideal mean both lie in the
+piece capacity, so their absolute discrepancy is at most that capacity. -/
+theorem senderOutgoingPiece_profile_error_le_capacity {N : Nat}
+    (s : Finset (Fin N)) (v : Fin N → Bool) (up down q : Nat) (frac : Real)
+    (hs : s.card = up + 64 * down) (hu : 2 ∣ up)
+    (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) (i : Nat) (hi : i < 66) :
+    |(trueCountOn (senderOutgoingPiece s up down i) v : Real) -
+      profileIntervalMean s.card q frac (senderRankCut up down i)
+        (senderRankCut up down (i + 1))| ≤
+      (senderRankCut up down (i + 1) - senderRankCut up down i : Nat) := by
+  have hcard := senderOutgoingPiece_card_eq_interval s up down hs hu i hi
+  have hcount : trueCountOn (senderOutgoingPiece s up down i) v ≤
+      (senderOutgoingPiece s up down i).card := by
+    rw [trueCountOn_eq_card_filter]
+    exact Finset.card_filter_le _ _
+  have hcountR : (trueCountOn (senderOutgoingPiece s up down i) v : Real) ≤
+      (senderRankCut up down (i + 1) - senderRankCut up down i : Nat) := by
+    exact_mod_cast (hcard ▸ hcount)
+  have hmono := senderRankCut_mono up down (Nat.le_succ i)
+  have hbound : senderRankCut up down (i + 1) ≤ s.card := by
+    rw [hs]
+    exact senderRankCut_le up down (i + 1)
+  have hmean := profileIntervalMean_bounds s.card q
+    (senderRankCut up down i) (senderRankCut up down (i + 1)) frac
+    hmono hbound hfrac0 hfrac1
+  apply abs_le.mpr
+  constructor <;> linarith
+
+/-- The combined omitted root/first-level fringe discrepancy of one sender is
+bounded by its total up-flow capacity. -/
+theorem senderOutgoing_fringe_profile_error_sum_le_up {N : Nat}
+    (s : Finset (Fin N)) (v : Fin N → Bool) (up down q : Nat) (frac : Real)
+    (hs : s.card = up + 64 * down) (hu : 2 ∣ up)
+    (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    (∑ i ∈ ({0, 65} : Finset Nat),
+      |(trueCountOn (senderOutgoingPiece s up down i) v : Real) -
+        profileIntervalMean s.card q frac
+          (senderRankCut up down i) (senderRankCut up down (i + 1))|) ≤ up := by
+  calc
+    _ ≤ ∑ i ∈ ({0, 65} : Finset Nat),
+        ((senderRankCut up down (i + 1) - senderRankCut up down i : Nat) : Real) := by
+      apply Finset.sum_le_sum
+      intro i hi
+      have hi_lt : i < 66 := by simp at hi; omega
+      exact senderOutgoingPiece_profile_error_le_capacity s v up down q frac
+        hs hu hfrac0 hfrac1 i hi_lt
+    _ = up := by
+      have hwidth : ∑ i ∈ ({0, 65} : Finset Nat),
+          (senderRankCut up down (i + 1) - senderRankCut up down i) = up := by
+        norm_num [senderRankCut]
+        omega
+      exact_mod_cast hwidth
+
+/-- The omitted top-frontier middle discrepancy of one sender is bounded by
+the combined capacity of its 64 child ports. -/
+theorem senderOutgoing_middle_profile_error_sum_le_down {N : Nat}
+    (s : Finset (Fin N)) (v : Fin N → Bool) (up down q : Nat) (frac : Real)
+    (hs : s.card = up + 64 * down) (hu : 2 ∣ up)
+    (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    (∑ i ∈ (range 66).filter (fun i => 1 ≤ i ∧ i ≤ 64),
+      |(trueCountOn (senderOutgoingPiece s up down i) v : Real) -
+        profileIntervalMean s.card q frac
+          (senderRankCut up down i) (senderRankCut up down (i + 1))|) ≤ 64 * down := by
+  let middle := (range 66).filter (fun i => 1 ≤ i ∧ i ≤ 64)
+  have hwidth (i : Nat) (hi : i ∈ middle) :
+      senderRankCut up down (i + 1) - senderRankCut up down i = down := by
+    have hb := (Finset.mem_filter.mp hi).2
+    have hi0 : i ≠ 0 := by omega
+    have hnext : i + 1 ≤ 65 := by omega
+    have hcut : senderRankCut up down i = up / 2 + (i - 1) * down := by
+      simp [senderRankCut, hi0, show i ≤ 65 by omega]
+    have hcutNext : senderRankCut up down (i + 1) = up / 2 + i * down := by
+      simp [senderRankCut, hnext]
+    rw [hcut, hcutNext]
+    have hmul : i * down = (i - 1) * down + down := by
+      calc
+        i * down = ((i - 1) + 1) * down := by rw [Nat.sub_add_cancel hb.1]
+        _ = (i - 1) * down + down := by rw [Nat.add_mul]; simp
+    rw [hmul]
+    omega
+  have hcard : middle.card = 64 := by
+    have hset : middle = Finset.Icc 1 64 := by
+      ext i
+      simp [middle, Finset.mem_filter, Finset.mem_range, Finset.mem_Icc]
+      omega
+    rw [hset]
+    simp
+  calc
+    _ ≤ ∑ i ∈ middle, (down : Real) := by
+      apply Finset.sum_le_sum
+      intro i hi
+      have hi_lt : i < 66 := by
+        have := (Finset.mem_filter.mp hi).1
+        simp at this
+        omega
+      have hpiece := senderOutgoingPiece_profile_error_le_capacity s v up down q frac
+        hs hu hfrac0 hfrac1 i hi_lt
+      rw [hwidth i hi] at hpiece
+      exact hpiece
+    _ = (64 : Real) * down := by simp [hcard]
 
 theorem senderOutgoingPieces_are_WireFlow_ports {N : Nat} (s : Finset (Fin N))
     (up down : Nat) :
@@ -2017,6 +2210,146 @@ noncomputable def wireFlowLayerSenderPieceError {d tf : Nat}
     (frac : KBag 64 d → Real) (source : KBag 64 d) (i : Nat) : Real :=
   (wireFlowLayerSenderPieceCount F nets input t predicate source i : Real) -
     wireFlowLayerSenderPieceMean F t q frac source i
+
+/-- Across all root/first-level source bags, the profile error in the omitted
+fringes is bounded by their total up-flow capacity. -/
+theorem wireFlowLayer_low_frontier_error_sum_le_up {d tf : Nat}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (predicate : Fin (64 ^ d) → Bool) (q : KBag 64 d → Nat)
+    (frac : KBag 64 d → Real)
+    (hfrac0 : ∀ source, 0 ≤ frac source)
+    (hfrac1 : ∀ source, frac source ≤ 1) :
+    (∑ source ∈ (Finset.univ : Finset (KBag 64 d)).filter
+      (fun b => b.l ≤ 1 ∧ b.l + 1 < d),
+      ∑ i ∈ ({0, 65} : Finset Nat),
+        |wireFlowLayerSenderPieceError F nets input t predicate q frac source i|) ≤
+      ∑ source ∈ (Finset.univ : Finset (KBag 64 d)).filter
+        (fun b => b.l ≤ 1 ∧ b.l + 1 < d),
+        (F.up source.l t : Real) := by
+  classical
+  apply Finset.sum_le_sum
+  intro source hsource
+  have hsize : (wireSets F t source).card =
+      F.up source.l t + 64 * F.down source.l t := by
+    rw [wireSets_card _ (Nat.le_of_lt ht)]
+    exact F.hsplit source.l t source.hl ht
+  simpa [wireFlowLayerSenderPieceError, wireFlowLayerSenderPieceCount,
+    wireFlowLayerSenderPieceMean] using
+    (senderOutgoing_fringe_profile_error_sum_le_up
+      (wireSets F t source)
+      (fun w => predicate (X F nets input (t + 1) w))
+      (F.up source.l t) (F.down source.l t) (q source) (frac source)
+      hsize (F.hup_even source.l t ht) (hfrac0 source) (hfrac1 source))
+
+/-- Across all top-frontier source bags, the profile error in the omitted
+middle pieces is bounded by their aggregate down-flow capacity. -/
+theorem wireFlowLayer_high_frontier_error_sum_le_down {d tf : Nat}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (predicate : Fin (64 ^ d) → Bool) (q : KBag 64 d → Nat)
+    (frac : KBag 64 d → Real)
+    (hfrac0 : ∀ source, 0 ≤ frac source)
+    (hfrac1 : ∀ source, frac source ≤ 1) :
+    (∑ source ∈ (Finset.univ : Finset (KBag 64 d)).filter
+      (fun b => 2 ≤ b.l ∧ d ≤ b.l + 1),
+      ∑ i ∈ (range 66).filter (fun i => 1 ≤ i ∧ i ≤ 64),
+        |wireFlowLayerSenderPieceError F nets input t predicate q frac source i|) ≤
+      ∑ source ∈ (Finset.univ : Finset (KBag 64 d)).filter
+        (fun b => 2 ≤ b.l ∧ d ≤ b.l + 1),
+        (64 * F.down source.l t : Real) := by
+  classical
+  apply Finset.sum_le_sum
+  intro source hsource
+  have hsize : (wireSets F t source).card =
+      F.up source.l t + 64 * F.down source.l t := by
+    rw [wireSets_card _ (Nat.le_of_lt ht)]
+    exact F.hsplit source.l t source.hl ht
+  simpa [wireFlowLayerSenderPieceError, wireFlowLayerSenderPieceCount,
+    wireFlowLayerSenderPieceMean] using
+    (senderOutgoing_middle_profile_error_sum_le_down
+      (wireSets F t source)
+      (fun w => predicate (X F nets input (t + 1) w))
+      (F.up source.l t) (F.down source.l t) (q source) (frac source)
+      hsize (F.hup_even source.l t ht) (hfrac0 source) (hfrac1 source))
+
+/-- The root's omitted fringe error vanishes: its up-flow is identically zero. -/
+theorem wireFlowLayer_root_fringe_error_eq_zero {d tf : Nat}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (source : KBag 64 d) (hroot : source.l = 0)
+    (predicate : Fin (64 ^ d) → Bool) (q : KBag 64 d → Nat)
+    (frac : KBag 64 d → Real)
+    (hfrac0 : 0 ≤ frac source) (hfrac1 : frac source ≤ 1) :
+    (∑ i ∈ ({0, 65} : Finset Nat),
+      |wireFlowLayerSenderPieceError F nets input t predicate q frac source i|) = 0 := by
+  have hsize : (wireSets F t source).card =
+      F.up source.l t + 64 * F.down source.l t := by
+    rw [wireSets_card _ (Nat.le_of_lt ht)]
+    exact F.hsplit source.l t source.hl ht
+  have hup : F.up source.l t = 0 := by
+    rw [hroot]
+    exact F.hup_root t ht
+  have hle := senderOutgoing_fringe_profile_error_sum_le_up
+    (wireSets F t source) (fun w => predicate (X F nets input (t + 1) w))
+    (F.up source.l t) (F.down source.l t) (q source) (frac source)
+    hsize (F.hup_even source.l t ht) hfrac0 hfrac1
+  have hnonneg : 0 ≤ ∑ i ∈ ({0, 65} : Finset Nat),
+      |(trueCountOn (senderOutgoingPiece (wireSets F t source)
+          (F.up source.l t) (F.down source.l t) i)
+          (fun w => predicate (X F nets input (t + 1) w)) : Real) -
+        profileIntervalMean (wireSets F t source).card (q source) (frac source)
+          (senderRankCut (F.up source.l t) (F.down source.l t) i)
+          (senderRankCut (F.up source.l t) (F.down source.l t) (i + 1))| := by
+    apply Finset.sum_nonneg
+    intro i hi
+    exact abs_nonneg _
+  have hle0 := by simpa [hup] using hle
+  have hnonneg0 := by simpa [hup] using hnonneg
+  have hsum := le_antisymm hle0 hnonneg0
+  simpa [hup, wireFlowLayerSenderPieceError, wireFlowLayerSenderPieceCount,
+    wireFlowLayerSenderPieceMean] using hsum
+
+/-- The bottom leaf's omitted middle error vanishes: it sends no down-flow. -/
+theorem wireFlowLayer_leaf_middle_error_eq_zero {d tf : Nat}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (source : KBag 64 d) (hleaf : source.l = d)
+    (predicate : Fin (64 ^ d) → Bool) (q : KBag 64 d → Nat)
+    (frac : KBag 64 d → Real)
+    (hfrac0 : 0 ≤ frac source) (hfrac1 : frac source ≤ 1) :
+    (∑ i ∈ (range 66).filter (fun i => 1 ≤ i ∧ i ≤ 64),
+      |wireFlowLayerSenderPieceError F nets input t predicate q frac source i|) = 0 := by
+  have hsize : (wireSets F t source).card =
+      F.up source.l t + 64 * F.down source.l t := by
+    rw [wireSets_card _ (Nat.le_of_lt ht)]
+    exact F.hsplit source.l t source.hl ht
+  have hdown : F.down source.l t = 0 := by
+    rw [hleaf]
+    exact F.hdown_leaf t ht
+  have hle := senderOutgoing_middle_profile_error_sum_le_down
+    (wireSets F t source) (fun w => predicate (X F nets input (t + 1) w))
+    (F.up source.l t) (F.down source.l t) (q source) (frac source)
+    hsize (F.hup_even source.l t ht) hfrac0 hfrac1
+  have hnonneg : 0 ≤ ∑ i ∈ (range 66).filter (fun i => 1 ≤ i ∧ i ≤ 64),
+      |(trueCountOn (senderOutgoingPiece (wireSets F t source)
+          (F.up source.l t) (F.down source.l t) i)
+          (fun w => predicate (X F nets input (t + 1) w)) : Real) -
+        profileIntervalMean (wireSets F t source).card (q source) (frac source)
+          (senderRankCut (F.up source.l t) (F.down source.l t) i)
+          (senderRankCut (F.up source.l t) (F.down source.l t) (i + 1))| := by
+    apply Finset.sum_nonneg
+    intro i hi
+    exact abs_nonneg _
+  have hle0 := by simpa [hdown] using hle
+  have hnonneg0 := by simpa [hdown] using hnonneg
+  have hsum := le_antisymm hle0 hnonneg0
+  simpa [hdown, wireFlowLayerSenderPieceError, wireFlowLayerSenderPieceCount,
+    wireFlowLayerSenderPieceMean] using hsum
 
 /-- Sum of the selected ideal means for an active receiver. -/
 noncomputable def wireFlowReceiverSelectedIdealMean {d tf : Nat}

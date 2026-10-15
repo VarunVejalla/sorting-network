@@ -3,6 +3,46 @@ import PacketGenMerge
 import PacketRebinning
 import PacketHalfProfile
 
+/-- info: 'Chvatal.PacketAlignment.senderRankCut_fringe_mean_sum_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.senderRankCut_fringe_mean_sum_le
+
+/-- info: 'Chvatal.PacketAlignment.senderRankCut_middle_mean_sum_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.senderRankCut_middle_mean_sum_le
+
+/-- info: 'Chvatal.PacketAlignment.senderOutgoingPiece_card_eq_interval' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.senderOutgoingPiece_card_eq_interval
+
+/-- info: 'Chvatal.PacketAlignment.senderOutgoingPiece_profile_error_le_capacity' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.senderOutgoingPiece_profile_error_le_capacity
+
+/-- info: 'Chvatal.PacketAlignment.senderOutgoing_fringe_profile_error_sum_le_up' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.senderOutgoing_fringe_profile_error_sum_le_up
+
+/-- info: 'Chvatal.PacketAlignment.senderOutgoing_middle_profile_error_sum_le_down' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.senderOutgoing_middle_profile_error_sum_le_down
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_low_frontier_error_sum_le_up' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_low_frontier_error_sum_le_up
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_high_frontier_error_sum_le_down' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_high_frontier_error_sum_le_down
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_root_fringe_error_eq_zero' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_root_fringe_error_eq_zero
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_leaf_middle_error_eq_zero' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_leaf_middle_error_eq_zero
+
 /-- info: 'Chvatal.PacketAlignment.profileIntervalMean_partition_sum' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.profileIntervalMean_partition_sum
