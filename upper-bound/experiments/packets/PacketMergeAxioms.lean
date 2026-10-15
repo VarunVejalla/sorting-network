@@ -15,6 +15,16 @@ import PacketHalfProfile
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.sum_receiver_profile_errors_le_source_count_errors
 
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayerSelection_pairwise_disjoint' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.wireFlowLayerSelection_pairwise_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_profile_error_sum_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_profile_error_sum_le
+
 /-- info: 'Chvatal.PacketAlignment.wireFlowReceiver_selected_count_eq_register' depends on axioms: [propext,
  Classical.choice,
  Quot.sound] -/
