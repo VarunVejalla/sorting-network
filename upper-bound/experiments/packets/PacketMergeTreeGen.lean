@@ -556,6 +556,127 @@ theorem packetFamily64BlockList_support {q N : Nat}
       rw [← hidx]
       exact hx
 
+/-- The output chunks of all grouped 64-run merges cover exactly the wires
+in the original packet cohort. Thus the merge simultaneously preserves the
+cohort support while redistributing it into sorted rank packets. -/
+theorem packetFamily64BlockList_output_support {q N : Nat}
+    (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y)
+    {α : Type} [LinearOrder α]
+    (tree : PacketMergeTree α 4096)
+    (w : Fin N) :
+    (∃ e ∈ packetFamily64BlockList packets hdis,
+      ∃ j : Fin tree.leafCount,
+        w ∈ Set.range (genScatterMergeTreeOutputEmbedding tree e j)) ↔
+      (∃ a : Fin (q * 64), ∃ i : Fin 64, packets a i = w) := by
+  constructor
+  · rintro ⟨e, he, j, hw⟩
+    apply (packetFamily64BlockList_support packets hdis w).mp
+    exact ⟨e, he,
+      (genScatterMergeTreeOutputEmbedding_support_iff tree e w).mp
+        ⟨j, hw⟩⟩
+  · intro hw
+    obtain ⟨e, he, hw⟩ :=
+      (packetFamily64BlockList_support packets hdis w).mpr hw
+    obtain ⟨j, hj⟩ :=
+      (genScatterMergeTreeOutputEmbedding_support_iff tree e w).mpr hw
+    exact ⟨e, he, j, hj⟩
+
+/-- A cohort with 63 packets beyond a multiple of 64 is covered exactly by
+its merged full blocks and its one 63-packet tail. -/
+theorem packetFamily64BlockList_residue63_support {q N : Nat}
+    (packets : Fin (q * 64 + 63) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y)
+    (w : Fin N) :
+    (∃ e ∈ packetFamily64BlockList
+        (fun i : Fin (q * 64) => packets ⟨i.val, by have hi := i.isLt; omega⟩)
+        (by
+          intro a b hab x y heq
+          exact hdis ⟨a.val, by have ha := a.isLt; omega⟩
+            ⟨b.val, by have hb := b.isLt; omega⟩
+            (by
+              intro h
+              apply hab
+              apply Fin.ext
+              have hv := congrArg Fin.val h
+              simpa using hv) x y heq),
+      w ∈ Set.range e) ∨
+      w ∈ Set.range (genPacketGroup63Embedding
+        (fun i : Fin 63 => packets ⟨q * 64 + i.val, by have hi := i.isLt; omega⟩)
+        (by
+          intro a b hab x y heq
+          exact hdis ⟨q * 64 + a.val, by have ha := a.isLt; omega⟩
+            ⟨q * 64 + b.val, by have hb := b.isLt; omega⟩
+            (by
+              intro h
+              apply hab
+              apply Fin.ext
+              have hv := congrArg Fin.val h
+              simp only [Fin.val_mk] at hv
+              omega) x y heq)) ↔
+      (∃ a : Fin (q * 64 + 63), ∃ i : Fin 64, packets a i = w) := by
+  let prefixIndex : Fin (q * 64) → Fin (q * 64 + 63) :=
+    fun i => ⟨i.val, by have hi := i.isLt; omega⟩
+  let tailIndex : Fin 63 → Fin (q * 64 + 63) :=
+    fun i => ⟨q * 64 + i.val, by have hi := i.isLt; omega⟩
+  let prefixPackets : Fin (q * 64) → Fin 64 ↪ Fin N :=
+    fun i => packets (prefixIndex i)
+  let tailPackets : Fin 63 → Fin 64 ↪ Fin N := fun i => packets (tailIndex i)
+  have hprefixInj : Function.Injective prefixIndex := by
+    intro i j h
+    apply Fin.ext
+    simpa [prefixIndex] using congrArg Fin.val h
+  have htailInj : Function.Injective tailIndex := by
+    intro i j h
+    apply Fin.ext
+    have hv := congrArg Fin.val h
+    simp only [tailIndex, Fin.val_mk] at hv
+    omega
+  have hprefixDis : ∀ a b, a ≠ b → ∀ x y, prefixPackets a x ≠ prefixPackets b y := by
+    intro a b hab x y heq
+    exact hdis (prefixIndex a) (prefixIndex b)
+      (fun h => hab (hprefixInj h)) x y heq
+  have htailDis : ∀ {a b : Fin 63}, a ≠ b → ∀ x y,
+      tailPackets a x ≠ tailPackets b y := by
+    intro a b hab x y heq
+    exact hdis (tailIndex a) (tailIndex b)
+      (fun h => hab (htailInj h)) x y heq
+  change (∃ e ∈ packetFamily64BlockList prefixPackets hprefixDis,
+      w ∈ Set.range e) ∨
+      w ∈ Set.range (genPacketGroup63Embedding tailPackets htailDis) ↔ _
+  constructor
+  · rintro (⟨e, he, hw⟩ | ⟨x, hx⟩)
+    · obtain ⟨a, i, hai⟩ :=
+        (packetFamily64BlockList_support prefixPackets hprefixDis w).mp
+          ⟨e, he, hw⟩
+      exact ⟨prefixIndex a, i, hai⟩
+    · obtain ⟨a, i, hai⟩ :=
+        genPacketGroup63Embedding_mem_packets tailPackets htailDis x
+      exact ⟨tailIndex a, i, hai.symm.trans hx⟩
+  · rintro ⟨a, i, hai⟩
+    by_cases hprefix : a.val < q * 64
+    · let j : Fin (q * 64) := ⟨a.val, hprefix⟩
+      have hj : prefixIndex j = a := by
+        apply Fin.ext
+        rfl
+      left
+      apply (packetFamily64BlockList_support prefixPackets hprefixDis w).mpr
+      exact ⟨j, i, by simpa [prefixPackets, hj] using hai⟩
+    · have htailBound : q * 64 ≤ a.val := by omega
+      let j : Fin 63 := ⟨a.val - q * 64, by have ha := a.isLt; omega⟩
+      have hj : tailIndex j = a := by
+        apply Fin.ext
+        simp [tailIndex, j]
+        omega
+      right
+      obtain ⟨x, hx⟩ := genPacketGroup63Embedding_covers_packets
+        tailPackets htailDis j i
+      refine ⟨x, ?_⟩
+      calc
+        genPacketGroup63Embedding tailPackets htailDis x = tailPackets j i := hx
+        _ = packets a i := by simp [tailPackets, hj]
+        _ = w := hai
+
 theorem packetFamily64BlockList_nodup {q N : Nat}
     (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
     (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y) :

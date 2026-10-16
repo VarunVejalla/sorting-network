@@ -721,3 +721,19 @@ terminal time, the only occupied level has `64^6` wires and is divisible. The
 theorem compiles in the focused packet check and is axiom-guarded. The finite
 screen in `FlowReceiverResidueScreen.lean` was the diagnostic that suggested
 this classification; it is no longer the evidence for the uniform claim.
+
+Grouped merge support conservation (GPT-6-astra-high, 2026-10-16):
+`packetFamily64BlockList_support` proves that consecutive full 64-packet
+blocks cover exactly the input cohort's wires. Its output-strengthening,
+`packetFamily64BlockList_output_support`, proves the merge tree's output rank
+chunks cover that same set. `flowA7_receiver_allCases_divisible64_batch_support`
+then lifts this to the actual divisible receiver and its exact next-stage
+`wireSets` support. The generic grouped-block lemma passes its focused check;
+the receiver theorem passes the focused `PacketHalfProfile` check. This closes
+support conservation for the divisible case alongside its sortedness/profile
+contracts. `flowA7_receiver_allCases_residue63_batch_support` now proves the
+analogous exact cover of the actual receiver by full-block and tail supports.
+Together with `genMergeTreeFullTailBatch_output_support`, this supplies exact
+support conservation through both merge configurations. Neither route
+identifies logical output ranks with the next scheduler's physical cuts; the
+global recurrence and any coefficient improvement remain open.

@@ -510,6 +510,141 @@ theorem flowA7_receiver_allCases_divisible64_batch_profiles {d : Nat}
       castPackets hdis' ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
       (fun i => hsorted (Fin.cast hq i)) threshold e he j
 
+/-- For a divisible-64 receiver, the merged rank packets cover precisely
+the receiver's next-stage register. This upgrades the local grouped-block
+support theorem to the actual `flowA7` support partition. -/
+theorem flowA7_receiver_allCases_divisible64_batch_support {d : Nat}
+    {α : Type} [LinearOrder α]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d)
+    (v : Fin (64 ^ d) → α)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v)
+    (hdiv : 64 ∣ flowA7 d hd b.l (t + 1) / 64) :
+    ∃ blocks : List (Fin 4096 ↪ Fin (64 ^ d)),
+      ∀ w, (∃ e ∈ blocks, ∃ j : Fin (packetPowerTree6 (α := α)).leafCount,
+        w ∈ Set.range (genScatterMergeTreeOutputEmbedding
+          (packetPowerTree6 (α := α)) e j)) ↔
+        w ∈ wireSets (flowSizes7 d hd) (t + 1) b := by
+  obtain ⟨m, packets, hsorted, hdis, hcover, hcount⟩ :=
+    flowA7_receiver_allCases_packetCount hd t ht2 ht b hb hchild v hpack
+  have hdivM : 64 ∣ m := by simpa [hcount] using hdiv
+  let q := m / 64
+  have hq : q * 64 = m := by
+    dsimp [q]
+    exact Nat.div_mul_cancel hdivM
+  let castPackets : Fin (q * 64) → Fin 64 ↪ Fin (64 ^ d) :=
+    fun i => packets (Fin.cast hq i)
+  have hdis' : ∀ a b, a ≠ b → ∀ x y, castPackets a x ≠ castPackets b y := by
+    intro a b hab x y heq
+    apply hdis (Fin.cast hq a) (Fin.cast hq b)
+    · intro h
+      apply hab
+      apply Fin.ext
+      have hv := congrArg Fin.val h
+      simpa using hv
+    · exact heq
+  let blocks := packetFamily64BlockList castPackets hdis'
+  have hsource : ∀ w,
+      (∃ a : Fin (q * 64), ∃ i : Fin 64, castPackets a i = w) ↔
+        w ∈ wireSets (flowSizes7 d hd) (t + 1) b := by
+    intro w
+    rw [← hcover]
+    simp only [Finset.mem_biUnion, Finset.mem_univ, true_and,
+      packetEmbeddingSupport_mem_iff]
+    constructor
+    · rintro ⟨a, i, hi⟩
+      exact ⟨Fin.cast hq a, i, hi⟩
+    · rintro ⟨a, i, hi⟩
+      refine ⟨Fin.cast hq.symm a, i, ?_⟩
+      simpa using hi
+  refine ⟨blocks, ?_⟩
+  intro w
+  simpa [blocks] using
+    (packetFamily64BlockList_output_support castPackets hdis'
+      (packetPowerTree6 (α := α)) w).trans (hsource w)
+
+/-- The actual residue-63 receiver is also partitioned exactly by its full
+64-packet blocks and final 63-packet tail. Together with
+`genMergeTreeFullTailBatch_output_support`, this is the source-side
+conservation law for its 57-layer full-plus-tail merge. -/
+theorem flowA7_receiver_allCases_residue63_batch_support {d : Nat}
+    {α : Type} [LinearOrder α]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d)
+    (v : Fin (64 ^ d) → α)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v)
+    (hrem : (flowA7 d hd b.l (t + 1) / 64) % 64 = 63) :
+    ∃ blocks : List (Fin 4096 ↪ Fin (64 ^ d)),
+      ∃ tail : Fin 4032 ↪ Fin (64 ^ d),
+      ∀ w, (∃ e ∈ blocks, w ∈ Set.range e) ∨ w ∈ Set.range tail ↔
+        w ∈ wireSets (flowSizes7 d hd) (t + 1) b := by
+  obtain ⟨m, packets, hsorted, hdis, hcover, hcount⟩ :=
+    flowA7_receiver_allCases_packetCount hd t ht2 ht b hb hchild v hpack
+  have hmrem : m % 64 = 63 := by simpa [hcount] using hrem
+  let q := m / 64
+  have hsize : m = q * 64 + 63 := by
+    have hdecomp := Nat.mod_add_div m 64
+    dsimp [q]
+    rw [hmrem] at hdecomp
+    omega
+  let packets' : Fin (q * 64 + 63) → Fin 64 ↪ Fin (64 ^ d) :=
+    fun i => packets (Fin.cast hsize.symm i)
+  have hdis' : ∀ a b, a ≠ b → ∀ x y, packets' a x ≠ packets' b y := by
+    intro a b hab x y heq
+    apply hdis (Fin.cast hsize.symm a) (Fin.cast hsize.symm b)
+    · intro h
+      apply hab
+      exact Fin.cast_injective hsize.symm h
+    · exact heq
+  let prefixPackets : Fin (q * 64) → Fin 64 ↪ Fin (64 ^ d) :=
+    fun i => packets' ⟨i.val, by have hi := i.isLt; omega⟩
+  let tailPackets : Fin 63 → Fin 64 ↪ Fin (64 ^ d) :=
+    fun i => packets' ⟨q * 64 + i.val, by have hi := i.isLt; omega⟩
+  have hprefixDis : ∀ a b, a ≠ b → ∀ x y,
+      prefixPackets a x ≠ prefixPackets b y := by
+    intro a b hab x y heq
+    exact hdis' _ _ (by
+      intro h
+      apply hab
+      apply Fin.ext
+      have hv := congrArg Fin.val h
+      simpa using hv) x y heq
+  have htailDis : ∀ {a b : Fin 63}, a ≠ b → ∀ x y,
+      tailPackets a x ≠ tailPackets b y := by
+    intro a b hab x y heq
+    exact hdis' _ _ (by
+      intro h
+      apply hab
+      apply Fin.ext
+      have hv := congrArg Fin.val h
+      simp only [Fin.val_mk] at hv
+      omega) x y heq
+  let blocks := packetFamily64BlockList prefixPackets hprefixDis
+  let tail := genPacketGroup63Embedding tailPackets htailDis
+  have hsource : ∀ w,
+      (∃ a : Fin (q * 64 + 63), ∃ i : Fin 64, packets' a i = w) ↔
+        w ∈ wireSets (flowSizes7 d hd) (t + 1) b := by
+    intro w
+    rw [← hcover]
+    simp only [Finset.mem_biUnion, Finset.mem_univ, true_and,
+      packetEmbeddingSupport_mem_iff]
+    constructor
+    · rintro ⟨a, i, hi⟩
+      exact ⟨Fin.cast hsize.symm a, i, hi⟩
+    · rintro ⟨a, i, hi⟩
+      refine ⟨Fin.cast hsize a, i, ?_⟩
+      simpa using hi
+  refine ⟨blocks, tail, ?_⟩
+  intro w
+  have hlocal := packetFamily64BlockList_residue63_support packets' hdis' w
+  have hlocal' : (∃ e ∈ blocks, w ∈ Set.range e) ∨
+      w ∈ Set.range tail ↔
+        (∃ a : Fin (q * 64 + 63), ∃ i : Fin 64, packets' a i = w) := by
+    simpa [blocks, tail, prefixPackets, tailPackets] using hlocal
+  exact hlocal'.trans (hsource w)
+
 set_option maxHeartbeats 600000 in
 /-- Actual residue-63 `flowA7` receivers also retain exact threshold
 profiles through the full-block plus unequal-tail batch. -/

@@ -1441,3 +1441,19 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.flowA7_receiver_packetCount_residue' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_receiver_packetCount_residue
+
+/-- info: 'Chvatal.PacketAlignment.packetFamily64BlockList_support' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetFamily64BlockList_support
+/-- info: 'Chvatal.PacketAlignment.packetFamily64BlockList_residue63_support' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetFamily64BlockList_residue63_support
+/-- info: 'Chvatal.PacketAlignment.packetFamily64BlockList_output_support' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetFamily64BlockList_output_support
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_divisible64_batch_support' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_divisible64_batch_support
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_residue63_batch_support' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_residue63_batch_support

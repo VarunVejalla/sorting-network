@@ -197,3 +197,15 @@ remain open.
 The local threshold-profile lemma is now parameterized by the number of
 64-wire output cells, so the 63-run unequal merge has the same exact profile
 interface as the 64-run full merge.
+
+Current follow-up (2026-10-16): the actual receiver packet-count residue is
+uniformly 0 or 63, and exact threshold profiles are now proved through both
+the divisible full-block batch and the residue-63 full-plus-tail batch.
+Grouped 64-run output chunks are proved to preserve their exact source support;
+this is lifted all the way to the actual divisible receiver's next-stage
+`wireSets`. The residue-63 receiver's full blocks and tail are also proved to
+cover its next-stage `wireSets`; the generic full-plus-tail output-support
+theorem carries that union through the merge. The critical identification of
+logical rank packets with the next fixed physical `WireFlow` cuts remains
+open. Consequently there is still no global rank-profile recurrence or
+improved limsup coefficient.
