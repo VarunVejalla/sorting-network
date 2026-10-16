@@ -182,3 +182,15 @@ as a 4096-wire merge-tree theorem, and the actual `WireFlow` receiver assembly
 has not been shown to present exactly 64 contiguous sorted runs of 64 wires.
 Proving that interface (or finding its actual run count and widths) is the
 next test of whether this structural use of all 57 layers is viable.
+
+The alternating two-chain microcase has now been screened separately. On the
+128-wire support word `AB` repeated 64 times, `alternating_chain_screen.py`
+produces an explicit 14-layer comparator network that sorts every one of the
+`65*65 = 4225` legal Boolean threshold inputs. The comparator layers are
+stored in `alternating_chain_128_screen.json`; `sorts_all_threshold_states`
+is checked by the script. The network is a valid finite upper-bound candidate
+for this fixed support pattern, but the greedy search proves neither minimum
+depth nor correctness for any other support pattern or the whole receiver.
+It shows that the earlier six-layer allowance cannot simply be assumed for
+an alternating support, while leaving open whether this 14-layer repair can
+be absorbed into the 57-layer budget by a receiver-wide construction.
