@@ -174,3 +174,13 @@ The actual aligned no-repair case is now instantiated. For positive down-flow, b
 The two positive-flow mixed cases are now instantiated as well. When the parent fringe is shifted, `flowA7_receiver_repairedParent_alignedChildren_packetAssembly` combines its repaired cut with the aligned child ports. When the child fringe is shifted, `flowA7_receiver_alignedParent_repairedChildren_packetAssembly` combines the aligned parent cut with all repaired child up-ports. Both return canonical `Fin`-indexed packet families: the endpoint-repair `Unit` indices are transported along finite-type equivalences, leaving packet IDs ready for the indexed matching-round adapter. The generic `flowA7_receiver_packetAssembly_fin` performs this reindexing while preserving all partition contracts. `flowA7_receiver_parentPort_canonical` and `flowA7_receiver_childPorts_canonical` now package all zero/aligned/repaired modes into common finite families, and `flowA7_receiver_allCases_canonical` assembles every combination into a canonical partition of the next register. The remaining induction gap is to propagate those packet IDs and rank placements through the concrete matching schedule and into the next layer's port cuts.
 
 Zero-flow sides now have reusable receiver adapters. A zero parent down-flow gives an empty selected parent cut, which composes with any certified child-port family. If the child down-flow is zero, each child up-port is its entire sender register and its original 64-cell grid supplies the packets; this composes with any certified parent cut. These adapters pass the guarded focused chain. All aligned/repaired/zero-side port contracts are available, though a single theorem combining every case and the later global matching-round induction remain open.
+
+The current 4096-to-64 output interface is stronger than support conservation:
+`PacketHalfProfile.lean` proves that every 64-wire chunk emitted by the
+57-layer 64-run merge has exactly the ideal rank profile of the merged
+threshold count. The unresolved transition is its identification with the
+next scheduler's physical positional cuts.
+The exact merge-output profile theorem has also been lifted to arbitrary
+ordered inputs at every value threshold, using comparator/threshold
+commutation. This supplies the profile interface needed by the recurrence;
+identification with next-stage physical cuts is still open.

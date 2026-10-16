@@ -635,3 +635,33 @@ enumerate the outputs in the scheduler's next canonical rank order or identify
 them with its positional cuts. The next useful step is an adapter from this
 support-certified output family to those actual next-stage cuts, rather than
 more local merge lemmas.
+
+Exact output rank-profile transfer (GPT-6-astra-high, 2026-10-16):
+`genScatterMergeTree_output_profile` proves that if a merge tree sorts 4096
+Boolean wires into 64 sorted 64-wire runs, then each output run has exactly
+the ideal 64-cell profile for the total number of ones. The specialized
+`packetPowerTree6GroupNet_output_profile` applies this to the 57-layer merge
+of 64 sorted 64-wire packets. Both results are kernel checked and added to the
+axiom guard. This gives a rigorous local scale-transfer interface: the full
+merge preserves global rank and materializes each canonical rank cell. It
+still does not identify those abstract chunk embeddings with the physical
+rank intervals used by the next scheduler stage; that alignment plus the
+cross-stage recurrence remains the main obstruction to deriving a global
+coefficient improvement.
+
+Arbitrary-value threshold profile transfer (GPT-6-astra-high, 2026-10-16):
+`genScatterMergeTree_output_threshold_profile` lifts the exact local profile
+law from Boolean inputs to every threshold of any linearly ordered input. It
+uses threshold-commutation of comparator execution, so the statement is ready
+for the value-threshold recurrence rather than requiring a separate Boolean
+input invariant. The focused module check passes; the complete axiom chain is
+being rerun with a guard for this theorem. The physical next-cut alignment and
+rank/energy contraction remain unproved.
+Concrete all-threshold 4096-to-64 interface (GPT-6-astra-high,
+2026-10-16): `packetPowerTree6GroupNet_output_threshold_profile` specializes
+the preceding result to the actual 57-layer 64-run merge, for arbitrary
+linearly ordered values and every threshold. Both arbitrary-value theorems
+pass the focused `PacketHalfProfile` check and are included in the axiom-guard
+chain. This makes the local profile law directly consumable by the existing
+threshold recurrence. No physical-cut identification or global contraction
+has been established, so this does not yet improve the proved limsup bound.
