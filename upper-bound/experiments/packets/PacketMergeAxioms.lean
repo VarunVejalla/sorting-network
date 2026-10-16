@@ -574,3 +574,9 @@ import PacketHalfProfile
  Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.flowA7_scheduled_source_port_packetLayout
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_source_port_packetLayout_register' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.flowA7_source_port_packetLayout_register

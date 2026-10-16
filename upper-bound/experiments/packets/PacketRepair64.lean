@@ -1678,6 +1678,103 @@ theorem flowA7_scheduled_source_port_packetLayout {d : Nat} {α : Type}
   intro j
   exact ⟨h.1 j, h.2.1 j⟩
 
+/-- The same checked sender repair expressed on its local register indices,
+ready to be embedded by `stageNet` through the bag's rank-order embedding. -/
+theorem flowA7_source_port_packetLayout_register {d : Nat} {α : Type}
+    [LinearOrder α] (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t)
+    (ht : t < tf7 d) (q : KBag 64 d)
+    (hτpos : 0 < flowDown7 d hd q.l t)
+    (hbad : HalfMisaligned (flowUp7 d hd q.l t)) :
+    ∃ net : ComparatorNetwork ((flowSizes7 d hd).a q.l t), net.depth ≤ 6 ∧
+      ∀ v : Fin ((flowSizes7 d hd).a q.l t) → α,
+        PacketSortedOn (Finset.univ : Finset (Fin ((flowSizes7 d hd).a q.l t))) v →
+        (∀ j : Fin 64,
+          RankSortedOn
+            (downSetEndpointLeft (Finset.univ : Finset (Fin ((flowSizes7 d hd).a q.l t)))
+              (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j ∪
+             downSetEndpointRight (Finset.univ : Finset (Fin ((flowSizes7 d hd).a q.l t)))
+              (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j)
+            (net.exec v) ∧
+          (∀ k : Fin (flowDown7 d hd q.l t / 64 - 1),
+            RankSortedOn
+              (downSetInteriorCell (Finset.univ : Finset (Fin ((flowSizes7 d hd).a q.l t)))
+                (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j
+                (flowDown7 d hd q.l t / 64 - 1) k) (net.exec v))) ∧
+        RankSortedOn (upFringePairSupport
+          (Finset.univ : Finset (Fin ((flowSizes7 d hd).a q.l t)))
+          (flowUp7 d hd q.l t)) (net.exec v) ∧
+        (∀ k : Fin ((flowUp7 d hd q.l t / 2) / 64),
+          RankSortedOn
+            (upSetPrefixCell (Finset.univ : Finset (Fin ((flowSizes7 d hd).a q.l t))) k)
+            (net.exec v)) ∧
+        (∀ k : Fin ((flowUp7 d hd q.l t / 2) / 64),
+          RankSortedOn
+            (upSetSuffixCell (Finset.univ : Finset (Fin ((flowSizes7 d hd).a q.l t)))
+              (flowUp7 d hd q.l t) k) (net.exec v)) := by
+  let F := flowSizes7 d hd
+  let π := flowUp7 d hd q.l t
+  let τ := flowDown7 d hd q.l t
+  let m := τ / 64 - 1
+  let r := (π / 2) / 64
+  let C := 2 * r + 1 + τ
+  have hshape := node_shape_refined d hd t q.l ht2 ht
+  have hres := refined_packet_residues hd ht2 ht hshape
+  have hτdiv : 64 ∣ τ := by dsimp [τ]; exact hres.2.1
+  have hτlarge : 64 ≤ τ := Nat.le_of_dvd (by simpa [τ] using hτpos) hτdiv
+  have hbase : (π / 2) % 64 = 32 := hbad.2
+  have heven : 2 ∣ π := by dsimp [π]; exact F.hup_even q.l t ht
+  have hsize : F.a q.l t = π + 64 * τ := by
+    dsimp [F, π, τ]
+    exact (flowSizes7 d hd).hsplit q.l t q.hl ht
+  have hτeq : τ = 64 * (m + 1) := by
+    have hmod := Nat.mod_add_div τ 64
+    have hrem : τ % 64 = 0 := Nat.mod_eq_zero_of_dvd hτdiv
+    rw [hrem] at hmod
+    dsimp [m]
+    omega
+  have hhalfEq : π / 2 = 64 * r + 32 := by
+    have hmod := Nat.mod_add_div (π / 2) 64
+    rw [hbase] at hmod
+    dsimp [r]
+    omega
+  have hpiTwice : π = 2 * (π / 2) := by
+    have hmod := Nat.mod_add_div π 2
+    have hrem : π % 2 = 0 := Nat.mod_eq_zero_of_dvd heven
+    rw [hrem] at hmod
+    omega
+  have hπeq : π = 64 * (2 * r + 1) := by rw [hpiTwice, hhalfEq]; omega
+  have hncard : (Finset.univ : Finset (Fin (F.a q.l t))).card = 64 * C := by
+    simp only [Finset.card_univ, Fintype.card_fin]
+    rw [hsize, hπeq]
+    dsimp [C]
+    omega
+  have hcard64 : 64 ∣ (Finset.univ : Finset (Fin (F.a q.l t))).card := by
+    rw [hncard]
+    exact ⟨C, rfl⟩
+  have hπcard : π ≤ (Finset.univ : Finset (Fin (F.a q.l t))).card := by
+    rw [hncard, hπeq]
+    dsimp [C]
+    omega
+  have hwithin : π / 2 + 64 * τ ≤ (Finset.univ : Finset (Fin (F.a q.l t))).card := by
+    rw [hncard]
+    dsimp [C]
+    rw [hhalfEq]
+    omega
+  have hcapacity : π + 64 * τ ≤ (Finset.univ : Finset (Fin (F.a q.l t))).card := by
+    rw [hncard, hπeq]
+    dsimp [C]
+    omega
+  obtain ⟨net, hdepth, hlayout⟩ :=
+    parallelSourcePortPacketLayout (α := α)
+      (Finset.univ : Finset (Fin (F.a q.l t))) π τ m r C hτeq hπeq hncard
+      hτdiv hτlarge hbase heven hcard64 hπcard hwithin hcapacity
+  refine ⟨net, hdepth, ?_⟩
+  intro v hpack
+  have h := hlayout v hpack
+  refine ⟨?_, h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
+  intro j
+  exact ⟨h.1 j, h.2.1 j⟩
+
 /-- At an actual receiver, the 64 child senders' shifted up-fringe endpoint
 repairs are also one six-layer disjoint family. The packet divisibility,
 fringe parity, capacity, and sender disjointness all come from the checked
