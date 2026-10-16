@@ -974,4 +974,76 @@ theorem scheduled_receiver_fragment_budget
   have hc := node_shape_refined d hd t (level + 1) ht2 ht
   exact receiver_fragment_budget hp hc
 
+/-- Apart from singleton and empty bags, every scheduled packet count either
+tiles exactly into groups of 64 or has exactly 63 packets left over after
+tiling. In the latter case the cohort has at least 4095 packets. This is the
+shape needed to apply a 64-run merge tree to all full groups while isolating a
+small, explicit tail. -/
+theorem flowA7_packet_count_block_shape (d : Nat) (hd : 7 ≤ d) (t i : Nat)
+    (ht2 : 2 ≤ t) (ht : t < tf7 d) :
+    flowA7 d hd i t / 64 = 0 ∨
+      flowA7 d hd i t / 64 = 1 ∨
+      64 ∣ flowA7 d hd i t / 64 ∨
+      (flowA7 d hd i t / 64) % 64 = 63 ∧
+        4095 ≤ flowA7 d hd i t / 64 := by
+  let c := flowA7 d hd i t / 64
+  have hfactor := flowA7_scheduled_packet_factorization d hd t i ht2 ht
+  change c = 0 ∨ c = 1 ∨ 64 ∣ c ∨ c % 64 = 63 ∧ 4095 ≤ c
+  rcases hfactor with hz | hp | hn
+  · left
+    simp [c, hz]
+  · rcases hp with ⟨e, he⟩
+    have hc : c = 64 ^ e := by simpa [c] using he
+    rw [hc]
+    by_cases he0 : e = 0
+    · right; left
+      simp [he0]
+    · right; right; left
+      have hepos : 0 < e := Nat.pos_of_ne_zero he0
+      obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero he0
+      refine ⟨64 ^ k, ?_⟩
+      simp [pow_succ, Nat.mul_comm]
+  · rcases hn with ⟨h, r, hrlo, hrhi, he⟩
+    have hc : c = 64 ^ h * (64 ^ r - 1) := by simpa [c] using he
+    rw [hc]
+    by_cases hh : h = 0
+    · subst h
+      right; right; right
+      have hr : r = 2 ∨ r = 3 ∨ r = 4 ∨ r = 5 ∨ r = 6 := by omega
+      rcases hr with rfl | rfl | rfl | rfl | rfl <;>
+        norm_num [Nat.pow_succ] at *
+    · right; right; left
+      have hpos : 0 < h := Nat.pos_of_ne_zero hh
+      obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hh
+      refine ⟨64 ^ k * (64 ^ r - 1), ?_⟩
+      rw [pow_succ]
+      ring
+
+theorem packetTailFraction_bound {c : Nat} (hc : 4095 ≤ c) :
+    (63 : Rat) / c ≤ (7 : Rat) / 455 := by
+  have hcpos : (0 : Rat) < c := by
+    exact_mod_cast (show 0 < c by omega)
+  rw [div_le_div_iff₀ hcpos (by norm_num : (0 : Rat) < 455)]
+  have hcCast : (4095 : Rat) ≤ c := by exact_mod_cast hc
+  norm_num
+  nlinarith
+
+/-- The only non-full 64-packet block in an ordinary scheduled bag has at
+most `7/455` of that bag's packets. -/
+theorem flowA7_packet_tail_fraction_le (d : Nat) (hd : 7 ≤ d) (t i : Nat)
+    (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (htail : (flowA7 d hd i t / 64) % 64 = 63) :
+    (63 : Rat) / ((flowA7 d hd i t / 64 : Nat) : Rat) ≤ (7 : Rat) / 455 := by
+  have hshape := flowA7_packet_count_block_shape d hd t i ht2 ht
+  rcases hshape with hzero | hone | hdiv | hrem
+  · rw [hzero] at htail
+    norm_num at htail
+  · rw [hone] at htail
+    norm_num at htail
+  · have hmod : (flowA7 d hd i t / 64) % 64 = 0 :=
+      Nat.mod_eq_zero_of_dvd hdiv
+    rw [hmod] at htail
+    norm_num at htail
+  · exact packetTailFraction_bound hrem.2
+
 end Chvatal.PacketAlignment

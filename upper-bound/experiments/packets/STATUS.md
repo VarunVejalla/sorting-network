@@ -334,3 +334,13 @@ already supplies disjoint sorted 64-wire supports, so physical contiguity is
 not needed: `genScatter` supports arbitrary injective placements. Grouping
 complete sets of 64 packets by ID is therefore available; handling the fewer
 than 64 leftover packets within budget remains open. See `GRANULARITY-GATE.md`.
+
+Scheduled packet-tail gate (Codex / GPT-6-astra-high, 2026-10-16):
+`flowA7_packet_count_block_shape` and `flowA7_packet_tail_fraction_le` are
+kernel-checked. For the actual scheduled packet count `C = flowA7/64`, the
+only nontrivial remainder modulo 64 is exactly 63, and then `C >= 4095`; hence
+that tail is at most `7/455` of the cohort. This follows from the existing
+exact packet-count factorization and isolates the bounded exception to the
+64-run merge-tree tiling. The new claims are guarded in `PacketMergeAxioms.lean`.
+They do not yet sort the tail or bound its contribution in the coupled rank and
+variance recurrence. See `GRANULARITY-GATE.md`.

@@ -975,3 +975,11 @@ import PacketHalfProfile
 /-- info: 'Chvatal.PacketAlignment.flowA7_sourcePortRepairNet_layout' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_sourcePortRepairNet_layout
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_packet_count_block_shape' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_packet_count_block_shape
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_packet_tail_fraction_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_packet_tail_fraction_le

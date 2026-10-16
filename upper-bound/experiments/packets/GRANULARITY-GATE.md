@@ -196,6 +196,16 @@ agree with the next scheduler's required ports. In particular, the earlier
 wording that asks for “64 contiguous runs” is unnecessarily restrictive, but
 the 57-layer budget is not yet justified for the actual receiver.
 
+The exact scheduled packet-count factorization narrows the incomplete-block
+case. For packet count `C = flowA7/64`, `flowA7_packet_count_block_shape`
+proves that `C` is zero, one, divisible by 64, or has `C % 64 = 63` with
+`C >= 4095`. In the last case, the ungrouped tail is exactly 63 packets and
+at most `63/4095 = 7/455` of the cohort. The theorem
+`flowA7_packet_tail_fraction_le` verifies that ratio in Lean. This makes the
+tail bounded and sparse, but does not yet prove that its sorting/rebinning cost
+fits the depth budget or that its error can be absorbed by the global
+recurrence.
+
 The alternating two-chain microcase has now been screened separately. On the
 128-wire support word `AB` repeated 64 times, `alternating_chain_screen.py`
 produces an explicit 14-layer comparator network that sorts every one of the
