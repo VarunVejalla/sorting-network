@@ -166,6 +166,48 @@ theorem genScatterMergeTree_output_threshold_profile {N : Nat} {α : Type}
     _ = profileCell 64
         (boolTrueCount (fun i : Fin 4096 => decide (t ≤ v (e i)))) j.val := rfl
 
+/-- A complete 4096-wire merge transfers the aggregate threshold-profile
+error exactly into its 64 output cells. Reassembly adds no L1 error beyond
+the discrepancy of the cohort's total count from its fractional target. -/
+theorem genScatterMergeTree_output_threshold_profile_L1_exact {N : Nat}
+    {α : Type} [LinearOrder α]
+    (tree : PacketMergeTree α 4096) (hleaf : tree.leafCount = 64)
+    (e : Fin 4096 ↪ Fin N) (v : Fin N → α)
+    (hRuns : tree.RunsSorted (fun i => v (e i))) (t : α)
+    (q : Nat) (frac : Real) (hq : q < 4096)
+    (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    (∑ j : Fin 64,
+      |(boolTrueCount (fun i : Fin 64 => decide (t ≤
+          (genScatterMergeTree tree e).exec v
+            (genScatterMergeTreeOutputEmbedding tree e (Fin.cast hleaf.symm j) i))) : Real) -
+        profileCellMean 64 q frac j.val|) =
+      |((boolTrueCount (fun i : Fin 4096 => decide (t ≤ v (e i))) : Real) -
+        (q + frac))| := by
+  let X := boolTrueCount (fun i : Fin 4096 => decide (t ≤ v (e i)))
+  have hX : X ≤ 4096 := by
+    simpa [X, boolTrueCount] using
+      (Fintype.card_subtype_le (fun i : Fin 4096 => decide (t ≤ v (e i)) = true))
+  calc
+    (∑ j : Fin 64,
+        |(boolTrueCount (fun i : Fin 64 => decide (t ≤
+            (genScatterMergeTree tree e).exec v
+              (genScatterMergeTreeOutputEmbedding tree e (Fin.cast hleaf.symm j) i))) : Real) -
+          profileCellMean 64 q frac j.val|) =
+      ∑ j : Fin 64,
+        |(profileCell 64 X j.val : Real) - profileCellMean 64 q frac j.val| := by
+      apply Finset.sum_congr rfl
+      intro j hj
+      rw [genScatterMergeTree_output_threshold_profile tree hleaf e v hRuns t
+        j]
+    _ = ∑ j ∈ Finset.range 64,
+        |(profileCell 64 X j : Real) - profileCellMean 64 q frac j| :=
+      Fin.sum_univ_eq_sum_range
+        (fun j : Nat => |(profileCell 64 X j : Real) - profileCellMean 64 q frac j|) 64
+    _ = |(X : Real) - (q + frac)| :=
+      profileCellMean_L1_exact 64 X q frac hq hX hfrac0 hfrac1
+    _ = |((boolTrueCount (fun i : Fin 4096 => decide (t ≤ v (e i))) : Real) -
+        (q + frac))| := by rfl
+
 /-- Threshold-profile transfer for a merge tree with any number `K` of
 64-wire output packets. This includes the 63-packet unequal tail tree. -/
 theorem genScatterMergeTree_output_threshold_profile_k {K N : Nat}

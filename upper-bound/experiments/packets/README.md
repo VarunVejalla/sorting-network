@@ -248,3 +248,10 @@ on the actual 128-wire merge-and-deal network, with standard axioms only.
 This gives the correct local potential for a moving target profile. To use it
 globally, the scheduler must evolve those targets by the same matching
 averages, which is not yet proved for the selected-interval recurrence.
+
+`genScatterMergeTree_output_threshold_profile_L1_exact` also proves that a
+sorted 4096-wire cohort merged into 64 output packets redistributes its
+fractional rank-profile error with exact aggregate L1 conservation. This
+removes reassembly as a source of fresh error in that local model; the
+remaining challenge is carrying the induced logical rank order into the next
+physical scheduler cuts.

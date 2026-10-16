@@ -1349,3 +1349,13 @@ The actual `WireFlow` selected-interval means have not been shown to satisfy
 that update law; closing that compatibility is the next coupling test. The
 separate factor-65 active-layer squared-error recurrence is checked, but it
 does not itself contract this potential.
+
+Exact reassembly L1 transfer (GPT-6-astra-high, 2026-10-16):
+`genScatterMergeTree_output_threshold_profile_L1_exact` shows that a sorted
+64-run 4096-wire cohort reassembled into 64 sorted output packets has total
+absolute cell-profile error exactly equal to the cohort's total threshold
+count error from its fractional target. This uses the checked threshold
+profile theorem and `profileCellMean_L1_exact`, and passes the full
+`PacketMergeAxioms` guard chain. It removes fresh error from this local merge
+tree, but the output packets are indexed by the logical merge embedding; their
+alignment with subsequent physical `WireFlow` rank cuts is still open.

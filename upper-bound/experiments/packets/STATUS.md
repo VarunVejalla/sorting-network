@@ -798,3 +798,14 @@ identifies the right edge discrepancy for a moving target profile. It applies
 to a global recurrence only if the scheduler's targets evolve by the same
 pairwise averages; the current selected-interval target recurrence has not
 been shown to do so, and no contraction or improved coefficient follows yet.
+
+Exact merge reassembly error (GPT-6-astra-high, 2026-10-16):
+`genScatterMergeTree_output_threshold_profile_L1_exact` combines the checked
+4096-to-64 threshold-profile law with `profileCellMean_L1_exact`. For any
+fractional target `q+frac` and sorted 64-run input, the sum of the absolute
+errors across all 64 output packets equals exactly the input cohort's total
+count error. Thus a complete 57-layer local reassembly introduces no fresh
+aggregate L1 error at that scale. The theorem passes `PacketHalfProfile`; its
+axiom guard is included in the current full-chain check. This local exact
+transfer still depends on a rank-coherent target and does not identify the
+logical output packet order with the next physical `WireFlow` cuts.

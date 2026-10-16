@@ -1423,6 +1423,9 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.genScatterMergeTree_output_threshold_profile' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genScatterMergeTree_output_threshold_profile
+/-- info: 'Chvatal.PacketAlignment.genScatterMergeTree_output_threshold_profile_L1_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genScatterMergeTree_output_threshold_profile_L1_exact
 /-- info: 'Chvatal.PacketAlignment.packetPowerTree6GroupNet_output_threshold_profile' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.packetPowerTree6GroupNet_output_threshold_profile
