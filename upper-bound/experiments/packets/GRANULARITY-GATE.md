@@ -270,3 +270,23 @@ depth nor correctness for any other support pattern or the whole receiver.
 It shows that the earlier six-layer allowance cannot simply be assumed for
 an alternating support, while leaving open whether this 14-layer repair can
 be absorbed into the 57-layer budget by a receiver-wide construction.
+
+### Formalization update (2026-10-16)
+
+The local incomplete-block network gate described above is now closed for the
+actual 63-run remainder. `PacketMergeTree.lean` constructs a tree on 4032 wires
+that merges 63 ascending 64-wire runs: its equal merges cost 7 through 11 and
+the five unequal joins cost 8 through 12, giving maximum depth 57. The tree's
+sorting and depth theorems pass the axiom guard. `PacketMergeTreeGen.lean`
+transports this network to any injective generalized-comparator support
+embedding, with sorting preserved in the logical support order and depth
+preserved exactly. This supersedes the statements above that the 63-run tail
+network still needs to be constructed. It does not prove that an actual
+scheduler cohort supplies such a grouped 63-run family, nor the resulting
+packet rebinning, next-stage invariant, or global coefficient.
+
+The generalized output theorem also supplies a legal local re-packetization:
+the sorted 4032-wire support is partitioned into 63 sorted 64-wire embeddings,
+with pairwise disjoint supports and exact preservation of the consumed support.
+This settles re-packetization within each merged block. The unresolved step is
+coordinating distinct blocks with the scheduler's next matching and port cuts.

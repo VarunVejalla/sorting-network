@@ -512,3 +512,29 @@ Smallest scheduled tail pair closed: six lifts of the 2+1 core give a
 of 8. Its correctness and depth claims pass the axiom guard. This completes
 the five individual unequal merge networks at costs 8 through 12; the complete
 tree composition and packet-stage recurrence remain open.
+
+63-run merge tree closed locally: `PacketMergeTree` defines a reusable tree
+composition theorem for parallel child networks followed by a checked merger.
+It instantiates the 57 equal 64+64 joins and the five unequal joins (at costs
+8 through 12) into a concrete network on 4032 wires. `packetOddTree6_sorts`
+proves it merges 63 sorted 64-wire runs, and `packetOddTree6_depth_le` proves
+depth at most 57; both declarations pass `PacketMergeAxioms` guards and the
+focused checker. This closes the local 63-run merge-tree gate. It does not yet
+prove the resulting 4032-wire layout is the packet-stage layout needed by the
+global scheduler, nor the packet recurrence, global depth sum, or a coefficient
+improvement. The next mathematical gate is to identify the tree's run order
+with the scheduler's packet order and transport the packet support/profile
+invariant through this merge stage.
+
+The generic `PacketMergeTree.scatter_sorts` theorem transports any checked
+merge tree through an increasing wire embedding, and `scatter_depth_le`
+preserves its depth budget. `PacketMergeTreeGen` now gives the stronger
+generalized-comparator interface: `genScatterMergeTree_sorts` works for any
+injective support embedding, and `genScatterMergeTree_depth_eq` preserves the
+tree depth exactly. Its sorted output is now re-packetized as 63 embeddings of
+64 wires: these output supports are pairwise disjoint, cover exactly the input
+support, and each output packet is sorted. These declarations pass the axiom
+guard. The local merge and re-packetization can therefore be applied to
+arbitrary disjoint scheduler supports; remaining integration is constructing
+the actual scheduler groups and proving their 63-run premises from its evolving
+packet invariant.
