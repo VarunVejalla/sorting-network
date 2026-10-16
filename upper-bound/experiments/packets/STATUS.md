@@ -848,3 +848,20 @@ the scattered-profile recurrence to a global packet partition; it still does
 not identify the destination fractional targets or prove energy contraction.
 The owner-map and partition theorems now accept any finite packet-ID type, so
 they compose with receiver families whose packet counts differ by bag.
+
+Packet-target monotonicity bridge (GPT-6-astra-high, 2026-10-16):
+`natProfileInterp_mono_mean` establishes monotonicity of the interpolated
+destination count as its real packet target increases, including the adjacent
+floor-boundary case. `assignedRankCount_mono` and
+`assignedRankInterp_sum_mono` lift this to arbitrary fixed scattered-rank
+owner maps and finite packet families, assuming nested rank-prefix selectors
+and monotone per-packet targets. The concrete
+`wireSetPacketRankInterp_sum_mono` corollary applies this directly to the
+unique owners in the actual current `WireFlow` partition. Both modules compile and the complete
+`PacketMergeAxioms` guard chain passes. This closes the monotonicity-under-
+ownership subgap, so fixed ownership itself is compatible with coherent
+threshold targets. Still open: identify the exact ownership-induced target
+sum with the selected WireFlow interval means after merge/reassembly, and
+prove that these targets evolve by the matching averages required by the
+heterogeneous energy-drop lemma. No global recurrence or coefficient
+improvement follows yet.

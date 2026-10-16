@@ -1163,6 +1163,25 @@ def assignedRankCount {ι : Type} [Fintype ι] [DecidableEq ι] {m : Nat}
     (destination : ι) (X : Nat) : Nat :=
   ∑ k : Fin m, if destination = owner k ∧ suffix X k = true then 1 else 0
 
+/-- A fixed rank-owner map sends monotone suffix counts to monotone counts in
+each destination. -/
+theorem assignedRankCount_mono {ι : Type} [Fintype ι] [DecidableEq ι]
+    {m : Nat} (owner : Fin m → ι) (suffix : Nat → Fin m → Bool)
+    (destination : ι) (X Y : Nat)
+    (hmono : X ≤ Y → ∀ k, suffix X k = true → suffix Y k = true)
+    (hXY : X ≤ Y) :
+    assignedRankCount owner suffix destination X ≤
+      assignedRankCount owner suffix destination Y := by
+  unfold assignedRankCount
+  apply Finset.sum_le_sum
+  intro k _
+  by_cases howner : destination = owner k
+  · by_cases hX : suffix X k = true
+    · have hY := hmono hXY k hX
+      simp [howner, hX, hY]
+    · simp [howner, hX]
+  · simp [howner]
+
 /-- For any partition of ranks among destinations, the suffix counts are
 monotone and sum to the suffix size. The preceding abstract L1 lemma then
 shows that arbitrary scattered destination subsets incur no profile error
@@ -1449,6 +1468,143 @@ theorem finSum_ite_one_eq_card_subtype {ι : Type} [Fintype ι]
       simp
     _ = Fintype.card {i // P i} := by
       rw [Fintype.card_subtype]
+
+/-- Linear interpolation of a monotone integer count profile is monotone in
+the underlying real target, including when the floor crosses an integer. -/
+def natProfileInterp (F : Nat → Nat) (q : Nat) (frac : Real) : Real :=
+  (1 - frac) * (F q : Real) + frac * (F (q + 1) : Real)
+
+theorem natProfileInterp_between (F : Nat → Nat) (hF : Monotone F)
+    (q : Nat) (frac : Real) (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    (F q : Real) ≤ natProfileInterp F q frac ∧
+      natProfileInterp F q frac ≤ F (q + 1) := by
+  have hstepNat := hF (Nat.le_succ q)
+  have hstep : (F q : Real) ≤ F (q + 1) := by exact_mod_cast hstepNat
+  constructor <;> unfold natProfileInterp <;> nlinarith [
+    mul_nonneg hfrac0 (show (0 : Real) ≤ F (q + 1) - F q by linarith),
+    mul_nonneg (sub_nonneg.mpr hfrac1)
+      (show (0 : Real) ≤ F (q + 1) - F q by linarith)]
+
+theorem natProfileInterp_mono_mean (F : Nat → Nat) (hF : Monotone F)
+    (q₁ q₂ : Nat) (frac₁ frac₂ : Real)
+    (hfrac₁0 : 0 ≤ frac₁) (hfrac₁1 : frac₁ ≤ 1)
+    (hfrac₂0 : 0 ≤ frac₂) (hfrac₂1 : frac₂ ≤ 1)
+    (hmean : (q₁ : Real) + frac₁ ≤ (q₂ : Real) + frac₂) :
+    natProfileInterp F q₁ frac₁ ≤ natProfileInterp F q₂ frac₂ := by
+  by_cases hq : q₁ ≤ q₂
+  · by_cases heq : q₁ = q₂
+    · subst q₂
+      have hfrac : frac₁ ≤ frac₂ := by nlinarith
+      have hstepNat := hF (Nat.le_succ q₁)
+      have hstep : (F q₁ : Real) ≤ F (q₁ + 1) := by exact_mod_cast hstepNat
+      unfold natProfileInterp
+      nlinarith [mul_nonneg (show (0 : Real) ≤ frac₂ - frac₁ by linarith)
+        (show (0 : Real) ≤ F (q₁ + 1) - F q₁ by linarith)]
+    · have hlt : q₁ < q₂ := by omega
+      have hleft := (natProfileInterp_between F hF q₁ frac₁ hfrac₁0 hfrac₁1).2
+      have hright := (natProfileInterp_between F hF q₂ frac₂ hfrac₂0 hfrac₂1).1
+      have hmidNat := hF (Nat.succ_le_of_lt hlt)
+      have hmid : (F (q₁ + 1) : Real) ≤ F q₂ := by exact_mod_cast hmidNat
+      exact le_trans hleft (le_trans hmid hright)
+  · have hlt : q₂ < q₁ := by omega
+    have hqleReal : (q₁ : Real) ≤ (q₂ : Real) + 1 := by nlinarith
+    have hqle : q₁ ≤ q₂ + 1 := by exact_mod_cast hqleReal
+    have hsucc : q₂ + 1 = q₁ := by omega
+    have hcast : (q₁ : Real) = (q₂ : Real) + 1 := by exact_mod_cast hsucc.symm
+    have hmean' : (q₂ : Real) + 1 + frac₁ ≤ (q₂ : Real) + frac₂ := by
+      rw [← hcast]
+      exact hmean
+    have hf₁ : frac₁ = 0 := by nlinarith [hfrac₂1]
+    have hf₂ : frac₂ = 1 := by nlinarith [hfrac₁0]
+    rw [hf₁, hf₂]
+    rw [← hsucc]
+    simp [natProfileInterp]
+
+/-- Finite sums of packet count interpolants remain monotone when each
+packet's integer count profile is monotone and its real target is monotone.
+This is the profile-level closure needed when packets are regrouped by their
+actual `WireFlow` owner. -/
+theorem natProfileInterp_sum_mono {ι Θ : Type} [Fintype ι]
+    (F : ι → Nat → Nat) (q : Θ → ι → Nat) (frac : Θ → ι → Real)
+    (hF : ∀ packet, Monotone (F packet))
+    (hfrac0 : ∀ θ packet, 0 ≤ frac θ packet)
+    (hfrac1 : ∀ θ packet, frac θ packet ≤ 1)
+    (hmono : ∀ θ₁ θ₂ packet,
+      (q θ₁ packet : Real) + frac θ₁ packet ≤
+        (q θ₂ packet : Real) + frac θ₂ packet)
+    (θ₁ θ₂ : Θ) :
+    (∑ packet, natProfileInterp (F packet) (q θ₁ packet)
+      (frac θ₁ packet)) ≤
+      ∑ packet, natProfileInterp (F packet) (q θ₂ packet)
+        (frac θ₂ packet) := by
+  apply Finset.sum_le_sum
+  intro packet _
+  exact natProfileInterp_mono_mean (F packet) (hF packet)
+    (q θ₁ packet) (q θ₂ packet) (frac θ₁ packet) (frac θ₂ packet)
+    (hfrac0 θ₁ packet) (hfrac1 θ₁ packet)
+    (hfrac0 θ₂ packet) (hfrac1 θ₂ packet)
+    (hmono θ₁ θ₂ packet)
+
+/-- The preceding closure applies to actual scattered ownership: each packet
+may contribute an arbitrary subset of its ranks to a destination, provided
+the packet's rank prefixes are nested. The resulting sum of destination
+profile means is monotone in the packet targets. -/
+theorem assignedRankInterp_sum_mono {κ Θ D : Type} [Fintype κ]
+    [Fintype D] [DecidableEq D] {m : Nat}
+    (owner : κ → Fin m → D) (rankPrefix : κ → Nat → Fin m → Bool)
+    (destination : D) (q : Θ → κ → Nat) (frac : Θ → κ → Real)
+    (hprefix : ∀ packet a b, a ≤ b → ∀ k,
+      rankPrefix packet a k = true → rankPrefix packet b k = true)
+    (hfrac0 : ∀ θ packet, 0 ≤ frac θ packet)
+    (hfrac1 : ∀ θ packet, frac θ packet ≤ 1)
+    (htarget : ∀ θ₁ θ₂ packet,
+      (q θ₁ packet : Real) + frac θ₁ packet ≤
+        (q θ₂ packet : Real) + frac θ₂ packet)
+    (θ₁ θ₂ : Θ) :
+    (∑ packet, natProfileInterp
+      (assignedRankCount (owner packet) (rankPrefix packet) destination)
+      (q θ₁ packet) (frac θ₁ packet)) ≤
+      ∑ packet, natProfileInterp
+        (assignedRankCount (owner packet) (rankPrefix packet) destination)
+        (q θ₂ packet) (frac θ₂ packet) := by
+  apply natProfileInterp_sum_mono
+    (F := fun packet z =>
+      assignedRankCount (owner packet) (rankPrefix packet) destination z)
+    q frac ?_ hfrac0 hfrac1 htarget θ₁ θ₂
+  intro packet a b hab
+  exact assignedRankCount_mono (owner packet) (rankPrefix packet) destination a b
+    (fun _ => hprefix packet a b hab) hab
+
+/-- Concrete WireFlow form of `assignedRankInterp_sum_mono`: assigning every
+rank of each scattered packet to its containing current register preserves
+monotonicity of the summed fractional destination targets. -/
+theorem wireSetPacketRankInterp_sum_mono {d tf m : Nat} {κ Θ : Type}
+    [Fintype κ]
+    (F : FlowSizes d tf) (t : Nat) (ht : t ≤ tf)
+    (packets : κ → Fin m ↪ Fin (64 ^ d))
+    (rankPrefix : κ → Nat → Fin m → Bool)
+    (receiver : KBag 64 d) (q : Θ → κ → Nat) (frac : Θ → κ → Real)
+    (hprefix : ∀ packet a b, a ≤ b → ∀ k,
+      rankPrefix packet a k = true → rankPrefix packet b k = true)
+    (hfrac0 : ∀ θ packet, 0 ≤ frac θ packet)
+    (hfrac1 : ∀ θ packet, frac θ packet ≤ 1)
+    (htarget : ∀ θ₁ θ₂ packet,
+      (q θ₁ packet : Real) + frac θ₁ packet ≤
+        (q θ₂ packet : Real) + frac θ₂ packet)
+    (θ₁ θ₂ : Θ) :
+    (∑ packet, natProfileInterp
+      (assignedRankCount
+        (wireSetPacketRankOwner F t ht packets packet)
+        (rankPrefix packet) receiver)
+      (q θ₁ packet) (frac θ₁ packet)) ≤
+      ∑ packet, natProfileInterp
+        (assignedRankCount
+          (wireSetPacketRankOwner F t ht packets packet)
+          (rankPrefix packet) receiver)
+        (q θ₂ packet) (frac θ₂ packet) := by
+  exact assignedRankInterp_sum_mono
+    (fun packet => wireSetPacketRankOwner F t ht packets packet)
+    rankPrefix receiver q frac hprefix hfrac0 hfrac1 htarget θ₁ θ₂
 
 /-- If a family of disjoint packet embeddings covers all wires, then summing
 its rank-owner threshold counts gives exactly the threshold count in any

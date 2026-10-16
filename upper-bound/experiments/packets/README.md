@@ -277,3 +277,18 @@ bounds the output aggregate L1 profile error by the sum of the input count
 errors whenever the target means sum to the batch mean. Its Lean axiom guard
 passes in `PacketMergeAxioms`. The global scheduler still needs to align these
 logical output packets and targets with the next physical cuts.
+
+Packet-target monotonicity bridge (GPT-6-astra-high, 2026-10-16):
+`natProfileInterp_mono_mean` proves that a monotone integer destination-count
+profile has a monotone linear interpolation even when the target crosses an
+integer boundary. `assignedRankInterp_sum_mono` specializes this to arbitrary
+scattered packet-rank ownership: nested rank prefixes give monotone counts in
+each actual destination, and finite sums preserve monotonicity across packets.
+`wireSetPacketRankInterp_sum_mono` instantiates that result for the unique
+owners from the current complete, disjoint `WireFlow` register partition.
+This supplies a sound interface for carrying monotone fractional targets
+through a fixed ownership map. It does not yet show that the scheduler's next
+selected-interval target is this ownership sum, or that merge/deal evolves it
+by the pairwise averages needed for a global energy decrement. The focused
+`PacketHalfProfile` check and full axiom guard pass; the coefficient remains
+unchanged.

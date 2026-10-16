@@ -1503,6 +1503,24 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.packetRankOwner_trueCountOn_eq_of_partition' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.packetRankOwner_trueCountOn_eq_of_partition
+/-- info: 'Chvatal.PacketAlignment.natProfileInterp_between' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.natProfileInterp_between
+/-- info: 'Chvatal.PacketAlignment.natProfileInterp_mono_mean' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.natProfileInterp_mono_mean
+/-- info: 'Chvatal.PacketAlignment.natProfileInterp_sum_mono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.natProfileInterp_sum_mono
+/-- info: 'Chvatal.PacketAlignment.assignedRankCount_mono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.assignedRankCount_mono
+/-- info: 'Chvatal.PacketAlignment.assignedRankInterp_sum_mono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.assignedRankInterp_sum_mono
+/-- info: 'Chvatal.PacketAlignment.wireSetPacketRankInterp_sum_mono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireSetPacketRankInterp_sum_mono
 /-- info: 'Chvatal.PacketAlignment.sum_receiver_selected_error_sq_le_source_pieces' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.sum_receiver_selected_error_sq_le_source_pieces
