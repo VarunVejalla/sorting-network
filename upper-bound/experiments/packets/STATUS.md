@@ -501,5 +501,14 @@ Middle scheduled tail pair closed: six lifts of the 8+7 core give a concrete
 960-wire merger for sorted 512- and 448-wire runs, with a checked depth bound
 of 10. Its correctness and depth theorems are guarded. Three of the five
 special merges in the 63-run tree are now proved at their target costs 10, 11,
-and 12. The 256+192 pair is also now closed at depth 9. The 128+64 pair and
-the surrounding tree composition remain.
+and 12. The 256+192 pair is also closed at depth 9, and 128+64 is closed at
+depth 8. All five scheduled unequal merges are now proved at their target
+costs. The remaining local network gate is composing them with the 57 full
+64+64 pair merges into the complete 63-run tree and showing its output is the
+required packet layout.
+
+Smallest scheduled tail pair closed: six lifts of the 2+1 core give a
+192-wire merger for sorted 128- and 64-wire runs, with a checked depth bound
+of 8. Its correctness and depth claims pass the axiom guard. This completes
+the five individual unequal merge networks at costs 8 through 12; the complete
+tree composition and packet-stage recurrence remain open.
