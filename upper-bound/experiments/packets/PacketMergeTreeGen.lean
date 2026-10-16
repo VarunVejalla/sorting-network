@@ -506,6 +506,56 @@ def packetFamily64BlockList {q N : Nat}
     List (Fin 4096 ↪ Fin N) :=
   List.ofFn (packetFamily64BlockEmbedding packets hdis)
 
+/-- The grouped full blocks cover exactly the wires of the packets in their
+cohort. This makes the parallel merge output a full-support packet family. -/
+theorem packetFamily64BlockList_support {q N : Nat}
+    (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y)
+    (w : Fin N) :
+    (∃ e ∈ packetFamily64BlockList packets hdis, w ∈ Set.range e) ↔
+      (∃ a : Fin (q * 64), ∃ i : Fin 64, packets a i = w) := by
+  constructor
+  · rintro ⟨e, he, x, hx⟩
+    simp only [packetFamily64BlockList, List.mem_ofFn] at he
+    obtain ⟨j, rfl⟩ := he
+    obtain ⟨a, i, hxi⟩ := genPacketGroup64Embedding_mem_packets
+      (packets := fun k => packets (packetFamily64BlockIndex j k))
+      (hdisjoint := by
+        intro k l hkl u v huv
+        apply hdis (packetFamily64BlockIndex j k) (packetFamily64BlockIndex j l)
+        · intro h
+          apply hkl
+          exact packetFamily64BlockIndex_injective j h
+        · exact huv)
+      (x := x)
+    exact ⟨packetFamily64BlockIndex j a, i, hxi.symm.trans hx⟩
+  · rintro ⟨a, i, rfl⟩
+    have hquot : a.val / 64 < q := by
+      apply (Nat.div_lt_iff_lt_mul (by norm_num : 0 < 64)).2
+      simpa [Nat.mul_comm] using a.isLt
+    let j : Fin q := ⟨a.val / 64, hquot⟩
+    let k : Fin 64 := ⟨a.val % 64, Nat.mod_lt _ (by norm_num)⟩
+    have hidx : packetFamily64BlockIndex j k = a := by
+      apply Fin.ext
+      simp only [packetFamily64BlockIndex, Fin.val_mk]
+      simpa [j, k, Nat.mul_comm] using Nat.div_add_mod a.val 64
+    obtain ⟨x, hx⟩ := genPacketGroup64Embedding_covers_packets
+      (packets := fun l => packets (packetFamily64BlockIndex j l))
+      (hdisjoint := by
+        intro l m hlm u v huv
+        apply hdis (packetFamily64BlockIndex j l) (packetFamily64BlockIndex j m)
+        · intro h
+          apply hlm
+          exact packetFamily64BlockIndex_injective j h
+        · exact huv)
+      (j := k) (i := i)
+    refine ⟨packetFamily64BlockEmbedding packets hdis j, ?_, x, ?_⟩
+    · simp [packetFamily64BlockList]
+    · change genPacketGroup64Embedding
+        (fun l => packets (packetFamily64BlockIndex j l)) _ x = packets a i
+      rw [← hidx]
+      exact hx
+
 theorem packetFamily64BlockList_nodup {q N : Nat}
     (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
     (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y) :
