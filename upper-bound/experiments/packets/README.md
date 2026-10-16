@@ -87,9 +87,11 @@ checks all scratch sources.
 
 ## Remaining proof gates
 
-1. Instantiate the parallel half-packet repair family on every actual receiver,
-   including the exclusive parent/child misalignment cases, and prove that the
-   resulting packets partition its registers with the required capacities.
+1. Combine the now-checked parent down-port and child up-port packet layouts
+   into each actual receiver register, with the right fixed labels and
+   capacities. The local repairs cover the exclusive misalignment cases, but
+   their source-rank cells are not yet shown to be the receiver's physical
+   64-wire cells after the scheduler's placements.
 2. Carry the logical packet embeddings through matching rounds and positional
    port cuts. `PacketSortedOn` on the physical rank grid is a sufficient local
    premise, not yet an invariant of that combined scheduler. In particular,

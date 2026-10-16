@@ -548,3 +548,19 @@ import PacketHalfProfile
 /-- info: 'Chvatal.PacketAlignment.wireFlowReceiver_count_error_actual' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.wireFlowReceiver_count_error_actual
+
+/-- info: 'Chvatal.PacketAlignment.upSetEndpoint_partition' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.upSetEndpoint_partition
+
+/-- info: 'Chvatal.PacketAlignment.parallelUpFringeEndpointRepair_packetLayout' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.parallelUpFringeEndpointRepair_packetLayout
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_child_up_packetLayout' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_child_up_packetLayout

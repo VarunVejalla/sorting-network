@@ -282,6 +282,164 @@ theorem downSetEndpoint_partition {N : Nat} (s : Finset (Fin N))
     · have hk := k.isLt
       exact ⟨hw, by omega, by rw [hhi]; omega⟩
 
+/-- The rank interval `[lo, lo + 64*q)` is the disjoint union of its
+consecutive 64-wire cells. -/
+def rankPacketCell {N : Nat} (s : Finset (Fin N)) (lo : Nat)
+    {q : Nat} (k : Fin q) : Finset (Fin N) :=
+  Chvatal.blockOf s (lo + 64 * k.val) (lo + 64 * (k.val + 1))
+
+theorem blockOf_packetCell_partition {N : Nat} (s : Finset (Fin N))
+    (lo q : Nat) :
+    Chvatal.blockOf s lo (lo + 64 * q) =
+      Finset.univ.biUnion (fun k : Fin q => rankPacketCell s lo k) := by
+  classical
+  ext w
+  simp only [Chvatal.blockOf, Finset.mem_filter, Finset.mem_biUnion,
+    Finset.mem_univ, true_and, rankPacketCell]
+  constructor
+  · rintro ⟨hw, hlo, hhi⟩
+    let k := (Chvatal.rankIn s w - lo) / 64
+    have hk : k < q := by
+      dsimp [k]
+      apply (Nat.div_lt_iff_lt_mul (by norm_num : 0 < 64)).2
+      omega
+    refine ⟨⟨k, hk⟩, hw, ?_, ?_⟩
+    · have hdecomp := Nat.mod_add_div (Chvatal.rankIn s w - lo) 64
+      dsimp [k]
+      omega
+    · have hdecomp := Nat.mod_add_div (Chvatal.rankIn s w - lo) 64
+      dsimp [k]
+      omega
+  · rintro ⟨k, hw, hlo, hhi⟩
+    have hk := k.isLt
+    exact ⟨hw, by omega, by omega⟩
+
+def upSetPrefixCell {N : Nat} (s : Finset (Fin N)) {q : Nat}
+    (k : Fin q) : Finset (Fin N) := rankPacketCell s 0 k
+
+def upSetSuffixCell {N : Nat} (s : Finset (Fin N)) (π : Nat) {q : Nat}
+    (k : Fin q) : Finset (Fin N) := rankPacketCell s (s.card - π / 2 + 32) k
+
+/-- A shifted up-fringe consists of the endpoint pair together with the
+complete aligned cells in the two middle portions of its prefix and suffix. -/
+theorem upSetEndpoint_partition {N : Nat} (s : Finset (Fin N))
+    (π q C : Nat) (hπ : π = 64 * (2 * q + 1))
+    (hcard : s.card = 64 * C) (hπcard : π ≤ s.card) :
+    Chvatal.upSet s π =
+      upFringePairSupport s π ∪
+        ((Finset.univ.biUnion (fun k : Fin q => upSetPrefixCell s k)) ∪
+          Finset.univ.biUnion (fun k : Fin q => upSetSuffixCell s π k)) := by
+  classical
+  have hhalf : π / 2 = 64 * q + 32 := by rw [hπ]; omega
+  have hprefix : π / 2 - 32 = 64 * q := by rw [hhalf]; omega
+  have hsuffix : s.card - π / 2 + 32 + 64 * q = s.card := by
+    rw [hcard, hhalf]
+    omega
+  have hinterval : Chvatal.upSet s π =
+      upFringePairSupport s π ∪
+        (Chvatal.blockOf s 0 (π / 2 - 32) ∪
+          Chvatal.blockOf s (s.card - π / 2 + 32) s.card) := by
+    ext w
+    simp only [Chvatal.upSet, upFringePairSupport, Chvatal.blockOf,
+      Finset.mem_union, Finset.mem_filter]
+    change (w ∈ s ∧ 0 ≤ Chvatal.rankIn s w ∧ Chvatal.rankIn s w < π / 2 ∨
+        w ∈ s ∧ s.card - π / 2 ≤ Chvatal.rankIn s w ∧ Chvatal.rankIn s w < s.card) ↔ _
+    constructor
+    · rintro (⟨hw, _, hr⟩ | ⟨hw, hlo, hhi⟩)
+      · by_cases hleft : Chvatal.rankIn s w < π / 2 - 32
+        · exact Or.inr (Or.inl ⟨hw, by omega, hleft⟩)
+        · exact Or.inl (Or.inl ⟨hw, by omega, hr⟩)
+      · by_cases hright : Chvatal.rankIn s w < s.card - π / 2 + 32
+        · exact Or.inl (Or.inr ⟨hw, hlo, hright⟩)
+        · exact Or.inr (Or.inr ⟨hw, by omega, hhi⟩)
+    · rintro (⟨⟨hw, hlo, hhi⟩ | ⟨hw, hlo, hhi⟩⟩ |
+        ⟨⟨hw, hlo, hhi⟩ | ⟨hw, hlo, hhi⟩⟩)
+      · exact Or.inl ⟨hw, by omega, by omega⟩
+      · exact Or.inr ⟨hw, hlo, by omega⟩
+      · exact Or.inl ⟨hw, by omega, by omega⟩
+      · exact Or.inr ⟨hw, by omega, hhi⟩
+  have hpre : Chvatal.blockOf s 0 (π / 2 - 32) =
+      Finset.univ.biUnion (fun k : Fin q => upSetPrefixCell s k) := by
+    rw [hprefix]
+    simpa [upSetPrefixCell] using blockOf_packetCell_partition s 0 q
+  have hsuf : Chvatal.blockOf s (s.card - π / 2 + 32) s.card =
+      Finset.univ.biUnion (fun k : Fin q => upSetSuffixCell s π k) := by
+    calc
+      Chvatal.blockOf s (s.card - π / 2 + 32) s.card =
+          Chvatal.blockOf s (s.card - π / 2 + 32)
+            (s.card - π / 2 + 32 + 64 * q) := by congr 1 <;> omega
+      _ = Finset.univ.biUnion (fun k : Fin q => upSetSuffixCell s π k) := by
+        simpa [upSetSuffixCell] using
+          blockOf_packetCell_partition s (s.card - π / 2 + 32) q
+  rw [hinterval, hpre, hsuf]
+
+/-- A cell on an aligned 64-wire rank interval is one of the original
+packet cells and is therefore already sorted under `PacketSortedOn`. -/
+theorem rankPacketCell_sorted {N : Nat} {α : Type} [Preorder α]
+    (s : Finset (Fin N)) (v : Fin N → α) (hpack : PacketSortedOn s v)
+    (lo : Nat) (hlo : lo % 64 = 0) {q : Nat} (k : Fin q) :
+    RankSortedOn (rankPacketCell s lo k) v := by
+  let p := lo / 64 + k.val
+  have hdiv := Nat.mod_add_div lo 64
+  rw [hlo] at hdiv
+  have hstart : lo + 64 * k.val = 64 * p := by
+    dsimp [p]
+    omega
+  have hend : lo + 64 * (k.val + 1) = 64 * (p + 1) := by
+    dsimp [p]
+    omega
+  unfold rankPacketCell
+  rw [hstart, hend]
+  exact hpack p
+
+theorem rankPacketCell_bounds {N : Nat} (s : Finset (Fin N)) (lo : Nat)
+    {q : Nat} (k : Fin q) {w : Fin N}
+    (hw : w ∈ rankPacketCell s lo k) :
+    lo + 64 * k.val ≤ Chvatal.rankIn s w ∧
+      Chvatal.rankIn s w < lo + 64 * (k.val + 1) := by
+  exact Chvatal.mem_blockOf.mp hw |>.2
+
+theorem upSetPrefixCell_disjoint_endpoints {N : Nat} (s : Finset (Fin N))
+    (π q C : Nat) (hπ : π = 64 * (2 * q + 1))
+    (hcard : s.card = 64 * C) (hπcard : π ≤ s.card)
+    {k : Fin q} {w : Fin N} (hw : w ∈ upSetPrefixCell s k) :
+    w ∉ upFringePairSupport s π := by
+  have hb := rankPacketCell_bounds s 0 k hw
+  have hk := k.isLt
+  have hhalf : π / 2 = 64 * q + 32 := by rw [hπ]; omega
+  have hcardLower : 64 * (2 * q + 1) ≤ s.card := by rw [← hπ]; exact hπcard
+  intro hmem
+  rcases Finset.mem_union.mp hmem with hA | hB
+  · have hr := Chvatal.mem_blockOf.mp hA
+    rw [hhalf] at hr
+    omega
+  · have hr := Chvatal.mem_blockOf.mp hB
+    rw [hcard, hhalf] at hr
+    omega
+
+theorem upSetSuffixCell_disjoint_endpoints {N : Nat} (s : Finset (Fin N))
+    (π q C : Nat) (hπ : π = 64 * (2 * q + 1))
+    (hcard : s.card = 64 * C) (hπcard : π ≤ s.card)
+    {k : Fin q} {w : Fin N} (hw : w ∈ upSetSuffixCell s π k) :
+    w ∉ upFringePairSupport s π := by
+  have hb := rankPacketCell_bounds s (s.card - π / 2 + 32) k hw
+  have hk := k.isLt
+  have hhalf : π / 2 = 64 * q + 32 := by rw [hπ]; omega
+  have hC : 2 * q + 1 ≤ C := by rw [hπ, hcard] at hπcard; omega
+  have hlo : s.card - π / 2 + 32 = 64 * (C - q) := by
+    rw [hcard, hhalf]
+    omega
+  intro hmem
+  rcases Finset.mem_union.mp hmem with hA | hB
+  · have hr := Chvatal.mem_blockOf.mp hA
+    rw [hlo] at hb
+    rw [hhalf] at hr
+    omega
+  · have hr := Chvatal.mem_blockOf.mp hB
+    rw [hlo] at hb
+    rw [hcard, hhalf] at hr
+    omega
+
 /-- Every interior cell in that partition is an original packet-grid cell,
 so packet-sortedness carries through it without any comparator. -/
 theorem downSetInteriorCell_sorted {N : Nat} {α : Type} [Preorder α]
@@ -720,6 +878,137 @@ theorem parallelUpFringeEndpointRepair_exists {ι : Type} [DecidableEq ι]
     · exact (packetSortedOn_upFringe_endpoints (s i) v (hsorted i hi) π
         (hcard i) hhalf (hπcard i)).2
 
+/-- After the child-fringe endpoint repairs, every full aligned cell in each
+up-port remains sorted, so the whole up-port is a sorted 64-packet layout. -/
+theorem parallelUpFringeEndpointRepair_packetLayout {ι : Type} [DecidableEq ι]
+    {N : Nat} {α : Type} [LinearOrder α]
+    (ids : List ι) (hids : ids.Nodup) (s : ι → Finset (Fin N))
+    (π q : Nat) (C : ι → Nat) (hπ : π = 64 * (2 * q + 1))
+    (hcard : ∀ i, (s i).card = 64 * C i)
+    (hπcard : ∀ i, π ≤ (s i).card)
+    (hsourceDisjoint : ∀ i ∈ ids, ∀ j ∈ ids, i ≠ j → Disjoint (s i) (s j)) :
+    ∃ net : ComparatorNetwork N, net.depth ≤ 6 ∧
+      ∀ v : Fin N → α, (∀ i ∈ ids, PacketSortedOn (s i) v) →
+        ∀ i ∈ ids,
+          RankSortedOn (upFringePairSupport (s i) π) (net.exec v) ∧
+          (∀ k : Fin q, RankSortedOn (upSetPrefixCell (s i) k) (net.exec v)) ∧
+          (∀ k : Fin q, RankSortedOn (upSetSuffixCell (s i) π k) (net.exec v)) := by
+  classical
+  have hcard64 : ∀ i, 64 ∣ (s i).card := by
+    intro i
+    rw [hcard i]
+    exact ⟨C i, rfl⟩
+  have heven : 2 ∣ π := by
+    refine ⟨32 * (2 * q + 1), ?_⟩
+    rw [hπ]
+    omega
+  have hhalf : (π / 2) % 64 = 32 := by rw [hπ]; omega
+  let A (i : ι) := Chvatal.blockOf (s i) (π / 2 - 32) (π / 2)
+  let B (i : ι) := Chvatal.blockOf (s i) ((s i).card - π / 2)
+    ((s i).card - π / 2 + 32)
+  have hA : ∀ i, (A i).card = 32 := by
+    intro i
+    exact (upFringe_endpoint_pair (s i) π heven (hcard64 i) hhalf (hπcard i)).2.1
+  have hB : ∀ i, (B i).card = 32 := by
+    intro i
+    exact (upFringe_endpoint_pair (s i) π heven (hcard64 i) hhalf (hπcard i)).2.2.1
+  have hsep : ∀ i, ∀ x ∈ A i, ∀ y ∈ B i, x < y := by
+    intro i x hx y hy
+    exact upFringe_endpoint_pair_ordered (s i) π heven hhalf (hπcard i) hx hy
+  have hdis : ∀ i ∈ ids, ∀ j ∈ ids, i ≠ j →
+      Disjoint (A i ∪ B i) (A j ∪ B j) := by
+    intro i hi j hj hne
+    exact (hsourceDisjoint i hi j hj hne).mono
+      (by
+        intro w hw
+        rcases Finset.mem_union.mp hw with hw | hw
+        · exact Chvatal.blockOf_subset hw
+        · exact Chvatal.blockOf_subset hw)
+      (by
+        intro w hw
+        rcases Finset.mem_union.mp hw with hw | hw
+        · exact Chvatal.blockOf_subset hw
+        · exact Chvatal.blockOf_subset hw)
+  let net := parallelHalfPairRepair ids A B hA hB hsep
+  have hdepth : net.depth ≤ 6 := by
+    exact parallelHalfPairRepair_depth_le ids hids A B hA hB hsep hdis
+  have hsort : ∀ v : Fin N → α, (∀ i ∈ ids, PacketSortedOn (s i) v) →
+      ∀ i ∈ ids, RankSortedOn (upFringePairSupport (s i) π) (net.exec v) := by
+    intro v hsorted i hi
+    have hsPair := parallelHalfPairRepair_sorts_pair ids hids A B hA hB hsep
+      hdis v i hi
+    have hsA := (packetSortedOn_upFringe_endpoints (s i) v (hsorted i hi) π
+      (hcard64 i) hhalf (hπcard i)).1
+    have hsB := (packetSortedOn_upFringe_endpoints (s i) v (hsorted i hi) π
+      (hcard64 i) hhalf (hπcard i)).2
+    have h := hsPair hsA hsB
+    simpa [net, A, B, upFringePairSupport] using h
+  refine ⟨net, hdepth, ?_⟩
+  intro v hpack i hi
+  have hsorted : ∀ j ∈ ids, PacketSortedOn (s j) v := hpack
+  have hendpoint : RankSortedOn (upFringePairSupport (s i) π) (net.exec v) :=
+    hsort v hsorted i hi
+  refine ⟨hendpoint, ?_, ?_⟩
+  · intro k
+    have hsCell := rankPacketCell_sorted (s i) v (hpack i hi) 0 (by rfl) k
+    have houtside : ∀ w ∈ upSetPrefixCell (s i) k, ∀ j ∈ ids,
+        w ∉ A j ∪ B j := by
+      intro w hw j hj hmem
+      by_cases hij : i = j
+      · subst j
+        exact upSetPrefixCell_disjoint_endpoints (s i) π q (C i) hπ
+          (hcard i) (hπcard i) hw (by simpa [A, B, upFringePairSupport] using hmem)
+      · have hwi : w ∈ s i := Chvatal.blockOf_subset hw
+        have hwj : w ∈ s j := by
+          rcases Finset.mem_union.mp hmem with hmem | hmem
+          · exact Chvatal.blockOf_subset hmem
+          · exact Chvatal.blockOf_subset hmem
+        exact (Finset.disjoint_left.mp (hsourceDisjoint i hi j hj hij)) hwi hwj
+    intro x y hx hy hxy
+    have hxEq := parallelHalfPairRepair_exec_outside ids A B hA hB hsep v x
+      (houtside x hx)
+    have hyEq := parallelHalfPairRepair_exec_outside ids A B hA hB hsep v y
+      (houtside y hy)
+    change (parallelHalfPairRepair ids A B hA hB hsep).exec v x ≤
+      (parallelHalfPairRepair ids A B hA hB hsep).exec v y
+    rw [hxEq, hyEq]
+    exact hsCell hx hy hxy
+  · intro k
+    have hC : 2 * q + 1 ≤ C i := by
+      have hcap := hπcard i
+      rw [hπ, hcard i] at hcap
+      omega
+    have hstart : (s i).card - π / 2 + 32 = 64 * (C i - q) := by
+      rw [hcard i, hπ]
+      omega
+    have hstartAligned : ((s i).card - π / 2 + 32) % 64 = 0 := by
+      rw [hstart]
+      omega
+    have hsCell := rankPacketCell_sorted (s i) v (hpack i hi)
+      ((s i).card - π / 2 + 32) hstartAligned k
+    have houtside : ∀ w ∈ upSetSuffixCell (s i) π k, ∀ j ∈ ids,
+        w ∉ A j ∪ B j := by
+      intro w hw j hj hmem
+      by_cases hij : i = j
+      · subst j
+        exact upSetSuffixCell_disjoint_endpoints (s i) π q (C i) hπ
+          (hcard i) (hπcard i) hw (by simpa [A, B, upFringePairSupport] using hmem)
+      · have hwi : w ∈ s i := Chvatal.blockOf_subset hw
+        have hwj : w ∈ s j := by
+          rcases Finset.mem_union.mp hmem with hmem | hmem
+          · exact Chvatal.blockOf_subset hmem
+          · exact Chvatal.blockOf_subset hmem
+        exact (Finset.disjoint_left.mp (hsourceDisjoint i hi j hj hij)) hwi hwj
+    intro x y hx hy hxy
+    have hxEq := parallelHalfPairRepair_exec_outside ids A B hA hB hsep v x
+      (houtside x hx)
+    have hyEq := parallelHalfPairRepair_exec_outside ids A B hA hB hsep v y
+      (houtside y hy)
+    change (parallelHalfPairRepair ids A B hA hB hsep).exec v x ≤
+      (parallelHalfPairRepair ids A B hA hB hsep).exec v y
+    rw [hxEq, hyEq]
+    exact hsCell hx hy hxy
+
 /-- All 64 child cuts of a shifted parent can repair their endpoint
 half-packets concurrently. The supports are disjoint, the depth is six, and
 each repaired support is sorted whenever the parent packets were sorted. -/
@@ -1032,5 +1321,91 @@ theorem flowA7_receiver_child_up_endpoint_repair {d : Nat} {α : Type}
     simpa [s] using hv i
   have h := hsort v hsorted j (by simp)
   simpa [upFringePairSupport, s, π] using h
+
+/-- Scheduled child-up endpoint repair with the untouched interior cells
+included: all 64 child up-ports become sorted packet layouts in six layers. -/
+theorem flowA7_receiver_child_up_packetLayout {d : Nat} {α : Type}
+    [LinearOrder α] (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t)
+    (ht : t < tf7 d) (b : KBag 64 d) (hchild : b.l < d)
+    (hbad : HalfMisaligned (flowUp7 d hd (b.l + 1) t)) :
+    ∃ q : Nat, flowUp7 d hd (b.l + 1) t = 64 * (2 * q + 1) ∧
+      ∃ net : ComparatorNetwork (64 ^ d), net.depth ≤ 6 ∧
+        ∀ v : Fin (64 ^ d) → α,
+          (∀ j : Fin 64, PacketSortedOn
+            (wireSets (flowSizes7 d hd) t (b.child j.val j.isLt hchild)) v) →
+          ∀ j : Fin 64,
+            RankSortedOn (upFringePairSupport
+              (wireSets (flowSizes7 d hd) t (b.child j.val j.isLt hchild))
+              (flowUp7 d hd (b.l + 1) t)) (net.exec v) ∧
+            (∀ k : Fin q, RankSortedOn
+              (upSetPrefixCell
+                (wireSets (flowSizes7 d hd) t (b.child j.val j.isLt hchild)) k)
+              (net.exec v)) ∧
+            (∀ k : Fin q, RankSortedOn
+              (upSetSuffixCell
+                (wireSets (flowSizes7 d hd) t (b.child j.val j.isLt hchild))
+                (flowUp7 d hd (b.l + 1) t) k) (net.exec v)) := by
+  let F := flowSizes7 d hd
+  let s (j : Fin 64) := wireSets F t (b.child j.val j.isLt hchild)
+  let π := flowUp7 d hd (b.l + 1) t
+  let τ := flowDown7 d hd (b.l + 1) t
+  have hshape := node_shape_refined d hd t (b.l + 1) ht2 ht
+  have hres := refined_packet_residues hd ht2 ht hshape
+  have hcard64 : ∀ j : Fin 64, 64 ∣ (s j).card := by
+    intro j
+    rw [wireSets_card F (Nat.le_of_lt ht)]
+    dsimp [s, F, flowSizes7]
+    exact hres.1
+  have heven : 2 ∣ π := by dsimp [π]; exact F.hup_even (b.l + 1) t ht
+  have hhalf : (π / 2) % 64 = 32 := hbad.2
+  let q := (π / 2) / 64
+  have hhalfEq : π / 2 = 64 * q + 32 := by
+    have hdecomp := Nat.mod_add_div (π / 2) 64
+    rw [hhalf] at hdecomp
+    dsimp [q]
+    omega
+  have hpiTwice : π = 2 * (π / 2) := by
+    have hrem := Nat.mod_add_div π 2
+    have hzero : π % 2 = 0 := Nat.mod_eq_zero_of_dvd heven
+    rw [hzero] at hrem
+    omega
+  have hπ : π = 64 * (2 * q + 1) := by
+    rw [hpiTwice, hhalfEq]
+    dsimp [q]
+    omega
+  have hsize : ∀ j : Fin 64, (s j).card = π + 64 * τ := by
+    intro j
+    dsimp [s, F, π, τ]
+    rw [wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht)]
+    exact (flowSizes7 d hd).hsplit
+      (b.child j.val j.isLt hchild).l t
+      (b.child j.val j.isLt hchild).hl ht
+  have hcard : ∀ j : Fin 64, (s j).card = 64 * (2 * q + 1 + τ) := by
+    intro j
+    rw [hsize j, hπ]
+    omega
+  have hπcard : ∀ j : Fin 64, π ≤ (s j).card := by
+    intro j
+    rw [hsize j]
+    omega
+  have hdis : ∀ j ∈ List.finRange 64, ∀ k ∈ List.finRange 64,
+      j ≠ k → Disjoint (s j) (s k) := by
+    intro j hj k hk hne
+    apply wireSets_disjoint F (Nat.le_of_lt ht)
+    intro heq
+    apply hne
+    exact Fin.ext (KBag.child_inj b j.val k.val j.isLt k.isLt hchild heq)
+  obtain ⟨net, hdepth, hlayout⟩ :=
+    parallelUpFringeEndpointRepair_packetLayout (α := α)
+      (List.finRange 64) (List.nodup_finRange 64) s π q
+      (fun _ => 2 * q + 1 + τ) hπ hcard hπcard hdis
+  refine ⟨q, ?_, net, hdepth, ?_⟩
+  · simpa [π] using hπ
+  · intro v hv j
+    have hsorted : ∀ i ∈ List.finRange 64, PacketSortedOn (s i) v := by
+      intro i hi
+      simpa [s] using hv i
+    have h := hlayout v hsorted j (by simp)
+    simpa [s, π, upFringePairSupport] using h
 
 end Chvatal.PacketAlignment
