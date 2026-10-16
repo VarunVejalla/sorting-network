@@ -14,7 +14,7 @@ the accepted sorting bound remains 1419.
 | --- | --- |
 | `OddEvenMerge64.lean` | `oddEvenMergeNet_sorts_two_runs` proves the actual recursive network correct on any two ascending runs. `oddEvenMergeNet64_sorts_two_runs` and `oddEvenMergeNet64_depth_le` specialize to 64 wires and depth six. Scatter correctness and depth preserve this on any increasing 64-wire embedding. The dealt lanes are sorted and have exact floor/ceiling Boolean counts. |
 | `PacketAlignment.lean` | Scheduled flow residues, fragment counts, separated endpoint supports and sender disjointness. Historical bitonic fallback lemmas remain available. |
-| `PacketRepair64.lean` | An input-independent ordinary network repairs two physically separated 32-wire supports in six layers. Actual shifted down-cut/up-fringe fragments are sorted under `PacketSortedOn`, which orders each packet but imposes no inter-packet value order. Disjoint repair families have depth at most six and act as the corresponding local merger on each pair. `flowA7_sourcePortRepairStage_depth_le` chooses the shared-port repair on every eligible source bag and composes these networks through the actual `stageNet`, preserving the six-layer depth bound globally. `flowA7_sourcePortRepairNet_layout` lifts the chosen Boolean repair contract to arbitrary linearly ordered values by thresholding. `flowA7_sourcePortRepairStage_layout` starts from packet-sorted values on the actual sender bag and proves every designated endpoint, interior, and fringe support is sorted on its physical-wire image after correction. `blockOf_register_image` identifies register rank intervals under the bag embedding with the matching actual `WireFlow.blockOf` intervals. Identifying the complete support partition with the next stage's packet family and closing the receiver recurrence remain open. |
+| `PacketRepair64.lean` | An input-independent ordinary network repairs two physically separated 32-wire supports in six layers. Actual shifted down-cut/up-fringe fragments are sorted under `PacketSortedOn`, which orders each packet but imposes no inter-packet value order. Disjoint repair families have depth at most six and act as the corresponding local merger on each pair. `flowA7_sourcePortRepairStage_depth_le` chooses the shared-port repair on every eligible source bag and composes these networks through the actual `stageNet`, preserving the six-layer depth bound globally. `flowA7_sourcePortRepairNet_layout` lifts the chosen Boolean repair contract to arbitrary linearly ordered values by thresholding. `flowA7_sourcePortRepairStage_layout` proves every designated support sorted on its physical-wire image. `flowA7_sourcePortRepairStage_downCutFamily` packages each actual child down-cut as pairwise-disjoint 64-wire supports, proves exact coverage and cardinality 64, and proves each support sorted after correction. Identifying these cut-local families with the next stage's global packet labels and closing receiver reassembly remain open. |
 | `PacketGenMerge.lean` | An arbitrary injective placement of an ordinary network preserves execution and depth in `Untangle.GenNetwork`. `genMerge_sorts_two_runs` and `genMerge_depth_le` apply at every power-of-two width, including seven layers for 64+64 packets and thirteen for 4096+4096. Dealing has exact floor/ceiling counts, including all value thresholds. Logical packet embeddings can be joined and their fixed parity outputs are disjoint and partition the consumed support. |
 | `PacketRebinning.lean` | The scalar complementary-half rebinning model preserves counts and cannot increase positive/negative spill or squared energy around any common real reference. |
 | `PacketSenderCycle.lean` | The 65 shifted boundary cells are distinct whole source packets. Actual child and parent repairs consume complementary halves in a fixed cycle and cover exactly those cells. A fixed ordinary six-layer network sorts all 65 repaired pairs and leaves other wires unchanged. `scheduled_senderRepair_exists` instantiates this on actual ordinary scheduled bags with positive down-flow and shifted half-fringes. |
@@ -87,15 +87,15 @@ checks all scratch sources.
 
 ## Remaining proof gates
 
-1. Integrate the checked six-layer shared source-port packet-layout network
+1. Carry cut-local packets into global matching rounds
    The checked six-layer shared source-port repair is selected on every
    eligible bag and embedded by `stageNet`; the global stage has depth at most
-   six. `flowA7_sourcePortRepairStage_layout` now applies the input invariant
-   and transports every endpoint, interior, and fringe support through the
-   stage. `blockOf_register_image` identifies register intervals with their
-   actual physical `WireFlow.blockOf` sets. Still missing is identifying this
-   complete dynamic packet family with the fixed receiver packet labels and
-   capacities used by later matching rounds and register reassembly.
+   six. `flowA7_sourcePortRepairStage_layout` applies the input invariant and
+   transports every endpoint, interior, and fringe support through the stage.
+   `flowA7_sourcePortRepairStage_downCutFamily` packages every actual child
+   down-cut as a disjoint exact cover by sorted 64-wire supports. Still missing
+   is identifying the evolving cut-local families with global packet IDs,
+   matching edges, and receiver register capacities.
 2. Carry the logical packet embeddings through matching rounds and positional
    port cuts. `PacketSortedOn` on the physical rank grid is a sufficient local
    premise, not yet an invariant of that combined scheduler. In particular,

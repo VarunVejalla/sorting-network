@@ -731,6 +731,22 @@ import PacketHalfProfile
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.blockOf_register_image
 
+/-- info: 'Chvatal.PacketAlignment.downSetRepairPacket_union' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.downSetRepairPacket_union
+
+/-- info: 'Chvatal.PacketAlignment.downSetRepairPacket_pairwise_disjoint' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.downSetRepairPacket_pairwise_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.downSetRepairPacket_card_eq_64' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.downSetRepairPacket_card_eq_64
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_sourcePortRepairStage_downCutFamily' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_sourcePortRepairStage_downCutFamily
+
 /-- info: 'Chvatal.PacketAlignment.stageNet_rankSortedOn_image' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.stageNet_rankSortedOn_image

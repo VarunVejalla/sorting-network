@@ -715,10 +715,79 @@ theorem downSetInteriorCell_bounds {N : Nat} (s : Finset (Fin N))
       _ ≤ π / 2 + j.val * τ + 32 + 64 * m := by gcongr <;> omega
       _ = π / 2 + (j.val + 1) * τ - 32 := hmid.symm
 
-/-- One endpoint correction sorts its new 64-wire packet and leaves every
-aligned interior packet sorted and unchanged. Together with
-`downSetEndpoint_partition`, this gives a complete sorted-packet partition of
-one child down-cut. -/
+/-- The indexed packet family on a shifted down-cut consists of one repaired
+endpoint pair and the unmodified aligned interior cells. -/
+def downSetRepairPacket {N : Nat} (s : Finset (Fin N)) (π τ : Nat)
+    (j : Fin 64) (m : Nat) : Unit ⊕ Fin m → Finset (Fin N) := fun a =>
+  match a with
+  | Sum.inl _ => downSetEndpointLeft s π τ j ∪ downSetEndpointRight s π τ j
+  | Sum.inr k => downSetInteriorCell s π τ j m k
+
+theorem downSetRepairPacket_union {N : Nat} (s : Finset (Fin N))
+    (π τ : Nat) (j : Fin 64) (m : Nat)
+    (hτ : τ = 64 * (m + 1)) :
+    Finset.univ.biUnion (downSetRepairPacket s π τ j m) =
+      Chvatal.downSet s π τ j.val := by
+  rw [downSetEndpoint_partition s π τ j m hτ]
+  ext w
+  simp [downSetRepairPacket]
+  tauto
+
+private theorem downSetRepairPacket_endpoint_interior_disjoint {N : Nat}
+    (s : Finset (Fin N)) (π τ : Nat) (j : Fin 64) (m : Nat)
+    (hτ : τ = 64 * (m + 1)) (k : Fin m) :
+    Disjoint
+      (downSetEndpointLeft s π τ j ∪ downSetEndpointRight s π τ j)
+      (downSetInteriorCell s π τ j m k) := by
+  apply Finset.disjoint_left.mpr
+  intro w hwe hwi
+  have hi := downSetInteriorCell_bounds s π τ j m hτ k w hwi
+  rcases Finset.mem_union.mp hwe with hl | hr
+  · change w ∈ Chvatal.blockOf s (π / 2 + j.val * τ)
+      (π / 2 + j.val * τ + 32) at hl
+    have he := Chvatal.mem_blockOf.mp hl
+    omega
+  · change w ∈ Chvatal.blockOf s
+      (π / 2 + (j.val + 1) * τ - 32) (π / 2 + (j.val + 1) * τ) at hr
+    have he := Chvatal.mem_blockOf.mp hr
+    omega
+
+theorem downSetRepairPacket_pairwise_disjoint {N : Nat}
+    (s : Finset (Fin N)) (π τ : Nat) (j : Fin 64) (m : Nat)
+    (hτ : τ = 64 * (m + 1)) :
+    ∀ a b : Unit ⊕ Fin m, a ≠ b →
+      Disjoint (downSetRepairPacket s π τ j m a)
+        (downSetRepairPacket s π τ j m b) := by
+  intro a b hab
+  cases a with
+  | inl u =>
+    cases b with
+    | inl v =>
+      cases u
+      cases v
+      exact (hab rfl).elim
+    | inr k =>
+      cases u
+      exact downSetRepairPacket_endpoint_interior_disjoint s π τ j m hτ k
+  | inr k =>
+    cases b with
+    | inl u =>
+      cases u
+      exact (downSetRepairPacket_endpoint_interior_disjoint s π τ j m hτ k).symm
+    | inr l =>
+      have hkl : k.val ≠ l.val := by
+        intro h
+        apply hab
+        exact congrArg Sum.inr (Fin.ext h)
+      apply Finset.disjoint_left.mpr
+      intro w hwk hwl
+      have hk := Chvatal.mem_blockOf.mp hwk
+      have hl := Chvatal.mem_blockOf.mp hwl
+      by_cases hkl' : k.val < l.val
+      · omega
+      · have hlk' : l.val < k.val := by omega
+        omega
+
 theorem downSetEndpointRepair_preserves_interiors {N : Nat} {α : Type}
     [LinearOrder α] (s : Finset (Fin N)) (π τ : Nat) (j : Fin 64)
     (m : Nat) (hτ : τ = 64 * (m + 1))
@@ -847,6 +916,50 @@ theorem downSetEndpointRight_card {N : Nat} (s : Finset (Fin N)) (π τ : Nat)
   have hend : π / 2 + (j.val + 1) * τ ≤ s.card := by omega
   rw [Chvatal.blockOf_card (by omega)]
   omega
+
+theorem downSetRepairPacket_card_eq_64 {N : Nat}
+    (s : Finset (Fin N)) (π τ : Nat) (j : Fin 64) (m : Nat)
+    (hτ : τ = 64 * (m + 1)) (hbase : (π / 2) % 64 = 32)
+    (hwithin : π / 2 + 64 * τ ≤ s.card) :
+    ∀ a : Unit ⊕ Fin m, (downSetRepairPacket s π τ j m a).card = 64 := by
+  intro a
+  cases a with
+  | inl u =>
+    cases u
+    have hτlarge : 64 ≤ τ := by rw [hτ]; omega
+    have hleft := downSetEndpointLeft_card s π τ j hτlarge hwithin
+    have hdiv : 64 ∣ τ := by rw [hτ]; exact ⟨m + 1, rfl⟩
+    have hright := downSetEndpointRight_card s π τ j hdiv hbase hwithin
+    have hdj : Disjoint (downSetEndpointLeft s π τ j)
+        (downSetEndpointRight s π τ j) := by
+      apply Finset.disjoint_left.mpr
+      intro w hwL hwR
+      change w ∈ Chvatal.blockOf s (π / 2 + j.val * τ)
+        (π / 2 + j.val * τ + 32) at hwL
+      change w ∈ Chvatal.blockOf s
+        (π / 2 + (j.val + 1) * τ - 32)
+        (π / 2 + (j.val + 1) * τ) at hwR
+      have hl := Chvatal.mem_blockOf.mp hwL
+      have hr := Chvatal.mem_blockOf.mp hwR
+      have hstep : (j.val + 1) * τ = j.val * τ + τ := by
+        rw [Nat.add_mul, Nat.one_mul]
+      rw [hstep] at hr
+      omega
+    simp [downSetRepairPacket, Finset.card_union_of_disjoint hdj, hleft, hright]
+  | inr k =>
+    have hmul : (j.val + 1) * τ ≤ 64 * τ :=
+      Nat.mul_le_mul_right τ (by omega)
+    have hhi : π / 2 + (j.val + 1) * τ ≤ s.card := by omega
+    have hstep : (j.val + 1) * τ = j.val * τ + τ := by
+      rw [Nat.add_mul, Nat.one_mul]
+    have hend : π / 2 + j.val * τ + 32 + 64 * (k.val + 1) ≤ s.card := by
+      have hlt : k.val < m := k.isLt
+      have hle : π / 2 + j.val * τ + 32 + 64 * (k.val + 1) ≤
+          π / 2 + (j.val + 1) * τ := by rw [hstep, hτ]; omega
+      exact hle.trans hhi
+    rw [downSetRepairPacket, downSetInteriorCell,
+      Chvatal.blockOf_card hend]
+    omega
 
 theorem downSetEndpoint_separated {N : Nat} (s : Finset (Fin N)) (π τ : Nat)
     (j : Fin 64) (hτlarge : 64 ≤ τ) :
@@ -2188,6 +2301,80 @@ theorem flowA7_sourcePortRepairStage_layout {d : Nat} {α : Type}
   · intro k
     exact flowA7_sourcePortRepairStage_transport hd t ht2 ht q hdown hbad
       v _ (hlayout.2.2.2 k)
+
+/-- Each actual shifted child down-port is partitioned after correction into
+pairwise-disjoint, sorted 64-wire supports ready for a matching round. -/
+theorem flowA7_sourcePortRepairStage_downCutFamily {d : Nat} {α : Type}
+    [LinearOrder α] (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t)
+    (ht : t < tf7 d) (q : KBag 64 d)
+    (hdown : 0 < flowDown7 d hd q.l t)
+    (hbad : HalfMisaligned (flowUp7 d hd q.l t))
+    (v : Fin (64 ^ d) → α)
+    (hpack : PacketSortedOn (wireSets (flowSizes7 d hd) t q) v) :
+    ∀ j : Fin 64,
+      (∀ a : Unit ⊕ Fin (flowDown7 d hd q.l t / 64 - 1),
+        RankSortedOn
+          (downSetRepairPacket (wireSets (flowSizes7 d hd) t q)
+            (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j
+            (flowDown7 d hd q.l t / 64 - 1) a)
+          ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)) ∧
+      Finset.univ.biUnion (downSetRepairPacket (wireSets (flowSizes7 d hd) t q)
+        (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j
+        (flowDown7 d hd q.l t / 64 - 1)) =
+        Chvatal.downSet (wireSets (flowSizes7 d hd) t q)
+          (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j.val ∧
+      (∀ a b : Unit ⊕ Fin (flowDown7 d hd q.l t / 64 - 1), a ≠ b →
+        Disjoint
+          (downSetRepairPacket (wireSets (flowSizes7 d hd) t q)
+            (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j
+            (flowDown7 d hd q.l t / 64 - 1) a)
+          (downSetRepairPacket (wireSets (flowSizes7 d hd) t q)
+            (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j
+            (flowDown7 d hd q.l t / 64 - 1) b)) ∧
+      (∀ a : Unit ⊕ Fin (flowDown7 d hd q.l t / 64 - 1),
+        (downSetRepairPacket (wireSets (flowSizes7 d hd) t q)
+          (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j
+          (flowDown7 d hd q.l t / 64 - 1) a).card = 64) := by
+  let S := wireSets (flowSizes7 d hd) t q
+  let π := flowUp7 d hd q.l t
+  let τ := flowDown7 d hd q.l t
+  let m := τ / 64 - 1
+  have hshape := node_shape_refined d hd t q.l ht2 ht
+  have hres := refined_packet_residues hd ht2 ht hshape
+  have hτdiv : 64 ∣ τ := by dsimp [τ]; exact hres.2.1
+  have hτeq : τ = 64 * (m + 1) := by
+    have hmod := Nat.mod_add_div τ 64
+    have hrem : τ % 64 = 0 := Nat.mod_eq_zero_of_dvd hτdiv
+    rw [hrem] at hmod
+    dsimp [m]
+    omega
+  have hbase : (π / 2) % 64 = 32 := hbad.2
+  have hbag : S.card = π + 64 * τ := by
+    dsimp [S, π, τ]
+    rw [wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) q]
+    exact (flowSizes7 d hd).hsplit q.l t q.hl ht
+  have hwithin : π / 2 + 64 * τ ≤ S.card := by rw [hbag]; omega
+  have hlayout := flowA7_sourcePortRepairStage_layout hd t ht2 ht q hdown hbad v hpack
+  intro j
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro a
+    cases a with
+    | inl u =>
+      cases u
+      have hs := (hlayout.1 j).1
+      simp only [downSetEndpointLeft, downSetEndpointRight,
+        Finset.image_union] at hs
+      rw [blockOf_register_image, blockOf_register_image] at hs
+      simpa [S, π, τ, m, downSetRepairPacket, downSetEndpointLeft,
+        downSetEndpointRight] using hs
+    | inr k =>
+      have hs := (hlayout.1 j).2 k
+      simp only [downSetInteriorCell] at hs
+      rw [blockOf_register_image] at hs
+      simpa [S, π, τ, m, downSetRepairPacket, downSetInteriorCell] using hs
+  · exact downSetRepairPacket_union S π τ j m hτeq
+  · exact downSetRepairPacket_pairwise_disjoint S π τ j m hτeq
+  · exact downSetRepairPacket_card_eq_64 S π τ j m hτeq hbase hwithin
 
 /-- At an actual receiver, the 64 child senders' shifted up-fringe endpoint
 repairs are also one six-layer disjoint family. The packet divisibility,
