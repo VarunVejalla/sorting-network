@@ -883,6 +883,18 @@ import PacketHalfProfile
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_receiver_alignedParent_repairedChildren_packetAssembly
 
+/-- info: 'Chvatal.PacketAlignment.flowA7_zeroDownSet_empty' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_zeroDownSet_empty
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_zeroParent_packetAssembly' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_zeroParent_packetAssembly
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_zeroDownChildren_packetAssembly' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_zeroDownChildren_packetAssembly
+
 /-- info: 'Chvatal.PacketAlignment.stageNet_rankSortedOn_image' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.stageNet_rankSortedOn_image

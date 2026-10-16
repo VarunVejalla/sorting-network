@@ -3551,6 +3551,23 @@ theorem flowA7_sourcePortRepairStage_zeroDownUpFamily {d : Nat} {α : Type}
   · intro k
     exact rankPacketCell_whole_card_eq_64 S C hScard k
 
+/-- A zero-down sender contributes no wires to any of its 64 child cuts. -/
+theorem flowA7_zeroDownSet_empty {d : Nat}
+    (hd : 7 ≤ d) (t : Nat) (ht : t < tf7 d) (b : KBag 64 d)
+    (hzero : flowDown7 d hd b.l t = 0) :
+    ∀ j : Fin 64,
+      Chvatal.downSet (wireSets (flowSizes7 d hd) t b)
+        (flowUp7 d hd b.l t) (flowDown7 d hd b.l t) j.val = ∅ := by
+  have hsize : (wireSets (flowSizes7 d hd) t b).card =
+      flowUp7 d hd b.l t + 64 * flowDown7 d hd b.l t := by
+    rw [wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht)]
+    exact (flowSizes7 d hd).hsplit b.l t b.hl ht
+  intro j
+  have hcard := Chvatal.downSet_card hsize j.isLt
+  rw [hzero] at hcard
+  rw [hzero]
+  exact Finset.card_eq_zero.mp hcard
+
 /-- Reindex the packet partitions arriving at one receiver: one family comes
 from its parent and one family from each of its 64 children. -/
 def receiverPacketFamily {N : Nat} {ι κ : Type} [Fintype ι] [Fintype κ]
@@ -3736,6 +3753,165 @@ theorem flowA7_receiver_packetAssembly {d : Nat} {ι κ α : Type}
   exact receiverPacketFamily_pairwise_disjoint parent child pSupport cSupport
     hparentUnion hchildUnion hparentDisjoint hchildDisjoint hpacketPortsDisjoint
     hchildPortsDisjoint
+
+/-- Boundary adapter for a receiver whose parent down-flow is zero. The
+parent port is the empty family; any checked partition of the 64 child
+up-ports then assembles through the ordinary receiver contract. -/
+theorem flowA7_receiver_zeroParent_packetAssembly {d : Nat} {κ α : Type}
+    [Fintype κ] [LinearOrder α]
+    (hd : 7 ≤ d) (t : Nat) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d)
+    (hzero : flowDown7 d hd (b.l - 1) t = 0)
+    (child : Fin 64 → κ → Finset (Fin (64 ^ d)))
+    (v : Fin (64 ^ d) → α)
+    (hchildUnion : ∀ j, Finset.univ.biUnion (child j) =
+      Chvatal.upSet (wireSets (flowSizes7 d hd) t
+        (b.child j.val j.isLt hchild)) (flowUp7 d hd (b.l + 1) t))
+    (hchildSorted : ∀ j k, RankSortedOn (child j k) v)
+    (hchildDisjoint : ∀ j k k', k ≠ k' → Disjoint (child j k) (child j k'))
+    (hchildCard : ∀ j k, (child j k).card = 64) :
+    (∀ i : Fin (flowDown7 d hd (b.l - 1) t / 64) ⊕ (Fin 64 × κ),
+      RankSortedOn (receiverPacketFamily
+        (fun i : Fin (flowDown7 d hd (b.l - 1) t / 64) =>
+          Fin.elim0 (Fin.cast (by omega : flowDown7 d hd (b.l - 1) t / 64 = 0) i))
+        child i) v) ∧
+    Finset.univ.biUnion
+      (receiverPacketFamily
+        (fun i : Fin (flowDown7 d hd (b.l - 1) t / 64) =>
+          Fin.elim0 (Fin.cast (by omega : flowDown7 d hd (b.l - 1) t / 64 = 0) i))
+        child) =
+      wireSets (flowSizes7 d hd) (t + 1) b ∧
+    (∀ i i', i ≠ i' →
+      Disjoint
+        (receiverPacketFamily
+          (fun i : Fin (flowDown7 d hd (b.l - 1) t / 64) =>
+            Fin.elim0 (Fin.cast (by omega : flowDown7 d hd (b.l - 1) t / 64 = 0) i))
+          child i)
+        (receiverPacketFamily
+          (fun i : Fin (flowDown7 d hd (b.l - 1) t / 64) =>
+            Fin.elim0 (Fin.cast (by omega : flowDown7 d hd (b.l - 1) t / 64 = 0) i))
+          child i')) ∧
+    (∀ i,
+      (receiverPacketFamily
+        (fun i : Fin (flowDown7 d hd (b.l - 1) t / 64) =>
+          Fin.elim0 (Fin.cast (by omega : flowDown7 d hd (b.l - 1) t / 64 = 0) i))
+        child i).card = 64) := by
+  let hzeroIdx : flowDown7 d hd (b.l - 1) t / 64 = 0 := by omega
+  let parent : Fin (flowDown7 d hd (b.l - 1) t / 64) →
+      Finset (Fin (64 ^ d)) := fun i => Fin.elim0 (Fin.cast hzeroIdx i)
+  let j : Fin 64 := ⟨b.x % 64, Nat.mod_lt _ (by norm_num)⟩
+  have hparentZero : flowDown7 d hd b.parent.l t = 0 := by
+    simpa [KBag.parent_l] using hzero
+  have hparentSupport := flowA7_zeroDownSet_empty hd t ht b.parent hparentZero j
+  have hparentEmpty : Chvatal.downSet (wireSets (flowSizes7 d hd) t b.parent)
+      (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t) j.val = ∅ := by
+    simpa [KBag.parent_l] using hparentSupport
+  have hparentEmpty' : Chvatal.downSet (wireSets (flowSizes7 d hd) t b.parent)
+      (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t) (b.x % 64) = ∅ := by
+    simpa [j] using hparentEmpty
+  have hparentFamilyEmpty : Finset.univ.biUnion parent = ∅ := by
+    ext w
+    constructor
+    · intro hw
+      simp only [Finset.mem_biUnion, Finset.mem_univ, true_and] at hw
+      rcases hw with ⟨i, _⟩
+      exact Fin.elim0 (Fin.cast hzeroIdx i)
+    · intro hw
+      simp at hw
+  have hparentUnion : Finset.univ.biUnion parent =
+      Chvatal.downSet (wireSets (flowSizes7 d hd) t b.parent)
+        (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t) (b.x % 64) := by
+    rw [hparentFamilyEmpty, hparentEmpty']
+  exact flowA7_receiver_packetAssembly hd t ht b hb hchild parent child v
+    hparentUnion hchildUnion
+    (by intro i; exact Fin.elim0 (Fin.cast hzeroIdx i))
+    hchildSorted
+    (by intro i i' _; exact Fin.elim0 (Fin.cast hzeroIdx i))
+    hchildDisjoint
+    (by intro i; exact Fin.elim0 (Fin.cast hzeroIdx i))
+    hchildCard
+
+/-- Boundary adapter for receivers whose 64 child senders have zero
+down-flow. Their up-ports are their complete sender registers, partitioned by
+the preserved original packet grids; any checked parent cut family assembles
+with them. -/
+theorem flowA7_receiver_zeroDownChildren_packetAssembly {d : Nat} {ι α : Type}
+    [Fintype ι] [LinearOrder α]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d)
+    (hchildZero : flowDown7 d hd (b.l + 1) t = 0)
+    (parent : ι → Finset (Fin (64 ^ d)))
+    (v : Fin (64 ^ d) → α)
+    (hparentUnion : Finset.univ.biUnion parent =
+      Chvatal.downSet (wireSets (flowSizes7 d hd) t b.parent)
+        (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t) (b.x % 64))
+    (hparentSorted : ∀ i, RankSortedOn (parent i)
+      ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v))
+    (hparentDisjoint : ∀ i i', i ≠ i' → Disjoint (parent i) (parent i'))
+    (hparentCard : ∀ i, (parent i).card = 64)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v) :
+    (∀ i : ι ⊕ (Fin 64 × Fin ((flowSizes7 d hd).a (b.l + 1) t / 64)),
+      RankSortedOn
+        (receiverPacketFamily parent
+          (fun (j : Fin 64) (k : Fin ((flowSizes7 d hd).a (b.l + 1) t / 64)) => rankPacketCell
+            (wireSets (flowSizes7 d hd) t
+              (b.child j.val j.isLt hchild)) 0 k) i)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)) ∧
+    Finset.univ.biUnion
+      (receiverPacketFamily parent
+        (fun (j : Fin 64) (k : Fin ((flowSizes7 d hd).a (b.l + 1) t / 64)) => rankPacketCell
+          (wireSets (flowSizes7 d hd) t
+            (b.child j.val j.isLt hchild)) 0 k)) =
+      wireSets (flowSizes7 d hd) (t + 1) b ∧
+    (∀ i i', i ≠ i' →
+      Disjoint
+        (receiverPacketFamily parent
+          (fun (j : Fin 64) (k : Fin ((flowSizes7 d hd).a (b.l + 1) t / 64)) => rankPacketCell
+            (wireSets (flowSizes7 d hd) t
+              (b.child j.val j.isLt hchild)) 0 k) i)
+        (receiverPacketFamily parent
+          (fun (j : Fin 64) (k : Fin ((flowSizes7 d hd).a (b.l + 1) t / 64)) => rankPacketCell
+            (wireSets (flowSizes7 d hd) t
+              (b.child j.val j.isLt hchild)) 0 k) i')) ∧
+    (∀ i,
+      (receiverPacketFamily parent
+        (fun (j : Fin 64) (k : Fin ((flowSizes7 d hd).a (b.l + 1) t / 64)) => rankPacketCell
+          (wireSets (flowSizes7 d hd) t
+            (b.child j.val j.isLt hchild)) 0 k) i).card = 64) := by
+  let child : Fin 64 → Fin ((flowSizes7 d hd).a (b.l + 1) t / 64) →
+      Finset (Fin (64 ^ d)) := fun j k =>
+    rankPacketCell (wireSets (flowSizes7 d hd) t
+      (b.child j.val j.isLt hchild)) 0 k
+  have hchildFamily : ∀ j : Fin 64,
+      (∀ k, RankSortedOn (child j k)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)) ∧
+      Finset.univ.biUnion (child j) = Chvatal.upSet
+        (wireSets (flowSizes7 d hd) t
+          (b.child j.val j.isLt hchild))
+        (flowUp7 d hd (b.l + 1) t) ∧
+      (∀ k k', k ≠ k' → Disjoint (child j k) (child j k')) ∧
+      (∀ k, (child j k).card = 64) := by
+    intro j
+    have hzero : flowDown7 d hd
+        (b.child j.val j.isLt hchild).l t = 0 := by
+      simpa [KBag.child_l] using hchildZero
+    have hfam := flowA7_sourcePortRepairStage_zeroDownUpFamily
+      hd t ht2 ht (b.child j.val j.isLt hchild) hzero v
+      (hpack (b.child j.val j.isLt hchild))
+    simpa [child, KBag.child_l] using hfam
+  have hchildUnion : ∀ j, Finset.univ.biUnion (child j) =
+      Chvatal.upSet (wireSets (flowSizes7 d hd) t
+        (b.child j.val j.isLt hchild)) (flowUp7 d hd (b.l + 1) t) :=
+    fun j => (hchildFamily j).2.1
+  exact flowA7_receiver_packetAssembly hd t ht b hb hchild parent child
+    ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+    hparentUnion hchildUnion hparentSorted
+    (by intro j k; exact (hchildFamily j).1 k)
+    hparentDisjoint
+    (by intro j k k' hne; exact (hchildFamily j).2.2.1 k k' hne)
+    hparentCard
+    (by intro j k; exact (hchildFamily j).2.2.2 k)
 
 /-- Actual receiver induction step in the aligned positive-flow case: the
 parent down-cut and all 64 child up-ports assemble into a sorted, disjoint
