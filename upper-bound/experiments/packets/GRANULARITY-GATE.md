@@ -183,6 +183,19 @@ has not been shown to present exactly 64 contiguous sorted runs of 64 wires.
 Proving that interface (or finding its actual run count and widths) is the
 next test of whether this structural use of all 57 layers is viable.
 
+There is a useful refinement to the interface test: physical contiguity of the
+64 input runs is not necessary in the generalized-comparator model. The
+receiver assembly theorem gives an arbitrary disjoint family of sorted
+64-wire supports, and `genScatter` can place a fixed comparator network on any
+injective support map. Thus the receiver's family can be grouped by packet ID
+into blocks of 64 and each full block treated as 64 concatenated logical runs.
+The exact obstacle is now the incomplete final block (fewer than 64 packets)
+and proving/instantiating the 4096-wire merge-tree on arbitrary disjoint packet
+supports. A complete UB-25 stage also needs the output re-packetization to
+agree with the next scheduler's required ports. In particular, the earlier
+wording that asks for “64 contiguous runs” is unnecessarily restrictive, but
+the 57-layer budget is not yet justified for the actual receiver.
+
 The alternating two-chain microcase has now been screened separately. On the
 128-wire support word `AB` repeated 64 times, `alternating_chain_screen.py`
 produces an explicit 14-layer comparator network that sorts every one of the

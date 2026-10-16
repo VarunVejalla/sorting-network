@@ -29,19 +29,26 @@ def threshold_states(word):
             yield row
 
 
-def greedy_sort(word):
+def greedy_sort(word, tie_seed=None):
     rows = np.asarray(list(threshold_states(word)), dtype=np.uint8)
     n = len(word)
     ii, jj = np.triu_indices(n, 1)
     layers = []
 
+    rng = np.random.default_rng(tie_seed) if tie_seed is not None else None
     while True:
         # Swapping a binary inversion at i<j removes exactly j-i inversions.
         counts = np.sum((rows[:, ii] == 1) & (rows[:, jj] == 0), axis=0)
         scores = counts * (jj - ii)
-        order = sorted(range(len(scores)),
-                       key=lambda q: (int(scores[q]), int(ii[q]), int(jj[q])),
-                       reverse=True)
+        if rng is None:
+            order = sorted(range(len(scores)),
+                           key=lambda q: (int(scores[q]), int(ii[q]), int(jj[q])),
+                           reverse=True)
+        else:
+            tie_break = rng.random(len(scores))
+            order = sorted(range(len(scores)),
+                           key=lambda q: (int(scores[q]), float(tie_break[q])),
+                           reverse=True)
         used = set()
         layer = []
         for q in order:
@@ -69,16 +76,30 @@ def main():
                         help="number of A/B wire pairs in the alternating support")
     parser.add_argument("--output", type=Path,
                         help="optional JSON file for the exact comparator layers")
+    parser.add_argument("--trials", type=int, default=1,
+                        help="number of randomized tie-break trials (default: 1 deterministic run)")
+    parser.add_argument("--seed", type=int, default=0,
+                        help="base seed for randomized tie-break trials")
     args = parser.parse_args()
     if args.pairs < 1:
         parser.error("--pairs must be positive")
     word = tuple(i % 2 for i in range(2 * args.pairs))
-    state_count, layers, sorted_all = greedy_sort(word)
+    if args.trials < 1:
+        parser.error("--trials must be positive")
+    results = []
+    for trial in range(args.trials):
+        tie_seed = None if args.trials == 1 else args.seed + trial
+        state_count, layers, sorted_all = greedy_sort(word, tie_seed)
+        results.append((len(layers), trial, state_count, layers, sorted_all, tie_seed))
+    _, trial, state_count, layers, sorted_all, tie_seed = min(results)
     result = {
         "support": "AB" * args.pairs,
         "width": 2 * args.pairs,
         "threshold_states": state_count,
         "depth": len(layers),
+        "trial": trial,
+        "tie_seed": tie_seed,
+        "trials_run": args.trials,
         "sorts_all_threshold_states": sorted_all,
         "layers": [[[i, j] for i, j in layer] for layer in layers],
         "status": "heuristic finite construction; not an optimality certificate",

@@ -317,3 +317,20 @@ Phase-specific energy baseline (GPT-6-astra-high, 2026-10-16): `oddEvenMerge128_
 57-layer reassembly candidate (GPT-6-astra-high, 2026-10-16): a balanced merge tree on 64 sorted 64-wire runs uses `oddEvenMergeNet 7` through `oddEvenMergeNet 12`, once per tree level in parallel, for depth `7+8+9+10+11+12=57`. Correctness follows inductively from the existing two-run merge theorem, and disjoint intervals permit parallelism. This makes the budget structurally plausible, but the tree is not yet formalized and the actual receiver's parent-plus-64-child packet family has not been shown to match 64 contiguous runs. Tracked in `GRANULARITY-GATE.md` as the next interface test, not as a proved 57-layer receiver network.
 
 Alternating two-chain correction screen (GPT-6-astra-high, 2026-10-16): the new `alternating_chain_screen.py --pairs 64` constructs a 14-layer comparator network on the fixed `AB` repeated 64 times support. Its finite state space is exactly the `65*65=4225` independent Boolean thresholds of the two sorted chains; all output states are sorted. The full layers are saved in `alternating_chain_128_screen.json`. This is constructive finite evidence for a 128-wire correction motif, not an optimality result, Lean proof, or 65-run receiver construction. It raises the concrete next test: check whether actual matching outputs induce this motif and whether the 14-layer correction can be scheduled inside the existing 57 layers.
+
+Alternating-chain screen follow-up (2026-10-16): the deterministic greedy
+network for the alternating two-chain support sorts all 4,225 threshold states
+in 14 layers. Randomized tie-breaking was tested for 40 total seeds (the
+original deterministic construction plus 8 and 32 randomized trials); none
+found a shallower construction. This is heuristic evidence only and does not
+prove a 14-layer lower bound. The script accepts `--trials` and `--seed` for
+replay. The corresponding Lean exhaustive-certification attempt was abandoned:
+expanding the generated comparator evaluation in the kernel exceeded practical
+elaboration/resource limits, so no Lean claim is made. The focused
+`PacketMergeAxioms` check passed on 2026-10-16. The primary structural test
+is now the arbitrary-support 4096-wire merge-tree lemma plus its incomplete
+final block and output re-packetization interface. `flowA7_receiver_allCases`
+already supplies disjoint sorted 64-wire supports, so physical contiguity is
+not needed: `genScatter` supports arbitrary injective placements. Grouping
+complete sets of 64 packets by ID is therefore available; handling the fewer
+than 64 leftover packets within budget remains open. See `GRANULARITY-GATE.md`.
