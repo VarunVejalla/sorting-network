@@ -98,7 +98,19 @@ checks all scratch sources.
    it does not by itself order the two halves of each same-grid packet after
    execution. The generalized
    join/deal interface avoids a physical interleaving cost, but it still needs
-   a full evolving placement map compatible with the scheduled flow.
+   a full evolving placement map compatible with the scheduled flow. The
+   immediate compositional lemma should be one complete matching round on a
+   finite family of arbitrary disjoint packet embeddings: scatter one
+   `oddEvenMergeNet 7` onto each matched pair, route its even/odd lanes to the
+   pair's two new embeddings, and prove (i) both outputs sorted, (ii) all new
+   supports pairwise disjoint, (iii) their union equals the old support union,
+   and (iv) the round has depth at most 7. The pairwise sortedness and
+   even/odd partition ingredients already exist as
+   `genPacketPair_lanes_sorted` and `dealEmbeddings_partition`; what is missing
+   is the finite matching/whole-round composition and its iteration interface.
+   This avoids assuming source-rank cells remain fixed physical receiver
+   packets. After that, the evolving embeddings must still be related to the
+   actual positional `WireFlow` cuts; that compatibility is a separate gate.
 3. Supply an unbounded matching family and a uniform rounded-discrepancy bound,
    including exceptional small cohorts. Finite mixing screens do not prove
    this.
