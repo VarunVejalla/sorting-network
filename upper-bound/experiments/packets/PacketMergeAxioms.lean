@@ -747,6 +747,38 @@ import PacketHalfProfile
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_sourcePortRepairStage_downCutFamily
 
+/-- info: 'Chvatal.PacketAlignment.upSetRepairPacket_union' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.upSetRepairPacket_union
+
+/-- info: 'Chvatal.PacketAlignment.upSetRepairPacket_pairwise_disjoint' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.upSetRepairPacket_pairwise_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.upSetRepairPacket_card_eq_64' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.upSetRepairPacket_card_eq_64
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_sourcePortRepairStage_upSetFamily' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_sourcePortRepairStage_upSetFamily
+
+/-- info: 'Chvatal.PacketAlignment.sourcePortRepairPacket_union' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.sourcePortRepairPacket_union
+
+/-- info: 'Chvatal.PacketAlignment.sourcePortRepairPacket_pairwise_disjoint' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.sourcePortRepairPacket_pairwise_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.sourcePortRepairPacket_card_eq_64' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.sourcePortRepairPacket_card_eq_64
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_sourcePortRepairStage_sourcePackets' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_sourcePortRepairStage_sourcePackets
+
 /-- info: 'Chvatal.PacketAlignment.stageNet_rankSortedOn_image' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.stageNet_rankSortedOn_image
