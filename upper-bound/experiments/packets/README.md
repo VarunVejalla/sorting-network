@@ -87,11 +87,10 @@ checks all scratch sources.
 
 ## Remaining proof gates
 
-1. Combine the now-checked parent down-port and child up-port packet layouts
-   into each actual receiver register, with the right fixed labels and
-   capacities. The local repairs cover the exclusive misalignment cases, but
-   their source-rank cells are not yet shown to be the receiver's physical
-   64-wire cells after the scheduler's placements.
+1. Integrate the checked six-layer shared source-port packet-layout network
+   into `stageNet`, then identify source-rank cells with fixed receiver packet
+   labels and capacities. Local layouts and the combined network's invariant
+   are checked; global stage integration and receiver reassembly are not.
 2. Carry the logical packet embeddings through matching rounds and positional
    port cuts. `PacketSortedOn` on the physical rank grid is a sufficient local
    premise, not yet an invariant of that combined scheduler. In particular,

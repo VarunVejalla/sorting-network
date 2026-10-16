@@ -440,6 +440,90 @@ theorem upSetSuffixCell_disjoint_endpoints {N : Nat} (s : Finset (Fin N))
     rw [hcard, hhalf] at hr
     omega
 
+theorem downSetEndpointSupport_rank_bounds {N : Nat}
+    (s : Finset (Fin N)) (π τ : Nat) (j : Fin 64)
+    (hτlarge : 64 ≤ τ) {w : Fin N}
+    (hw : w ∈ downSetEndpointLeft s π τ j ∪ downSetEndpointRight s π τ j) :
+    π / 2 ≤ Chvatal.rankIn s w ∧
+      Chvatal.rankIn s w < π / 2 + 64 * τ := by
+  rcases Finset.mem_union.mp hw with hleft | hright
+  · have hj := j.isLt
+    have hj1 : j.val + 1 ≤ 64 := by omega
+    have hmul : (j.val + 1) * τ ≤ 64 * τ := Nat.mul_le_mul_right τ hj1
+    change w ∈ Chvatal.blockOf s (π / 2 + j.val * τ)
+      (π / 2 + j.val * τ + 32) at hleft
+    have hr := Chvatal.mem_blockOf.mp hleft
+    constructor
+    · omega
+    · have hstep : (j.val + 1) * τ = j.val * τ + τ := by
+        rw [Nat.add_mul, Nat.one_mul]
+      omega
+  · change w ∈ Chvatal.blockOf s
+      (π / 2 + (j.val + 1) * τ - 32) (π / 2 + (j.val + 1) * τ) at hright
+    have hr := Chvatal.mem_blockOf.mp hright
+    have hj := j.isLt
+    have hj1 : j.val + 1 ≤ 64 := by omega
+    have hmul : (j.val + 1) * τ ≤ 64 * τ := Nat.mul_le_mul_right τ hj1
+    constructor
+    · have hjpos : 1 ≤ j.val + 1 := by omega
+      have hlow := Nat.mul_le_mul_right τ hjpos
+      simp only [Nat.one_mul] at hlow
+      omega
+    · omega
+
+theorem downSetEndpointSupport_disjoint_upFringe {N : Nat}
+    (s : Finset (Fin N)) (π τ : Nat) (j : Fin 64)
+    (hτlarge : 64 ≤ τ) (heven : 2 ∣ π) (hcapacity : π + 64 * τ ≤ s.card)
+    {w : Fin N}
+    (hdown : w ∈ downSetEndpointLeft s π τ j ∪ downSetEndpointRight s π τ j)
+    (hup : w ∈ upFringePairSupport s π) : False := by
+  have hd := downSetEndpointSupport_rank_bounds s π τ j hτlarge hdown
+  rcases Finset.mem_union.mp hup with hup | hup
+  · have hu := Chvatal.mem_blockOf.mp hup
+    omega
+  · have hu := Chvatal.mem_blockOf.mp hup
+    have hrem := Nat.mod_add_div π 2
+    have hzero := Nat.mod_eq_zero_of_dvd heven
+    rw [hzero] at hrem
+    have hpieq : π = 2 * (π / 2) := by omega
+    have hcap := hcapacity
+    rw [hpieq] at hcap
+    have hgap : π / 2 + 64 * τ ≤ s.card - π / 2 := by omega
+    omega
+
+theorem downSet_disjoint_upSet_of_capacity {N : Nat}
+    (s : Finset (Fin N)) (π τ j : Nat) (hj : j < 64)
+    (heven : 2 ∣ π) (hcapacity : π + 64 * τ ≤ s.card)
+    {w : Fin N} (hd : w ∈ Chvatal.downSet s π τ j)
+    (hu : w ∈ Chvatal.upSet s π) : False := by
+  have hd' := downSet_rank_cut s π τ j hd
+  have hu' := upSet_rank_cut s π hu
+  have hrem := Nat.mod_add_div π 2
+  have hzero := Nat.mod_eq_zero_of_dvd heven
+  rw [hzero] at hrem
+  have hpieq : π = 2 * (π / 2) := by omega
+  have hcap := hcapacity
+  rw [hpieq] at hcap
+  have hgap : π / 2 + 64 * τ ≤ s.card - π / 2 := by omega
+  rcases hu' with ⟨_, huLt⟩ | ⟨_, huLo, _⟩
+  · omega
+  · have hmul : (j + 1) * τ ≤ 64 * τ := Nat.mul_le_mul_right τ (by omega)
+    omega
+
+theorem upFringePairSupport_subset_upSet {N : Nat} (s : Finset (Fin N)) (π : Nat)
+    (hπlarge : 32 ≤ π / 2) (hπcard : π ≤ s.card) :
+    upFringePairSupport s π ⊆ Chvatal.upSet s π := by
+  intro w hw
+  rcases Finset.mem_union.mp hw with hleft | hright
+  · have hr := Chvatal.mem_blockOf.mp hleft
+    apply Finset.mem_union_left
+    apply Chvatal.mem_blockOf.mpr
+    exact ⟨hr.1, by omega, hr.2.2⟩
+  · have hr := Chvatal.mem_blockOf.mp hright
+    apply Finset.mem_union_right
+    apply Chvatal.mem_blockOf.mpr
+    exact ⟨hr.1, hr.2.1, by omega⟩
+
 /-- Every interior cell in that partition is an original packet-grid cell,
 so packet-sortedness carries through it without any comparator. -/
 theorem downSetInteriorCell_sorted {N : Nat} {α : Type} [Preorder α]
@@ -1071,6 +1155,252 @@ theorem parallelDownSetEndpointRepair_exists {N : Nat} {α : Type}
           exact hlo) hhi
       simpa [B, downSetEndpointRight] using hruns.2
 
+/-- One six-layer cohort repairs both kinds of shifted endpoint support on a
+sender: its 64 outgoing down-cut pairs and its own incoming up-fringe pair.
+All 65 pairs are disjoint because the down region is the middle interval
+between the two up-fringe intervals. -/
+theorem parallelSourcePortPacketLayout {N : Nat} {α : Type}
+    [LinearOrder α] (s : Finset (Fin N)) (π τ m q C : Nat)
+    (hτeq : τ = 64 * (m + 1)) (hπeq : π = 64 * (2 * q + 1))
+    (hcardEq : s.card = 64 * C)
+    (hτ : 64 ∣ τ) (hτlarge : 64 ≤ τ)
+    (hbase : (π / 2) % 64 = 32) (heven : 2 ∣ π)
+    (hcard64 : 64 ∣ s.card) (hπcard : π ≤ s.card)
+    (hwithin : π / 2 + 64 * τ ≤ s.card)
+    (hcapacity : π + 64 * τ ≤ s.card) :
+    ∃ net : ComparatorNetwork N, net.depth ≤ 6 ∧
+      ∀ v : Fin N → α, PacketSortedOn s v →
+        (∀ j : Fin 64,
+          RankSortedOn
+            (downSetEndpointLeft s π τ j ∪ downSetEndpointRight s π τ j)
+            (net.exec v)) ∧
+        (∀ j : Fin 64, ∀ k : Fin m,
+          RankSortedOn (downSetInteriorCell s π τ j m k) (net.exec v)) ∧
+        RankSortedOn (upFringePairSupport s π) (net.exec v) ∧
+        (∀ k : Fin q, RankSortedOn (upSetPrefixCell s k) (net.exec v)) ∧
+        (∀ k : Fin q, RankSortedOn (upSetSuffixCell s π k) (net.exec v)) := by
+  classical
+  let Id := Fin 64 ⊕ Unit
+  let ids : List Id :=
+    (List.finRange 64).map (fun j : Fin 64 => (Sum.inl j : Id)) ++ [Sum.inr ()]
+  let A (i : Id) : Finset (Fin N) := match i with
+    | .inl j => downSetEndpointLeft s π τ j
+    | .inr _ => Chvatal.blockOf s (π / 2 - 32) (π / 2)
+  let B (i : Id) : Finset (Fin N) := match i with
+    | .inl j => downSetEndpointRight s π τ j
+    | .inr _ => Chvatal.blockOf s (s.card - π / 2) (s.card - π / 2 + 32)
+  have hids : ids.Nodup := by
+    apply List.Nodup.append
+    · exact (List.nodup_finRange 64).map Sum.inl_injective
+    · simp
+    · simp
+  have hA : ∀ i, (A i).card = 32 := by
+    intro i
+    cases i with
+    | inl j => exact downSetEndpointLeft_card s π τ j hτlarge hwithin
+    | inr u => cases u; exact (upFringe_endpoint_pair s π heven hcard64 hbase hπcard).2.1
+  have hB : ∀ i, (B i).card = 32 := by
+    intro i
+    cases i with
+    | inl j => exact downSetEndpointRight_card s π τ j hτ hbase hwithin
+    | inr u => cases u; exact (upFringe_endpoint_pair s π heven hcard64 hbase hπcard).2.2.1
+  have hsep : ∀ i, ∀ x ∈ A i, ∀ y ∈ B i, x < y := by
+    intro i x hx y hy
+    cases i with
+    | inl j => exact downSetEndpoint_separated s π τ j hτlarge x hx y hy
+    | inr u =>
+      cases u
+      · exact upFringe_endpoint_pair_ordered s π heven hbase hπcard
+          (a := x) (b := y) hx hy
+  have hdis : ∀ i ∈ ids, ∀ j ∈ ids, i ≠ j →
+      Disjoint (A i ∪ B i) (A j ∪ B j) := by
+    intro i hi j hj hne
+    cases i with
+    | inl i =>
+      cases j with
+      | inl j =>
+        exact downSetEndpointSupport_disjoint s π τ i j hτlarge (by
+          intro h
+          apply hne
+          exact congrArg Sum.inl h)
+      | inr u =>
+        cases u
+        apply Finset.disjoint_left.mpr
+        intro w hwDown hwUp
+        change w ∈ upFringePairSupport s π at hwUp
+        rcases Finset.mem_union.mp hwDown with hleft | hright
+        · exact downSetEndpointSupport_disjoint_upFringe s π τ i hτlarge heven
+            hcapacity (Finset.mem_union_left _ hleft) hwUp
+        · exact downSetEndpointSupport_disjoint_upFringe s π τ i hτlarge heven
+            hcapacity (Finset.mem_union_right _ hright) hwUp
+    | inr u =>
+      cases u
+      cases j with
+      | inl j =>
+        apply Finset.disjoint_left.mpr
+        intro w hwUp hwDown
+        change w ∈ upFringePairSupport s π at hwUp
+        rcases Finset.mem_union.mp hwDown with hleft | hright
+        · exact downSetEndpointSupport_disjoint_upFringe s π τ j hτlarge heven
+            hcapacity (Finset.mem_union_left _ hleft) hwUp
+        · exact downSetEndpointSupport_disjoint_upFringe s π τ j hτlarge heven
+            hcapacity (Finset.mem_union_right _ hright) hwUp
+      | inr u => cases u; exact (hne rfl).elim
+  let net := parallelHalfPairRepair ids A B hA hB hsep
+  have hdepth : net.depth ≤ 6 :=
+    parallelHalfPairRepair_depth_le ids hids A B hA hB hsep hdis
+  refine ⟨net, hdepth, ?_⟩
+  intro v hpack
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · intro j
+    have hlo := (downSet_cut_residues (π := π) (τ := τ) (j := j.val) hτ).1
+    rw [hbase] at hlo
+    have hhi := (downSet_cut_residues (π := π) (τ := τ) (j := j.val) hτ).2
+    rw [hbase] at hhi
+    have hstep : (j.val + 1) * τ = j.val * τ + τ := by
+      rw [Nat.add_mul, Nat.one_mul]
+    have hspan : 64 ≤ (π / 2 + (j.val + 1) * τ) - (π / 2 + j.val * τ) := by
+      rw [hstep]
+      omega
+    have hruns := packetSortedOn_rankInterval_endpoints s v hpack
+      (π / 2 + j.val * τ) (π / 2 + (j.val + 1) * τ) hspan hlo hhi
+    have hsA : RankSortedOn (A (Sum.inl j)) v := by
+      simpa [A, downSetEndpointLeft] using hruns.1
+    have hsB : RankSortedOn (B (Sum.inl j)) v := by
+      simpa [B, downSetEndpointRight] using hruns.2
+    have hsort := parallelHalfPairRepair_sorts_pair ids hids A B hA hB hsep hdis
+      v (Sum.inl j) (by simp [ids]) hsA hsB
+    simpa [net, A, B] using hsort
+  · intro j k
+    have hsCell := downSetInteriorCell_sorted s π τ j m hτ hbase v hpack k
+    have hwDown (w : Fin N) (hw : w ∈ downSetInteriorCell s π τ j m k) :
+        w ∈ Chvatal.downSet s π τ j.val := by
+      rw [downSetEndpoint_partition s π τ j m hτeq]
+      apply Finset.mem_union.mpr
+      right
+      exact Finset.mem_biUnion.mpr ⟨k, Finset.mem_univ _, hw⟩
+    have houtside (w : Fin N) (hw : w ∈ downSetInteriorCell s π τ j m k) :
+        ∀ i ∈ ids, w ∉ A i ∪ B i := by
+      intro i hi hmem
+      cases i with
+      | inl i =>
+        by_cases hij : i = j
+        · subst i
+          rcases Finset.mem_union.mp hmem with hleft | hright
+          · have hb := downSetInteriorCell_bounds s π τ j m hτeq k w hw
+            change w ∈ Chvatal.blockOf s (π / 2 + j.val * τ)
+              (π / 2 + j.val * τ + 32) at hleft
+            have hr := Chvatal.mem_blockOf.mp hleft
+            omega
+          · have hb := downSetInteriorCell_bounds s π τ j m hτeq k w hw
+            change w ∈ Chvatal.blockOf s
+              (π / 2 + (j.val + 1) * τ - 32) (π / 2 + (j.val + 1) * τ) at hright
+            have hr := Chvatal.mem_blockOf.mp hright
+            omega
+        · have hdisj : Disjoint (Chvatal.downSet s π τ j.val)
+            (Chvatal.downSet s π τ i.val) := by
+            have hne : j.val ≠ i.val := by
+              intro h
+              apply hij
+              exact Fin.ext h.symm
+            rcases lt_or_gt_of_ne hne with hlt | hgt
+            · exact Chvatal.disjoint_downSet (j := j.val) (j' := i.val) hlt
+            · exact (Chvatal.disjoint_downSet (j := i.val) (j' := j.val) hgt).symm
+          have hsupport := downSetEndpointSupport_subset s π τ i hτlarge hmem
+          exact (Finset.disjoint_left.mp hdisj (hwDown w hw)) hsupport
+      | inr u =>
+        cases u
+        change w ∈ upFringePairSupport s π at hmem
+        have hUp := upFringePairSupport_subset_upSet s π (by rw [hπeq]; omega) hπcard
+        exact downSet_disjoint_upSet_of_capacity s π τ j.val j.isLt heven hcapacity
+          (hwDown w hw) (hUp hmem)
+    intro x y hx hy hxy
+    have hxEq := parallelHalfPairRepair_exec_outside ids A B hA hB hsep v x
+      (houtside x hx)
+    have hyEq := parallelHalfPairRepair_exec_outside ids A B hA hB hsep v y
+      (houtside y hy)
+    change (parallelHalfPairRepair ids A B hA hB hsep).exec v x ≤
+      (parallelHalfPairRepair ids A B hA hB hsep).exec v y
+    rw [hxEq, hyEq]
+    exact hsCell hx hy hxy
+  · have hsUp := packetSortedOn_upFringe_endpoints s v hpack π hcard64 hbase hπcard
+    have hsA : RankSortedOn (A (Sum.inr ())) v := by simpa [A] using hsUp.1
+    have hsB : RankSortedOn (B (Sum.inr ())) v := by simpa [B] using hsUp.2
+    have hsort := parallelHalfPairRepair_sorts_pair ids hids A B hA hB hsep hdis
+      v (Sum.inr ()) (by simp [ids]) hsA hsB
+    simpa [net, A, B, upFringePairSupport] using hsort
+  · intro k
+    have hsCell := rankPacketCell_sorted s v hpack 0 (by rfl) k
+    have hpart := upSetEndpoint_partition s π q C hπeq hcardEq hπcard
+    have hwUp (w : Fin N) (hw : w ∈ upSetPrefixCell s k) :
+        w ∈ Chvatal.upSet s π := by
+      rw [hpart]
+      apply Finset.mem_union.mpr
+      right
+      apply Finset.mem_union.mpr
+      left
+      exact Finset.mem_biUnion.mpr ⟨k, Finset.mem_univ _, hw⟩
+    have houtside (w : Fin N) (hw : w ∈ upSetPrefixCell s k) :
+        ∀ i ∈ ids, w ∉ A i ∪ B i := by
+      intro i hi hmem
+      cases i with
+      | inl j =>
+        have hdown := downSetEndpointSupport_subset s π τ j hτlarge hmem
+        exact downSet_disjoint_upSet_of_capacity s π τ j.val j.isLt heven hcapacity
+          hdown (hwUp w hw)
+      | inr u =>
+        cases u
+        change w ∈ upFringePairSupport s π at hmem
+        exact upSetPrefixCell_disjoint_endpoints s π q C hπeq hcardEq hπcard hw hmem
+    intro x y hx hy hxy
+    have hxEq := parallelHalfPairRepair_exec_outside ids A B hA hB hsep v x
+      (houtside x hx)
+    have hyEq := parallelHalfPairRepair_exec_outside ids A B hA hB hsep v y
+      (houtside y hy)
+    change (parallelHalfPairRepair ids A B hA hB hsep).exec v x ≤
+      (parallelHalfPairRepair ids A B hA hB hsep).exec v y
+    rw [hxEq, hyEq]
+    exact hsCell hx hy hxy
+  · intro k
+    have hstart : s.card - π / 2 + 32 = 64 * (C - q) := by
+      rw [hcardEq, hπeq]
+      omega
+    have hstartAligned : (s.card - π / 2 + 32) % 64 = 0 := by
+      rw [hstart]
+      omega
+    have hsCell := rankPacketCell_sorted s v hpack
+      (s.card - π / 2 + 32) hstartAligned k
+    have hpart := upSetEndpoint_partition s π q C hπeq hcardEq hπcard
+    have hwUp (w : Fin N) (hw : w ∈ upSetSuffixCell s π k) :
+        w ∈ Chvatal.upSet s π := by
+      rw [hpart]
+      apply Finset.mem_union.mpr
+      right
+      apply Finset.mem_union.mpr
+      right
+      exact Finset.mem_biUnion.mpr ⟨k, Finset.mem_univ _, hw⟩
+    have houtside (w : Fin N) (hw : w ∈ upSetSuffixCell s π k) :
+        ∀ i ∈ ids, w ∉ A i ∪ B i := by
+      intro i hi hmem
+      cases i with
+      | inl j =>
+        have hdown := downSetEndpointSupport_subset s π τ j hτlarge hmem
+        exact downSet_disjoint_upSet_of_capacity s π τ j.val j.isLt heven hcapacity
+          hdown (hwUp w hw)
+      | inr u =>
+        cases u
+        change w ∈ upFringePairSupport s π at hmem
+        exact upSetSuffixCell_disjoint_endpoints s π q C hπeq hcardEq hπcard hw hmem
+    intro x y hx hy hxy
+    have hxEq := parallelHalfPairRepair_exec_outside ids A B hA hB hsep v x
+      (houtside x hx)
+    have hyEq := parallelHalfPairRepair_exec_outside ids A B hA hB hsep v y
+      (houtside y hy)
+    change (parallelHalfPairRepair ids A B hA hB hsep).exec v x ≤
+      (parallelHalfPairRepair ids A B hA hB hsep).exec v y
+    rw [hxEq, hyEq]
+    exact hsCell hx hy hxy
+
 /-- The full 64-cut repair leaves each parent down-port partitioned into
 sorted 64-wire packets: one repaired endpoint pair and all original interior
 cells. This is the local packet-layout induction step for a shifted sender. -/
@@ -1263,6 +1593,90 @@ theorem flowA7_scheduled_parent_endpoint_packetLayout {d : Nat} {α : Type}
   intro v hv j
   have h := hlayout v hv j
   simpa [s, π, τ, m] using h
+
+/-- Scheduled local packet-layout induction step: one six-layer repair on a
+shifted sender simultaneously sorts all 64 outgoing down-port packets and
+its incoming up-port packets, preserving their aligned interior cells. -/
+theorem flowA7_scheduled_source_port_packetLayout {d : Nat} {α : Type}
+    [LinearOrder α] (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t)
+    (ht : t < tf7 d) (q : KBag 64 d)
+    (hτpos : 0 < flowDown7 d hd q.l t)
+    (hbad : HalfMisaligned (flowUp7 d hd q.l t)) :
+    ∃ net : ComparatorNetwork (64 ^ d), net.depth ≤ 6 ∧
+      ∀ v : Fin (64 ^ d) → α,
+        PacketSortedOn (wireSets (flowSizes7 d hd) t q) v →
+        (∀ j : Fin 64,
+          RankSortedOn
+            (downSetEndpointLeft (wireSets (flowSizes7 d hd) t q)
+              (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j ∪
+             downSetEndpointRight (wireSets (flowSizes7 d hd) t q)
+              (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j)
+            (net.exec v) ∧
+          (∀ k : Fin (flowDown7 d hd q.l t / 64 - 1),
+            RankSortedOn
+              (downSetInteriorCell (wireSets (flowSizes7 d hd) t q)
+                (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j
+                (flowDown7 d hd q.l t / 64 - 1) k) (net.exec v))) ∧
+        RankSortedOn (upFringePairSupport (wireSets (flowSizes7 d hd) t q)
+          (flowUp7 d hd q.l t)) (net.exec v) ∧
+        (∀ k : Fin ((flowUp7 d hd q.l t / 2) / 64),
+          RankSortedOn
+            (upSetPrefixCell (wireSets (flowSizes7 d hd) t q) k) (net.exec v)) ∧
+        (∀ k : Fin ((flowUp7 d hd q.l t / 2) / 64),
+          RankSortedOn
+            (upSetSuffixCell (wireSets (flowSizes7 d hd) t q)
+              (flowUp7 d hd q.l t) k) (net.exec v)) := by
+  let F := flowSizes7 d hd
+  let s := wireSets F t q
+  let π := flowUp7 d hd q.l t
+  let τ := flowDown7 d hd q.l t
+  have hshape := node_shape_refined d hd t q.l ht2 ht
+  have hres := refined_packet_residues hd ht2 ht hshape
+  have hτdiv : 64 ∣ τ := by dsimp [τ]; exact hres.2.1
+  have hτlarge : 64 ≤ τ := Nat.le_of_dvd (by simpa [τ] using hτpos) hτdiv
+  have hbase : (π / 2) % 64 = 32 := hbad.2
+  have heven : 2 ∣ π := by dsimp [π]; exact F.hup_even q.l t ht
+  have hcard64 : 64 ∣ s.card := by
+    dsimp [s, F]
+    rw [wireSets_card _ (Nat.le_of_lt ht)]
+    exact hres.1
+  have hsize : s.card = π + 64 * τ := by
+    dsimp [s, F, π, τ]
+    rw [wireSets_card _ (Nat.le_of_lt ht) q]
+    exact F.hsplit q.l t q.hl ht
+  have hwithin : π / 2 + 64 * τ ≤ s.card := by rw [hsize]; omega
+  have hcapacity : π + 64 * τ ≤ s.card := by rw [hsize]
+  have hπcard : π ≤ s.card := by rw [hsize]; omega
+  let m := τ / 64 - 1
+  have hτeq : τ = 64 * (m + 1) := by
+    have hmod := Nat.mod_add_div τ 64
+    have hrem : τ % 64 = 0 := Nat.mod_eq_zero_of_dvd hτdiv
+    rw [hrem] at hmod
+    dsimp [m]
+    omega
+  let r := (π / 2) / 64
+  have hhalfEq : π / 2 = 64 * r + 32 := by
+    have hmod := Nat.mod_add_div (π / 2) 64
+    rw [hbase] at hmod
+    dsimp [r]
+    omega
+  have hpiTwice : π = 2 * (π / 2) := by
+    have hmod := Nat.mod_add_div π 2
+    have hrem : π % 2 = 0 := Nat.mod_eq_zero_of_dvd heven
+    rw [hrem] at hmod
+    omega
+  have hπeq : π = 64 * (2 * r + 1) := by rw [hpiTwice, hhalfEq]; omega
+  let C := 2 * r + 1 + τ
+  have hcardEq : s.card = 64 * C := by rw [hsize, hπeq]; dsimp [C]; omega
+  obtain ⟨net, hdepth, hlayout⟩ :=
+    parallelSourcePortPacketLayout (α := α) s π τ m r C hτeq hπeq hcardEq
+      hτdiv hτlarge hbase heven hcard64 hπcard hwithin hcapacity
+  refine ⟨net, hdepth, ?_⟩
+  intro v hpack
+  have h := hlayout v hpack
+  refine ⟨?_, h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
+  intro j
+  exact ⟨h.1 j, h.2.1 j⟩
 
 /-- At an actual receiver, the 64 child senders' shifted up-fringe endpoint
 repairs are also one six-layer disjoint family. The packet divisibility,
