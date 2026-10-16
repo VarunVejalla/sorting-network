@@ -575,6 +575,32 @@ theorem oddEvenMerge128_balanced_inputs_shift_physical_profile
     v hA hB htotal
   exact ⟨⟨hAcount, hBcount⟩, hprofile.1, hprofile.2⟩
 
+/-- The deterministic doubled centered energy of the two physical 64-rank
+halves of a sorted 128-wire Boolean profile with `H` ones. This is the
+phase-specific baseline to subtract when comparing physical halves with the
+logical even/odd dealt packets. -/
+theorem oddEvenMerge128_physicalHalf_doubledEnergy (H : Nat) (hH : H ≤ 128) :
+    let a : ℤ := (min 64 (H - 64) : Nat)
+    let b : ℤ := (min 64 H : Nat)
+    (2 * a - H) ^ 2 + (2 * b - H) ^ 2 =
+      2 * ((min H (128 - H) : Nat) : ℤ) ^ 2 := by
+  dsimp
+  by_cases h : H ≤ 64
+  · have hsub : H - 64 = 0 := by omega
+    have hminA : min 64 (H - 64) = 0 := by omega
+    have hminB : min 64 H = H := Nat.min_eq_right h
+    have hminH : min H (128 - H) = H := by omega
+    rw [hminA, hminB, hminH]
+    ring
+  · have hlow : 64 ≤ H := by omega
+    have hsub_le : H - 64 ≤ 64 := by omega
+    have hminA : min 64 (H - 64) = H - 64 := Nat.min_eq_right hsub_le
+    have hminB : min 64 H = 64 := Nat.min_eq_left hlow
+    have hminH : min H (128 - H) = 128 - H := by omega
+    rw [hminA, hminB, hminH]
+    rw [Int.natCast_sub hlow, Int.natCast_sub hH]
+    ring
+
 /-- Actual values on a `WireFlow` rank block have exactly the ideal sorted
 profile count. This connects the abstract profile lemma to concrete `blockOf`
 ports without choosing or reordering their physical wire labels. -/

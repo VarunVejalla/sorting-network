@@ -152,6 +152,8 @@ interfaces; this README supersedes its historical statements that the
 
 The rank-profile obstruction is now explicit: `oddEvenMerge128_physicalHalf_counts` gives the exact clamped counts in the two positional 64-rank cells after a full 128-wire merge. At threshold total 64, `oddEvenMerge128_balanced_deal_vs_physical_halves` proves the physical halves have counts `(0,64)` while the logical even/odd deal has `(32,32)`. `oddEvenMerge128_balanced_inputs_shift_physical_profile` makes this mismatch concrete from two balanced, sorted input packets: physical counts shift from `(32,32)` to `(0,64)` in one merge. A global recurrence must track both rank-profile state and logical-packet state; packet variance alone cannot represent the fixed positional cuts.
 
+`oddEvenMerge128_physicalHalf_doubledEnergy` now kernel-checks the phase-specific baseline: for total threshold count `H`, the two physical halves have doubled centered energy `2*min(H,128-H)^2`. `GRANULARITY-GATE.md` compares this with the logical even/odd packet energy, explaining why a recurrence must correct for the deterministic profile shift before comparing variances.
+
 Temporal frontier accounting (2026-10-15): the actual schedule eliminates the entire high-frontier omitted-middle error at every ordinary stage; level d-1 is inactive and the leaf down-flow is zero. The remaining level-1 up-flow has a formal per-bag time sum bounded by (64/63) * 64^(d-5), from a ratio-1/64 capacity tail. Across 64 level-1 bags this predicts total charge (64/63) * 64^(d-4), about 6.05e-8 of all 64^d wires; the bag-cardinality multiplier is formalized in Lean. This proves a small boundary budget, not a recurrence: sortedness preservation and rank/variance contraction remain open. See MIXING-TAIL.md.
 
 
