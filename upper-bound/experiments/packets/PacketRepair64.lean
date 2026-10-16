@@ -3698,6 +3698,39 @@ theorem packetFamily_reindex_contract {N : Nat} {ι κ : Type}
   · intro k
     exact hcard (e k)
 
+/-- A packet family with its finite index set encoded as a natural-number
+cardinality. This is the common interface used by receiver cases whose
+endpoint repairs have different native index types. -/
+structure CanonicalPacketFamily (N : Nat) where
+  count : Nat
+  packet : Fin count → Finset (Fin N)
+
+/-- Exact port contract carried by a canonical packet family. -/
+def CanonicalPacketPortContract {N : Nat} (P : CanonicalPacketFamily N)
+    (support : Finset (Fin N)) {α : Type} [LinearOrder α]
+    (v : Fin N → α) : Prop :=
+  (∀ i, RankSortedOn (P.packet i) v) ∧
+  Finset.univ.biUnion P.packet = support ∧
+  (∀ i i', i ≠ i' → Disjoint (P.packet i) (P.packet i')) ∧
+  (∀ i, (P.packet i).card = 64)
+
+/-- Put any finite packet indexing into canonical `Fin` form. -/
+noncomputable def canonicalPacketFamily {N : Nat} {ι : Type} [Fintype ι]
+    (packets : ι → Finset (Fin N)) : CanonicalPacketFamily N :=
+  ⟨Fintype.card ι, fun i => packets ((Fintype.equivFin ι).symm i)⟩
+
+/-- Transport a packet-port contract into canonical `Fin` form. -/
+theorem canonicalPacketFamily_contract {N : Nat} {ι : Type} [Fintype ι]
+    {α : Type} [LinearOrder α] (packets : ι → Finset (Fin N))
+    (support : Finset (Fin N)) (v : Fin N → α)
+    (hcontract : (∀ i, RankSortedOn (packets i) v) ∧
+      Finset.univ.biUnion packets = support ∧
+      (∀ i i', i ≠ i' → Disjoint (packets i) (packets i')) ∧
+      (∀ i, (packets i).card = 64)) :
+    CanonicalPacketPortContract (canonicalPacketFamily packets) support v := by
+  exact packetFamily_reindex_contract (Fintype.equivFin ι).symm packets support v
+    hcontract.1 hcontract.2.1 hcontract.2.2.1 hcontract.2.2.2
+
 /-- The assembled parent/child packet family is the actual next-time register
 support in `WireFlow`; the source partition hypotheses supply its two port
 unions. -/
@@ -3859,6 +3892,241 @@ theorem flowA7_receiver_packetAssembly_fin {d : Nat} {ι κ α : Type}
     (by intro i; exact hp.2.2.2 i)
     (by intro j k; exact (hc j).2.2.2 k)
   exact ⟨parentFin, childFin, hresult⟩
+
+/-- One actual `WireFlow` receiver step for canonical port partitions. It
+combines the parent cut and the 64 child up-ports, then returns the complete
+next-register packet partition in the same canonical representation. -/
+theorem flowA7_receiver_packetAssembly_canonical {d : Nat} {α : Type}
+    [LinearOrder α]
+    (hd : 7 ≤ d) (t : Nat) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchildLevel : b.l < d)
+    (parent : CanonicalPacketFamily (64 ^ d))
+    (childCount : Nat)
+    (child : Fin 64 → Fin childCount → Finset (Fin (64 ^ d)))
+    (v : Fin (64 ^ d) → α)
+    (hparent : CanonicalPacketPortContract parent
+      (Chvatal.downSet (wireSets (flowSizes7 d hd) t b.parent)
+        (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t) (b.x % 64)) v)
+    (hchildren : ∀ j, CanonicalPacketPortContract
+      ⟨childCount, child j⟩
+      (Chvatal.upSet (wireSets (flowSizes7 d hd) t
+        (b.child j.val j.isLt hchildLevel)) (flowUp7 d hd (b.l + 1) t)) v) :
+    CanonicalPacketPortContract
+      (canonicalPacketFamily (receiverPacketFamily parent.packet child))
+      (wireSets (flowSizes7 d hd) (t + 1) b) v := by
+  have hassembled := flowA7_receiver_packetAssembly hd t ht b hb hchildLevel
+    parent.packet child v hparent.2.1 (fun j => (hchildren j).2.1)
+    hparent.1 (by intro j k; exact (hchildren j).1 k)
+    (by intro i i' hne; exact hparent.2.2.1 i i' hne)
+    (by intro j k k' hne; exact (hchildren j).2.2.1 k k' hne)
+    hparent.2.2.2 (by intro j k; exact (hchildren j).2.2.2 k)
+  exact canonicalPacketFamily_contract (receiverPacketFamily parent.packet child)
+    (wireSets (flowSizes7 d hd) (t + 1) b) v hassembled
+
+/-- Canonical packet partition of the actual parent down-cut, covering all
+three flow modes: empty, aligned, and endpoint-repaired. -/
+theorem flowA7_receiver_parentPort_canonical {d : Nat} {α : Type}
+    [LinearOrder α]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (v : Fin (64 ^ d) → α)
+    (hpack : PacketSortedOn (wireSets (flowSizes7 d hd) t b.parent) v) :
+    ∃ parent : CanonicalPacketFamily (64 ^ d),
+      CanonicalPacketPortContract parent
+        (Chvatal.downSet (wireSets (flowSizes7 d hd) t b.parent)
+          (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t)
+          (b.x % 64)) ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) := by
+  let q := b.parent
+  let stageV := (flowA7_sourcePortRepairStage hd t ht2 ht).exec v
+  let j : Fin 64 := ⟨b.x % 64, Nat.mod_lt _ (by norm_num)⟩
+  by_cases hzero : flowDown7 d hd (b.l - 1) t = 0
+  · have hn : flowDown7 d hd q.l t / 64 = 0 := by
+      have hzeroQ : flowDown7 d hd q.l t = 0 := by
+        simpa [q, KBag.parent_l] using hzero
+      rw [hzeroQ]
+    let native : Fin (flowDown7 d hd q.l t / 64) → Finset (Fin (64 ^ d)) :=
+      fun i => Fin.elim0 (Fin.cast hn i)
+    have hzeroQ : flowDown7 d hd q.l t = 0 := by
+      simpa [q, KBag.parent_l] using hzero
+    have hempty := flowA7_zeroDownSet_empty hd t ht q hzeroQ j
+    have hsupportEmpty :
+        Chvatal.downSet (wireSets (flowSizes7 d hd) t q)
+          (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j.val = ∅ := hempty
+    have hunion : Finset.univ.biUnion native = ∅ := by
+      ext w
+      constructor
+      · intro hw
+        simp only [Finset.mem_biUnion, Finset.mem_univ, true_and] at hw
+        rcases hw with ⟨i, _⟩
+        exact Fin.elim0 (Fin.cast hn i)
+      · intro hw
+        simp at hw
+    have hcontract : CanonicalPacketPortContract
+        (canonicalPacketFamily native)
+        (Chvatal.downSet (wireSets (flowSizes7 d hd) t b.parent)
+          (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t)
+          (b.x % 64)) stageV := by
+      apply canonicalPacketFamily_contract native _ stageV
+      refine ⟨?_, ?_, ?_, ?_⟩
+      · intro i
+        exact Fin.elim0 (Fin.cast hn i)
+      · have hs :
+          Chvatal.downSet (wireSets (flowSizes7 d hd) t b.parent)
+            (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t)
+            (b.x % 64) = ∅ := by
+          simpa [q, j, KBag.parent_l] using hsupportEmpty
+        exact hunion.trans hs.symm
+      · intro i i' _
+        exact Fin.elim0 (Fin.cast hn i)
+      · intro i
+        exact Fin.elim0 (Fin.cast hn i)
+    exact ⟨canonicalPacketFamily native, hcontract⟩
+  · have hdown : 0 < flowDown7 d hd q.l t := by
+      simpa [q, KBag.parent_l] using Nat.pos_of_ne_zero hzero
+    by_cases hbad : HalfMisaligned (flowUp7 d hd q.l t)
+    · let native : Unit ⊕ Fin (flowDown7 d hd q.l t / 64 - 1) →
+          Finset (Fin (64 ^ d)) :=
+        fun i => downSetRepairPacket (wireSets (flowSizes7 d hd) t q)
+          (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j
+          (flowDown7 d hd q.l t / 64 - 1) i
+      have hfam := flowA7_sourcePortRepairStage_downCutFamily
+        hd t ht2 ht q hdown hbad v hpack
+      have hcontract : CanonicalPacketPortContract
+          (canonicalPacketFamily native)
+          (Chvatal.downSet (wireSets (flowSizes7 d hd) t b.parent)
+            (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t)
+            (b.x % 64)) stageV := by
+        apply canonicalPacketFamily_contract native _ stageV
+        simpa [native, q, j, KBag.parent_l] using hfam j
+      exact ⟨canonicalPacketFamily native, hcontract⟩
+    · let native : Fin (flowDown7 d hd q.l t / 64) →
+          Finset (Fin (64 ^ d)) :=
+        fun i => alignedDownRepairPacket (wireSets (flowSizes7 d hd) t q)
+          (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j
+          (flowDown7 d hd q.l t / 64) i
+      have hfam := flowA7_sourcePortRepairStage_alignedDownCutFamily
+        hd t ht2 ht q hdown hbad v hpack
+      have hcontract : CanonicalPacketPortContract
+          (canonicalPacketFamily native)
+          (Chvatal.downSet (wireSets (flowSizes7 d hd) t b.parent)
+            (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t)
+            (b.x % 64)) stageV := by
+        apply canonicalPacketFamily_contract native _ stageV
+        simpa [native, q, j, KBag.parent_l] using hfam j
+      exact ⟨canonicalPacketFamily native, hcontract⟩
+
+/-- Canonical packet families for all 64 child up-ports, covering zero-flow,
+aligned positive-flow, and endpoint-repaired positive-flow cases. -/
+theorem flowA7_receiver_childPorts_canonical {d : Nat} {α : Type}
+    [LinearOrder α]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hchildLevel : b.l < d)
+    (v : Fin (64 ^ d) → α)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v) :
+    ∃ childCount : Nat,
+    ∃ child : Fin 64 → Fin childCount → Finset (Fin (64 ^ d)),
+      ∀ j, CanonicalPacketPortContract ⟨childCount, child j⟩
+        (Chvatal.upSet (wireSets (flowSizes7 d hd) t
+          (b.child j.val j.isLt hchildLevel)) (flowUp7 d hd (b.l + 1) t))
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) := by
+  let stageV := (flowA7_sourcePortRepairStage hd t ht2 ht).exec v
+  by_cases hzero : flowDown7 d hd (b.l + 1) t = 0
+  · let childCount := (flowSizes7 d hd).a (b.l + 1) t / 64
+    let native (j : Fin 64) : Fin childCount → Finset (Fin (64 ^ d)) :=
+      fun k => rankPacketCell
+        (wireSets (flowSizes7 d hd) t (b.child j.val j.isLt hchildLevel)) 0 k
+    let child : Fin 64 → Fin (Fintype.card (Fin childCount)) →
+        Finset (Fin (64 ^ d)) :=
+      fun j => (canonicalPacketFamily (native j)).packet
+    refine ⟨Fintype.card (Fin childCount), child, ?_⟩
+    intro j
+    have hzeroChild : flowDown7 d hd
+        (b.child j.val j.isLt hchildLevel).l t = 0 := by
+      simpa [KBag.child_l] using hzero
+    have hfam := flowA7_sourcePortRepairStage_zeroDownUpFamily
+      hd t ht2 ht (b.child j.val j.isLt hchildLevel) hzeroChild v
+      (hpack (b.child j.val j.isLt hchildLevel))
+    have hcontract := canonicalPacketFamily_contract (native j)
+      (Chvatal.upSet (wireSets (flowSizes7 d hd) t
+        (b.child j.val j.isLt hchildLevel)) (flowUp7 d hd (b.l + 1) t))
+      stageV (by simpa [native, childCount, KBag.child_l] using hfam)
+    change CanonicalPacketPortContract (canonicalPacketFamily (native j)) _ stageV
+    exact hcontract
+  · have hdown : 0 < flowDown7 d hd (b.l + 1) t := Nat.pos_of_ne_zero hzero
+    by_cases hbad : HalfMisaligned (flowUp7 d hd (b.l + 1) t)
+    · let q := (flowUp7 d hd (b.l + 1) t / 2) / 64
+      let κ := Unit ⊕ (Fin q ⊕ Fin q)
+      let native (j : Fin 64) : κ → Finset (Fin (64 ^ d)) :=
+        fun k => upSetRepairPacket
+          (wireSets (flowSizes7 d hd) t (b.child j.val j.isLt hchildLevel))
+          (flowUp7 d hd (b.l + 1) t) q k
+      let child : Fin 64 → Fin (Fintype.card κ) →
+          Finset (Fin (64 ^ d)) :=
+        fun j => (canonicalPacketFamily (native j)).packet
+      refine ⟨Fintype.card κ, child, ?_⟩
+      intro j
+      have hdownChild : 0 < flowDown7 d hd
+          (b.child j.val j.isLt hchildLevel).l t := by
+        simpa [KBag.child_l] using hdown
+      have hfam := flowA7_sourcePortRepairStage_upSetFamily
+        hd t ht2 ht (b.child j.val j.isLt hchildLevel) hdownChild hbad v
+        (hpack (b.child j.val j.isLt hchildLevel))
+      have hcontract := canonicalPacketFamily_contract (native j)
+        (Chvatal.upSet (wireSets (flowSizes7 d hd) t
+          (b.child j.val j.isLt hchildLevel)) (flowUp7 d hd (b.l + 1) t))
+        stageV (by simpa [native, q, κ, KBag.child_l] using hfam)
+      change CanonicalPacketPortContract (canonicalPacketFamily (native j)) _ stageV
+      exact hcontract
+    · let q := (flowUp7 d hd (b.l + 1) t / 2) / 64
+      let κ := Fin q ⊕ Fin q
+      let native (j : Fin 64) : κ → Finset (Fin (64 ^ d)) :=
+        fun k => alignedUpRepairPacket
+          (wireSets (flowSizes7 d hd) t (b.child j.val j.isLt hchildLevel))
+          (flowUp7 d hd (b.l + 1) t) q k
+      let child : Fin 64 → Fin (Fintype.card κ) →
+          Finset (Fin (64 ^ d)) :=
+        fun j => (canonicalPacketFamily (native j)).packet
+      refine ⟨Fintype.card κ, child, ?_⟩
+      intro j
+      have hdownChild : 0 < flowDown7 d hd
+          (b.child j.val j.isLt hchildLevel).l t := by
+        simpa [KBag.child_l] using hdown
+      have hnotbad : ¬ HalfMisaligned
+          (flowUp7 d hd (b.child j.val j.isLt hchildLevel).l t) := by
+        simpa [KBag.child_l] using hbad
+      have hfam := flowA7_sourcePortRepairStage_alignedUpFamily
+        hd t ht2 ht (b.child j.val j.isLt hchildLevel) hdownChild hnotbad v
+        (hpack (b.child j.val j.isLt hchildLevel))
+      have hcontract := canonicalPacketFamily_contract (native j)
+        (Chvatal.upSet (wireSets (flowSizes7 d hd) t
+          (b.child j.val j.isLt hchildLevel)) (flowUp7 d hd (b.l + 1) t))
+        stageV (by simpa [native, q, κ, KBag.child_l] using hfam)
+      change CanonicalPacketPortContract (canonicalPacketFamily (native j)) _ stageV
+      exact hcontract
+
+/-- Complete local receiver induction step, with every zero/aligned/repaired
+parent and child case handled by the canonical port selectors. The output is
+again one canonical sorted 64-wire packet partition of the actual next
+`WireFlow` register. -/
+theorem flowA7_receiver_allCases_canonical {d : Nat} {α : Type}
+    [LinearOrder α]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchildLevel : b.l < d)
+    (v : Fin (64 ^ d) → α)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v) :
+    ∃ receiver : CanonicalPacketFamily (64 ^ d),
+      CanonicalPacketPortContract receiver
+        (wireSets (flowSizes7 d hd) (t + 1) b)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) := by
+  obtain ⟨parent, hparent⟩ := flowA7_receiver_parentPort_canonical
+    hd t ht2 ht b v (hpack b.parent)
+  obtain ⟨childCount, child, hchildren⟩ := flowA7_receiver_childPorts_canonical
+    hd t ht2 ht b hchildLevel v hpack
+  exact ⟨canonicalPacketFamily (receiverPacketFamily parent.packet child),
+    flowA7_receiver_packetAssembly_canonical hd t ht b hb hchildLevel
+      parent childCount child ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+      hparent hchildren⟩
 
 /-- Boundary adapter for a receiver whose parent down-flow is zero. The
 parent port is the empty family; any checked partition of the 64 child
