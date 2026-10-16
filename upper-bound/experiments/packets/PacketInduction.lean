@@ -270,4 +270,212 @@ theorem genIndexedPacketRound_unmatched_unchanged {m N : Nat} {α : Type}
   exact genPacketRound_exec_outside supports hsupportsNodup hsupportsDisjoint
     (packets i k) houtside v
 
+/-- Combine the dealt outputs of a partial matching with its untouched
+singleton packets. -/
+def genIndexedPacketRoundOutputWithSingletons {m N : Nat}
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges : List (Fin m × Fin m))
+    (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2)
+    (singles : List (Fin m)) : List (Fin 64 ↪ Fin N) :=
+  genIndexedPacketRoundOutput packets hpacketDisjoint edges hnoFixed ++
+    singles.map packets
+
+/-- A partial matching together with a pairwise-disjoint list of untouched
+singletons gives a sorted, pairwise-disjoint packet family covering precisely
+the input packet support, provided every input ID is either matched or listed
+as a singleton. -/
+theorem genIndexedPacketRound_withSingletons_contract {m N : Nat} {α : Type}
+    [LinearOrder α]
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges : List (Fin m × Fin m)) (hedges : edges.Nodup)
+    (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2)
+    (hvertexDisjoint : ∀ e ∈ edges, ∀ f ∈ edges, e ≠ f →
+      e.1 ≠ f.1 ∧ e.1 ≠ f.2 ∧ e.2 ≠ f.1 ∧ e.2 ≠ f.2)
+    (singles : List (Fin m))
+    (hsingleDisjoint : List.Pairwise
+      (fun i j => ∀ x y, packets i x ≠ packets j y) singles)
+    (hfree : ∀ i ∈ singles, ∀ e ∈ edges, e.1 ≠ i ∧ e.2 ≠ i)
+    (hcover : ∀ i, (∃ e ∈ edges, e.1 = i ∨ e.2 = i) ∨ i ∈ singles)
+    (v : Fin N → α)
+    (hsorted : ∀ i, Monotone (fun k => v (packets i k))) :
+    (∀ p ∈ genIndexedPacketRoundOutputWithSingletons packets hpacketDisjoint
+        edges hnoFixed singles,
+      Monotone (fun k =>
+        (genIndexedPacketRound packets hpacketDisjoint edges hnoFixed).exec v
+          (p k))) ∧
+    List.Pairwise (fun p q : Fin 64 ↪ Fin N => ∀ x y, p x ≠ q y)
+      (genIndexedPacketRoundOutputWithSingletons packets hpacketDisjoint
+        edges hnoFixed singles) ∧
+    (∀ w, (∃ p ∈ genIndexedPacketRoundOutputWithSingletons packets
+        hpacketDisjoint edges hnoFixed singles, w ∈ Set.range p) ↔
+      ∃ i, w ∈ Set.range (packets i)) := by
+  let output := genIndexedPacketRoundOutput packets hpacketDisjoint edges hnoFixed
+  let family := genIndexedPacketRoundOutputWithSingletons packets hpacketDisjoint
+    edges hnoFixed singles
+  have hsortedMatched : ∀ p ∈ output,
+      Monotone (fun k =>
+        (genIndexedPacketRound packets hpacketDisjoint edges hnoFixed).exec v
+          (p k)) := by
+    intro p hp
+    exact genIndexedPacketRound_output_sorted packets hpacketDisjoint edges hedges
+      hnoFixed hvertexDisjoint v hsorted p hp
+  have hsortedFamily : ∀ p ∈ family,
+      Monotone (fun k =>
+        (genIndexedPacketRound packets hpacketDisjoint edges hnoFixed).exec v
+          (p k)) := by
+    intro p hp
+    simp only [family, genIndexedPacketRoundOutputWithSingletons,
+      List.mem_append] at hp
+    rcases hp with hp | hp
+    · exact hsortedMatched p hp
+    · simp only [List.mem_map] at hp
+      obtain ⟨i, hi, rfl⟩ := hp
+      intro a b hab
+      change (genIndexedPacketRound packets hpacketDisjoint edges hnoFixed).exec v
+          (packets i a) ≤
+        (genIndexedPacketRound packets hpacketDisjoint edges hnoFixed).exec v
+          (packets i b)
+      rw [genIndexedPacketRound_unmatched_unchanged packets hpacketDisjoint edges
+        hedges hnoFixed hvertexDisjoint i (fun e he => hfree i hi e he) v a,
+        genIndexedPacketRound_unmatched_unchanged packets hpacketDisjoint edges
+        hedges hnoFixed hvertexDisjoint i (fun e he => hfree i hi e he) v b]
+      exact hsorted i hab
+  have hmatchedDisjoint : List.Pairwise
+      (fun p q : Fin 64 ↪ Fin N => ∀ x y, p x ≠ q y) output := by
+    exact genIndexedPacketRound_output_disjoint packets hpacketDisjoint edges hedges
+      hnoFixed hvertexDisjoint
+  have hsingleOutputDisjoint : List.Pairwise
+      (fun p q : Fin 64 ↪ Fin N => ∀ x y, p x ≠ q y) (singles.map packets) := by
+    rw [List.pairwise_map]
+    exact hsingleDisjoint
+  have hcross : ∀ p ∈ output, ∀ q ∈ singles.map packets,
+      ∀ x y, p x ≠ q y := by
+    intro p hp q hq x y heq
+    simp only [List.mem_map] at hq
+    obtain ⟨i, hi, rfl⟩ := hq
+    have hincident :=
+      (genIndexedPacketRound_output_support_incident packets hpacketDisjoint
+        edges hnoFixed (p x)).1 ⟨p, hp, ⟨x, rfl⟩⟩
+    rcases hincident with ⟨e, he, hleft | hright⟩
+    · obtain ⟨j, hj⟩ := hleft
+      exact hpacketDisjoint e.1 i (hfree i hi e he).1 j y (hj.trans heq)
+    · obtain ⟨j, hj⟩ := hright
+      exact hpacketDisjoint e.2 i (hfree i hi e he).2 j y (hj.trans heq)
+  have hfamilyDisjoint : List.Pairwise
+      (fun p q : Fin 64 ↪ Fin N => ∀ x y, p x ≠ q y) family := by
+    change List.Pairwise (fun p q : Fin 64 ↪ Fin N => ∀ x y, p x ≠ q y)
+      (output ++ singles.map packets)
+    rw [List.pairwise_append]
+    exact ⟨hmatchedDisjoint, hsingleOutputDisjoint, hcross⟩
+  have hfamilySupport : ∀ w,
+      (∃ p ∈ family, w ∈ Set.range p) ↔ ∃ i, w ∈ Set.range (packets i) := by
+    intro w
+    simp only [family, genIndexedPacketRoundOutputWithSingletons,
+      List.mem_append]
+    constructor
+    · rintro ⟨p, hp | hp, hw⟩
+      · obtain ⟨e, he, hside⟩ :=
+          (genIndexedPacketRound_output_support_incident packets hpacketDisjoint
+            edges hnoFixed w).1 ⟨p, hp, hw⟩
+        rcases hside with hleft | hright
+        · exact ⟨e.1, hleft⟩
+        · exact ⟨e.2, hright⟩
+      · simp only [List.mem_map] at hp
+        obtain ⟨i, hi, rfl⟩ := hp
+        exact ⟨i, hw⟩
+    · rintro ⟨i, hi⟩
+      rcases hcover i with hincident | hsingle
+      · have hout :=
+          (genIndexedPacketRound_output_support_incident packets hpacketDisjoint
+            edges hnoFixed w).2 (by
+              obtain ⟨e, he, hside⟩ := hincident
+              exact ⟨e, he, hside.elim (fun h => Or.inl (h ▸ hi))
+                (fun h => Or.inr (h ▸ hi))⟩)
+        rcases hout with ⟨p, hp, hw⟩
+        exact ⟨p, Or.inl hp, hw⟩
+      · refine ⟨packets i, Or.inr ?_, hi⟩
+        simp only [List.mem_map]
+        exact ⟨i, hsingle, rfl⟩
+  exact ⟨hsortedFamily, hfamilyDisjoint, hfamilySupport⟩
+
+/-- Canonicalize the full output family of a partial matching round, including
+unmatched singletons. This makes a partial matching round composable with the
+next indexed round without losing packet coverage. -/
+theorem genIndexedPacketRound_withSingletons_canonicalOutput {m N : Nat}
+    {α : Type} [LinearOrder α]
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges : List (Fin m × Fin m)) (hedges : edges.Nodup)
+    (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2)
+    (hvertexDisjoint : ∀ e ∈ edges, ∀ f ∈ edges, e ≠ f →
+      e.1 ≠ f.1 ∧ e.1 ≠ f.2 ∧ e.2 ≠ f.1 ∧ e.2 ≠ f.2)
+    (singles : List (Fin m))
+    (hsingleDisjoint : List.Pairwise
+      (fun i j => ∀ x y, packets i x ≠ packets j y) singles)
+    (hfree : ∀ i ∈ singles, ∀ e ∈ edges, e.1 ≠ i ∧ e.2 ≠ i)
+    (hcover : ∀ i, (∃ e ∈ edges, e.1 = i ∨ e.2 = i) ∨ i ∈ singles)
+    (v : Fin N → α)
+    (hsorted : ∀ i, Monotone (fun k => v (packets i k))) :
+    ∃ nextCount : Nat, ∃ next : Fin nextCount → Fin 64 ↪ Fin N,
+      (∀ i, Monotone (fun k =>
+        (genIndexedPacketRound packets hpacketDisjoint edges hnoFixed).exec v
+          (next i k))) ∧
+      (∀ i i', i ≠ i' → ∀ x y, next i x ≠ next i' y) ∧
+      Finset.univ.biUnion (fun i => packetEmbeddingSupport (next i)) =
+        Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) ∧
+      (genIndexedPacketRound packets hpacketDisjoint edges hnoFixed).depth ≤ 7 := by
+  let output := genIndexedPacketRoundOutputWithSingletons packets hpacketDisjoint
+    edges hnoFixed singles
+  have hcontract := genIndexedPacketRound_withSingletons_contract packets
+    hpacketDisjoint edges hedges hnoFixed hvertexDisjoint singles hsingleDisjoint
+    hfree hcover v hsorted
+  let next : Fin output.length → Fin 64 ↪ Fin N := fun i => output.get i
+  have hsortedOut : ∀ i, Monotone (fun k =>
+      (genIndexedPacketRound packets hpacketDisjoint edges hnoFixed).exec v
+        (next i k)) := by
+    intro i
+    exact hcontract.1 (output.get i) (List.get_mem output i)
+  have hdisjointOut : ∀ i i', i ≠ i' → ∀ x y, next i x ≠ next i' y := by
+    intro i i' hne x y
+    rcases lt_or_gt_of_ne hne with hlt | hgt
+    · exact hcontract.2.1.rel_get_of_lt hlt x y
+    · exact (hcontract.2.1.rel_get_of_lt hgt y x).symm
+  have hsupportOut : Finset.univ.biUnion
+      (fun i => packetEmbeddingSupport (next i)) =
+      Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) := by
+    ext w
+    have hout : w ∈ Finset.univ.biUnion
+        (fun i => packetEmbeddingSupport (next i)) ↔
+        ∃ p ∈ output, w ∈ Set.range p := by
+      simp only [Finset.mem_biUnion, Finset.mem_univ, true_and]
+      constructor
+      · rintro ⟨i, hi⟩
+        exact ⟨output.get i, List.get_mem output i,
+          (packetEmbeddingSupport_mem_iff _ _).mp hi⟩
+      · rintro ⟨p, hp, hw⟩
+        obtain ⟨i, hi⟩ :=
+          (List.exists_mem_iff_get (l := output) (p := fun x => x = p)).mp
+            ⟨p, hp, rfl⟩
+        refine ⟨i, ?_⟩
+        change w ∈ packetEmbeddingSupport (output.get i)
+        rw [packetEmbeddingSupport_mem_iff, hi]
+        exact hw
+    have hin : w ∈ Finset.univ.biUnion
+        (fun i => packetEmbeddingSupport (packets i)) ↔
+        ∃ i, w ∈ Set.range (packets i) := by
+      simp only [Finset.mem_biUnion, Finset.mem_univ, true_and]
+      constructor
+      · rintro ⟨i, hi⟩
+        exact ⟨i, (packetEmbeddingSupport_mem_iff _ _).mp hi⟩
+      · rintro ⟨i, hi⟩
+        exact ⟨i, (packetEmbeddingSupport_mem_iff _ _).mpr hi⟩
+    rw [hout, hcontract.2.2 w, hin]
+  have hdepth :
+      (genIndexedPacketRound packets hpacketDisjoint edges hnoFixed).depth ≤ 7 :=
+    genIndexedPacketRound_depth_le packets hpacketDisjoint edges hedges hnoFixed
+      hvertexDisjoint
+  exact ⟨output.length, next, hsortedOut, hdisjointOut, hsupportOut, hdepth⟩
+
 end Chvatal.PacketAlignment
