@@ -206,6 +206,15 @@ tail bounded and sparse, but does not yet prove that its sorting/rebinning cost
 fits the depth budget or that its error can be absorbed by the global
 recurrence.
 
+Padding the 63-run tail to 64 runs with sentinel wires and then deleting those
+wires is not automatically valid. The generic wire-deletion rule fails even
+for the 3-wire sorting network `(0,1),(1,2),(0,1)`: deleting its middle wire
+and incident comparators leaves no comparator on the two remaining wires.
+The 63-run case therefore needs an actual unequal-run merge construction (or
+a proved projection theorem tailored to the 64-run merge tree), with depth at
+most 57. This is the next local network gate before charging the tail in the
+global recurrence.
+
 The alternating two-chain microcase has now been screened separately. On the
 128-wire support word `AB` repeated 64 times, `alternating_chain_screen.py`
 produces an explicit 14-layer comparator network that sorts every one of the
