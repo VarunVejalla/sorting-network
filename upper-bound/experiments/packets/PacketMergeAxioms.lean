@@ -1,5 +1,6 @@
 import PacketRepair64
 import PacketGenMerge
+import PacketInduction
 import PacketRebinning
 import PacketHalfProfile
 
@@ -894,6 +895,10 @@ import PacketHalfProfile
 /-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_canonical' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_canonical
+
+/-- info: 'Chvatal.PacketAlignment.genIndexedPacketRound_canonicalOutput' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genIndexedPacketRound_canonicalOutput
 
 /-- info: 'Chvatal.PacketAlignment.flowA7_receiver_repairedParent_alignedChildren_packetAssembly' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
