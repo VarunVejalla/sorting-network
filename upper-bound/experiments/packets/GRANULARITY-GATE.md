@@ -138,3 +138,25 @@ has no port-count factor. The destination-target identification and the
 multi-run merge/deal contraction are still open.
 
 Dynamic receiver target (2026-10-15): the checked `wireFlowLayer_reencoded_profile_recurrence` chooses the selected interval-mean sum as the next target profile for every active receiver and every threshold. It proves the codes remain monotone and within receiver capacity, and the summed actual register error is charged to source coarse errors exactly once. Thus target identification is no longer a mismatch with a preselected target; the remaining main gap is proving sortedness of the source registers at each cycle and proving the reassembly/mixing contraction for the resulting dynamic profile.
+
+## Exact 128-wire phase baseline
+
+The checked physical-half formula and parity-count theorem determine the exact
+energy transfer for each Boolean threshold. If a fully merged 128-wire block
+has `H` ones, its physical half-counts are
+`a=min(64,max(0,H-64))` and `b=min(64,H)`. The doubled centered energy of
+these two counts is
+
+```text
+(2a-H)^2 + (2b-H)^2 = 2 * min(H,128-H)^2.
+```
+
+The logical even/odd dealt counts are `floor(H/2)` and `ceil(H/2)`, whose
+doubled centered energy is 0 for even `H` and 2 for odd `H`. In particular,
+at `H=64`, logical energy is zero while physical energy is 8192 in this
+normalization. A recurrence that changes between logical packet counts and
+physical rank-cell counts must subtract this deterministic, `H`-dependent
+baseline before comparing errors. The identity is an immediate arithmetic
+consequence of the checked count formulas; it is a candidate phase-specific
+potential, not a contraction theorem for the 4096-wire stages or scheduler
+reassembly.
