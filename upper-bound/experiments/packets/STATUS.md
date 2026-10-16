@@ -344,3 +344,30 @@ exact packet-count factorization and isolates the bounded exception to the
 64-run merge-tree tiling. The new claims are guarded in `PacketMergeAxioms.lean`.
 They do not yet sort the tail or bound its contribution in the coupled rank and
 variance recurrence. See `GRANULARITY-GATE.md`.
+
+Unequal-run tail construction screen (Codex / GPT-6-astra-high, 2026-10-16):
+`unequal_run_merge_screen.py` implements recursive odd/even merging for
+arbitrary two sorted-run lengths. It passes all Boolean threshold cuts for all
+run lengths 1 through 16, plus the actual first two tail pairs (128+64 and
+256+192 wires). For the five unequal pairs in the 63-run tree, computed depths
+are exactly 8, 9, 10, 11, and 12; with the initial 7-layer pair-merge level,
+the 63-run merge tree fits 57 layers. This is still finite computation, not a
+Lean correctness theorem. The formal obligation is the unequal-lane
+correction-layer invariant for the recursive network.
+
+Unequal correction formal step (Codex / GPT-6-astra-high, 2026-10-16):
+`PacketUnequalMerge.lean` now includes the unequal `(L,L-1)` min/max
+correction formula and proves its output is monotone from the lane monotonicity,
+same-rank ordering, and two-position cross-rank bound. It also defines the
+intended disjoint comparator layer and proves its depth is at most one. Both
+claims are guarded in `PacketMergeAxioms.lean`; the focused chain from
+`PacketUnequalMerge` through `PacketMergeAxioms` passes. The odd and even
+comparator endpoints are now proved to execute the corresponding min/max
+outputs on the interleaved lanes. `unequal_cross_bounds_of_threshold_gap`
+proves that sorted lane profiles with threshold-count difference at most one
+imply the exact same-rank and two-position inequalities needed by that layer.
+The full pointwise execution-equality theorem, including the untouched first
+wire, is also proved. `unequalCorrectionLayer_sorts_of_threshold_gap` now
+packages the correction proof as a sorting theorem for the concrete layer.
+The recursive submerge threshold-count invariant is the remaining mathematical
+gap; this closes the local correction interface only, not the 63-run merge.

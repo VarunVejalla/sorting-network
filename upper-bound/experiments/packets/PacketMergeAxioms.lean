@@ -3,6 +3,7 @@ import PacketGenMerge
 import PacketInduction
 import PacketRebinning
 import PacketHalfProfile
+import PacketUnequalMerge
 
 /-- info: 'Chvatal.PacketAlignment.parallelDownSetEndpointRepair_exists' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
@@ -983,3 +984,47 @@ import PacketHalfProfile
 /-- info: 'Chvatal.PacketAlignment.flowA7_packet_tail_fraction_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_packet_tail_fraction_le
+
+/-- info: 'Chvatal.PacketAlignment.unequalCorrectedInterleave_sorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalCorrectedInterleave_sorted
+
+/-- info: 'Chvatal.PacketAlignment.unequalCorrectionLayer_parallel' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalCorrectionLayer_parallel
+
+/-- info: 'Chvatal.PacketAlignment.unequalCorrectionLayer_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalCorrectionLayer_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.unequalInterleave_odd' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalInterleave_odd
+
+/-- info: 'Chvatal.PacketAlignment.unequalInterleave_even_succ' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalInterleave_even_succ
+
+/-- info: 'Chvatal.PacketAlignment.unequalCorrectionLayer_exec_odd' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalCorrectionLayer_exec_odd
+
+/-- info: 'Chvatal.PacketAlignment.unequalCorrectionLayer_exec_even' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalCorrectionLayer_exec_even
+
+/-- info: 'Chvatal.PacketAlignment.unequal_cross_bounds_of_threshold_gap' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequal_cross_bounds_of_threshold_gap
+
+/-- info: 'Chvatal.PacketAlignment.unequalCorrectionLayer_exec_first' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalCorrectionLayer_exec_first
+
+/-- info: 'Chvatal.PacketAlignment.unequalCorrectionLayer_exec_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalCorrectionLayer_exec_eq
+
+/-- info: 'Chvatal.PacketAlignment.unequalCorrectionLayer_sorts_of_threshold_gap' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalCorrectionLayer_sorts_of_threshold_gap

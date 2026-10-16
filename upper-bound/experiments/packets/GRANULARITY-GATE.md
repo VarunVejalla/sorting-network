@@ -215,6 +215,43 @@ a proved projection theorem tailored to the 64-run merge tree), with depth at
 most 57. This is the next local network gate before charging the tail in the
 global recurrence.
 
+There is a sharper candidate than a separate tail cleanup. Merge the 63 runs
+in a balanced tree while carrying the lone odd run forward. The unequal merge
+at successive levels has run lengths `(128,64)`, `(256,192)`, `(512,448)`,
+`(1024,960)`, and `(2048,1984)` wires. These are exactly
+`(64·2^j, 64·(2^j−1))` for `j=1,...,5`. If such sorted runs can be merged in
+depth at most `j+7 = ceil(log₂(64·(2^(j+1)−1)))`, each level costs the same
+as its equal-run merges: respectively 8, 9, 10, 11, and 12 layers. The initial
+64+64 merges cost 7, so the complete 63-run tree also costs exactly
+`7+8+9+10+11+12 = 57` layers. This reduces the missing theorem to an explicit
+family of unequal-run mergers, rather than a general incomplete-tree cleanup.
+
+A likely proof construction for that family is a recursive odd/even split:
+merge the even-index subsequences and odd-index subsequences in parallel, then
+compare each odd output with the following even output. For lengths
+`(2^q,2^q−1)`, the even subproblem has equal run lengths and the odd subproblem
+has the same unequal form; the Boolean count gap is at most one because the
+odd-length input run contributes one more even-index position. Six further
+parity splits handle the common factor 64 in the required wire lengths. The
+local correction obligation is now partly formalized in
+`PacketUnequalMerge.lean`: its one-layer comparator pairs are disjoint and
+have depth at most one, and the min/max interleave is proved sorted under the
+same-rank and two-position cross-rank inequalities. The full execution of the
+concrete correction layer is proved equal to that min/max interleave, including
+the untouched first wire. The new `unequal_cross_bounds_of_threshold_gap`
+theorem also derives the required cross-rank inequalities from sorted lanes
+whose value-threshold counts differ by at most one. The remaining local proof
+gap is establishing that count profile for the recursive submerges. The
+`unequalCorrectionLayer_sorts_of_threshold_gap` theorem packages this as a
+sorting theorem for the concrete comparator layer. The proposed recursion is
+implemented in `unequal_run_merge_screen.py`. Exhaustive threshold-state checks pass for all
+run lengths 1 through 16, and separately for the first two scheduled unequal
+pairs, 128+64 and 256+192 wires. The generated networks have depths 8, 9, 10,
+11, and 12 on the five scheduled pairs. These finite checks support the
+construction but do not prove the general merge theorem. The next formal step
+is to prove the recursive threshold-count invariant and a depth theorem for
+the unequal merger family.
+
 The alternating two-chain microcase has now been screened separately. On the
 128-wire support word `AB` repeated 64 times, `alternating_chain_screen.py`
 produces an explicit 14-layer comparator network that sorts every one of the
