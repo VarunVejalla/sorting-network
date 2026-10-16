@@ -778,6 +778,127 @@ private theorem genDepth_flatMap_disjoint {N : Nat} {ι : Type*}
         (ih (fun y hy => hD y (List.mem_cons_of_mem x hy))
           (List.pairwise_cons.mp hdis).2))
 
+/-- Scatter one fixed local network independently onto a finite family of
+pairwise disjoint supports. The resulting comparator list is sequentially
+stored, but disjointness makes its generalized-network depth the local depth. -/
+def genScatterBatch {M N : Nat} (net : ComparatorNetwork M)
+    (supports : List (Fin M ↪ Fin N)) : GenNetwork N :=
+  ⟨supports.flatMap fun e => (genScatter net e).comparators⟩
+
+@[simp] theorem genScatterBatch_cons {M N : Nat} (net : ComparatorNetwork M)
+    (e : Fin M ↪ Fin N) (supports : List (Fin M ↪ Fin N)) :
+    genScatterBatch net (e :: supports) =
+      ⟨(genScatter net e).comparators ++
+        (genScatterBatch net supports).comparators⟩ := rfl
+
+theorem genScatterBatch_depth_le {M N : Nat} (net : ComparatorNetwork M)
+    (supports : List (Fin M ↪ Fin N)) (hnd : supports.Nodup)
+    (hdis : ∀ e ∈ supports, ∀ f ∈ supports, e ≠ f → ∀ i j, e i ≠ f j) :
+    (genScatterBatch net supports).depth ≤ net.depth := by
+  have hchunks : supports.Pairwise (fun e f =>
+      ∀ c ∈ (genScatter net e).comparators,
+        ∀ d ∈ (genScatter net f).comparators,
+          c.a ≠ d.a ∧ c.a ≠ d.b ∧ c.b ≠ d.a ∧ c.b ≠ d.b) := by
+    have haux : ∀ (es : List (Fin M ↪ Fin N)), es.Nodup →
+        (∀ e ∈ es, ∀ f ∈ es, e ≠ f → ∀ i j, e i ≠ f j) →
+        es.Pairwise (fun e f =>
+          ∀ c ∈ (genScatter net e).comparators,
+            ∀ d ∈ (genScatter net f).comparators,
+              c.a ≠ d.a ∧ c.a ≠ d.b ∧ c.b ≠ d.a ∧ c.b ≠ d.b) := by
+      intro es
+      induction es with
+      | nil => intro _ _; simp
+      | cons e es ih =>
+          intro hnd' hdis'
+          have hnd'' := List.nodup_cons.mp hnd'
+          have hdisTail : ∀ a ∈ es, ∀ b ∈ es, a ≠ b → ∀ i j, a i ≠ b j := by
+            intro a ha b hb hne i j
+            exact hdis' a (List.mem_cons_of_mem e ha) b
+              (List.mem_cons_of_mem e hb) hne i j
+          refine List.pairwise_cons.mpr ⟨?_, ih hnd''.2 hdisTail⟩
+          intro f hf c hc d hd
+          have hef : e ≠ f := by
+            intro heq
+            subst f
+            exact hnd''.1 hf
+          have hwire := hdis' e (by simp) f (List.mem_cons_of_mem e hf) hef
+          change c ∈ net.comparators.map (genScatterComparator e) at hc
+          change d ∈ net.comparators.map (genScatterComparator f) at hd
+          obtain ⟨c₀, _, rfl⟩ := List.mem_map.mp hc
+          obtain ⟨d₀, _, rfl⟩ := List.mem_map.mp hd
+          refine ⟨?_, ?_, ?_, ?_⟩
+          · simpa [genScatterComparator] using hwire c₀.i d₀.i
+          · simpa [genScatterComparator] using hwire c₀.i d₀.j
+          · simpa [genScatterComparator] using hwire c₀.j d₀.i
+          · simpa [genScatterComparator] using hwire c₀.j d₀.j
+    exact haux supports hnd hdis
+  have hbound : ∀ e ∈ supports,
+      (⟨(genScatter net e).comparators⟩ : GenNetwork N).depth ≤ net.depth := by
+    intro e he
+    rw [genScatter_depth]
+  exact genDepth_flatMap_disjoint supports
+    (fun e => (genScatter net e).comparators) net.depth hbound hchunks
+
+theorem genScatterBatch_exec_outside {M N : Nat} {α : Type} [LinearOrder α]
+    (net : ComparatorNetwork M) (supports : List (Fin M ↪ Fin N))
+    (w : Fin N) (hw : ∀ e ∈ supports, w ∉ Set.range e) (v : Fin N → α) :
+    (genScatterBatch net supports).exec v w = v w := by
+  induction supports generalizing v with
+  | nil => rfl
+  | cons e es ih =>
+      have hwHead : w ∉ Set.range e := hw e (by simp)
+      have hwTail : ∀ f ∈ es, w ∉ Set.range f := by
+        intro f hf
+        exact hw f (List.mem_cons_of_mem e hf)
+      rw [genScatterBatch_cons, genNetwork_exec_append]
+      rw [ih hwTail ((genScatter net e).exec v)]
+      exact genScatter_exec_outside net e v w hwHead
+
+/-- On each member support, a batch acts exactly as that support's local
+network. Other batch members cannot alter its inputs or outputs. -/
+theorem genScatterBatch_exec_inside {M N : Nat} {α : Type} [LinearOrder α]
+    (net : ComparatorNetwork M) (supports : List (Fin M ↪ Fin N))
+    (hnd : supports.Nodup)
+    (hdis : ∀ e ∈ supports, ∀ f ∈ supports, e ≠ f → ∀ i j, e i ≠ f j)
+    (v : Fin N → α) (e : Fin M ↪ Fin N) (he : e ∈ supports) (i : Fin M) :
+    (genScatterBatch net supports).exec v (e i) =
+      (genScatter net e).exec v (e i) := by
+  induction supports generalizing v with
+  | nil => simp at he
+  | cons f fs ih =>
+      have hnd' := List.nodup_cons.mp hnd
+      by_cases hef : e = f
+      · subst e
+        have hwTail : ∀ g ∈ fs, f i ∉ Set.range g := by
+          intro g hg hmem
+          obtain ⟨j, hj⟩ := hmem
+          have hfg : f ≠ g := by
+            intro h
+            exact hnd'.1 (h ▸ hg)
+          exact (hdis f (by simp) g (List.mem_cons_of_mem f hg) hfg i j) hj.symm
+        have hdisTail : ∀ g ∈ fs, ∀ h ∈ fs, g ≠ h → ∀ a b, g a ≠ h b := by
+          intro g hg h hh hne
+          exact hdis g (List.mem_cons_of_mem f hg) h
+            (List.mem_cons_of_mem f hh) hne
+        rw [genScatterBatch_cons, genNetwork_exec_append]
+        rw [genScatterBatch_exec_outside net fs (f i) hwTail
+          ((genScatter net f).exec v)]
+      · have hefFs : e ∈ fs := by simpa [hef] using he
+        have hdisFs : ∀ g ∈ fs, ∀ h ∈ fs, g ≠ h → ∀ a b, g a ≠ h b := by
+          intro g hg h hh hne
+          exact hdis g (List.mem_cons_of_mem f hg) h
+            (List.mem_cons_of_mem f hh) hne
+        have hcomp : (genScatter net f).exec v ∘ e = v ∘ e := by
+          funext a
+          exact genScatter_exec_outside net f v (e a) (by
+            rintro ⟨j, hj⟩
+            exact (hdis e he f (by simp) hef a j) hj.symm)
+        rw [genScatterBatch_cons, genNetwork_exec_append]
+        rw [ih hnd'.2 hdisFs ((genScatter net f).exec v) hefFs]
+        rw [genScatter_exec_inside net e ((genScatter net f).exec v) i,
+          genScatter_exec_inside net e v i]
+        exact congrArg (fun x => net.exec x i) hcomp
+
 theorem genPacketRound_depth_le {N : Nat}
     (pairs : List (Fin 128 ↪ Fin N))
     (hnodup : pairs.Nodup)

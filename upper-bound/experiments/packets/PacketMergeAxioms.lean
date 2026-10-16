@@ -1276,6 +1276,26 @@ import PacketMergeTreeGen
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.packetOddTree6GroupNet_outputPacket_sorted
 
+/-- info: 'Chvatal.PacketAlignment.genScatterBatch_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genScatterBatch_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.genScatterBatch_exec_outside' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genScatterBatch_exec_outside
+
+/-- info: 'Chvatal.PacketAlignment.genScatterBatch_exec_inside' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genScatterBatch_exec_inside
+
+/-- info: 'Chvatal.PacketAlignment.genScatterMergeTreeBatch_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genScatterMergeTreeBatch_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.genScatterMergeTreeBatch_outputPacket_sorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genScatterMergeTreeBatch_outputPacket_sorted
+
 /-- info: 'Chvatal.PacketAlignment.packetPowerTree6_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.packetPowerTree6_depth_le

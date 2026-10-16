@@ -371,4 +371,47 @@ theorem packetOddTree6GroupNet_outputPacket_sorted {N : Nat} {α : Type}
   exact genScatterMergeTree_outputPacket_sorted (packetOddTree6 (α := α))
     (genPacketGroup63Embedding packets hdisjoint) v hRuns j
 
+/-- Run the same fixed merge tree independently over a finite disjoint family
+of logical supports. -/
+def genScatterMergeTreeBatch {α : Type} [LinearOrder α] {M N : Nat}
+    (tree : PacketMergeTree α M) (supports : List (Fin M ↪ Fin N)) : GenNetwork N :=
+  genScatterBatch tree.network supports
+
+theorem genScatterMergeTreeBatch_depth_le {α : Type} [LinearOrder α]
+    {M N : Nat} (tree : PacketMergeTree α M)
+    (supports : List (Fin M ↪ Fin N)) (hnd : supports.Nodup)
+    (hdis : ∀ e ∈ supports, ∀ f ∈ supports, e ≠ f → ∀ i j, e i ≠ f j)
+    (D : Nat) (hdepth : tree.network.depth ≤ D) :
+    (genScatterMergeTreeBatch tree supports).depth ≤ D := by
+  exact (genScatterBatch_depth_le tree.network supports hnd hdis).trans hdepth
+
+/-- Every block in a parallel merge-tree batch exits as sorted 64-wire
+packets, with the same execution as its individual scattered tree. -/
+theorem genScatterMergeTreeBatch_outputPacket_sorted {α : Type}
+    [LinearOrder α] {M N : Nat} (tree : PacketMergeTree α M)
+    (supports : List (Fin M ↪ Fin N)) (hnd : supports.Nodup)
+    (hdis : ∀ e ∈ supports, ∀ f ∈ supports, e ≠ f → ∀ i j, e i ≠ f j)
+    (v : Fin N → α)
+    (hRuns : ∀ e ∈ supports, tree.RunsSorted (fun i => v (e i)))
+    (e : Fin M ↪ Fin N) (he : e ∈ supports)
+    (j : Fin tree.leafCount) :
+    Monotone (fun i =>
+      (genScatterMergeTreeBatch tree supports).exec v
+        (genScatterMergeTreeOutputEmbedding tree e j i)) := by
+  have hlocal := genScatterMergeTree_outputPacket_sorted tree e v (hRuns e he) j
+  intro i k hik
+  change (genScatterMergeTreeBatch tree supports).exec v
+      (e (PacketMergeTree.chunkIndex tree j i)) ≤
+    (genScatterMergeTreeBatch tree supports).exec v
+      (e (PacketMergeTree.chunkIndex tree j k))
+  change (genScatterBatch tree.network supports).exec v
+      (e (PacketMergeTree.chunkIndex tree j i)) ≤
+    (genScatterBatch tree.network supports).exec v
+      (e (PacketMergeTree.chunkIndex tree j k))
+  rw [genScatterBatch_exec_inside tree.network supports hnd hdis v e he
+    (PacketMergeTree.chunkIndex tree j i),
+    genScatterBatch_exec_inside tree.network supports hnd hdis v e he
+    (PacketMergeTree.chunkIndex tree j k)]
+  exact hlocal hik
+
 end Chvatal.PacketAlignment

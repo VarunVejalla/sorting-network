@@ -577,3 +577,19 @@ re-packetization interfaces are axiom-guarded. Together with the 63-packet
 remainder network, the local block and exceptional-tail networks required by
 the packet-count factorization are now available. They are not yet composed
 across all groups in an actual receiver or matching stage.
+
+Parallel merge batches and exact receiver arity (GPT-6.1-astra-high,
+2026-10-16): generalized `genScatterBatch` applies one fixed local comparator
+network to a finite list of pairwise-disjoint supports. Its axiom-guarded
+depth is at most the local depth, and its execution on every member support
+equals that support's independent local execution. `genScatterMergeTreeBatch`
+instantiates this for any `PacketMergeTree`; the 64-run tree therefore sorts
+and re-packetizes every full group simultaneously in at most 57 layers. The
+receiver-family cardinality is also now derived exactly as
+`flowA7 d hd b.l (t+1) / 64`, with count shape for nonterminal times and the
+terminal empty-or-multiple-of-64 case. This closes the isolated-block parallel
+depth concern and the receiver arity lookup. Still open: turn an actual
+`Fin m` receiver family into a list of disjoint 64-packet blocks plus the
+possible 63-packet tail, run the unequal tree on that tail in parallel, and
+show resulting packet supports match the next physical scheduler cuts. No
+stage-to-stage recurrence or improved global coefficient follows yet.
