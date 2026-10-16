@@ -88,14 +88,14 @@ checks all scratch sources.
 ## Remaining proof gates
 
 1. Integrate the checked six-layer shared source-port packet-layout network
-   The checked six-layer shared source-port repair is now selected on every
-   eligible bag and embedded by `stageNet`; the resulting global stage has
-   depth at most six. `PacketSortedOn_orderEmb` transfers the input invariant
-   into register coordinates, and `stageNet_rankSortedOn_image` transports
-   local sorted supports back to global wires. Still missing is applying this
-   pair of adapters to the selected repair's complete output layout, then
-   identifying those source-rank cells with fixed receiver packet labels and
-   capacities.
+   The checked six-layer shared source-port repair is selected on every
+   eligible bag and embedded by `stageNet`; the global stage has depth at most
+   six. `flowA7_sourcePortRepairStage_layout` now applies the input invariant
+   and transports every endpoint, interior, and fringe support through the
+   stage. `blockOf_register_image` identifies register intervals with their
+   actual physical `WireFlow.blockOf` sets. Still missing is identifying this
+   complete dynamic packet family with the fixed receiver packet labels and
+   capacities used by later matching rounds and register reassembly.
 2. Carry the logical packet embeddings through matching rounds and positional
    port cuts. `PacketSortedOn` on the physical rank grid is a sufficient local
    premise, not yet an invariant of that combined scheduler. In particular,
