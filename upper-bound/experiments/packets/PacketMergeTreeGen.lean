@@ -793,6 +793,9 @@ theorem packetFamily_residue63_merge {q N : Nat} {α : Type} [LinearOrder α]
       (∀ e ∈ blocks, ∀ i j, e i ≠ tail j) ∧
       (genMergeTreeFullTailBatch (packetPowerTree6 (α := α))
         (packetOddTree6 (α := α)) blocks tail).depth ≤ 57 ∧
+      (∀ e ∈ blocks,
+        (packetPowerTree6 (α := α)).RunsSorted (fun i => v (e i))) ∧
+      (packetOddTree6 (α := α)).RunsSorted (fun i => v (tail i)) ∧
       (∀ e ∈ blocks, ∀ j : Fin (packetPowerTree6 (α := α)).leafCount,
         Monotone (fun i =>
           (genMergeTreeFullTailBatch (packetPowerTree6 (α := α))
@@ -896,7 +899,8 @@ theorem packetFamily_residue63_merge {q N : Nat} {α : Type} [LinearOrder α]
   have hsorted := genMergeTreeFullTailBatch_outputPacket_sorted
     (packetPowerTree6 (α := α)) (packetOddTree6 (α := α)) blocks tail
     hnd hdisBlocks hsep v hRunsFull hRunsTail
-  exact ⟨blocks, tail, hnd, hdisBlocks, hsep, hdepth, hsorted.1, hsorted.2⟩
+  exact ⟨blocks, tail, hnd, hdisBlocks, hsep, hdepth,
+    hRunsFull, hRunsTail, hsorted.1, hsorted.2⟩
 
 
 end Chvatal.PacketAlignment

@@ -341,6 +341,113 @@ theorem packetFamily64BlockList_merge_output_threshold_profile {q N : Nat}
     (packetPowerTree6 (α := α)) hleaf (packetFamily64BlockList packets hdis)
     hnd hdisBlocks v hRuns e he t j
 
+/-- Exact threshold profiles survive the disjoint full-plus-tail batch: full
+blocks retain their 64-cell profiles and the unequal tail retains its
+K-cell profile. -/
+theorem genMergeTreeFullTailBatch_output_threshold_profile {K N : Nat}
+    {α : Type} [LinearOrder α]
+    (fullTree : PacketMergeTree α 4096) (hfullLeaf : fullTree.leafCount = 64)
+    (tailTree : PacketMergeTree α (64 * K)) (htailLeaf : tailTree.leafCount = K)
+    (fullBlocks : List (Fin 4096 ↪ Fin N)) (tail : Fin (64 * K) ↪ Fin N)
+    (hnd : fullBlocks.Nodup)
+    (hdis : ∀ e ∈ fullBlocks, ∀ f ∈ fullBlocks, e ≠ f → ∀ i j, e i ≠ f j)
+    (hsep : ∀ e ∈ fullBlocks, ∀ i j, e i ≠ tail j)
+    (v : Fin N → α)
+    (hfullRuns : ∀ e ∈ fullBlocks, fullTree.RunsSorted (fun i => v (e i)))
+    (htailRuns : tailTree.RunsSorted (fun i => v (tail i))) (t : α) :
+    (∀ e ∈ fullBlocks, ∀ j : Fin 64,
+      boolTrueCount (fun i : Fin 64 => decide (t ≤
+        (genMergeTreeFullTailBatch fullTree tailTree fullBlocks tail).exec v
+          (genScatterMergeTreeOutputEmbedding fullTree e
+            (Fin.cast hfullLeaf.symm j) i))) =
+      profileCell 64 (boolTrueCount (fun i : Fin 4096 => decide (t ≤ v (e i)))) j.val) ∧
+    (∀ j : Fin K,
+      boolTrueCount (fun i : Fin 64 => decide (t ≤
+        (genMergeTreeFullTailBatch fullTree tailTree fullBlocks tail).exec v
+          (genScatterMergeTreeOutputEmbedding tailTree tail
+            (Fin.cast htailLeaf.symm j) i))) =
+      profileCell K (boolTrueCount (fun i : Fin (64 * K) => decide (t ≤ v (tail i))))
+        j.val) := by
+  let G := genScatterMergeTreeBatch fullTree fullBlocks
+  let H := genScatterMergeTree tailTree tail
+  have hexec : (genMergeTreeFullTailBatch fullTree tailTree fullBlocks tail).exec v =
+      H.exec (G.exec v) := by
+    simp [genMergeTreeFullTailBatch, G, H, Untangle.GenNetwork.exec,
+      List.foldl_append]
+  constructor
+  · intro e he j
+    have hEq : (fun i : Fin 64 => decide (t ≤
+        (genMergeTreeFullTailBatch fullTree tailTree fullBlocks tail).exec v
+          (genScatterMergeTreeOutputEmbedding fullTree e
+            (Fin.cast hfullLeaf.symm j) i))) =
+        (fun i : Fin 64 => decide (t ≤
+          G.exec v (genScatterMergeTreeOutputEmbedding fullTree e
+            (Fin.cast hfullLeaf.symm j) i))) := by
+      funext i
+      rw [hexec]
+      change decide (t ≤ (genScatter tailTree.network tail).exec (G.exec v)
+          (e (PacketMergeTree.chunkIndex fullTree (Fin.cast hfullLeaf.symm j) i))) = _
+      exact congrArg (fun x : α => decide (t ≤ x))
+        (genScatter_exec_outside tailTree.network tail (G.exec v)
+          (e (PacketMergeTree.chunkIndex fullTree (Fin.cast hfullLeaf.symm j) i)) (by
+            rintro ⟨k, hk⟩
+            exact (hsep e he (PacketMergeTree.chunkIndex fullTree
+              (Fin.cast hfullLeaf.symm j) i) k) hk.symm))
+    calc
+      _ = boolTrueCount (fun i : Fin 64 => decide (t ≤
+          G.exec v (genScatterMergeTreeOutputEmbedding fullTree e
+            (Fin.cast hfullLeaf.symm j) i))) := congrArg boolTrueCount hEq
+      _ = profileCell 64 (boolTrueCount (fun i : Fin 4096 => decide (t ≤ v (e i))))
+          j.val := genScatterMergeTreeBatch_output_threshold_profile fullTree
+            hfullLeaf fullBlocks hnd hdis v hfullRuns e he t j
+  · intro j
+    have hEq : (fun i : Fin 64 => decide (t ≤
+        (genMergeTreeFullTailBatch fullTree tailTree fullBlocks tail).exec v
+          (genScatterMergeTreeOutputEmbedding tailTree tail
+            (Fin.cast htailLeaf.symm j) i))) =
+        (fun i : Fin 64 => decide (t ≤
+          H.exec v (genScatterMergeTreeOutputEmbedding tailTree tail
+            (Fin.cast htailLeaf.symm j) i))) := by
+      funext i
+      rw [hexec]
+      change decide (t ≤ H.exec (G.exec v)
+          (tail (PacketMergeTree.chunkIndex tailTree (Fin.cast htailLeaf.symm j) i))) = _
+      have htailInput : G.exec v ∘ tail = v ∘ tail := by
+        funext k
+        exact genScatterBatch_exec_outside fullTree.network fullBlocks (tail k) (by
+          intro e he heRange
+          obtain ⟨k', hk'⟩ := heRange
+          exact (hsep e he k' k) hk') v
+      have hRaw : H.exec (G.exec v)
+          (tail (PacketMergeTree.chunkIndex tailTree (Fin.cast htailLeaf.symm j) i)) =
+          H.exec v (tail (PacketMergeTree.chunkIndex tailTree
+            (Fin.cast htailLeaf.symm j) i)) := by
+        calc
+          H.exec (G.exec v)
+              (tail (PacketMergeTree.chunkIndex tailTree (Fin.cast htailLeaf.symm j) i)) =
+              tailTree.network.exec (G.exec v ∘ tail)
+                (PacketMergeTree.chunkIndex tailTree (Fin.cast htailLeaf.symm j) i) :=
+            genScatter_exec_inside tailTree.network tail (G.exec v)
+              (PacketMergeTree.chunkIndex tailTree (Fin.cast htailLeaf.symm j) i)
+          _ = tailTree.network.exec (v ∘ tail)
+                (PacketMergeTree.chunkIndex tailTree (Fin.cast htailLeaf.symm j) i) :=
+            congrArg (fun f : Fin (64 * K) → α => tailTree.network.exec f
+              (PacketMergeTree.chunkIndex tailTree (Fin.cast htailLeaf.symm j) i))
+                htailInput
+          _ = H.exec v
+              (tail (PacketMergeTree.chunkIndex tailTree (Fin.cast htailLeaf.symm j) i)) :=
+            (genScatter_exec_inside tailTree.network tail v
+              (PacketMergeTree.chunkIndex tailTree (Fin.cast htailLeaf.symm j) i)).symm
+      exact congrArg (fun x : α => decide (t ≤ x)) hRaw
+    calc
+      _ = boolTrueCount (fun i : Fin 64 => decide (t ≤
+          H.exec v (genScatterMergeTreeOutputEmbedding tailTree tail
+            (Fin.cast htailLeaf.symm j) i))) := congrArg boolTrueCount hEq
+      _ = profileCell K
+          (boolTrueCount (fun i : Fin (64 * K) => decide (t ≤ v (tail i)))) j.val :=
+        genScatterMergeTree_output_threshold_profile_k tailTree htailLeaf
+          tail v htailRuns t j
+
 /-- An actual divisible-64 `flowA7` receiver, after its checked correction
 stage, can be merged in parallel and exposes the exact threshold profile on
 every resulting rank packet. -/
@@ -402,6 +509,79 @@ theorem flowA7_receiver_allCases_divisible64_batch_profiles {d : Nat}
     exact packetFamily64BlockList_merge_output_threshold_profile
       castPackets hdis' ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
       (fun i => hsorted (Fin.cast hq i)) threshold e he j
+
+set_option maxHeartbeats 600000 in
+/-- Actual residue-63 `flowA7` receivers also retain exact threshold
+profiles through the full-block plus unequal-tail batch. -/
+theorem flowA7_receiver_allCases_residue63_batch_profiles {d : Nat}
+    {α : Type} [LinearOrder α]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d)
+    (v : Fin (64 ^ d) → α)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v)
+    (hrem : (flowA7 d hd b.l (t + 1) / 64) % 64 = 63) :
+    ∃ blocks : List (Fin 4096 ↪ Fin (64 ^ d)), ∃ tail : Fin 4032 ↪ Fin (64 ^ d),
+      blocks.Nodup ∧
+      (∀ e ∈ blocks, ∀ f ∈ blocks, e ≠ f → ∀ i j, e i ≠ f j) ∧
+      (∀ e ∈ blocks, ∀ i j, e i ≠ tail j) ∧
+      (genMergeTreeFullTailBatch (packetPowerTree6 (α := α))
+        (packetOddTree6 (α := α)) blocks tail).depth ≤ 57 ∧
+      (∀ e ∈ blocks, ∀ j : Fin 64,
+        Monotone (fun i =>
+          (genMergeTreeFullTailBatch (packetPowerTree6 (α := α))
+            (packetOddTree6 (α := α)) blocks tail).exec
+            ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+            (genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α)) e
+              (Fin.cast (packetPowerTree6_leafCount (α := α)).symm j) i))) ∧
+      (∀ j : Fin 63,
+        Monotone (fun i =>
+          (genMergeTreeFullTailBatch (packetPowerTree6 (α := α))
+            (packetOddTree6 (α := α)) blocks tail).exec
+            ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+            (genScatterMergeTreeOutputEmbedding (packetOddTree6 (α := α)) tail
+              (Fin.cast (packetOddTree6_leafCount (α := α)).symm j) i))) ∧
+      (∀ e ∈ blocks, ∀ j : Fin 64, ∀ threshold : α,
+        boolTrueCount (fun i : Fin 64 => decide (threshold ≤
+          (genMergeTreeFullTailBatch (packetPowerTree6 (α := α))
+            (packetOddTree6 (α := α)) blocks tail).exec
+            ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+            (genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α)) e
+              (Fin.cast (packetPowerTree6_leafCount (α := α)).symm j) i))) =
+        profileCell 64
+          (boolTrueCount (fun i : Fin 4096 => decide (threshold ≤
+            ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) (e i)))) j.val) ∧
+      (∀ j : Fin 63, ∀ threshold : α,
+        boolTrueCount (fun i : Fin 64 => decide (threshold ≤
+          (genMergeTreeFullTailBatch (packetPowerTree6 (α := α))
+            (packetOddTree6 (α := α)) blocks tail).exec
+            ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+            (genScatterMergeTreeOutputEmbedding (packetOddTree6 (α := α)) tail
+              (Fin.cast (packetOddTree6_leafCount (α := α)).symm j) i))) =
+        profileCell 63
+          (boolTrueCount (fun i : Fin 4032 => decide (threshold ≤
+            ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) (tail i)))) j.val) := by
+  obtain ⟨blocks, tail, hnodup, hblocksDisjoint, htailDisjoint, hdepth,
+      hRunsFull, hRunsTail, hsortedFull, hsortedTail⟩ :=
+    flowA7_receiver_allCases_residue63_batch hd t ht2 ht b hb hchild v hpack hrem
+  refine ⟨blocks, tail, hnodup, hblocksDisjoint, htailDisjoint, hdepth,
+    ?_, ?_, ?_, ?_⟩
+  · exact hsortedFull
+  · exact hsortedTail
+  · intro e he j threshold
+    exact (genMergeTreeFullTailBatch_output_threshold_profile (K := 63)
+      (packetPowerTree6 (α := α)) (packetPowerTree6_leafCount (α := α))
+      (packetOddTree6 (α := α)) (packetOddTree6_leafCount (α := α))
+      blocks tail hnodup hblocksDisjoint htailDisjoint
+      ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+      hRunsFull hRunsTail threshold).1 e he j
+  · intro j threshold
+    exact (genMergeTreeFullTailBatch_output_threshold_profile (K := 63)
+      (packetPowerTree6 (α := α)) (packetPowerTree6_leafCount (α := α))
+      (packetOddTree6 (α := α)) (packetOddTree6_leafCount (α := α))
+      blocks tail hnodup hblocksDisjoint htailDisjoint
+      ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+      hRunsFull hRunsTail threshold).2 j
 
 def profileHalf (K X i : Nat) : Nat :=
   profileTail (32 * K) X (32 * (i + 1)) - profileTail (32 * K) X (32 * i)

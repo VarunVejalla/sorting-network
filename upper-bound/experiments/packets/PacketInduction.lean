@@ -207,6 +207,11 @@ theorem flowA7_receiver_allCases_residue63_batch {d : Nat} {α : Type}
       (∀ e ∈ blocks, ∀ i j, e i ≠ tail j) ∧
       (genMergeTreeFullTailBatch (packetPowerTree6 (α := α))
         (packetOddTree6 (α := α)) blocks tail).depth ≤ 57 ∧
+      (∀ e ∈ blocks,
+        (packetPowerTree6 (α := α)).RunsSorted
+          (fun i => ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) (e i))) ∧
+      (packetOddTree6 (α := α)).RunsSorted
+        (fun i => ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) (tail i)) ∧
       (∀ e ∈ blocks, ∀ j : Fin (packetPowerTree6 (α := α)).leafCount,
         Monotone (fun i =>
           (genMergeTreeFullTailBatch (packetPowerTree6 (α := α))
@@ -238,11 +243,11 @@ theorem flowA7_receiver_allCases_residue63_batch {d : Nat} {α : Type}
       exact Fin.cast_injective hsize.symm h
     · exact heq
   obtain ⟨blocks, tail, hnodup, hblocksDisjoint, htailDisjoint,
-      hdepth, hsortedFull, hsortedTail⟩ := packetFamily_residue63_merge
+      hdepth, hRunsFull, hRunsTail, hsortedFull, hsortedTail⟩ := packetFamily_residue63_merge
     packets' hdis' ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
     (fun a => hsorted (Fin.cast hsize.symm a))
   exact ⟨blocks, tail, hnodup, hblocksDisjoint, htailDisjoint,
-    hdepth, hsortedFull, hsortedTail⟩
+    hdepth, hRunsFull, hRunsTail, hsortedFull, hsortedTail⟩
 
 /-- At every nonterminal receiver stage, the actual output packet family is
 immediately in one of the existing 64-block/tail configurations. -/

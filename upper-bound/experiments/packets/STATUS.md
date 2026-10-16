@@ -692,12 +692,19 @@ that these logical output packets are the next stage's fixed physical port
 cuts, so no global coefficient follows.
 
 
-Variable-cardinality merge profile law (GPT-6-astra-high, 2026-10-16):
-`genScatterMergeTree_output_threshold_profile_k` generalizes the exact
-all-threshold output-profile theorem from 64 output packets to any merge tree
-with `K` 64-wire leaves. It states that each output cell has exactly
-`profileCell K` of the combined threshold count; therefore it applies to both
-the 64-run full block and 63-run unequal tail without a new combinatorial
-argument. The theorem passes the focused module check and is added to the
-axiom guard. Its application to the residue-63 `FullTailBatch` execution still
-needs an execution-locality adapter and an actual receiver wrapper.
+Variable-cardinality and residue-63 profile integration (GPT-6-astra-high,
+2026-10-16): `genScatterMergeTree_output_threshold_profile_k` gives exact
+all-threshold profiles for a merge tree with any number of 64-wire leaves.
+`genMergeTreeFullTailBatch_output_threshold_profile` lifts that law through a
+disjoint batch of full blocks plus one unequal tail, using execution locality
+to show the full batch leaves the tail unchanged. Finally,
+`flowA7_receiver_allCases_residue63_batch_profiles` composes it with the actual
+all-case receiver correction and residue-63 packet decomposition. The witness
+retains disjointness, sorted output packets and the 57-layer ceiling, while
+giving exact threshold profiles for all 64-wire full-block packets and the
+63-wire tail packet. The focused module compilation succeeds. This closes the
+local profile-transfer gap for both divisible and residue-63 receiver sizes;
+the next critical gaps are the other residues and, especially, matching these
+logical output packets to the next stage's fixed physical `WireFlow` cuts and
+proving a global rank-profile contraction. No improved limsup coefficient is
+established yet.
