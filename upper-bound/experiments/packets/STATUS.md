@@ -846,3 +846,5 @@ register. `PacketHalfProfile` compiles, and the full `PacketMergeAxioms` guard
 chain passes with standard axioms. This closes the counting half of applying
 the scattered-profile recurrence to a global packet partition; it still does
 not identify the destination fractional targets or prove energy contraction.
+The owner-map and partition theorems now accept any finite packet-ID type, so
+they compose with receiver families whose packet counts differ by bag.

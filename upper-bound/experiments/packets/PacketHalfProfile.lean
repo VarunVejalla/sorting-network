@@ -1400,9 +1400,9 @@ theorem wireSetOwner_eq_iff_mem {d tf : Nat} (F : FlowSizes d tf) (t : Nat)
 
 /-- Assign each rank of a scattered packet to the unique actual register
 containing its physical wire. -/
-noncomputable def wireSetPacketRankOwner {d tf c m : Nat}
+noncomputable def wireSetPacketRankOwner {d tf m : Nat} {ι : Type}
     (F : FlowSizes d tf) (t : Nat) (ht : t ≤ tf)
-    (packets : Fin c → Fin m ↪ Fin (64 ^ d)) (packet : Fin c) :
+    (packets : ι → Fin m ↪ Fin (64 ^ d)) (packet : ι) :
     Fin m → KBag 64 d :=
   fun k => wireSetOwner F t ht (packets packet k)
 
@@ -1410,9 +1410,9 @@ noncomputable def wireSetPacketRankOwner {d tf c m : Nat}
 of selected packet ranks whose physical wires lie in the actual destination
 register. This is the concrete counting bridge needed before applying the
 scattered-profile energy inequality to a scheduler stage. -/
-theorem assignedRankCount_wireSetPacketRankOwner {d tf c m : Nat}
+theorem assignedRankCount_wireSetPacketRankOwner {d tf m : Nat} {ι : Type}
     (F : FlowSizes d tf) (t : Nat) (ht : t ≤ tf)
-    (packets : Fin c → Fin m ↪ Fin (64 ^ d)) (packet : Fin c)
+    (packets : ι → Fin m ↪ Fin (64 ^ d)) (packet : ι)
     (suffix : Nat → Fin m → Bool) (destination : KBag 64 d) (X : Nat) :
     assignedRankCount (wireSetPacketRankOwner F t ht packets packet)
       suffix destination X =
@@ -1454,25 +1454,26 @@ theorem finSum_ite_one_eq_card_subtype {ι : Type} [Fintype ι]
 its rank-owner threshold counts gives exactly the threshold count in any
 actual `WireFlow` register. This turns the abstract scattered-rank accounting
 into the physical receiver count used by the scheduler. -/
-theorem packetRankOwner_trueCountOn_eq_of_partition {d tf c m : Nat}
+theorem packetRankOwner_trueCountOn_eq_of_partition {d tf m : Nat}
+    {ι : Type} [Fintype ι] [DecidableEq ι]
     (F : FlowSizes d tf) (t : Nat) (ht : t ≤ tf)
-    (packets : Fin c → Fin m ↪ Fin (64 ^ d))
-    (hdisjoint : ∀ {p p' : Fin c}, p ≠ p' → ∀ i j,
+    (packets : ι → Fin m ↪ Fin (64 ^ d))
+    (hdisjoint : ∀ {p p' : ι}, p ≠ p' → ∀ i j,
       packets p i ≠ packets p' j)
     (hcover : ∀ w : Fin (64 ^ d), ∃ p i, packets p i = w)
     (v : Fin (64 ^ d) → Bool) (destination : KBag 64 d) :
-    (∑ p : Fin c,
+    (∑ p : ι,
       assignedRankCount (wireSetPacketRankOwner F t ht packets p)
         (fun _ i => v (packets p i)) destination 0) =
       trueCountOn (wireSets F t destination) v := by
   classical
-  let P : Fin c × Fin m → Prop := fun z =>
+  let P : ι × Fin m → Prop := fun z =>
     wireSetOwner F t ht (packets z.1 z.2) = destination ∧
       v (packets z.1 z.2) = true
-  let source := {z : Fin c × Fin m // P z}
+  let source := {z : ι × Fin m // P z}
   let target := {w : {w : Fin (64 ^ d) // w ∈ wireSets F t destination} //
     v w.val = true}
-  have hflatInj : Function.Injective (fun z : Fin c × Fin m =>
+  have hflatInj : Function.Injective (fun z : ι × Fin m =>
       packets z.1 z.2) := by
     intro z z' h
     have hp : z.1 = z'.1 := by
@@ -1506,11 +1507,11 @@ theorem packetRankOwner_trueCountOn_eq_of_partition {d tf c m : Nat}
       exact hpi
   have hcard : Fintype.card source = Fintype.card target :=
     Fintype.card_congr (Equiv.ofBijective f hf)
-  have hsum : (∑ p : Fin c,
+  have hsum : (∑ p : ι,
       assignedRankCount (wireSetPacketRankOwner F t ht packets p)
         (fun _ i => v (packets p i)) destination 0) = Fintype.card source := by
     calc
-      _ = ∑ p : Fin c, ∑ i : Fin m,
+      _ = ∑ p : ι, ∑ i : Fin m,
           if P (p, i) then 1 else 0 := by
         apply Finset.sum_congr rfl
         intro p hp
@@ -1518,11 +1519,11 @@ theorem packetRankOwner_trueCountOn_eq_of_partition {d tf c m : Nat}
         apply Finset.sum_congr rfl
         intro i hi
         simp only [P, wireSetOwner_eq_iff_mem]
-      _ = ∑ p : Fin c, Fintype.card {i : Fin m // P (p, i)} := by
+      _ = ∑ p : ι, Fintype.card {i : Fin m // P (p, i)} := by
         apply Finset.sum_congr rfl
         intro p hp
         exact finSum_ite_one_eq_card_subtype (fun i : Fin m => P (p, i))
-      _ = Fintype.card (Σ p : Fin c, {i : Fin m // P (p, i)}) := by
+      _ = Fintype.card (Σ p : ι, {i : Fin m // P (p, i)}) := by
         rw [Fintype.card_sigma]
       _ = Fintype.card source := by
         apply Fintype.card_congr

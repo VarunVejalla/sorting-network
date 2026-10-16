@@ -239,7 +239,8 @@ For a disjoint packet family covering the full wire set,
 `packetRankOwner_trueCountOn_eq_of_partition` proves that summing the
 packet-owner counts recovers each register's exact Boolean threshold count.
 Thus the physical count-recovery step is now available for a global packet
-partition; target compatibility and contraction remain open.
+partition, with packet IDs in any finite type so per-register packet counts
+may differ; target compatibility and contraction remain open.
 
 Follow-up (GPT-6-astra-high, 2026-10-16): the owner-map bridge is bypassed for
 the one-layer recurrence by using the actual `wireFlowLayerSelection`
