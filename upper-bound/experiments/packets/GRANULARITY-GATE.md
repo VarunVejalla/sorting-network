@@ -160,3 +160,25 @@ baseline before comparing errors. The identity is an immediate arithmetic
 consequence of the checked count formulas; it is a candidate phase-specific
 potential, not a contraction theorem for the 4096-wire stages or scheduler
 reassembly.
+
+## A concrete 57-layer merge-tree target
+
+There is a simple structural way to spend exactly the conditional 57-layer
+reassembly budget, if the actual receiver can be reduced to 64 sorted
+64-wire runs. Merge adjacent pairs first (128 wires, `oddEvenMergeNet 7`),
+then merge adjacent 128-wire runs (256 wires, `oddEvenMergeNet 8`), continuing
+through the 4096-wire output (`oddEvenMergeNet 12`). At each tree level, the
+component merges act on disjoint intervals and run in parallel. Inductively
+each component emits one sorted run, and the depth is
+
+```text
+7 + 8 + 9 + 10 + 11 + 12 = 57.
+```
+
+The local correctness and depth lemmas for every two-run merge already exist
+in `OddEvenMerge64.lean`; this is a concrete candidate construction for the
+57 layers, rather than an unexplained allowance. It is not yet instantiated
+as a 4096-wire merge-tree theorem, and the actual `WireFlow` receiver assembly
+has not been shown to present exactly 64 contiguous sorted runs of 64 wires.
+Proving that interface (or finding its actual run count and widths) is the
+next test of whether this structural use of all 57 layers is viable.
