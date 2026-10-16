@@ -180,4 +180,94 @@ theorem genIndexedPacketRound_canonicalOutput {m N : Nat} {α : Type}
       hvertexDisjoint
   exact ⟨output.length, next, hsortedOut, hdisjointOut, hsupportOut, hdepth⟩
 
+/-- The output packets of a partial matching cover exactly the packets incident
+to its edges; this formulation does not assume the matching is perfect. -/
+theorem genIndexedPacketRound_output_support_incident {m N : Nat}
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges : List (Fin m × Fin m))
+    (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2) (w : Fin N) :
+    (∃ p ∈ genIndexedPacketRoundOutput packets hpacketDisjoint edges hnoFixed,
+      w ∈ Set.range p) ↔
+    ∃ e ∈ edges, w ∈ Set.range (packets e.1) ∨ w ∈ Set.range (packets e.2) := by
+  change (∃ p ∈ genPacketRound_outputPackets
+      (genIndexedPairSupports packets hpacketDisjoint edges hnoFixed),
+        w ∈ Set.range p) ↔ _
+  rw [genPacketRound_outputPackets_support]
+  constructor
+  · rintro ⟨joined, hj, hw⟩
+    simp only [genIndexedPairSupports, List.mem_map, List.mem_attach] at hj
+    obtain ⟨edge, hedge, rfl⟩ := hj
+    rw [joinPacketEmbedding_range _ _
+      (hpacketDisjoint edge.1.1 edge.1.2 (hnoFixed edge.1 edge.2))] at hw
+    rcases hw with hw | hw
+    · exact ⟨edge.1, edge.2, Or.inl hw⟩
+    · exact ⟨edge.1, edge.2, Or.inr hw⟩
+  · rintro ⟨e, he, hw | hw⟩
+    · let joined := joinPacketEmbedding (packets e.1) (packets e.2)
+        (hpacketDisjoint e.1 e.2 (hnoFixed e he))
+      have hj : joined ∈ genIndexedPairSupports packets hpacketDisjoint edges hnoFixed := by
+        simp only [genIndexedPairSupports, List.mem_map, List.mem_attach]
+        exact ⟨⟨e, he⟩, trivial, rfl⟩
+      have hrange : w ∈ Set.range joined := by
+        rw [joinPacketEmbedding_range _ _
+          (hpacketDisjoint e.1 e.2 (hnoFixed e he))]
+        exact Or.inl hw
+      exact ⟨joined, hj, hrange⟩
+    · let joined := joinPacketEmbedding (packets e.1) (packets e.2)
+        (hpacketDisjoint e.1 e.2 (hnoFixed e he))
+      have hj : joined ∈ genIndexedPairSupports packets hpacketDisjoint edges hnoFixed := by
+        simp only [genIndexedPairSupports, List.mem_map, List.mem_attach]
+        exact ⟨⟨e, he⟩, trivial, rfl⟩
+      have hrange : w ∈ Set.range joined := by
+        rw [joinPacketEmbedding_range _ _
+          (hpacketDisjoint e.1 e.2 (hnoFixed e he))]
+        exact Or.inr hw
+      exact ⟨joined, hj, hrange⟩
+
+/-- A packet not incident to an edge of a vertex-disjoint matching is left
+pointwise unchanged by the indexed merge-and-deal round. This is the local
+adapter needed to retain unmatched vertices as singleton packets. -/
+theorem genIndexedPacketRound_unmatched_unchanged {m N : Nat} {α : Type}
+    [LinearOrder α]
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges : List (Fin m × Fin m)) (hedges : edges.Nodup)
+    (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2)
+    (hvertexDisjoint : ∀ e ∈ edges, ∀ f ∈ edges, e ≠ f →
+      e.1 ≠ f.1 ∧ e.1 ≠ f.2 ∧ e.2 ≠ f.1 ∧ e.2 ≠ f.2)
+    (i : Fin m)
+    (hfree : ∀ e ∈ edges, e.1 ≠ i ∧ e.2 ≠ i)
+    (v : Fin N → α) (k : Fin 64) :
+    (genIndexedPacketRound packets hpacketDisjoint edges hnoFixed).exec v
+      (packets i k) = v (packets i k) := by
+  let supports := genIndexedPairSupports packets hpacketDisjoint edges hnoFixed
+  have hsupportsNodup : supports.Nodup :=
+    genIndexedPairSupports_nodup packets hpacketDisjoint edges hedges hnoFixed
+      hvertexDisjoint
+  have hsupportsDisjoint : ∀ e ∈ supports, ∀ f ∈ supports, e ≠ f →
+      ∀ x y, e x ≠ f y :=
+    genIndexedPairSupports_disjoint packets hpacketDisjoint edges hnoFixed
+      hvertexDisjoint
+  have houtside : ∀ e ∈ supports, packets i k ∉ Set.range e := by
+    intro e he
+    simp only [supports, genIndexedPairSupports, List.mem_map,
+      List.mem_attach] at he
+    obtain ⟨edge, hedge, rfl⟩ := he
+    have hleft : i ≠ edge.1.1 := (hfree edge.1 edge.2).1.symm
+    have hright : i ≠ edge.1.2 := (hfree edge.1 edge.2).2.symm
+    have hwithin := hpacketDisjoint edge.1.1 edge.1.2
+      (hnoFixed edge.1 edge.2)
+    rw [joinPacketEmbedding_range _ _ hwithin]
+    simp only [Set.mem_union, Set.mem_range]
+    intro hx
+    rcases hx with hx | hx
+    · obtain ⟨x, hx⟩ := hx
+      exact hpacketDisjoint i edge.1.1 hleft k x (by simpa using hx.symm)
+    · obtain ⟨x, hx⟩ := hx
+      exact hpacketDisjoint i edge.1.2 hright k x (by simpa using hx.symm)
+  change (genPacketRound supports).exec v (packets i k) = _
+  exact genPacketRound_exec_outside supports hsupportsNodup hsupportsDisjoint
+    (packets i k) houtside v
+
 end Chvatal.PacketAlignment
