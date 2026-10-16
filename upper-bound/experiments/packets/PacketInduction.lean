@@ -8,6 +8,21 @@ packet embeddings; it does not identify them with later positional
 
 namespace Chvatal.PacketAlignment
 
+/-- A disjoint canonical partition into 64-wire packets has exactly one
+packet per 64 wires. This converts the receiver's existential family size
+into the scheduler's concrete packet count. -/
+theorem canonicalPacketFamily_count_mul_64 {N : Nat}
+    (P : CanonicalPacketFamily N) (support : Finset (Fin N))
+    {α : Type} [LinearOrder α] (v : Fin N → α)
+    (h : CanonicalPacketPortContract P support v) :
+    P.count * 64 = support.card := by
+  have hdis : ∀ i ∈ Finset.univ, ∀ j ∈ Finset.univ, i ≠ j →
+      Disjoint (P.packet i) (P.packet j) := by
+    intro i hi j hj hij
+    exact h.2.2.1 i j hij
+  rw [← h.2.1, Finset.card_biUnion hdis]
+  simp [h.2.2.2]
+
 /-- The physical support of a logical 64-wire packet embedding. -/
 def packetEmbeddingSupport {N : Nat} (p : Fin 64 ↪ Fin N) : Finset (Fin N) :=
   Finset.univ.image p
@@ -107,6 +122,53 @@ theorem flowA7_receiver_allCases_embeddingFamily {d : Nat} {α : Type}
     canonicalPacketFamily_toEmbeddings receiver
       (wireSets (flowSizes7 d hd) (t + 1) b)
       ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) hreceiver⟩
+
+/-- The canonical packet count produced by a receiver is exactly the
+scheduler's next-stage wire count divided by 64. -/
+theorem flowA7_receiver_allCases_packetCount {d : Nat} {α : Type}
+    [LinearOrder α]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d)
+    (v : Fin (64 ^ d) → α)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v) :
+    ∃ m : Nat, ∃ packets : Fin m → Fin 64 ↪ Fin (64 ^ d),
+      (∀ i, Monotone (fun k =>
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) (packets i k))) ∧
+      (∀ i i', i ≠ i' → ∀ x y, packets i x ≠ packets i' y) ∧
+      Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) =
+        wireSets (flowSizes7 d hd) (t + 1) b ∧
+      m = flowA7 d hd b.l (t + 1) / 64 := by
+  obtain ⟨receiver, hreceiver⟩ := flowA7_receiver_allCases_canonical
+    hd t ht2 ht b hb hchild v hpack
+  let packets := canonicalPacketEmbedding receiver hreceiver.2.2.2
+  have hmul := canonicalPacketFamily_count_mul_64 receiver
+    (wireSets (flowSizes7 d hd) (t + 1) b)
+    ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) hreceiver
+  have hcard : receiver.count * 64 = flowA7 d hd b.l (t + 1) := by
+    rw [wireSets_card (flowSizes7 d hd) (by omega) b] at hmul
+    simpa [flowSizes7] using hmul
+  refine ⟨receiver.count, packets, ?_, ?_, ?_, ?_⟩
+  · exact (canonicalPacketFamily_toEmbeddings receiver
+      (wireSets (flowSizes7 d hd) (t + 1) b)
+      ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) hreceiver).1
+  · exact (canonicalPacketFamily_toEmbeddings receiver
+      (wireSets (flowSizes7 d hd) (t + 1) b)
+      ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) hreceiver).2.1
+  · exact (canonicalPacketFamily_toEmbeddings receiver
+      (wireSets (flowSizes7 d hd) (t + 1) b)
+      ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) hreceiver).2.2
+  · omega
+
+/-- At every nonterminal receiver stage, the actual output packet family is
+immediately in one of the existing 64-block/tail configurations. -/
+theorem flowA7_receiver_allCases_packetCount_block_shape
+    (d : Nat) (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t)
+    (ht : t < tf7 d) (htnext : t + 1 < tf7 d) (i : Nat)
+    (m : Nat) (hmEq : m = flowA7 d hd i (t + 1) / 64) :
+    m = 0 ∨ m = 1 ∨ 64 ∣ m ∨ (m % 64 = 63 ∧ 4095 ≤ m) := by
+  rw [hmEq]
+  exact flowA7_packet_count_block_shape d hd (t + 1) i (by omega) htnext
 
 /-- Convert the output list of an indexed merge-and-deal round to a canonical
 `Fin`-indexed embedding family. If the matching covers every input ID, this
