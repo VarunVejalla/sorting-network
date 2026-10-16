@@ -1437,3 +1437,7 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_residue63_batch_profiles' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_residue63_batch_profiles
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_packetCount_residue' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_packetCount_residue

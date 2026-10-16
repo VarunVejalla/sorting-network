@@ -1,7 +1,7 @@
 import PacketProfile
 import PacketGenMerge
 import PacketMergeTreeGen
-import PacketInduction
+import PacketReceiverResidue
 import AKS.Chvatal.ExecPlacement
 
 /-! The actual repair atoms are 32-wire rank intervals. This file carries the

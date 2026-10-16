@@ -703,21 +703,21 @@ all-case receiver correction and residue-63 packet decomposition. The witness
 retains disjointness, sorted output packets and the 57-layer ceiling, while
 giving exact threshold profiles for all 64-wire full-block packets and the
 63-wire tail packet. The focused module compilation succeeds. This closes the
-local profile-transfer gap for both divisible and residue-63 receiver sizes;
-the next critical gaps are the other residues and, especially, matching these
-logical output packets to the next stage's fixed physical `WireFlow` cuts and
-proving a global rank-profile contraction. No improved limsup coefficient is
+local profile-transfer gap for both divisible and residue-63 receiver sizes.
+`PacketReceiverResidue.lean` now proves that these two cases cover every
+nonzero active receiver in the actual schedule. Matching the logical output
+packets to the next stage's fixed physical `WireFlow` cuts and proving a global
+rank-profile contraction remain open. No improved limsup coefficient is
 established yet.
 
-Receiver-residue finite diagnostic (GPT-6-astra-high, 2026-10-16):
-[`FlowReceiverResidueScreen.lean`](FlowReceiverResidueScreen.lean) evaluates the
-actual `flowA7` formulas for every `7 <= d <= 40`,
-`2 <= t < tf7 d`, and `1 <= l < d` found that each nonzero next-stage receiver
-packet count `(flowA7 d hd l (t+1) / 64)` is congruent to either 0 or 63 modulo
-64. This is exactly the pair of cohort cases now handled by the checked
-divisible and residue-63 profile wrappers. The screen is finite evidence, not
-a theorem. The next formal gate is a residue classification from `NodeShape`
-plus exclusion of its small top-descending exception for active receiver
-levels; if that closes, no additional tail merge tree is needed for the actual
-schedule. It still would not resolve the logical-to-physical next-cut
-alignment or global contraction.
+Receiver-residue classification (GPT-6-astra-high, 2026-10-16):
+`flowA7_receiver_packetCount_residue` proves for every `d >= 7`, every actual
+transition `2 <= t < tf7 d`, and every nonroot receiver level `1 <= l`, that
+the next receiver's packet count has remainder 0 or 63 modulo 64. The proof
+classifies the `NodeShape` forms: an active node has either zero wires or at
+least 128, which excludes the exceptional 64-wire top-descending case; all
+remaining power and power-difference forms yield residue 0 or 63. At the
+terminal time, the only occupied level has `64^6` wires and is divisible. The
+theorem compiles in the focused packet check and is axiom-guarded. The finite
+screen in `FlowReceiverResidueScreen.lean` was the diagnostic that suggested
+this classification; it is no longer the evidence for the uniform claim.
