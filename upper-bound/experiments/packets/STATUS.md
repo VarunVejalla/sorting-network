@@ -501,4 +501,5 @@ Middle scheduled tail pair closed: six lifts of the 8+7 core give a concrete
 960-wire merger for sorted 512- and 448-wire runs, with a checked depth bound
 of 10. Its correctness and depth theorems are guarded. Three of the five
 special merges in the 63-run tree are now proved at their target costs 10, 11,
-and 12; only 128+64 and 256+192 remain before proving the full tree schedule.
+and 12. The 256+192 pair is also now closed at depth 9. The 128+64 pair and
+the surrounding tree composition remain.

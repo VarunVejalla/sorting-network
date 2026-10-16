@@ -2406,6 +2406,84 @@ theorem unequalTail15Lift6_sorts_two_runs {α : Type} [LinearOrder α]
     (equalParityMergeNet_sorts_two_even_runs (m := 256) (n := 224) (by omega)
       unequalTail15Lift5 hmerge A B hA hB)
 
+def unequalTail7Lift1 : ComparatorNetwork 14 :=
+  equalParityMergeNet (by omega : 2 ≤ 7) unequalMerge7Net unequalMerge7Net
+
+theorem unequalTail7Lift1_sorts_two_runs {α : Type} [LinearOrder α]
+    (A : Fin 8 → α) (B : Fin 6 → α) (hA : Monotone A) (hB : Monotone B) :
+    Monotone (unequalTail7Lift1.exec (Fin.append (m := 8) (n := 6) A B)) := by
+  have hmerge : ∀ (X : Fin 4 → α) (Y : Fin 3 → α), Monotone X → Monotone Y →
+      Monotone (unequalMerge7Net.exec (Fin.append X Y)) :=
+    fun X Y hX hY => unequalMerge7Net_sorts_two_runs X Y hX hY
+  simpa [unequalTail7Lift1] using
+    (equalParityMergeNet_sorts_two_even_runs (m := 4) (n := 3) (by omega)
+      unequalMerge7Net hmerge A B hA hB)
+
+def unequalTail7Lift2 : ComparatorNetwork 28 :=
+  equalParityMergeNet (by omega : 2 ≤ 14) unequalTail7Lift1 unequalTail7Lift1
+
+theorem unequalTail7Lift2_sorts_two_runs {α : Type} [LinearOrder α]
+    (A : Fin 16 → α) (B : Fin 12 → α) (hA : Monotone A) (hB : Monotone B) :
+    Monotone (unequalTail7Lift2.exec (Fin.append (m := 16) (n := 12) A B)) := by
+  have hmerge : ∀ (X : Fin 8 → α) (Y : Fin 6 → α), Monotone X → Monotone Y →
+      Monotone (unequalTail7Lift1.exec (Fin.append X Y)) :=
+    fun X Y hX hY => unequalTail7Lift1_sorts_two_runs X Y hX hY
+  simpa [unequalTail7Lift2] using
+    (equalParityMergeNet_sorts_two_even_runs (m := 8) (n := 6) (by omega)
+      unequalTail7Lift1 hmerge A B hA hB)
+
+def unequalTail7Lift3 : ComparatorNetwork 56 :=
+  equalParityMergeNet (by omega : 2 ≤ 28) unequalTail7Lift2 unequalTail7Lift2
+
+theorem unequalTail7Lift3_sorts_two_runs {α : Type} [LinearOrder α]
+    (A : Fin 32 → α) (B : Fin 24 → α) (hA : Monotone A) (hB : Monotone B) :
+    Monotone (unequalTail7Lift3.exec (Fin.append (m := 32) (n := 24) A B)) := by
+  have hmerge : ∀ (X : Fin 16 → α) (Y : Fin 12 → α), Monotone X → Monotone Y →
+      Monotone (unequalTail7Lift2.exec (Fin.append X Y)) :=
+    fun X Y hX hY => unequalTail7Lift2_sorts_two_runs X Y hX hY
+  simpa [unequalTail7Lift3] using
+    (equalParityMergeNet_sorts_two_even_runs (m := 16) (n := 12) (by omega)
+      unequalTail7Lift2 hmerge A B hA hB)
+
+def unequalTail7Lift4 : ComparatorNetwork 112 :=
+  equalParityMergeNet (by omega : 2 ≤ 56) unequalTail7Lift3 unequalTail7Lift3
+
+theorem unequalTail7Lift4_sorts_two_runs {α : Type} [LinearOrder α]
+    (A : Fin 64 → α) (B : Fin 48 → α) (hA : Monotone A) (hB : Monotone B) :
+    Monotone (unequalTail7Lift4.exec (Fin.append (m := 64) (n := 48) A B)) := by
+  have hmerge : ∀ (X : Fin 32 → α) (Y : Fin 24 → α), Monotone X → Monotone Y →
+      Monotone (unequalTail7Lift3.exec (Fin.append X Y)) :=
+    fun X Y hX hY => unequalTail7Lift3_sorts_two_runs X Y hX hY
+  simpa [unequalTail7Lift4] using
+    (equalParityMergeNet_sorts_two_even_runs (m := 32) (n := 24) (by omega)
+      unequalTail7Lift3 hmerge A B hA hB)
+
+def unequalTail7Lift5 : ComparatorNetwork 224 :=
+  equalParityMergeNet (by omega : 2 ≤ 112) unequalTail7Lift4 unequalTail7Lift4
+
+theorem unequalTail7Lift5_sorts_two_runs {α : Type} [LinearOrder α]
+    (A : Fin 128 → α) (B : Fin 96 → α) (hA : Monotone A) (hB : Monotone B) :
+    Monotone (unequalTail7Lift5.exec (Fin.append (m := 128) (n := 96) A B)) := by
+  have hmerge : ∀ (X : Fin 64 → α) (Y : Fin 48 → α), Monotone X → Monotone Y →
+      Monotone (unequalTail7Lift4.exec (Fin.append X Y)) :=
+    fun X Y hX hY => unequalTail7Lift4_sorts_two_runs X Y hX hY
+  simpa [unequalTail7Lift5] using
+    (equalParityMergeNet_sorts_two_even_runs (m := 64) (n := 48) (by omega)
+      unequalTail7Lift4 hmerge A B hA hB)
+
+def unequalTail7Lift6 : ComparatorNetwork 448 :=
+  equalParityMergeNet (by omega : 2 ≤ 224) unequalTail7Lift5 unequalTail7Lift5
+
+theorem unequalTail7Lift6_sorts_two_runs {α : Type} [LinearOrder α]
+    (A : Fin 256 → α) (B : Fin 192 → α) (hA : Monotone A) (hB : Monotone B) :
+    Monotone (unequalTail7Lift6.exec (Fin.append (m := 256) (n := 192) A B)) := by
+  have hmerge : ∀ (X : Fin 128 → α) (Y : Fin 96 → α), Monotone X → Monotone Y →
+      Monotone (unequalTail7Lift5.exec (Fin.append X Y)) :=
+    fun X Y hX hY => unequalTail7Lift5_sorts_two_runs X Y hX hY
+  simpa [unequalTail7Lift6] using
+    (equalParityMergeNet_sorts_two_even_runs (m := 128) (n := 96) (by omega)
+      unequalTail7Lift5 hmerge A B hA hB)
+
 theorem unequalMerge3Net_depth_le : unequalMerge3Net.depth ≤ 2 := by
   have h := unequalParityMergeNet_depth_le (by omega : 2 ≤ 2)
     (oddEvenMergeNet 1) unequalMerge1Net
@@ -2540,6 +2618,38 @@ theorem unequalTail15Lift6_depth_le : unequalTail15Lift6.depth ≤ 10 := by
   have h := equalParityMergeNet_depth_le (by omega : 2 ≤ 480)
     unequalTail15Lift5 unequalTail15Lift5
   simp only [unequalTail15Lift6] at h ⊢
+  omega
+
+theorem unequalTail7Lift6_depth_le : unequalTail7Lift6.depth ≤ 9 := by
+  have h1 : unequalTail7Lift1.depth ≤ 4 := by
+    have h := equalParityMergeNet_depth_le (by omega : 2 ≤ 7)
+      unequalMerge7Net unequalMerge7Net
+    have hc := unequalMerge7Net_depth_le
+    simp only [unequalTail7Lift1] at h ⊢
+    omega
+  have h2 : unequalTail7Lift2.depth ≤ 5 := by
+    have h := equalParityMergeNet_depth_le (by omega : 2 ≤ 14)
+      unequalTail7Lift1 unequalTail7Lift1
+    simp only [unequalTail7Lift2] at h ⊢
+    omega
+  have h3 : unequalTail7Lift3.depth ≤ 6 := by
+    have h := equalParityMergeNet_depth_le (by omega : 2 ≤ 28)
+      unequalTail7Lift2 unequalTail7Lift2
+    simp only [unequalTail7Lift3] at h ⊢
+    omega
+  have h4 : unequalTail7Lift4.depth ≤ 7 := by
+    have h := equalParityMergeNet_depth_le (by omega : 2 ≤ 56)
+      unequalTail7Lift3 unequalTail7Lift3
+    simp only [unequalTail7Lift4] at h ⊢
+    omega
+  have h5 : unequalTail7Lift5.depth ≤ 8 := by
+    have h := equalParityMergeNet_depth_le (by omega : 2 ≤ 112)
+      unequalTail7Lift4 unequalTail7Lift4
+    simp only [unequalTail7Lift5] at h ⊢
+    omega
+  have h := equalParityMergeNet_depth_le (by omega : 2 ≤ 224)
+    unequalTail7Lift5 unequalTail7Lift5
+  simp only [unequalTail7Lift6] at h ⊢
   omega
 
 end Chvatal.PacketAlignment
