@@ -369,5 +369,33 @@ imply the exact same-rank and two-position inequalities needed by that layer.
 The full pointwise execution-equality theorem, including the untouched first
 wire, is also proved. `unequalCorrectionLayer_sorts_of_threshold_gap` now
 packages the correction proof as a sorting theorem for the concrete layer.
-The recursive submerge threshold-count invariant is the remaining mathematical
-gap; this closes the local correction interface only, not the 63-run merge.
+At that stage the recursive submerge threshold-count invariant was still open;
+the following progress note records its invariant-transport component. This
+does not complete the 63-run merge.
+
+Threshold-profile induction progress (Codex / GPT-6-astra-high, 2026-10-16):
+`PacketUnequalMerge.lean` now proves `unequalSourceParityThresholdGap`: for
+two monotone source runs of lengths `2m` and `2m-1`, their even and odd
+projections (concatenated in source-run order) have threshold counts differing
+by at most one. The proof reduces each threshold to a sorted Boolean string;
+the even-length source uses the existing even/odd count lemmas, and in the
+odd-length source injections account for its unpaired final even position.
+The new `unequalThresholdCount_exec` states that every comparator network
+preserves each threshold count. Consequently
+`unequalSourceParityThresholdGap_exec` proves the same gap after arbitrary,
+independent comparator networks act on the two lanes. These theorem statements
+are guarded in `PacketMergeAxioms.lean`; the focused check through that guard
+passes. This closes the *invariant transport* step, not the induction itself:
+we still need to instantiate the networks with the actual recursive merge
+networks, establish lane sortedness inductively, reconcile the `m + (m-1)` and
+`2*m-1` size casts, prove the base cases, and account for the resulting depth
+recurrence. No improved limsup coefficient follows yet.
+
+Follow-up: the size-cast portion of that list is now closed for threshold
+counts. `unequalThresholdCount_cast` proves profile counts invariant under the
+canonical `Fin` equivalence, and `unequalSourceParityThresholdGap_exec_cast`
+states the transported gap directly at the exact `2*m` / `2*m-1` dimensions
+used by the correction layer. Both are axiom-guarded and the focused Lean
+chain passes. Remaining: instantiate the actual recursively defined networks,
+prove their outputs monotone by induction, handle base cases, and formalize
+their scheduled depth.

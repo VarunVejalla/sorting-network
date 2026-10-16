@@ -240,8 +240,14 @@ same-rank and two-position cross-rank inequalities. The full execution of the
 concrete correction layer is proved equal to that min/max interleave, including
 the untouched first wire. The new `unequal_cross_bounds_of_threshold_gap`
 theorem also derives the required cross-rank inequalities from sorted lanes
-whose value-threshold counts differ by at most one. The remaining local proof
-gap is establishing that count profile for the recursive submerges. The
+whose value-threshold counts differ by at most one. The source parity gap and
+its preservation by arbitrary comparator networks are now formalized in
+`PacketUnequalMerge.lean`, including the canonical size casts from
+`m+(m-1)` to `2*m-1`. This closes the threshold-profile transport gap: the
+same-rank and two-position cross-rank bounds follow as soon as the recursive
+lane outputs are known to be sorted. Still open are the induction connecting
+the concrete recursively defined merge networks to this interface, base
+cases, and a formal depth recurrence. The
 `unequalCorrectionLayer_sorts_of_threshold_gap` theorem packages this as a
 sorting theorem for the concrete comparator layer. The proposed recursion is
 implemented in `unequal_run_merge_screen.py`. Exhaustive threshold-state checks pass for all
@@ -249,8 +255,9 @@ run lengths 1 through 16, and separately for the first two scheduled unequal
 pairs, 128+64 and 256+192 wires. The generated networks have depths 8, 9, 10,
 11, and 12 on the five scheduled pairs. These finite checks support the
 construction but do not prove the general merge theorem. The next formal step
-is to prove the recursive threshold-count invariant and a depth theorem for
-the unequal merger family.
+is to define the corresponding recursively embedded networks in Lean and
+prove their output sortedness and depth recurrence for the unequal merger
+family.
 
 The alternating two-chain microcase has now been screened separately. On the
 128-wire support word `AB` repeated 64 times, `alternating_chain_screen.py`

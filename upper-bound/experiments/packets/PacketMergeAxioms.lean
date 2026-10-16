@@ -1028,3 +1028,27 @@ import PacketUnequalMerge
 /-- info: 'Chvatal.PacketAlignment.unequalCorrectionLayer_sorts_of_threshold_gap' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.unequalCorrectionLayer_sorts_of_threshold_gap
+
+/-- info: 'Chvatal.PacketAlignment.unequalSourceParityThresholdGap' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalSourceParityThresholdGap
+
+/-- info: 'Chvatal.PacketAlignment.unequalThresholdCount_exec' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalThresholdCount_exec
+
+/-- info: 'Chvatal.PacketAlignment.unequalThresholdGap_exec' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalThresholdGap_exec
+
+/-- info: 'Chvatal.PacketAlignment.unequalSourceParityThresholdGap_exec' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalSourceParityThresholdGap_exec
+
+/-- info: 'Chvatal.PacketAlignment.unequalThresholdCount_cast' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalThresholdCount_cast
+
+/-- info: 'Chvatal.PacketAlignment.unequalSourceParityThresholdGap_exec_cast' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalSourceParityThresholdGap_exec_cast

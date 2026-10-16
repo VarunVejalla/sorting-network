@@ -113,6 +113,324 @@ theorem unequalCorrectedInterleave_sorted {L : Nat} (hL : 2 ≤ L)
 def unequalThresholdCount {N : Nat} {α : Type} [LinearOrder α]
     (f : Fin N → α) (t : α) : Nat := Fintype.card {i : Fin N // t ≤ f i}
 
+private theorem unequalBoolCount_append {m n : Nat} (A : Fin m → Bool)
+    (B : Fin n → Bool) :
+    boolTrueCount (Fin.append A B) = boolTrueCount A + boolTrueCount B := by
+  let p : Fin m ⊕ Fin n → Prop
+    | Sum.inl i => A i = true
+    | Sum.inr j => B j = true
+  have hp (s : Fin m ⊕ Fin n) :
+      p s ↔ Fin.append A B (finSumFinEquiv s) = true := by
+    cases s with
+    | inl i => simp [p]
+    | inr j =>
+        change (B j = true) ↔ Fin.addCases A B (Fin.natAdd m j) = true
+        rw [Fin.addCases_right]
+  let e : {i : Fin (m + n) // Fin.append A B i = true} ≃
+      Sum ({i : Fin m // A i = true}) ({j : Fin n // B j = true}) :=
+    (finSumFinEquiv.subtypeEquiv hp).symm.trans Equiv.subtypeSum
+  unfold boolTrueCount
+  rw [← Fintype.card_sum]
+  exact Fintype.card_congr e
+
+private theorem decide_threshold_append {m n : Nat} {α : Type} [LinearOrder α]
+    (A : Fin m → α) (B : Fin n → α) (t : α) :
+    (fun i => decide (t ≤ Fin.append A B i)) =
+      Fin.append (fun i => decide (t ≤ A i)) (fun i => decide (t ≤ B i)) := by
+  funext i
+  rcases hidx : finSumFinEquiv.symm i with j | j
+  · have hi : i = Fin.castAdd n j := by
+      have h := congrArg finSumFinEquiv hidx
+      simpa using h
+    rw [hi]
+    simp only [Fin.append_left]
+  · have hi : i = Fin.natAdd m j := by
+      have h := congrArg finSumFinEquiv hidx
+      simpa using h
+    rw [hi]
+    simp only [Fin.append_right]
+
+private def unequalEvenIndex {m : Nat} (i : Fin m) : Fin (2 * m) :=
+  ⟨2 * i.val, by have hi := i.isLt; omega⟩
+
+private def unequalOddIndex {m : Nat} (i : Fin m) : Fin (2 * m) :=
+  ⟨2 * i.val + 1, by have hi := i.isLt; omega⟩
+
+private def unequalEvenIndexOddLength {m : Nat} (i : Fin m) :
+    Fin (2 * m - 1) :=
+  ⟨2 * i.val, by have hi := i.isLt; omega⟩
+
+private def unequalOddIndexOddLength {m : Nat} (i : Fin (m - 1)) :
+    Fin (2 * m - 1) :=
+  ⟨2 * i.val + 1, by have hi := i.isLt; omega⟩
+
+/-- In a sorted Boolean run of odd length, the even lane has at most one more
+true value than the odd lane; only the last even position can be unpaired. -/
+private theorem oddLength_even_count_le_odd_add_one {m : Nat}
+    (v : Fin (2 * m - 1) → Bool) (hv : Monotone v) :
+    boolTrueCount (fun i : Fin m => v (unequalEvenIndexOddLength i)) ≤
+      boolTrueCount (fun i : Fin (m - 1) => v (unequalOddIndexOddLength i)) + 1 := by
+  let f : {i : Fin m // v (unequalEvenIndexOddLength i) = true} →
+      ({i : Fin (m - 1) // v (unequalOddIndexOddLength i) = true} ⊕ Unit) :=
+    fun x => if hi : x.1.val + 1 < m then
+      Sum.inl ⟨⟨x.1.val, by omega⟩, by
+        have hp : unequalEvenIndexOddLength x.1 ≤
+            unequalOddIndexOddLength ⟨x.1.val, by omega⟩ := by
+          apply Fin.mk_le_mk.mpr
+          simp [unequalEvenIndexOddLength, unequalOddIndexOddLength]
+        have h := hv hp
+        cases hval : v (unequalOddIndexOddLength ⟨x.1.val, by omega⟩) with
+        | false =>
+            have htf : true ≤ false := by simpa [x.2, hval] using h
+            exact False.elim ((by decide : ¬ ((true : Bool) ≤ false)) htf)
+        | true => simpa [hval]⟩
+    else Sum.inr Unit.unit
+  have hf : Function.Injective f := by
+    intro x y hxy
+    by_cases hx : x.1.val + 1 < m <;> by_cases hy : y.1.val + 1 < m
+    · simp [f, hx, hy] at hxy
+      apply Subtype.ext
+      exact Fin.ext hxy
+    · simp [f, hx, hy] at hxy
+    · simp [f, hx, hy] at hxy
+    · simp [f, hx, hy] at hxy
+      apply Subtype.ext
+      apply Fin.ext
+      have hxlt := x.1.isLt
+      have hylt := y.1.isLt
+      omega
+  have hcard := Fintype.card_le_of_injective f hf
+  simpa [f, boolTrueCount] using hcard
+
+/-- In a sorted Boolean run of odd length, every true odd position injects
+into the following even position. -/
+private theorem oddLength_odd_count_le_even {m : Nat}
+    (v : Fin (2 * m - 1) → Bool) (hv : Monotone v) :
+    boolTrueCount (fun i : Fin (m - 1) => v (unequalOddIndexOddLength i)) ≤
+      boolTrueCount (fun i : Fin m => v (unequalEvenIndexOddLength i)) := by
+  let f : {i : Fin (m - 1) // v (unequalOddIndexOddLength i) = true} →
+      {i : Fin m // v (unequalEvenIndexOddLength i) = true} := fun x =>
+    ⟨⟨x.1.val + 1, by have hx := x.1.isLt; omega⟩, by
+      have hp : unequalOddIndexOddLength x.1 ≤
+          unequalEvenIndexOddLength ⟨x.1.val + 1, by have hx := x.1.isLt; omega⟩ := by
+        apply Fin.mk_le_mk.mpr
+        simp [unequalOddIndexOddLength, unequalEvenIndexOddLength]
+      have h := hv hp
+      cases hval : v (unequalEvenIndexOddLength ⟨x.1.val + 1, by omega⟩) with
+      | false =>
+          have htf : true ≤ false := by simpa [x.2, hval] using h
+          exact False.elim ((by decide : ¬ ((true : Bool) ≤ false)) htf)
+      | true => simpa [hval]⟩
+  have hf : Function.Injective f := by
+    intro x y hxy
+    apply Subtype.ext
+    apply Fin.ext
+    have hv := congrArg (fun z : {i : Fin m // _} => z.1.val) hxy
+    dsimp [f] at hv
+    omega
+  have hcard := Fintype.card_le_of_injective f hf
+  simpa [f, boolTrueCount] using hcard
+
+/-- For two sorted source runs of lengths `2m` and `2m-1`, their even and odd
+parity projections have threshold counts within one. -/
+theorem unequalSourceParityThresholdGap {m : Nat} {α : Type} [LinearOrder α]
+    (A : Fin (2 * m) → α) (B : Fin (2 * m - 1) → α)
+    (hA : Monotone A) (hB : Monotone B) :
+    ∀ t : α,
+      unequalThresholdCount
+        (Fin.append (fun i : Fin m => A (unequalEvenIndex i))
+          (fun i : Fin m => B (unequalEvenIndexOddLength i))) t ≤
+          unequalThresholdCount
+            (Fin.append (fun i : Fin m => A (unequalOddIndex i))
+              (fun i : Fin (m - 1) => B (unequalOddIndexOddLength i))) t + 1 ∧
+      unequalThresholdCount
+        (Fin.append (fun i : Fin m => A (unequalOddIndex i))
+          (fun i : Fin (m - 1) => B (unequalOddIndexOddLength i))) t ≤
+          unequalThresholdCount
+            (Fin.append (fun i : Fin m => A (unequalEvenIndex i))
+              (fun i : Fin m => B (unequalEvenIndexOddLength i))) t + 1 := by
+  intro t
+  let a : Fin (2 * m) → Bool := fun i => decide (t ≤ A i)
+  let b : Fin (2 * m - 1) → Bool := fun i => decide (t ≤ B i)
+  have ha : Monotone a := by
+    intro i j hij
+    by_cases hi : t ≤ A i
+    · have hj : t ≤ A j := hi.trans (hA hij)
+      simp [a, hi, hj]
+    · simp [a, hi]
+  have hb : Monotone b := by
+    intro i j hij
+    by_cases hi : t ≤ B i
+    · have hj : t ≤ B j := hi.trans (hB hij)
+      simp [b, hi, hj]
+    · simp [b, hi]
+  have hAlo := monotone_even_count_le_odd a ha
+  have hAhi := monotone_odd_count_le_even_add_one a ha
+  have hAlo' :
+      boolTrueCount (fun i : Fin m => a (unequalEvenIndex i)) ≤
+        boolTrueCount (fun i : Fin m => a (unequalOddIndex i)) := by
+    change boolTrueCount (fun i : Fin m => a (evenWire m i)) ≤ _
+    exact hAlo
+  have hAhi' :
+      boolTrueCount (fun i : Fin m => a (unequalOddIndex i)) ≤
+        boolTrueCount (fun i : Fin m => a (unequalEvenIndex i)) + 1 := by
+    change boolTrueCount (fun i : Fin m => a (oddWire m i)) ≤ _
+    exact hAhi
+  have hBlo := oddLength_odd_count_le_even b hb
+  have hBhi := oddLength_even_count_le_odd_add_one b hb
+  have hconv (f : Fin (m + m) → α) :
+      unequalThresholdCount f t = boolTrueCount (fun i => decide (t ≤ f i)) := by
+    simp [unequalThresholdCount, boolTrueCount]
+  have hconvOdd (f : Fin (m + (m - 1)) → α) :
+      unequalThresholdCount f t = boolTrueCount (fun i => decide (t ≤ f i)) := by
+    simp [unequalThresholdCount, boolTrueCount]
+  rw [hconv, hconvOdd, decide_threshold_append, decide_threshold_append,
+    unequalBoolCount_append, unequalBoolCount_append]
+  change
+    boolTrueCount (fun i : Fin m => a (unequalEvenIndex i)) +
+      boolTrueCount (fun i : Fin m => b (unequalEvenIndexOddLength i)) ≤
+      boolTrueCount (fun i : Fin m => a (unequalOddIndex i)) +
+        boolTrueCount (fun i : Fin (m - 1) => b (unequalOddIndexOddLength i)) + 1 ∧
+    boolTrueCount (fun i : Fin m => a (unequalOddIndex i)) +
+      boolTrueCount (fun i : Fin (m - 1) => b (unequalOddIndexOddLength i)) ≤
+      boolTrueCount (fun i : Fin m => a (unequalEvenIndex i)) +
+        boolTrueCount (fun i : Fin m => b (unequalEvenIndexOddLength i)) + 1
+  constructor
+  · have hsum := Nat.add_le_add hAlo' hBhi
+    omega
+  · have hsum := Nat.add_le_add hAhi' hBlo
+    omega
+
+/-- Comparator networks preserve the number of entries above every threshold.
+This is the profile-level form of the fact that a comparator only permutes
+its input values. -/
+theorem unequalThresholdCount_exec {N : Nat} {α : Type} [LinearOrder α]
+    (net : ComparatorNetwork N) (v : Fin N → α) (t : α) :
+    unequalThresholdCount (net.exec v) t = unequalThresholdCount v t := by
+  have hconv (f : Fin N → α) :
+      unequalThresholdCount f t = boolTrueCount (fun i => decide (t ≤ f i)) := by
+    simp [unequalThresholdCount, boolTrueCount]
+  rw [hconv, hconv, ← boolTrueCount_exec net (fun i => decide (t ≤ v i)),
+    exec_threshold]
+
+/-- Applying independent networks to two lanes preserves a unit threshold-
+count gap between their rank profiles. No sorting hypothesis on the networks
+is needed here; only the permutation semantics of comparator networks. -/
+theorem unequalThresholdGap_exec {M N : Nat} {α : Type} [LinearOrder α]
+    (netE : ComparatorNetwork M) (netO : ComparatorNetwork N)
+    (E : Fin M → α) (O : Fin N → α)
+    (hgap : ∀ t : α,
+      unequalThresholdCount E t ≤ unequalThresholdCount O t + 1 ∧
+      unequalThresholdCount O t ≤ unequalThresholdCount E t + 1) :
+    ∀ t : α,
+      unequalThresholdCount (netE.exec E) t ≤
+        unequalThresholdCount (netO.exec O) t + 1 ∧
+      unequalThresholdCount (netO.exec O) t ≤
+        unequalThresholdCount (netE.exec E) t + 1 := by
+  intro t
+  rw [unequalThresholdCount_exec, unequalThresholdCount_exec]
+  exact hgap t
+
+/-- Reindexing a profile along the canonical equivalence between equal-sized
+`Fin` types does not change its threshold counts. -/
+theorem unequalThresholdCount_cast {M N : Nat} (h : N = M)
+    {α : Type} [LinearOrder α] (f : Fin M → α) (t : α) :
+    unequalThresholdCount (fun i : Fin N => f (Fin.cast h i)) t =
+      unequalThresholdCount f t := by
+  classical
+  let e : {i : Fin N // t ≤ f (Fin.cast h i)} ≃ {i : Fin M // t ≤ f i} := {
+    toFun := fun i => ⟨Fin.cast h i.1, i.2⟩
+    invFun := fun i => ⟨Fin.cast h.symm i.1, by simpa using i.2⟩
+    left_inv := by
+      intro i
+      apply Subtype.ext
+      apply Fin.ext
+      simp
+    right_inv := by
+      intro i
+      apply Subtype.ext
+      apply Fin.ext
+      simp
+  }
+  unfold unequalThresholdCount
+  exact Fintype.card_congr e
+
+/-- The recursive parity split has lane sizes `m+m` and `m+(m-1)`, while
+the interleave/correction interface uses `2*m` and `2*m-1`. This theorem
+transports the profile gap across those canonical `Fin` casts after the
+actual lane networks have run. -/
+theorem unequalSourceParityThresholdGap_exec_cast {m : Nat} {α : Type}
+    [LinearOrder α] (A : Fin (2 * m) → α) (B : Fin (2 * m - 1) → α)
+    (hA : Monotone A) (hB : Monotone B)
+    (netE : ComparatorNetwork (m + m))
+    (netO : ComparatorNetwork (m + (m - 1))) :
+    ∀ t : α,
+      unequalThresholdCount
+        (fun i : Fin (2 * m) =>
+          netE.exec (Fin.append (fun j : Fin m => A (unequalEvenIndex j))
+            (fun j : Fin m => B (unequalEvenIndexOddLength j)))
+            (Fin.cast (by omega : 2 * m = m + m) i)) t ≤
+          unequalThresholdCount
+            (fun i : Fin (2 * m - 1) =>
+              netO.exec (Fin.append (fun j : Fin m => A (unequalOddIndex j))
+                (fun j : Fin (m - 1) => B (unequalOddIndexOddLength j)))
+                (Fin.cast (by omega : 2 * m - 1 = m + (m - 1)) i)) t + 1 ∧
+      unequalThresholdCount
+        (fun i : Fin (2 * m - 1) =>
+          netO.exec (Fin.append (fun j : Fin m => A (unequalOddIndex j))
+            (fun j : Fin (m - 1) => B (unequalOddIndexOddLength j)))
+            (Fin.cast (by omega : 2 * m - 1 = m + (m - 1)) i)) t ≤
+          unequalThresholdCount
+            (fun i : Fin (2 * m) =>
+              netE.exec (Fin.append (fun j : Fin m => A (unequalEvenIndex j))
+                (fun j : Fin m => B (unequalEvenIndexOddLength j)))
+                (Fin.cast (by omega : 2 * m = m + m) i)) t + 1 := by
+  let e0 : Fin (m + m) → α := Fin.append
+    (fun j : Fin m => A (unequalEvenIndex j))
+    (fun j : Fin m => B (unequalEvenIndexOddLength j))
+  let o0 : Fin (m + (m - 1)) → α := Fin.append
+    (fun j : Fin m => A (unequalOddIndex j))
+    (fun j : Fin (m - 1) => B (unequalOddIndexOddLength j))
+  let E : Fin (2 * m) → α := fun i =>
+    netE.exec e0 (Fin.cast (by omega : 2 * m = m + m) i)
+  let O : Fin (2 * m - 1) → α := fun i =>
+    netO.exec o0 (Fin.cast (by omega : 2 * m - 1 = m + (m - 1)) i)
+  intro t
+  have hnative := unequalThresholdGap_exec netE netO _ _
+    (unequalSourceParityThresholdGap A B hA hB) t
+  have hE : unequalThresholdCount E t = unequalThresholdCount (netE.exec e0) t := by
+    exact unequalThresholdCount_cast (by omega : 2 * m = m + m) (netE.exec e0) t
+  have hO : unequalThresholdCount O t = unequalThresholdCount (netO.exec o0) t := by
+    exact unequalThresholdCount_cast (by omega : 2 * m - 1 = m + (m - 1))
+      (netO.exec o0) t
+  rw [hE, hO]
+  exact hnative
+
+/-- Thus, for sorted source runs of lengths `2m` and `2m-1`, *any* recursive
+comparator networks on their even and odd projections preserve the profile
+gap needed by the final unequal correction layer. This isolates the invariant
+induction step from the details of how each lane is sorted. -/
+theorem unequalSourceParityThresholdGap_exec {m : Nat} {α : Type} [LinearOrder α]
+    (A : Fin (2 * m) → α) (B : Fin (2 * m - 1) → α)
+    (hA : Monotone A) (hB : Monotone B)
+    (netE : ComparatorNetwork (m + m))
+    (netO : ComparatorNetwork (m + (m - 1))) :
+    ∀ t : α,
+      unequalThresholdCount
+        (netE.exec (Fin.append (fun i : Fin m => A (unequalEvenIndex i))
+          (fun i : Fin m => B (unequalEvenIndexOddLength i)))) t ≤
+          unequalThresholdCount
+            (netO.exec (Fin.append (fun i : Fin m => A (unequalOddIndex i))
+              (fun i : Fin (m - 1) => B (unequalOddIndexOddLength i)))) t + 1 ∧
+      unequalThresholdCount
+        (netO.exec (Fin.append (fun i : Fin m => A (unequalOddIndex i))
+          (fun i : Fin (m - 1) => B (unequalOddIndexOddLength i)))) t ≤
+          unequalThresholdCount
+            (netE.exec (Fin.append (fun i : Fin m => A (unequalEvenIndex i))
+              (fun i : Fin m => B (unequalEvenIndexOddLength i)))) t + 1 := by
+  exact unequalThresholdGap_exec netE netO _ _
+    (unequalSourceParityThresholdGap A B hA hB)
+
 private theorem unequalThresholdCount_lower {N : Nat} {α : Type}
     [LinearOrder α] (f : Fin N → α) (hf : Monotone f)
     (i : Fin N) (t : α) (hit : t ≤ f i) :
