@@ -418,3 +418,38 @@ networks, and `equal_cross_bounds_of_threshold_gap` turns it into the same-rank
 and two-rank inequalities for a one-layer equal-lane correction. These results
 are axiom-guarded. The remaining construction gap is to formalize the general
 even-size correction network and combine it recursively with the 32+31 core.
+
+Correction-layer closure: the equal-lane one-layer correction is now a
+concrete comparator network, implemented as the unequal correction layer
+scattered onto the first `2L-1` wires of `2L`. Its depth is at most one, its
+execution is proved equal to the equal-length min/max interleave, and that
+output is proved sorted under the asymmetric `0/2` threshold-profile gap.
+`evenParityMerge_step_sorts` packages the even/even induction step, just as
+`unequalParityMerge_step_sorts` packages the odd-sized step. These declarations
+are added to the axiom guard. This closes the local correction-layer gap for
+both parities.
+
+Recursive-step progress: `equalParityFront` now physically scatters two
+same-size recursive lane networks onto even and odd wires, and its execution
+is proved to be the intended interleave of their outputs. The theorem
+`equalParityFront_depth_le` proves those lanes run in parallel, and
+`equalParityMergeNet_depth_le` adds only the one-layer correction cost:
+`depth(parent) ≤ max(depth(evenLane), depth(oddLane)) + 1`. The composed network
+`equalParityMergeNet` is proved to sort whenever its lane outputs are sorted
+and have the transported `0/2` threshold gap. Focused runs have checked both
+`PacketUnequalMerge` and `PacketMergeAxioms`, including axiom guards for the
+depth and sorting results. `equalParityMerge64_sorts_two_runs` now instantiates
+the interface on two 32-wire source runs: if the recursive networks sort the
+32-wire even and odd parity lanes, then the composed 64-wire network sorts.
+Its profile gap follows from source monotonicity, and explicit index lemmas
+identify those parity wires with the two 16-wire pieces. The companion
+`equalParityMerge64_depth_le` gives a six-layer bound when both lane networks
+have depth at most five. `standard64Merge_sorts_two_runs` discharges those
+hypotheses using the verified 32-wire odd-even merge, and
+`standard64Merge_depth_le` closes the six-layer bound for this concrete
+network. This closes the standalone 64-wire equal-run merge proof, although
+it recovers the standard odd-even merge bound and by itself gives no
+improvement. The novel remaining work is to replace that standard lane choice
+with the proposed unequal 32+31 core, connect it to the five tail levels, and
+prove the resulting global depth recurrence. No improved limsup constant
+follows yet.

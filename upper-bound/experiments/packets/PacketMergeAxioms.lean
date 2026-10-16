@@ -1069,3 +1069,51 @@ import PacketUnequalMerge
 /-- info: 'Chvatal.PacketAlignment.evenSourceParityThresholdGap_exec' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.evenSourceParityThresholdGap_exec
+
+/-- info: 'Chvatal.PacketAlignment.equalCorrectedInterleave_sorted_of_threshold_gap' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.equalCorrectedInterleave_sorted_of_threshold_gap
+
+/-- info: 'Chvatal.PacketAlignment.equalCorrectionLayer_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.equalCorrectionLayer_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.equalCorrectionLayer_exec_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.equalCorrectionLayer_exec_eq
+
+/-- info: 'Chvatal.PacketAlignment.equalCorrectionLayer_sorts_of_threshold_gap' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.equalCorrectionLayer_sorts_of_threshold_gap
+
+/-- info: 'Chvatal.PacketAlignment.evenParityMerge_step_sorts' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.evenParityMerge_step_sorts
+
+/-- info: 'Chvatal.PacketAlignment.equalParityFront_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.equalParityFront_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.equalParityMergeNet_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.equalParityMergeNet_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.equalParityMergeNet_sorts' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.equalParityMergeNet_sorts
+
+/-- info: 'Chvatal.PacketAlignment.equalParityMerge64_sorts_two_runs' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.equalParityMerge64_sorts_two_runs
+
+/-- info: 'Chvatal.PacketAlignment.equalParityMerge64_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.equalParityMerge64_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.standard64Merge_sorts_two_runs' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.standard64Merge_sorts_two_runs
+
+/-- info: 'Chvatal.PacketAlignment.standard64Merge_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.standard64Merge_depth_le
