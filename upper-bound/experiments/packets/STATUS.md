@@ -467,3 +467,32 @@ or the five tail levels, and it yields no improved coefficient by itself. A
 parameter-generic physical lane identity remains desirable; the first attempt
 needed explicit casts between different `Fin` length expressions and was
 removed after its focused check exposed type mismatches.
+
+Even/even tail-lift interface: `equalEvenRuns_lane_eq` and
+`equalOddRuns_lane_eq` now identify the physical parity wires of arbitrary
+even-length source runs `2m` and `2n` with their two `m`- and `n`-wire parity
+subruns, including the required `Fin` casts. The guarded theorem
+`equalParityMergeNet_sorts_two_even_runs` packages the outer induction step:
+any verified merger for sorted `m+n` runs lifts to a merger for sorted
+`2m+2n` runs with one additional correction layer. This is the reusable
+interface needed to wrap each `2^k+(2^k-1)` core six times for the five
+scheduled tail pairs. The next entries record completed sixfold compositions
+for the two largest pairs; three smaller compositions and the 57-layer tree
+composition remain open.
+
+Largest scheduled tail pair closed: six explicit equal/even lifts of the
+verified 32+31 core now give a concrete 4032-wire network that merges sorted
+2048- and 1984-wire runs. `unequalTail63Lift6_sorts_two_runs` proves
+correctness, and `unequalTail63Lift6_depth_le` proves depth at most 12, the
+required `j+7` cost for the `j=5` tail level. Both are axiom-guarded, and the
+focused guard chain passes. This discharges the largest of the five unequal
+merge gates in the 63-run tree; the corresponding four smaller tail pairs,
+the rest of the tree proof, and all global recurrence/coefficient obligations
+remain open.
+
+Second scheduled tail pair closed: six equal/even lifts of the 16+15 core now
+give a concrete 1984-wire merger for sorted 1024- and 960-wire runs. Its
+correctness and depth-at-most-11 results are axiom-guarded. Together with the
+2048+1984, depth-12 merger above, this formally closes the two largest of the
+five special tail merges. The 128+64, 256+192, and 512+448 pairs and the
+surrounding 64-run tree composition remain.
