@@ -803,6 +803,46 @@ import PacketHalfProfile
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_sourcePortRepairStage_noRepair_packetCells
 
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_packetAssembly' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_packetAssembly
+
+/-- info: 'Chvatal.PacketAlignment.alignedUpRepairPacket_union' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.alignedUpRepairPacket_union
+
+/-- info: 'Chvatal.PacketAlignment.alignedUpRepairPacket_pairwise_disjoint' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.alignedUpRepairPacket_pairwise_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.alignedUpRepairPacket_card_eq_64' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.alignedUpRepairPacket_card_eq_64
+
+/-- info: 'Chvatal.PacketAlignment.alignedUpRepairPacket_sorted' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.alignedUpRepairPacket_sorted
+
+/-- info: 'Chvatal.PacketAlignment.alignedDownRepairPacket_union' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.alignedDownRepairPacket_union
+
+/-- info: 'Chvatal.PacketAlignment.alignedDownRepairPacket_pairwise_disjoint' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.alignedDownRepairPacket_pairwise_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.alignedDownRepairPacket_card_eq_64' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.alignedDownRepairPacket_card_eq_64
+
+/-- info: 'Chvatal.PacketAlignment.alignedDownRepairPacket_sorted' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.alignedDownRepairPacket_sorted
+
+/-- info: 'Chvatal.PacketAlignment.rankPacketCell_eq_global' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.rankPacketCell_eq_global
+
 /-- info: 'Chvatal.PacketAlignment.stageNet_rankSortedOn_image' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.stageNet_rankSortedOn_image

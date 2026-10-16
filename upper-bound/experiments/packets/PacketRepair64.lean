@@ -540,6 +540,25 @@ theorem rankPacketCell_bounds {N : Nat} (s : Finset (Fin N)) (lo : Nat)
       Chvatal.rankIn s w < lo + 64 * (k.val + 1) := by
   exact Chvatal.mem_blockOf.mp hw |>.2
 
+/-- A packet cell beginning at an aligned rank is literally one of the
+source register's original 64-rank cells. -/
+theorem rankPacketCell_eq_global {N : Nat} (s : Finset (Fin N)) (lo : Nat)
+    {q : Nat} (k : Fin q) (hlo : lo % 64 = 0)
+    (hglobal : lo / 64 + k.val < s.card / 64) :
+    rankPacketCell s lo k =
+      rankPacketCell s 0 ⟨lo / 64 + k.val, hglobal⟩ := by
+  have hdiv : lo = 64 * (lo / 64) := by
+    have h := Nat.mod_add_div lo 64
+    rw [hlo] at h
+    omega
+  have hstart : lo + 64 * k.val = 64 * (lo / 64 + k.val) := by
+    omega
+  have hend' : lo + 64 * (k.val + 1) =
+      64 * (lo / 64 + k.val + 1) := by
+    omega
+  rw [rankPacketCell, rankPacketCell, hstart, hend']
+  simp
+
 theorem upSetPrefixCell_disjoint_endpoints {N : Nat} (s : Finset (Fin N))
     (π q C : Nat) (hπ : π = 64 * (2 * q + 1))
     (hcard : s.card = 64 * C) (hπcard : π ≤ s.card)
@@ -589,6 +608,221 @@ def upSetRepairPacket {N : Nat} (s : Finset (Fin N)) (π q : Nat) :
   | Sum.inl _ => upFringePairSupport s π
   | Sum.inr (.inl k) => upSetPrefixCell s k
   | Sum.inr (.inr k) => upSetSuffixCell s π k
+
+/-- Packetization of an already aligned up-set: its prefix and suffix are
+each a sequence of original 64-rank cells. -/
+def alignedUpRepairPacket {N : Nat} (s : Finset (Fin N)) (π q : Nat) :
+    Fin q ⊕ Fin q → Finset (Fin N)
+  | Sum.inl k => rankPacketCell s 0 k
+  | Sum.inr k => rankPacketCell s (s.card - π / 2) k
+
+/-- Packetization of an already aligned down-cut by its consecutive 64-rank
+cells. -/
+def alignedDownRepairPacket {N : Nat} (s : Finset (Fin N))
+    (π τ : Nat) (j : Fin 64) (m : Nat) : Fin m → Finset (Fin N) :=
+  fun k => rankPacketCell s (π / 2 + j.val * τ) k
+
+theorem alignedUpRepairPacket_union {N : Nat} (s : Finset (Fin N))
+    (π q : Nat) (hhalf : π / 2 = 64 * q) (hπcard : π ≤ s.card) :
+    Finset.univ.biUnion (alignedUpRepairPacket s π q) = Chvatal.upSet s π := by
+  have hpre : Chvatal.blockOf s 0 (π / 2) =
+      Finset.univ.biUnion (fun k : Fin q => rankPacketCell s 0 k) := by
+    rw [hhalf]
+    simpa using blockOf_packetCell_partition s 0 q
+  have hsuf : Chvatal.blockOf s (s.card - π / 2) s.card =
+      Finset.univ.biUnion (fun k : Fin q =>
+        rankPacketCell s (s.card - π / 2) k) := by
+    have hend : s.card = s.card - π / 2 + 64 * q := by rw [hhalf]; omega
+    calc
+      Chvatal.blockOf s (s.card - π / 2) s.card =
+          Chvatal.blockOf s (s.card - π / 2) (s.card - π / 2 + 64 * q) := by
+            congr 1
+      _ = Finset.univ.biUnion (fun k : Fin q =>
+          rankPacketCell s (s.card - π / 2) k) :=
+        blockOf_packetCell_partition s (s.card - π / 2) q
+  rw [Chvatal.upSet]
+  rw [hpre, hsuf]
+  ext w
+  simp [alignedUpRepairPacket]
+
+theorem alignedDownRepairPacket_union {N : Nat} (s : Finset (Fin N))
+    (π τ : Nat) (j : Fin 64) (m : Nat)
+    (hτ : τ = 64 * m) :
+    Finset.univ.biUnion (alignedDownRepairPacket s π τ j m) =
+      Chvatal.downSet s π τ j.val := by
+  have hend : π / 2 + (j.val + 1) * τ =
+      π / 2 + j.val * τ + 64 * m := by rw [hτ]; ring
+  rw [Chvatal.downSet]
+  calc
+    Finset.univ.biUnion (alignedDownRepairPacket s π τ j m) =
+        Finset.univ.biUnion (fun k : Fin m =>
+          rankPacketCell s (π / 2 + j.val * τ) k) := rfl
+    _ = Chvatal.blockOf s (π / 2 + j.val * τ)
+        (π / 2 + j.val * τ + 64 * m) :=
+      (blockOf_packetCell_partition s (π / 2 + j.val * τ) m).symm
+    _ = Chvatal.blockOf s (π / 2 + j.val * τ)
+        (π / 2 + (j.val + 1) * τ) := by rw [hend]
+
+theorem alignedUpRepairPacket_pairwise_disjoint {N : Nat}
+    (s : Finset (Fin N)) (π q : Nat)
+    (hhalf : π / 2 = 64 * q) (hπ : π = 128 * q)
+    (hπcard : π ≤ s.card) :
+    ∀ a b : Fin q ⊕ Fin q, a ≠ b →
+      Disjoint (alignedUpRepairPacket s π q a)
+        (alignedUpRepairPacket s π q b) := by
+  intro a b hab
+  cases a with
+  | inl k =>
+    cases b with
+    | inl l =>
+      have hne : k.val ≠ l.val := fun h => hab (congrArg Sum.inl (Fin.ext h))
+      apply Finset.disjoint_left.mpr
+      intro w hwk hwl
+      have hk := rankPacketCell_bounds s 0 k (by simpa [alignedUpRepairPacket] using hwk)
+      have hl := rankPacketCell_bounds s 0 l (by simpa [alignedUpRepairPacket] using hwl)
+      rcases lt_or_gt_of_ne hne with hkl | hlk
+      · omega
+      · omega
+    | inr l =>
+      have htotal : 128 * q ≤ s.card := by rw [← hπ]; exact hπcard
+      have hsep : 64 * q ≤ s.card - 64 * q := by omega
+      apply Finset.disjoint_left.mpr
+      intro w hwk hwl
+      have hk := rankPacketCell_bounds s 0 k
+        (by simpa [alignedUpRepairPacket] using hwk)
+      have hl := rankPacketCell_bounds s (s.card - π / 2) l
+        (by simpa [alignedUpRepairPacket] using hwl)
+      rw [hhalf] at hl
+      have hklt := k.isLt
+      have hllt := l.isLt
+      omega
+  | inr k =>
+    cases b with
+    | inl l =>
+      have htotal : 128 * q ≤ s.card := by rw [← hπ]; exact hπcard
+      have hsep : 64 * q ≤ s.card - 64 * q := by omega
+      apply Finset.disjoint_left.mpr
+      intro w hwk hwl
+      have hl := rankPacketCell_bounds s 0 l
+        (by simpa [alignedUpRepairPacket] using hwl)
+      have hk := rankPacketCell_bounds s (s.card - π / 2) k
+        (by simpa [alignedUpRepairPacket] using hwk)
+      rw [hhalf] at hk
+      have hllt := l.isLt
+      have hkl := k.isLt
+      omega
+    | inr l =>
+      have hne : k.val ≠ l.val := fun h => hab (congrArg Sum.inr (Fin.ext h))
+      apply Finset.disjoint_left.mpr
+      intro w hwk hwl
+      have hk := rankPacketCell_bounds s (s.card - π / 2) k
+        (by simpa [alignedUpRepairPacket] using hwk)
+      have hl := rankPacketCell_bounds s (s.card - π / 2) l
+        (by simpa [alignedUpRepairPacket] using hwl)
+      rcases lt_or_gt_of_ne hne with hkl | hlk
+      · omega
+      · omega
+
+theorem alignedUpRepairPacket_card_eq_64 {N : Nat}
+    (s : Finset (Fin N)) (π q : Nat)
+    (hhalf : π / 2 = 64 * q) (hπ : π = 128 * q)
+    (hπcard : π ≤ s.card) :
+    ∀ a : Fin q ⊕ Fin q, (alignedUpRepairPacket s π q a).card = 64 := by
+  intro a
+  cases a with
+  | inl k =>
+    have htotal : 128 * q ≤ s.card := by rw [← hπ]; exact hπcard
+    have hk := k.isLt
+    have hhi : 64 * (k.val + 1) ≤ s.card := by omega
+    simp only [alignedUpRepairPacket, rankPacketCell, Nat.zero_add]
+    rw [Chvatal.blockOf_card hhi]
+    omega
+  | inr k =>
+    have hhi : s.card - π / 2 + 64 * (k.val + 1) ≤ s.card := by
+      rw [hhalf]
+      omega
+    simp only [alignedUpRepairPacket, rankPacketCell]
+    rw [Chvatal.blockOf_card hhi]
+    omega
+
+theorem alignedDownRepairPacket_pairwise_disjoint {N : Nat}
+    (s : Finset (Fin N)) (π τ : Nat) (j : Fin 64) (m : Nat) :
+    ∀ k l : Fin m, k ≠ l →
+      Disjoint (alignedDownRepairPacket s π τ j m k)
+        (alignedDownRepairPacket s π τ j m l) := by
+  intro k l hne
+  have hval : k.val ≠ l.val := fun h => hne (Fin.ext h)
+  apply Finset.disjoint_left.mpr
+  intro w hwk hwl
+  have hk := rankPacketCell_bounds s (π / 2 + j.val * τ) k
+    (by simpa [alignedDownRepairPacket] using hwk)
+  have hl := rankPacketCell_bounds s (π / 2 + j.val * τ) l
+    (by simpa [alignedDownRepairPacket] using hwl)
+  rcases lt_or_gt_of_ne hval with hkl | hlk
+  · omega
+  · omega
+
+theorem alignedDownRepairPacket_card_eq_64 {N : Nat}
+    (s : Finset (Fin N)) (π τ : Nat) (j : Fin 64) (m : Nat)
+    (hτ : τ = 64 * m) (hsize : s.card = π + 64 * τ) :
+    ∀ k : Fin m, (alignedDownRepairPacket s π τ j m k).card = 64 := by
+  intro k
+  have hj : j.val + 1 ≤ 64 := by omega
+  have hmul : (j.val + 1) * τ ≤ 64 * τ := Nat.mul_le_mul_right _ hj
+  have hhi : π / 2 + (j.val + 1) * τ ≤ s.card := by rw [hsize]; omega
+  have hk := k.isLt
+  simp only [alignedDownRepairPacket, rankPacketCell]
+  have hstep : (j.val + 1) * τ = j.val * τ + τ := by ring
+  have hcell : 64 * (k.val + 1) ≤ τ := by rw [hτ]; omega
+  have hupper : π / 2 + j.val * τ + τ ≤ s.card := by
+    calc
+      π / 2 + j.val * τ + τ = π / 2 + (j.val + 1) * τ := by omega
+      _ ≤ s.card := hhi
+  have hend : π / 2 + j.val * τ + 64 * (k.val + 1) ≤ s.card := by
+    omega
+  rw [Chvatal.blockOf_card hend]
+  omega
+
+/-- If the original register consists of sorted 64-cells, an aligned up-set
+packetization is sorted cell-by-cell. -/
+theorem alignedUpRepairPacket_sorted {N : Nat} {α : Type} [Preorder α]
+    (s : Finset (Fin N)) (v : Fin N → α) (π q : Nat)
+    (hhalf : π / 2 = 64 * q) (hcard : 64 ∣ s.card)
+    (hpack : PacketSortedOn s v) :
+    ∀ a : Fin q ⊕ Fin q, RankSortedOn (alignedUpRepairPacket s π q a) v := by
+  intro a
+  cases a with
+  | inl k =>
+    simpa [alignedUpRepairPacket, rankPacketCell] using
+      rankPacketCell_sorted s v hpack 0 (by rfl) k
+  | inr k =>
+    have hmod : s.card % 64 = 0 := Nat.mod_eq_zero_of_dvd hcard
+    have hcardEq : s.card = 64 * (s.card / 64) := by
+      have := Nat.mod_add_div s.card 64
+      rw [hmod] at this
+      omega
+    have hloEq : s.card - π / 2 = 64 * (s.card / 64 - q) := by
+      rw [hhalf, hcardEq]
+      omega
+    have hlo : (s.card - π / 2) % 64 = 0 := by rw [hloEq]; simp
+    simpa [alignedUpRepairPacket, rankPacketCell] using
+      rankPacketCell_sorted s v hpack (s.card - π / 2) hlo k
+
+/-- If the cut origin is packet-aligned, consecutive aligned down-cut cells
+inherit sortedness from the source register's packet grid. -/
+theorem alignedDownRepairPacket_sorted {N : Nat} {α : Type} [Preorder α]
+    (s : Finset (Fin N)) (v : Fin N → α) (π τ : Nat) (j : Fin 64)
+    (m : Nat) (hhalf : π / 2 % 64 = 0) (hτ : τ = 64 * m)
+    (hpack : PacketSortedOn s v) :
+    ∀ k : Fin m, RankSortedOn (alignedDownRepairPacket s π τ j m k) v := by
+  intro k
+  have hτdiv : 64 ∣ τ := ⟨m, hτ⟩
+  have hloDiv : 64 ∣ π / 2 + j.val * τ := by
+    apply Nat.dvd_add (Nat.dvd_of_mod_eq_zero hhalf)
+    exact dvd_mul_of_dvd_right hτdiv j.val
+  have hlo : (π / 2 + j.val * τ) % 64 = 0 := Nat.mod_eq_zero_of_dvd hloDiv
+  simpa [alignedDownRepairPacket, rankPacketCell] using
+    rankPacketCell_sorted s v hpack (π / 2 + j.val * τ) hlo k
 
 theorem upSetRepairPacket_union {N : Nat} (s : Finset (Fin N))
     (π q C : Nat) (hπ : π = 64 * (2 * q + 1))
@@ -3036,6 +3270,82 @@ theorem receiverPacketFamily_wireSets_union {d : Nat} {ι κ : Type}
   simp_rw [hchildren]
   rw [wireSets_succ_eq]
   simp [parentPart, childPart, hb, hchild, KBag.parent, KBag.child, flowSizes7]
+
+/-- Full receiver assembly contract for the actual ordinary `WireFlow`:
+port partitions of sorted 64-wire packets combine into a sorted, disjoint
+64-wire partition of the receiver's next-time register. -/
+theorem flowA7_receiver_packetAssembly {d : Nat} {ι κ α : Type}
+    [Fintype ι] [Fintype κ] [LinearOrder α]
+    (hd : 7 ≤ d) (t : Nat) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d)
+    (parent : ι → Finset (Fin (64 ^ d)))
+    (child : Fin 64 → κ → Finset (Fin (64 ^ d)))
+    (v : Fin (64 ^ d) → α)
+    (hparentUnion : Finset.univ.biUnion parent =
+      Chvatal.downSet (wireSets (flowSizes7 d hd) t b.parent)
+        (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t) (b.x % 64))
+    (hchildUnion : ∀ j, Finset.univ.biUnion (child j) =
+      Chvatal.upSet (wireSets (flowSizes7 d hd) t
+        (b.child j.val j.isLt hchild)) (flowUp7 d hd (b.l + 1) t))
+    (hparentSorted : ∀ i, RankSortedOn (parent i) v)
+    (hchildSorted : ∀ j k, RankSortedOn (child j k) v)
+    (hparentDisjoint : ∀ i i', i ≠ i' → Disjoint (parent i) (parent i'))
+    (hchildDisjoint : ∀ j k k', k ≠ k' → Disjoint (child j k) (child j k'))
+    (hparentCard : ∀ i, (parent i).card = 64)
+    (hchildCard : ∀ j k, (child j k).card = 64) :
+    (∀ i, RankSortedOn (receiverPacketFamily parent child i) v) ∧
+    Finset.univ.biUnion (receiverPacketFamily parent child) =
+      wireSets (flowSizes7 d hd) (t + 1) b ∧
+    (∀ i i', i ≠ i' →
+      Disjoint (receiverPacketFamily parent child i)
+        (receiverPacketFamily parent child i')) ∧
+    (∀ i, (receiverPacketFamily parent child i).card = 64) := by
+  let pSupport := Chvatal.downSet (wireSets (flowSizes7 d hd) t b.parent)
+    (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t) (b.x % 64)
+  let cSupport (j : Fin 64) := Chvatal.upSet
+    (wireSets (flowSizes7 d hd) t (b.child j.val j.isLt hchild))
+    (flowUp7 d hd (b.l + 1) t)
+  have hparentSubset (i : ι) : parent i ⊆ pSupport := by
+    change parent i ⊆ Chvatal.downSet (wireSets (flowSizes7 d hd) t b.parent)
+      (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t) (b.x % 64)
+    rw [← hparentUnion]
+    exact Finset.subset_biUnion_of_mem _ (Finset.mem_univ i)
+  have hchildSubset (j : Fin 64) (k : κ) : child j k ⊆ cSupport j := by
+    change child j k ⊆ Chvatal.upSet
+      (wireSets (flowSizes7 d hd) t (b.child j.val j.isLt hchild))
+      (flowUp7 d hd (b.l + 1) t)
+    rw [← hchildUnion j]
+    exact Finset.subset_biUnion_of_mem _ (Finset.mem_univ k)
+  have hparentChildBagNe (j : Fin 64) :
+      b.parent ≠ b.child j.val j.isLt hchild := by
+    intro heq
+    have hl := congrArg KBag.l heq
+    rw [KBag.parent_l, KBag.child_l] at hl
+    omega
+  have hparentChildDisjoint (j : Fin 64) :
+      Disjoint pSupport (cSupport j) := by
+    exact (wireSets_disjoint (flowSizes7 d hd) (Nat.le_of_lt ht) b.parent
+      (b.child j.val j.isLt hchild) (hparentChildBagNe j)).mono
+      Chvatal.downSet_subset Chvatal.upSet_subset
+  have hchildPortsDisjoint : ∀ j j', j ≠ j' →
+      Disjoint (cSupport j) (cSupport j') := by
+    intro j j' hj
+    apply (wireSets_disjoint (flowSizes7 d hd) (Nat.le_of_lt ht)
+      (b.child j.val j.isLt hchild) (b.child j'.val j'.isLt hchild) ?_).mono
+      Chvatal.upSet_subset Chvatal.upSet_subset
+    intro heq
+    apply hj
+    exact Fin.ext (KBag.child_inj b j.val j'.val j.isLt j'.isLt hchild heq)
+  have hpacketPortsDisjoint : ∀ i j k, Disjoint (parent i) (child j k) := by
+    intro i j k
+    exact (hparentChildDisjoint j).mono (hparentSubset i) (hchildSubset j k)
+  refine ⟨receiverPacketFamily_sorted parent child v hparentSorted hchildSorted,
+    receiverPacketFamily_wireSets_union hd t ht b hb hchild parent child
+      hparentUnion hchildUnion, ?_,
+    receiverPacketFamily_card_eq_64 parent child hparentCard hchildCard⟩
+  exact receiverPacketFamily_pairwise_disjoint parent child pSupport cSupport
+    hparentUnion hchildUnion hparentDisjoint hchildDisjoint hpacketPortsDisjoint
+    hchildPortsDisjoint
 
 /-- At an actual receiver, the 64 child senders' shifted up-fringe endpoint
 repairs are also one six-layer disjoint family. The packet divisibility,
