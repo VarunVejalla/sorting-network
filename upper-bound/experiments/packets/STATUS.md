@@ -593,3 +593,16 @@ depth concern and the receiver arity lookup. Still open: turn an actual
 possible 63-packet tail, run the unequal tree on that tail in parallel, and
 show resulting packet supports match the next physical scheduler cuts. No
 stage-to-stage recurrence or improved global coefficient follows yet.
+
+Divisible receiver cohorts (GPT-6.1-astra-high, 2026-10-16):
+`packetFamily_divisible64_merge` now converts any disjoint sorted
+`Fin m`-indexed packet family with `64 ∣ m` into consecutive 4096-wire blocks,
+proves the block supports disjoint, runs the 64-run tree on all blocks in
+parallel at depth at most 57, and proves every output packet sorted.
+`flowA7_receiver_allCases_divisible64_batch` applies this directly to an
+actual corrected receiver register whenever its scheduled packet count is
+divisible by 64. These results are included in `PacketMergeAxioms.lean` and
+the focused guard chain passes. The remaining scheduled arities are empty or
+singleton bags (trivial/no full merge) and the residue-63 cohorts; for those,
+the latter still needs a mixed full-block-plus-63-tail batch theorem and then
+the physical next-cut identification.

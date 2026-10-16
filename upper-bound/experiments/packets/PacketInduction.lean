@@ -1,5 +1,6 @@
 import PacketRepair64
 import PacketGenMerge
+import PacketMergeTreeGen
 import AKS.Chvatal.RealBlocks
 
 /-! Canonical finite-index bridge from one generalized matching round to the
@@ -160,6 +161,35 @@ theorem flowA7_receiver_allCases_packetCount {d : Nat} {α : Type}
       (wireSets (flowSizes7 d hd) (t + 1) b)
       ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) hreceiver).2.2
   · omega
+
+/-- When a scheduled receiver has a packet count divisible by 64, its actual
+output family decomposes into disjoint full blocks that can all be merged in
+57 layers. -/
+theorem flowA7_receiver_allCases_divisible64_batch {d : Nat} {α : Type}
+    [LinearOrder α]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d)
+    (v : Fin (64 ^ d) → α)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v)
+    (hdiv : 64 ∣ flowA7 d hd b.l (t + 1) / 64) :
+    ∃ blocks : List (Fin 4096 ↪ Fin (64 ^ d)),
+      blocks.Nodup ∧
+      (∀ e ∈ blocks, ∀ f ∈ blocks, e ≠ f → ∀ x y, e x ≠ f y) ∧
+      (genScatterMergeTreeBatch (packetPowerTree6 (α := α)) blocks).depth ≤ 57 ∧
+      (∀ e ∈ blocks, ∀ j : Fin (packetPowerTree6 (α := α)).leafCount,
+        Monotone (fun i =>
+          (genScatterMergeTreeBatch (packetPowerTree6 (α := α)) blocks).exec
+            ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+            (genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α)) e j i))) := by
+  obtain ⟨m, packets, hsorted, hdis, hcover, hcount⟩ :=
+    flowA7_receiver_allCases_packetCount hd t ht2 ht b hb hchild v hpack
+  have hdivM : 64 ∣ m := by
+    simpa [hcount] using hdiv
+  obtain ⟨blocks, hnodup, hblocksDisjoint, hdepth, hsortedOut⟩ :=
+    packetFamily_divisible64_merge packets hdivM hdis
+      ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) hsorted
+  exact ⟨blocks, hnodup, hblocksDisjoint, hdepth, hsortedOut⟩
 
 /-- At every nonterminal receiver stage, the actual output packet family is
 immediately in one of the existing 64-block/tail configurations. -/

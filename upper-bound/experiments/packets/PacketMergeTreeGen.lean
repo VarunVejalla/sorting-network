@@ -414,4 +414,206 @@ theorem genScatterMergeTreeBatch_outputPacket_sorted {α : Type}
     (PacketMergeTree.chunkIndex tree j k)]
   exact hlocal hik
 
+/-- The packet at offset `i` inside the `j`th consecutive 64-packet block of
+a cohort whose packet count is `64*q`. -/
+def packetFamily64BlockIndex {q : Nat} (j : Fin q) (i : Fin 64) : Fin (q * 64) :=
+  ⟨j.val * 64 + i.val, by have hj := j.isLt; have hi := i.isLt; omega⟩
+
+theorem packetFamily64BlockIndex_injective {q : Nat} (j : Fin q) :
+    Function.Injective (packetFamily64BlockIndex j) := by
+  intro i k h
+  apply Fin.ext
+  have hv := congrArg Fin.val h
+  simp only [packetFamily64BlockIndex, Fin.val_mk] at hv
+  omega
+
+/-- Assemble 64 consecutive packets into the 4096-wire support expected by
+the proved 64-run merge tree. -/
+def packetFamily64BlockEmbedding {q N : Nat}
+    (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y)
+    (j : Fin q) : Fin 4096 ↪ Fin N :=
+  genPacketGroup64Embedding (fun i => packets (packetFamily64BlockIndex j i))
+    (by
+      intro i k hik x y heq
+      apply hdis (packetFamily64BlockIndex j i) (packetFamily64BlockIndex j k)
+      · intro h
+        apply hik
+        exact packetFamily64BlockIndex_injective j h
+      · exact heq)
+
+theorem packetFamily64BlockEmbedding_disjoint {q N : Nat}
+    (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y)
+    {j k : Fin q} (hjk : j ≠ k) (x y : Fin 4096) :
+    packetFamily64BlockEmbedding packets hdis j x ≠
+      packetFamily64BlockEmbedding packets hdis k y := by
+  let localPackets := fun (g : Fin q) (i : Fin 64) =>
+    packets (packetFamily64BlockIndex g i)
+  have hinner : ∀ (g : Fin q) (a b : Fin 64), a ≠ b →
+      ∀ u v, localPackets g a u ≠ localPackets g b v := by
+    intro g a b hab u v heq
+    apply hdis (packetFamily64BlockIndex g a) (packetFamily64BlockIndex g b)
+    · intro h
+      apply hab
+      exact packetFamily64BlockIndex_injective g h
+    · exact heq
+  obtain ⟨a, u, hx⟩ := genPacketGroup64Embedding_mem_packets
+    (localPackets j) (by
+      intro a b hab u v
+      exact hinner j a b hab u v) x
+  obtain ⟨b, v, hy⟩ := genPacketGroup64Embedding_mem_packets
+    (localPackets k) (by
+      intro a b hab u v
+      exact hinner k a b hab u v) y
+  have hidx : packetFamily64BlockIndex j a ≠ packetFamily64BlockIndex k b := by
+    intro hidx
+    apply hjk
+    apply Fin.ext
+    have hv := congrArg Fin.val hidx
+    simp only [packetFamily64BlockIndex, Fin.val_mk] at hv
+    omega
+  intro heq
+  have hval : packets (packetFamily64BlockIndex j a) u =
+      packets (packetFamily64BlockIndex k b) v := by
+    calc
+      packets (packetFamily64BlockIndex j a) u =
+          packetFamily64BlockEmbedding packets hdis j x := hx.symm
+      _ = packetFamily64BlockEmbedding packets hdis k y := heq
+      _ = packets (packetFamily64BlockIndex k b) v := hy
+  exact (hdis _ _ hidx u v) hval
+
+/-- Enumerate all full 64-packet blocks of a cohort whose packet count is
+divisible by 64. -/
+def packetFamily64BlockList {q N : Nat}
+    (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y) :
+    List (Fin 4096 ↪ Fin N) :=
+  List.ofFn (packetFamily64BlockEmbedding packets hdis)
+
+theorem packetFamily64BlockList_nodup {q N : Nat}
+    (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y) :
+    (packetFamily64BlockList packets hdis).Nodup := by
+  apply List.nodup_ofFn_ofInjective
+  intro j k hEq
+  apply Fin.ext
+  by_contra hne
+  have hjk : j ≠ k := by
+    intro h
+    apply hne
+    exact congrArg Fin.val h
+  have hwire := congrArg (fun e : Fin 4096 ↪ Fin N => e 0) hEq
+  exact (packetFamily64BlockEmbedding_disjoint packets hdis hjk 0 0) hwire
+
+theorem packetFamily64BlockList_disjoint {q N : Nat}
+    (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y)
+    (e : Fin 4096 ↪ Fin N) (he : e ∈ packetFamily64BlockList packets hdis)
+    (f : Fin 4096 ↪ Fin N) (hf : f ∈ packetFamily64BlockList packets hdis)
+    (hne : e ≠ f) (x y : Fin 4096) : e x ≠ f y := by
+  simp only [packetFamily64BlockList, List.mem_ofFn] at he hf
+  obtain ⟨j, rfl⟩ := he
+  obtain ⟨k, rfl⟩ := hf
+  have hjkVal : j.val ≠ k.val := by
+    intro h
+    apply hne
+    exact congrArg (packetFamily64BlockEmbedding packets hdis) (Fin.ext h)
+  have hjk : j ≠ k := by
+    intro h
+    apply hjkVal
+    exact congrArg Fin.val h
+  exact packetFamily64BlockEmbedding_disjoint packets hdis hjk x y
+
+/-- All full blocks in a divisible cohort can be merged simultaneously in 57
+layers. -/
+theorem packetFamily64BlockList_merge_depth_le {q N : Nat} {α : Type}
+    [LinearOrder α] (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y) :
+    (genScatterMergeTreeBatch (packetPowerTree6 (α := α))
+      (packetFamily64BlockList packets hdis)).depth ≤ 57 := by
+  have hnd := packetFamily64BlockList_nodup packets hdis
+  have hdisBlocks := packetFamily64BlockList_disjoint packets hdis
+  exact genScatterMergeTreeBatch_depth_le (packetPowerTree6 (α := α))
+    (packetFamily64BlockList packets hdis) hnd hdisBlocks 57
+    packetPowerTree6_depth_le
+
+/-- If each input packet in a divisible cohort is sorted, every output packet
+from every parallel full-block merge is sorted. -/
+theorem packetFamily64BlockList_merge_output_sorted {q N : Nat} {α : Type}
+    [LinearOrder α] (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y)
+    (v : Fin N → α)
+    (hpackets : ∀ a, Monotone (fun i => v (packets a i))) :
+    ∀ e ∈ packetFamily64BlockList packets hdis,
+      ∀ j : Fin (packetPowerTree6 (α := α)).leafCount,
+        Monotone (fun i =>
+          (genScatterMergeTreeBatch (packetPowerTree6 (α := α))
+            (packetFamily64BlockList packets hdis)).exec v
+              (genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α))
+                e j i)) := by
+  have hnd := packetFamily64BlockList_nodup packets hdis
+  have hdisBlocks := packetFamily64BlockList_disjoint packets hdis
+  have hRuns : ∀ e ∈ packetFamily64BlockList packets hdis,
+      (packetPowerTree6 (α := α)).RunsSorted (fun i => v (e i)) := by
+    intro e he
+    simp only [packetFamily64BlockList, List.mem_ofFn] at he
+    obtain ⟨g, rfl⟩ := he
+    have hinner : ∀ {a b : Fin 64}, a ≠ b → ∀ x y,
+        packets (packetFamily64BlockIndex g a) x ≠
+          packets (packetFamily64BlockIndex g b) y := by
+      intro a b hab x y
+      apply hdis _ _ ?_ x y
+      intro h
+      apply hab
+      exact packetFamily64BlockIndex_injective g h
+    have hlocal := packetPowerTree6_runsSorted_of_packets
+      (fun a => packets (packetFamily64BlockIndex g a)) hinner v
+      (fun a => hpackets (packetFamily64BlockIndex g a))
+    simpa [packetFamily64BlockEmbedding] using hlocal
+  intro e he j
+  exact genScatterMergeTreeBatch_outputPacket_sorted
+    (packetPowerTree6 (α := α)) (packetFamily64BlockList packets hdis)
+    hnd hdisBlocks v hRuns e he j
+
+/-- For any pairwise-disjoint sorted packet family whose cardinality is a
+multiple of 64, expose its consecutive full-block decomposition and the
+parallel 57-layer merge result. -/
+theorem packetFamily_divisible64_merge {m N : Nat} {α : Type}
+    [LinearOrder α] (packets : Fin m → Fin 64 ↪ Fin N)
+    (hdiv : 64 ∣ m)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y)
+    (v : Fin N → α)
+    (hpackets : ∀ a, Monotone (fun i => v (packets a i))) :
+    ∃ blocks : List (Fin 4096 ↪ Fin N),
+      blocks.Nodup ∧
+      (∀ e ∈ blocks, ∀ f ∈ blocks, e ≠ f → ∀ x y, e x ≠ f y) ∧
+      (genScatterMergeTreeBatch (packetPowerTree6 (α := α)) blocks).depth ≤ 57 ∧
+      (∀ e ∈ blocks, ∀ j : Fin (packetPowerTree6 (α := α)).leafCount,
+        Monotone (fun i =>
+          (genScatterMergeTreeBatch (packetPowerTree6 (α := α)) blocks).exec v
+            (genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α)) e j i))) := by
+  let q := m / 64
+  have hq : q * 64 = m := by
+    dsimp [q]
+    exact Nat.div_mul_cancel hdiv
+  let castPackets : Fin (q * 64) → Fin 64 ↪ Fin N :=
+    fun i => packets (Fin.cast hq i)
+  have hdis' : ∀ a b, a ≠ b → ∀ x y, castPackets a x ≠ castPackets b y := by
+    intro a b hab x y heq
+    apply hdis (Fin.cast hq a) (Fin.cast hq b)
+    · intro h
+      apply hab
+      apply Fin.ext
+      have hv := congrArg Fin.val h
+      simpa using hv
+    · exact heq
+  let blocks := packetFamily64BlockList castPackets hdis'
+  refine ⟨blocks, ?_, ?_, ?_, ?_⟩
+  · exact packetFamily64BlockList_nodup castPackets hdis'
+  · exact packetFamily64BlockList_disjoint castPackets hdis'
+  · exact packetFamily64BlockList_merge_depth_le castPackets hdis'
+  · exact packetFamily64BlockList_merge_output_sorted castPackets hdis' v
+      (fun a => hpackets (Fin.cast hq a))
+
 end Chvatal.PacketAlignment

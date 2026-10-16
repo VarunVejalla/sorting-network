@@ -919,6 +919,10 @@ import PacketMergeTreeGen
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_packetCount
 
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_divisible64_batch' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_divisible64_batch
+
 /-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_packetCount_block_shape' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_packetCount_block_shape
@@ -1295,6 +1299,34 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.genScatterMergeTreeBatch_outputPacket_sorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genScatterMergeTreeBatch_outputPacket_sorted
+
+/-- info: 'Chvatal.PacketAlignment.packetFamily64BlockIndex_injective' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetFamily64BlockIndex_injective
+
+/-- info: 'Chvatal.PacketAlignment.packetFamily64BlockEmbedding_disjoint' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetFamily64BlockEmbedding_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.packetFamily64BlockList_nodup' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetFamily64BlockList_nodup
+
+/-- info: 'Chvatal.PacketAlignment.packetFamily64BlockList_disjoint' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetFamily64BlockList_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.packetFamily64BlockList_merge_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetFamily64BlockList_merge_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.packetFamily64BlockList_merge_output_sorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetFamily64BlockList_merge_output_sorted
+
+/-- info: 'Chvatal.PacketAlignment.packetFamily_divisible64_merge' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetFamily_divisible64_merge
 
 /-- info: 'Chvatal.PacketAlignment.packetPowerTree6_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
