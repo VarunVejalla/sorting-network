@@ -3861,6 +3861,157 @@ theorem flowA7_receiver_aligned_packetAssembly {d : Nat} {α : Type}
     (by intro i; exact (hparent.2.2.2 i))
     (by intro i k; exact (hchildFamily i).2.2.2 k)
 
+/-- Receiver assembly when the selected parent cut needs endpoint repair and
+the 64 child up-ports are aligned. The existential witnesses expose the
+actual repaired/aligned packet families to the next global scheduling layer. -/
+theorem flowA7_receiver_repairedParent_alignedChildren_packetAssembly
+    {d : Nat} {α : Type} [LinearOrder α]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d)
+    (hparentDown : 0 < flowDown7 d hd (b.l - 1) t)
+    (hparentBad : HalfMisaligned (flowUp7 d hd (b.l - 1) t))
+    (hchildDown : 0 < flowDown7 d hd (b.l + 1) t)
+    (hchildNotBad : ¬ HalfMisaligned (flowUp7 d hd (b.l + 1) t))
+    (v : Fin (64 ^ d) → α)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v) :
+    ∃ parent : (Unit ⊕ Fin (flowDown7 d hd (b.l - 1) t / 64 - 1)) →
+        Finset (Fin (64 ^ d)),
+    ∃ child : Fin 64 →
+        (Fin ((flowUp7 d hd (b.l + 1) t / 2) / 64) ⊕
+          Fin ((flowUp7 d hd (b.l + 1) t / 2) / 64)) → Finset (Fin (64 ^ d)),
+      (∀ i, RankSortedOn (receiverPacketFamily parent child i)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)) ∧
+      Finset.univ.biUnion (receiverPacketFamily parent child) =
+        wireSets (flowSizes7 d hd) (t + 1) b ∧
+      (∀ i i', i ≠ i' →
+        Disjoint (receiverPacketFamily parent child i)
+          (receiverPacketFamily parent child i')) ∧
+      (∀ i, (receiverPacketFamily parent child i).card = 64) := by
+  let j : Fin 64 := ⟨b.x % 64, Nat.mod_lt _ (by norm_num)⟩
+  let parent : (Unit ⊕ Fin (flowDown7 d hd (b.l - 1) t / 64 - 1)) →
+      Finset (Fin (64 ^ d)) :=
+    fun i => downSetRepairPacket
+      (wireSets (flowSizes7 d hd) t b.parent)
+      (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t) j
+      (flowDown7 d hd (b.l - 1) t / 64 - 1) i
+  let child : Fin 64 →
+      (Fin ((flowUp7 d hd (b.l + 1) t / 2) / 64) ⊕
+        Fin ((flowUp7 d hd (b.l + 1) t / 2) / 64)) → Finset (Fin (64 ^ d)) :=
+    fun i k => alignedUpRepairPacket
+      (wireSets (flowSizes7 d hd) t (b.child i.val i.isLt hchild))
+      (flowUp7 d hd (b.l + 1) t)
+      ((flowUp7 d hd (b.l + 1) t / 2) / 64) k
+  have hpAll := flowA7_sourcePortRepairStage_downCutFamily
+    hd t ht2 ht b.parent hparentDown hparentBad v (hpack b.parent)
+  have hp := hpAll j
+  have hcAll : ∀ i : Fin 64,
+      (∀ k, RankSortedOn (child i k)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)) ∧
+      Finset.univ.biUnion (child i) = Chvatal.upSet
+        (wireSets (flowSizes7 d hd) t (b.child i.val i.isLt hchild))
+        (flowUp7 d hd (b.l + 1) t) ∧
+      (∀ k k', k ≠ k' → Disjoint (child i k) (child i k')) ∧
+      (∀ k, (child i k).card = 64) := by
+    intro i
+    have hfam := flowA7_sourcePortRepairStage_alignedUpFamily
+      hd t ht2 ht (b.child i.val i.isLt hchild) hchildDown hchildNotBad v
+      (hpack (b.child i.val i.isLt hchild))
+    simpa [child] using hfam
+  have hparentUnion : Finset.univ.biUnion parent =
+      Chvatal.downSet (wireSets (flowSizes7 d hd) t b.parent)
+        (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t) (b.x % 64) := by
+    simpa [parent, j] using hp.2.1
+  have hchildUnion : ∀ i, Finset.univ.biUnion (child i) =
+      Chvatal.upSet (wireSets (flowSizes7 d hd) t
+        (b.child i.val i.isLt hchild)) (flowUp7 d hd (b.l + 1) t) :=
+    fun i => (hcAll i).2.1
+  refine ⟨parent, child, ?_⟩
+  exact flowA7_receiver_packetAssembly hd t ht b hb hchild parent child
+    ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+    hparentUnion hchildUnion
+    (by intro i; exact hp.1 i)
+    (by intro i k; exact (hcAll i).1 k)
+    (by intro i i' hne; exact hp.2.2.1 i i' hne)
+    (by intro i k k' hne; exact (hcAll i).2.2.1 k k' hne)
+    (by intro i; exact hp.2.2.2 i)
+    (by intro i k; exact (hcAll i).2.2.2 k)
+
+/-- Receiver assembly in the opposite mixed case: the parent cut is aligned,
+while all 64 child up-ports use their checked six-layer endpoint repairs. -/
+theorem flowA7_receiver_alignedParent_repairedChildren_packetAssembly
+    {d : Nat} {α : Type} [LinearOrder α]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d)
+    (hparentDown : 0 < flowDown7 d hd (b.l - 1) t)
+    (hparentNotBad : ¬ HalfMisaligned (flowUp7 d hd (b.l - 1) t))
+    (hchildDown : 0 < flowDown7 d hd (b.l + 1) t)
+    (hchildBad : HalfMisaligned (flowUp7 d hd (b.l + 1) t))
+    (v : Fin (64 ^ d) → α)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v) :
+    ∃ parent : Fin (flowDown7 d hd (b.l - 1) t / 64) →
+        Finset (Fin (64 ^ d)),
+    ∃ child : Fin 64 →
+        (Unit ⊕ (Fin ((flowUp7 d hd (b.l + 1) t / 2) / 64) ⊕
+          Fin ((flowUp7 d hd (b.l + 1) t / 2) / 64))) → Finset (Fin (64 ^ d)),
+      (∀ i, RankSortedOn (receiverPacketFamily parent child i)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)) ∧
+      Finset.univ.biUnion (receiverPacketFamily parent child) =
+        wireSets (flowSizes7 d hd) (t + 1) b ∧
+      (∀ i i', i ≠ i' →
+        Disjoint (receiverPacketFamily parent child i)
+          (receiverPacketFamily parent child i')) ∧
+      (∀ i, (receiverPacketFamily parent child i).card = 64) := by
+  let j : Fin 64 := ⟨b.x % 64, Nat.mod_lt _ (by norm_num)⟩
+  let parent : Fin (flowDown7 d hd (b.l - 1) t / 64) →
+      Finset (Fin (64 ^ d)) :=
+    fun k => alignedDownRepairPacket
+      (wireSets (flowSizes7 d hd) t b.parent)
+      (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t) j
+      (flowDown7 d hd (b.l - 1) t / 64) k
+  let child : Fin 64 →
+      (Unit ⊕ (Fin ((flowUp7 d hd (b.l + 1) t / 2) / 64) ⊕
+        Fin ((flowUp7 d hd (b.l + 1) t / 2) / 64))) → Finset (Fin (64 ^ d)) :=
+    fun i k => upSetRepairPacket
+      (wireSets (flowSizes7 d hd) t (b.child i.val i.isLt hchild))
+      (flowUp7 d hd (b.l + 1) t)
+      ((flowUp7 d hd (b.l + 1) t / 2) / 64) k
+  have hpAll := flowA7_sourcePortRepairStage_alignedDownCutFamily
+    hd t ht2 ht b.parent hparentDown hparentNotBad v (hpack b.parent)
+  have hp := hpAll j
+  have hcAll : ∀ i : Fin 64,
+      (∀ k, RankSortedOn (child i k)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)) ∧
+      Finset.univ.biUnion (child i) = Chvatal.upSet
+        (wireSets (flowSizes7 d hd) t (b.child i.val i.isLt hchild))
+        (flowUp7 d hd (b.l + 1) t) ∧
+      (∀ k k', k ≠ k' → Disjoint (child i k) (child i k')) ∧
+      (∀ k, (child i k).card = 64) := by
+    intro i
+    have hfam := flowA7_sourcePortRepairStage_upSetFamily
+      hd t ht2 ht (b.child i.val i.isLt hchild) hchildDown hchildBad v
+      (hpack (b.child i.val i.isLt hchild))
+    simpa [child] using hfam
+  have hparentUnion : Finset.univ.biUnion parent =
+      Chvatal.downSet (wireSets (flowSizes7 d hd) t b.parent)
+        (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t) (b.x % 64) := by
+    simpa [parent, j] using hp.2.1
+  have hchildUnion : ∀ i, Finset.univ.biUnion (child i) =
+      Chvatal.upSet (wireSets (flowSizes7 d hd) t
+        (b.child i.val i.isLt hchild)) (flowUp7 d hd (b.l + 1) t) :=
+    fun i => (hcAll i).2.1
+  refine ⟨parent, child, ?_⟩
+  exact flowA7_receiver_packetAssembly hd t ht b hb hchild parent child
+    ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+    hparentUnion hchildUnion
+    (by intro i; exact hp.1 i)
+    (by intro i k; exact (hcAll i).1 k)
+    (by intro i i' hne; exact hp.2.2.1 i i' hne)
+    (by intro i k k' hne; exact (hcAll i).2.2.1 k k' hne)
+    (by intro i; exact hp.2.2.2 i)
+    (by intro i k; exact (hcAll i).2.2.2 k)
+
 /-- At an actual receiver, the 64 child senders' shifted up-fringe endpoint
 repairs are also one six-layer disjoint family. The packet divisibility,
 fringe parity, capacity, and sender disjointness all come from the checked
