@@ -1469,3 +1469,24 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.assignedRankProfiles_aggregate_L2_var' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.assignedRankProfiles_aggregate_L2_var
+/-- info: 'Chvatal.PacketAlignment.sum_receiver_selected_error_sq_le_source_pieces' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.sum_receiver_selected_error_sq_le_source_pieces
+/-- info: 'Chvatal.PacketAlignment.sortedSenderOutgoing_profile_error_exact_one' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.sortedSenderOutgoing_profile_error_exact_one
+/-- info: 'Chvatal.PacketAlignment.wireFlowReceiverNeighborSum_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowReceiverNeighborSum_eq
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_profile_error_sq_sum_le_source_energy' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_profile_error_sq_sum_le_source_energy
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_register_error_sq_sum_le_source_energy' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_register_error_sq_sum_le_source_energy
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_register_error_sq_sum_le_source_energy_multi' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_register_error_sq_sum_le_source_energy_multi
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_reencoded_profile_energy_recurrence' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_reencoded_profile_energy_recurrence

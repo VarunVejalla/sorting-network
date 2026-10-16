@@ -766,3 +766,21 @@ map from actual merge-output wire embeddings to next-stage receiver ports,
 prove its suffix counts agree with routed Boolean counts, and sum the result
 over active levels without losing the energy contraction needed for a global
 coefficient. No limsup improvement is established by this lemma alone.
+
+Actual active-layer squared-error recurrence (GPT-6-astra-high, 2026-10-16):
+`wireFlowLayer_profile_error_sq_sum_le_source_energy` uses the actual
+`wireFlowLayerSelection` parent/children routing. For each receiver, Cauchy
+charges its at-most 65 source contributions; across receivers, the selected
+pieces from each sender are disjoint and their absolute errors sum exactly to
+that sender's coarse count error. This proves the all-active-receiver bound
+with factor 65, including actual register counts and any finite family of
+thresholds. `wireFlowLayer_reencoded_profile_energy_recurrence` also chooses
+the selected ideal means as monotone, capacity-valid next fractional codes,
+giving the same squared-error recurrence at every threshold and active level.
+Both theorems pass the focused axiom guard. This closes the one-layer
+aggregation/re-encoding gap, but the factor-65 estimate is not a contraction:
+it does not compose with merge/deal to give a coefficient. The next decisive
+test is a schedule-level operator/potential bound that exploits the actual
+matching geometry and quantifies the mixing decrement against these routed
+profile errors; the local matching energy lemma alone does not supply that
+bridge.

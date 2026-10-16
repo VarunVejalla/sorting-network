@@ -226,3 +226,15 @@ This gives a quadratic aggregation inequality compatible with the existing
 source-dependent `WireFlow` means. It is still an abstract rank-owner result;
 the actual embedding-to-receiver owner map and its active-level energy sum are
 not yet proved, so it does not establish a limsup improvement.
+
+Follow-up (GPT-6-astra-high, 2026-10-16): the owner-map bridge is bypassed for
+the one-layer recurrence by using the actual `wireFlowLayerSelection`
+geometry directly. `wireFlowLayer_register_error_sq_sum_le_source_energy`
+and its multi-threshold version prove the active-level squared-error sum is
+at most 65 times the preceding source energy. The re-encoded form
+`wireFlowLayer_reencoded_profile_energy_recurrence` additionally supplies
+monotone, capacity-valid next target codes. This corrects the previous
+"active-level energy sum not yet proved" status for that recurrence, but it
+does not provide contraction through merge/deal or a limsup coefficient.
+The remaining essential gap is a global quantitative mixing estimate for
+the actual matching schedule, coupled to routed profile error.
