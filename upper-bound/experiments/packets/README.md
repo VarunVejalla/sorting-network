@@ -238,3 +238,13 @@ monotone, capacity-valid next target codes. This corrects the previous
 does not provide contraction through merge/deal or a limsup coefficient.
 The remaining essential gap is a global quantitative mixing estimate for
 the actual matching schedule, coupled to routed profile error.
+
+`PacketGenMerge.lean` now also proves the heterogeneous-target form of the
+pairwise energy decrement. If source packets carry different targets, assign
+both dealt outputs the average target; the exact decrement is controlled by
+the squared difference of the two source errors, minus the one-half rounding
+allowance. The result is summed over any parallel matching and instantiated
+on the actual 128-wire merge-and-deal network, with standard axioms only.
+This gives the correct local potential for a moving target profile. To use it
+globally, the scheduler must evolve those targets by the same matching
+averages, which is not yet proved for the selected-interval recurrence.

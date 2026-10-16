@@ -784,3 +784,17 @@ test is a schedule-level operator/potential bound that exploits the actual
 matching geometry and quantifies the mixing decrement against these routed
 profile errors; the local matching energy lemma alone does not supply that
 bridge.
+
+Heterogeneous-target matching energy (GPT-6-astra-high, 2026-10-16):
+`floorCeilAverage_energy_drop_ge_targetAverage` proves that if two packet
+targets are μ₁ and μ₂, and both dealt outputs take target (μ₁+μ₂)/2, then
+the squared target-relative energy drop is at least
+`((e₁-e₂)^2-1)/2`, where eᵢ is countᵢ−μᵢ. The summed theorem
+`mergeDealMatching_energy_drop_ge_targetAverage` handles any parallel
+matching, and `genMerge128_dealt_energy_drop_ge_targetAverage` instantiates
+it on the checked 128-wire merge-and-deal network. The full axiom guard passes.
+This removes the common-target hypothesis from the local mixing interface and
+identifies the right edge discrepancy for a moving target profile. It applies
+to a global recurrence only if the scheduler's targets evolve by the same
+pairwise averages; the current selected-interval target recurrence has not
+been shown to do so, and no contraction or improved coefficient follows yet.

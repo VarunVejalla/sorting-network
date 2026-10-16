@@ -67,9 +67,21 @@ import PacketMergeTreeGen
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genMerge128_dealt_energy_drop_ge
 
+/-- info: 'Chvatal.PacketAlignment.genMerge128_dealt_energy_drop_ge_targetAverage' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genMerge128_dealt_energy_drop_ge_targetAverage
+
 /-- info: 'Chvatal.PacketAlignment.mergeDealMatching_energy_drop_ge' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.mergeDealMatching_energy_drop_ge
+
+/-- info: 'Chvatal.PacketAlignment.floorCeilAverage_energy_drop_ge_targetAverage' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.floorCeilAverage_energy_drop_ge_targetAverage
+
+/-- info: 'Chvatal.PacketAlignment.mergeDealMatching_energy_drop_ge_targetAverage' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.mergeDealMatching_energy_drop_ge_targetAverage
 
 /-- info: 'Chvatal.PacketAlignment.senderRankCut_fringe_mean_sum_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in

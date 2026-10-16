@@ -1337,3 +1337,15 @@ rounds. Avoiding that extra cost requires a separate proof that a synchronized
 diagonal schedule contracts the product. The exact factorization remains
 useful: only five odd cofactors occur, while `64^h` is the unbounded factor.
 No product contraction is proved.
+
+Heterogeneous moving-target energy (GPT-6-astra-high, 2026-10-16):
+`floorCeilAverage_energy_drop_ge_targetAverage` proves the pairwise identity
+with distinct source references μ₁, μ₂ when both outputs use their average:
+the energy loss is at least `((e₁−e₂)^2−1)/2`, where eᵢ is the count minus
+its own target. Its summed matching form and the actual 128-wire network
+instance are axiom-guarded. This provides a direct edge-disagreement
+potential for a target profile that is itself averaged on each matching.
+The actual `WireFlow` selected-interval means have not been shown to satisfy
+that update law; closing that compatibility is the next coupling test. The
+separate factor-65 active-layer squared-error recurrence is checked, but it
+does not itself contract this potential.
