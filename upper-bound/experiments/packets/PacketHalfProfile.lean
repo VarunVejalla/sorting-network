@@ -1,4 +1,5 @@
 import PacketProfile
+import PacketGenMerge
 import AKS.Chvatal.ExecPlacement
 
 /-! The actual repair atoms are 32-wire rank intervals. This file carries the
@@ -481,6 +482,76 @@ theorem sortedBool_rankInterval_trueCount {m : Nat} (v : Fin m → Bool)
   change boolTrueCount C = profileInterval m (boolTrueCount v) a b
   unfold profileInterval profileTail
   rw [hC]
+
+/-- Sorting two ascending 64-wire Boolean runs makes the physical first and
+second 64-wire rank cells follow the clamped rank profile of the total count.
+This is distinct from the balanced counts in the logical even/odd dealt
+packets. -/
+theorem oddEvenMerge128_physicalHalf_counts (v : Fin 128 → Bool)
+    (hA : Monotone (fun i : Fin 64 => v (Fin.castAdd 64 i)))
+    (hB : Monotone (fun i : Fin 64 => v (Fin.natAdd 64 i))) :
+    let w := (oddEvenMergeNet 7).exec v
+    boolTrueCount (fun i : Fin 64 => w ⟨i.val, by omega⟩) =
+        min 64 (boolTrueCount v - 64) ∧
+      boolTrueCount (fun i : Fin 64 => w ⟨64 + i.val, by omega⟩) =
+        min 64 (boolTrueCount v) := by
+  let w := (oddEvenMergeNet 7).exec v
+  have hsorted : Monotone w := by
+    dsimp [w]
+    exact oddEvenMergeNet_sorts_two_runs 6 v ⟨hA, hB⟩
+  have hcount : boolTrueCount w = boolTrueCount v :=
+    boolTrueCount_exec (oddEvenMergeNet 7) v
+  have hfirstProfile := sortedBool_rankInterval_trueCount w hsorted 0 64
+    (by omega) (by omega)
+  have hfirst : boolTrueCount (fun i : Fin 64 => w ⟨i.val, by omega⟩) =
+      min 64 (boolTrueCount v - 64) := by
+    have hfirst' : boolTrueCount (fun i : Fin 64 => w ⟨i.val, by omega⟩) =
+        profileInterval 128 (boolTrueCount w) 0 64 := by
+      simpa [w] using hfirstProfile
+    rw [profileInterval_formula 128 (boolTrueCount w) 0 64 (by omega) (by omega),
+      hcount] at hfirst'
+    exact hfirst'
+  have hsecondProfile := sortedBool_rankInterval_trueCount w hsorted 64 128
+    (by omega) (by omega)
+  have hsecond : boolTrueCount (fun i : Fin 64 => w ⟨64 + i.val, by omega⟩) =
+      min 64 (boolTrueCount v) := by
+    have hsecond' : boolTrueCount (fun i : Fin 64 => w ⟨64 + i.val, by omega⟩) =
+        profileInterval 128 (boolTrueCount w) 64 128 := by
+      simpa [w] using hsecondProfile
+    rw [profileInterval_formula 128 (boolTrueCount w) 64 128 (by omega) (by omega),
+      hcount] at hsecond'
+    exact hsecond'
+  exact ⟨hfirst, hsecond⟩
+
+/-- At total count 64, the positional 64-wire cells become maximally
+imbalanced after the merge, although the logical even/odd dealt packets each
+have count 32. Thus positional-cell variance cannot be substituted for the
+logical packet variance in the mixing recurrence. -/
+theorem oddEvenMerge128_balanced_deal_vs_physical_halves (v : Fin 128 → Bool)
+    (hA : Monotone (fun i : Fin 64 => v (Fin.castAdd 64 i)))
+    (hB : Monotone (fun i : Fin 64 => v (Fin.natAdd 64 i)))
+    (hcount : boolTrueCount v = 64) :
+    let w := (oddEvenMergeNet 7).exec v
+    (boolTrueCount (fun i : Fin 64 => w ⟨i.val, by omega⟩) = 0 ∧
+      boolTrueCount (fun i : Fin 64 => w ⟨64 + i.val, by omega⟩) = 64) ∧
+    (boolTrueCount (fun i : Fin 64 => w (evenWire 64 i)) = 32 ∧
+      boolTrueCount (fun i : Fin 64 => w (oddWire 64 i)) = 32) := by
+  let w := (oddEvenMergeNet 7).exec v
+  have hsorted : Monotone w := by
+    dsimp [w]
+    exact oddEvenMergeNet_sorts_two_runs 6 v ⟨hA, hB⟩
+  have hphys := oddEvenMerge128_physicalHalf_counts v hA hB
+  have hparity := sorted_bool_parity_counts (m := 64) w hsorted
+  rw [boolTrueCount_exec] at hparity
+  have hphysical :
+      boolTrueCount (fun i : Fin 64 => w ⟨i.val, by omega⟩) = 0 ∧
+      boolTrueCount (fun i : Fin 64 => w ⟨64 + i.val, by omega⟩) = 64 := by
+    simpa [w, hcount] using hphys
+  have hdealt :
+      boolTrueCount (fun i : Fin 64 => w (evenWire 64 i)) = 32 ∧
+      boolTrueCount (fun i : Fin 64 => w (oddWire 64 i)) = 32 := by
+    constructor <;> have h := hparity.1 <;> omega
+  exact ⟨hphysical, hdealt⟩
 
 /-- Actual values on a `WireFlow` rank block have exactly the ideal sorted
 profile count. This connects the abstract profile lemma to concrete `blockOf`
