@@ -690,3 +690,14 @@ batch/profile helpers are axiom-guarded; direct compilation of
 invariant transfer. It does not handle the scheduled residue-63 tail or prove
 that these logical output packets are the next stage's fixed physical port
 cuts, so no global coefficient follows.
+
+
+Variable-cardinality merge profile law (GPT-6-astra-high, 2026-10-16):
+`genScatterMergeTree_output_threshold_profile_k` generalizes the exact
+all-threshold output-profile theorem from 64 output packets to any merge tree
+with `K` 64-wire leaves. It states that each output cell has exactly
+`profileCell K` of the combined threshold count; therefore it applies to both
+the 64-run full block and 63-run unequal tail without a new combinatorial
+argument. The theorem passes the focused module check and is added to the
+axiom guard. Its application to the residue-63 `FullTailBatch` execution still
+needs an execution-locality adapter and an actual receiver wrapper.

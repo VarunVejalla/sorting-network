@@ -165,6 +165,80 @@ theorem genScatterMergeTree_output_threshold_profile {N : Nat} {α : Type}
     _ = profileCell 64
         (boolTrueCount (fun i : Fin 4096 => decide (t ≤ v (e i)))) j.val := rfl
 
+/-- Threshold-profile transfer for a merge tree with any number `K` of
+64-wire output packets. This includes the 63-packet unequal tail tree. -/
+theorem genScatterMergeTree_output_threshold_profile_k {K N : Nat}
+    {α : Type} [LinearOrder α] (tree : PacketMergeTree α (64 * K))
+    (hleaf : tree.leafCount = K) (e : Fin (64 * K) ↪ Fin N)
+    (v : Fin N → α)
+    (hRuns : tree.RunsSorted (fun i => v (e i))) (t : α) (j : Fin K) :
+    boolTrueCount (fun i : Fin 64 => decide (t ≤
+      (genScatterMergeTree tree e).exec v
+        (genScatterMergeTreeOutputEmbedding tree e (Fin.cast hleaf.symm j) i))) =
+      profileCell K
+        (boolTrueCount (fun i : Fin (64 * K) => decide (t ≤ v (e i)))) j.val := by
+  let input : Fin (64 * K) → Bool := fun i => decide (t ≤ v (e i))
+  let output : Fin (64 * K) → Bool := fun i =>
+    decide (t ≤ (genScatterMergeTree tree e).exec v (e i))
+  have houtput : output = tree.network.exec input := by
+    funext i
+    dsimp [output, input]
+    calc
+      decide (t ≤ (genScatterMergeTree tree e).exec v (e i)) =
+          (genScatter tree.network e).exec (fun w => decide (t ≤ v w)) (e i) :=
+        (congrFun (genScatter_exec_threshold tree.network e v t) (e i)).symm
+      _ = tree.network.exec (fun k => decide (t ≤ v (e k))) i := by
+        exact genScatter_exec_inside tree.network e (fun w => decide (t ≤ v w)) i
+  have hmap : Monotone (fun x : α => decide (t ≤ x)) := by
+    intro x y hxy
+    by_cases hx : t ≤ x
+    · have hy : t ≤ y := hx.trans hxy
+      simp [hx, hy]
+    · simp [hx]
+  have hsortedNet := PacketMergeTree.network_sorts tree (v ∘ e) hRuns
+  have hthreshold : tree.network.exec input =
+      fun i => decide (t ≤ tree.network.exec (v ∘ e) i) :=
+    exec_threshold tree.network (v ∘ e) t
+  have hsorted : Monotone output := by
+    rw [houtput, hthreshold]
+    exact hmap.comp hsortedNet
+  have hcount : boolTrueCount output = boolTrueCount input := by
+    rw [houtput, boolTrueCount_exec]
+  have hprofile := @sortedBool_profileCell_trueCount K output hsorted
+    (boolTrueCount output) rfl j.val j.isLt
+  have hchunk : (fun i : Fin 64 => decide (t ≤
+      (genScatterMergeTree tree e).exec v
+        (genScatterMergeTreeOutputEmbedding tree e (Fin.cast hleaf.symm j) i))) =
+      (fun i : Fin 64 => output ⟨j.val * 64 + i.val, by
+        have hi := i.isLt
+        omega⟩) := by
+    funext i
+    dsimp [output, genScatterMergeTreeOutputEmbedding, genScatterMergeTree]
+    change decide (t ≤ (genScatter tree.network e).exec v
+        (e (PacketMergeTree.chunkIndex tree (Fin.cast hleaf.symm j) i))) =
+      decide (t ≤ (genScatter tree.network e).exec v
+        (e ⟨j.val * 64 + i.val, by
+          have hi := i.isLt
+          omega⟩))
+    rw [genScatter_exec_inside, genScatter_exec_inside]
+    apply congrArg (fun k : Fin (64 * K) => decide (t ≤ tree.network.exec (v ∘ e) k))
+    apply Fin.ext
+    rw [PacketMergeTree.chunkIndex_val]
+    simp [Fin.val_cast, Nat.mul_comm]
+  have hprofile' : boolTrueCount (fun i : Fin 64 =>
+      output ⟨j.val * 64 + i.val, by omega⟩) =
+      profileCell K (boolTrueCount output) j.val := by
+    simpa [Nat.mul_comm] using hprofile
+  calc
+    _ = boolTrueCount (fun i : Fin 64 =>
+        output ⟨j.val * 64 + i.val, by
+          have hi := i.isLt
+          omega⟩) := congrArg boolTrueCount hchunk
+    _ = profileCell K (boolTrueCount output) j.val := hprofile'
+    _ = profileCell K (boolTrueCount input) j.val := by rw [hcount]
+    _ = profileCell K
+        (boolTrueCount (fun i : Fin (64 * K) => decide (t ≤ v (e i)))) j.val := rfl
+
 /-- The threshold-profile law for the concrete 57-layer 64-run merge,
 assuming its 64 input packets are sorted. -/
 theorem packetPowerTree6GroupNet_output_threshold_profile {N : Nat}

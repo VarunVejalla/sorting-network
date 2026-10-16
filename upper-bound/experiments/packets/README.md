@@ -193,3 +193,7 @@ The `flowA7` divisible-64 receiver wrapper now returns exact threshold
 profiles for every merged rank packet, together with sortedness and the
 57-layer bound. The residue-63 tail and next-stage physical-cut alignment
 remain open.
+
+The local threshold-profile lemma is now parameterized by the number of
+64-wire output cells, so the 63-run unequal merge has the same exact profile
+interface as the 64-run full merge.

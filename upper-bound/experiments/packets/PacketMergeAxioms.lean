@@ -1426,3 +1426,6 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_divisible64_batch_profiles' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_divisible64_batch_profiles
+/-- info: 'Chvatal.PacketAlignment.genScatterMergeTree_output_threshold_profile_k' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genScatterMergeTree_output_threshold_profile_k
