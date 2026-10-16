@@ -922,6 +922,20 @@ def profileIntervalMean (m q : Nat) (frac : Real) (a b : Nat) : Real :=
   (1 - frac) * profileInterval m q a b +
     frac * profileInterval m (q + 1) a b
 
+/-- Count-profile contributed by any selected family of rank intervals. A
+fixed owner assigns each interval to its eventual receiver. -/
+def profileIntervalOwnerCount {D : Type} [DecidableEq D] {m p : Nat}
+    (cuts : Nat → Nat) (owner : Fin p → D) (destination : D) (X : Nat) : Nat :=
+  ∑ i : Fin p,
+    if owner i = destination then
+      profileInterval m X (cuts i.val) (cuts (i.val + 1))
+    else 0
+
+/-- Count-profile of a specified finite family of rank intervals. -/
+def profileIntervalSelectedCount {m : Nat} (cuts : Nat → Nat)
+    (selected : Finset Nat) (X : Nat) : Nat :=
+  ∑ i ∈ selected, profileInterval m X (cuts i) (cuts (i + 1))
+
 /-- A fractional ideal profile assigns each rank interval a mean between zero
 and that interval's capacity. This lets selected interval means define a
 valid next receiver threshold target without a separate common-mean ansatz. -/
@@ -1473,6 +1487,48 @@ theorem finSum_ite_one_eq_card_subtype {ι : Type} [Fintype ι]
 the underlying real target, including when the floor crosses an integer. -/
 def natProfileInterp (F : Nat → Nat) (q : Nat) (frac : Real) : Real :=
   (1 - frac) * (F q : Real) + frac * (F (q + 1) : Real)
+
+/-- Summing the ideal means of the intervals assigned to one destination is
+exactly the interpolation of that destination's integer count profile. -/
+theorem profileIntervalOwnerMean_eq_interp {D : Type} [DecidableEq D]
+    {m p : Nat} (cuts : Nat → Nat) (owner : Fin p → D) (destination : D)
+    (q : Nat) (frac : Real) :
+    (∑ i : Fin p, if owner i = destination then
+      profileIntervalMean m q frac (cuts i.val) (cuts (i.val + 1)) else 0) =
+      natProfileInterp
+        (profileIntervalOwnerCount (m := m) cuts owner destination) q frac := by
+  classical
+  calc
+    _ = ∑ i : Fin p,
+        ((1 - frac) * (if owner i = destination then
+            (profileInterval m q (cuts i.val) (cuts (i.val + 1)) : Real) else 0) +
+          frac * (if owner i = destination then
+            (profileInterval m (q + 1) (cuts i.val) (cuts (i.val + 1)) : Real) else 0)) := by
+      apply Finset.sum_congr rfl
+      intro i hi
+      by_cases h : owner i = destination <;>
+        simp [profileIntervalMean, h]
+    _ = (1 - frac) *
+          (∑ i : Fin p, if owner i = destination then
+            (profileInterval m q (cuts i.val) (cuts (i.val + 1)) : Real) else 0) +
+        frac * (∑ i : Fin p, if owner i = destination then
+          (profileInterval m (q + 1) (cuts i.val) (cuts (i.val + 1)) : Real) else 0) := by
+      rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum]
+    _ = _ := by
+      simp [natProfileInterp, profileIntervalOwnerCount]
+
+/-- The scheduler's ideal target for any selected family of rank intervals is
+the linear interpolation of that family's integer interval-count profile. -/
+theorem profileIntervalSelectedMean_eq_interp {m : Nat}
+    (cuts : Nat → Nat) (selected : Finset Nat) (q : Nat) (frac : Real) :
+    (∑ i ∈ selected,
+      profileIntervalMean m q frac (cuts i) (cuts (i + 1))) =
+      natProfileInterp (profileIntervalSelectedCount (m := m) cuts selected) q frac := by
+  classical
+  unfold profileIntervalMean natProfileInterp profileIntervalSelectedCount
+  rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum]
+  push_cast
+  ring
 
 theorem natProfileInterp_between (F : Nat → Nat) (hF : Monotone F)
     (q : Nat) (frac : Real) (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
@@ -4295,6 +4351,40 @@ noncomputable def wireFlowReceiverSelectedIdealMean {d tf : Nat}
         wireFlowLayerSenderPieceMean F t q frac
           (wireFlowReceiverSource receiver hchild source) i
   else 0
+
+/-- The actual selected target of a receiver is a sum of interpolated integer
+counts of the sender rank pieces routed to it. This expresses the existing
+WireFlow target in the same count-profile language as packet ownership. -/
+theorem wireFlowReceiverSelectedIdealMean_eq_intervalProfile {d tf : Nat}
+    (F : FlowSizes d tf) (t : Nat)
+    (q : KBag 64 d → Nat) (frac : KBag 64 d → Real)
+    (receiver : KBag 64 d) (hchild : receiver.l < d) :
+    wireFlowReceiverSelectedIdealMean F t q frac receiver =
+      ∑ source : Fin 65,
+        natProfileInterp
+          (profileIntervalSelectedCount
+            (m := (wireSets F t
+              (wireFlowReceiverSource receiver hchild source)).card)
+            (fun i => senderRankCut
+              (F.up (wireFlowReceiverSource receiver hchild source).l t)
+              (F.down (wireFlowReceiverSource receiver hchild source).l t) i)
+            (receiverOutgoingSelection (receiver.x % 64) source))
+          (q (wireFlowReceiverSource receiver hchild source))
+          (frac (wireFlowReceiverSource receiver hchild source)) := by
+  unfold wireFlowReceiverSelectedIdealMean
+  rw [dif_pos hchild]
+  apply Finset.sum_congr rfl
+  intro source hsource
+  simpa [wireFlowLayerSenderPieceMean] using
+    (profileIntervalSelectedMean_eq_interp
+      (m := (wireSets F t
+        (wireFlowReceiverSource receiver hchild source)).card)
+      (cuts := fun i => senderRankCut
+        (F.up (wireFlowReceiverSource receiver hchild source).l t)
+        (F.down (wireFlowReceiverSource receiver hchild source).l t) i)
+      (selected := receiverOutgoingSelection (receiver.x % 64) source)
+      (q := q (wireFlowReceiverSource receiver hchild source))
+      (frac := frac (wireFlowReceiverSource receiver hchild source)))
 
 set_option maxHeartbeats 1000000
 /-- The signed all-bag routed discrepancy at an active receiver equals its

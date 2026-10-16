@@ -1521,6 +1521,15 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.wireSetPacketRankInterp_sum_mono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.wireSetPacketRankInterp_sum_mono
+/-- info: 'Chvatal.PacketAlignment.profileIntervalOwnerMean_eq_interp' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.profileIntervalOwnerMean_eq_interp
+/-- info: 'Chvatal.PacketAlignment.profileIntervalSelectedMean_eq_interp' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.profileIntervalSelectedMean_eq_interp
+/-- info: 'Chvatal.PacketAlignment.wireFlowReceiverSelectedIdealMean_eq_intervalProfile' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireFlowReceiverSelectedIdealMean_eq_intervalProfile
 /-- info: 'Chvatal.PacketAlignment.sum_receiver_selected_error_sq_le_source_pieces' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.sum_receiver_selected_error_sq_le_source_pieces

@@ -286,9 +286,15 @@ scattered packet-rank ownership: nested rank prefixes give monotone counts in
 each actual destination, and finite sums preserve monotonicity across packets.
 `wireSetPacketRankInterp_sum_mono` instantiates that result for the unique
 owners from the current complete, disjoint `WireFlow` register partition.
+`wireFlowReceiverSelectedIdealMean_eq_intervalProfile` also rewrites the
+existing receiver target exactly as interpolated count profiles of its routed
+sender intervals. With `wireFlowReceiver_selected_count_eq_register`, the
+actual receiver count and ideal target are now expressed using the same
+selected pieces.
 This supplies a sound interface for carrying monotone fractional targets
 through a fixed ownership map. It does not yet show that the scheduler's next
-selected-interval target is this ownership sum, or that merge/deal evolves it
-by the pairwise averages needed for a global energy decrement. The focused
+selected intervals coincide with the sorted output packet embeddings at the
+next physical cuts, or that merge/deal evolves it by the pairwise averages
+needed for a global energy decrement. The focused
 `PacketHalfProfile` check and full axiom guard pass; the coefficient remains
 unchanged.

@@ -855,13 +855,19 @@ destination count as its real packet target increases, including the adjacent
 floor-boundary case. `assignedRankCount_mono` and
 `assignedRankInterp_sum_mono` lift this to arbitrary fixed scattered-rank
 owner maps and finite packet families, assuming nested rank-prefix selectors
-and monotone per-packet targets. The concrete
+and monotone per-packet targets. `profileIntervalSelectedMean_eq_interp`
+shows that any selected family of ideal rank-piece means is exactly the
+interpolation of its integer interval-count profile.
+`wireFlowReceiverSelectedIdealMean_eq_intervalProfile` instantiates this for
+the actual 65-source receiver, while
+`wireFlowReceiver_selected_count_eq_register` identifies the corresponding
+actual count with the receiver register count. The concrete
 `wireSetPacketRankInterp_sum_mono` corollary applies this directly to the
 unique owners in the actual current `WireFlow` partition. Both modules compile and the complete
 `PacketMergeAxioms` guard chain passes. This closes the monotonicity-under-
 ownership subgap, so fixed ownership itself is compatible with coherent
-threshold targets. Still open: identify the exact ownership-induced target
-sum with the selected WireFlow interval means after merge/reassembly, and
-prove that these targets evolve by the matching averages required by the
+threshold targets. Still open: identify the routed intervals with the sorted
+output packet embeddings at the next physical cuts, and prove that these
+targets evolve by the matching averages required by the
 heterogeneous energy-drop lemma. No global recurrence or coefficient
 improvement follows yet.
