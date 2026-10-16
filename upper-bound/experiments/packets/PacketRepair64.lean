@@ -559,6 +559,76 @@ theorem rankPacketCell_eq_global {N : Nat} (s : Finset (Fin N)) (lo : Nat)
   rw [rankPacketCell, rankPacketCell, hstart, hend']
   simp
 
+/-- The ordinary 64-rank grid partitions a whole register when its size is a
+multiple of 64. -/
+theorem rankPacketCell_whole_union {N : Nat} (s : Finset (Fin N)) (q : Nat)
+    (hcard : s.card = 64 * q) :
+    Finset.univ.biUnion (fun k : Fin q => rankPacketCell s 0 k) = s := by
+  rw [← blockOf_packetCell_partition s 0 q]
+  ext w
+  rw [Chvatal.mem_blockOf]
+  constructor
+  · rintro ⟨hw, hlo, hhi⟩
+    exact hw
+  · intro hw
+    have hr := Chvatal.rankIn_lt_card hw
+    refine ⟨hw, by omega, ?_⟩
+    rw [hcard] at hr
+    simpa using hr
+
+/-- Distinct ordinary rank cells are disjoint. -/
+theorem rankPacketCell_whole_pairwise_disjoint {N : Nat}
+    (s : Finset (Fin N)) (q : Nat) :
+    ∀ k l : Fin q, k ≠ l →
+      Disjoint (rankPacketCell s 0 k) (rankPacketCell s 0 l) := by
+  intro k l hne
+  have hval : k.val ≠ l.val := fun h => hne (Fin.ext h)
+  apply Finset.disjoint_left.mpr
+  intro w hwk hwl
+  have hk := rankPacketCell_bounds s 0 k hwk
+  have hl := rankPacketCell_bounds s 0 l hwl
+  rcases lt_or_gt_of_ne hval with hkl | hlk
+  · omega
+  · omega
+
+/-- Every ordinary 64-rank cell in a 64-divisible register has exactly 64
+wires. -/
+theorem rankPacketCell_whole_card_eq_64 {N : Nat}
+    (s : Finset (Fin N)) (q : Nat) (hcard : s.card = 64 * q) :
+    ∀ k : Fin q, (rankPacketCell s 0 k).card = 64 := by
+  intro k
+  have hk := k.isLt
+  have hhi : 64 * (k.val + 1) ≤ s.card := by rw [hcard]; omega
+  simp only [rankPacketCell, Nat.zero_add]
+  rw [Chvatal.blockOf_card hhi]
+  omega
+
+/-- If the requested up-flow is the whole even-sized register, its two
+fringes partition exactly that register. -/
+theorem upSet_eq_self_of_card_eq {N : Nat}
+    (s : Finset (Fin N)) (π : Nat) (hcard : s.card = π)
+    (heven : 2 ∣ π) : Chvatal.upSet s π = s := by
+  ext w
+  rw [Chvatal.upSet, Finset.mem_union,
+    Chvatal.mem_blockOf, Chvatal.mem_blockOf]
+  constructor
+  · rintro (h | h)
+    · exact h.1
+    · exact h.1
+  · intro hw
+    have hr := Chvatal.rankIn_lt_card hw
+    have htwice : π = 2 * (π / 2) := (Nat.mul_div_cancel' heven).symm
+    by_cases hlow : Chvatal.rankIn s w < π / 2
+    · left
+      exact ⟨hw, by omega, hlow⟩
+    · right
+      refine ⟨hw, ?_, ?_⟩
+      · rw [hcard, htwice]
+        omega
+      · rw [hcard]
+        rw [hcard] at hr
+        exact hr
+
 theorem upSetPrefixCell_disjoint_endpoints {N : Nat} (s : Finset (Fin N))
     (π q C : Nat) (hπ : π = 64 * (2 * q + 1))
     (hcard : s.card = 64 * C) (hπcard : π ≤ s.card)
@@ -3161,6 +3231,326 @@ theorem flowA7_sourcePortRepairStage_noRepair_packetCells {d : Nat} {α : Type}
   rw [himage] at hphysical
   simpa [flowA7_sourcePortRepairStage, nodeNet, F, S] using hphysical
 
+/-- For a positive-down sender whose up-fringe is aligned, the no-op
+correction stage leaves an actual up-port partition into sorted 64-wire
+packets. This instantiates the aligned static family on the real register. -/
+theorem flowA7_sourcePortRepairStage_alignedUpFamily {d : Nat} {α : Type}
+    [LinearOrder α] (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t)
+    (ht : t < tf7 d) (b : KBag 64 d)
+    (hdown : 0 < flowDown7 d hd b.l t)
+    (hnotbad : ¬ HalfMisaligned (flowUp7 d hd b.l t))
+    (v : Fin (64 ^ d) → α)
+    (hpack : PacketSortedOn (wireSets (flowSizes7 d hd) t b) v) :
+    (∀ a : Fin ((flowUp7 d hd b.l t / 2) / 64) ⊕
+        Fin ((flowUp7 d hd b.l t / 2) / 64),
+      RankSortedOn
+        (alignedUpRepairPacket (wireSets (flowSizes7 d hd) t b)
+          (flowUp7 d hd b.l t) ((flowUp7 d hd b.l t / 2) / 64) a)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)) ∧
+    Finset.univ.biUnion
+      (alignedUpRepairPacket (wireSets (flowSizes7 d hd) t b)
+        (flowUp7 d hd b.l t) ((flowUp7 d hd b.l t / 2) / 64)) =
+      Chvatal.upSet (wireSets (flowSizes7 d hd) t b)
+        (flowUp7 d hd b.l t) ∧
+    (∀ a a' : Fin ((flowUp7 d hd b.l t / 2) / 64) ⊕
+        Fin ((flowUp7 d hd b.l t / 2) / 64), a ≠ a' →
+      Disjoint
+        (alignedUpRepairPacket (wireSets (flowSizes7 d hd) t b)
+          (flowUp7 d hd b.l t) ((flowUp7 d hd b.l t / 2) / 64) a)
+        (alignedUpRepairPacket (wireSets (flowSizes7 d hd) t b)
+          (flowUp7 d hd b.l t) ((flowUp7 d hd b.l t / 2) / 64) a')) ∧
+    (∀ a : Fin ((flowUp7 d hd b.l t / 2) / 64) ⊕
+        Fin ((flowUp7 d hd b.l t / 2) / 64),
+      (alignedUpRepairPacket (wireSets (flowSizes7 d hd) t b)
+        (flowUp7 d hd b.l t) ((flowUp7 d hd b.l t / 2) / 64) a).card = 64) := by
+  let F := flowSizes7 d hd
+  let S := wireSets F t b
+  let π := flowUp7 d hd b.l t
+  let q := (π / 2) / 64
+  let C := S.card / 64
+  have hshape := node_shape_refined d hd t b.l ht2 ht
+  have hres := refined_packet_residues hd ht2 ht hshape
+  have hπeven : 2 ∣ π := by dsimp [π]; exact F.hup_even b.l t ht
+  have hhalfResidue : π / 2 % 64 = 0 := by
+    rcases hres.2.2 with hz | h32
+    · exact hz
+    · have hπpos : 0 < π := by omega
+      exact (hnotbad ⟨hπpos, h32⟩).elim
+  have hhalf : π / 2 = 64 * q := by
+    have hdecomp := Nat.mod_add_div (π / 2) 64
+    rw [hhalfResidue] at hdecomp
+    dsimp [q]
+    omega
+  have hπeq : π = 128 * q := by
+    have htwice : π = 2 * (π / 2) := (Nat.mul_div_cancel' hπeven).symm
+    rw [htwice, hhalf]
+    ring
+  have hSdiv : 64 ∣ S.card := by
+    dsimp [S, F]
+    rw [wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) b]
+    exact hres.1
+  have hScard : S.card = 64 * C := by
+    have hmod := Nat.mod_add_div S.card 64
+    have hrem := Nat.mod_eq_zero_of_dvd hSdiv
+    rw [hrem] at hmod
+    dsimp [C]
+    omega
+  have hπcard : π ≤ S.card := by
+    have hsize : S.card = π + 64 * flowDown7 d hd b.l t := by
+      dsimp [S, F, π]
+      rw [wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) b]
+      exact (flowSizes7 d hd).hsplit b.l t b.hl ht
+    rw [hsize]
+    omega
+  have hcells0 := flowA7_sourcePortRepairStage_noRepair_packetCells
+    hd t ht2 ht b (Or.inr hnotbad) v hpack
+  have hcells : ∀ k : Fin (S.card / 64),
+      RankSortedOn (rankPacketCell S 0 k)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) := by
+    intro k
+    have hsize : S.card = F.a b.l t := by
+      dsimp [S, F]
+      exact wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) b
+    let hk : Fin (F.a b.l t / 64) :=
+      ⟨k.val, by rw [← hsize]; exact k.isLt⟩
+    have hsorted := hcells0 hk
+    have hcellEq : rankPacketCell S 0 k = rankPacketCell S 0 hk := by
+      simp [rankPacketCell, hk]
+    exact hcellEq ▸ hsorted
+  have hCeq : S.card / 64 = C := by rw [hScard]; simp
+  have hqC : q ≤ C := by
+    have harith : 128 * q ≤ 64 * C := by
+      simpa [hπeq, hScard] using hπcard
+    omega
+  refine ⟨?_, alignedUpRepairPacket_union S π q hhalf hπcard,
+    alignedUpRepairPacket_pairwise_disjoint S π q hhalf hπeq hπcard,
+    alignedUpRepairPacket_card_eq_64 S π q hhalf hπeq hπcard⟩
+  intro a
+  cases a with
+  | inl k =>
+    have hkC : k.val < C := lt_of_lt_of_le k.isLt hqC
+    have hk : k.val < S.card / 64 := by rw [hCeq]; exact hkC
+    change RankSortedOn (rankPacketCell S 0 k)
+      ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+    exact hcells ⟨k.val, hk⟩
+  | inr k =>
+    have hlo : S.card - π / 2 = 64 * (C - q) := by rw [hScard, hhalf]; omega
+    have hmod : (S.card - π / 2) % 64 = 0 := by rw [hlo]; simp
+    have hquot : (S.card - π / 2) / 64 = C - q := by rw [hlo]; simp
+    have hidxC : C - q + k.val < C := by omega
+    have hidx : (S.card - π / 2) / 64 + k.val < S.card / 64 := by
+      rw [hquot, hCeq]
+      exact hidxC
+    have heq := rankPacketCell_eq_global S (S.card - π / 2) k hmod hidx
+    have hsorted := hcells ⟨(S.card - π / 2) / 64 + k.val, hidx⟩
+    rw [← heq] at hsorted
+    change RankSortedOn (rankPacketCell S (S.card - π / 2) k)
+      ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+    simpa [alignedUpRepairPacket] using hsorted
+
+/-- For an aligned positive-down sender, each actual child cut is likewise
+partitioned after the no-op correction into sorted 64-wire packets. -/
+theorem flowA7_sourcePortRepairStage_alignedDownCutFamily {d : Nat} {α : Type}
+    [LinearOrder α] (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t)
+    (ht : t < tf7 d) (b : KBag 64 d)
+    (hdown : 0 < flowDown7 d hd b.l t)
+    (hnotbad : ¬ HalfMisaligned (flowUp7 d hd b.l t))
+    (v : Fin (64 ^ d) → α)
+    (hpack : PacketSortedOn (wireSets (flowSizes7 d hd) t b) v) :
+    ∀ j : Fin 64,
+      (∀ k : Fin (flowDown7 d hd b.l t / 64),
+        RankSortedOn
+          (alignedDownRepairPacket (wireSets (flowSizes7 d hd) t b)
+            (flowUp7 d hd b.l t) (flowDown7 d hd b.l t) j
+            (flowDown7 d hd b.l t / 64) k)
+          ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)) ∧
+      Finset.univ.biUnion
+        (alignedDownRepairPacket (wireSets (flowSizes7 d hd) t b)
+          (flowUp7 d hd b.l t) (flowDown7 d hd b.l t) j
+          (flowDown7 d hd b.l t / 64)) =
+        Chvatal.downSet (wireSets (flowSizes7 d hd) t b)
+          (flowUp7 d hd b.l t) (flowDown7 d hd b.l t) j.val ∧
+      (∀ k k' : Fin (flowDown7 d hd b.l t / 64), k ≠ k' →
+        Disjoint
+          (alignedDownRepairPacket (wireSets (flowSizes7 d hd) t b)
+            (flowUp7 d hd b.l t) (flowDown7 d hd b.l t) j
+            (flowDown7 d hd b.l t / 64) k)
+          (alignedDownRepairPacket (wireSets (flowSizes7 d hd) t b)
+            (flowUp7 d hd b.l t) (flowDown7 d hd b.l t) j
+            (flowDown7 d hd b.l t / 64) k')) ∧
+      (∀ k : Fin (flowDown7 d hd b.l t / 64),
+        (alignedDownRepairPacket (wireSets (flowSizes7 d hd) t b)
+          (flowUp7 d hd b.l t) (flowDown7 d hd b.l t) j
+          (flowDown7 d hd b.l t / 64) k).card = 64) := by
+  let F := flowSizes7 d hd
+  let S := wireSets F t b
+  let π := flowUp7 d hd b.l t
+  let τ := flowDown7 d hd b.l t
+  let m := τ / 64
+  let q := π / 2 / 64
+  have hshape := node_shape_refined d hd t b.l ht2 ht
+  have hres := refined_packet_residues hd ht2 ht hshape
+  have hτdiv : 64 ∣ τ := by dsimp [τ]; exact hres.2.1
+  have hτeq : τ = 64 * m := by
+    have hdecomp := Nat.mod_add_div τ 64
+    have hrem := Nat.mod_eq_zero_of_dvd hτdiv
+    rw [hrem] at hdecomp
+    dsimp [m]
+    omega
+  have hπeven : 2 ∣ π := by dsimp [π]; exact F.hup_even b.l t ht
+  have hhalfResidue : π / 2 % 64 = 0 := by
+    rcases hres.2.2 with hz | h32
+    · exact hz
+    · have hπpos : 0 < π := by omega
+      exact (hnotbad ⟨hπpos, h32⟩).elim
+  have hhalf : π / 2 = 64 * q := by
+    have hdecomp := Nat.mod_add_div (π / 2) 64
+    rw [hhalfResidue] at hdecomp
+    dsimp [q]
+    omega
+  have hπeq : π = 128 * q := by
+    have htwice : π = 2 * (π / 2) := (Nat.mul_div_cancel' hπeven).symm
+    rw [htwice, hhalf]
+    ring
+  have hsize : S.card = π + 64 * τ := by
+    dsimp [S, F, π, τ]
+    rw [wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) b]
+    exact (flowSizes7 d hd).hsplit b.l t b.hl ht
+  have hSdiv : 64 ∣ S.card := by
+    dsimp [S, F]
+    rw [wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) b]
+    exact hres.1
+  have hScard : S.card = 64 * (2 * q + 64 * m) := by
+    rw [hsize, hπeq, hτeq]
+    ring
+  have hcells0 := flowA7_sourcePortRepairStage_noRepair_packetCells
+    hd t ht2 ht b (Or.inr hnotbad) v hpack
+  have hcells : ∀ k : Fin (S.card / 64),
+      RankSortedOn (rankPacketCell S 0 k)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) := by
+    intro k
+    have hbagcard : S.card = F.a b.l t := by
+      dsimp [S, F]
+      exact wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) b
+    let hk : Fin (F.a b.l t / 64) :=
+      ⟨k.val, by rw [← hbagcard]; exact k.isLt⟩
+    have hsorted := hcells0 hk
+    have hcellEq : rankPacketCell S 0 k = rankPacketCell S 0 hk := by
+      simp [rankPacketCell, hk]
+    exact hcellEq ▸ hsorted
+  intro j
+  have hstart : π / 2 + j.val * τ = 64 * (q + j.val * m) := by
+    rw [hhalf, hτeq]
+    ring
+  have hstartmod : (π / 2 + j.val * τ) % 64 = 0 := by rw [hstart]; simp
+  refine ⟨?_, alignedDownRepairPacket_union S π τ j m hτeq,
+    alignedDownRepairPacket_pairwise_disjoint S π τ j m,
+    alignedDownRepairPacket_card_eq_64 S π τ j m hτeq hsize⟩
+  intro k
+  have hj : j.val < 64 := j.isLt
+  have hk : k.val < m := k.isLt
+  have hquot : (π / 2 + j.val * τ) / 64 = q + j.val * m := by
+    rw [hstart]
+    simp
+  have hcardquot : S.card / 64 = 2 * q + 64 * m := by rw [hScard]; simp
+  have hidx : (π / 2 + j.val * τ) / 64 + k.val < S.card / 64 := by
+    rw [hquot, hcardquot]
+    have hmul : j.val * m ≤ 63 * m := Nat.mul_le_mul_right m (by omega)
+    omega
+  have heq := rankPacketCell_eq_global S (π / 2 + j.val * τ) k hstartmod hidx
+  have hsorted := hcells ⟨(π / 2 + j.val * τ) / 64 + k.val, hidx⟩
+  rw [← heq] at hsorted
+  change RankSortedOn
+    (rankPacketCell S (π / 2 + j.val * τ) k)
+    ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+  simpa [alignedDownRepairPacket] using hsorted
+
+/-- At a zero-down sender, the up-port is the whole register. Its original
+64-rank grid is preserved by the no-op correction and partitions that port,
+including the half-fringe residue case where a prefix/suffix grid would be
+misaligned. -/
+theorem flowA7_sourcePortRepairStage_zeroDownUpFamily {d : Nat} {α : Type}
+    [LinearOrder α] (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t)
+    (ht : t < tf7 d) (b : KBag 64 d)
+    (hzero : flowDown7 d hd b.l t = 0)
+    (v : Fin (64 ^ d) → α)
+    (hpack : PacketSortedOn (wireSets (flowSizes7 d hd) t b) v) :
+    (∀ k : Fin ((flowSizes7 d hd).a b.l t / 64),
+      RankSortedOn
+        (rankPacketCell (wireSets (flowSizes7 d hd) t b) 0 k)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)) ∧
+    Finset.univ.biUnion
+      (fun k : Fin ((flowSizes7 d hd).a b.l t / 64) =>
+        rankPacketCell (wireSets (flowSizes7 d hd) t b) 0 k) =
+      Chvatal.upSet (wireSets (flowSizes7 d hd) t b)
+        (flowUp7 d hd b.l t) ∧
+    (∀ k k' : Fin ((flowSizes7 d hd).a b.l t / 64), k ≠ k' →
+      Disjoint
+        (rankPacketCell (wireSets (flowSizes7 d hd) t b) 0 k)
+        (rankPacketCell (wireSets (flowSizes7 d hd) t b) 0 k')) ∧
+    (∀ k : Fin ((flowSizes7 d hd).a b.l t / 64),
+      (rankPacketCell (wireSets (flowSizes7 d hd) t b) 0 k).card = 64) := by
+  let F := flowSizes7 d hd
+  let S := wireSets F t b
+  let π := flowUp7 d hd b.l t
+  let C := F.a b.l t / 64
+  have hshape := node_shape_refined d hd t b.l ht2 ht
+  have hres := refined_packet_residues hd ht2 ht hshape
+  have hSdiv : 64 ∣ S.card := by
+    dsimp [S, F]
+    rw [wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) b]
+    exact hres.1
+  have hScard : S.card = 64 * C := by
+    have hbagcard : S.card = F.a b.l t := by
+      dsimp [S, F]
+      exact wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) b
+    have hmod := Nat.mod_add_div S.card 64
+    have hrem := Nat.mod_eq_zero_of_dvd hSdiv
+    rw [hrem] at hmod
+    dsimp [C]
+    rw [hbagcard]
+    omega
+  have hsize : S.card = π := by
+    have hsplit : S.card = π + 64 * flowDown7 d hd b.l t := by
+      dsimp [S, F, π]
+      rw [wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) b]
+      exact (flowSizes7 d hd).hsplit b.l t b.hl ht
+    rw [hzero] at hsplit
+    exact hsplit
+  have hπeven : 2 ∣ π := by dsimp [π]; exact F.hup_even b.l t ht
+  have hcells0 := flowA7_sourcePortRepairStage_noRepair_packetCells
+    hd t ht2 ht b (Or.inl hzero) v hpack
+  have hcells : ∀ k : Fin C,
+      RankSortedOn (rankPacketCell S 0 k)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) := by
+    intro k
+    have hbagcard : S.card = F.a b.l t := by
+      dsimp [S, F]
+      exact wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) b
+    let hk : Fin (F.a b.l t / 64) := k
+    have hsorted := hcells0 hk
+    have hcellEq : rankPacketCell S 0 k = rankPacketCell S 0 hk := by
+      simp [rankPacketCell, hk]
+    exact hcellEq ▸ hsorted
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro k
+    have hbagcard : S.card = F.a b.l t := by
+      dsimp [S, F]
+      exact wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) b
+    let hk : Fin C := k
+    simpa [S, F, C] using hcells hk
+  · change Finset.univ.biUnion
+      (fun k : Fin C => rankPacketCell S 0 k) = Chvatal.upSet S π
+    calc
+      Finset.univ.biUnion (fun k : Fin C => rankPacketCell S 0 k) = S :=
+        rankPacketCell_whole_union S C hScard
+      _ = Chvatal.upSet S π :=
+        (upSet_eq_self_of_card_eq S π hsize hπeven).symm
+  · intro k k' hne
+    exact rankPacketCell_whole_pairwise_disjoint S C k k' hne
+  · intro k
+    exact rankPacketCell_whole_card_eq_64 S C hScard k
+
 /-- Reindex the packet partitions arriving at one receiver: one family comes
 from its parent and one family from each of its 64 children. -/
 def receiverPacketFamily {N : Nat} {ι κ : Type} [Fintype ι] [Fintype κ]
@@ -3346,6 +3736,130 @@ theorem flowA7_receiver_packetAssembly {d : Nat} {ι κ α : Type}
   exact receiverPacketFamily_pairwise_disjoint parent child pSupport cSupport
     hparentUnion hchildUnion hparentDisjoint hchildDisjoint hpacketPortsDisjoint
     hchildPortsDisjoint
+
+/-- Actual receiver induction step in the aligned positive-flow case: the
+parent down-cut and all 64 child up-ports assemble into a sorted, disjoint
+64-wire partition of the next receiver register after the no-op correction. -/
+theorem flowA7_receiver_aligned_packetAssembly {d : Nat} {α : Type}
+    [LinearOrder α] (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t)
+    (ht : t < tf7 d) (b : KBag 64 d) (hb : 1 ≤ b.l)
+    (hchild : b.l < d)
+    (hparentDown : 0 < flowDown7 d hd (b.l - 1) t)
+    (hparentNotBad : ¬ HalfMisaligned (flowUp7 d hd (b.l - 1) t))
+    (hchildDown : 0 < flowDown7 d hd (b.l + 1) t)
+    (hchildNotBad : ¬ HalfMisaligned (flowUp7 d hd (b.l + 1) t))
+    (v : Fin (64 ^ d) → α)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v) :
+    (∀ i : Fin (flowDown7 d hd (b.l - 1) t / 64) ⊕
+        (Fin 64 × (Fin ((flowUp7 d hd (b.l + 1) t / 2) / 64) ⊕
+          Fin ((flowUp7 d hd (b.l + 1) t / 2) / 64))),
+      RankSortedOn
+        (receiverPacketFamily
+          (fun k => alignedDownRepairPacket
+            (wireSets (flowSizes7 d hd) t b.parent)
+            (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t)
+            ⟨b.x % 64, Nat.mod_lt _ (by norm_num)⟩
+            (flowDown7 d hd (b.l - 1) t / 64) k)
+          (fun j k => alignedUpRepairPacket
+            (wireSets (flowSizes7 d hd) t
+              (b.child j.val j.isLt hchild))
+            (flowUp7 d hd (b.l + 1) t)
+            ((flowUp7 d hd (b.l + 1) t / 2) / 64) k) i)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)) ∧
+    Finset.univ.biUnion
+      (receiverPacketFamily
+        (fun k => alignedDownRepairPacket
+          (wireSets (flowSizes7 d hd) t b.parent)
+          (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t)
+          ⟨b.x % 64, Nat.mod_lt _ (by norm_num)⟩
+          (flowDown7 d hd (b.l - 1) t / 64) k)
+        (fun j k => alignedUpRepairPacket
+          (wireSets (flowSizes7 d hd) t
+            (b.child j.val j.isLt hchild))
+          (flowUp7 d hd (b.l + 1) t)
+          ((flowUp7 d hd (b.l + 1) t / 2) / 64) k)) =
+      wireSets (flowSizes7 d hd) (t + 1) b ∧
+    (∀ i i', i ≠ i' →
+      Disjoint
+        (receiverPacketFamily
+          (fun k => alignedDownRepairPacket
+            (wireSets (flowSizes7 d hd) t b.parent)
+            (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t)
+            ⟨b.x % 64, Nat.mod_lt _ (by norm_num)⟩
+            (flowDown7 d hd (b.l - 1) t / 64) k)
+          (fun j k => alignedUpRepairPacket
+            (wireSets (flowSizes7 d hd) t
+              (b.child j.val j.isLt hchild))
+            (flowUp7 d hd (b.l + 1) t)
+            ((flowUp7 d hd (b.l + 1) t / 2) / 64) k) i)
+        (receiverPacketFamily
+          (fun k => alignedDownRepairPacket
+            (wireSets (flowSizes7 d hd) t b.parent)
+            (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t)
+            ⟨b.x % 64, Nat.mod_lt _ (by norm_num)⟩
+            (flowDown7 d hd (b.l - 1) t / 64) k)
+          (fun j k => alignedUpRepairPacket
+            (wireSets (flowSizes7 d hd) t
+              (b.child j.val j.isLt hchild))
+            (flowUp7 d hd (b.l + 1) t)
+            ((flowUp7 d hd (b.l + 1) t / 2) / 64) k) i')) ∧
+    (∀ i,
+      (receiverPacketFamily
+        (fun k => alignedDownRepairPacket
+          (wireSets (flowSizes7 d hd) t b.parent)
+          (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t)
+          ⟨b.x % 64, Nat.mod_lt _ (by norm_num)⟩
+          (flowDown7 d hd (b.l - 1) t / 64) k)
+        (fun j k => alignedUpRepairPacket
+          (wireSets (flowSizes7 d hd) t
+            (b.child j.val j.isLt hchild))
+          (flowUp7 d hd (b.l + 1) t)
+          ((flowUp7 d hd (b.l + 1) t / 2) / 64) k) i).card = 64) := by
+  let j : Fin 64 := ⟨b.x % 64, Nat.mod_lt _ (by norm_num)⟩
+  let parent : Fin (flowDown7 d hd (b.l - 1) t / 64) → Finset (Fin (64 ^ d)) :=
+    fun k => alignedDownRepairPacket (wireSets (flowSizes7 d hd) t b.parent)
+      (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t) j
+      (flowDown7 d hd (b.l - 1) t / 64) k
+  let child : Fin 64 →
+      (Fin ((flowUp7 d hd (b.l + 1) t / 2) / 64) ⊕
+        Fin ((flowUp7 d hd (b.l + 1) t / 2) / 64)) → Finset (Fin (64 ^ d)) :=
+    fun i k => alignedUpRepairPacket
+      (wireSets (flowSizes7 d hd) t (b.child i.val i.isLt hchild))
+      (flowUp7 d hd (b.l + 1) t)
+      ((flowUp7 d hd (b.l + 1) t / 2) / 64) k
+  have hparent := flowA7_sourcePortRepairStage_alignedDownCutFamily
+    hd t ht2 ht b.parent hparentDown hparentNotBad v (hpack b.parent) j
+  have hchildFamily : ∀ i : Fin 64,
+      (∀ k, RankSortedOn (child i k)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)) ∧
+      Finset.univ.biUnion (child i) = Chvatal.upSet
+        (wireSets (flowSizes7 d hd) t (b.child i.val i.isLt hchild))
+        (flowUp7 d hd (b.l + 1) t) ∧
+      (∀ k k', k ≠ k' → Disjoint (child i k) (child i k')) ∧
+      (∀ k, (child i k).card = 64) := by
+    intro i
+    have hfam := flowA7_sourcePortRepairStage_alignedUpFamily
+      hd t ht2 ht (b.child i.val i.isLt hchild) hchildDown hchildNotBad v
+      (hpack (b.child i.val i.isLt hchild))
+    simpa [child] using hfam
+  have hparentUnion : Finset.univ.biUnion parent =
+      Chvatal.downSet (wireSets (flowSizes7 d hd) t b.parent)
+        (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t) (b.x % 64) := by
+    simpa [parent, j] using hparent.2.1
+  have hchildUnion : ∀ i, Finset.univ.biUnion (child i) =
+      Chvatal.upSet (wireSets (flowSizes7 d hd) t
+        (b.child i.val i.isLt hchild)) (flowUp7 d hd (b.l + 1) t) :=
+    fun i => (hchildFamily i).2.1
+  exact flowA7_receiver_packetAssembly hd t ht b hb hchild parent child
+    ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+    hparentUnion hchildUnion
+    (by intro i; exact hparent.1 i)
+    (by intro i k; exact (hchildFamily i).1 k)
+    (by intro i i' hne; exact hparent.2.2.1 i i' hne)
+    (by intro i k k' hne; exact (hchildFamily i).2.2.1 k k' hne)
+    (by intro i; exact (hparent.2.2.2 i))
+    (by intro i k; exact (hchildFamily i).2.2.2 k)
 
 /-- At an actual receiver, the 64 child senders' shifted up-fringe endpoint
 repairs are also one six-layer disjoint family. The packet divisibility,

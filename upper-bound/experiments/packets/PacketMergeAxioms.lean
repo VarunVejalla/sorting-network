@@ -843,6 +843,38 @@ import PacketHalfProfile
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.rankPacketCell_eq_global
 
+/-- info: 'Chvatal.PacketAlignment.flowA7_sourcePortRepairStage_alignedUpFamily' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_sourcePortRepairStage_alignedUpFamily
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_sourcePortRepairStage_alignedDownCutFamily' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_sourcePortRepairStage_alignedDownCutFamily
+
+/-- info: 'Chvatal.PacketAlignment.rankPacketCell_whole_union' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.rankPacketCell_whole_union
+
+/-- info: 'Chvatal.PacketAlignment.rankPacketCell_whole_pairwise_disjoint' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.rankPacketCell_whole_pairwise_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.rankPacketCell_whole_card_eq_64' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.rankPacketCell_whole_card_eq_64
+
+/-- info: 'Chvatal.PacketAlignment.upSet_eq_self_of_card_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.upSet_eq_self_of_card_eq
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_sourcePortRepairStage_zeroDownUpFamily' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_sourcePortRepairStage_zeroDownUpFamily
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_aligned_packetAssembly' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_aligned_packetAssembly
+
 /-- info: 'Chvatal.PacketAlignment.stageNet_rankSortedOn_image' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.stageNet_rankSortedOn_image
