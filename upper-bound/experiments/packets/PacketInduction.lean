@@ -1,5 +1,6 @@
 import PacketRepair64
 import PacketGenMerge
+import AKS.Chvatal.RealBlocks
 
 /-! Canonical finite-index bridge from one generalized matching round to the
 packet-family interface used by receiver induction. This file tracks logical
@@ -169,6 +170,19 @@ theorem flowA7_receiver_allCases_packetCount_block_shape
     m = 0 ∨ m = 1 ∨ 64 ∣ m ∨ (m % 64 = 63 ∧ 4095 ≤ m) := by
   rw [hmEq]
   exact flowA7_packet_count_block_shape d hd (t + 1) i (by omega) htnext
+
+/-- At the terminal time, every scheduled bag is empty or has a packet count
+divisible by 64, so no exceptional tail remains to schedule. -/
+theorem flowA7_terminal_packet_count_shape (d : Nat) (hd : 7 ≤ d) (i : Nat) :
+    flowA7 d hd i (tf7 d) / 64 = 0 ∨
+      64 ∣ flowA7 d hd i (tf7 d) / 64 := by
+  by_cases hi : i = d - 6
+  · right
+    rw [flowA7_tf d hd i, if_pos hi]
+    rw [show (64 : Nat) ^ 6 = 64 * 64 ^ 5 by norm_num]
+    simp
+  · left
+    rw [flowA7_tf d hd i, if_neg hi]
 
 /-- Convert the output list of an indexed merge-and-deal round to a canonical
 `Fin`-indexed embedding family. If the matching covers every input ID, this

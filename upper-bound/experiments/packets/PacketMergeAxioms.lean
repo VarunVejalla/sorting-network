@@ -923,6 +923,10 @@ import PacketMergeTreeGen
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_packetCount_block_shape
 
+/-- info: 'Chvatal.PacketAlignment.flowA7_terminal_packet_count_shape' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_terminal_packet_count_shape
+
 /-- info: 'Chvatal.PacketAlignment.genIndexedPacketRound_unmatched_unchanged' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genIndexedPacketRound_unmatched_unchanged
