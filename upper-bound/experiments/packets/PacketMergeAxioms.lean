@@ -932,6 +932,10 @@ import PacketHalfProfile
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.oddEvenMerge128_balanced_deal_vs_physical_halves
 
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge128_balanced_inputs_shift_physical_profile' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge128_balanced_inputs_shift_physical_profile
+
 /-- info: 'Chvatal.PacketAlignment.flowA7_receiver_repairedParent_alignedChildren_packetAssembly' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_receiver_repairedParent_alignedChildren_packetAssembly

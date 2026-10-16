@@ -553,6 +553,28 @@ theorem oddEvenMerge128_balanced_deal_vs_physical_halves (v : Fin 128 → Bool)
     constructor <;> have h := hparity.1 <;> omega
   exact ⟨hphysical, hdealt⟩
 
+/-- In particular, merging two already balanced 64-wire packets starts with
+physical cell counts `(32,32)` and ends with physical counts `(0,64)`, even
+though its logical dealt packets still have counts `(32,32)`. -/
+theorem oddEvenMerge128_balanced_inputs_shift_physical_profile
+    (v : Fin 128 → Bool)
+    (hA : Monotone (fun i : Fin 64 => v (Fin.castAdd 64 i)))
+    (hB : Monotone (fun i : Fin 64 => v (Fin.natAdd 64 i)))
+    (hAcount : boolTrueCount (fun i : Fin 64 => v (Fin.castAdd 64 i)) = 32)
+    (hBcount : boolTrueCount (fun i : Fin 64 => v (Fin.natAdd 64 i)) = 32) :
+    let w := (oddEvenMergeNet 7).exec v
+    (boolTrueCount (fun i : Fin 64 => v (Fin.castAdd 64 i)) = 32 ∧
+      boolTrueCount (fun i : Fin 64 => v (Fin.natAdd 64 i)) = 32) ∧
+    (boolTrueCount (fun i : Fin 64 => w ⟨i.val, by omega⟩) = 0 ∧
+      boolTrueCount (fun i : Fin 64 => w ⟨64 + i.val, by omega⟩) = 64) ∧
+    (boolTrueCount (fun i : Fin 64 => w (evenWire 64 i)) = 32 ∧
+      boolTrueCount (fun i : Fin 64 => w (oddWire 64 i)) = 32) := by
+  have htotal : boolTrueCount v = 64 := by
+    rw [boolTrueCount_halves (m := 64) v, hAcount, hBcount]
+  have hprofile := oddEvenMerge128_balanced_deal_vs_physical_halves
+    v hA hB htotal
+  exact ⟨⟨hAcount, hBcount⟩, hprofile.1, hprofile.2⟩
+
 /-- Actual values on a `WireFlow` rank block have exactly the ideal sorted
 profile count. This connects the abstract profile lemma to concrete `blockOf`
 ports without choosing or reordering their physical wire labels. -/
