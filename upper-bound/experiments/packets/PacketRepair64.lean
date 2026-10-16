@@ -196,6 +196,16 @@ theorem PacketSortedOn_orderEmb {N : Nat} {α : Type} [Preorder α]
     exact Fin.le_def.mp ((s.orderEmbOfFin rfl).monotone (Fin.le_def.mpr hxy))
   exact hpack p hxe hye hxy'
 
+/-- Register-coordinate packet sortedness when the register size is given by
+a proved cardinality equality. -/
+theorem PacketSortedOn_orderEmb_of_card_eq {N n : Nat} {α : Type}
+    [Preorder α] (s : Finset (Fin N)) (v : Fin N → α)
+    (hpack : PacketSortedOn s v) (hn : s.card = n) :
+    PacketSortedOn (Finset.univ : Finset (Fin n))
+      (fun i => v (s.orderEmbOfFin hn i)) := by
+  cases hn
+  exact PacketSortedOn_orderEmb s v hpack
+
 /-- A linear-order sortedness claim follows if every lower-threshold Boolean
 profile is sorted. -/
 theorem rankSortedOn_of_thresholds {N : Nat} {α : Type} [LinearOrder α]
@@ -2069,6 +2079,81 @@ theorem flowA7_sourcePortRepairStage_transport {d : Nat} {α : Type}
   change RankSortedOn (A.image ((S q).orderEmbOfFin hsize))
     ((stageNet S nodeNet).exec v)
   exact stageNet_rankSortedOn_image_of_card_eq S hS nodeNet v q _ hsize A hlocal'
+
+/-- The selected source repair turns packet-sorted physical input into the
+full family of endpoint, interior, and fringe rank-sorted supports on the
+actual physical wires. -/
+theorem flowA7_sourcePortRepairStage_layout {d : Nat} {α : Type}
+    [LinearOrder α] (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t)
+    (ht : t < tf7 d) (q : KBag 64 d)
+    (hdown : 0 < flowDown7 d hd q.l t)
+    (hbad : HalfMisaligned (flowUp7 d hd q.l t))
+    (v : Fin (64 ^ d) → α)
+    (hpack : PacketSortedOn (wireSets (flowSizes7 d hd) t q) v) :
+    (∀ j : Fin 64,
+      RankSortedOn
+        ((downSetEndpointLeft (Finset.univ : Finset
+          (Fin ((flowSizes7 d hd).a q.l t)))
+          (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j ∪
+         downSetEndpointRight (Finset.univ : Finset
+          (Fin ((flowSizes7 d hd).a q.l t)))
+          (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j).image
+          ((wireSets (flowSizes7 d hd) t q).orderEmbOfFin
+            (wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) q)))
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) ∧
+      (∀ k : Fin (flowDown7 d hd q.l t / 64 - 1),
+        RankSortedOn
+          ((downSetInteriorCell (Finset.univ : Finset
+            (Fin ((flowSizes7 d hd).a q.l t)))
+            (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j
+            (flowDown7 d hd q.l t / 64 - 1) k).image
+            ((wireSets (flowSizes7 d hd) t q).orderEmbOfFin
+              (wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) q)))
+          ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v))) ∧
+    RankSortedOn
+      ((upFringePairSupport (Finset.univ : Finset
+        (Fin ((flowSizes7 d hd).a q.l t))) (flowUp7 d hd q.l t)).image
+        ((wireSets (flowSizes7 d hd) t q).orderEmbOfFin
+          (wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) q)))
+      ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) ∧
+    (∀ k : Fin ((flowUp7 d hd q.l t / 2) / 64),
+      RankSortedOn
+        ((upSetPrefixCell (Finset.univ : Finset
+          (Fin ((flowSizes7 d hd).a q.l t))) k).image
+          ((wireSets (flowSizes7 d hd) t q).orderEmbOfFin
+            (wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) q)))
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)) ∧
+    (∀ k : Fin ((flowUp7 d hd q.l t / 2) / 64),
+      RankSortedOn
+        ((upSetSuffixCell (Finset.univ : Finset
+          (Fin ((flowSizes7 d hd).a q.l t)))
+          (flowUp7 d hd q.l t) k).image
+          ((wireSets (flowSizes7 d hd) t q).orderEmbOfFin
+            (wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) q)))
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)) := by
+  let S := wireSets (flowSizes7 d hd) t
+  let e := (S q).orderEmbOfFin
+    (wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) q)
+  have hreg := PacketSortedOn_orderEmb_of_card_eq (S q) v hpack
+    (wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) q)
+  have hlayout := flowA7_sourcePortRepairNet_layout hd t ht2 ht q hdown hbad
+    (fun i => v (e i)) hreg
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro j
+    constructor
+    · exact flowA7_sourcePortRepairStage_transport hd t ht2 ht q hdown hbad
+        v _ (hlayout.1 j).1
+    · intro k
+      exact flowA7_sourcePortRepairStage_transport hd t ht2 ht q hdown hbad
+        v _ ((hlayout.1 j).2 k)
+  · exact flowA7_sourcePortRepairStage_transport hd t ht2 ht q hdown hbad
+      v _ hlayout.2.1
+  · intro k
+    exact flowA7_sourcePortRepairStage_transport hd t ht2 ht q hdown hbad
+      v _ (hlayout.2.2.1 k)
+  · intro k
+    exact flowA7_sourcePortRepairStage_transport hd t ht2 ht q hdown hbad
+      v _ (hlayout.2.2.2 k)
 
 /-- At an actual receiver, the 64 child senders' shifted up-fringe endpoint
 repairs are also one six-layer disjoint family. The packet divisibility,

@@ -711,9 +711,17 @@ import PacketHalfProfile
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_sourcePortRepairStage_transport
 
+/-- info: 'Chvatal.PacketAlignment.flowA7_sourcePortRepairStage_layout' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_sourcePortRepairStage_layout
+
 /-- info: 'Chvatal.PacketAlignment.PacketSortedOn_orderEmb' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.PacketSortedOn_orderEmb
+
+/-- info: 'Chvatal.PacketAlignment.PacketSortedOn_orderEmb_of_card_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.PacketSortedOn_orderEmb_of_card_eq
 
 /-- info: 'Chvatal.PacketAlignment.stageNet_rankSortedOn_image' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
