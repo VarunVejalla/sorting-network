@@ -588,11 +588,12 @@ and re-packetizes every full group simultaneously in at most 57 layers. The
 receiver-family cardinality is also now derived exactly as
 `flowA7 d hd b.l (t+1) / 64`, with count shape for nonterminal times and the
 terminal empty-or-multiple-of-64 case. This closes the isolated-block parallel
-depth concern and the receiver arity lookup. Still open: turn an actual
-`Fin m` receiver family into a list of disjoint 64-packet blocks plus the
-possible 63-packet tail, run the unequal tree on that tail in parallel, and
-show resulting packet supports match the next physical scheduler cuts. No
-stage-to-stage recurrence or improved global coefficient follows yet.
+depth concern and the receiver arity lookup. The divisible and residue-63
+receiver wrappers now transport the canonical existential family into the
+corresponding arithmetic indexing forms. Still open: package the sorted
+post-merge outputs as an exact receiver partition and show their supports
+match the next physical scheduler cuts. No stage-to-stage recurrence or
+improved global coefficient follows yet.
 
 Divisible receiver cohorts (GPT-6.1-astra-high, 2026-10-16):
 `packetFamily_divisible64_merge` now converts any disjoint sorted
@@ -603,6 +604,34 @@ parallel at depth at most 57, and proves every output packet sorted.
 actual corrected receiver register whenever its scheduled packet count is
 divisible by 64. These results are included in `PacketMergeAxioms.lean` and
 the focused guard chain passes. The remaining scheduled arities are empty or
-singleton bags (trivial/no full merge) and the residue-63 cohorts; for those,
-the latter still needs a mixed full-block-plus-63-tail batch theorem and then
-the physical next-cut identification.
+singleton bags (trivial/no full merge) and residue-63 cohorts. Their actual
+receiver wrapper is recorded below; physical next-cut identification remains.
+
+Residue-63 mixed batch now closed (GPT-6.1-astra-high, 2026-10-16):
+`packetFamily_residue63_merge` accepts any disjoint sorted cohort indexed by
+`Fin (64*q+63)`, groups the first `64*q` packets into consecutive 64-packet
+blocks, assembles the last 63 packets as one unequal merge tree, proves the
+tail support is disjoint from every full block, and combines both families of
+merge networks at depth at most 57. It also proves all full-block and tail
+output packets sorted. Its result and the mixed network's depth/sorting
+theorems pass the axiom guard. `flowA7_receiver_allCases_residue63_batch`
+reindexes the actual all-case receiver family using its exact packet count and
+applies this mixed batch directly. Together with
+`flowA7_receiver_allCases_divisible64_batch`, this closes the local
+all-arities merge-cost gate. Still open: package the output embeddings into an
+exact next-stage partition, identify them with the scheduler's physical cuts,
+and prove the global rank/energy recurrence needed for any coefficient
+improvement.
+
+Exact local output support partition (GPT-6.1-astra-high, 2026-10-16):
+`genScatterMergeTreeOutputEmbedding_support_iff` proves that a merge tree's
+output chunks cover exactly the input embedding's wire support. The new
+`genMergeTreeFullTailBatch_output_support` combines this with disjointness:
+output chunks within a tree, across distinct full blocks, and between full
+blocks and the 63-packet tail are pairwise disjoint, and their union is exactly
+the union of full-block and tail input supports. The theorem is axiom-guarded.
+This closes support conservation for the local mixed batch; it does not yet
+enumerate the outputs in the scheduler's next canonical rank order or identify
+them with its positional cuts. The next useful step is an adapter from this
+support-certified output family to those actual next-stage cuts, rather than
+more local merge lemmas.

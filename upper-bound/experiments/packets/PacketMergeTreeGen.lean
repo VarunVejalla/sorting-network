@@ -105,6 +105,21 @@ theorem genScatterMergeTreeOutputEmbedding_covers {α : Type} [LinearOrder α]
     omega
   exact ⟨j, q, by simp [genScatterMergeTreeOutputEmbedding, hidx]⟩
 
+/-- The output chunks of a merge tree partition exactly the wires in its
+input embedding. -/
+theorem genScatterMergeTreeOutputEmbedding_support_iff {α : Type}
+    [LinearOrder α] {M N : Nat} (tree : PacketMergeTree α M)
+    (e : Fin M ↪ Fin N) (w : Fin N) :
+    (∃ j : Fin tree.leafCount,
+      w ∈ Set.range (genScatterMergeTreeOutputEmbedding tree e j)) ↔
+      w ∈ Set.range e := by
+  constructor
+  · rintro ⟨j, q, hq⟩
+    exact ⟨PacketMergeTree.chunkIndex tree j q, hq⟩
+  · rintro ⟨i, rfl⟩
+    obtain ⟨j, q, hq⟩ := genScatterMergeTreeOutputEmbedding_covers tree e i
+    exact ⟨j, q, hq⟩
+
 def genPacketGroup63Embedding {N : Nat} (packets : Fin 63 → Fin 64 ↪ Fin N)
     (hdisjoint : ∀ {j k : Fin 63}, j ≠ k → ∀ (i q : Fin 64),
       packets j i ≠ packets k q) : Fin 4032 ↪ Fin N :=
@@ -615,5 +630,273 @@ theorem packetFamily_divisible64_merge {m N : Nat} {α : Type}
   · exact packetFamily64BlockList_merge_depth_le castPackets hdis'
   · exact packetFamily64BlockList_merge_output_sorted castPackets hdis' v
       (fun a => hpackets (Fin.cast hq a))
+
+/-- Concatenate a parallel family of full-block merge trees with one unequal
+tail merge tree on a disjoint support. -/
+def genMergeTreeFullTailBatch {α : Type} [LinearOrder α] {M K N : Nat}
+    (fullTree : PacketMergeTree α M) (tailTree : PacketMergeTree α K)
+    (fullBlocks : List (Fin M ↪ Fin N)) (tail : Fin K ↪ Fin N) : GenNetwork N :=
+  ⟨(genScatterMergeTreeBatch fullTree fullBlocks).comparators ++
+    (genScatterMergeTree tailTree tail).comparators⟩
+
+theorem genMergeTreeFullTailBatch_depth_le {α : Type} [LinearOrder α]
+    {M K N : Nat} (fullTree : PacketMergeTree α M) (tailTree : PacketMergeTree α K)
+    (fullBlocks : List (Fin M ↪ Fin N)) (tail : Fin K ↪ Fin N)
+    (hnd : fullBlocks.Nodup)
+    (hdis : ∀ e ∈ fullBlocks, ∀ f ∈ fullBlocks, e ≠ f → ∀ i j, e i ≠ f j)
+    (hsep : ∀ e ∈ fullBlocks, ∀ i j, e i ≠ tail j)
+    (D : Nat) (hfullDepth : fullTree.network.depth ≤ D)
+    (htailDepth : tailTree.network.depth ≤ D) :
+    (genMergeTreeFullTailBatch fullTree tailTree fullBlocks tail).depth ≤ D := by
+  apply genDisjointAppend_depth_le
+    (genScatterMergeTreeBatch fullTree fullBlocks)
+    (genScatterMergeTree tailTree tail) D
+  · exact genScatterMergeTreeBatch_depth_le fullTree fullBlocks hnd hdis D hfullDepth
+  · exact genScatterMergeTree_depth_le tailTree tail htailDepth
+  · exact genScatterBatch_genScatter_comparators_disjoint
+      fullTree.network fullBlocks tailTree.network tail hsep
+/-- A disjoint 63-run tail and every full block retain their independent
+sorted outputs when their merge trees are concatenated. -/
+theorem genMergeTreeFullTailBatch_outputPacket_sorted {α : Type}
+    [LinearOrder α] {M K N : Nat} (fullTree : PacketMergeTree α M)
+    (tailTree : PacketMergeTree α K) (fullBlocks : List (Fin M ↪ Fin N))
+    (tail : Fin K ↪ Fin N) (hnd : fullBlocks.Nodup)
+    (hdis : ∀ e ∈ fullBlocks, ∀ f ∈ fullBlocks, e ≠ f → ∀ i j, e i ≠ f j)
+    (hsep : ∀ e ∈ fullBlocks, ∀ i j, e i ≠ tail j)
+    (v : Fin N → α)
+    (hfullRuns : ∀ e ∈ fullBlocks, fullTree.RunsSorted (fun i => v (e i)))
+    (htailRuns : tailTree.RunsSorted (fun i => v (tail i))) :
+    (∀ e ∈ fullBlocks, ∀ j : Fin fullTree.leafCount,
+      Monotone (fun i =>
+        (genMergeTreeFullTailBatch fullTree tailTree fullBlocks tail).exec v
+          (genScatterMergeTreeOutputEmbedding fullTree e j i))) ∧
+    (∀ j : Fin tailTree.leafCount,
+      Monotone (fun i =>
+        (genMergeTreeFullTailBatch fullTree tailTree fullBlocks tail).exec v
+          (genScatterMergeTreeOutputEmbedding tailTree tail j i))) := by
+  let G := genScatterMergeTreeBatch fullTree fullBlocks
+  let H := genScatterMergeTree tailTree tail
+  have hexec :
+      (genMergeTreeFullTailBatch fullTree tailTree fullBlocks tail).exec v =
+        H.exec (G.exec v) := by
+    simp [genMergeTreeFullTailBatch, G, H, GenNetwork.exec, List.foldl_append]
+  have htailOutside (w : Fin N) (hw : ∀ e ∈ fullBlocks, w ∉ Set.range e) :
+      G.exec v w = v w := by
+    exact genScatterBatch_exec_outside fullTree.network fullBlocks w hw v
+  have htailInput : G.exec v ∘ tail = v ∘ tail := by
+    funext i
+    exact htailOutside (tail i) (by
+      intro e he heRange
+      obtain ⟨j, hj⟩ := heRange
+      exact (hsep e he j i) hj)
+  have htailRunsAfter : tailTree.RunsSorted (fun i => G.exec v (tail i)) := by
+    change tailTree.RunsSorted ((G.exec v) ∘ tail)
+    rw [htailInput]
+    exact htailRuns
+  constructor
+  · intro e he j
+    have hlocal := genScatterMergeTreeBatch_outputPacket_sorted
+      fullTree fullBlocks hnd hdis v hfullRuns e he j
+    intro i k hik
+    rw [hexec]
+    change (genScatter tailTree.network tail).exec (G.exec v)
+        (e (PacketMergeTree.chunkIndex fullTree j i)) ≤
+      (genScatter tailTree.network tail).exec (G.exec v)
+        (e (PacketMergeTree.chunkIndex fullTree j k))
+    rw [genScatter_exec_outside tailTree.network tail (G.exec v)
+      (e (PacketMergeTree.chunkIndex fullTree j i)) (by
+        rintro ⟨q, hq⟩
+        exact (hsep e he (PacketMergeTree.chunkIndex fullTree j i) q) hq.symm),
+      genScatter_exec_outside tailTree.network tail (G.exec v)
+      (e (PacketMergeTree.chunkIndex fullTree j k)) (by
+        rintro ⟨q, hq⟩
+        exact (hsep e he (PacketMergeTree.chunkIndex fullTree j k) q) hq.symm)]
+    exact hlocal hik
+  · intro j
+    intro i k hik
+    rw [hexec]
+    change (genScatterMergeTree tailTree tail).exec (G.exec v)
+        (tail (PacketMergeTree.chunkIndex tailTree j i)) ≤
+      (genScatterMergeTree tailTree tail).exec (G.exec v)
+        (tail (PacketMergeTree.chunkIndex tailTree j k))
+    have hsortedAfter := genScatterMergeTree_outputPacket_sorted
+      tailTree tail (G.exec v) htailRunsAfter j
+    exact hsortedAfter hik
+
+/-- The full-block and tail output packets form an exact disjoint
+repartition of the supports consumed by a full-plus-tail batch. -/
+theorem genMergeTreeFullTailBatch_output_support {α : Type}
+    [LinearOrder α] {M K N : Nat} (fullTree : PacketMergeTree α M)
+    (tailTree : PacketMergeTree α K) (fullBlocks : List (Fin M ↪ Fin N))
+    (tail : Fin K ↪ Fin N)
+    (hdis : ∀ e ∈ fullBlocks, ∀ f ∈ fullBlocks, e ≠ f →
+      ∀ i j, e i ≠ f j)
+    (hsep : ∀ e ∈ fullBlocks, ∀ i j, e i ≠ tail j) :
+    (∀ e ∈ fullBlocks, ∀ j k : Fin fullTree.leafCount, j ≠ k →
+      ∀ x y : Fin 64,
+        genScatterMergeTreeOutputEmbedding fullTree e j x ≠
+          genScatterMergeTreeOutputEmbedding fullTree e k y) ∧
+    (∀ e f, e ∈ fullBlocks → f ∈ fullBlocks → e ≠ f →
+      ∀ j k x y,
+        genScatterMergeTreeOutputEmbedding fullTree e j x ≠
+          genScatterMergeTreeOutputEmbedding fullTree f k y) ∧
+    (∀ e ∈ fullBlocks, ∀ j k x y,
+      genScatterMergeTreeOutputEmbedding fullTree e j x ≠
+        genScatterMergeTreeOutputEmbedding tailTree tail k y) ∧
+    (∀ j k : Fin tailTree.leafCount, j ≠ k → ∀ x y : Fin 64,
+      genScatterMergeTreeOutputEmbedding tailTree tail j x ≠
+        genScatterMergeTreeOutputEmbedding tailTree tail k y) ∧
+    (∀ w : Fin N,
+      ((∃ e, ∃ he : e ∈ fullBlocks, ∃ j,
+          w ∈ Set.range (genScatterMergeTreeOutputEmbedding fullTree e j)) ∨
+        ∃ j, w ∈ Set.range (genScatterMergeTreeOutputEmbedding tailTree tail j)) ↔
+      ((∃ e, ∃ he : e ∈ fullBlocks, w ∈ Set.range e) ∨
+        w ∈ Set.range tail)) := by
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · intro e he j k hjk x y
+    exact genScatterMergeTreeOutputEmbedding_disjoint fullTree e hjk x y
+  · intro e f he hf hef j k x y heq
+    have hne := hdis e he f hf hef
+      (PacketMergeTree.chunkIndex fullTree j x)
+      (PacketMergeTree.chunkIndex fullTree k y)
+    exact hne (by simpa [genScatterMergeTreeOutputEmbedding] using heq)
+  · intro e he j k x y heq
+    exact hsep e he (PacketMergeTree.chunkIndex fullTree j x)
+      (PacketMergeTree.chunkIndex tailTree k y)
+      (by simpa [genScatterMergeTreeOutputEmbedding] using heq)
+  · intro j k hjk x y
+    exact genScatterMergeTreeOutputEmbedding_disjoint tailTree tail hjk x y
+  · intro w
+    constructor
+    · rintro (⟨e, he, j, hw⟩ | ⟨j, hw⟩)
+      · exact Or.inl ⟨e, he, (genScatterMergeTreeOutputEmbedding_support_iff
+          fullTree e w).mp ⟨j, hw⟩⟩
+      · exact Or.inr ((genScatterMergeTreeOutputEmbedding_support_iff
+          tailTree tail w).mp ⟨j, hw⟩)
+    · rintro (⟨e, he, hw⟩ | hw)
+      · exact Or.inl ⟨e, he, (genScatterMergeTreeOutputEmbedding_support_iff
+          fullTree e w).mpr hw⟩
+      · exact Or.inr ((genScatterMergeTreeOutputEmbedding_support_iff
+          tailTree tail w).mpr hw)
+
+/-- Split a cohort with `64*q + 63` sorted packets into consecutive full
+blocks and its final 63-packet tail, then merge both parts in parallel at
+depth at most 57. -/
+theorem packetFamily_residue63_merge {q N : Nat} {α : Type} [LinearOrder α]
+    (packets : Fin (q * 64 + 63) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y)
+    (v : Fin N → α)
+    (hpackets : ∀ a, Monotone (fun i => v (packets a i))) :
+    ∃ blocks : List (Fin 4096 ↪ Fin N), ∃ tail : Fin 4032 ↪ Fin N,
+      blocks.Nodup ∧
+      (∀ e ∈ blocks, ∀ f ∈ blocks, e ≠ f → ∀ x y, e x ≠ f y) ∧
+      (∀ e ∈ blocks, ∀ i j, e i ≠ tail j) ∧
+      (genMergeTreeFullTailBatch (packetPowerTree6 (α := α))
+        (packetOddTree6 (α := α)) blocks tail).depth ≤ 57 ∧
+      (∀ e ∈ blocks, ∀ j : Fin (packetPowerTree6 (α := α)).leafCount,
+        Monotone (fun i =>
+          (genMergeTreeFullTailBatch (packetPowerTree6 (α := α))
+            (packetOddTree6 (α := α)) blocks tail).exec v
+              (genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α)) e j i))) ∧
+      (∀ j : Fin (packetOddTree6 (α := α)).leafCount,
+        Monotone (fun i =>
+          (genMergeTreeFullTailBatch (packetPowerTree6 (α := α))
+            (packetOddTree6 (α := α)) blocks tail).exec v
+              (genScatterMergeTreeOutputEmbedding (packetOddTree6 (α := α)) tail j i))) := by
+  let prefixIndex : Fin (q * 64) → Fin (q * 64 + 63) :=
+    fun i => ⟨i.val, by have hi := i.isLt; omega⟩
+  let tailIndex : Fin 63 → Fin (q * 64 + 63) :=
+    fun i => ⟨q * 64 + i.val, by have hi := i.isLt; omega⟩
+  let prefixPackets : Fin (q * 64) → Fin 64 ↪ Fin N :=
+    fun i => packets (prefixIndex i)
+  let tailPackets : Fin 63 → Fin 64 ↪ Fin N := fun i => packets (tailIndex i)
+  have hprefixIndexInjective : Function.Injective prefixIndex := by
+    intro i j h
+    apply Fin.ext
+    have hv := congrArg Fin.val h
+    simpa [prefixIndex] using hv
+  have htailIndexInjective : Function.Injective tailIndex := by
+    intro i j h
+    apply Fin.ext
+    have hv := congrArg Fin.val h
+    simp only [tailIndex, Fin.val_mk] at hv
+    omega
+  have hdisPrefix : ∀ a b, a ≠ b → ∀ x y,
+      prefixPackets a x ≠ prefixPackets b y := by
+    intro a b hab x y heq
+    apply hdis (prefixIndex a) (prefixIndex b)
+    · intro h
+      apply hab
+      exact hprefixIndexInjective h
+    · exact heq
+  have hdisTail : ∀ {a b : Fin 63}, a ≠ b → ∀ x y,
+      tailPackets a x ≠ tailPackets b y := by
+    intro a b hab x y heq
+    apply hdis (tailIndex a) (tailIndex b)
+    · intro h
+      apply hab
+      exact htailIndexInjective h
+    · exact heq
+  let blocks := packetFamily64BlockList prefixPackets hdisPrefix
+  let tail := genPacketGroup63Embedding tailPackets hdisTail
+  have hsep : ∀ e ∈ blocks, ∀ i j, e i ≠ tail j := by
+    intro e he i j
+    simp only [blocks, packetFamily64BlockList, List.mem_ofFn] at he
+    obtain ⟨g, rfl⟩ := he
+    obtain ⟨a, x, hx⟩ := genPacketGroup64Embedding_mem_packets
+      (fun a => prefixPackets (packetFamily64BlockIndex g a))
+      (by
+        intro a' b' hab x y
+        have hidx : packetFamily64BlockIndex g a' ≠
+            packetFamily64BlockIndex g b' := by
+          intro h
+          apply hab
+          exact packetFamily64BlockIndex_injective g h
+        exact hdisPrefix _ _ hidx x y) i
+    obtain ⟨b, y, hy⟩ := genPacketGroup63Embedding_mem_packets
+      tailPackets hdisTail j
+    have hidx : prefixIndex (packetFamily64BlockIndex g a) ≠ tailIndex b := by
+      intro heq
+      have hv := congrArg Fin.val heq
+      simp only [prefixIndex, tailIndex, packetFamily64BlockIndex, Fin.val_mk] at hv
+      omega
+    intro heq
+    have hval : packets (prefixIndex (packetFamily64BlockIndex g a)) x =
+        packets (tailIndex b) y := by
+      calc
+        packets (prefixIndex (packetFamily64BlockIndex g a)) x =
+            packetFamily64BlockEmbedding prefixPackets hdisPrefix g i := hx.symm
+        _ = genPacketGroup63Embedding tailPackets hdisTail j := heq
+        _ = packets (tailIndex b) y := hy
+    exact (hdis _ _ hidx x y) hval
+  have hnd := packetFamily64BlockList_nodup prefixPackets hdisPrefix
+  have hdisBlocks := packetFamily64BlockList_disjoint prefixPackets hdisPrefix
+  have hRunsFull : ∀ e ∈ blocks,
+      (packetPowerTree6 (α := α)).RunsSorted (fun i => v (e i)) := by
+    intro e he
+    simp only [blocks, packetFamily64BlockList, List.mem_ofFn] at he
+    obtain ⟨g, rfl⟩ := he
+    have hinner : ∀ {a b : Fin 64}, a ≠ b → ∀ x y,
+        prefixPackets (packetFamily64BlockIndex g a) x ≠
+          prefixPackets (packetFamily64BlockIndex g b) y := by
+      intro a b hab x y
+      apply hdisPrefix _ _ ?_ x y
+      intro h
+      apply hab
+      exact packetFamily64BlockIndex_injective g h
+    have hlocal := packetPowerTree6_runsSorted_of_packets
+      (fun a => prefixPackets (packetFamily64BlockIndex g a)) hinner v
+      (fun a => hpackets (prefixIndex (packetFamily64BlockIndex g a)))
+    simpa [packetFamily64BlockEmbedding] using hlocal
+  have hRunsTail := packetOddTree6_runsSorted_of_packets tailPackets hdisTail v
+    (fun i => hpackets (tailIndex i))
+  have hdepth := genMergeTreeFullTailBatch_depth_le
+    (packetPowerTree6 (α := α)) (packetOddTree6 (α := α)) blocks tail
+    hnd hdisBlocks hsep 57 packetPowerTree6_depth_le packetOddTree6_depth_le
+  have hsorted := genMergeTreeFullTailBatch_outputPacket_sorted
+    (packetPowerTree6 (α := α)) (packetOddTree6 (α := α)) blocks tail
+    hnd hdisBlocks hsep v hRunsFull hRunsTail
+  exact ⟨blocks, tail, hnd, hdisBlocks, hsep, hdepth, hsorted.1, hsorted.2⟩
+
 
 end Chvatal.PacketAlignment

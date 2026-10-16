@@ -923,6 +923,10 @@ import PacketMergeTreeGen
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_divisible64_batch
 
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_residue63_batch' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_residue63_batch
+
 /-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_packetCount_block_shape' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_packetCount_block_shape
@@ -1248,6 +1252,12 @@ import PacketMergeTreeGen
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genScatterMergeTreeOutputEmbedding_covers
 
+/-- info: 'Chvatal.PacketAlignment.genScatterMergeTreeOutputEmbedding_support_iff' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genScatterMergeTreeOutputEmbedding_support_iff
+
 /-- info: 'Chvatal.PacketAlignment.genScatterMergeTree_outputPacket_sorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genScatterMergeTree_outputPacket_sorted
@@ -1284,6 +1294,18 @@ import PacketMergeTreeGen
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genScatterBatch_depth_le
 
+/-- info: 'Chvatal.PacketAlignment.genScatterBatch_comparator_endpoints' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genScatterBatch_comparator_endpoints
+
+/-- info: 'Chvatal.PacketAlignment.genScatter_comparator_endpoints' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genScatter_comparator_endpoints
+
+/-- info: 'Chvatal.PacketAlignment.genScatterBatch_genScatter_comparators_disjoint' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genScatterBatch_genScatter_comparators_disjoint
+
 /-- info: 'Chvatal.PacketAlignment.genScatterBatch_exec_outside' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genScatterBatch_exec_outside
@@ -1292,6 +1314,10 @@ import PacketMergeTreeGen
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genScatterBatch_exec_inside
 
+/-- info: 'Chvatal.PacketAlignment.genDisjointAppend_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genDisjointAppend_depth_le
+
 /-- info: 'Chvatal.PacketAlignment.genScatterMergeTreeBatch_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genScatterMergeTreeBatch_depth_le
@@ -1299,6 +1325,24 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.genScatterMergeTreeBatch_outputPacket_sorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genScatterMergeTreeBatch_outputPacket_sorted
+
+/-- info: 'Chvatal.PacketAlignment.genMergeTreeFullTailBatch_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genMergeTreeFullTailBatch_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.packetFamily_residue63_merge' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetFamily_residue63_merge
+
+/-- info: 'Chvatal.PacketAlignment.genMergeTreeFullTailBatch_outputPacket_sorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genMergeTreeFullTailBatch_outputPacket_sorted
+
+/-- info: 'Chvatal.PacketAlignment.genMergeTreeFullTailBatch_output_support' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genMergeTreeFullTailBatch_output_support
 
 /-- info: 'Chvatal.PacketAlignment.packetFamily64BlockIndex_injective' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs (whitespace := lax) in

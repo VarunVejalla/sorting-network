@@ -785,6 +785,47 @@ def genScatterBatch {M N : Nat} (net : ComparatorNetwork M)
     (supports : List (Fin M ↪ Fin N)) : GenNetwork N :=
   ⟨supports.flatMap fun e => (genScatter net e).comparators⟩
 
+theorem genScatterBatch_comparator_endpoints {M N : Nat}
+    (net : ComparatorNetwork M) (supports : List (Fin M ↪ Fin N))
+    (c : GenComparator N) (hc : c ∈ (genScatterBatch net supports).comparators) :
+    (∃ e ∈ supports, ∃ i, e i = c.a) ∧
+      (∃ e ∈ supports, ∃ i, e i = c.b) := by
+  change c ∈ supports.flatMap (fun e => (genScatter net e).comparators) at hc
+  obtain ⟨e, he, hlocal⟩ := List.mem_flatMap.mp hc
+  change c ∈ net.comparators.map (genScatterComparator e) at hlocal
+  obtain ⟨c₀, _, rfl⟩ := List.mem_map.mp hlocal
+  exact ⟨⟨e, he, c₀.i, rfl⟩, ⟨e, he, c₀.j, rfl⟩⟩
+
+theorem genScatter_comparator_endpoints {M N : Nat} (net : ComparatorNetwork M)
+    (e : Fin M ↪ Fin N) (c : GenComparator N)
+    (hc : c ∈ (genScatter net e).comparators) :
+    (∃ i, e i = c.a) ∧ (∃ i, e i = c.b) := by
+  change c ∈ net.comparators.map (genScatterComparator e) at hc
+  obtain ⟨c₀, _, rfl⟩ := List.mem_map.mp hc
+  exact ⟨⟨c₀.i, rfl⟩, ⟨c₀.j, rfl⟩⟩
+
+theorem genScatterBatch_genScatter_comparators_disjoint {M K N : Nat}
+    (net : ComparatorNetwork M) (supports : List (Fin M ↪ Fin N))
+    (tailNet : ComparatorNetwork K) (tail : Fin K ↪ Fin N)
+    (hsep : ∀ e ∈ supports, ∀ i j, e i ≠ tail j)
+    (c : GenComparator N) (hc : c ∈ (genScatterBatch net supports).comparators)
+    (d : GenComparator N) (hd : d ∈ (genScatter tailNet tail).comparators) :
+    c.a ≠ d.a ∧ c.a ≠ d.b ∧ c.b ≠ d.a ∧ c.b ≠ d.b := by
+  obtain ⟨e, he, i, hca⟩ := (genScatterBatch_comparator_endpoints net supports c hc).1
+  obtain ⟨e', he', i', hcb⟩ := (genScatterBatch_comparator_endpoints net supports c hc).2
+  have htail := genScatter_comparator_endpoints tailNet tail d hd
+  obtain ⟨j, hda⟩ := htail.1
+  obtain ⟨j', hdb⟩ := htail.2
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro heq
+    exact (hsep e he i j) (hca.trans (heq.trans hda.symm))
+  · intro heq
+    exact (hsep e he i j') (hca.trans (heq.trans hdb.symm))
+  · intro heq
+    exact (hsep e' he' i' j) (hcb.trans (heq.trans hda.symm))
+  · intro heq
+    exact (hsep e' he' i' j') (hcb.trans (heq.trans hdb.symm))
+
 @[simp] theorem genScatterBatch_cons {M N : Nat} (net : ComparatorNetwork M)
     (e : Fin M ↪ Fin N) (supports : List (Fin M ↪ Fin N)) :
     genScatterBatch net (e :: supports) =
@@ -898,6 +939,32 @@ theorem genScatterBatch_exec_inside {M N : Nat} {α : Type} [LinearOrder α]
         rw [genScatter_exec_inside net e ((genScatter net f).exec v) i,
           genScatter_exec_inside net e v i]
         exact congrArg (fun x => net.exec x i) hcomp
+
+/-- Sequentially store two networks on disjoint comparator supports; their
+generalized-network depth is at most the larger component depth. -/
+theorem genDisjointAppend_depth_le {N : Nat} (G H : GenNetwork N) (D : Nat)
+    (hG : G.depth ≤ D) (hH : H.depth ≤ D)
+    (hdis : ∀ c ∈ G.comparators, ∀ d ∈ H.comparators,
+      c.a ≠ d.a ∧ c.a ≠ d.b ∧ c.b ≠ d.a ∧ c.b ≠ d.b) :
+    (⟨G.comparators ++ H.comparators⟩ : GenNetwork N).depth ≤ D := by
+  have hD : ∀ b ∈ ([true, false] : List Bool),
+      (⟨(if b then G.comparators else H.comparators)⟩ : GenNetwork N).depth ≤ D := by
+    intro b hb
+    have hb' : b = true ∨ b = false := by simpa using hb
+    rcases hb' with rfl | rfl <;> simp [hG, hH]
+  have hpair : ([true, false] : List Bool).Pairwise
+      (fun b c => ∀ x ∈ (if b then G.comparators else H.comparators),
+        ∀ y ∈ (if c then G.comparators else H.comparators),
+          x.a ≠ y.a ∧ x.a ≠ y.b ∧ x.b ≠ y.a ∧ x.b ≠ y.b) := by
+    apply List.pairwise_cons.mpr
+    constructor
+    · intro b hb x hx y hy
+      have hb' : b = false := by simpa using hb
+      subst b
+      simpa using hdis x hx y hy
+    · simp
+  simpa using genDepth_flatMap_disjoint ([true, false] : List Bool)
+    (fun b => if b then G.comparators else H.comparators) D hD hpair
 
 theorem genPacketRound_depth_le {N : Nat}
     (pairs : List (Fin 128 ↪ Fin N))

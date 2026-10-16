@@ -191,6 +191,59 @@ theorem flowA7_receiver_allCases_divisible64_batch {d : Nat} {α : Type}
       ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) hsorted
   exact ⟨blocks, hnodup, hblocksDisjoint, hdepth, hsortedOut⟩
 
+/-- The residue-63 receiver case reindexes its canonical packet family into
+the `64*q+63` form and applies the proved mixed full-block/tail merge. -/
+theorem flowA7_receiver_allCases_residue63_batch {d : Nat} {α : Type}
+    [LinearOrder α]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d)
+    (v : Fin (64 ^ d) → α)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v)
+    (hrem : (flowA7 d hd b.l (t + 1) / 64) % 64 = 63) :
+    ∃ blocks : List (Fin 4096 ↪ Fin (64 ^ d)), ∃ tail : Fin 4032 ↪ Fin (64 ^ d),
+      blocks.Nodup ∧
+      (∀ e ∈ blocks, ∀ f ∈ blocks, e ≠ f → ∀ x y, e x ≠ f y) ∧
+      (∀ e ∈ blocks, ∀ i j, e i ≠ tail j) ∧
+      (genMergeTreeFullTailBatch (packetPowerTree6 (α := α))
+        (packetOddTree6 (α := α)) blocks tail).depth ≤ 57 ∧
+      (∀ e ∈ blocks, ∀ j : Fin (packetPowerTree6 (α := α)).leafCount,
+        Monotone (fun i =>
+          (genMergeTreeFullTailBatch (packetPowerTree6 (α := α))
+            (packetOddTree6 (α := α)) blocks tail).exec
+            ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+            (genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α)) e j i))) ∧
+      (∀ j : Fin (packetOddTree6 (α := α)).leafCount,
+        Monotone (fun i =>
+          (genMergeTreeFullTailBatch (packetPowerTree6 (α := α))
+            (packetOddTree6 (α := α)) blocks tail).exec
+            ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+            (genScatterMergeTreeOutputEmbedding (packetOddTree6 (α := α)) tail j i))) := by
+  obtain ⟨m, packets, hsorted, hdis, hcover, hcount⟩ :=
+    flowA7_receiver_allCases_packetCount hd t ht2 ht b hb hchild v hpack
+  have hmrem : m % 64 = 63 := by simpa [hcount] using hrem
+  let q := m / 64
+  have hsize : m = q * 64 + 63 := by
+    have hdecomp := Nat.mod_add_div m 64
+    dsimp [q]
+    rw [hmrem] at hdecomp
+    omega
+  let packets' : Fin (q * 64 + 63) → Fin 64 ↪ Fin (64 ^ d) :=
+    fun i => packets (Fin.cast hsize.symm i)
+  have hdis' : ∀ a b, a ≠ b → ∀ x y, packets' a x ≠ packets' b y := by
+    intro a b hab x y heq
+    apply hdis (Fin.cast hsize.symm a) (Fin.cast hsize.symm b)
+    · intro h
+      apply hab
+      exact Fin.cast_injective hsize.symm h
+    · exact heq
+  obtain ⟨blocks, tail, hnodup, hblocksDisjoint, htailDisjoint,
+      hdepth, hsortedFull, hsortedTail⟩ := packetFamily_residue63_merge
+    packets' hdis' ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+    (fun a => hsorted (Fin.cast hsize.symm a))
+  exact ⟨blocks, tail, hnodup, hblocksDisjoint, htailDisjoint,
+    hdepth, hsortedFull, hsortedTail⟩
+
 /-- At every nonterminal receiver stage, the actual output packet family is
 immediately in one of the existing 64-block/tail configurations. -/
 theorem flowA7_receiver_allCases_packetCount_block_shape
