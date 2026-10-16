@@ -2879,6 +2879,116 @@ theorem flowA7_sourcePortRepairStage_sourcePackets {d : Nat} {α : Type}
   · exact sourcePortRepairPacket_card_eq_64 S π τ q m hπeq hτeq hsize hπcard
       hbase hwithin
 
+/-- Reindex the packet partitions arriving at one receiver: one family comes
+from its parent and one family from each of its 64 children. -/
+def receiverPacketFamily {N : Nat} {ι κ : Type} [Fintype ι] [Fintype κ]
+    (parent : ι → Finset (Fin N)) (child : Fin 64 → κ → Finset (Fin N)) :
+    ι ⊕ (Fin 64 × κ) → Finset (Fin N)
+  | Sum.inl i => parent i
+  | Sum.inr (j, k) => child j k
+
+/-- The assembled receiver family covers exactly the union of its parent and
+child contributions. -/
+theorem receiverPacketFamily_union {N : Nat} {ι κ : Type}
+    [Fintype ι] [Fintype κ]
+    (parent : ι → Finset (Fin N)) (child : Fin 64 → κ → Finset (Fin N)) :
+    Finset.univ.biUnion (receiverPacketFamily parent child) =
+      (Finset.univ.biUnion parent) ∪
+        Finset.univ.biUnion (fun j => Finset.univ.biUnion (child j)) := by
+  ext w
+  simp [receiverPacketFamily]
+
+/-- Sortedness of each source piece is inherited by the reindexed receiver
+family without any assumption about how the source wire sets interleave. -/
+theorem receiverPacketFamily_sorted {N : Nat} {ι κ : Type}
+    [Fintype ι] [Fintype κ] {α : Type} [LinearOrder α]
+    (parent : ι → Finset (Fin N)) (child : Fin 64 → κ → Finset (Fin N))
+    (v : Fin N → α)
+    (hparent : ∀ i, RankSortedOn (parent i) v)
+    (hchild : ∀ j k, RankSortedOn (child j k) v) :
+    ∀ i, RankSortedOn (receiverPacketFamily parent child i) v := by
+  intro i
+  cases i with
+  | inl i => exact hparent i
+  | inr jk => exact hchild jk.1 jk.2
+
+/-- Pairwise disjoint source partitions, disjoint port contributions, and
+disjoint child ports combine into a pairwise-disjoint receiver family. -/
+theorem receiverPacketFamily_pairwise_disjoint {N : Nat} {ι κ : Type}
+    [Fintype ι] [Fintype κ]
+    (parent : ι → Finset (Fin N)) (child : Fin 64 → κ → Finset (Fin N))
+    (parentSupport : Finset (Fin N)) (childSupport : Fin 64 → Finset (Fin N))
+    (hparentUnion : Finset.univ.biUnion parent = parentSupport)
+    (hchildUnion : ∀ j, Finset.univ.biUnion (child j) = childSupport j)
+    (hparentDisjoint : ∀ i i', i ≠ i' → Disjoint (parent i) (parent i'))
+    (hchildDisjoint : ∀ j k k', k ≠ k' → Disjoint (child j k) (child j k'))
+    (hportsDisjoint : ∀ i j k, Disjoint (parent i) (child j k))
+    (hchildrenDisjoint : ∀ j j', j ≠ j' → Disjoint (childSupport j) (childSupport j')) :
+    ∀ i i' : ι ⊕ (Fin 64 × κ), i ≠ i' →
+      Disjoint (receiverPacketFamily parent child i)
+        (receiverPacketFamily parent child i') := by
+  intro i i' hne
+  cases i with
+  | inl a =>
+    cases i' with
+    | inl b => exact hparentDisjoint a b (fun h => hne (congrArg Sum.inl h))
+    | inr jk =>
+      exact hportsDisjoint a jk.1 jk.2
+  | inr jk =>
+    cases i' with
+    | inl b =>
+      exact (hportsDisjoint b jk.1 jk.2).symm
+    | inr jk' =>
+      rcases jk with ⟨j, k⟩
+      rcases jk' with ⟨j', k'⟩
+      by_cases hj : j = j'
+      · subst j'
+        exact hchildDisjoint j k k'
+          (fun h => hne (congrArg (fun x => Sum.inr (j, x)) h))
+      · have hsubA : child j k ⊆ childSupport j := by
+          rw [← hchildUnion j]
+          exact Finset.subset_biUnion_of_mem _ (Finset.mem_univ k)
+        have hsubB : child j' k' ⊆ childSupport j' := by
+          rw [← hchildUnion j']
+          exact Finset.subset_biUnion_of_mem _ (Finset.mem_univ k')
+        exact (hchildrenDisjoint j j' hj).mono hsubA hsubB
+
+/-- If every source piece has 64 wires, so does every assembled receiver
+packet. -/
+theorem receiverPacketFamily_card_eq_64 {N : Nat} {ι κ : Type}
+    [Fintype ι] [Fintype κ]
+    (parent : ι → Finset (Fin N)) (child : Fin 64 → κ → Finset (Fin N))
+    (hparent : ∀ i, (parent i).card = 64)
+    (hchild : ∀ j k, (child j k).card = 64) :
+    ∀ i : ι ⊕ (Fin 64 × κ),
+      (receiverPacketFamily parent child i).card = 64 := by
+  intro i
+  cases i with
+  | inl i => exact hparent i
+  | inr jk => exact hchild jk.1 jk.2
+
+/-- The assembled parent/child packet family is the actual next-time register
+support in `WireFlow`; the source partition hypotheses supply its two port
+unions. -/
+theorem receiverPacketFamily_wireSets_union {d : Nat} {ι κ : Type}
+    [Fintype ι] [Fintype κ] (hd : 7 ≤ d) (t : Nat)
+    (ht : t < tf7 d) (b : KBag 64 d) (hb : 1 ≤ b.l)
+    (hchild : b.l < d)
+    (parent : ι → Finset (Fin (64 ^ d)))
+    (child : Fin 64 → κ → Finset (Fin (64 ^ d)))
+    (hparent : Finset.univ.biUnion parent =
+      Chvatal.downSet (wireSets (flowSizes7 d hd) t b.parent)
+        (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t) (b.x % 64))
+    (hchildren : ∀ j, Finset.univ.biUnion (child j) =
+      Chvatal.upSet (wireSets (flowSizes7 d hd) t
+        (b.child j.val j.isLt hchild)) (flowUp7 d hd (b.l + 1) t)) :
+    Finset.univ.biUnion (receiverPacketFamily parent child) =
+      wireSets (flowSizes7 d hd) (t + 1) b := by
+  rw [receiverPacketFamily_union, hparent]
+  simp_rw [hchildren]
+  rw [wireSets_succ_eq]
+  simp [parentPart, childPart, hb, hchild, KBag.parent, KBag.child, flowSizes7]
+
 /-- At an actual receiver, the 64 child senders' shifted up-fringe endpoint
 repairs are also one six-layer disjoint family. The packet divisibility,
 fringe parity, capacity, and sender disjointness all come from the checked
