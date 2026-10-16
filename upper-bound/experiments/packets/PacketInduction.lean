@@ -84,6 +84,30 @@ theorem canonicalPacketFamily_toEmbeddings {N : Nat} {α : Type}
     exact hcontract.2.1
   exact ⟨hsorted, hdisjoint, hsupport⟩
 
+/-- Compose the all-case `WireFlow` receiver partition with the embedding
+adapter, so an actual corrected receiver register is ready to enter an
+indexed logical matching round. -/
+theorem flowA7_receiver_allCases_embeddingFamily {d : Nat} {α : Type}
+    [LinearOrder α]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d)
+    (v : Fin (64 ^ d) → α)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v) :
+    ∃ m : Nat, ∃ packets : Fin m → Fin 64 ↪ Fin (64 ^ d),
+      (∀ i, Monotone (fun k =>
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) (packets i k))) ∧
+      (∀ i i', i ≠ i' → ∀ x y, packets i x ≠ packets i' y) ∧
+      Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) =
+        wireSets (flowSizes7 d hd) (t + 1) b := by
+  obtain ⟨receiver, hreceiver⟩ := flowA7_receiver_allCases_canonical
+    hd t ht2 ht b hb hchild v hpack
+  exact ⟨receiver.count,
+    canonicalPacketEmbedding receiver hreceiver.2.2.2,
+    canonicalPacketFamily_toEmbeddings receiver
+      (wireSets (flowSizes7 d hd) (t + 1) b)
+      ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) hreceiver⟩
+
 /-- Convert the output list of an indexed merge-and-deal round to a canonical
 `Fin`-indexed embedding family. If the matching covers every input ID, this
 preserves the full support union and logical sortedness. -/
