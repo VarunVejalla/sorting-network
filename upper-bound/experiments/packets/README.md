@@ -14,7 +14,7 @@ the accepted sorting bound remains 1419.
 | --- | --- |
 | `OddEvenMerge64.lean` | `oddEvenMergeNet_sorts_two_runs` proves the actual recursive network correct on any two ascending runs. `oddEvenMergeNet64_sorts_two_runs` and `oddEvenMergeNet64_depth_le` specialize to 64 wires and depth six. Scatter correctness and depth preserve this on any increasing 64-wire embedding. The dealt lanes are sorted and have exact floor/ceiling Boolean counts. |
 | `PacketAlignment.lean` | Scheduled flow residues, fragment counts, separated endpoint supports and sender disjointness. Historical bitonic fallback lemmas remain available. |
-| `PacketRepair64.lean` | An input-independent ordinary network repairs two physically separated 32-wire supports in six layers. Actual shifted down-cut/up-fringe fragments are sorted under `PacketSortedOn`, which orders each packet but imposes no inter-packet value order. Disjoint repair families have depth at most six and act as the corresponding local merger on each pair. |
+| `PacketRepair64.lean` | An input-independent ordinary network repairs two physically separated 32-wire supports in six layers. Actual shifted down-cut/up-fringe fragments are sorted under `PacketSortedOn`, which orders each packet but imposes no inter-packet value order. Disjoint repair families have depth at most six and act as the corresponding local merger on each pair. `flowA7_sourcePortRepairStage_depth_le` chooses the shared-port repair on every eligible source bag and composes these networks through the actual `stageNet`, preserving the six-layer depth bound globally. |
 | `PacketGenMerge.lean` | An arbitrary injective placement of an ordinary network preserves execution and depth in `Untangle.GenNetwork`. `genMerge_sorts_two_runs` and `genMerge_depth_le` apply at every power-of-two width, including seven layers for 64+64 packets and thirteen for 4096+4096. Dealing has exact floor/ceiling counts, including all value thresholds. Logical packet embeddings can be joined and their fixed parity outputs are disjoint and partition the consumed support. |
 | `PacketRebinning.lean` | The scalar complementary-half rebinning model preserves counts and cannot increase positive/negative spill or squared energy around any common real reference. |
 | `PacketSenderCycle.lean` | The 65 shifted boundary cells are distinct whole source packets. Actual child and parent repairs consume complementary halves in a fixed cycle and cover exactly those cells. A fixed ordinary six-layer network sorts all 65 repaired pairs and leaves other wires unchanged. `scheduled_senderRepair_exists` instantiates this on actual ordinary scheduled bags with positive down-flow and shifted half-fringes. |
@@ -77,7 +77,7 @@ From this worktree's repository root on Windows:
 powershell -NoProfile -ExecutionPolicy Bypass -File upper-bound/experiments/packets/check-lean.ps1
 ```
 
-The script builds the required `StageNet` and `Untangle` library modules,
+The script builds the required `StageNet`, `ExecPlacement`, and `Untangle` library modules,
 then checks the scratch modules in dependency order. Scratch `.olean` files
 and logs go to `LLM-helpers/ub25-packets`, outside tracked proof sources.
 `-From PacketRepair64`, `-From PacketGenMerge`, or `-From PacketMergeAxioms`
@@ -88,9 +88,14 @@ checks all scratch sources.
 ## Remaining proof gates
 
 1. Integrate the checked six-layer shared source-port packet-layout network
-   into `stageNet`, then identify source-rank cells with fixed receiver packet
-   labels and capacities. Local layouts and the combined network's invariant
-   are checked; global stage integration and receiver reassembly are not.
+   The checked six-layer shared source-port repair is now selected on every
+   eligible bag and embedded by `stageNet`; the resulting global stage has
+   depth at most six. `PacketSortedOn_orderEmb` transfers the input invariant
+   into register coordinates, and `stageNet_rankSortedOn_image` transports
+   local sorted supports back to global wires. Still missing is applying this
+   pair of adapters to the selected repair's complete output layout, then
+   identifying those source-rank cells with fixed receiver packet labels and
+   capacities.
 2. Carry the logical packet embeddings through matching rounds and positional
    port cuts. `PacketSortedOn` on the physical rank grid is a sufficient local
    premise, not yet an invariant of that combined scheduler. In particular,

@@ -10,7 +10,7 @@ $packetBest = (Resolve-Path (Join-Path $packetSources '../../best')).Path
 if (-not $InLake) {
     Push-Location $packetBest
     try {
-        & lake build AKS.Chvatal.StageNet AKS.Sort.Untangle
+        & lake build AKS.Chvatal.StageNet AKS.Chvatal.ExecPlacement AKS.Sort.Untangle
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         & lake env powershell -NoProfile -ExecutionPolicy Bypass -File $PSCommandPath -InLake -From $From
         $packetExit = $LASTEXITCODE

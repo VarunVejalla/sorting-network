@@ -694,3 +694,23 @@ import PacketHalfProfile
 /-- info: 'Chvatal.PacketAlignment.adjacentPacketMatching_covers' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.adjacentPacketMatching_covers
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_sourcePortRepairNet_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_sourcePortRepairNet_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_sourcePortRepairNetAt_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_sourcePortRepairNetAt_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_sourcePortRepairStage_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_sourcePortRepairStage_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.PacketSortedOn_orderEmb' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.PacketSortedOn_orderEmb
+
+/-- info: 'Chvatal.PacketAlignment.stageNet_rankSortedOn_image' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.stageNet_rankSortedOn_image

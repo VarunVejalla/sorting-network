@@ -1,6 +1,7 @@
 import OddEvenMerge64
 import PacketAlignment
 import AKS.Chvatal.StageNet
+import AKS.Chvatal.ExecPlacement
 
 /-! Fixed-label repair of two separated ascending half-packets, using
 Batcher's six-layer odd-even merge. This file uses the best package's
@@ -155,6 +156,71 @@ support. It imposes no value order between different packets. -/
 def PacketSortedOn {N : Nat} {α : Type} [Preorder α]
     (s : Finset (Fin N)) (v : Fin N → α) : Prop :=
   ∀ p : Nat, RankSortedOn (Chvatal.blockOf s (64 * p) (64 * (p + 1))) v
+
+/-- Packet sortedness on physical wires is the same invariant in the bag's
+rank-order register coordinates. -/
+theorem PacketSortedOn_orderEmb {N : Nat} {α : Type} [Preorder α]
+    (s : Finset (Fin N)) (v : Fin N → α)
+    (hpack : PacketSortedOn s v) :
+    PacketSortedOn (Finset.univ : Finset (Fin s.card))
+      (fun i => v (s.orderEmbOfFin rfl i)) := by
+  intro p x y hx hy hxy
+  rw [Chvatal.mem_blockOf] at hx hy
+  have hxrank : Chvatal.rankIn (Finset.univ : Finset (Fin s.card)) x = x.val := by
+    change ((Finset.univ : Finset (Fin s.card)).filter (fun z => z < x)).card = x.val
+    have hfilter : (Finset.univ : Finset (Fin s.card)).filter (fun z => z < x) = Finset.Iio x := by
+      ext z
+      simp
+    rw [hfilter]
+    exact Fin.card_Iio x
+  have hyrank : Chvatal.rankIn (Finset.univ : Finset (Fin s.card)) y = y.val := by
+    change ((Finset.univ : Finset (Fin s.card)).filter (fun z => z < y)).card = y.val
+    have hfilter : (Finset.univ : Finset (Fin s.card)).filter (fun z => z < y) = Finset.Iio y := by
+      ext z
+      simp
+    rw [hfilter]
+    exact Fin.card_Iio y
+  rw [hxrank] at hx
+  rw [hyrank] at hy
+  have hxlo : 64 * p ≤ x.val := hx.2.1
+  have hxhi : x.val < 64 * (p + 1) := hx.2.2
+  have hylo : 64 * p ≤ y.val := hy.2.1
+  have hyhi : y.val < 64 * (p + 1) := hy.2.2
+  have hxe : s.orderEmbOfFin rfl x ∈ Chvatal.blockOf s (64 * p) (64 * (p + 1)) := by
+    rw [Chvatal.mem_blockOf, Chvatal.rankIn_orderEmb]
+    exact ⟨Finset.orderEmbOfFin_mem s rfl x, hxlo, hxhi⟩
+  have hye : s.orderEmbOfFin rfl y ∈ Chvatal.blockOf s (64 * p) (64 * (p + 1)) := by
+    rw [Chvatal.mem_blockOf, Chvatal.rankIn_orderEmb]
+    exact ⟨Finset.orderEmbOfFin_mem s rfl y, hylo, hyhi⟩
+  have hxy' : (s.orderEmbOfFin rfl x).val ≤ (s.orderEmbOfFin rfl y).val := by
+    exact Fin.le_def.mp ((s.orderEmbOfFin rfl).monotone (Fin.le_def.mpr hxy))
+  exact hpack p hxe hye hxy'
+
+/-- A sorted register support stays sorted when `stageNet` embeds the node
+network along the bag's increasing rank-order map. -/
+theorem stageNet_rankSortedOn_image {d : Nat} {α : Type} [LinearOrder α]
+    (S : KBag 64 d → Finset (Fin (64 ^ d)))
+    (hS : ∀ b b', b ≠ b' → Disjoint (S b) (S b'))
+    (nodeNet : (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (v : Fin (64 ^ d) → α) (b : KBag 64 d)
+    (A : Finset (Fin (S b).card))
+    (hsorted : RankSortedOn A
+      ((nodeNet b (S b).card).exec (fun i => v ((S b).orderEmbOfFin rfl i)))) :
+    RankSortedOn (A.image ((S b).orderEmbOfFin rfl))
+      ((stageNet S nodeNet).exec v) := by
+  intro x y hx hy hxy
+  rcases Finset.mem_image.mp hx with ⟨i, hi, rfl⟩
+  rcases Finset.mem_image.mp hy with ⟨j, hj, rfl⟩
+  have hij : i.val ≤ j.val := by
+    by_contra hnot
+    have hji : j < i := Fin.lt_def.mpr (by omega)
+    have hstrict := (S b).orderEmbOfFin rfl |>.strictMono hji
+    have hnotle : ¬ (S b).orderEmbOfFin rfl i ≤ (S b).orderEmbOfFin rfl j :=
+      not_le_of_gt hstrict
+    exact hnotle (Fin.le_def.mpr hxy)
+  rw [stageNet_exec_inside S hS nodeNet v b i,
+    stageNet_exec_inside S hS nodeNet v b j]
+  exact hsorted hi hj hij
 
 /-- Either aligned half of one packet is an ascending run under the packet
 invariant; sorting the whole sender bag is unnecessary. -/
@@ -1774,6 +1840,76 @@ theorem flowA7_source_port_packetLayout_register {d : Nat} {α : Type}
   refine ⟨?_, h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
   intro j
   exact ⟨h.1 j, h.2.1 j⟩
+
+/-- Choose the checked local shared-port correction at every shifted ordinary
+sender; all other senders run the empty network. -/
+noncomputable def flowA7_sourcePortRepairNet {d : Nat}
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (q : KBag 64 d) :
+    ComparatorNetwork ((flowSizes7 d hd).a q.l t) := by
+  classical
+  by_cases hdown : 0 < flowDown7 d hd q.l t
+  · by_cases hbad : HalfMisaligned (flowUp7 d hd q.l t)
+    · exact Classical.choose
+        (flowA7_source_port_packetLayout_register (α := Bool) hd t ht2 ht q hdown hbad)
+    · exact ⟨[]⟩
+  · exact ⟨[]⟩
+
+theorem flowA7_sourcePortRepairNet_depth_le {d : Nat}
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (q : KBag 64 d) :
+    (flowA7_sourcePortRepairNet hd t ht2 ht q).depth ≤ 6 := by
+  classical
+  unfold flowA7_sourcePortRepairNet
+  split
+  · rename_i hdown
+    split
+    · rename_i hbad
+      exact (Classical.choose_spec
+        (flowA7_source_port_packetLayout_register (α := Bool) hd t ht2 ht q hdown hbad)).1
+    · simp [ComparatorNetwork.depth]
+  · simp [ComparatorNetwork.depth]
+
+/-- Reindex the selected register network to the size parameter used by
+`stageNet`; at unrelated sizes this is the empty network. -/
+noncomputable def flowA7_sourcePortRepairNetAt {d : Nat}
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (q : KBag 64 d) (n : Nat) : ComparatorNetwork n := by
+  classical
+  by_cases hsize : n = (flowSizes7 d hd).a q.l t
+  · exact hsize.symm ▸ flowA7_sourcePortRepairNet hd t ht2 ht q
+  · exact ⟨[]⟩
+
+theorem flowA7_sourcePortRepairNetAt_depth_le {d : Nat}
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (q : KBag 64 d) (n : Nat) :
+    (flowA7_sourcePortRepairNetAt hd t ht2 ht q n).depth ≤ 6 := by
+  classical
+  unfold flowA7_sourcePortRepairNetAt
+  split
+  · rename_i hsize
+    cases hsize
+    exact flowA7_sourcePortRepairNet_depth_le hd t ht2 ht q
+  · simp [ComparatorNetwork.depth]
+
+/-- The local correction choices form one global stage of depth at most six.
+`stageNet` places them on the actual disjoint `WireFlow` bags. -/
+noncomputable def flowA7_sourcePortRepairStage {d : Nat}
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d) :
+    ComparatorNetwork (64 ^ d) :=
+  stageNet (wireSets (flowSizes7 d hd) t)
+    (fun q n => flowA7_sourcePortRepairNetAt hd t ht2 ht q n)
+
+theorem flowA7_sourcePortRepairStage_depth_le {d : Nat}
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d) :
+    (flowA7_sourcePortRepairStage hd t ht2 ht).depth ≤ 6 := by
+  exact stageNet_depth_le (wireSets (flowSizes7 d hd) t)
+    (wireSets_disjoint (flowSizes7 d hd) (Nat.le_of_lt ht))
+    (fun q n => flowA7_sourcePortRepairNetAt hd t ht2 ht q n)
+    (fun q => by
+      have hsize := wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) q
+      simpa [hsize] using flowA7_sourcePortRepairNetAt_depth_le
+        hd t ht2 ht q (wireSets (flowSizes7 d hd) t q).card)
 
 /-- At an actual receiver, the 64 child senders' shifted up-fringe endpoint
 repairs are also one six-layer disjoint family. The packet divisibility,
