@@ -1,6 +1,7 @@
 import PacketProfile
 import PacketGenMerge
 import PacketMergeTreeGen
+import PacketInduction
 import AKS.Chvatal.ExecPlacement
 
 /-! The actual repair atoms are 32-wire rank intervals. This file carries the
@@ -186,6 +187,147 @@ theorem packetPowerTree6GroupNet_output_threshold_profile {N : Nat}
   exact genScatterMergeTree_output_threshold_profile (packetPowerTree6 (α := α))
     packetPowerTree6_leafCount (genPacketGroup64Embedding packets hdisjoint)
     v hRuns t j
+
+/-- A parallel batch of 4096-wire merge trees preserves the exact threshold
+profile on every output chunk of every disjoint block. -/
+theorem genScatterMergeTreeBatch_output_threshold_profile {N : Nat}
+    {α : Type} [LinearOrder α] (tree : PacketMergeTree α 4096)
+    (hleaf : tree.leafCount = 64)
+    (supports : List (Fin 4096 ↪ Fin N)) (hnd : supports.Nodup)
+    (hdis : ∀ e ∈ supports, ∀ f ∈ supports, e ≠ f →
+      ∀ i j, e i ≠ f j)
+    (v : Fin N → α)
+    (hRuns : ∀ e ∈ supports, tree.RunsSorted (fun i => v (e i)))
+    (e : Fin 4096 ↪ Fin N) (he : e ∈ supports)
+    (t : α) (j : Fin 64) :
+    boolTrueCount (fun i : Fin 64 => decide (t ≤
+      (genScatterMergeTreeBatch tree supports).exec v
+        (genScatterMergeTreeOutputEmbedding tree e (Fin.cast hleaf.symm j) i))) =
+      profileCell 64 (boolTrueCount (fun i : Fin 4096 => decide (t ≤ v (e i))))
+        j.val := by
+  have hEq : (fun i : Fin 64 => decide (t ≤
+      (genScatterMergeTreeBatch tree supports).exec v
+        (genScatterMergeTreeOutputEmbedding tree e (Fin.cast hleaf.symm j) i))) =
+      (fun i : Fin 64 => decide (t ≤
+        (genScatterMergeTree tree e).exec v
+          (genScatterMergeTreeOutputEmbedding tree e (Fin.cast hleaf.symm j) i))) := by
+    funext i
+    change decide (t ≤ (genScatterMergeTreeBatch tree supports).exec v
+        (e (PacketMergeTree.chunkIndex tree (Fin.cast hleaf.symm j) i))) =
+      decide (t ≤ (genScatterMergeTree tree e).exec v
+        (e (PacketMergeTree.chunkIndex tree (Fin.cast hleaf.symm j) i)))
+    change decide (t ≤ (genScatterBatch tree.network supports).exec v
+        (e (PacketMergeTree.chunkIndex tree (Fin.cast hleaf.symm j) i))) = _
+    rw [genScatterBatch_exec_inside tree.network supports hnd hdis v e he
+      (PacketMergeTree.chunkIndex tree (Fin.cast hleaf.symm j) i)]
+    rfl
+  rw [hEq]
+  exact genScatterMergeTree_output_threshold_profile tree hleaf e v
+    (hRuns e he) t j
+
+/-- The standard divisible-cohort decomposition carries exact rank profiles,
+not just sortedness, through all of its parallel full-block merges. -/
+theorem packetFamily64BlockList_merge_output_threshold_profile {q N : Nat}
+    {α : Type} [LinearOrder α]
+    (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y)
+    (v : Fin N → α)
+    (hpackets : ∀ a, Monotone (fun i => v (packets a i))) (t : α) :
+    ∀ e ∈ packetFamily64BlockList packets hdis,
+      ∀ j : Fin 64,
+        boolTrueCount (fun i : Fin 64 => decide (t ≤
+          (genScatterMergeTreeBatch (packetPowerTree6 (α := α))
+            (packetFamily64BlockList packets hdis)).exec v
+              (genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α)) e
+                (Fin.cast (packetPowerTree6_leafCount (α := α)).symm j) i))) =
+        profileCell 64
+          (boolTrueCount (fun i : Fin 4096 => decide (t ≤ v (e i)))) j.val := by
+  have hnd := packetFamily64BlockList_nodup packets hdis
+  have hdisBlocks := packetFamily64BlockList_disjoint packets hdis
+  have hRuns : ∀ e ∈ packetFamily64BlockList packets hdis,
+      (packetPowerTree6 (α := α)).RunsSorted (fun i => v (e i)) := by
+    intro e he
+    simp only [packetFamily64BlockList, List.mem_ofFn] at he
+    obtain ⟨g, rfl⟩ := he
+    have hinner : ∀ {a b : Fin 64}, a ≠ b → ∀ x y,
+        packets (packetFamily64BlockIndex g a) x ≠
+          packets (packetFamily64BlockIndex g b) y := by
+      intro a b hab x y
+      apply hdis _ _ ?_ x y
+      intro h
+      apply hab
+      exact packetFamily64BlockIndex_injective g h
+    have hlocal := packetPowerTree6_runsSorted_of_packets
+      (fun a => packets (packetFamily64BlockIndex g a)) hinner v
+      (fun a => hpackets (packetFamily64BlockIndex g a))
+    simpa [packetFamily64BlockEmbedding] using hlocal
+  intro e he j
+  have hleaf := packetPowerTree6_leafCount (α := α)
+  exact genScatterMergeTreeBatch_output_threshold_profile
+    (packetPowerTree6 (α := α)) hleaf (packetFamily64BlockList packets hdis)
+    hnd hdisBlocks v hRuns e he t j
+
+/-- An actual divisible-64 `flowA7` receiver, after its checked correction
+stage, can be merged in parallel and exposes the exact threshold profile on
+every resulting rank packet. -/
+theorem flowA7_receiver_allCases_divisible64_batch_profiles {d : Nat}
+    {α : Type} [LinearOrder α]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d)
+    (v : Fin (64 ^ d) → α)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v)
+    (hdiv : 64 ∣ flowA7 d hd b.l (t + 1) / 64) :
+    ∃ blocks : List (Fin 4096 ↪ Fin (64 ^ d)),
+      blocks.Nodup ∧
+      (∀ e ∈ blocks, ∀ f ∈ blocks, e ≠ f → ∀ i j, e i ≠ f j) ∧
+      (genScatterMergeTreeBatch (packetPowerTree6 (α := α)) blocks).depth ≤ 57 ∧
+      (∀ e ∈ blocks, ∀ j : Fin 64,
+        Monotone (fun i =>
+          (genScatterMergeTreeBatch (packetPowerTree6 (α := α)) blocks).exec
+            ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+            (genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α)) e
+              (Fin.cast (packetPowerTree6_leafCount (α := α)).symm j) i))) ∧
+      (∀ e ∈ blocks, ∀ j : Fin 64, ∀ threshold : α,
+        boolTrueCount (fun i : Fin 64 => decide (threshold ≤
+          (genScatterMergeTreeBatch (packetPowerTree6 (α := α)) blocks).exec
+            ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+            (genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α)) e
+              (Fin.cast (packetPowerTree6_leafCount (α := α)).symm j) i))) =
+        profileCell 64
+          (boolTrueCount (fun i : Fin 4096 => decide (threshold ≤
+            ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) (e i)))) j.val) := by
+  obtain ⟨m, packets, hsorted, hdis, hcover, hcount⟩ :=
+    flowA7_receiver_allCases_packetCount hd t ht2 ht b hb hchild v hpack
+  have hdivM : 64 ∣ m := by simpa [hcount] using hdiv
+  let q := m / 64
+  have hq : q * 64 = m := by
+    dsimp [q]
+    exact Nat.div_mul_cancel hdivM
+  let castPackets : Fin (q * 64) → Fin 64 ↪ Fin (64 ^ d) :=
+    fun i => packets (Fin.cast hq i)
+  have hdis' : ∀ a b, a ≠ b → ∀ x y, castPackets a x ≠ castPackets b y := by
+    intro a b hab x y heq
+    apply hdis (Fin.cast hq a) (Fin.cast hq b)
+    · intro h
+      apply hab
+      apply Fin.ext
+      have hv := congrArg Fin.val h
+      simpa using hv
+    · exact heq
+  let blocks := packetFamily64BlockList castPackets hdis'
+  have hnd := packetFamily64BlockList_nodup castPackets hdis'
+  have hdisBlocks := packetFamily64BlockList_disjoint castPackets hdis'
+  have hdepth := packetFamily64BlockList_merge_depth_le (α := α) castPackets hdis'
+  have hsortedOut := packetFamily64BlockList_merge_output_sorted castPackets hdis'
+    ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+    (fun i => hsorted (Fin.cast hq i))
+  refine ⟨blocks, hnd, hdisBlocks, hdepth, ?_, ?_⟩
+  · exact hsortedOut
+  · intro e he j threshold
+    exact packetFamily64BlockList_merge_output_threshold_profile
+      castPackets hdis' ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+      (fun i => hsorted (Fin.cast hq i)) threshold e he j
 
 def profileHalf (K X i : Nat) : Nat :=
   profileTail (32 * K) X (32 * (i + 1)) - profileTail (32 * K) X (32 * i)

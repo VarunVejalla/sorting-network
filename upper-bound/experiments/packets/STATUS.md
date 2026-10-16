@@ -665,3 +665,28 @@ pass the focused `PacketHalfProfile` check and are included in the axiom-guard
 chain. This makes the local profile law directly consumable by the existing
 threshold recurrence. No physical-cut identification or global contraction
 has been established, so this does not yet improve the proved limsup bound.
+
+
+Divisible-receiver profile integration (GPT-6-astra-high, 2026-10-16):
+`genScatterMergeTreeBatch_output_threshold_profile` and
+`packetFamily64BlockList_merge_output_threshold_profile` lift the exact
+per-run threshold profile through the actual parallel full-block batch.
+`flowA7_receiver_allCases_divisible64_batch_profiles` then composes this with
+the checked all-case receiver correction and packet decomposition: for each
+full block and every threshold, its output rank packets have the exact ideal
+profile, and the same witness retains the established disjointness,
+sortedness, and 57-layer bound. The focused check passes; guards are added.
+This closes the full-block local receiver invariant only. Residue-63 tails and
+identification with the next stage's physical `WireFlow` cuts remain open.
+
+Actual divisible receiver profile contract (GPT-6-astra-high, 2026-10-16):
+`flowA7_receiver_allCases_divisible64_batch_profiles` now combines the
+all-case source correction, canonical receiver packet family, consecutive
+64-packet block decomposition, and exact threshold profiles of every output
+rank packet. It returns one witness preserving block disjointness, sorted
+output packets, and the 57-layer depth ceiling. The theorem and its generic
+batch/profile helpers are axiom-guarded; direct compilation of
+`PacketMergeAxioms.lean` succeeds. This closes the divisible-cohort local
+invariant transfer. It does not handle the scheduled residue-63 tail or prove
+that these logical output packets are the next stage's fixed physical port
+cuts, so no global coefficient follows.

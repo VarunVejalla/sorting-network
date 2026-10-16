@@ -184,3 +184,12 @@ The exact merge-output profile theorem has also been lifted to arbitrary
 ordered inputs at every value threshold, using comparator/threshold
 commutation. This supplies the profile interface needed by the recurrence;
 identification with next-stage physical cuts is still open.
+
+The divisible-64 receiver path now also carries exact threshold profiles
+through its parallel 57-layer merge batch, composed with the actual correction
+stage. The receiver's 63-packet remainder and cross-stage physical-cut
+identification are still open.
+The `flowA7` divisible-64 receiver wrapper now returns exact threshold
+profiles for every merged rank packet, together with sortedness and the
+57-layer bound. The residue-63 tail and next-stage physical-cut alignment
+remain open.
