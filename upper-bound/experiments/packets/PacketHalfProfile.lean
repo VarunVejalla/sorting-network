@@ -1436,6 +1436,105 @@ theorem assignedRankCount_wireSetPacketRankOwner {d tf c m : Nat}
         (wireSetOwner_mem F t ht (packets packet k))
   simp only [howner]
 
+/-- A finite sum of Boolean indicators is the cardinality of the corresponding
+subtype. -/
+theorem finSum_ite_one_eq_card_subtype {ι : Type} [Fintype ι]
+    (P : ι → Prop) [DecidablePred P] :
+    (∑ i : ι, if P i then 1 else 0) = Fintype.card {i // P i} := by
+  classical
+  calc
+    (∑ i : ι, if P i then 1 else 0) =
+        (Finset.univ.filter P).card := by
+      rw [← Finset.sum_filter]
+      simp
+    _ = Fintype.card {i // P i} := by
+      rw [Fintype.card_subtype]
+
+/-- If a family of disjoint packet embeddings covers all wires, then summing
+its rank-owner threshold counts gives exactly the threshold count in any
+actual `WireFlow` register. This turns the abstract scattered-rank accounting
+into the physical receiver count used by the scheduler. -/
+theorem packetRankOwner_trueCountOn_eq_of_partition {d tf c m : Nat}
+    (F : FlowSizes d tf) (t : Nat) (ht : t ≤ tf)
+    (packets : Fin c → Fin m ↪ Fin (64 ^ d))
+    (hdisjoint : ∀ {p p' : Fin c}, p ≠ p' → ∀ i j,
+      packets p i ≠ packets p' j)
+    (hcover : ∀ w : Fin (64 ^ d), ∃ p i, packets p i = w)
+    (v : Fin (64 ^ d) → Bool) (destination : KBag 64 d) :
+    (∑ p : Fin c,
+      assignedRankCount (wireSetPacketRankOwner F t ht packets p)
+        (fun _ i => v (packets p i)) destination 0) =
+      trueCountOn (wireSets F t destination) v := by
+  classical
+  let P : Fin c × Fin m → Prop := fun z =>
+    wireSetOwner F t ht (packets z.1 z.2) = destination ∧
+      v (packets z.1 z.2) = true
+  let source := {z : Fin c × Fin m // P z}
+  let target := {w : {w : Fin (64 ^ d) // w ∈ wireSets F t destination} //
+    v w.val = true}
+  have hflatInj : Function.Injective (fun z : Fin c × Fin m =>
+      packets z.1 z.2) := by
+    intro z z' h
+    have hp : z.1 = z'.1 := by
+      by_contra hne
+      exact (hdisjoint hne z.2 z'.2) h
+    apply Prod.ext
+    · exact hp
+    · change packets z.1 z.2 = packets z'.1 z'.2 at h
+      rw [hp] at h
+      exact (packets z'.1).injective h
+  let f : source → target := fun z =>
+    ⟨⟨packets z.val.1 z.val.2,
+      (wireSetOwner_eq_iff_mem F t ht (packets z.val.1 z.val.2) destination).1
+        z.property.1⟩,
+      z.property.2⟩
+  have hf : Function.Bijective f := by
+    constructor
+    · intro z z' hzz'
+      apply Subtype.ext
+      exact hflatInj (congrArg (fun w : target => w.val.val) hzz')
+    · intro w
+      obtain ⟨p, i, hpi⟩ := hcover w.val.val
+      have hmem : w.val.val ∈ wireSets F t destination := w.val.property
+      have howner : wireSetOwner F t ht (packets p i) = destination := by
+        apply (wireSetOwner_eq_iff_mem F t ht (packets p i) destination).2
+        simpa only [hpi] using hmem
+      have hv : v (packets p i) = true := by simpa [hpi] using w.property
+      refine ⟨⟨(p, i), ⟨howner, hv⟩⟩, ?_⟩
+      apply Subtype.ext
+      apply Subtype.ext
+      exact hpi
+  have hcard : Fintype.card source = Fintype.card target :=
+    Fintype.card_congr (Equiv.ofBijective f hf)
+  have hsum : (∑ p : Fin c,
+      assignedRankCount (wireSetPacketRankOwner F t ht packets p)
+        (fun _ i => v (packets p i)) destination 0) = Fintype.card source := by
+    calc
+      _ = ∑ p : Fin c, ∑ i : Fin m,
+          if P (p, i) then 1 else 0 := by
+        apply Finset.sum_congr rfl
+        intro p hp
+        rw [assignedRankCount_wireSetPacketRankOwner]
+        apply Finset.sum_congr rfl
+        intro i hi
+        simp only [P, wireSetOwner_eq_iff_mem]
+      _ = ∑ p : Fin c, Fintype.card {i : Fin m // P (p, i)} := by
+        apply Finset.sum_congr rfl
+        intro p hp
+        exact finSum_ite_one_eq_card_subtype (fun i : Fin m => P (p, i))
+      _ = Fintype.card (Σ p : Fin c, {i : Fin m // P (p, i)}) := by
+        rw [Fintype.card_sigma]
+      _ = Fintype.card source := by
+        apply Fintype.card_congr
+        refine Equiv.mk (fun z => ⟨(z.1, z.2.1), z.2.2⟩)
+          (fun z => ⟨z.1.1, ⟨z.1.2, z.2⟩⟩) ?_ ?_
+        · intro z
+          rfl
+        · intro z
+          rfl
+  unfold trueCountOn
+  exact hsum.trans hcard
+
 theorem profileInterval_partition_L1_exact (m p X q : Nat) (frac : Real)
     (cuts : Nat → Nat) (hstart : cuts 0 = 0) (hcuts : Monotone cuts)
     (hend : cuts p = m) (hX : X ≤ m) (hq : q < m)

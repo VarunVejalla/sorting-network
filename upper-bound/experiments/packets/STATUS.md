@@ -835,3 +835,14 @@ This closes the owner-map existence/counting interface for the scattered-rank
 L2 lemma. It does not yet identify the induced fractional destination targets
 with `wireFlowLayer_reencoded_profile_recurrence`, nor prove contraction for
 the actual matching schedule; the global coefficient is unchanged.
+
+Full-partition threshold realization (GPT-6-astra-high, 2026-10-16):
+`packetRankOwner_trueCountOn_eq_of_partition` strengthens the individual
+slot identity: for any disjoint packet family covering all wires, summing its
+rank-owner threshold counts over packets equals the exact Boolean threshold
+count in each actual `WireFlow` register. The proof constructs a bijection
+from selected `(packet, rank)` pairs to selected wires in the destination
+register. `PacketHalfProfile` compiles, and the full `PacketMergeAxioms` guard
+chain passes with standard axioms. This closes the counting half of applying
+the scattered-profile recurrence to a global packet partition; it still does
+not identify the destination fractional targets or prove energy contraction.

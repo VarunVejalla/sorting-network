@@ -1500,6 +1500,9 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.assignedRankCount_wireSetPacketRankOwner' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.assignedRankCount_wireSetPacketRankOwner
+/-- info: 'Chvatal.PacketAlignment.packetRankOwner_trueCountOn_eq_of_partition' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetRankOwner_trueCountOn_eq_of_partition
 /-- info: 'Chvatal.PacketAlignment.sum_receiver_selected_error_sq_le_source_pieces' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.sum_receiver_selected_error_sq_le_source_pieces
