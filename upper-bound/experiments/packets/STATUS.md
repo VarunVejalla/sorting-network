@@ -496,3 +496,9 @@ correctness and depth-at-most-11 results are axiom-guarded. Together with the
 2048+1984, depth-12 merger above, this formally closes the two largest of the
 five special tail merges. The 128+64, 256+192, and 512+448 pairs and the
 surrounding 64-run tree composition remain.
+
+Middle scheduled tail pair closed: six lifts of the 8+7 core give a concrete
+960-wire merger for sorted 512- and 448-wire runs, with a checked depth bound
+of 10. Its correctness and depth theorems are guarded. Three of the five
+special merges in the 63-run tree are now proved at their target costs 10, 11,
+and 12; only 128+64 and 256+192 remain before proving the full tree schedule.

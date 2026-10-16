@@ -1161,3 +1161,11 @@ import PacketUnequalMerge
 /-- info: 'Chvatal.PacketAlignment.unequalTail31Lift6_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.unequalTail31Lift6_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.unequalTail15Lift6_sorts_two_runs' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalTail15Lift6_sorts_two_runs
+
+/-- info: 'Chvatal.PacketAlignment.unequalTail15Lift6_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalTail15Lift6_depth_le
