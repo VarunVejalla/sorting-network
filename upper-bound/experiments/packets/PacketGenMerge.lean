@@ -421,6 +421,102 @@ def joinPacketEmbedding {m N : Nat} (a b : Fin m ↪ Fin N)
   rw [finSumFinEquiv_symm_apply_natAdd]
   rfl
 
+theorem joinPacketEmbedding_range {m N : Nat} (a b : Fin m ↪ Fin N)
+    (hdis : ∀ i j, a i ≠ b j) :
+    Set.range (joinPacketEmbedding a b hdis) = Set.range a ∪ Set.range b := by
+  ext w
+  constructor
+  · rintro ⟨i, rfl⟩
+    by_cases hi : i.val < m
+    · let j : Fin m := ⟨i.val, hi⟩
+      have hij : i = Fin.castAdd m j := Fin.ext rfl
+      rw [hij, joinPacketEmbedding_left]
+      exact Or.inl ⟨j, rfl⟩
+    · let j : Fin m := ⟨i.val - m, by have := i.isLt; omega⟩
+      have hij : i = Fin.natAdd m j := Fin.ext (by simp [j]; omega)
+      rw [hij, joinPacketEmbedding_right]
+      exact Or.inr ⟨j, rfl⟩
+  · rintro (⟨i, rfl⟩ | ⟨i, rfl⟩)
+    · exact ⟨Fin.castAdd m i, joinPacketEmbedding_left a b hdis i⟩
+    · exact ⟨Fin.natAdd m i, joinPacketEmbedding_right a b hdis i⟩
+
+/-- Assemble the logical packet pairs of a matching into 128-wire supports. -/
+def genJoinMatching {N : Nat}
+    (matching : List ((Fin 64 ↪ Fin N) × (Fin 64 ↪ Fin N)))
+    (hwithin : ∀ e : (Fin 64 ↪ Fin N) × (Fin 64 ↪ Fin N),
+      ∀ i j, e.1 i ≠ e.2 j) :
+    List (Fin 128 ↪ Fin N) :=
+  matching.map fun e => joinPacketEmbedding e.1 e.2 (hwithin e)
+
+theorem genJoinMatching_edges_disjoint {N : Nat}
+    (matching : List ((Fin 64 ↪ Fin N) × (Fin 64 ↪ Fin N)))
+    (hwithin : ∀ e : (Fin 64 ↪ Fin N) × (Fin 64 ↪ Fin N),
+      ∀ i j, e.1 i ≠ e.2 j)
+    (hmatching : ∀ e ∈ matching, ∀ f ∈ matching, e ≠ f → ∀ i j,
+      e.1 i ≠ f.1 j ∧ e.1 i ≠ f.2 j ∧
+      e.2 i ≠ f.1 j ∧ e.2 i ≠ f.2 j)
+    (a b : (Fin 64 ↪ Fin N) × (Fin 64 ↪ Fin N))
+    (ha : a ∈ matching) (hb : b ∈ matching) (hab : a ≠ b) :
+    ∀ i j, joinPacketEmbedding a.1 a.2 (hwithin a) i ≠
+      joinPacketEmbedding b.1 b.2 (hwithin b) j := by
+  intro i j
+  have hleft : joinPacketEmbedding a.1 a.2 (hwithin a) i ∈
+      Set.range a.1 ∪ Set.range a.2 := by
+    rw [← joinPacketEmbedding_range a.1 a.2 (hwithin a)]
+    exact ⟨i, rfl⟩
+  have hright : joinPacketEmbedding b.1 b.2 (hwithin b) j ∈
+      Set.range b.1 ∪ Set.range b.2 := by
+    rw [← joinPacketEmbedding_range b.1 b.2 (hwithin b)]
+    exact ⟨j, rfl⟩
+  have hsep := hmatching a ha b hb hab
+  rcases hleft with ⟨ia, hia⟩ | ⟨ia, hia⟩ <;>
+    rcases hright with ⟨ib, hib⟩ | ⟨ib, hib⟩
+  · intro heq
+    exact (hsep ia ib).1 (hia.trans (heq.trans hib.symm))
+  · intro heq
+    exact (hsep ia ib).2.1 (hia.trans (heq.trans hib.symm))
+  · intro heq
+    exact (hsep ia ib).2.2.1 (hia.trans (heq.trans hib.symm))
+  · intro heq
+    exact (hsep ia ib).2.2.2 (hia.trans (heq.trans hib.symm))
+
+theorem genJoinMatching_disjoint {N : Nat}
+    (matching : List ((Fin 64 ↪ Fin N) × (Fin 64 ↪ Fin N)))
+    (hwithin : ∀ e : (Fin 64 ↪ Fin N) × (Fin 64 ↪ Fin N),
+      ∀ i j, e.1 i ≠ e.2 j)
+    (hmatching : ∀ e ∈ matching, ∀ f ∈ matching, e ≠ f → ∀ i j,
+      e.1 i ≠ f.1 j ∧ e.1 i ≠ f.2 j ∧
+      e.2 i ≠ f.1 j ∧ e.2 i ≠ f.2 j) :
+    ∀ e ∈ genJoinMatching matching hwithin,
+      ∀ f ∈ genJoinMatching matching hwithin, e ≠ f → ∀ i j, e i ≠ f j := by
+  intro e he f hf hne i j
+  simp only [genJoinMatching, List.mem_map] at he hf
+  obtain ⟨a, ha, rfl⟩ := he
+  obtain ⟨b, hb, rfl⟩ := hf
+  have hab : a ≠ b := by
+    intro h
+    apply hne
+    subst b
+    rfl
+  exact genJoinMatching_edges_disjoint matching hwithin hmatching a b ha hb hab i j
+
+theorem genJoinMatching_nodup {N : Nat}
+    (matching : List ((Fin 64 ↪ Fin N) × (Fin 64 ↪ Fin N)))
+    (hwithin : ∀ e : (Fin 64 ↪ Fin N) × (Fin 64 ↪ Fin N),
+      ∀ i j, e.1 i ≠ e.2 j)
+    (hnodup : matching.Nodup)
+    (hmatching : ∀ e ∈ matching, ∀ f ∈ matching, e ≠ f → ∀ i j,
+      e.1 i ≠ f.1 j ∧ e.1 i ≠ f.2 j ∧
+      e.2 i ≠ f.1 j ∧ e.2 i ≠ f.2 j) :
+    (genJoinMatching matching hwithin).Nodup := by
+  apply List.Nodup.map_on
+  · intro a ha b hb hab
+    by_contra hne
+    have hsep := genJoinMatching_edges_disjoint matching hwithin hmatching a b ha hb hne
+      (0 : Fin 128) (0 : Fin 128)
+    exact hsep (congrArg (fun e : Fin 128 ↪ Fin N => e 0) hab)
+  · exact hnodup
+
 def dealEvenEmbedding {N : Nat} (e : Fin 128 ↪ Fin N) : Fin 64 ↪ Fin N :=
   ⟨fun i => e (evenWire 64 i), by
     intro i j hij
@@ -861,5 +957,95 @@ theorem genPacketRound_outputPackets_disjoint {N : Nat}
           · intro i j
             exact (hcross f hf i j).2.2
   exact aux pairs hnodup hdis
+
+theorem genJoinMatching_round_depth_le {N : Nat}
+    (matching : List ((Fin 64 ↪ Fin N) × (Fin 64 ↪ Fin N)))
+    (hwithin : ∀ e : (Fin 64 ↪ Fin N) × (Fin 64 ↪ Fin N),
+      ∀ i j, e.1 i ≠ e.2 j)
+    (hnodup : matching.Nodup)
+    (hmatching : ∀ e ∈ matching, ∀ f ∈ matching, e ≠ f → ∀ i j,
+      e.1 i ≠ f.1 j ∧ e.1 i ≠ f.2 j ∧
+      e.2 i ≠ f.1 j ∧ e.2 i ≠ f.2 j) :
+    (genPacketRound (genJoinMatching matching hwithin)).depth ≤ 7 := by
+  exact genPacketRound_depth_le (genJoinMatching matching hwithin)
+    (genJoinMatching_nodup matching hwithin hnodup hmatching)
+    (genJoinMatching_disjoint matching hwithin hmatching)
+
+theorem genJoinMatching_round_outputPackets_sorted {N : Nat} {α : Type}
+    [LinearOrder α]
+    (matching : List ((Fin 64 ↪ Fin N) × (Fin 64 ↪ Fin N)))
+    (hwithin : ∀ e : (Fin 64 ↪ Fin N) × (Fin 64 ↪ Fin N),
+      ∀ i j, e.1 i ≠ e.2 j)
+    (hnodup : matching.Nodup)
+    (hmatching : ∀ e ∈ matching, ∀ f ∈ matching, e ≠ f → ∀ i j,
+      e.1 i ≠ f.1 j ∧ e.1 i ≠ f.2 j ∧
+      e.2 i ≠ f.1 j ∧ e.2 i ≠ f.2 j)
+    (v : Fin N → α)
+    (hsorted : ∀ e ∈ matching,
+      Monotone (fun i : Fin 64 => v (e.1 i)) ∧
+      Monotone (fun i : Fin 64 => v (e.2 i))) :
+    ∀ p ∈ genPacketRound_outputPackets (genJoinMatching matching hwithin),
+      Monotone (fun i =>
+        (genPacketRound (genJoinMatching matching hwithin)).exec v (p i)) := by
+  apply genPacketRound_outputPackets_sorted
+    (genJoinMatching matching hwithin)
+    (genJoinMatching_nodup matching hwithin hnodup hmatching)
+    (genJoinMatching_disjoint matching hwithin hmatching) v
+  intro e he
+  simp only [genJoinMatching, List.mem_map] at he
+  obtain ⟨edge, hedge, rfl⟩ := he
+  constructor
+  · intro i j hij
+    change v (joinPacketEmbedding edge.1 edge.2 (hwithin edge) (Fin.castAdd 64 i)) ≤
+      v (joinPacketEmbedding edge.1 edge.2 (hwithin edge) (Fin.castAdd 64 j))
+    have hi := joinPacketEmbedding_left edge.1 edge.2 (hwithin edge) i
+    have hj := joinPacketEmbedding_left edge.1 edge.2 (hwithin edge) j
+    rw [hi, hj]
+    exact (hsorted edge hedge).1 hij
+  · intro i j hij
+    change v (joinPacketEmbedding edge.1 edge.2 (hwithin edge) (Fin.natAdd 64 i)) ≤
+      v (joinPacketEmbedding edge.1 edge.2 (hwithin edge) (Fin.natAdd 64 j))
+    have hi := joinPacketEmbedding_right edge.1 edge.2 (hwithin edge) i
+    have hj := joinPacketEmbedding_right edge.1 edge.2 (hwithin edge) j
+    rw [hi, hj]
+    exact (hsorted edge hedge).2 hij
+
+theorem genJoinMatching_round_outputPackets_disjoint {N : Nat}
+    (matching : List ((Fin 64 ↪ Fin N) × (Fin 64 ↪ Fin N)))
+    (hwithin : ∀ e : (Fin 64 ↪ Fin N) × (Fin 64 ↪ Fin N),
+      ∀ i j, e.1 i ≠ e.2 j)
+    (hnodup : matching.Nodup)
+    (hmatching : ∀ e ∈ matching, ∀ f ∈ matching, e ≠ f → ∀ i j,
+      e.1 i ≠ f.1 j ∧ e.1 i ≠ f.2 j ∧
+      e.2 i ≠ f.1 j ∧ e.2 i ≠ f.2 j) :
+    List.Pairwise (fun p q : Fin 64 ↪ Fin N => ∀ i j, p i ≠ q j)
+      (genPacketRound_outputPackets (genJoinMatching matching hwithin)) := by
+  exact genPacketRound_outputPackets_disjoint _
+    (genJoinMatching_nodup matching hwithin hnodup hmatching)
+    (genJoinMatching_disjoint matching hwithin hmatching)
+
+theorem genJoinMatching_round_outputPackets_support {N : Nat}
+    (matching : List ((Fin 64 ↪ Fin N) × (Fin 64 ↪ Fin N)))
+    (hwithin : ∀ e : (Fin 64 ↪ Fin N) × (Fin 64 ↪ Fin N),
+      ∀ i j, e.1 i ≠ e.2 j)
+    (w : Fin N) :
+    (∃ p ∈ genPacketRound_outputPackets (genJoinMatching matching hwithin),
+      w ∈ Set.range p) ↔
+    ∃ e ∈ matching, w ∈ Set.range e.1 ∨ w ∈ Set.range e.2 := by
+  rw [genPacketRound_outputPackets_support]
+  constructor
+  · rintro ⟨e, he, hw⟩
+    simp only [genJoinMatching, List.mem_map] at he
+    obtain ⟨edge, hedge, rfl⟩ := he
+    rw [joinPacketEmbedding_range edge.1 edge.2 (hwithin edge)] at hw
+    exact ⟨edge, hedge, hw⟩
+  · rintro ⟨edge, hedge, hw⟩
+    refine ⟨joinPacketEmbedding edge.1 edge.2 (hwithin edge), ?_, ?_⟩
+    · change joinPacketEmbedding edge.1 edge.2 (hwithin edge) ∈
+        matching.map (fun p => joinPacketEmbedding p.1 p.2 (hwithin p))
+      rw [List.mem_map]
+      exact ⟨edge, hedge, rfl⟩
+    · rw [joinPacketEmbedding_range edge.1 edge.2 (hwithin edge)]
+      exact hw
 
 end Chvatal.PacketAlignment

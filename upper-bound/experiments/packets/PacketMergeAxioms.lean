@@ -612,3 +612,39 @@ import PacketHalfProfile
 /-- info: 'Chvatal.PacketAlignment.genPacketRound_outputPackets_disjoint' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genPacketRound_outputPackets_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.joinPacketEmbedding_range' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.joinPacketEmbedding_range
+
+/-- info: 'Chvatal.PacketAlignment.genJoinMatching_edges_disjoint' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genJoinMatching_edges_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.genJoinMatching_disjoint' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genJoinMatching_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.genJoinMatching_nodup' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genJoinMatching_nodup
+
+/-- info: 'Chvatal.PacketAlignment.genJoinMatching_round_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genJoinMatching_round_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.genJoinMatching_round_outputPackets_sorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genJoinMatching_round_outputPackets_sorted
+
+/-- info: 'Chvatal.PacketAlignment.genJoinMatching_round_outputPackets_disjoint' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genJoinMatching_round_outputPackets_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.genJoinMatching_round_outputPackets_support' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genJoinMatching_round_outputPackets_support

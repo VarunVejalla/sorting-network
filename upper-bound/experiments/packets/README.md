@@ -98,14 +98,16 @@ checks all scratch sources.
    it does not by itself order the two halves of each same-grid packet after
    execution. The generalized
    join/deal interface avoids a physical interleaving cost, but it still needs
-   a full evolving placement map compatible with the scheduled flow. The
-   full evolving placement map compatible with the scheduled flow. A generic
+   a full evolving placement map compatible with the scheduled flow. A generic
    matching-round network is now checked: `genPacketRound` runs the seven-layer
    merge on every pair in a list of pairwise disjoint 128-wire embeddings;
    each pair's even/odd outputs remain sorted after the whole network,
    the `genPacketRound_outputPackets` list is pairwise support-disjoint and
    covers exactly the consumed support union, and the network depth is at most
    7. The output list is therefore a valid next-round sorted packet family.
+   `genJoinMatching` now constructs those 128-wire supports from an edge list
+   of packet-embedding pairs, and its round adapters prove the same depth and
+   output invariants under explicit pairwise support-disjointness hypotheses.
    This avoids assuming source-rank cells remain fixed physical receiver
    packets. Still missing are the matching schedule on packet IDs and its
    compatibility with positional `WireFlow` cuts.
