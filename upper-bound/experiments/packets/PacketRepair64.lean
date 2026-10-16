@@ -3656,6 +3656,48 @@ theorem receiverPacketFamily_card_eq_64 {N : Nat} {ι κ : Type}
   | inl i => exact hparent i
   | inr jk => exact hchild jk.1 jk.2
 
+/-- Reindexing a finite packet partition along an equivalence preserves its
+union. This lets the port adapters use canonical `Fin` indices even when a
+repair construction naturally indexes its endpoint packet by a `Unit` sum. -/
+theorem packetFamily_reindex_union {N : Nat} {ι κ : Type}
+    [Fintype ι] [Fintype κ]
+    (e : κ ≃ ι) (packets : ι → Finset (Fin N)) :
+    Finset.univ.biUnion (fun k => packets (e k)) =
+      Finset.univ.biUnion packets := by
+  ext w
+  simp only [Finset.mem_biUnion, Finset.mem_univ, true_and]
+  constructor
+  · rintro ⟨k, hw⟩
+    exact ⟨e k, hw⟩
+  · rintro ⟨i, hw⟩
+    exact ⟨e.symm i, by simpa using hw⟩
+
+/-- A packet family contract can be transported to any equivalent finite
+index type without changing any of its mathematical obligations. -/
+theorem packetFamily_reindex_contract {N : Nat} {ι κ : Type}
+    [Fintype ι] [Fintype κ] {α : Type} [LinearOrder α]
+    (e : κ ≃ ι) (packets : ι → Finset (Fin N))
+    (support : Finset (Fin N)) (v : Fin N → α)
+    (hsorted : ∀ i, RankSortedOn (packets i) v)
+    (hsupport : Finset.univ.biUnion packets = support)
+    (hdisjoint : ∀ i i', i ≠ i' → Disjoint (packets i) (packets i'))
+    (hcard : ∀ i, (packets i).card = 64) :
+    (∀ k, RankSortedOn (packets (e k)) v) ∧
+    Finset.univ.biUnion (fun k => packets (e k)) = support ∧
+    (∀ k k', k ≠ k' → Disjoint (packets (e k)) (packets (e k'))) ∧
+    (∀ k, (packets (e k)).card = 64) := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro k
+    exact hsorted (e k)
+  · rw [packetFamily_reindex_union]
+    exact hsupport
+  · intro k k' hne
+    apply hdisjoint
+    intro heq
+    exact hne (e.injective heq)
+  · intro k
+    exact hcard (e k)
+
 /-- The assembled parent/child packet family is the actual next-time register
 support in `WireFlow`; the source partition hypotheses supply its two port
 unions. -/
@@ -3753,6 +3795,70 @@ theorem flowA7_receiver_packetAssembly {d : Nat} {ι κ α : Type}
   exact receiverPacketFamily_pairwise_disjoint parent child pSupport cSupport
     hparentUnion hchildUnion hparentDisjoint hchildDisjoint hpacketPortsDisjoint
     hchildPortsDisjoint
+
+/-- Canonical-index form of receiver assembly. The local port construction
+may use a `Unit` summand for a repaired endpoint, but downstream matching
+rounds consume packet IDs in `Fin` families. This reindexes both partitions
+without changing support, sortedness, or disjointness facts. -/
+theorem flowA7_receiver_packetAssembly_fin {d : Nat} {ι κ α : Type}
+    [Fintype ι] [Fintype κ] [LinearOrder α]
+    (hd : 7 ≤ d) (t : Nat) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchild : b.l < d)
+    (parent : ι → Finset (Fin (64 ^ d)))
+    (child : Fin 64 → κ → Finset (Fin (64 ^ d)))
+    (v : Fin (64 ^ d) → α)
+    (hparentUnion : Finset.univ.biUnion parent =
+      Chvatal.downSet (wireSets (flowSizes7 d hd) t b.parent)
+        (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t) (b.x % 64))
+    (hchildUnion : ∀ j, Finset.univ.biUnion (child j) =
+      Chvatal.upSet (wireSets (flowSizes7 d hd) t
+        (b.child j.val j.isLt hchild)) (flowUp7 d hd (b.l + 1) t))
+    (hparentSorted : ∀ i, RankSortedOn (parent i) v)
+    (hchildSorted : ∀ j k, RankSortedOn (child j k) v)
+    (hparentDisjoint : ∀ i i', i ≠ i' → Disjoint (parent i) (parent i'))
+    (hchildDisjoint : ∀ j k k', k ≠ k' → Disjoint (child j k) (child j k'))
+    (hparentCard : ∀ i, (parent i).card = 64)
+    (hchildCard : ∀ j k, (child j k).card = 64) :
+    ∃ parentFin : Fin (Fintype.card ι) → Finset (Fin (64 ^ d)),
+    ∃ childFin : Fin 64 → Fin (Fintype.card κ) → Finset (Fin (64 ^ d)),
+      (∀ i, RankSortedOn (receiverPacketFamily parentFin childFin i) v) ∧
+      Finset.univ.biUnion (receiverPacketFamily parentFin childFin) =
+        wireSets (flowSizes7 d hd) (t + 1) b ∧
+      (∀ i i', i ≠ i' →
+        Disjoint (receiverPacketFamily parentFin childFin i)
+          (receiverPacketFamily parentFin childFin i')) ∧
+      (∀ i, (receiverPacketFamily parentFin childFin i).card = 64) := by
+  let eι : Fin (Fintype.card ι) ≃ ι := (Fintype.equivFin ι).symm
+  let eκ : Fin (Fintype.card κ) ≃ κ := (Fintype.equivFin κ).symm
+  let parentFin : Fin (Fintype.card ι) → Finset (Fin (64 ^ d)) :=
+    fun i => parent (eι i)
+  let childFin : Fin 64 → Fin (Fintype.card κ) → Finset (Fin (64 ^ d)) :=
+    fun j k => child j (eκ k)
+  have hp := packetFamily_reindex_contract eι parent
+    (Chvatal.downSet (wireSets (flowSizes7 d hd) t b.parent)
+      (flowUp7 d hd (b.l - 1) t) (flowDown7 d hd (b.l - 1) t) (b.x % 64))
+    v hparentSorted hparentUnion hparentDisjoint hparentCard
+  have hc : ∀ j : Fin 64,
+      (∀ k, RankSortedOn (childFin j k) v) ∧
+      Finset.univ.biUnion (childFin j) =
+        Chvatal.upSet (wireSets (flowSizes7 d hd) t
+          (b.child j.val j.isLt hchild)) (flowUp7 d hd (b.l + 1) t) ∧
+      (∀ k k', k ≠ k' → Disjoint (childFin j k) (childFin j k')) ∧
+      (∀ k, (childFin j k).card = 64) := by
+    intro j
+    exact packetFamily_reindex_contract eκ (child j)
+      (Chvatal.upSet (wireSets (flowSizes7 d hd) t
+        (b.child j.val j.isLt hchild)) (flowUp7 d hd (b.l + 1) t))
+      v (hchildSorted j) (hchildUnion j) (hchildDisjoint j) (hchildCard j)
+  have hresult := flowA7_receiver_packetAssembly hd t ht b hb hchild
+    parentFin childFin v hp.2.1 (fun j => (hc j).2.1)
+    (by intro i; exact hp.1 i)
+    (by intro j k; exact (hc j).1 k)
+    (by intro i i' hne; exact hp.2.2.1 i i' hne)
+    (by intro j k k' hne; exact (hc j).2.2.1 k k' hne)
+    (by intro i; exact hp.2.2.2 i)
+    (by intro j k; exact (hc j).2.2.2 k)
+  exact ⟨parentFin, childFin, hresult⟩
 
 /-- Boundary adapter for a receiver whose parent down-flow is zero. The
 parent port is the empty family; any checked partition of the 64 child
@@ -4051,11 +4157,13 @@ theorem flowA7_receiver_repairedParent_alignedChildren_packetAssembly
     (v : Fin (64 ^ d) → α)
     (hpack : ∀ q : KBag 64 d,
       PacketSortedOn (wireSets (flowSizes7 d hd) t q) v) :
-    ∃ parent : (Unit ⊕ Fin (flowDown7 d hd (b.l - 1) t / 64 - 1)) →
+    ∃ parent : Fin (Fintype.card
+        (Unit ⊕ Fin (flowDown7 d hd (b.l - 1) t / 64 - 1))) →
         Finset (Fin (64 ^ d)),
-    ∃ child : Fin 64 →
+    ∃ child : Fin 64 → Fin (Fintype.card
         (Fin ((flowUp7 d hd (b.l + 1) t / 2) / 64) ⊕
-          Fin ((flowUp7 d hd (b.l + 1) t / 2) / 64)) → Finset (Fin (64 ^ d)),
+          Fin ((flowUp7 d hd (b.l + 1) t / 2) / 64))) →
+        Finset (Fin (64 ^ d)),
       (∀ i, RankSortedOn (receiverPacketFamily parent child i)
         ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)) ∧
       Finset.univ.biUnion (receiverPacketFamily parent child) =
@@ -4102,8 +4210,7 @@ theorem flowA7_receiver_repairedParent_alignedChildren_packetAssembly
       Chvatal.upSet (wireSets (flowSizes7 d hd) t
         (b.child i.val i.isLt hchild)) (flowUp7 d hd (b.l + 1) t) :=
     fun i => (hcAll i).2.1
-  refine ⟨parent, child, ?_⟩
-  exact flowA7_receiver_packetAssembly hd t ht b hb hchild parent child
+  exact flowA7_receiver_packetAssembly_fin hd t ht b hb hchild parent child
     ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
     hparentUnion hchildUnion
     (by intro i; exact hp.1 i)
@@ -4126,11 +4233,13 @@ theorem flowA7_receiver_alignedParent_repairedChildren_packetAssembly
     (v : Fin (64 ^ d) → α)
     (hpack : ∀ q : KBag 64 d,
       PacketSortedOn (wireSets (flowSizes7 d hd) t q) v) :
-    ∃ parent : Fin (flowDown7 d hd (b.l - 1) t / 64) →
+    ∃ parent : Fin (Fintype.card
+        (Fin (flowDown7 d hd (b.l - 1) t / 64))) →
         Finset (Fin (64 ^ d)),
-    ∃ child : Fin 64 →
+    ∃ child : Fin 64 → Fin (Fintype.card
         (Unit ⊕ (Fin ((flowUp7 d hd (b.l + 1) t / 2) / 64) ⊕
-          Fin ((flowUp7 d hd (b.l + 1) t / 2) / 64))) → Finset (Fin (64 ^ d)),
+          Fin ((flowUp7 d hd (b.l + 1) t / 2) / 64)))) →
+        Finset (Fin (64 ^ d)),
       (∀ i, RankSortedOn (receiverPacketFamily parent child i)
         ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)) ∧
       Finset.univ.biUnion (receiverPacketFamily parent child) =
@@ -4177,8 +4286,7 @@ theorem flowA7_receiver_alignedParent_repairedChildren_packetAssembly
       Chvatal.upSet (wireSets (flowSizes7 d hd) t
         (b.child i.val i.isLt hchild)) (flowUp7 d hd (b.l + 1) t) :=
     fun i => (hcAll i).2.1
-  refine ⟨parent, child, ?_⟩
-  exact flowA7_receiver_packetAssembly hd t ht b hb hchild parent child
+  exact flowA7_receiver_packetAssembly_fin hd t ht b hb hchild parent child
     ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
     hparentUnion hchildUnion
     (by intro i; exact hp.1 i)
