@@ -196,6 +196,22 @@ theorem PacketSortedOn_orderEmb {N : Nat} {α : Type} [Preorder α]
     exact Fin.le_def.mp ((s.orderEmbOfFin rfl).monotone (Fin.le_def.mpr hxy))
   exact hpack p hxe hye hxy'
 
+/-- A linear-order sortedness claim follows if every lower-threshold Boolean
+profile is sorted. -/
+theorem rankSortedOn_of_thresholds {N : Nat} {α : Type} [LinearOrder α]
+    (A : Finset (Fin N)) (v : Fin N → α)
+    (hthreshold : ∀ t : α,
+      RankSortedOn A (fun w => decide (t ≤ v w))) : RankSortedOn A v := by
+  intro x y hx hy hxy
+  by_contra hnot
+  have hyx : v y < v x := lt_of_not_ge hnot
+  have hbool := hthreshold (v x) (x := x) (y := y) hx hy hxy
+  have hxBool : decide (v x ≤ v x) = true := decide_eq_true le_rfl
+  have hyBool : decide (v x ≤ v y) = false := decide_eq_false (not_le_of_gt hyx)
+  have hcontra : (true : Bool) ≤ false := by
+    simpa only [hxBool, hyBool] using hbool
+  exact (by decide : ¬ ((true : Bool) ≤ false)) hcontra
+
 /-- A sorted register support stays sorted when `stageNet` embeds the node
 network along the bag's increasing rank-order map. -/
 theorem stageNet_rankSortedOn_image {d : Nat} {α : Type} [LinearOrder α]
@@ -221,6 +237,21 @@ theorem stageNet_rankSortedOn_image {d : Nat} {α : Type} [LinearOrder α]
   rw [stageNet_exec_inside S hS nodeNet v b i,
     stageNet_exec_inside S hS nodeNet v b j]
   exact hsorted hi hj hij
+
+/-- The same transport works when a node network is specified at an index
+`n` propositionally equal to the bag cardinality. -/
+theorem stageNet_rankSortedOn_image_of_card_eq {d : Nat} {α : Type}
+    [LinearOrder α] (S : KBag 64 d → Finset (Fin (64 ^ d)))
+    (hS : ∀ b b', b ≠ b' → Disjoint (S b) (S b'))
+    (nodeNet : (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (v : Fin (64 ^ d) → α) (b : KBag 64 d) (n : Nat)
+    (hn : (S b).card = n) (A : Finset (Fin n))
+    (hsorted : RankSortedOn A
+      ((nodeNet b n).exec (fun i => v ((S b).orderEmbOfFin hn i)))) :
+    RankSortedOn (A.image ((S b).orderEmbOfFin hn))
+      ((stageNet S nodeNet).exec v) := by
+  cases hn
+  exact stageNet_rankSortedOn_image S hS nodeNet v b A hsorted
 
 /-- Either aligned half of one packet is an ascending run under the packet
 invariant; sorting the whole sender bag is unnecessary. -/
@@ -1870,6 +1901,96 @@ theorem flowA7_sourcePortRepairNet_depth_le {d : Nat}
     · simp [ComparatorNetwork.depth]
   · simp [ComparatorNetwork.depth]
 
+/-- The Bool-chosen repair network has the same sorted-packet layout for every
+linear order: apply its Boolean contract to every threshold. -/
+theorem flowA7_sourcePortRepairNet_layout {d : Nat} {α : Type}
+    [LinearOrder α] (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t)
+    (ht : t < tf7 d) (q : KBag 64 d)
+    (hdown : 0 < flowDown7 d hd q.l t)
+    (hbad : HalfMisaligned (flowUp7 d hd q.l t))
+    (v : Fin ((flowSizes7 d hd).a q.l t) → α)
+    (hpack : PacketSortedOn
+      (Finset.univ : Finset (Fin ((flowSizes7 d hd).a q.l t))) v) :
+    (∀ j : Fin 64,
+      RankSortedOn
+        (downSetEndpointLeft (Finset.univ : Finset (Fin ((flowSizes7 d hd).a q.l t)))
+          (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j ∪
+         downSetEndpointRight (Finset.univ : Finset (Fin ((flowSizes7 d hd).a q.l t)))
+          (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j)
+        ((flowA7_sourcePortRepairNet hd t ht2 ht q).exec v) ∧
+      (∀ k : Fin (flowDown7 d hd q.l t / 64 - 1),
+        RankSortedOn
+          (downSetInteriorCell (Finset.univ : Finset (Fin ((flowSizes7 d hd).a q.l t)))
+            (flowUp7 d hd q.l t) (flowDown7 d hd q.l t) j
+            (flowDown7 d hd q.l t / 64 - 1) k)
+          ((flowA7_sourcePortRepairNet hd t ht2 ht q).exec v))) ∧
+    RankSortedOn (upFringePairSupport
+      (Finset.univ : Finset (Fin ((flowSizes7 d hd).a q.l t)))
+      (flowUp7 d hd q.l t)) ((flowA7_sourcePortRepairNet hd t ht2 ht q).exec v) ∧
+    (∀ k : Fin ((flowUp7 d hd q.l t / 2) / 64),
+      RankSortedOn
+        (upSetPrefixCell (Finset.univ : Finset (Fin ((flowSizes7 d hd).a q.l t))) k)
+        ((flowA7_sourcePortRepairNet hd t ht2 ht q).exec v)) ∧
+    (∀ k : Fin ((flowUp7 d hd q.l t / 2) / 64),
+      RankSortedOn
+        (upSetSuffixCell (Finset.univ : Finset (Fin ((flowSizes7 d hd).a q.l t)))
+          (flowUp7 d hd q.l t) k)
+        ((flowA7_sourcePortRepairNet hd t ht2 ht q).exec v)) := by
+  classical
+  let P := flowA7_source_port_packetLayout_register (α := Bool) hd t ht2 ht q hdown hbad
+  let net := Classical.choose P
+  have hnet : flowA7_sourcePortRepairNet hd t ht2 ht q = net := by
+    simp [flowA7_sourcePortRepairNet, hdown, hbad, net]
+  rw [hnet]
+  have hbool (θ : α) := (Classical.choose_spec P).2
+    (fun i => decide (θ ≤ v i)) (by
+      have hm : Monotone (fun z : α => decide (θ ≤ z)) := by
+        intro a b hab
+        by_cases ha : θ ≤ a
+        · have hb : θ ≤ b := ha.trans hab
+          simp [ha, hb]
+        · simp [ha]
+      intro p x y hx hy hxy
+      exact hm (hpack p hx hy hxy))
+  have lift {A : Finset (Fin ((flowSizes7 d hd).a q.l t))}
+      (hA : ∀ θ : α,
+        RankSortedOn A (fun i => decide (θ ≤ net.exec v i))) :
+      RankSortedOn A (net.exec v) := by
+    apply rankSortedOn_of_thresholds
+    intro θ
+    exact hA θ
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro j
+    constructor
+    · apply lift
+      intro θ
+      have h := (hbool θ).1 j
+      rw [exec_threshold] at h
+      exact h.1
+    · intro k
+      apply lift
+      intro θ
+      have h := (hbool θ).1 j
+      rw [exec_threshold] at h
+      exact h.2 k
+  · apply lift
+    intro θ
+    have h := (hbool θ).2.1
+    rw [exec_threshold] at h
+    exact h
+  · intro k
+    apply lift
+    intro θ
+    have h := (hbool θ).2.2.1 k
+    rw [exec_threshold] at h
+    exact h
+  · intro k
+    apply lift
+    intro θ
+    have h := (hbool θ).2.2.2 k
+    rw [exec_threshold] at h
+    exact h
+
 /-- Reindex the selected register network to the size parameter used by
 `stageNet`; at unrelated sizes this is the empty network. -/
 noncomputable def flowA7_sourcePortRepairNetAt {d : Nat}
@@ -1910,6 +2031,44 @@ theorem flowA7_sourcePortRepairStage_depth_le {d : Nat}
       have hsize := wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) q
       simpa [hsize] using flowA7_sourcePortRepairNetAt_depth_le
         hd t ht2 ht q (wireSets (flowSizes7 d hd) t q).card)
+
+/-- Transport any sorted support of an eligible source repair from its
+register coordinates to the physical wires after the globally scheduled
+correction stage. -/
+theorem flowA7_sourcePortRepairStage_transport {d : Nat} {α : Type}
+    [LinearOrder α] (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t)
+    (ht : t < tf7 d) (q : KBag 64 d)
+    (hdown : 0 < flowDown7 d hd q.l t)
+    (hbad : HalfMisaligned (flowUp7 d hd q.l t))
+    (v : Fin (64 ^ d) → α)
+    (A : Finset (Fin ((flowSizes7 d hd).a q.l t)))
+    (hlocal : RankSortedOn A
+      ((flowA7_sourcePortRepairNet hd t ht2 ht q).exec
+        (fun i => v (((wireSets (flowSizes7 d hd) t q).orderEmbOfFin
+          (wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) q)) i)))) :
+    RankSortedOn
+      (A.image ((wireSets (flowSizes7 d hd) t q).orderEmbOfFin
+        (wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) q)))
+      ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) := by
+  let S := wireSets (flowSizes7 d hd) t
+  let nodeNet := fun b n => flowA7_sourcePortRepairNetAt hd t ht2 ht b n
+  have hS : ∀ b b', b ≠ b' → Disjoint (S b) (S b') := by
+    intro b b' hne
+    exact wireSets_disjoint (flowSizes7 d hd) (Nat.le_of_lt ht) b b' hne
+  have hsize : (S q).card = (flowSizes7 d hd).a q.l t :=
+    wireSets_card (flowSizes7 d hd) (Nat.le_of_lt ht) q
+  have hAt : nodeNet q ((flowSizes7 d hd).a q.l t) =
+      flowA7_sourcePortRepairNet hd t ht2 ht q := by
+    unfold nodeNet flowA7_sourcePortRepairNetAt
+    simp [hsize]
+  have hlocal' : RankSortedOn A
+      ((nodeNet q ((flowSizes7 d hd).a q.l t)).exec
+        (fun i => v ((S q).orderEmbOfFin hsize i))) := by
+    rw [hAt]
+    exact hlocal
+  change RankSortedOn (A.image ((S q).orderEmbOfFin hsize))
+    ((stageNet S nodeNet).exec v)
+  exact stageNet_rankSortedOn_image_of_card_eq S hS nodeNet v q _ hsize A hlocal'
 
 /-- At an actual receiver, the 64 child senders' shifted up-fringe endpoint
 repairs are also one six-layer disjoint family. The packet divisibility,
