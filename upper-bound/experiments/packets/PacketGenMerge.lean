@@ -483,4 +483,271 @@ theorem genPacketPair_lanes_sorted {N : Nat} {α : Type} [LinearOrder α]
     rw [joinPacketEmbedding_right, joinPacketEmbedding_right]
     exact hb hij
 
+/-! ### Disjoint matching-round execution
+
+The local pair theorem becomes useful to an induction only after all pairs in
+one matching can be run on the same ambient wires. The following family
+network scatters the same seven-layer merge onto each listed 128-wire support.
+Its execution on one support agrees with that pair's local execution; hence
+other disjoint pairs cannot disturb either dealt output packet. -/
+
+def genPacketRound {N : Nat} (pairs : List (Fin 128 ↪ Fin N)) : GenNetwork N :=
+  ⟨pairs.flatMap fun e => (genScatter (oddEvenMergeNet 7) e).comparators⟩
+
+@[simp] theorem genPacketRound_cons {N : Nat} (e : Fin 128 ↪ Fin N)
+    (es : List (Fin 128 ↪ Fin N)) :
+    genPacketRound (e :: es) =
+      ⟨(genScatter (oddEvenMergeNet 7) e).comparators ++
+        (genPacketRound es).comparators⟩ := rfl
+
+private theorem genNetwork_exec_append {N : Nat} {α : Type*} [LinearOrder α]
+    (G H : GenNetwork N) (v : Fin N → α) :
+    (⟨G.comparators ++ H.comparators⟩ : GenNetwork N).exec v = H.exec (G.exec v) := by
+  simp [GenNetwork.exec, List.foldl_append]
+
+private theorem genFoldlDmLe {N : Nat} (cs : List (GenComparator N))
+    (wt : Fin N → Nat) (dm : Nat) :
+    dm ≤ (cs.foldl genDepthStep (wt, dm)).2 := by
+  induction cs generalizing wt dm with
+  | nil => exact le_rfl
+  | cons c cs ih => exact (le_max_left _ _).trans (ih _ _)
+
+private theorem genFoldlUntouched {N : Nat} (cs : List (GenComparator N))
+    (wt : Fin N → Nat) (dm : Nat) (k : Fin N)
+    (hk : ∀ c ∈ cs, k ≠ c.a ∧ k ≠ c.b) :
+    (cs.foldl genDepthStep (wt, dm)).1 k = wt k := by
+  induction cs generalizing wt dm with
+  | nil => rfl
+  | cons c cs ih =>
+      have hkc := hk c (by simp)
+      simp only [List.foldl_cons]
+      rw [ih _ _ (fun c' hc' => hk c' (List.mem_cons_of_mem c hc'))]
+      simp [genDepthStep, hkc.1, hkc.2]
+
+private theorem genFoldlDepthMax {N : Nat} (cs : List (GenComparator N))
+    (wt wt₀ : Fin N → Nat) (dm dm₀ : Nat)
+    (hwt : ∀ c ∈ cs, wt c.a = wt₀ c.a ∧ wt c.b = wt₀ c.b) :
+    (cs.foldl genDepthStep (wt, dm)).2 ≤
+      max dm (cs.foldl genDepthStep (wt₀, dm₀)).2 := by
+  induction cs generalizing wt wt₀ dm dm₀ with
+  | nil => exact le_max_left _ _
+  | cons c cs ih =>
+      have htime := hwt c (by simp)
+      have htail := ih
+        (genDepthStep (wt, dm) c).1 (genDepthStep (wt₀, dm₀) c).1
+        (genDepthStep (wt, dm) c).2 (genDepthStep (wt₀, dm₀) c).2
+        (fun c' hc' => by
+          have h := hwt c' (List.mem_cons_of_mem c hc')
+          simp only [genDepthStep, Function.update_apply]
+          split_ifs <;> simp_all)
+      have hbase := genFoldlDmLe cs
+        (genDepthStep (wt₀, dm₀) c).1 (genDepthStep (wt₀, dm₀) c).2
+      have hct : max (wt c.a) (wt c.b) + 1 ≤
+          (cs.foldl genDepthStep (genDepthStep (wt₀, dm₀) c)).2 := by
+        rw [htime.1, htime.2]
+        dsimp [genDepthStep]
+        exact (le_max_right _ _).trans hbase
+      simp only [List.foldl_cons]
+      dsimp only [genDepthStep] at htail ⊢
+      exact htail.trans (by
+        apply max_le
+        · exact max_le (le_max_left _ _) (hct.trans (le_max_right _ _))
+        · exact le_max_right _ _)
+
+/-- Generalized comparators on pairwise disjoint supports have parallel depth:
+the sequential list concatenation costs only the maximum component depth. -/
+private theorem genDepth_flatMap_disjoint {N : Nat} {ι : Type*}
+    (chunks : List ι) (f : ι → List (GenComparator N)) (D : Nat)
+    (hD : ∀ x ∈ chunks, (⟨f x⟩ : GenNetwork N).depth ≤ D)
+    (hdis : chunks.Pairwise (fun x y =>
+      ∀ c ∈ f x, ∀ d ∈ f y,
+        c.a ≠ d.a ∧ c.a ≠ d.b ∧ c.b ≠ d.a ∧ c.b ≠ d.b)) :
+    (⟨chunks.flatMap f⟩ : GenNetwork N).depth ≤ D := by
+  simp only [GenNetwork.depth]
+  induction chunks with
+  | nil => simp
+  | cons x xs ih =>
+      simp only [List.flatMap_cons, List.foldl_append]
+      have hxdis := (List.pairwise_cons.mp hdis).1
+      have hag : ∀ c ∈ xs.flatMap f,
+          ((f x).foldl genDepthStep (fun _ => 0, 0)).1 c.a = 0 ∧
+          ((f x).foldl genDepthStep (fun _ => 0, 0)).1 c.b = 0 := by
+        intro c hc
+        obtain ⟨y, hy, hcy⟩ := List.mem_flatMap.mp hc
+        have hxy := hxdis y hy
+        exact ⟨genFoldlUntouched (f x) (fun _ => 0) 0 c.a
+            (fun z hz => ⟨(hxy z hz c hcy).1.symm, (hxy z hz c hcy).2.2.1.symm⟩),
+          genFoldlUntouched (f x) (fun _ => 0) 0 c.b
+            (fun z hz => ⟨(hxy z hz c hcy).2.1.symm, (hxy z hz c hcy).2.2.2.symm⟩)⟩
+      have htail := genFoldlDepthMax (xs.flatMap f)
+        ((f x).foldl genDepthStep (fun _ => 0, 0)).1 (fun _ => 0)
+        ((f x).foldl genDepthStep (fun _ => 0, 0)).2 0 hag
+      exact htail.trans (max_le (hD x (by simp))
+        (ih (fun y hy => hD y (List.mem_cons_of_mem x hy))
+          (List.pairwise_cons.mp hdis).2))
+
+theorem genPacketRound_depth_le {N : Nat}
+    (pairs : List (Fin 128 ↪ Fin N))
+    (hnodup : pairs.Nodup)
+    (hdis : ∀ e ∈ pairs, ∀ f ∈ pairs, e ≠ f →
+      ∀ i j, e i ≠ f j) :
+    (genPacketRound pairs).depth ≤ 7 := by
+  have hchunks_aux : ∀ (ps : List (Fin 128 ↪ Fin N)), ps.Nodup →
+      (∀ e ∈ ps, ∀ f ∈ ps, e ≠ f → ∀ i j, e i ≠ f j) →
+      ps.Pairwise (fun e f =>
+        ∀ c ∈ (genScatter (oddEvenMergeNet 7) e).comparators,
+        ∀ d ∈ (genScatter (oddEvenMergeNet 7) f).comparators,
+          c.a ≠ d.a ∧ c.a ≠ d.b ∧ c.b ≠ d.a ∧ c.b ≠ d.b) := by
+    intro ps
+    induction ps with
+    | nil => intro hnodup' hdis'; simp
+    | cons e es ih =>
+        intro hnodup' hdis'
+        have hnd := List.nodup_cons.mp hnodup'
+        have hdisTail : ∀ a ∈ es, ∀ b ∈ es, a ≠ b → ∀ i j, a i ≠ b j := by
+          intro a ha b hb hne i j
+          exact hdis' a (List.mem_cons_of_mem e ha) b (List.mem_cons_of_mem e hb) hne i j
+        refine List.pairwise_cons.mpr ⟨?_, ih hnd.2 hdisTail⟩
+        intro f hf c hc d hd
+        have hef : e ≠ f := by
+          intro heq
+          subst f
+          exact hnd.1 hf
+        have hwire := hdis' e (by simp) f (List.mem_cons_of_mem e hf) hef
+        change c ∈ (oddEvenMergeNet 7).comparators.map (genScatterComparator e) at hc
+        change d ∈ (oddEvenMergeNet 7).comparators.map (genScatterComparator f) at hd
+        obtain ⟨c₀, _, rfl⟩ := List.mem_map.mp hc
+        obtain ⟨d₀, _, rfl⟩ := List.mem_map.mp hd
+        refine ⟨?_, ?_, ?_, ?_⟩
+        · simpa [genScatterComparator] using hwire c₀.i d₀.i
+        · simpa [genScatterComparator] using hwire c₀.i d₀.j
+        · simpa [genScatterComparator] using hwire c₀.j d₀.i
+        · simpa [genScatterComparator] using hwire c₀.j d₀.j
+  have hchunks := hchunks_aux pairs hnodup hdis
+  have hbound : ∀ e ∈ pairs,
+      (⟨(genScatter (oddEvenMergeNet 7) e).comparators⟩ : GenNetwork N).depth ≤ 7 := by
+    intro e he
+    exact genMerge128_depth_le e
+  exact genDepth_flatMap_disjoint pairs
+    (fun e => (genScatter (oddEvenMergeNet 7) e).comparators) 7 hbound hchunks
+
+theorem genPacketRound_exec_outside {N : Nat} {α : Type} [LinearOrder α]
+    (pairs : List (Fin 128 ↪ Fin N))
+    (hnodup : pairs.Nodup)
+    (hdis : ∀ e ∈ pairs, ∀ f ∈ pairs, e ≠ f →
+      ∀ i j, e i ≠ f j)
+    (w : Fin N)
+    (hw : ∀ e ∈ pairs, w ∉ Set.range e)
+    (v : Fin N → α) :
+    (genPacketRound pairs).exec v w = v w := by
+  induction pairs generalizing v with
+  | nil => rfl
+  | cons e es ih =>
+      have hnodup' := List.nodup_cons.mp hnodup
+      have hwHead : w ∉ Set.range e := hw e (by simp)
+      have hwTail : ∀ f ∈ es, w ∉ Set.range f := by
+        intro f hf
+        exact hw f (List.mem_cons_of_mem e hf)
+      have hdisTail : ∀ f ∈ es, ∀ g ∈ es, f ≠ g → ∀ i j, f i ≠ g j := by
+        intro f hf g hg hne
+        exact hdis f (List.mem_cons_of_mem e hf) g (List.mem_cons_of_mem e hg) hne
+      rw [genPacketRound_cons, genNetwork_exec_append]
+      rw [ih hnodup'.2 hdisTail hwTail ((genScatter (oddEvenMergeNet 7) e).exec v)]
+      exact genScatter_exec_outside (oddEvenMergeNet 7) e v w hwHead
+
+theorem genPacketRound_exec_inside {N : Nat} {α : Type} [LinearOrder α]
+    (pairs : List (Fin 128 ↪ Fin N))
+    (hnodup : pairs.Nodup)
+    (hdis : ∀ e ∈ pairs, ∀ f ∈ pairs, e ≠ f →
+      ∀ i j, e i ≠ f j)
+    (v : Fin N → α) (e : Fin 128 ↪ Fin N) (he : e ∈ pairs)
+    (i : Fin 128) :
+    (genPacketRound pairs).exec v (e i) =
+      (genScatter (oddEvenMergeNet 7) e).exec v (e i) := by
+  induction pairs generalizing v with
+  | nil => simp at he
+  | cons f fs ih =>
+      have hnodup' := List.nodup_cons.mp hnodup
+      by_cases hfe : e = f
+      · subst e
+        have hwTail : ∀ g ∈ fs, f i ∉ Set.range g := by
+          intro g hg hmem
+          obtain ⟨j, hj⟩ := hmem
+          have hfg : f ≠ g := by
+            intro h
+            exact hnodup'.1 (h ▸ hg)
+          exact (hdis f (by simp) g (List.mem_cons_of_mem f hg)
+            hfg i j) hj.symm
+        have hdisTail : ∀ g ∈ fs, ∀ h ∈ fs, g ≠ h → ∀ a b, g a ≠ h b := by
+          intro g hg h hh hne
+          exact hdis g (List.mem_cons_of_mem f hg) h (List.mem_cons_of_mem f hh) hne
+        rw [genPacketRound_cons, genNetwork_exec_append]
+        rw [genPacketRound_exec_outside fs hnodup'.2 hdisTail (f i) hwTail
+          ((genScatter (oddEvenMergeNet 7) f).exec v)]
+      · have hefs : e ∈ fs := by simpa [hfe] using he
+        have hdisFs : ∀ g ∈ fs, ∀ h ∈ fs, g ≠ h → ∀ a b, g a ≠ h b := by
+          intro g hg h hh hne
+          exact hdis g (List.mem_cons_of_mem f hg) h (List.mem_cons_of_mem f hh) hne
+        have hcomp : (genScatter (oddEvenMergeNet 7) f).exec v ∘ e = v ∘ e := by
+          funext a
+          exact genScatter_exec_outside (oddEvenMergeNet 7) f v (e a) (by
+            rintro ⟨j, hj⟩
+            exact (hdis e he f (by simp) hfe a j) hj.symm)
+        rw [genPacketRound_cons, genNetwork_exec_append]
+        rw [ih hnodup'.2 hdisFs ((genScatter (oddEvenMergeNet 7) f).exec v) hefs]
+        rw [genScatter_exec_inside (oddEvenMergeNet 7) e ((genScatter (oddEvenMergeNet 7) f).exec v) i,
+          genScatter_exec_inside (oddEvenMergeNet 7) e v i]
+        exact congrArg (fun x => (oddEvenMergeNet 7).exec x i) hcomp
+
+theorem genPacketRound_dealt_lanes_sorted {N : Nat} {α : Type} [LinearOrder α]
+    (pairs : List (Fin 128 ↪ Fin N))
+    (hnodup : pairs.Nodup)
+    (hdis : ∀ e ∈ pairs, ∀ f ∈ pairs, e ≠ f →
+      ∀ i j, e i ≠ f j)
+    (v : Fin N → α)
+    (hsorted : ∀ e ∈ pairs,
+      Monotone (fun i : Fin 64 => v (e (Fin.castAdd 64 i))) ∧
+      Monotone (fun i : Fin 64 => v (e (Fin.natAdd 64 i)))) :
+    ∀ e ∈ pairs,
+      Monotone (fun i : Fin 64 =>
+        (genPacketRound pairs).exec v (dealEvenEmbedding e i)) ∧
+      Monotone (fun i : Fin 64 =>
+        (genPacketRound pairs).exec v (dealOddEmbedding e i)) := by
+  intro e he
+  have hlocal := genMerge128_dealt_lanes_sorted e v (hsorted e he).1 (hsorted e he).2
+  constructor
+  · intro i j hij
+    change (genPacketRound pairs).exec v (e (evenWire 64 i)) ≤
+      (genPacketRound pairs).exec v (e (evenWire 64 j))
+    rw [genPacketRound_exec_inside pairs hnodup hdis v e he (evenWire 64 i),
+      genPacketRound_exec_inside pairs hnodup hdis v e he (evenWire 64 j)]
+    exact hlocal.1 hij
+  · intro i j hij
+    change (genPacketRound pairs).exec v (e (oddWire 64 i)) ≤
+      (genPacketRound pairs).exec v (e (oddWire 64 j))
+    rw [genPacketRound_exec_inside pairs hnodup hdis v e he (oddWire 64 i),
+      genPacketRound_exec_inside pairs hnodup hdis v e he (oddWire 64 j)]
+    exact hlocal.2 hij
+
+theorem genPacketRound_dealt_supports_disjoint {N : Nat}
+    (pairs : List (Fin 128 ↪ Fin N))
+    (hdis : ∀ e ∈ pairs, ∀ f ∈ pairs, e ≠ f →
+      ∀ i j, e i ≠ f j) :
+    (∀ e ∈ pairs, ∀ i j,
+      dealEvenEmbedding e i ≠ dealOddEmbedding e j) ∧
+    (∀ e ∈ pairs, ∀ f ∈ pairs, e ≠ f → ∀ i j,
+      dealEvenEmbedding e i ≠ dealEvenEmbedding f j ∧
+      dealEvenEmbedding e i ≠ dealOddEmbedding f j ∧
+      dealOddEmbedding e i ≠ dealEvenEmbedding f j ∧
+      dealOddEmbedding e i ≠ dealOddEmbedding f j) := by
+  constructor
+  · intro e he i j
+    exact dealEmbeddings_disjoint e i j
+  · intro e he f hf hef i j
+    refine ⟨?_, ?_, ?_, ?_⟩
+    · exact hdis e he f hf hef (evenWire 64 i) (evenWire 64 j)
+    · exact hdis e he f hf hef (evenWire 64 i) (oddWire 64 j)
+    · exact hdis e he f hf hef (oddWire 64 i) (evenWire 64 j)
+    · exact hdis e he f hf hef (oddWire 64 i) (oddWire 64 j)
+
 end Chvatal.PacketAlignment

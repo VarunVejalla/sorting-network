@@ -580,3 +580,23 @@ import PacketHalfProfile
  Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.flowA7_source_port_packetLayout_register
+
+/-- info: 'Chvatal.PacketAlignment.genPacketRound_dealt_lanes_sorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genPacketRound_dealt_lanes_sorted
+
+/-- info: 'Chvatal.PacketAlignment.genPacketRound_dealt_supports_disjoint' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genPacketRound_dealt_supports_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.genPacketRound_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genPacketRound_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.genPacketRound_exec_inside' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genPacketRound_exec_inside
+
+/-- info: 'Chvatal.PacketAlignment.genPacketRound_exec_outside' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genPacketRound_exec_outside
