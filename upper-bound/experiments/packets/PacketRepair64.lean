@@ -2879,6 +2879,54 @@ theorem flowA7_sourcePortRepairStage_sourcePackets {d : Nat} {α : Type}
   · exact sourcePortRepairPacket_card_eq_64 S π τ q m hπeq hτeq hsize hπcard
       hbase hwithin
 
+/-- On a packet-aligned up-fringe, the selected correction stage is a no-op
+on that sender, so every original 64-rank cell remains a sorted packet. -/
+theorem flowA7_sourcePortRepairStage_noRepair_packetCells {d : Nat} {α : Type}
+    [LinearOrder α] (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t)
+    (ht : t < tf7 d) (b : KBag 64 d)
+    (hnoop : flowDown7 d hd b.l t = 0 ∨
+      ¬ HalfMisaligned (flowUp7 d hd b.l t))
+    (v : Fin (64 ^ d) → α)
+    (hpack : PacketSortedOn (wireSets (flowSizes7 d hd) t b) v) :
+    ∀ k : Fin ((flowSizes7 d hd).a b.l t / 64),
+      RankSortedOn
+        (rankPacketCell (wireSets (flowSizes7 d hd) t b) 0 k)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) := by
+  let F := flowSizes7 d hd
+  let S := wireSets F t
+  let nodeNet := fun q n => flowA7_sourcePortRepairNetAt hd t ht2 ht q n
+  have hnet0 : flowA7_sourcePortRepairNet hd t ht2 ht b = ⟨[]⟩ := by
+    rcases hnoop with hzero | hnotbad
+    · simp [flowA7_sourcePortRepairNet, hzero]
+    · by_cases hflow : 0 < flowDown7 d hd b.l t
+      · simp [flowA7_sourcePortRepairNet, hflow, hnotbad]
+      · simp [flowA7_sourcePortRepairNet, hflow]
+  have hsize : (S b).card = F.a b.l t :=
+    wireSets_card F (Nat.le_of_lt ht) b
+  have hAt : nodeNet b (F.a b.l t) = ⟨[]⟩ := by
+    unfold nodeNet flowA7_sourcePortRepairNetAt
+    simp [F, hnet0]
+  have hS : ∀ q q', q ≠ q' → Disjoint (S q) (S q') := by
+    intro q q' hne
+    exact wireSets_disjoint F (Nat.le_of_lt ht) q q' hne
+  intro k
+  let A := rankPacketCell (Finset.univ : Finset (Fin (F.a b.l t))) 0 k
+  have hreg := PacketSortedOn_orderEmb_of_card_eq (S b) v hpack hsize
+  have hlocal : RankSortedOn A
+      ((nodeNet b (F.a b.l t)).exec
+        (fun i => v (((S b).orderEmbOfFin hsize) i))) := by
+    have hcell := hreg k.val
+    simpa [A, rankPacketCell, hAt] using hcell
+  have hphysical := stageNet_rankSortedOn_image_of_card_eq S hS nodeNet v b
+    (F.a b.l t) hsize A hlocal
+  have himage : A.image ((S b).orderEmbOfFin hsize) =
+      rankPacketCell (S b) 0 k := by
+    simpa [A, rankPacketCell] using
+      blockOf_register_image (S b) hsize (64 * k.val)
+        (64 * (k.val + 1))
+  rw [himage] at hphysical
+  simpa [flowA7_sourcePortRepairStage, nodeNet, F, S] using hphysical
+
 /-- Reindex the packet partitions arriving at one receiver: one family comes
 from its parent and one family from each of its 64 children. -/
 def receiverPacketFamily {N : Nat} {ι κ : Type} [Fintype ι] [Fintype κ]
