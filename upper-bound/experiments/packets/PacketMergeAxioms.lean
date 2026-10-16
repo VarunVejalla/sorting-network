@@ -648,3 +648,49 @@ import PacketHalfProfile
 /-- info: 'Chvatal.PacketAlignment.genJoinMatching_round_outputPackets_support' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genJoinMatching_round_outputPackets_support
+
+/-- info: 'Chvatal.PacketAlignment.genIndexedPairSupports_edges_disjoint' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genIndexedPairSupports_edges_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.genIndexedPairSupports_disjoint' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genIndexedPairSupports_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.genIndexedPairSupports_nodup' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genIndexedPairSupports_nodup
+
+/-- info: 'Chvatal.PacketAlignment.genIndexedPacketRound_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genIndexedPacketRound_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.genIndexedPacketRound_output_sorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genIndexedPacketRound_output_sorted
+
+/-- info: 'Chvatal.PacketAlignment.genIndexedPacketRound_output_support' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genIndexedPacketRound_output_support
+
+/-- info: 'Chvatal.PacketAlignment.genIndexedPacketRound_output_disjoint' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genIndexedPacketRound_output_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.adjacentPacketMatching_nodup' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.adjacentPacketMatching_nodup
+
+/-- info: 'Chvatal.PacketAlignment.adjacentPacketMatching_noFixed' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.adjacentPacketMatching_noFixed
+
+/-- info: 'Chvatal.PacketAlignment.adjacentPacketMatching_vertexDisjoint' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.adjacentPacketMatching_vertexDisjoint
+
+/-- info: 'Chvatal.PacketAlignment.adjacentPacketMatching_covers' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.adjacentPacketMatching_covers

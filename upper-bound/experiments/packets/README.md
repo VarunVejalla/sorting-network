@@ -105,12 +105,18 @@ checks all scratch sources.
    the `genPacketRound_outputPackets` list is pairwise support-disjoint and
    covers exactly the consumed support union, and the network depth is at most
    7. The output list is therefore a valid next-round sorted packet family.
-   `genJoinMatching` now constructs those 128-wire supports from an edge list
-   of packet-embedding pairs, and its round adapters prove the same depth and
-   output invariants under explicit pairwise support-disjointness hypotheses.
-   This avoids assuming source-rank cells remain fixed physical receiver
-   packets. Still missing are the matching schedule on packet IDs and its
-   compatibility with positional `WireFlow` cuts.
+   `genJoinMatching` constructs those supports from explicit embedding pairs.
+   More directly, `genIndexedPacketRound` takes a matching edge list on packet
+   IDs and an indexed family of disjoint packet embeddings. It proves the
+   seven-layer depth, sortedness and pairwise support-disjointness of every
+   dealt output packet, and exact support coverage of the matched packets; the support construction attaches each
+   endpoint-disjointness proof to its edge. This closes the abstract packet-ID
+   adapter. Still missing are the concrete matching schedule extracted from
+   the positional `WireFlow` cuts, treatment of unmatched packets in the full
+   family, and compatibility of its evolving placements with later cuts.
+   As a first concrete instance, `adjacentPacketMatching` gives a perfect
+   matching on every even-sized packet-ID family; its no-self-edge,
+   vertex-disjointness, coverage, and duplicate-free properties are checked.
 3. Supply an unbounded matching family and a uniform rounded-discrepancy bound,
    including exceptional small cohorts. Finite mixing screens do not prove
    this.

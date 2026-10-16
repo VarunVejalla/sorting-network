@@ -517,6 +517,102 @@ theorem genJoinMatching_nodup {N : Nat}
     exact hsep (congrArg (fun e : Fin 128 ↪ Fin N => e 0) hab)
   · exact hnodup
 
+/-- Build the joined supports directly from a matching on packet indices.
+The endpoint-disjointness proof is attached to each edge, so no premise is
+needed for pairs that are not in the matching. -/
+def genIndexedPairSupports {m N : Nat}
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges : List (Fin m × Fin m))
+    (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2) : List (Fin 128 ↪ Fin N) :=
+  edges.attach.map fun e => joinPacketEmbedding (packets e.1.1) (packets e.1.2)
+    (hpacketDisjoint e.1.1 e.1.2 (hnoFixed e.1 e.2))
+
+theorem genIndexedPairSupports_edges_disjoint {m N : Nat}
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges : List (Fin m × Fin m))
+    (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2)
+    (hvertexDisjoint : ∀ e ∈ edges, ∀ f ∈ edges, e ≠ f →
+      e.1 ≠ f.1 ∧ e.1 ≠ f.2 ∧ e.2 ≠ f.1 ∧ e.2 ≠ f.2) :
+    ∀ e, ∀ he : e ∈ edges, ∀ f, ∀ hf : f ∈ edges, e ≠ f → ∀ i j,
+      joinPacketEmbedding (packets e.1) (packets e.2)
+        (hpacketDisjoint e.1 e.2 (hnoFixed e he)) i ≠
+      joinPacketEmbedding (packets f.1) (packets f.2)
+        (hpacketDisjoint f.1 f.2 (hnoFixed f hf)) j := by
+  intro edge hedge edge' hedge' hedgeNe i j
+  have hids := hvertexDisjoint edge hedge edge' hedge' hedgeNe
+  have hwithin : ∀ x y : Fin 64,
+      packets edge.1 x ≠ packets edge.2 y :=
+    hpacketDisjoint edge.1 edge.2 (hnoFixed edge hedge)
+  have hwithin' : ∀ x y : Fin 64,
+      packets edge'.1 x ≠ packets edge'.2 y :=
+    hpacketDisjoint edge'.1 edge'.2 (hnoFixed edge' hedge')
+  have hleft : joinPacketEmbedding (packets edge.1) (packets edge.2)
+      (hpacketDisjoint edge.1 edge.2 (hnoFixed edge hedge)) i ∈
+      Set.range (packets edge.1) ∪ Set.range (packets edge.2) := by
+    rw [← joinPacketEmbedding_range _ _ hwithin]
+    exact ⟨i, rfl⟩
+  have hright : joinPacketEmbedding (packets edge'.1) (packets edge'.2)
+      (hpacketDisjoint edge'.1 edge'.2 (hnoFixed edge' hedge')) j ∈
+      Set.range (packets edge'.1) ∪ Set.range (packets edge'.2) := by
+    rw [← joinPacketEmbedding_range _ _ hwithin']
+    exact ⟨j, rfl⟩
+  rcases hleft with ⟨x, hx⟩ | ⟨x, hx⟩ <;>
+    rcases hright with ⟨y, hy⟩ | ⟨y, hy⟩
+  · intro heq
+    exact (hpacketDisjoint edge.1 edge'.1 hids.1 x y) (hx.trans (heq.trans hy.symm))
+  · intro heq
+    exact (hpacketDisjoint edge.1 edge'.2 hids.2.1 x y) (hx.trans (heq.trans hy.symm))
+  · intro heq
+    exact (hpacketDisjoint edge.2 edge'.1 hids.2.2.1 x y) (hx.trans (heq.trans hy.symm))
+  · intro heq
+    exact (hpacketDisjoint edge.2 edge'.2 hids.2.2.2 x y) (hx.trans (heq.trans hy.symm))
+
+theorem genIndexedPairSupports_disjoint {m N : Nat}
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges : List (Fin m × Fin m))
+    (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2)
+    (hvertexDisjoint : ∀ e ∈ edges, ∀ f ∈ edges, e ≠ f →
+      e.1 ≠ f.1 ∧ e.1 ≠ f.2 ∧ e.2 ≠ f.1 ∧ e.2 ≠ f.2) :
+    ∀ e ∈ genIndexedPairSupports packets hpacketDisjoint edges hnoFixed,
+      ∀ f ∈ genIndexedPairSupports packets hpacketDisjoint edges hnoFixed,
+        e ≠ f → ∀ i j, e i ≠ f j := by
+  intro e he f hf hne i j
+  simp only [genIndexedPairSupports, List.mem_map, List.mem_attach] at he hf
+  obtain ⟨edge, hedge, rfl⟩ := he
+  obtain ⟨edge', hedge', rfl⟩ := hf
+  have hedgeNe : edge.1 ≠ edge'.1 := by
+    intro h
+    apply hne
+    have heq : edge = edge' := Subtype.ext h
+    subst edge'
+    rfl
+  exact genIndexedPairSupports_edges_disjoint packets hpacketDisjoint edges hnoFixed
+    hvertexDisjoint edge.1 edge.2 edge'.1 edge'.2 hedgeNe i j
+
+theorem genIndexedPairSupports_nodup {m N : Nat}
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges : List (Fin m × Fin m)) (hedges : edges.Nodup)
+    (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2)
+    (hvertexDisjoint : ∀ e ∈ edges, ∀ f ∈ edges, e ≠ f →
+      e.1 ≠ f.1 ∧ e.1 ≠ f.2 ∧ e.2 ≠ f.1 ∧ e.2 ≠ f.2) :
+    (genIndexedPairSupports packets hpacketDisjoint edges hnoFixed).Nodup := by
+  apply List.Nodup.map_on
+  · intro e he f hf heq
+    let ee := joinPacketEmbedding (packets e.1.1) (packets e.1.2)
+      (hpacketDisjoint e.1.1 e.1.2 (hnoFixed e.1 e.2))
+    let ff := joinPacketEmbedding (packets f.1.1) (packets f.1.2)
+      (hpacketDisjoint f.1.1 f.1.2 (hnoFixed f.1 f.2))
+    by_cases hval : e.1 = f.1
+    · exact Subtype.ext hval
+    · have hsep := genIndexedPairSupports_edges_disjoint packets hpacketDisjoint edges
+        hnoFixed hvertexDisjoint e.1 e.2 f.1 f.2 hval 0 0
+      exact False.elim (hsep (congrArg (fun p : Fin 128 ↪ Fin N => p 0) heq))
+  · simpa using hedges.attach
+
 def dealEvenEmbedding {N : Nat} (e : Fin 128 ↪ Fin N) : Fin 64 ↪ Fin N :=
   ⟨fun i => e (evenWire 64 i), by
     intro i j hij
@@ -1047,5 +1143,205 @@ theorem genJoinMatching_round_outputPackets_support {N : Nat}
       exact ⟨edge, hedge, rfl⟩
     · rw [joinPacketEmbedding_range edge.1 edge.2 (hwithin edge)]
       exact hw
+
+/-- Execute one generalized odd-even merge round on an indexed packet matching. -/
+def genIndexedPacketRound {m N : Nat}
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges : List (Fin m × Fin m))
+    (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2) : GenNetwork N :=
+  genPacketRound (genIndexedPairSupports packets hpacketDisjoint edges hnoFixed)
+
+def genIndexedPacketRoundOutput {m N : Nat}
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges : List (Fin m × Fin m))
+    (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2) : List (Fin 64 ↪ Fin N) :=
+  genPacketRound_outputPackets (genIndexedPairSupports packets hpacketDisjoint edges hnoFixed)
+
+theorem genIndexedPacketRound_depth_le {m N : Nat}
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges : List (Fin m × Fin m)) (hedges : edges.Nodup)
+    (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2)
+    (hvertexDisjoint : ∀ e ∈ edges, ∀ f ∈ edges, e ≠ f →
+      e.1 ≠ f.1 ∧ e.1 ≠ f.2 ∧ e.2 ≠ f.1 ∧ e.2 ≠ f.2) :
+    (genIndexedPacketRound packets hpacketDisjoint edges hnoFixed).depth ≤ 7 := by
+  change (genPacketRound (genIndexedPairSupports packets hpacketDisjoint edges hnoFixed)).depth ≤ 7
+  exact genPacketRound_depth_le _
+    (genIndexedPairSupports_nodup packets hpacketDisjoint edges hedges hnoFixed hvertexDisjoint)
+    (by
+      intro e he f hf hne i j
+      exact genIndexedPairSupports_disjoint packets hpacketDisjoint edges hnoFixed
+        hvertexDisjoint e he f hf hne i j)
+
+theorem genIndexedPacketRound_output_sorted {m N : Nat} {α : Type}
+    [LinearOrder α]
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges : List (Fin m × Fin m)) (hedges : edges.Nodup)
+    (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2)
+    (hvertexDisjoint : ∀ e ∈ edges, ∀ f ∈ edges, e ≠ f →
+      e.1 ≠ f.1 ∧ e.1 ≠ f.2 ∧ e.2 ≠ f.1 ∧ e.2 ≠ f.2)
+    (v : Fin N → α)
+    (hsorted : ∀ i, Monotone (fun k : Fin 64 => v (packets i k))) :
+    ∀ p ∈ genIndexedPacketRoundOutput packets hpacketDisjoint edges hnoFixed,
+      Monotone (fun k => (genIndexedPacketRound packets hpacketDisjoint edges hnoFixed).exec v (p k)) := by
+  change ∀ p ∈ genPacketRound_outputPackets
+      (genIndexedPairSupports packets hpacketDisjoint edges hnoFixed),
+    Monotone (fun k => (genPacketRound
+      (genIndexedPairSupports packets hpacketDisjoint edges hnoFixed)).exec v (p k))
+  apply genPacketRound_outputPackets_sorted _
+    (genIndexedPairSupports_nodup packets hpacketDisjoint edges hedges hnoFixed hvertexDisjoint)
+    (by
+      intro e he f hf hne i j
+      exact genIndexedPairSupports_disjoint packets hpacketDisjoint edges hnoFixed
+        hvertexDisjoint e he f hf hne i j) v
+  intro e he
+  simp only [genIndexedPairSupports, List.mem_map, List.mem_attach] at he
+  obtain ⟨edge, hedge, rfl⟩ := he
+  have hwithin := hpacketDisjoint edge.1.1 edge.1.2 (hnoFixed edge.1 edge.2)
+  constructor
+  · intro i j hij
+    change v (joinPacketEmbedding (packets edge.1.1) (packets edge.1.2) hwithin
+      (Fin.castAdd 64 i)) ≤
+      v (joinPacketEmbedding (packets edge.1.1) (packets edge.1.2) hwithin
+      (Fin.castAdd 64 j))
+    rw [joinPacketEmbedding_left, joinPacketEmbedding_left]
+    exact hsorted edge.1.1 hij
+  · intro i j hij
+    change v (joinPacketEmbedding (packets edge.1.1) (packets edge.1.2) hwithin
+      (Fin.natAdd 64 i)) ≤
+      v (joinPacketEmbedding (packets edge.1.1) (packets edge.1.2) hwithin
+      (Fin.natAdd 64 j))
+    rw [joinPacketEmbedding_right, joinPacketEmbedding_right]
+    exact hsorted edge.1.2 hij
+
+theorem genIndexedPacketRound_output_support {m N : Nat}
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges : List (Fin m × Fin m))
+    (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2)
+    (hcover : ∀ i, ∃ e ∈ edges, e.1 = i ∨ e.2 = i)
+    (w : Fin N) :
+    (∃ p ∈ genIndexedPacketRoundOutput packets hpacketDisjoint edges hnoFixed,
+      w ∈ Set.range p) ↔ ∃ i, w ∈ Set.range (packets i) := by
+  change (∃ p ∈ genPacketRound_outputPackets
+      (genIndexedPairSupports packets hpacketDisjoint edges hnoFixed),
+        w ∈ Set.range p) ↔ ∃ i, w ∈ Set.range (packets i)
+  rw [genPacketRound_outputPackets_support]
+  constructor
+  · rintro ⟨e, he, hw⟩
+    simp only [genIndexedPairSupports, List.mem_map, List.mem_attach] at he
+    obtain ⟨edge, hedge, rfl⟩ := he
+    rw [joinPacketEmbedding_range _ _
+      (hpacketDisjoint edge.1.1 edge.1.2 (hnoFixed edge.1 edge.2))] at hw
+    rcases hw with hw | hw
+    · exact ⟨edge.1.1, hw⟩
+    · exact ⟨edge.1.2, hw⟩
+  · rintro ⟨i, hi⟩
+    obtain ⟨edge, hedge, hside⟩ := hcover i
+    let joined := joinPacketEmbedding (packets edge.1) (packets edge.2)
+      (hpacketDisjoint edge.1 edge.2 (hnoFixed edge hedge))
+    have hmem : joined ∈ genIndexedPairSupports packets hpacketDisjoint edges hnoFixed := by
+      simp only [genIndexedPairSupports, List.mem_map, List.mem_attach]
+      exact ⟨⟨edge, hedge⟩, trivial, rfl⟩
+    refine ⟨joined, hmem, ?_⟩
+    rw [joinPacketEmbedding_range]
+    rcases hside with hleft | hright
+    · exact Or.inl (hleft ▸ hi)
+    · exact Or.inr (hright ▸ hi)
+
+theorem genIndexedPacketRound_output_disjoint {m N : Nat}
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges : List (Fin m × Fin m)) (hedges : edges.Nodup)
+    (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2)
+    (hvertexDisjoint : ∀ e ∈ edges, ∀ f ∈ edges, e ≠ f →
+      e.1 ≠ f.1 ∧ e.1 ≠ f.2 ∧ e.2 ≠ f.1 ∧ e.2 ≠ f.2) :
+    List.Pairwise (fun p q : Fin 64 ↪ Fin N => ∀ i j, p i ≠ q j)
+      (genIndexedPacketRoundOutput packets hpacketDisjoint edges hnoFixed) := by
+  change List.Pairwise (fun p q : Fin 64 ↪ Fin N => ∀ i j, p i ≠ q j)
+    (genPacketRound_outputPackets
+      (genIndexedPairSupports packets hpacketDisjoint edges hnoFixed))
+  exact genPacketRound_outputPackets_disjoint _
+    (genIndexedPairSupports_nodup packets hpacketDisjoint edges hedges hnoFixed hvertexDisjoint)
+    (genIndexedPairSupports_disjoint packets hpacketDisjoint edges hnoFixed hvertexDisjoint)
+
+/-- The canonical matching of adjacent packet IDs in an even-sized family. -/
+def adjacentPacketMatching (k : Nat) : List (Fin (2 * k) × Fin (2 * k)) :=
+  (List.finRange k).map fun i =>
+    (⟨2 * i.val, by omega⟩, ⟨2 * i.val + 1, by omega⟩)
+
+theorem adjacentPacketMatching_nodup (k : Nat) :
+    (adjacentPacketMatching k).Nodup := by
+  unfold adjacentPacketMatching
+  apply List.Nodup.map_on
+  · intro i hi j hj heq
+    have hv := congrArg (fun e : Fin (2 * k) × Fin (2 * k) => e.1.val) heq
+    simp at hv
+    apply Fin.ext
+    omega
+  · exact List.nodup_finRange k
+
+theorem adjacentPacketMatching_noFixed (k : Nat) :
+    ∀ e ∈ adjacentPacketMatching k, e.1 ≠ e.2 := by
+  intro e he
+  simp only [adjacentPacketMatching, List.mem_map, List.mem_finRange] at he
+  obtain ⟨i, hi, heq⟩ := he
+  rw [← heq]
+  intro h
+  have hv := congrArg Fin.val h
+  simp at hv
+  all_goals omega
+
+theorem adjacentPacketMatching_vertexDisjoint (k : Nat) :
+    ∀ e ∈ adjacentPacketMatching k, ∀ f ∈ adjacentPacketMatching k, e ≠ f →
+      e.1 ≠ f.1 ∧ e.1 ≠ f.2 ∧ e.2 ≠ f.1 ∧ e.2 ≠ f.2 := by
+  intro e he f hf hne
+  simp only [adjacentPacketMatching, List.mem_map, List.mem_finRange] at he hf
+  obtain ⟨i, hi, rfl⟩ := he
+  obtain ⟨j, hj, rfl⟩ := hf
+  have hij : i ≠ j := by
+    intro h
+    apply hne
+    subst j
+    rfl
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro h
+    have hv := congrArg Fin.val h
+    simp at hv
+    omega
+  · intro h
+    have hv := congrArg Fin.val h
+    simp at hv
+    omega
+  · intro h
+    have hv := congrArg Fin.val h
+    simp at hv
+    omega
+  · intro h
+    have hv := congrArg Fin.val h
+    simp at hv
+    omega
+
+theorem adjacentPacketMatching_covers (k : Nat) (i : Fin (2 * k)) :
+    ∃ e ∈ adjacentPacketMatching k, e.1 = i ∨ e.2 = i := by
+  by_cases heven : i.val % 2 = 0
+  · let j : Fin k := ⟨i.val / 2, by have := i.isLt; omega⟩
+    refine ⟨(⟨2 * j.val, by omega⟩, ⟨2 * j.val + 1, by omega⟩), ?_, Or.inl ?_⟩
+    · simp only [adjacentPacketMatching, List.mem_map]
+      exact ⟨j, by simpa using j.isLt, rfl⟩
+    · apply Fin.ext
+      simp [j]
+      omega
+  · let j : Fin k := ⟨i.val / 2, by have := i.isLt; omega⟩
+    refine ⟨(⟨2 * j.val, by omega⟩, ⟨2 * j.val + 1, by omega⟩), ?_, Or.inr ?_⟩
+    · simp only [adjacentPacketMatching, List.mem_map]
+      exact ⟨j, by simpa using j.isLt, rfl⟩
+    · apply Fin.ext
+      simp [j]
+      omega
+
 
 end Chvatal.PacketAlignment
