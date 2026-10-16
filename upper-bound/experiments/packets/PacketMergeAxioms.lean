@@ -723,6 +723,14 @@ import PacketHalfProfile
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.PacketSortedOn_orderEmb_of_card_eq
 
+/-- info: 'Chvatal.PacketAlignment.rankIn_univ_eq_val' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.rankIn_univ_eq_val
+
+/-- info: 'Chvatal.PacketAlignment.blockOf_register_image' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.blockOf_register_image
+
 /-- info: 'Chvatal.PacketAlignment.stageNet_rankSortedOn_image' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.stageNet_rankSortedOn_image

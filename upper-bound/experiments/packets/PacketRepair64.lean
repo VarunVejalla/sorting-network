@@ -206,6 +206,40 @@ theorem PacketSortedOn_orderEmb_of_card_eq {N n : Nat} {α : Type}
   cases hn
   exact PacketSortedOn_orderEmb s v hpack
 
+theorem rankIn_univ_eq_val {n : Nat} (i : Fin n) :
+    Chvatal.rankIn (Finset.univ : Finset (Fin n)) i = i.val := by
+  change ((Finset.univ : Finset (Fin n)).filter (fun z => z < i)).card = i.val
+  have hfilter : (Finset.univ : Finset (Fin n)).filter (fun z => z < i) =
+      Finset.Iio i := by
+    ext z
+    simp
+  rw [hfilter]
+  exact Fin.card_Iio i
+
+/-- A register rank interval maps to the matching physical `WireFlow` rank
+block under the bag's increasing enumeration. -/
+theorem blockOf_register_image {N n : Nat} (s : Finset (Fin N))
+    (hn : s.card = n) (lo hi : Nat) :
+    (Chvatal.blockOf (Finset.univ : Finset (Fin n)) lo hi).image
+      (s.orderEmbOfFin hn) = Chvatal.blockOf s lo hi := by
+  cases hn
+  ext w
+  simp only [Finset.mem_image, Chvatal.mem_blockOf]
+  constructor
+  · rintro ⟨i, hi, rfl⟩
+    rcases hi with ⟨_, hlo, hhi⟩
+    rw [rankIn_univ_eq_val] at hlo hhi
+    rw [Chvatal.rankIn_orderEmb]
+    exact ⟨Finset.orderEmbOfFin_mem s rfl i, hlo, hhi⟩
+  · rintro ⟨hw, hlo, hhi⟩
+    obtain ⟨i, rfl⟩ : w ∈ Set.range (s.orderEmbOfFin rfl) := by
+      rw [Finset.range_orderEmbOfFin]
+      exact hw
+    refine ⟨i, ?_, rfl⟩
+    rw [Chvatal.rankIn_orderEmb] at hlo hhi
+    exact ⟨Finset.mem_univ _, by simpa [rankIn_univ_eq_val] using hlo,
+      by simpa [rankIn_univ_eq_val] using hhi⟩
+
 /-- A linear-order sortedness claim follows if every lower-threshold Boolean
 profile is sorted. -/
 theorem rankSortedOn_of_thresholds {N : Nat} {α : Type} [LinearOrder α]
