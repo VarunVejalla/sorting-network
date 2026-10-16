@@ -399,3 +399,12 @@ used by the correction layer. Both are axiom-guarded and the focused Lean
 chain passes. Remaining: instantiate the actual recursively defined networks,
 prove their outputs monotone by induction, handle base cases, and formalize
 their scheduled depth.
+
+Induction-step package: `unequalParityMerge_step_sorts` now combines these
+pieces. Given any comparator networks whose outputs sort the even and odd
+parity subproblems, it proves that the unequal correction layer sorts the
+parent; the theorem explicitly handles the lane-size casts and is included in
+the axiom guard. Thus the mathematical induction step is formalized. The
+remaining work is to define and verify the recursively embedded networks
+(including their parity-wire placements), establish their base cases, and
+derive the `q+7` scheduled depth bound for the five tail levels.

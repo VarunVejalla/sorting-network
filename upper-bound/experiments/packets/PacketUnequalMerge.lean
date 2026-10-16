@@ -355,6 +355,15 @@ theorem unequalThresholdCount_cast {M N : Nat} (h : N = M)
   unfold unequalThresholdCount
   exact Fintype.card_congr e
 
+private theorem unequalMonotone_cast {M N : Nat} (h : N = M)
+    {α : Type} [Preorder α] (f : Fin M → α) (hf : Monotone f) :
+    Monotone (fun i : Fin N => f (Fin.cast h i)) := by
+  intro i j hij
+  apply hf
+  apply Fin.mk_le_mk.mpr
+  have hij' : i.val ≤ j.val := Fin.mk_le_mk.mp hij
+  simpa using hij'
+
 /-- The recursive parity split has lane sizes `m+m` and `m+(m-1)`, while
 the interleave/correction interface uses `2*m` and `2*m-1`. This theorem
 transports the profile gap across those canonical `Fin` casts after the
@@ -758,5 +767,46 @@ theorem unequalCorrectionLayer_sorts_of_threshold_gap {L : Nat} (hL : 2 ≤ L)
   exact unequalCorrectedInterleave_sorted hL E O hE hO
     (unequal_cross_bounds_of_threshold_gap hL E O hE hO hEcount hOcount).1
     (unequal_cross_bounds_of_threshold_gap hL E O hE hO hEcount hOcount).2
+
+/-- One full induction step for the odd-sized unequal merge: if networks
+correctly sort the two parity-lane subproblems, then the transported source
+profile gap makes the concrete final correction layer sort their parent. -/
+theorem unequalParityMerge_step_sorts {m : Nat} {α : Type} [LinearOrder α]
+    (hm : 1 ≤ m)
+    (A : Fin (2 * m) → α) (B : Fin (2 * m - 1) → α)
+    (hA : Monotone A) (hB : Monotone B)
+    (netE : ComparatorNetwork (m + m))
+    (netO : ComparatorNetwork (m + (m - 1)))
+    (hE : Monotone (netE.exec (Fin.append
+      (fun j : Fin m => A (unequalEvenIndex j))
+      (fun j : Fin m => B (unequalEvenIndexOddLength j)))))
+    (hO : Monotone (netO.exec (Fin.append
+      (fun j : Fin m => A (unequalOddIndex j))
+      (fun j : Fin (m - 1) => B (unequalOddIndexOddLength j))))) :
+    Monotone ((unequalCorrectionLayer (by omega : 2 ≤ 2 * m)).exec
+      (unequalInterleave
+        (fun i : Fin (2 * m) =>
+          netE.exec (Fin.append (fun j : Fin m => A (unequalEvenIndex j))
+            (fun j : Fin m => B (unequalEvenIndexOddLength j)))
+            (Fin.cast (by omega : 2 * m = m + m) i))
+        (fun i : Fin (2 * m - 1) =>
+          netO.exec (Fin.append (fun j : Fin m => A (unequalOddIndex j))
+            (fun j : Fin (m - 1) => B (unequalOddIndexOddLength j)))
+            (Fin.cast (by omega : 2 * m - 1 = m + (m - 1)) i)))) := by
+  let E : Fin (2 * m) → α := fun i =>
+    netE.exec (Fin.append (fun j : Fin m => A (unequalEvenIndex j))
+      (fun j : Fin m => B (unequalEvenIndexOddLength j)))
+      (Fin.cast (by omega : 2 * m = m + m) i)
+  let O : Fin (2 * m - 1) → α := fun i =>
+    netO.exec (Fin.append (fun j : Fin m => A (unequalOddIndex j))
+      (fun j : Fin (m - 1) => B (unequalOddIndexOddLength j)))
+      (Fin.cast (by omega : 2 * m - 1 = m + (m - 1)) i)
+  have hEmono : Monotone E := unequalMonotone_cast (by omega) _ hE
+  have hOmono : Monotone O := unequalMonotone_cast (by omega) _ hO
+  have hgap := unequalSourceParityThresholdGap_exec_cast A B hA hB netE netO
+  have hsorted := unequalCorrectionLayer_sorts_of_threshold_gap
+    (by omega : 2 ≤ 2 * m) E O hEmono hOmono
+    (fun t => (hgap t).1) (fun t => (hgap t).2)
+  simpa [E, O] using hsorted
 
 end Chvatal.PacketAlignment
