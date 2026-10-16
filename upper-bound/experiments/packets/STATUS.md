@@ -822,3 +822,16 @@ the aggregate discrepancy exactly. Both lemmas have axiom guards, and the
 accounting, but does not prove that the next physical `WireFlow` stage uses
 these output-cell targets or cuts. No global recurrence or coefficient below
 1419 follows from this lemma alone.
+
+Concrete scattered-rank ownership (GPT-6-astra-high, 2026-10-16):
+`wireSetOwner` chooses the unique register containing each physical wire,
+using the checked completeness and disjointness of the actual `WireFlow`
+partition. `wireSetPacketRankOwner` assigns every rank slot of an arbitrary
+scattered packet embedding to that register, and
+`assignedRankCount_wireSetPacketRankOwner` identifies the abstract assigned
+rank count exactly with the packet slots physically lying in each register.
+The `PacketHalfProfile` check and full `PacketMergeAxioms` guard chain pass.
+This closes the owner-map existence/counting interface for the scattered-rank
+L2 lemma. It does not yet identify the induced fractional destination targets
+with `wireFlowLayer_reencoded_profile_recurrence`, nor prove contraction for
+the actual matching schedule; the global coefficient is unchanged.

@@ -223,9 +223,17 @@ The next algebraic layer is also checked: `assignedRankProfiles_aggregate_L2`
 and `_var` bound the destination-wise squared signed errors by `c` times the
 source packet-count energy, including packet-dependent fractional targets.
 This gives a quadratic aggregation inequality compatible with the existing
-source-dependent `WireFlow` means. It is still an abstract rank-owner result;
-the actual embedding-to-receiver owner map and its active-level energy sum are
-not yet proved, so it does not establish a limsup improvement.
+source-dependent `WireFlow` means. The actual owner map and physical count
+identity are now proved below. The remaining target-coupling and active-level
+contraction are still open, so this does not establish a limsup improvement.
+
+The owner-map existence and counting step is now concrete: `wireSetOwner`
+uses the actual complete, disjoint `WireFlow` register partition, and
+`assignedRankCount_wireSetPacketRankOwner` equates each abstract destination
+count with the selected packet ranks physically present in that register.
+The remaining bridge is quantitative: couple the induced destination targets
+to the selected-interval recurrence and prove contraction for the actual
+matching schedule.
 
 Follow-up (GPT-6-astra-high, 2026-10-16): the owner-map bridge is bypassed for
 the one-layer recurrence by using the actual `wireFlowLayerSelection`

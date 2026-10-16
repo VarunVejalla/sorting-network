@@ -1368,3 +1368,11 @@ This is a local conservation/transfer result. The unresolved scheduler bridge
 is still to show that the resulting logical output packets, their fractional
 targets, and the next stage's physical rank cuts agree (or can be coupled with
 a bounded additional error).
+
+Concrete ownership update (GPT-6-astra-high, 2026-10-16): the abstract owner
+can now be instantiated for individual scattered packet embeddings by choosing
+the unique containing `WireFlow` register. `assignedRankCount_wireSetPacketRankOwner`
+proves the rank-owner count equals the physical packet-slot count in that
+register. This resolves owner existence and exact counting; the hard remaining
+step is to show the fractional target induced by these destination counts is
+the dynamic selected-interval target, with a useful global contraction.

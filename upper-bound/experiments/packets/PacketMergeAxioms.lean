@@ -1491,6 +1491,15 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.assignedRankProfiles_aggregate_L2_var' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.assignedRankProfiles_aggregate_L2_var
+/-- info: 'Chvatal.PacketAlignment.wireSetOwner_mem' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireSetOwner_mem
+/-- info: 'Chvatal.PacketAlignment.wireSetOwner_eq_iff_mem' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.wireSetOwner_eq_iff_mem
+/-- info: 'Chvatal.PacketAlignment.assignedRankCount_wireSetPacketRankOwner' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.assignedRankCount_wireSetPacketRankOwner
 /-- info: 'Chvatal.PacketAlignment.sum_receiver_selected_error_sq_le_source_pieces' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.sum_receiver_selected_error_sq_le_source_pieces

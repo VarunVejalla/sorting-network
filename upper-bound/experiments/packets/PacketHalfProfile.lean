@@ -1371,6 +1371,71 @@ theorem assignedRankProfiles_aggregate_L2_var {ι : Type} [Fintype ι] [Decidabl
       intro packet _
       exact hwithin packet
 
+/-! The abstract rank-owner interface can be realized directly by the actual
+disjoint, complete `WireFlow` register partition. -/
+
+/-- The unique `WireFlow` register containing a physical wire at time `t`. -/
+noncomputable def wireSetOwner {d tf : Nat} (F : FlowSizes d tf) (t : Nat)
+    (ht : t ≤ tf) (w : Fin (64 ^ d)) : KBag 64 d :=
+  Classical.choose (wireSets_complete F ht w)
+
+theorem wireSetOwner_mem {d tf : Nat} (F : FlowSizes d tf) (t : Nat)
+    (ht : t ≤ tf) (w : Fin (64 ^ d)) :
+    w ∈ wireSets F t (wireSetOwner F t ht w) :=
+  Classical.choose_spec (wireSets_complete F ht w)
+
+/-- Owner equality is exactly membership in that register. Completeness gives
+an owner, and `wireSets_disjoint` makes it unique. -/
+theorem wireSetOwner_eq_iff_mem {d tf : Nat} (F : FlowSizes d tf) (t : Nat)
+    (ht : t ≤ tf) (w : Fin (64 ^ d)) (b : KBag 64 d) :
+    wireSetOwner F t ht w = b ↔ w ∈ wireSets F t b := by
+  constructor
+  · intro h
+    rw [← h]
+    exact wireSetOwner_mem F t ht w
+  · intro hb
+    by_contra hne
+    have hdis := wireSets_disjoint F ht (wireSetOwner F t ht w) b hne
+    exact (Finset.disjoint_left.mp hdis) (wireSetOwner_mem F t ht w) hb
+
+/-- Assign each rank of a scattered packet to the unique actual register
+containing its physical wire. -/
+noncomputable def wireSetPacketRankOwner {d tf c m : Nat}
+    (F : FlowSizes d tf) (t : Nat) (ht : t ≤ tf)
+    (packets : Fin c → Fin m ↪ Fin (64 ^ d)) (packet : Fin c) :
+    Fin m → KBag 64 d :=
+  fun k => wireSetOwner F t ht (packets packet k)
+
+/-- The abstract assigned-rank count for this owner map is exactly the count
+of selected packet ranks whose physical wires lie in the actual destination
+register. This is the concrete counting bridge needed before applying the
+scattered-profile energy inequality to a scheduler stage. -/
+theorem assignedRankCount_wireSetPacketRankOwner {d tf c m : Nat}
+    (F : FlowSizes d tf) (t : Nat) (ht : t ≤ tf)
+    (packets : Fin c → Fin m ↪ Fin (64 ^ d)) (packet : Fin c)
+    (suffix : Nat → Fin m → Bool) (destination : KBag 64 d) (X : Nat) :
+    assignedRankCount (wireSetPacketRankOwner F t ht packets packet)
+      suffix destination X =
+    ∑ k : Fin m,
+      if packets packet k ∈ wireSets F t destination ∧ suffix X k = true
+      then 1 else 0 := by
+  unfold assignedRankCount wireSetPacketRankOwner
+  apply Finset.sum_congr rfl
+  intro k hk
+  have howner : destination = wireSetOwner F t ht (packets packet k) ↔
+      packets packet k ∈ wireSets F t destination := by
+    constructor
+    · intro heq
+      rw [heq]
+      exact wireSetOwner_mem F t ht (packets packet k)
+    · intro hmem
+      by_contra hne
+      have hdis := wireSets_disjoint F ht destination
+        (wireSetOwner F t ht (packets packet k)) hne
+      exact (Finset.disjoint_left.mp hdis) hmem
+        (wireSetOwner_mem F t ht (packets packet k))
+  simp only [howner]
+
 theorem profileInterval_partition_L1_exact (m p X q : Nat) (frac : Real)
     (cuts : Nat → Nat) (hstart : cuts 0 = 0) (hcuts : Monotone cuts)
     (hend : cuts p = m) (hX : X ≤ m) (hq : q < m)
