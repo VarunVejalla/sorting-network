@@ -809,3 +809,16 @@ aggregate L1 error at that scale. The theorem passes `PacketHalfProfile`; its
 axiom guard is included in the current full-chain check. This local exact
 transfer still depends on a rank-coherent target and does not identify the
 logical output packet order with the next physical `WireFlow` cuts.
+
+Heterogeneous merge-to-profile transfer (GPT-6-astra-high, 2026-10-16):
+`packetPowerTree6GroupNet_heterogeneous_profile_error_le` removes the common
+input-target restriction at this interface. For 64 disjoint sorted packets,
+arbitrary real targets `μ j`, and any threshold, if their targets sum to the
+batch target `q+frac`, then the sum of absolute output-cell errors is at most
+the sum of the 64 input count errors. The grouped embedding's threshold count
+is exactly the sum of source counts; the sorted 4096-to-64 merge then transfers
+the aggregate discrepancy exactly. Both lemmas have axiom guards, and the
+`PacketMergeAxioms` check passes. This closes local heterogeneous target
+accounting, but does not prove that the next physical `WireFlow` stage uses
+these output-cell targets or cuts. No global recurrence or coefficient below
+1419 follows from this lemma alone.

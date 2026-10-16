@@ -305,6 +305,63 @@ theorem packetPowerTree6GroupNet_output_threshold_profile {N : Nat}
     packetPowerTree6_leafCount (genPacketGroup64Embedding packets hdisjoint)
     v hRuns t j
 
+/-! A 4096-wire merge batch reassembles heterogeneous input-packet targets
+without creating aggregate L1 profile error. -/
+
+/-- The output rank-cell error of a 64-packet merge is bounded by the sum of
+the input packets' count errors against arbitrary fractional targets whose
+total is the batch target. The reassembly itself contributes no fresh L1
+error. -/
+theorem packetPowerTree6GroupNet_heterogeneous_profile_error_le {N : Nat}
+    {α : Type} [LinearOrder α]
+    (packets : Fin 64 → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ {j k : Fin 64}, j ≠ k → ∀ (i q : Fin 64),
+      packets j i ≠ packets k q)
+    (v : Fin N → α)
+    (hpackets : ∀ j : Fin 64, Monotone (fun i => v (packets j i)))
+    (t : α) (q : Nat) (frac : Real) (μ : Fin 64 → Real)
+    (hq : q < 4096) (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1)
+    (hμ : (∑ j : Fin 64, μ j) = q + frac) :
+    (∑ j : Fin 64,
+      |(boolTrueCount (fun i : Fin 64 => decide (t ≤
+          (packetPowerTree6GroupNet (α := α) packets hdisjoint).exec v
+            (genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α))
+              (genPacketGroup64Embedding packets hdisjoint)
+              (Fin.cast (packetPowerTree6_leafCount (α := α)).symm j) i))) : Real) -
+        profileCellMean 64 q frac j.val|) ≤
+      ∑ j : Fin 64,
+        |(boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j| := by
+  let e := genPacketGroup64Embedding packets hdisjoint
+  let X := boolTrueCount (fun i : Fin 4096 => decide (t ≤ v (e i)))
+  have hsum : X = ∑ j : Fin 64,
+      boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) := by
+    exact boolTrueCount_genPacketGroup64Embedding_sum packets hdisjoint
+      (fun x => decide (t ≤ v x))
+  have hscalar : (X : Real) - (q + frac) =
+      ∑ j : Fin 64,
+        ((boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j) := by
+    rw [Finset.sum_sub_distrib]
+    have hcounts : (∑ j : Fin 64,
+        (boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real)) =
+        (X : Real) := by
+      exact_mod_cast hsum.symm
+    rw [hcounts, hμ]
+  have hexact := genScatterMergeTree_output_threshold_profile_L1_exact
+    (packetPowerTree6 (α := α)) packetPowerTree6_leafCount e v
+    (packetPowerTree6_runsSorted_of_packets packets hdisjoint v hpackets)
+    t q frac hq hfrac0 hfrac1
+  calc
+    _ = |(X : Real) - (q + frac)| := by
+      simpa only [e, X, packetPowerTree6GroupNet] using hexact
+    _ = |∑ j : Fin 64,
+        ((boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j)| :=
+      congrArg abs hscalar
+    _ ≤ ∑ j : Fin 64,
+        |(boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j| := by
+      simpa using Finset.abs_sum_le_sum_abs
+        (s := Finset.univ) (f := fun j : Fin 64 =>
+          (boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j)
+
 /-- A parallel batch of 4096-wire merge trees preserves the exact threshold
 profile on every output chunk of every disjoint block. -/
 theorem genScatterMergeTreeBatch_output_threshold_profile {N : Nat}

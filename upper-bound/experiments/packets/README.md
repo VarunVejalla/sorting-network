@@ -255,3 +255,10 @@ fractional rank-profile error with exact aggregate L1 conservation. This
 removes reassembly as a source of fresh error in that local model; the
 remaining challenge is carrying the induced logical rank order into the next
 physical scheduler cuts.
+
+The local transfer now also accepts heterogeneous fractional targets on the
+64 input packets: `packetPowerTree6GroupNet_heterogeneous_profile_error_le`
+bounds the output aggregate L1 profile error by the sum of the input count
+errors whenever the target means sum to the batch mean. Its Lean axiom guard
+passes in `PacketMergeAxioms`. The global scheduler still needs to align these
+logical output packets and targets with the next physical cuts.

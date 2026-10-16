@@ -1359,3 +1359,12 @@ profile theorem and `profileCellMean_L1_exact`, and passes the full
 `PacketMergeAxioms` guard chain. It removes fresh error from this local merge
 tree, but the output packets are indexed by the logical merge embedding; their
 alignment with subsequent physical `WireFlow` rank cuts is still open.
+
+The local target restriction is now removed: the guarded theorem
+`packetPowerTree6GroupNet_heterogeneous_profile_error_le` proves that arbitrary
+per-input-packet target errors pass through this 64-run merge with no increase
+in their aggregate L1 bound, provided the targets sum to the batch target.
+This is a local conservation/transfer result. The unresolved scheduler bridge
+is still to show that the resulting logical output packets, their fractional
+targets, and the next stage's physical rank cuts agree (or can be coupled with
+a bounded additional error).

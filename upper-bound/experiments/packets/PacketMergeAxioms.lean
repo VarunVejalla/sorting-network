@@ -1412,6 +1412,10 @@ import PacketMergeTreeGen
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genPacketGroup64Embedding_covers_packets
 
+/-- info: 'Chvatal.PacketAlignment.boolTrueCount_genPacketGroup64Embedding_sum' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.boolTrueCount_genPacketGroup64Embedding_sum
+
 /-- info: 'Chvatal.PacketAlignment.genScatterMergeTree_output_profile' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genScatterMergeTree_output_profile
@@ -1429,6 +1433,9 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.packetPowerTree6GroupNet_output_threshold_profile' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.packetPowerTree6GroupNet_output_threshold_profile
+/-- info: 'Chvatal.PacketAlignment.packetPowerTree6GroupNet_heterogeneous_profile_error_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetPowerTree6GroupNet_heterogeneous_profile_error_le
 
 /-- info: 'Chvatal.PacketAlignment.genScatterMergeTreeBatch_output_threshold_profile' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in

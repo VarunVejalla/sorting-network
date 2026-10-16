@@ -223,6 +223,58 @@ theorem genPacketGroup64Embedding_covers_packets {N : Nat}
   refine ⟨packetTreeCellIndex64 j i, ?_⟩
   simp [genPacketGroup64Embedding, packetTreeBlockCoordinates64_cellIndex]
 
+/-- The Boolean threshold count of a logical 64-packet group is the sum of
+the 64 source-packet counts. This makes the grouped merge's scalar target
+equal to the sum of heterogeneous packet targets. -/
+theorem boolTrueCount_genPacketGroup64Embedding_sum {N : Nat}
+    (packets : Fin 64 → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ {j k : Fin 64}, j ≠ k → ∀ (i q : Fin 64),
+      packets j i ≠ packets k q) (v : Fin N → Bool) :
+    boolTrueCount (fun x : Fin 4096 =>
+      v (genPacketGroup64Embedding packets hdisjoint x)) =
+      ∑ j : Fin 64, boolTrueCount (fun i : Fin 64 => v (packets j i)) := by
+  let source := {x : Fin 4096 //
+    v (genPacketGroup64Embedding packets hdisjoint x) = true}
+  let pairPred : Fin 64 × Fin 64 → Prop := fun p =>
+    v (packets p.1 p.2) = true
+  let coordEquiv : Fin 4096 ≃ Fin 64 × Fin 64 := {
+    toFun := packetTreeBlockCoordinates64
+    invFun := fun p => packetTreeCellIndex64 p.1 p.2
+    left_inv := packetTreeCellIndex64_blockCoordinates
+    right_inv := by
+      rintro ⟨j, i⟩
+      exact packetTreeBlockCoordinates64_cellIndex j i
+  }
+  have hsource : ∀ x : Fin 4096,
+      v (genPacketGroup64Embedding packets hdisjoint x) = true ↔
+        pairPred (coordEquiv x) := by
+    intro x
+    change v (packets (packetTreeBlockCoordinates64 x).1
+      (packetTreeBlockCoordinates64 x).2) = true ↔ _
+    rfl
+  let e1 := Equiv.subtypeEquiv coordEquiv hsource
+  let e2 : {p : Fin 64 × Fin 64 // pairPred p} ≃
+      (Σ j : Fin 64, {i : Fin 64 // v (packets j i) = true}) := {
+    toFun := fun p => ⟨p.1.1, ⟨p.1.2, p.2⟩⟩
+    invFun := fun y => ⟨(y.1, y.2.1), y.2.2⟩
+    left_inv := by intro p; apply Subtype.ext; rfl
+    right_inv := by
+      rintro ⟨j, ⟨i, hi⟩⟩
+      apply Sigma.ext
+      · rfl
+      · exact HEq.rfl
+  }
+  let e : source ≃ (Σ j : Fin 64, {i : Fin 64 // v (packets j i) = true}) :=
+    e1.trans e2
+  unfold boolTrueCount
+  calc
+    Fintype.card source =
+        Fintype.card (Σ j : Fin 64, {i : Fin 64 // v (packets j i) = true}) :=
+      Fintype.card_congr e
+    _ = ∑ j : Fin 64, Fintype.card {i : Fin 64 // v (packets j i) = true} :=
+      Fintype.card_sigma
+    _ = ∑ j : Fin 64, boolTrueCount (fun i : Fin 64 => v (packets j i)) := rfl
+
 theorem packetOddTree6_leafCount {α : Type} [LinearOrder α] :
     (packetOddTree6 (α := α)).leafCount = 63 := by
   simp [packetOddTree6, packetOddTree5, packetOddTree4, packetOddTree3,
