@@ -1117,3 +1117,27 @@ import PacketUnequalMerge
 /-- info: 'Chvatal.PacketAlignment.standard64Merge_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.standard64Merge_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.unequalMerge3Net_sorts_two_runs' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalMerge3Net_sorts_two_runs
+
+/-- info: 'Chvatal.PacketAlignment.unequalMerge7Net_sorts_two_runs' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalMerge7Net_sorts_two_runs
+
+/-- info: 'Chvatal.PacketAlignment.unequalMerge15Net_sorts_two_runs' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalMerge15Net_sorts_two_runs
+
+/-- info: 'Chvatal.PacketAlignment.unequalMerge31Net_sorts_two_runs' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalMerge31Net_sorts_two_runs
+
+/-- info: 'Chvatal.PacketAlignment.unequalMerge63Net_sorts_two_runs' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalMerge63Net_sorts_two_runs
+
+/-- info: 'Chvatal.PacketAlignment.unequalMerge63Net_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.unequalMerge63Net_depth_le

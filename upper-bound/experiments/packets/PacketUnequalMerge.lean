@@ -1465,4 +1465,645 @@ theorem standard64Merge_depth_le :
   · exact oddEvenMergeNet_depth_le 5
   · exact oddEvenMergeNet_depth_le 5
 
+private def unequalEvenEmbed {L : Nat} (hL : 2 ≤ L) : Fin L ↪o Fin (2 * L - 1) :=
+  OrderEmbedding.ofStrictMono
+    (fun i => ⟨2 * i.val, by have hi := i.isLt; omega⟩)
+    (by intro i j hij; exact Fin.mk_lt_mk.mpr (by have h := Fin.mk_lt_mk.mp hij; omega))
+
+private def unequalOddEmbed {L : Nat} (hL : 2 ≤ L) : Fin (L - 1) ↪o Fin (2 * L - 1) :=
+  OrderEmbedding.ofStrictMono
+    (fun i => ⟨2 * i.val + 1, by have hi := i.isLt; omega⟩)
+    (by intro i j hij; exact Fin.mk_lt_mk.mpr (by have h := Fin.mk_lt_mk.mp hij; omega))
+
+private theorem unequalEven_not_odd {L : Nat} (hL : 2 ≤ L) (i : Fin L) :
+    (unequalEvenEmbed hL i : Fin (2 * L - 1)) ∉ Set.range (unequalOddEmbed hL) := by
+  rintro ⟨j, h⟩
+  have hval := congrArg Fin.val h
+  change 2 * j.val + 1 = 2 * i.val at hval
+  omega
+
+private theorem unequalOdd_not_even {L : Nat} (hL : 2 ≤ L) (i : Fin (L - 1)) :
+    (unequalOddEmbed hL i : Fin (2 * L - 1)) ∉ Set.range (unequalEvenEmbed hL) := by
+  rintro ⟨j, h⟩
+  have hval := congrArg Fin.val h
+  change 2 * j.val = 2 * i.val + 1 at hval
+  omega
+
+private def unequalParityFront {L : Nat} (hL : 2 ≤ L)
+    (netE : ComparatorNetwork L) (netO : ComparatorNetwork (L - 1)) :
+    ComparatorNetwork (2 * L - 1) := by
+  let e := netE.scatterEmbed (2 * L - 1) (unequalEvenEmbed hL)
+  let o := netO.scatterEmbed (2 * L - 1) (unequalOddEmbed hL)
+  exact ⟨e.comparators ++ o.comparators⟩
+
+private theorem unequalInterleave_evenEmbed {L : Nat} (hL : 2 ≤ L)
+    {α : Type} (E : Fin L → α) (O : Fin (L - 1) → α) (i : Fin L) :
+    unequalInterleave E O (unequalEvenEmbed hL i) = E i := by
+  simp [unequalInterleave, unequalEvenEmbed]
+
+private theorem unequalInterleave_oddEmbed {L : Nat} (hL : 2 ≤ L)
+    {α : Type} (E : Fin L → α) (O : Fin (L - 1) → α) (i : Fin (L - 1)) :
+    unequalInterleave E O (unequalOddEmbed hL i) = O i := by
+  simp [unequalInterleave, unequalOddEmbed]
+  apply congrArg O
+  apply Fin.ext
+  have hq : (2 * i.val + 1) / 2 = i.val := by omega
+  simpa using hq
+
+private theorem unequalParityFront_exec_eq_interleave {L : Nat} (hL : 2 ≤ L)
+    {α : Type} [LinearOrder α] (netE : ComparatorNetwork L)
+    (netO : ComparatorNetwork (L - 1)) (v : Fin (2 * L - 1) → α) :
+    (unequalParityFront hL netE netO).exec v =
+      unequalInterleave (netE.exec (fun i => v (unequalEvenEmbed hL i)))
+        (netO.exec (fun i => v (unequalOddEmbed hL i))) := by
+  let e := netE.scatterEmbed (2 * L - 1) (unequalEvenEmbed hL)
+  let o := netO.scatterEmbed (2 * L - 1) (unequalOddEmbed hL)
+  funext j
+  by_cases heven : j.val % 2 = 0
+  · let i : Fin L := ⟨j.val / 2, by have hj := j.isLt; omega⟩
+    have hidx : unequalEvenEmbed hL i = j := by
+      apply Fin.ext
+      simp [unequalEvenEmbed, i]
+      omega
+    rw [← hidx]
+    dsimp [unequalParityFront]
+    change (⟨e.comparators ++ o.comparators⟩ : ComparatorNetwork (2 * L - 1)).exec
+      v (unequalEvenEmbed hL i) = _
+    rw [ComparatorNetwork.exec_append,
+      ComparatorNetwork.scatterEmbed_exec_outside _ _ _ _ _
+        (unequalEven_not_odd hL i),
+      ComparatorNetwork.scatterEmbed_exec_inside]
+    rw [unequalInterleave_evenEmbed]
+    rfl
+  · let i : Fin (L - 1) := ⟨j.val / 2, by have hj := j.isLt; omega⟩
+    have hidx : unequalOddEmbed hL i = j := by
+      apply Fin.ext
+      simp [unequalOddEmbed, i]
+      omega
+    rw [← hidx]
+    dsimp [unequalParityFront]
+    change (⟨e.comparators ++ o.comparators⟩ : ComparatorNetwork (2 * L - 1)).exec
+      v (unequalOddEmbed hL i) = _
+    rw [ComparatorNetwork.exec_append, ComparatorNetwork.scatterEmbed_exec_inside]
+    rw [unequalInterleave_oddEmbed]
+    apply congrArg (fun w : Fin (L - 1) → α => netO.exec w i)
+    funext q
+    exact ComparatorNetwork.scatterEmbed_exec_outside netE (2 * L - 1)
+      (unequalEvenEmbed hL) v (unequalOddEmbed hL q) (unequalOdd_not_even hL q)
+private theorem unequalParityFront_depth_le {L : Nat} (hL : 2 ≤ L)
+    (netE : ComparatorNetwork L) (netO : ComparatorNetwork (L - 1)) :
+    (unequalParityFront hL netE netO).depth ≤ max netE.depth netO.depth := by
+  let e := netE.scatterEmbed (2 * L - 1) (unequalEvenEmbed hL)
+  let o := netO.scatterEmbed (2 * L - 1) (unequalOddEmbed hL)
+  have he : e.depth ≤ max netE.depth netO.depth :=
+    (depth_scatterEmbed_le _ _ _).trans (le_max_left _ _)
+  have ho : o.depth ≤ max netE.depth netO.depth :=
+    (depth_scatterEmbed_le _ _ _).trans (le_max_right _ _)
+  have hflat := depth_flatMap_disjoint [false, true]
+    (fun b => if b then o.comparators else e.comparators) (max netE.depth netO.depth)
+    (by intro b hb; simp only [List.mem_cons, List.mem_nil_iff, or_false] at hb
+        rcases hb with rfl | rfl <;> simp [ho, he])
+    (by
+      refine List.Pairwise.cons ?_ (List.pairwise_singleton _ _)
+      intro b hb
+      have hb' : b = true := by simpa using hb
+      subst b
+      intro c hc d hd
+      dsimp only [e, o, ComparatorNetwork.scatterEmbed] at hc hd
+      rcases List.mem_map.mp hc with ⟨ce, -, hce⟩
+      rcases List.mem_map.mp hd with ⟨cd, -, hcd⟩
+      have hci : unequalEvenEmbed hL ce.i = c.i := congrArg Comparator.i hce
+      have hcj : unequalEvenEmbed hL ce.j = c.j := congrArg Comparator.j hce
+      have hdi : unequalOddEmbed hL cd.i = d.i := congrArg Comparator.i hcd
+      have hdj : unequalOddEmbed hL cd.j = d.j := congrArg Comparator.j hcd
+      have h1 := unequalEven_not_odd hL ce.i
+      have h2 := unequalEven_not_odd hL ce.i
+      have h3 := unequalEven_not_odd hL ce.j
+      have h4 := unequalEven_not_odd hL ce.j
+      change (c.i ≠ d.i ∧ c.i ≠ d.j) ∧ (c.j ≠ d.i ∧ c.j ≠ d.j)
+      exact ⟨⟨fun h => h1 ⟨cd.i, hdi.trans (h.symm.trans hci.symm)⟩,
+        fun h => h2 ⟨cd.j, hdj.trans (h.symm.trans hci.symm)⟩⟩,
+        ⟨fun h => h3 ⟨cd.i, hdi.trans (h.symm.trans hcj.symm)⟩,
+         fun h => h4 ⟨cd.j, hdj.trans (h.symm.trans hcj.symm)⟩⟩⟩)
+  simpa [unequalParityFront, e, o] using hflat
+
+private def unequalParityMergeNet {L : Nat} (hL : 2 ≤ L)
+    (netE : ComparatorNetwork L) (netO : ComparatorNetwork (L - 1)) :
+    ComparatorNetwork (2 * L - 1) :=
+  ⟨(unequalParityFront hL netE netO).comparators ++
+    (unequalCorrectionLayer hL).comparators⟩
+
+private theorem unequalParityMergeNet_exec_eq {L : Nat} (hL : 2 ≤ L)
+    {α : Type} [LinearOrder α] (netE : ComparatorNetwork L)
+    (netO : ComparatorNetwork (L - 1)) (v : Fin (2 * L - 1) → α) :
+    (unequalParityMergeNet hL netE netO).exec v =
+      (unequalCorrectionLayer hL).exec
+        (unequalInterleave (netE.exec (fun i => v (unequalEvenEmbed hL i)))
+          (netO.exec (fun i => v (unequalOddEmbed hL i)))) := by
+  have h := ComparatorNetwork.exec_append (unequalParityFront hL netE netO)
+    (unequalCorrectionLayer hL) v
+  simpa [unequalParityMergeNet, unequalParityFront_exec_eq_interleave] using h
+
+private theorem unequalParityMergeNet_depth_le {L : Nat} (hL : 2 ≤ L)
+    (netE : ComparatorNetwork L) (netO : ComparatorNetwork (L - 1)) :
+    (unequalParityMergeNet hL netE netO).depth ≤ max netE.depth netO.depth + 1 := by
+  have happend := ComparatorNetwork.depth_append_le (unequalParityFront hL netE netO)
+    (unequalCorrectionLayer hL)
+  simpa [unequalParityMergeNet] using happend.trans
+    (add_le_add (unequalParityFront_depth_le hL netE netO)
+      (unequalCorrectionLayer_depth_le hL))
+
+theorem unequalParityMergeNet_sorts_of_profile {L : Nat} (hL : 2 ≤ L)
+    {α : Type} [LinearOrder α] (netE : ComparatorNetwork L)
+    (netO : ComparatorNetwork (L - 1)) (v : Fin (2 * L - 1) → α)
+    (hE : Monotone (netE.exec (fun i => v (unequalEvenEmbed hL i))))
+    (hO : Monotone (netO.exec (fun i => v (unequalOddEmbed hL i))))
+    (hEcount : ∀ t, unequalThresholdCount
+      (netE.exec (fun i => v (unequalEvenEmbed hL i))) t ≤
+      unequalThresholdCount (netO.exec (fun i => v (unequalOddEmbed hL i))) t + 1)
+    (hOcount : ∀ t, unequalThresholdCount
+      (netO.exec (fun i => v (unequalOddEmbed hL i))) t ≤
+      unequalThresholdCount (netE.exec (fun i => v (unequalEvenEmbed hL i))) t + 1) :
+    Monotone ((unequalParityMergeNet hL netE netO).exec v) := by
+  rw [unequalParityMergeNet_exec_eq, unequalCorrectionLayer_exec_eq]
+  exact unequalCorrectedInterleave_sorted hL _ _ hE hO
+    (unequal_cross_bounds_of_threshold_gap hL _ _ hE hO hEcount hOcount).1
+    (unequal_cross_bounds_of_threshold_gap hL _ _ hE hO hEcount hOcount).2
+
+private theorem unequalEvenLane32_eq {α : Type} [LinearOrder α]
+    (A : Fin 32 → α) (B : Fin 31 → α) :
+    (fun i : Fin 32 => Fin.append (m := 32) (n := 31) A B
+      (unequalEvenEmbed (by omega : 2 ≤ 32) i)) =
+      Fin.append (fun i : Fin 16 => A (unequalEvenIndex i))
+        (fun i : Fin 16 => B (unequalEvenIndexOddLength i)) := by
+  funext i
+  by_cases hi : i.val < 16
+  · let j : Fin 16 := ⟨i.val, hi⟩
+    have hidx : i = Fin.castAdd 16 j := by apply Fin.ext; rfl
+    rw [hidx]
+    have hw : unequalEvenEmbed (by omega : 2 ≤ 32) (Fin.castAdd 16 j) =
+        Fin.castAdd 31 (unequalEvenIndex j) := by
+      apply Fin.ext
+      simp [unequalEvenEmbed, unequalEvenIndex]
+    rw [hw, Fin.append_left]
+    simp
+  · let j : Fin 16 := ⟨i.val - 16, by have := i.isLt; omega⟩
+    have hidx : i = Fin.natAdd 16 j := by apply Fin.ext; simp [j]; omega
+    rw [hidx]
+    have hw : unequalEvenEmbed (by omega : 2 ≤ 32) (Fin.natAdd 16 j) =
+        Fin.natAdd 32 (unequalEvenIndexOddLength j) := by
+      apply Fin.ext
+      simp [unequalEvenEmbed, unequalEvenIndexOddLength, j]
+      omega
+    rw [hw, Fin.append_right]
+    simpa using (Fin.append_right
+      (fun q : Fin 16 => A (unequalEvenIndex q))
+      (fun q : Fin 16 => B (unequalEvenIndexOddLength q)) j).symm
+
+private theorem unequalOddLane31_eq {α : Type} [LinearOrder α]
+    (A : Fin 32 → α) (B : Fin 31 → α) :
+    (fun i : Fin 31 => Fin.append (m := 32) (n := 31) A B
+      (unequalOddEmbed (by omega : 2 ≤ 32) i)) =
+      Fin.append (fun i : Fin 16 => A (unequalOddIndex i))
+        (fun i : Fin 15 => B (unequalOddIndexOddLength (m := 16) i)) := by
+  funext i
+  by_cases hi : i.val < 16
+  · let j : Fin 16 := ⟨i.val, hi⟩
+    have hidx : i = Fin.castAdd 15 j := by apply Fin.ext; rfl
+    rw [hidx]
+    have hw : unequalOddEmbed (by omega : 2 ≤ 32) (Fin.castAdd 15 j) =
+        Fin.castAdd 31 (unequalOddIndex j) := by
+      apply Fin.ext
+      simp [unequalOddEmbed, unequalOddIndex]
+    rw [hw, Fin.append_left]
+    simp
+  · let j : Fin 15 := ⟨i.val - 16, by have := i.isLt; omega⟩
+    have hidx : i = Fin.natAdd 16 j := by apply Fin.ext; simp [j]; omega
+    rw [hidx]
+    have hw : unequalOddEmbed (by omega : 2 ≤ 32) (Fin.natAdd 16 j) =
+        Fin.natAdd 32 (unequalOddIndexOddLength (m := 16) j) := by
+      apply Fin.ext
+      simp [unequalOddEmbed, unequalOddIndexOddLength, j]
+      omega
+    rw [hw, Fin.append_right]
+    simpa using (Fin.append_right
+      (fun q : Fin 16 => A (unequalOddIndex q))
+      (fun q : Fin 15 => B (unequalOddIndexOddLength (m := 16) q)) j).symm
+
+/-- The 32+31 odd/even recursive step is now a concrete 63-wire network
+theorem, with the source-run parity pieces identified on their physical wires. -/
+theorem unequalMerge32_31_sorts_two_runs {α : Type} [LinearOrder α]
+    (netE : ComparatorNetwork 32) (netO : ComparatorNetwork 31)
+    (A : Fin 32 → α) (B : Fin 31 → α)
+    (hA : Monotone A) (hB : Monotone B)
+    (hE : Monotone (netE.exec (Fin.append
+      (fun i : Fin 16 => A (unequalEvenIndex i))
+      (fun i : Fin 16 => B (unequalEvenIndexOddLength i)))))
+    (hO : Monotone (netO.exec (Fin.append
+      (fun i : Fin 16 => A (unequalOddIndex i))
+      (fun i : Fin 15 => B (unequalOddIndexOddLength (m := 16) i))))) :
+    Monotone ((unequalParityMergeNet (by omega : 2 ≤ 32) netE netO).exec
+      (Fin.append (m := 32) (n := 31) A B)) := by
+  have hsorted := unequalParityMerge_step_sorts (m := 16) (by omega) A B hA hB
+    netE netO hE hO
+  rw [unequalParityMergeNet_exec_eq]
+  rw [unequalEvenLane32_eq, unequalOddLane31_eq]
+  simpa using hsorted
+
+private theorem unequalEvenLane16_eq {α : Type} [LinearOrder α]
+    (A : Fin 16 → α) (B : Fin 15 → α) :
+    (fun i : Fin 16 => Fin.append (m := 16) (n := 15) A B
+      (unequalEvenEmbed (by omega : 2 ≤ 16) i)) =
+      Fin.append (fun i : Fin 8 => A (unequalEvenIndex i))
+        (fun i : Fin 8 => B (unequalEvenIndexOddLength (m := 8) i)) := by
+  funext i
+  by_cases hi : i.val < 8
+  · let j : Fin 8 := ⟨i.val, hi⟩
+    have hidx : i = Fin.castAdd 8 j := by apply Fin.ext; rfl
+    rw [hidx]
+    have hw : unequalEvenEmbed (by omega : 2 ≤ 16) (Fin.castAdd 8 j) =
+        Fin.castAdd 15 (unequalEvenIndex j) := by
+      apply Fin.ext
+      simp [unequalEvenEmbed, unequalEvenIndex]
+    rw [hw, Fin.append_left]
+    simp
+  · let j : Fin 8 := ⟨i.val - 8, by have := i.isLt; omega⟩
+    have hidx : i = Fin.natAdd 8 j := by apply Fin.ext; simp [j]; omega
+    rw [hidx]
+    have hw : unequalEvenEmbed (by omega : 2 ≤ 16) (Fin.natAdd 8 j) =
+        Fin.natAdd 16 (unequalEvenIndexOddLength (m := 8) j) := by
+      apply Fin.ext
+      simp [unequalEvenEmbed, unequalEvenIndexOddLength, j]
+      omega
+    rw [hw, Fin.append_right]
+    simpa using (Fin.append_right
+      (fun q : Fin 8 => A (unequalEvenIndex q))
+      (fun q : Fin 8 => B (unequalEvenIndexOddLength (m := 8) q)) j).symm
+
+private theorem unequalOddLane15_eq {α : Type} [LinearOrder α]
+    (A : Fin 16 → α) (B : Fin 15 → α) :
+    (fun i : Fin 15 => Fin.append (m := 16) (n := 15) A B
+      (unequalOddEmbed (by omega : 2 ≤ 16) i)) =
+      Fin.append (fun i : Fin 8 => A (unequalOddIndex i))
+        (fun i : Fin 7 => B (unequalOddIndexOddLength (m := 8) i)) := by
+  funext i
+  by_cases hi : i.val < 8
+  · let j : Fin 8 := ⟨i.val, hi⟩
+    have hidx : i = Fin.castAdd 7 j := by apply Fin.ext; rfl
+    rw [hidx]
+    have hw : unequalOddEmbed (by omega : 2 ≤ 16) (Fin.castAdd 7 j) =
+        Fin.castAdd 15 (unequalOddIndex j) := by
+      apply Fin.ext
+      simp [unequalOddEmbed, unequalOddIndex]
+    rw [hw, Fin.append_left]
+    simp
+  · let j : Fin 7 := ⟨i.val - 8, by have := i.isLt; omega⟩
+    have hidx : i = Fin.natAdd 8 j := by apply Fin.ext; simp [j]; omega
+    rw [hidx]
+    have hw : unequalOddEmbed (by omega : 2 ≤ 16) (Fin.natAdd 8 j) =
+        Fin.natAdd 16 (unequalOddIndexOddLength (m := 8) j) := by
+      apply Fin.ext
+      simp [unequalOddEmbed, unequalOddIndexOddLength, j]
+      omega
+    rw [hw, Fin.append_right]
+    simpa using (Fin.append_right
+      (fun q : Fin 8 => A (unequalOddIndex q))
+      (fun q : Fin 7 => B (unequalOddIndexOddLength (m := 8) q)) j).symm
+
+theorem unequalMerge16_15_sorts_two_runs {α : Type} [LinearOrder α]
+    (netE : ComparatorNetwork 16) (netO : ComparatorNetwork 15)
+    (A : Fin 16 → α) (B : Fin 15 → α)
+    (hA : Monotone A) (hB : Monotone B)
+    (hE : Monotone (netE.exec (Fin.append
+      (fun i : Fin 8 => A (unequalEvenIndex i))
+      (fun i : Fin 8 => B (unequalEvenIndexOddLength (m := 8) i)))))
+    (hO : Monotone (netO.exec (Fin.append
+      (fun i : Fin 8 => A (unequalOddIndex i))
+      (fun i : Fin 7 => B (unequalOddIndexOddLength (m := 8) i))))) :
+    Monotone ((unequalParityMergeNet (by omega : 2 ≤ 16) netE netO).exec
+      (Fin.append (m := 16) (n := 15) A B)) := by
+  have hsorted := unequalParityMerge_step_sorts (m := 8) (by omega) A B hA hB
+    netE netO hE hO
+  rw [unequalParityMergeNet_exec_eq]
+  rw [unequalEvenLane16_eq, unequalOddLane15_eq]
+  simpa using hsorted
+
+def unequalMerge1Net : ComparatorNetwork 1 := ⟨[]⟩
+
+def unequalMerge3Net : ComparatorNetwork 3 :=
+  unequalParityMergeNet (by omega : 2 ≤ 2) (oddEvenMergeNet 1) unequalMerge1Net
+
+def unequalMerge7Net : ComparatorNetwork 7 :=
+  unequalParityMergeNet (by omega : 2 ≤ 4) (oddEvenMergeNet 2) unequalMerge3Net
+
+def unequalMerge15Net : ComparatorNetwork 15 :=
+  unequalParityMergeNet (by omega : 2 ≤ 8) (oddEvenMergeNet 3) unequalMerge7Net
+
+def unequalMerge31Net : ComparatorNetwork 31 :=
+  unequalParityMergeNet (by omega : 2 ≤ 16) (oddEvenMergeNet 4) unequalMerge15Net
+
+def unequalMerge63Net : ComparatorNetwork 63 :=
+  unequalParityMergeNet (by omega : 2 ≤ 32) (oddEvenMergeNet 5) unequalMerge31Net
+
+private theorem unequalEvenIndex_mono {m : Nat} :
+    Monotone (unequalEvenIndex : Fin m → Fin (2 * m)) := by
+  intro i j hij
+  apply Fin.mk_le_mk.mpr
+  have h : i.val ≤ j.val := Fin.mk_le_mk.mp hij
+  change 2 * i.val ≤ 2 * j.val
+  omega
+
+private theorem unequalOddIndex_mono {m : Nat} :
+    Monotone (unequalOddIndex : Fin m → Fin (2 * m)) := by
+  intro i j hij
+  apply Fin.mk_le_mk.mpr
+  have h : i.val ≤ j.val := Fin.mk_le_mk.mp hij
+  change 2 * i.val + 1 ≤ 2 * j.val + 1
+  omega
+
+private theorem unequalEvenIndexOddLength_mono {m : Nat} :
+    Monotone (unequalEvenIndexOddLength : Fin m → Fin (2 * m - 1)) := by
+  intro i j hij
+  apply Fin.mk_le_mk.mpr
+  have h : i.val ≤ j.val := Fin.mk_le_mk.mp hij
+  change 2 * i.val ≤ 2 * j.val
+  omega
+
+private theorem unequalOddIndexOddLength_mono {m : Nat} :
+    Monotone (unequalOddIndexOddLength : Fin (m - 1) → Fin (2 * m - 1)) := by
+  intro i j hij
+  apply Fin.mk_le_mk.mpr
+  have h : i.val ≤ j.val := Fin.mk_le_mk.mp hij
+  change 2 * i.val + 1 ≤ 2 * j.val + 1
+  omega
+
+private theorem unequalEvenLane8_eq {α : Type} [LinearOrder α]
+    (A : Fin 8 → α) (B : Fin 7 → α) :
+    (fun i : Fin 8 => Fin.append (m := 8) (n := 7) A B
+      (unequalEvenEmbed (by omega : 2 ≤ 8) i)) =
+      Fin.append (fun i : Fin 4 => A (unequalEvenIndex i))
+        (fun i : Fin 4 => B (unequalEvenIndexOddLength (m := 4) i)) := by
+  funext i
+  by_cases hi : i.val < 4
+  · let j : Fin 4 := ⟨i.val, hi⟩
+    have hidx : i = Fin.castAdd 4 j := by apply Fin.ext; rfl
+    rw [hidx]
+    have hw : unequalEvenEmbed (by omega : 2 ≤ 8) (Fin.castAdd 4 j) =
+        Fin.castAdd 7 (unequalEvenIndex j) := by
+      apply Fin.ext
+      simp [unequalEvenEmbed, unequalEvenIndex]
+    rw [hw, Fin.append_left]
+    simp
+  · let j : Fin 4 := ⟨i.val - 4, by have := i.isLt; omega⟩
+    have hidx : i = Fin.natAdd 4 j := by apply Fin.ext; simp [j]; omega
+    rw [hidx]
+    have hw : unequalEvenEmbed (by omega : 2 ≤ 8) (Fin.natAdd 4 j) =
+        Fin.natAdd 8 (unequalEvenIndexOddLength (m := 4) j) := by
+      apply Fin.ext
+      simp [unequalEvenEmbed, unequalEvenIndexOddLength, j]
+      omega
+    rw [hw, Fin.append_right]
+    simpa using (Fin.append_right
+      (fun q : Fin 4 => A (unequalEvenIndex q))
+      (fun q : Fin 4 => B (unequalEvenIndexOddLength (m := 4) q)) j).symm
+
+private theorem unequalOddLane7_eq {α : Type} [LinearOrder α]
+    (A : Fin 8 → α) (B : Fin 7 → α) :
+    (fun i : Fin 7 => Fin.append (m := 8) (n := 7) A B
+      (unequalOddEmbed (by omega : 2 ≤ 8) i)) =
+      Fin.append (fun i : Fin 4 => A (unequalOddIndex i))
+        (fun i : Fin 3 => B (unequalOddIndexOddLength (m := 4) i)) := by
+  funext i
+  by_cases hi : i.val < 4
+  · let j : Fin 4 := ⟨i.val, hi⟩
+    have hidx : i = Fin.castAdd 3 j := by apply Fin.ext; rfl
+    rw [hidx]
+    have hw : unequalOddEmbed (by omega : 2 ≤ 8) (Fin.castAdd 3 j) =
+        Fin.castAdd 7 (unequalOddIndex j) := by
+      apply Fin.ext
+      simp [unequalOddEmbed, unequalOddIndex]
+    rw [hw, Fin.append_left]
+    simp
+  · let j : Fin 3 := ⟨i.val - 4, by have := i.isLt; omega⟩
+    have hidx : i = Fin.natAdd 4 j := by apply Fin.ext; simp [j]; omega
+    rw [hidx]
+    have hw : unequalOddEmbed (by omega : 2 ≤ 8) (Fin.natAdd 4 j) =
+        Fin.natAdd 8 (unequalOddIndexOddLength (m := 4) j) := by
+      apply Fin.ext
+      simp [unequalOddEmbed, unequalOddIndexOddLength, j]
+      omega
+    rw [hw, Fin.append_right]
+    simpa using (Fin.append_right
+      (fun q : Fin 4 => A (unequalOddIndex q))
+      (fun q : Fin 3 => B (unequalOddIndexOddLength (m := 4) q)) j).symm
+
+theorem unequalMerge3Net_sorts_two_runs {α : Type} [LinearOrder α]
+    (A : Fin 2 → α) (B : Fin 1 → α) (hA : Monotone A) (hB : Monotone B) :
+    Monotone (unequalMerge3Net.exec (Fin.append (m := 2) (n := 1) A B)) := by
+  have hE : Monotone ((oddEvenMergeNet 1).exec (Fin.append
+      (fun i : Fin 1 => A (unequalEvenIndex i))
+      (fun i : Fin 1 => B (unequalEvenIndexOddLength (m := 1) i)))) := by
+    apply oddEvenMergeNet_sorts_two_runs 0
+    constructor
+    · intro i j hij
+      have hEq : i = j := Fin.ext (by have := Fin.mk_le_mk.mp hij; omega)
+      subst j
+      rfl
+    · intro i j hij
+      have hEq : i = j := Fin.ext (by have := Fin.mk_le_mk.mp hij; omega)
+      subst j
+      rfl
+  have hO : Monotone (unequalMerge1Net.exec (Fin.append
+      (fun i : Fin 1 => A (unequalOddIndex i))
+      (fun i : Fin 0 => B (unequalOddIndexOddLength (m := 1) i)))) := by
+    intro i j hij
+    have hEq : i = j := Fin.ext (by have := Fin.mk_le_mk.mp hij; omega)
+    subst j
+    rfl
+  have hsorted := unequalParityMerge_step_sorts (m := 1) (by omega) A B hA hB
+    (oddEvenMergeNet 1) unequalMerge1Net hE hO
+  have hinputE : (fun i : Fin 2 => Fin.append (m := 2) (n := 1) A B
+      (unequalEvenEmbed (by omega : 2 ≤ 2) i)) = Fin.append
+        (fun i : Fin 1 => A (unequalEvenIndex i))
+        (fun i : Fin 1 => B (unequalEvenIndexOddLength (m := 1) i)) := by
+    funext i
+    fin_cases i <;> simp [unequalEvenEmbed, unequalEvenIndex,
+      unequalEvenIndexOddLength, Fin.append, Fin.addCases]
+  have hinputO : (fun i : Fin 1 => Fin.append (m := 2) (n := 1) A B
+      (unequalOddEmbed (by omega : 2 ≤ 2) i)) = Fin.append
+        (fun i : Fin 1 => A (unequalOddIndex i))
+        (fun i : Fin 0 => B (unequalOddIndexOddLength (m := 1) i)) := by
+    funext i
+    fin_cases i <;> simp [unequalOddEmbed, unequalOddIndex,
+      unequalOddIndexOddLength, Fin.append, Fin.addCases]
+  change Monotone ((unequalParityMergeNet (by omega : 2 ≤ 2)
+    (oddEvenMergeNet 1) unequalMerge1Net).exec (Fin.append A B))
+  rw [unequalParityMergeNet_exec_eq]
+  rw [hinputE, hinputO]
+  simpa [unequalMerge3Net, unequalMerge1Net] using hsorted
+
+theorem unequalMerge7Net_sorts_two_runs {α : Type} [LinearOrder α]
+    (A : Fin 4 → α) (B : Fin 3 → α) (hA : Monotone A) (hB : Monotone B) :
+    Monotone (unequalMerge7Net.exec (Fin.append (m := 4) (n := 3) A B)) := by
+  let AE : Fin 2 → α := fun i => A (unequalEvenIndex i)
+  let BE : Fin 2 → α := fun i => B (unequalEvenIndexOddLength (m := 2) i)
+  let AO : Fin 2 → α := fun i => A (unequalOddIndex i)
+  let BO : Fin 1 → α := fun i => B (unequalOddIndexOddLength (m := 2) i)
+  have hAE : Monotone AE := hA.comp unequalEvenIndex_mono
+  have hBE : Monotone BE := hB.comp unequalEvenIndexOddLength_mono
+  have hAO : Monotone AO := hA.comp unequalOddIndex_mono
+  have hBO : Monotone BO := hB.comp unequalOddIndexOddLength_mono
+  have hE : Monotone ((oddEvenMergeNet 2).exec (Fin.append AE BE)) := by
+    apply oddEvenMergeNet_sorts_two_runs 1
+    constructor
+    · simpa [Fin.append_left] using hAE
+    · change Monotone (fun i : Fin 2 => Fin.append AE BE (Fin.natAdd 2 i))
+      have heq : (fun i : Fin 2 => Fin.append AE BE (Fin.natAdd 2 i)) = BE := by
+        funext i
+        exact Fin.append_right _ _ i
+      rw [heq]
+      exact hBE
+  have hO : Monotone (unequalMerge3Net.exec (Fin.append AO BO)) :=
+    unequalMerge3Net_sorts_two_runs AO BO hAO hBO
+  have hs := unequalParityMerge_step_sorts (m := 2) (by omega) A B hA hB
+    (oddEvenMergeNet 2) unequalMerge3Net hE hO
+  have hinputE : (fun i : Fin 4 => Fin.append (m := 4) (n := 3) A B
+      (unequalEvenEmbed (by omega : 2 ≤ 4) i)) = Fin.append AE BE := by
+    funext i
+    fin_cases i <;> simp [AE, BE, unequalEvenEmbed, unequalEvenIndex,
+      unequalEvenIndexOddLength, Fin.append, Fin.addCases]
+  have hinputO : (fun i : Fin 3 => Fin.append (m := 4) (n := 3) A B
+      (unequalOddEmbed (by omega : 2 ≤ 4) i)) = Fin.append AO BO := by
+    funext i
+    fin_cases i <;> simp [AO, BO, unequalOddEmbed, unequalOddIndex,
+      unequalOddIndexOddLength, Fin.append, Fin.addCases]
+  change Monotone ((unequalParityMergeNet (by omega : 2 ≤ 4)
+    (oddEvenMergeNet 2) unequalMerge3Net).exec (Fin.append A B))
+  rw [unequalParityMergeNet_exec_eq, hinputE, hinputO]
+  simpa [unequalMerge7Net] using hs
+
+theorem unequalMerge15Net_sorts_two_runs {α : Type} [LinearOrder α]
+    (A : Fin 8 → α) (B : Fin 7 → α) (hA : Monotone A) (hB : Monotone B) :
+    Monotone (unequalMerge15Net.exec (Fin.append (m := 8) (n := 7) A B)) := by
+  let AE : Fin 4 → α := fun i => A (unequalEvenIndex i)
+  let BE : Fin 4 → α := fun i => B (unequalEvenIndexOddLength (m := 4) i)
+  let AO : Fin 4 → α := fun i => A (unequalOddIndex i)
+  let BO : Fin 3 → α := fun i => B (unequalOddIndexOddLength (m := 4) i)
+  have hAE : Monotone AE := hA.comp unequalEvenIndex_mono
+  have hBE : Monotone BE := hB.comp unequalEvenIndexOddLength_mono
+  have hAO : Monotone AO := hA.comp unequalOddIndex_mono
+  have hBO : Monotone BO := hB.comp unequalOddIndexOddLength_mono
+  have hE : Monotone ((oddEvenMergeNet 3).exec (Fin.append AE BE)) := by
+    apply oddEvenMergeNet_sorts_two_runs 2
+    constructor
+    · simpa [Fin.append_left] using hAE
+    · change Monotone (fun i : Fin 4 => Fin.append AE BE (Fin.natAdd 4 i))
+      have heq : (fun i : Fin 4 => Fin.append AE BE (Fin.natAdd 4 i)) = BE := by
+        funext i
+        exact Fin.append_right _ _ i
+      rw [heq]
+      exact hBE
+  have hO : Monotone (unequalMerge7Net.exec (Fin.append AO BO)) :=
+    unequalMerge7Net_sorts_two_runs AO BO hAO hBO
+  have hs := unequalParityMerge_step_sorts (m := 4) (by omega) A B hA hB
+    (oddEvenMergeNet 3) unequalMerge7Net hE hO
+  change Monotone ((unequalParityMergeNet (by omega : 2 ≤ 8)
+    (oddEvenMergeNet 3) unequalMerge7Net).exec (Fin.append A B))
+  rw [unequalParityMergeNet_exec_eq, unequalEvenLane8_eq, unequalOddLane7_eq]
+  simpa [unequalMerge15Net] using hs
+
+theorem unequalMerge31Net_sorts_two_runs {α : Type} [LinearOrder α]
+    (A : Fin 16 → α) (B : Fin 15 → α) (hA : Monotone A) (hB : Monotone B) :
+    Monotone (unequalMerge31Net.exec (Fin.append (m := 16) (n := 15) A B)) := by
+  let AE : Fin 8 → α := fun i => A (unequalEvenIndex i)
+  let BE : Fin 8 → α := fun i => B (unequalEvenIndexOddLength (m := 8) i)
+  let AO : Fin 8 → α := fun i => A (unequalOddIndex i)
+  let BO : Fin 7 → α := fun i => B (unequalOddIndexOddLength (m := 8) i)
+  have hAE : Monotone AE := hA.comp unequalEvenIndex_mono
+  have hBE : Monotone BE := hB.comp unequalEvenIndexOddLength_mono
+  have hAO : Monotone AO := hA.comp unequalOddIndex_mono
+  have hBO : Monotone BO := hB.comp unequalOddIndexOddLength_mono
+  have hE : Monotone ((oddEvenMergeNet 4).exec (Fin.append AE BE)) := by
+    apply oddEvenMergeNet_sorts_two_runs 3
+    constructor
+    · simpa [Fin.append_left] using hAE
+    · change Monotone (fun i : Fin 8 => Fin.append AE BE (Fin.natAdd 8 i))
+      have heq : (fun i : Fin 8 => Fin.append AE BE (Fin.natAdd 8 i)) = BE := by
+        funext i
+        exact Fin.append_right _ _ i
+      rw [heq]
+      exact hBE
+  have hO : Monotone (unequalMerge15Net.exec (Fin.append AO BO)) :=
+    unequalMerge15Net_sorts_two_runs AO BO hAO hBO
+  have hs := unequalMerge16_15_sorts_two_runs (oddEvenMergeNet 4)
+    unequalMerge15Net A B hA hB hE hO
+  simpa [unequalMerge31Net] using hs
+
+theorem unequalMerge63Net_sorts_two_runs {α : Type} [LinearOrder α]
+    (A : Fin 32 → α) (B : Fin 31 → α) (hA : Monotone A) (hB : Monotone B) :
+    Monotone (unequalMerge63Net.exec (Fin.append (m := 32) (n := 31) A B)) := by
+  let AE : Fin 16 → α := fun i => A (unequalEvenIndex i)
+  let BE : Fin 16 → α := fun i => B (unequalEvenIndexOddLength (m := 16) i)
+  let AO : Fin 16 → α := fun i => A (unequalOddIndex i)
+  let BO : Fin 15 → α := fun i => B (unequalOddIndexOddLength (m := 16) i)
+  have hAE : Monotone AE := hA.comp unequalEvenIndex_mono
+  have hBE : Monotone BE := hB.comp unequalEvenIndexOddLength_mono
+  have hAO : Monotone AO := hA.comp unequalOddIndex_mono
+  have hBO : Monotone BO := hB.comp unequalOddIndexOddLength_mono
+  have hE : Monotone ((oddEvenMergeNet 5).exec (Fin.append AE BE)) := by
+    apply oddEvenMergeNet_sorts_two_runs 4
+    constructor
+    · simpa [Fin.append_left] using hAE
+    · change Monotone (fun i : Fin 16 => Fin.append AE BE (Fin.natAdd 16 i))
+      have heq : (fun i : Fin 16 => Fin.append AE BE (Fin.natAdd 16 i)) = BE := by
+        funext i
+        exact Fin.append_right _ _ i
+      rw [heq]
+      exact hBE
+  have hO : Monotone (unequalMerge31Net.exec (Fin.append AO BO)) :=
+    unequalMerge31Net_sorts_two_runs AO BO hAO hBO
+  have hs := unequalMerge32_31_sorts_two_runs (oddEvenMergeNet 5)
+    unequalMerge31Net A B hA hB hE hO
+  simpa [unequalMerge63Net] using hs
+
+theorem unequalMerge3Net_depth_le : unequalMerge3Net.depth ≤ 2 := by
+  have h := unequalParityMergeNet_depth_le (by omega : 2 ≤ 2)
+    (oddEvenMergeNet 1) unequalMerge1Net
+  simp only [unequalMerge3Net] at h ⊢
+  have he := oddEvenMergeNet_depth_le 1
+  have ho : unequalMerge1Net.depth ≤ 0 := by simp [unequalMerge1Net, ComparatorNetwork.depth]
+  omega
+
+theorem unequalMerge7Net_depth_le : unequalMerge7Net.depth ≤ 3 := by
+  have h := unequalParityMergeNet_depth_le (by omega : 2 ≤ 4)
+    (oddEvenMergeNet 2) unequalMerge3Net
+  simp only [unequalMerge7Net] at h ⊢
+  have he := oddEvenMergeNet_depth_le 2
+  have ho := unequalMerge3Net_depth_le
+  omega
+
+theorem unequalMerge15Net_depth_le : unequalMerge15Net.depth ≤ 4 := by
+  have h := unequalParityMergeNet_depth_le (by omega : 2 ≤ 8)
+    (oddEvenMergeNet 3) unequalMerge7Net
+  simp only [unequalMerge15Net] at h ⊢
+  have he := oddEvenMergeNet_depth_le 3
+  have ho := unequalMerge7Net_depth_le
+  omega
+
+theorem unequalMerge31Net_depth_le : unequalMerge31Net.depth ≤ 5 := by
+  have h := unequalParityMergeNet_depth_le (by omega : 2 ≤ 16)
+    (oddEvenMergeNet 4) unequalMerge15Net
+  simp only [unequalMerge31Net] at h ⊢
+  have he := oddEvenMergeNet_depth_le 4
+  have ho := unequalMerge15Net_depth_le
+  omega
+
+theorem unequalMerge63Net_depth_le : unequalMerge63Net.depth ≤ 6 := by
+  have h := unequalParityMergeNet_depth_le (by omega : 2 ≤ 32)
+    (oddEvenMergeNet 5) unequalMerge31Net
+  simp only [unequalMerge63Net] at h ⊢
+  have he := oddEvenMergeNet_depth_le 5
+  have ho := unequalMerge31Net_depth_le
+  omega
+
 end Chvatal.PacketAlignment

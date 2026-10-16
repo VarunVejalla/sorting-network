@@ -453,3 +453,17 @@ improvement. The novel remaining work is to replace that standard lane choice
 with the proposed unequal 32+31 core, connect it to the five tail levels, and
 prove the resulting global depth recurrence. No improved limsup constant
 follows yet.
+
+Unequal recursive correctness progress: the concrete 3-, 7-, 15-, 31-, and
+63-wire networks now each sort arbitrary sorted source runs of lengths
+`2^k` and `2^k - 1`. The 7- and 15-wire steps use standard equal-run merges
+on their even lanes and the already proved smaller unequal network on their
+odd lanes. The 31- and 63-wire steps reuse the physical-lane transport
+lemmas for 16+15 and 32+31. The existing depth chain gives respective upper
+bounds 2, 3, 4, 5, and 6. New axiom guards cover the concrete sorting theorems
+and 63-wire depth. This closes the recursive correctness proof for the
+32+31 merge core, but not its integration into the 64-wire global construction
+or the five tail levels, and it yields no improved coefficient by itself. A
+parameter-generic physical lane identity remains desirable; the first attempt
+needed explicit casts between different `Fin` length expressions and was
+removed after its focused check exposed type mismatches.
