@@ -301,6 +301,86 @@ theorem unequalSourceParityThresholdGap {m : Nat} {α : Type} [LinearOrder α]
   · have hsum := Nat.add_le_add hAhi' hBlo
     omega
 
+/-- For two even-length sorted source runs, their even and odd projections
+have equal length. The even lane's threshold count is never larger, and the
+odd lane can exceed it by at most two (one unmatched terminal odd position
+per source run). This is the profile invariant for the outer even/even
+stages of the 63-run tail. -/
+theorem evenSourceParityThresholdGap {m n : Nat} {α : Type} [LinearOrder α]
+    (A : Fin (2 * m) → α) (B : Fin (2 * n) → α)
+    (hA : Monotone A) (hB : Monotone B) :
+    ∀ t : α,
+      unequalThresholdCount
+        (Fin.append (fun i : Fin m => A (unequalEvenIndex i))
+          (fun i : Fin n => B (unequalEvenIndex i))) t ≤
+          unequalThresholdCount
+            (Fin.append (fun i : Fin m => A (unequalOddIndex i))
+              (fun i : Fin n => B (unequalOddIndex i))) t ∧
+      unequalThresholdCount
+        (Fin.append (fun i : Fin m => A (unequalOddIndex i))
+          (fun i : Fin n => B (unequalOddIndex i))) t ≤
+          unequalThresholdCount
+            (Fin.append (fun i : Fin m => A (unequalEvenIndex i))
+              (fun i : Fin n => B (unequalEvenIndex i))) t + 2 := by
+  intro t
+  let a : Fin (2 * m) → Bool := fun i => decide (t ≤ A i)
+  let b : Fin (2 * n) → Bool := fun i => decide (t ≤ B i)
+  have ha : Monotone a := by
+    intro i j hij
+    by_cases hi : t ≤ A i
+    · have hj : t ≤ A j := hi.trans (hA hij)
+      simp [a, hi, hj]
+    · simp [a, hi]
+  have hb : Monotone b := by
+    intro i j hij
+    by_cases hi : t ≤ B i
+    · have hj : t ≤ B j := hi.trans (hB hij)
+      simp [b, hi, hj]
+    · simp [b, hi]
+  have hAlo := monotone_even_count_le_odd a ha
+  have hAhi := monotone_odd_count_le_even_add_one a ha
+  have hBlo := monotone_even_count_le_odd b hb
+  have hBhi := monotone_odd_count_le_even_add_one b hb
+  have hconv (f : Fin (m + n) → α) :
+      unequalThresholdCount f t = boolTrueCount (fun i => decide (t ≤ f i)) := by
+    simp [unequalThresholdCount, boolTrueCount]
+  have hgapE := hconv (Fin.append
+    (fun i : Fin m => A (unequalEvenIndex i))
+    (fun i : Fin n => B (unequalEvenIndex i)))
+  have hgapO := hconv (Fin.append
+    (fun i : Fin m => A (unequalOddIndex i))
+    (fun i : Fin n => B (unequalOddIndex i)))
+  rw [hgapE, hgapO, decide_threshold_append, decide_threshold_append,
+    unequalBoolCount_append, unequalBoolCount_append]
+  have hAlo' : boolTrueCount (fun i : Fin m => a (unequalEvenIndex i)) ≤
+      boolTrueCount (fun i : Fin m => a (unequalOddIndex i)) := by
+    change boolTrueCount (fun i : Fin m => a (evenWire m i)) ≤ _
+    exact hAlo
+  have hAhi' : boolTrueCount (fun i : Fin m => a (unequalOddIndex i)) ≤
+      boolTrueCount (fun i : Fin m => a (unequalEvenIndex i)) + 1 := by
+    change boolTrueCount (fun i : Fin m => a (oddWire m i)) ≤ _
+    exact hAhi
+  have hBlo' : boolTrueCount (fun i : Fin n => b (unequalEvenIndex i)) ≤
+      boolTrueCount (fun i : Fin n => b (unequalOddIndex i)) := by
+    change boolTrueCount (fun i : Fin n => b (evenWire n i)) ≤ _
+    exact hBlo
+  have hBhi' : boolTrueCount (fun i : Fin n => b (unequalOddIndex i)) ≤
+      boolTrueCount (fun i : Fin n => b (unequalEvenIndex i)) + 1 := by
+    change boolTrueCount (fun i : Fin n => b (oddWire n i)) ≤ _
+    exact hBhi
+  change
+    boolTrueCount (fun i : Fin m => a (unequalEvenIndex i)) +
+      boolTrueCount (fun i : Fin n => b (unequalEvenIndex i)) ≤
+        boolTrueCount (fun i : Fin m => a (unequalOddIndex i)) +
+          boolTrueCount (fun i : Fin n => b (unequalOddIndex i)) ∧
+    boolTrueCount (fun i : Fin m => a (unequalOddIndex i)) +
+      boolTrueCount (fun i : Fin n => b (unequalOddIndex i)) ≤
+        boolTrueCount (fun i : Fin m => a (unequalEvenIndex i)) +
+          boolTrueCount (fun i : Fin n => b (unequalEvenIndex i)) + 2
+  exact ⟨Nat.add_le_add hAlo' hBlo', by
+    have hsum := Nat.add_le_add hAhi' hBhi'
+    omega⟩
+
 /-- Comparator networks preserve the number of entries above every threshold.
 This is the profile-level form of the fact that a comparator only permutes
 its input values. -/
@@ -491,6 +571,63 @@ private theorem unequalThresholdCount_upper {N : Nat} {α : Type}
     omega
   have hcard := Fintype.card_le_of_injective emb hemb
   simpa [unequalThresholdCount] using hcard
+
+/-- For equal-length sorted profiles, the asymmetric threshold-count bounds
+`count(E) ≤ count(O) ≤ count(E)+2` imply exactly the cross-rank inequalities
+needed by one odd-even correction layer. -/
+theorem equal_cross_bounds_of_threshold_gap {L : Nat} {α : Type}
+    [LinearOrder α] (E O : Fin L → α)
+    (hE : Monotone E) (hO : Monotone O)
+    (hEcount : ∀ t, unequalThresholdCount E t ≤ unequalThresholdCount O t)
+    (hOcount : ∀ t, unequalThresholdCount O t ≤ unequalThresholdCount E t + 2) :
+    (∀ i : Fin L, E i ≤ O i) ∧
+    (∀ i : Fin L, ∀ hi : i.val + 2 < L, O i ≤ E ⟨i.val + 2, hi⟩) := by
+  constructor
+  · intro i
+    by_contra hnot
+    have hlt : O i < E i := lt_of_not_ge hnot
+    let t := E i
+    have hElower := unequalThresholdCount_lower E hE i t (by simp [t])
+    have hOupper := unequalThresholdCount_upper O hO i t (by simp [t, hlt])
+    have hcnt := hEcount t
+    omega
+  · intro i hi
+    by_contra hnot
+    have hlt : E ⟨i.val + 2, hi⟩ < O i := lt_of_not_ge hnot
+    let t := O i
+    have hOlower := unequalThresholdCount_lower O hO i t (by simp [t])
+    have hEupper := unequalThresholdCount_upper E hE ⟨i.val + 2, hi⟩ t
+      (by simp [t, hlt])
+    have hEupper' : unequalThresholdCount E t ≤ L - (i.val + 3) := by
+      simpa using hEupper
+    have hcnt := hOcount t
+    omega
+
+/-- Independent lane networks preserve the asymmetric `0/2` profile gap of
+two even source runs. -/
+private def evenEvenParityLane {m n : Nat} {α : Type}
+    (A : Fin (2 * m) → α) (B : Fin (2 * n) → α) : Fin (m + n) → α :=
+  Fin.append (fun i : Fin m => A (unequalEvenIndex i))
+    (fun i : Fin n => B (unequalEvenIndex i))
+
+private def oddEvenParityLane {m n : Nat} {α : Type}
+    (A : Fin (2 * m) → α) (B : Fin (2 * n) → α) : Fin (m + n) → α :=
+  Fin.append (fun i : Fin m => A (unequalOddIndex i))
+    (fun i : Fin n => B (unequalOddIndex i))
+
+theorem evenSourceParityThresholdGap_exec {m n : Nat} {α : Type}
+    [LinearOrder α] (A : Fin (2 * m) → α) (B : Fin (2 * n) → α)
+    (hA : Monotone A) (hB : Monotone B)
+    (netE netO : ComparatorNetwork (m + n)) :
+    ∀ t : α,
+      unequalThresholdCount (netE.exec (evenEvenParityLane A B)) t ≤
+        unequalThresholdCount (netO.exec (oddEvenParityLane A B)) t ∧
+      unequalThresholdCount (netO.exec (oddEvenParityLane A B)) t ≤
+        unequalThresholdCount (netE.exec (evenEvenParityLane A B)) t + 2 := by
+  intro t
+  rw [unequalThresholdCount_exec, unequalThresholdCount_exec]
+  simpa [evenEvenParityLane, oddEvenParityLane] using
+    (evenSourceParityThresholdGap A B hA hB t)
 
 /-- A threshold-count gap of one on both sides gives the two cross-rank
 inequalities required by the unequal correction layer. -/

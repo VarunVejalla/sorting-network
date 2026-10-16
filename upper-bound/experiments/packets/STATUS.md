@@ -408,3 +408,13 @@ the axiom guard. Thus the mathematical induction step is formalized. The
 remaining work is to define and verify the recursively embedded networks
 (including their parity-wire placements), establish their base cases, and
 derive the `q+7` scheduled depth bound for the five tail levels.
+
+Outer-level profile progress: `evenSourceParityThresholdGap` proves that for
+two even sorted runs, the even-lane threshold count is at most the odd-lane
+count, while the odd-lane excess is at most two. This is the right asymmetric
+invariant for the repeated even/even splits above the 32+31 core;
+`evenSourceParityThresholdGap_exec` transports it through arbitrary lane
+networks, and `equal_cross_bounds_of_threshold_gap` turns it into the same-rank
+and two-rank inequalities for a one-layer equal-lane correction. These results
+are axiom-guarded. The remaining construction gap is to formalize the general
+even-size correction network and combine it recursively with the 32+31 core.

@@ -1056,3 +1056,15 @@ import PacketUnequalMerge
 /-- info: 'Chvatal.PacketAlignment.unequalParityMerge_step_sorts' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.unequalParityMerge_step_sorts
+
+/-- info: 'Chvatal.PacketAlignment.evenSourceParityThresholdGap' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.evenSourceParityThresholdGap
+
+/-- info: 'Chvatal.PacketAlignment.equal_cross_bounds_of_threshold_gap' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.equal_cross_bounds_of_threshold_gap
+
+/-- info: 'Chvatal.PacketAlignment.evenSourceParityThresholdGap_exec' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.evenSourceParityThresholdGap_exec
