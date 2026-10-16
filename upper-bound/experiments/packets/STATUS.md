@@ -529,12 +529,30 @@ invariant through this merge stage.
 The generic `PacketMergeTree.scatter_sorts` theorem transports any checked
 merge tree through an increasing wire embedding, and `scatter_depth_le`
 preserves its depth budget. `PacketMergeTreeGen` now gives the stronger
-generalized-comparator interface: `genScatterMergeTree_sorts` works for any
-injective support embedding, and `genScatterMergeTree_depth_eq` preserves the
-tree depth exactly. Its sorted output is now re-packetized as 63 embeddings of
-64 wires: these output supports are pairwise disjoint, cover exactly the input
-support, and each output packet is sorted. These declarations pass the axiom
-guard. The local merge and re-packetization can therefore be applied to
-arbitrary disjoint scheduler supports; remaining integration is constructing
-the actual scheduler groups and proving their 63-run premises from its evolving
-packet invariant.
+generalized-comparator interface: `packetOddTree6GroupNet` takes any 63
+pairwise-disjoint sorted 64-wire embeddings, constructs their logical 4032-wire
+order, and merges them at depth at most 57. `packetOddTree6_runsSorted_of_packets`
+derives the recursive tree precondition directly from the 63 input sortedness
+hypotheses. The sorted output is re-packetized as 63 sorted 64-wire embeddings;
+these supports are pairwise disjoint and cover exactly the input support.
+These composed declarations pass the axiom guard. The remaining integration
+is to construct the actual scheduler's 63-packet groups across receiver and
+matching rounds, carry their evolving support/rank invariant, and close the
+global recurrence.
+
+Update to the preceding next-step note: the merge-tree adapter now accepts the
+63 packets in any supplied logical order and derives the recursive run premise
+from individual packet sortedness. The outstanding group-order obligation is
+therefore scheduler bookkeeping: identifying which 63 packets are processed
+together at each receiver/matching stage and keeping the resulting packet IDs
+compatible with later cuts.
+
+Full 64-packet block closed as well: `packetPowerTree6` merges 64 sorted
+64-wire runs on 4096 wires using odd-even merge costs 7 through 12, for depth
+57. `packetPowerTree6GroupNet` accepts arbitrary pairwise-disjoint sorted
+64-wire embeddings, derives the tree's recursive precondition, and returns 64
+sorted 64-wire output embeddings on the same support. Its sorting, depth, and
+re-packetization interfaces are axiom-guarded. Together with the 63-packet
+remainder network, the local block and exceptional-tail networks required by
+the packet-count factorization are now available. They are not yet composed
+across all groups in an actual receiver or matching stage.

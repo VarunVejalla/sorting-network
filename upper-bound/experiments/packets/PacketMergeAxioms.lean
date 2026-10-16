@@ -1216,14 +1216,74 @@ import PacketMergeTreeGen
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genScatterMergeTree_depth_le
 
-/-- info: 'Chvatal.PacketAlignment.genScatterMergeTreeOutputEmbedding_disjoint' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'Chvatal.PacketAlignment.genScatterMergeTreeOutputEmbedding_disjoint' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genScatterMergeTreeOutputEmbedding_disjoint
 
-/-- info: 'Chvatal.PacketAlignment.genScatterMergeTreeOutputEmbedding_covers' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'Chvatal.PacketAlignment.genScatterMergeTreeOutputEmbedding_covers' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genScatterMergeTreeOutputEmbedding_covers
 
 /-- info: 'Chvatal.PacketAlignment.genScatterMergeTree_outputPacket_sorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genScatterMergeTree_outputPacket_sorted
+
+/-- info: 'Chvatal.PacketAlignment.genPacketGroup63Embedding_mem_packets' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genPacketGroup63Embedding_mem_packets
+
+/-- info: 'Chvatal.PacketAlignment.genPacketGroup63Embedding_covers_packets' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genPacketGroup63Embedding_covers_packets
+
+/-- info: 'Chvatal.PacketAlignment.PacketMergeTree.runsSorted_of_chunks' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.PacketMergeTree.runsSorted_of_chunks
+
+/-- info: 'Chvatal.PacketAlignment.packetOddTree6_runsSorted_of_packets' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetOddTree6_runsSorted_of_packets
+
+/-- info: 'Chvatal.PacketAlignment.packetOddTree6GroupNet_sorts' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetOddTree6GroupNet_sorts
+
+/-- info: 'Chvatal.PacketAlignment.packetOddTree6GroupNet_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetOddTree6GroupNet_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.packetOddTree6GroupNet_outputPacket_sorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetOddTree6GroupNet_outputPacket_sorted
+
+/-- info: 'Chvatal.PacketAlignment.packetPowerTree6_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetPowerTree6_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.packetPowerTree6_runsSorted_of_packets' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetPowerTree6_runsSorted_of_packets
+
+/-- info: 'Chvatal.PacketAlignment.packetPowerTree6GroupNet_sorts' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetPowerTree6GroupNet_sorts
+
+/-- info: 'Chvatal.PacketAlignment.packetPowerTree6GroupNet_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetPowerTree6GroupNet_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.packetPowerTree6GroupNet_outputPacket_sorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetPowerTree6GroupNet_outputPacket_sorted
+
+/-- info: 'Chvatal.PacketAlignment.genPacketGroup64Embedding_mem_packets' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genPacketGroup64Embedding_mem_packets
+
+/-- info: 'Chvatal.PacketAlignment.genPacketGroup64Embedding_covers_packets' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genPacketGroup64Embedding_covers_packets

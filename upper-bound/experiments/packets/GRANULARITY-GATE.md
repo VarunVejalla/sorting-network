@@ -280,13 +280,23 @@ the five unequal joins cost 8 through 12, giving maximum depth 57. The tree's
 sorting and depth theorems pass the axiom guard. `PacketMergeTreeGen.lean`
 transports this network to any injective generalized-comparator support
 embedding, with sorting preserved in the logical support order and depth
-preserved exactly. This supersedes the statements above that the 63-run tail
-network still needs to be constructed. It does not prove that an actual
-scheduler cohort supplies such a grouped 63-run family, nor the resulting
-packet rebinning, next-stage invariant, or global coefficient.
+preserved exactly. `packetOddTree6GroupNet` now takes any 63 pairwise-disjoint
+sorted 64-wire embeddings, derives the tree's recursive sorted-run premise,
+and merges them at depth 57. This supersedes the statements above that the
+63-run tail network or its local re-packetization still need to be constructed.
+It does not prove that an actual scheduler cohort supplies the groups or that
+the next-stage invariant and global coefficient follow.
 
 The generalized output theorem also supplies a legal local re-packetization:
 the sorted 4032-wire support is partitioned into 63 sorted 64-wire embeddings,
 with pairwise disjoint supports and exact preservation of the consumed support.
 This settles re-packetization within each merged block. The unresolved step is
 coordinating distinct blocks with the scheduler's next matching and port cuts.
+
+The complete 64-packet block is now formalized too. `packetPowerTree6` sorts
+64 ascending 64-wire runs on 4096 wires in depth 57, and its generalized group
+interface accepts arbitrary disjoint packet embeddings, derives recursive
+sortedness, and returns 64 sorted packets covering the same support. With the
+63-packet tail result above, both full blocks and the exceptional remainder
+have local merge/rebin networks at the same 57-layer ceiling. Actual selection
+and parallel composition of these groups in a scheduler receiver remain open.

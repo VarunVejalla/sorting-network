@@ -173,6 +173,118 @@ def depthBudget {α : Type} [LinearOrder α] {N : Nat} :
   | .node left right _ mergeCost _ _ =>
       max left.depthBudget right.depthBudget + mergeCost
 
+def leafCount {α : Type} [LinearOrder α] {N : Nat} :
+    PacketMergeTree α N → Nat
+  | .leaf => 1
+  | .node left right _ _ _ _ => left.leafCount + right.leafCount
+
+theorem leafCount_size {α : Type} [LinearOrder α] {N : Nat}
+    (tree : PacketMergeTree α N) : 64 * tree.leafCount = N := by
+  induction tree with
+  | leaf => rfl
+  | @node m n left right merge mergeCost hdepth hmerge ihLeft ihRight =>
+    simp only [leafCount]
+    rw [Nat.mul_add, ihLeft, ihRight]
+
+private def treeChunkIndexRaw {α : Type} [LinearOrder α] {N : Nat}
+    (tree : PacketMergeTree α N) (j : Fin tree.leafCount) (i : Fin 64) :
+    Fin (64 * tree.leafCount) :=
+  ⟨j.val * 64 + i.val, by
+    have hj := j.isLt
+    have hi := i.isLt
+    omega⟩
+
+def chunkIndex {α : Type} [LinearOrder α] {N : Nat}
+    (tree : PacketMergeTree α N) (j : Fin tree.leafCount) (i : Fin 64) : Fin N :=
+  Fin.cast (leafCount_size tree) (treeChunkIndexRaw tree j i)
+
+theorem chunkIndex_val {α : Type} [LinearOrder α] {N : Nat}
+    (tree : PacketMergeTree α N) (j : Fin tree.leafCount) (i : Fin 64) :
+    (chunkIndex tree j i).val = j.val * 64 + i.val := by
+  simp [chunkIndex, treeChunkIndexRaw]
+
+theorem chunkIndex_mono {α : Type} [LinearOrder α] {N : Nat}
+    (tree : PacketMergeTree α N) (j : Fin tree.leafCount) :
+    Monotone (chunkIndex tree j) := by
+  intro i k hik
+  apply Fin.mk_le_mk.mpr
+  have hik' := Fin.mk_le_mk.mp hik
+  exact Nat.add_le_add_left hik' (j.val * 64)
+
+private theorem chunkIndex_node_left {α : Type} [LinearOrder α] {m n : Nat}
+    (left : PacketMergeTree α m) (right : PacketMergeTree α n)
+    (merge : ComparatorNetwork (m + n)) (cost : Nat)
+    (hdepth : merge.depth ≤ cost)
+    (hmerge : ∀ (A : Fin m → α) (B : Fin n → α), Monotone A → Monotone B →
+      Monotone (merge.exec (Fin.append A B)))
+    (j : Fin left.leafCount) (i : Fin 64) :
+    chunkIndex (.node left right merge cost hdepth hmerge)
+        (Fin.castAdd right.leafCount j) i =
+      Fin.castAdd n (chunkIndex left j i) := by
+  apply Fin.ext
+  have hl := leafCount_size left
+  have hr := leafCount_size right
+  simp [chunkIndex, treeChunkIndexRaw, leafCount, Fin.val_cast] at *
+
+private theorem chunkIndex_node_right {α : Type} [LinearOrder α] {m n : Nat}
+    (left : PacketMergeTree α m) (right : PacketMergeTree α n)
+    (merge : ComparatorNetwork (m + n)) (cost : Nat)
+    (hdepth : merge.depth ≤ cost)
+    (hmerge : ∀ (A : Fin m → α) (B : Fin n → α), Monotone A → Monotone B →
+      Monotone (merge.exec (Fin.append A B)))
+    (j : Fin right.leafCount) (i : Fin 64) :
+    chunkIndex (.node left right merge cost hdepth hmerge)
+        (Fin.natAdd left.leafCount j) i =
+      Fin.natAdd m (chunkIndex right j i) := by
+  apply Fin.ext
+  have hl := leafCount_size left
+  have hr := leafCount_size right
+  simp [chunkIndex, treeChunkIndexRaw, leafCount, Fin.val_cast] at *
+  simp only [Nat.add_mul] at *
+  omega
+
+theorem runsSorted_of_chunks {α : Type} [LinearOrder α] {N : Nat}
+    (tree : PacketMergeTree α N) (v : Fin N → α)
+    (hchunks : ∀ j : Fin tree.leafCount, Monotone (fun i => v (chunkIndex tree j i))) :
+    tree.RunsSorted v := by
+  induction tree with
+  | leaf =>
+    have hzero : Fin (PacketMergeTree.leafCount (.leaf : PacketMergeTree α 64)) :=
+      ⟨0, by simp [leafCount]⟩
+    have h0 := hchunks hzero
+    have heq : (fun i : Fin 64 => v (chunkIndex (.leaf : PacketMergeTree α 64) hzero i)) = v := by
+      funext i
+      apply congrArg v
+      apply Fin.ext
+      simp [chunkIndex, treeChunkIndexRaw, leafCount]
+    rw [heq] at h0
+    exact h0
+  | @node m n left right merge cost hdepth hmerge ihLeft ihRight =>
+    dsimp [RunsSorted]
+    constructor
+    · apply ihLeft
+      intro j
+      have hp := hchunks (Fin.castAdd right.leafCount j)
+      have heq :
+          (fun i : Fin 64 => v (Fin.castAdd n (chunkIndex left j i))) =
+            (fun i => v (chunkIndex (.node left right merge cost hdepth hmerge)
+              (Fin.castAdd right.leafCount j) i)) := by
+        funext i
+        rw [chunkIndex_node_left]
+      rw [heq]
+      exact hp
+    · apply ihRight
+      intro j
+      have hp := hchunks (Fin.natAdd left.leafCount j)
+      have heq :
+          (fun i : Fin 64 => v (Fin.natAdd m (chunkIndex right j i))) =
+            (fun i => v (chunkIndex (.node left right merge cost hdepth hmerge)
+              (Fin.natAdd left.leafCount j) i)) := by
+        funext i
+        rw [chunkIndex_node_right]
+      rw [heq]
+      exact hp
+
 theorem network_sorts {α : Type} [LinearOrder α] {N : Nat}
     (tree : PacketMergeTree α N) (v : Fin N → α)
     (hv : tree.RunsSorted v) : Monotone (tree.network.exec v) := by
@@ -290,72 +402,98 @@ def packetOddTree6 {α : Type} [LinearOrder α] : PacketMergeTree α 4032 :=
   .node packetPowerTree5 packetOddTree5 unequalTail63Lift6 12 unequalTail63Lift6_depth_le
     (by intro A B hA hB; exact unequalTail63Lift6_sorts_two_runs A B hA hB)
 
+def packetPowerTree6 {α : Type} [LinearOrder α] : PacketMergeTree α 4096 :=
+  .node packetPowerTree5 packetPowerTree5 (oddEvenMergeNet 12) 12
+    (oddEvenMergeNet_depth_le 12)
+    (by intro A B hA hB; exact oddEvenMerge_sorts_runs (k := 11) A B hA hB)
+
 theorem packetOddTree6_sorts {α : Type} [LinearOrder α]
     (v : Fin 4032 → α) (hv : (packetOddTree6 (α := α)).RunsSorted v) :
     Monotone ((packetOddTree6 (α := α)).network.exec v) :=
   PacketMergeTree.network_sorts (packetOddTree6 (α := α)) v hv
 
-theorem packetOddTree6_depthBudget_le : (packetOddTree6 (α := Bool)).depthBudget ≤ 57 := by
-  have hp1 : (packetPowerTree1 (α := Bool)).depthBudget ≤ 7 := by
+theorem packetOddTree6_depthBudget_le {α : Type} [LinearOrder α] :
+    (packetOddTree6 (α := α)).depthBudget ≤ 57 := by
+  have hp1 : (packetPowerTree1 (α := α)).depthBudget ≤ 7 := by
     change max 0 0 + 7 ≤ 7
     omega
-  have hp2 : (packetPowerTree2 (α := Bool)).depthBudget ≤ 15 := by
-    change max (packetPowerTree1 (α := Bool)).depthBudget
-      (packetPowerTree1 (α := Bool)).depthBudget + 8 ≤ 15
+  have hp2 : (packetPowerTree2 (α := α)).depthBudget ≤ 15 := by
+    change max (packetPowerTree1 (α := α)).depthBudget
+      (packetPowerTree1 (α := α)).depthBudget + 8 ≤ 15
     calc
       _ ≤ max 7 7 + 8 := by omega
       _ = 15 := by omega
-  have hp3 : (packetPowerTree3 (α := Bool)).depthBudget ≤ 24 := by
-    change max (packetPowerTree2 (α := Bool)).depthBudget
-      (packetPowerTree2 (α := Bool)).depthBudget + 9 ≤ 24
+  have hp3 : (packetPowerTree3 (α := α)).depthBudget ≤ 24 := by
+    change max (packetPowerTree2 (α := α)).depthBudget
+      (packetPowerTree2 (α := α)).depthBudget + 9 ≤ 24
     calc
       _ ≤ max 15 15 + 9 := by omega
       _ = 24 := by omega
-  have hp4 : (packetPowerTree4 (α := Bool)).depthBudget ≤ 34 := by
-    change max (packetPowerTree3 (α := Bool)).depthBudget
-      (packetPowerTree3 (α := Bool)).depthBudget + 10 ≤ 34
+  have hp4 : (packetPowerTree4 (α := α)).depthBudget ≤ 34 := by
+    change max (packetPowerTree3 (α := α)).depthBudget
+      (packetPowerTree3 (α := α)).depthBudget + 10 ≤ 34
     calc
       _ ≤ max 24 24 + 10 := by omega
       _ = 34 := by omega
-  have hp5 : (packetPowerTree5 (α := Bool)).depthBudget ≤ 45 := by
-    change max (packetPowerTree4 (α := Bool)).depthBudget
-      (packetPowerTree4 (α := Bool)).depthBudget + 11 ≤ 45
+  have hp5 : (packetPowerTree5 (α := α)).depthBudget ≤ 45 := by
+    change max (packetPowerTree4 (α := α)).depthBudget
+      (packetPowerTree4 (α := α)).depthBudget + 11 ≤ 45
     calc
       _ ≤ max 34 34 + 11 := by omega
       _ = 45 := by omega
-  have ho1 : (packetOddTree1 (α := Bool)).depthBudget = 0 := by
+  have ho1 : (packetOddTree1 (α := α)).depthBudget = 0 := by
     simp [packetOddTree1, PacketMergeTree.depthBudget]
-  have ho2 : (packetOddTree2 (α := Bool)).depthBudget ≤ 15 := by
-    change max (packetPowerTree1 (α := Bool)).depthBudget
-      (packetOddTree1 (α := Bool)).depthBudget + 8 ≤ 15
+  have ho2 : (packetOddTree2 (α := α)).depthBudget ≤ 15 := by
+    change max (packetPowerTree1 (α := α)).depthBudget
+      (packetOddTree1 (α := α)).depthBudget + 8 ≤ 15
     calc
       _ ≤ max 7 0 + 8 := by omega
       _ = 15 := by omega
-  have ho3 : (packetOddTree3 (α := Bool)).depthBudget ≤ 24 := by
-    change max (packetPowerTree2 (α := Bool)).depthBudget
-      (packetOddTree2 (α := Bool)).depthBudget + 9 ≤ 24
+  have ho3 : (packetOddTree3 (α := α)).depthBudget ≤ 24 := by
+    change max (packetPowerTree2 (α := α)).depthBudget
+      (packetOddTree2 (α := α)).depthBudget + 9 ≤ 24
     calc
       _ ≤ max 15 15 + 9 := by omega
       _ = 24 := by omega
-  have ho4 : (packetOddTree4 (α := Bool)).depthBudget ≤ 34 := by
-    change max (packetPowerTree3 (α := Bool)).depthBudget
-      (packetOddTree3 (α := Bool)).depthBudget + 10 ≤ 34
+  have ho4 : (packetOddTree4 (α := α)).depthBudget ≤ 34 := by
+    change max (packetPowerTree3 (α := α)).depthBudget
+      (packetOddTree3 (α := α)).depthBudget + 10 ≤ 34
     calc
       _ ≤ max 24 24 + 10 := by omega
       _ = 34 := by omega
-  have ho5 : (packetOddTree5 (α := Bool)).depthBudget ≤ 45 := by
-    change max (packetPowerTree4 (α := Bool)).depthBudget
-      (packetOddTree4 (α := Bool)).depthBudget + 11 ≤ 45
+  have ho5 : (packetOddTree5 (α := α)).depthBudget ≤ 45 := by
+    change max (packetPowerTree4 (α := α)).depthBudget
+      (packetOddTree4 (α := α)).depthBudget + 11 ≤ 45
     calc
       _ ≤ max 34 34 + 11 := by omega
       _ = 45 := by omega
-  change max (packetPowerTree5 (α := Bool)).depthBudget
-    (packetOddTree5 (α := Bool)).depthBudget + 12 ≤ 57
+  change max (packetPowerTree5 (α := α)).depthBudget
+    (packetOddTree5 (α := α)).depthBudget + 12 ≤ 57
   calc
     _ ≤ max 45 45 + 12 := by omega
     _ = 57 := by omega
 
-theorem packetOddTree6_depth_le : (packetOddTree6 (α := Bool)).network.depth ≤ 57 :=
-  (PacketMergeTree.network_depth_le (packetOddTree6 (α := Bool))).trans packetOddTree6_depthBudget_le
+theorem packetOddTree6_depth_le {α : Type} [LinearOrder α] :
+    (packetOddTree6 (α := α)).network.depth ≤ 57 :=
+  (PacketMergeTree.network_depth_le (packetOddTree6 (α := α))).trans
+    packetOddTree6_depthBudget_le
+
+theorem packetPowerTree6_depthBudget_le {α : Type} [LinearOrder α] :
+    (packetPowerTree6 (α := α)).depthBudget ≤ 57 := by
+  change max (packetPowerTree5 (α := α)).depthBudget
+    (packetPowerTree5 (α := α)).depthBudget + 12 ≤ 57
+  have hp5 : (packetPowerTree5 (α := α)).depthBudget ≤ 45 := by
+    have h := packetOddTree6_depthBudget_le (α := α)
+    change max (packetPowerTree5 (α := α)).depthBudget
+      (packetOddTree5 (α := α)).depthBudget + 12 ≤ 57 at h
+    omega
+  calc
+    _ ≤ max 45 45 + 12 := by omega
+    _ = 57 := by omega
+
+theorem packetPowerTree6_depth_le {α : Type} [LinearOrder α] :
+    (packetPowerTree6 (α := α)).network.depth ≤ 57 :=
+  (PacketMergeTree.network_depth_le (packetPowerTree6 (α := α))).trans
+    packetPowerTree6_depthBudget_le
 
 end Chvatal.PacketAlignment
