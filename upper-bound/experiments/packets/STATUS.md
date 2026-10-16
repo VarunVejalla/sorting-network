@@ -708,3 +708,16 @@ the next critical gaps are the other residues and, especially, matching these
 logical output packets to the next stage's fixed physical `WireFlow` cuts and
 proving a global rank-profile contraction. No improved limsup coefficient is
 established yet.
+
+Receiver-residue finite diagnostic (GPT-6-astra-high, 2026-10-16):
+[`FlowReceiverResidueScreen.lean`](FlowReceiverResidueScreen.lean) evaluates the
+actual `flowA7` formulas for every `7 <= d <= 40`,
+`2 <= t < tf7 d`, and `1 <= l < d` found that each nonzero next-stage receiver
+packet count `(flowA7 d hd l (t+1) / 64)` is congruent to either 0 or 63 modulo
+64. This is exactly the pair of cohort cases now handled by the checked
+divisible and residue-63 profile wrappers. The screen is finite evidence, not
+a theorem. The next formal gate is a residue classification from `NodeShape`
+plus exclusion of its small top-descending exception for active receiver
+levels; if that closes, no additional tail merge tree is needed for the actual
+schedule. It still would not resolve the logical-to-physical next-cut
+alignment or global contraction.
