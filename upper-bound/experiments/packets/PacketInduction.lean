@@ -22,6 +22,68 @@ theorem packetEmbeddingSupport_card {N : Nat} (p : Fin 64 ↪ Fin N) :
   rw [packetEmbeddingSupport, Finset.card_image_of_injective _ p.injective]
   simp
 
+/-- The increasing physical-wire embedding of every packet in a canonical
+rank-sorted family. -/
+noncomputable def canonicalPacketEmbedding {N : Nat}
+    (P : CanonicalPacketFamily N)
+    (hcard : ∀ i, (P.packet i).card = 64) :
+    Fin P.count → Fin 64 ↪ Fin N :=
+  fun i => ((P.packet i).orderEmbOfFin (hcard i)).toEmbedding
+
+theorem canonicalPacketEmbedding_support {N : Nat}
+    (P : CanonicalPacketFamily N)
+    (hcard : ∀ i, (P.packet i).card = 64) (i : Fin P.count) :
+    packetEmbeddingSupport (canonicalPacketEmbedding P hcard i) = P.packet i := by
+  ext w
+  change w ∈ packetEmbeddingSupport
+      (((P.packet i).orderEmbOfFin (hcard i)).toEmbedding) ↔ w ∈ P.packet i
+  rw [packetEmbeddingSupport_mem_iff]
+  change w ∈ Set.range ((P.packet i).orderEmbOfFin (hcard i)) ↔
+    w ∈ P.packet i
+  rw [Finset.range_orderEmbOfFin]
+  simp
+
+/-- Convert a rank-sorted canonical partition into logical packet embeddings.
+The increasing physical-wire enumeration ensures each input embedding is
+sorted, and the embeddings retain the partition's exact support and
+disjointness. -/
+theorem canonicalPacketFamily_toEmbeddings {N : Nat} {α : Type}
+    [LinearOrder α] (P : CanonicalPacketFamily N)
+    (support : Finset (Fin N)) (v : Fin N → α)
+    (hcontract : CanonicalPacketPortContract P support v) :
+    let packets := canonicalPacketEmbedding P hcontract.2.2.2
+    (∀ i, Monotone (fun k => v (packets i k))) ∧
+    (∀ i i', i ≠ i' → ∀ x y, packets i x ≠ packets i' y) ∧
+    Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) = support := by
+  let packets := canonicalPacketEmbedding P hcontract.2.2.2
+  have hsorted : ∀ i, Monotone (fun k => v (packets i k)) := by
+    intro i a b hab
+    have hmemA : packets i a ∈ P.packet i := by
+      simpa [packets, canonicalPacketEmbedding] using
+        Finset.orderEmbOfFin_mem (P.packet i) (hcontract.2.2.2 i) a
+    have hmemB : packets i b ∈ P.packet i := by
+      simpa [packets, canonicalPacketEmbedding] using
+        Finset.orderEmbOfFin_mem (P.packet i) (hcontract.2.2.2 i) b
+    have hwire : (packets i a).val ≤ (packets i b).val := by
+      exact Fin.le_def.mp
+        (((P.packet i).orderEmbOfFin (hcontract.2.2.2 i)).monotone hab)
+    exact hcontract.1 i hmemA hmemB hwire
+  have hdisjoint : ∀ i i', i ≠ i' → ∀ x y, packets i x ≠ packets i' y := by
+    intro i i' hne x y heq
+    have hmemA : packets i x ∈ P.packet i :=
+      by simpa [packets, canonicalPacketEmbedding] using
+        Finset.orderEmbOfFin_mem (P.packet i) (hcontract.2.2.2 i) x
+    have hmemB : packets i' y ∈ P.packet i' :=
+      by simpa [packets, canonicalPacketEmbedding] using
+        Finset.orderEmbOfFin_mem (P.packet i') (hcontract.2.2.2 i') y
+    have hnot := (Finset.disjoint_left.mp (hcontract.2.2.1 i i' hne)) hmemA
+    exact hnot (heq ▸ hmemB)
+  have hsupport : Finset.univ.biUnion
+      (fun i => packetEmbeddingSupport (packets i)) = support := by
+    simp_rw [packets, canonicalPacketEmbedding_support]
+    exact hcontract.2.1
+  exact ⟨hsorted, hdisjoint, hsupport⟩
+
 /-- Convert the output list of an indexed merge-and-deal round to a canonical
 `Fin`-indexed embedding family. If the matching covers every input ID, this
 preserves the full support union and logical sortedness. -/
