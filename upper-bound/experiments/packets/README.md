@@ -298,3 +298,15 @@ next physical cuts, or that merge/deal evolves it by the pairwise averages
 needed for a global energy decrement. The focused
 `PacketHalfProfile` check and full axiom guard pass; the coefficient remains
 unchanged.
+
+Incidence-sensitive packet-error composition (GPT-6-astra-high, 2026-10-16):
+`packetized_source_errors_sq_sum_le_of_degree` bounds aggregate receiver
+squared error by `k` times source batch-error energy when receiver indegree is
+at most `k`, source routed L1 error is charged once, and the error is supported
+on that incidence graph. `packetized_merge_owner_errors_sq_sum_le_of_degree`
+composes this with merge-cell L1 control and exact ownership L1 conservation.
+The new lemmas pass the full axiom guard. They provide a reusable interface,
+but do not improve UB-25: the concrete active-level factor-65 estimate already
+exists. The open global bridge is still to identify merge outputs and averaged
+targets with the next physical `WireFlow` cuts so the checked pairwise
+merge/deal energy drop can be iterated across stages.

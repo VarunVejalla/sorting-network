@@ -3033,6 +3033,322 @@ theorem sum_receiver_profile_errors_le_source_count_errors
         (sortedSenderOutgoing_profile_error_exact_var S v up down q frac
           hsize hu hsorted hq hfrac0 hfrac1 hendpoint)
 
+/-- Packetized version of the layer energy bound. Each source cohort may
+produce many sorted output packets, and each packet's discrepancy may be
+split arbitrarily among destination registers. If the total routed L1 error
+from a cohort is bounded by its coarse error, then summing over `k` source
+cohorts costs only the Cauchy factor `k`. -/
+theorem packetized_source_errors_sq_sum_le
+    {Source Packet Receiver : Type}
+    [Fintype Source] [Fintype Packet] [Fintype Receiver]
+    (err : Source → Packet → Receiver → Real)
+    (batchError : Source → Real)
+    (hbatch : ∀ source,
+      (∑ packet : Packet, ∑ receiver : Receiver,
+        |err source packet receiver|) ≤ batchError source) :
+    (∑ receiver : Receiver,
+      (∑ source : Source, ∑ packet : Packet,
+        err source packet receiver) ^ 2) ≤
+      (Fintype.card Source : Real) *
+        ∑ source : Source, (batchError source) ^ 2 := by
+  classical
+  let agg (receiver : Receiver) : Real :=
+    ∑ source : Source, ∑ packet : Packet, err source packet receiver
+  have htriangle (receiver : Receiver) :
+      |agg receiver| ≤
+        ∑ source : Source, ∑ packet : Packet,
+          |err source packet receiver| := by
+    unfold agg
+    calc
+      |∑ source : Source, ∑ packet : Packet,
+          err source packet receiver| ≤
+        ∑ source : Source,
+          |∑ packet : Packet, err source packet receiver| :=
+            Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ source : Source, ∑ packet : Packet,
+          |err source packet receiver| := by
+        apply Finset.sum_le_sum
+        intro source _
+        exact Finset.abs_sum_le_sum_abs _ _
+  have htotal :
+      (∑ receiver : Receiver, |agg receiver|) ≤
+        ∑ source : Source, batchError source := by
+    calc
+      _ ≤ ∑ receiver : Receiver,
+          ∑ source : Source, ∑ packet : Packet,
+            |err source packet receiver| := by
+        apply Finset.sum_le_sum
+        intro receiver _
+        exact htriangle receiver
+      _ = ∑ source : Source,
+          ∑ packet : Packet, ∑ receiver : Receiver,
+            |err source packet receiver| := by
+        rw [Finset.sum_comm]
+        apply Finset.sum_congr rfl
+        intro source _
+        rw [Finset.sum_comm]
+      _ ≤ ∑ source : Source, batchError source := by
+        apply Finset.sum_le_sum
+        intro source _
+        exact hbatch source
+  have htotal_nonneg : 0 ≤ ∑ source : Source, batchError source := by
+    calc
+      0 ≤ ∑ receiver : Receiver, |agg receiver| :=
+        Finset.sum_nonneg (fun receiver _ => abs_nonneg _)
+      _ ≤ ∑ source : Source, batchError source := htotal
+  have hagg_nonneg : 0 ≤ ∑ receiver : Receiver, |agg receiver| :=
+    Finset.sum_nonneg (fun receiver _ => abs_nonneg _)
+  calc
+    _ = ∑ receiver : Receiver, |agg receiver| ^ 2 := by
+      apply Finset.sum_congr rfl
+      intro receiver _
+      rw [sq_abs]
+    _ ≤ (∑ receiver : Receiver, |agg receiver|) ^ 2 :=
+      Finset.sum_sq_le_sq_sum_of_nonneg
+        (fun receiver _ => abs_nonneg _)
+    _ ≤ (∑ source : Source, batchError source) ^ 2 := by
+      nlinarith [htotal, hagg_nonneg, htotal_nonneg]
+    _ ≤ (Fintype.card Source : Real) *
+          ∑ source : Source, (batchError source) ^ 2 := by
+      exact _root_.sq_sum_le_card_mul_sum_sq
+        (s := (Finset.univ : Finset Source)) (f := batchError)
+    _ = _ := by simp
+
+/-- Compose local merge/reassembly with arbitrary scattered packet ownership.
+The merge bounds each cohort's aggregate output-cell L1 error; ownership
+redistributes each cell's error across destinations with exact L1
+conservation. The next-register squared error then costs only one factor for
+the number of incoming cohorts. -/
+theorem packetized_merge_owner_errors_sq_sum_le
+    {Source Packet Receiver : Type}
+    [Fintype Source] [Fintype Packet] [Fintype Receiver]
+    (ownerError : Source → Packet → Receiver → Real)
+    (cellError : Source → Packet → Real)
+    (batchError : Source → Real)
+    (howner : ∀ source packet,
+      (∑ receiver : Receiver,
+        |ownerError source packet receiver|) =
+          |cellError source packet|)
+    (hmerge : ∀ source,
+      (∑ packet : Packet, |cellError source packet|) ≤ batchError source) :
+    (∑ receiver : Receiver,
+      (∑ source : Source, ∑ packet : Packet,
+        ownerError source packet receiver) ^ 2) ≤
+      (Fintype.card Source : Real) *
+        ∑ source : Source, (batchError source) ^ 2 := by
+  apply packetized_source_errors_sq_sum_le ownerError batchError
+  intro source
+  calc
+    _ = ∑ packet : Packet, |cellError source packet| := by
+      apply Finset.sum_congr rfl
+      intro packet _
+      exact howner source packet
+    _ ≤ batchError source := hmerge source
+
+/-- Global version of the packetized layer bound. A destination may receive
+errors from only `k` source cohorts, while each source's routed L1 error is
+charged at most once across all destinations. This incidence form avoids a
+factor equal to the total number of registers; for `WireFlow`, `k = 65`. -/
+theorem packetized_source_errors_sq_sum_le_of_degree
+    {Source Packet Receiver : Type}
+    [Fintype Source] [Fintype Packet] [Fintype Receiver]
+    [DecidableEq Source]
+    (err : Source → Packet → Receiver → Real)
+    (batchError : Source → Real) (incident : Source → Receiver → Prop)
+    [DecidableRel incident]
+    (k : Nat)
+    (hdegree : ∀ receiver,
+      ((Finset.univ : Finset Source).filter
+        (fun source => incident source receiver)).card ≤ k)
+    (hzero : ∀ source receiver, ¬ incident source receiver →
+      ∀ packet, err source packet receiver = 0)
+    (hbatch : ∀ source,
+      (∑ receiver : Receiver, ∑ packet : Packet,
+        |err source packet receiver|) ≤ batchError source) :
+    (∑ receiver : Receiver,
+      (∑ source : Source, ∑ packet : Packet,
+        err source packet receiver) ^ 2) ≤
+      (k : Real) * ∑ source : Source, (batchError source) ^ 2 := by
+  classical
+  let mass (source : Source) (receiver : Receiver) : Real :=
+    ∑ packet : Packet, |err source packet receiver|
+  let Incident (receiver : Receiver) : Finset Source :=
+    (Finset.univ : Finset Source).filter (fun source => incident source receiver)
+  have hmass_nonneg (source : Source) (receiver : Receiver) :
+      0 ≤ mass source receiver := by
+    dsimp [mass]
+    exact Finset.sum_nonneg (fun packet _ => abs_nonneg _)
+  have hmass_zero (source : Source) (receiver : Receiver)
+      (hnot : ¬ incident source receiver) : mass source receiver = 0 := by
+    apply Finset.sum_eq_zero
+    intro packet _
+    rw [hzero source receiver hnot packet]
+    simp
+  have hmass_total (source : Source) :
+      (∑ receiver : Receiver, mass source receiver) ≤ batchError source := by
+    simpa [mass] using hbatch source
+  have hbatch_nonneg (source : Source) : 0 ≤ batchError source := by
+    calc
+      0 ≤ ∑ receiver : Receiver, mass source receiver :=
+        Finset.sum_nonneg (fun receiver _ => hmass_nonneg source receiver)
+      _ ≤ batchError source := hmass_total source
+  have hmass_support (receiver : Receiver) :
+      (∑ source : Source, mass source receiver) =
+        ∑ source ∈ Incident receiver, mass source receiver := by
+    rw [Finset.sum_filter]
+    apply Finset.sum_congr rfl
+    intro source _
+    by_cases h : incident source receiver
+    · simp [h]
+    · simp [h, hmass_zero source receiver h]
+  have hmass_sq (receiver : Receiver) :
+      (∑ source : Source, mass source receiver) ^ 2 ≤
+        (k : Real) * ∑ source : Source, (mass source receiver) ^ 2 := by
+    rw [hmass_support]
+    have hc := _root_.sq_sum_le_card_mul_sum_sq
+      (s := Incident receiver) (f := fun source => mass source receiver)
+    have hcard : (Incident receiver).card ≤ k := hdegree receiver
+    have hsub :
+        (∑ source ∈ Incident receiver, (mass source receiver) ^ 2) ≤
+          ∑ source : Source, (mass source receiver) ^ 2 := by
+      apply Finset.sum_le_sum_of_subset_of_nonneg
+      · intro source hs
+        simp
+      · intro source _ _
+        positivity
+    have hfilter_nonneg :
+        0 ≤ ∑ source ∈ Incident receiver, (mass source receiver) ^ 2 :=
+      Finset.sum_nonneg (fun source _ => sq_nonneg _)
+    have hsum_nonneg :
+        0 ≤ ∑ source : Source, (mass source receiver) ^ 2 :=
+      Finset.sum_nonneg (fun source _ => sq_nonneg _)
+    have hcardR : ((Incident receiver).card : Real) ≤ k := by exact_mod_cast hcard
+    calc
+      _ ≤ ((Incident receiver).card : Real) *
+            ∑ source ∈ Incident receiver, (mass source receiver) ^ 2 := by
+        simpa using hc
+      _ ≤ (k : Real) * ∑ source : Source, (mass source receiver) ^ 2 := by
+        exact mul_le_mul hcardR hsub hfilter_nonneg (by positivity)
+  have hreceiver (receiver : Receiver) :
+      (∑ source : Source, ∑ packet : Packet,
+        err source packet receiver) ^ 2 ≤
+        (k : Real) * ∑ source : Source, (mass source receiver) ^ 2 := by
+    have htriangle :
+        |∑ source : Source, ∑ packet : Packet,
+          err source packet receiver| ≤ ∑ source : Source, mass source receiver := by
+      calc
+        _ ≤ ∑ source : Source,
+            |∑ packet : Packet, err source packet receiver| :=
+              Finset.abs_sum_le_sum_abs _ _
+        _ ≤ ∑ source : Source, mass source receiver := by
+          apply Finset.sum_le_sum
+          intro source _
+          dsimp [mass]
+          exact Finset.abs_sum_le_sum_abs _ _
+    have hsum_nonneg : 0 ≤ ∑ source : Source, mass source receiver :=
+      Finset.sum_nonneg (fun source _ => hmass_nonneg source receiver)
+    have hsq := hmass_sq receiver
+    have habs_nonneg := abs_nonneg
+      (∑ source : Source, ∑ packet : Packet, err source packet receiver)
+    have hsqAbs :
+        |∑ source : Source, ∑ packet : Packet,
+          err source packet receiver| ^ 2 ≤
+          (∑ source : Source, mass source receiver) ^ 2 :=
+      (sq_le_sq₀ habs_nonneg hsum_nonneg).2 htriangle
+    calc
+      (∑ source : Source, ∑ packet : Packet,
+        err source packet receiver) ^ 2 =
+          |∑ source : Source, ∑ packet : Packet,
+            err source packet receiver| ^ 2 := (sq_abs _).symm
+      _ ≤ (∑ source : Source, mass source receiver) ^ 2 := hsqAbs
+      _ ≤ (k : Real) * ∑ source : Source,
+          (mass source receiver) ^ 2 := hsq
+  calc
+    _ ≤ ∑ receiver : Receiver,
+          (k : Real) * ∑ source : Source,
+            (mass source receiver) ^ 2 := by
+      apply Finset.sum_le_sum
+      intro receiver _
+      exact hreceiver receiver
+    _ = (k : Real) *
+          ∑ source : Source, ∑ receiver : Receiver,
+            (mass source receiver) ^ 2 := by
+      calc
+        _ = ∑ receiver : Receiver, ∑ source : Source,
+              (k : Real) * (mass source receiver) ^ 2 := by
+          apply Finset.sum_congr rfl
+          intro receiver _
+          rw [Finset.mul_sum]
+        _ = ∑ source : Source, ∑ receiver : Receiver,
+              (k : Real) * (mass source receiver) ^ 2 := by
+          rw [Finset.sum_comm]
+        _ = ∑ source : Source,
+              (k : Real) * ∑ receiver : Receiver,
+                (mass source receiver) ^ 2 := by
+          apply Finset.sum_congr rfl
+          intro source _
+          rw [← Finset.mul_sum]
+        _ = _ := by rw [← Finset.mul_sum]
+    _ ≤ (k : Real) *
+          ∑ source : Source, (batchError source) ^ 2 := by
+      apply mul_le_mul_of_nonneg_left _ (by positivity)
+      apply Finset.sum_le_sum
+      intro source _
+      have hsum_sq := Finset.sum_sq_le_sq_sum_of_nonneg
+        (s := (Finset.univ : Finset Receiver))
+        (f := mass source)
+        (fun receiver _ => hmass_nonneg source receiver)
+      have hmassSum_nonneg : 0 ≤ ∑ receiver : Receiver, mass source receiver :=
+        Finset.sum_nonneg (fun receiver _ => hmass_nonneg source receiver)
+      have hmass2 :
+          (∑ receiver : Receiver, (mass source receiver) ^ 2) ≤
+            (batchError source) ^ 2 := by
+        calc
+          _ ≤ (∑ receiver : Receiver, mass source receiver) ^ 2 := hsum_sq
+          _ ≤ (batchError source) ^ 2 := by
+            nlinarith [hmass_total source, hbatch_nonneg source, hmassSum_nonneg]
+      exact hmass2
+
+/-- Degree-sensitive composition of the local merge estimate and exact
+rank-piece ownership. This is the interface needed by the fixed 65-port
+WireFlow scheduler: one must still prove the incidence and zero-support
+premises for the concrete layer. -/
+theorem packetized_merge_owner_errors_sq_sum_le_of_degree
+    {Source Packet Receiver : Type}
+    [Fintype Source] [Fintype Packet] [Fintype Receiver]
+    [DecidableEq Source]
+    (ownerError : Source → Packet → Receiver → Real)
+    (cellError : Source → Packet → Real)
+    (batchError : Source → Real)
+    (incident : Source → Receiver → Prop) [DecidableRel incident]
+    (k : Nat)
+    (hdegree : ∀ receiver,
+      ((Finset.univ : Finset Source).filter
+        (fun source => incident source receiver)).card ≤ k)
+    (hzero : ∀ source receiver, ¬ incident source receiver →
+      ∀ packet, ownerError source packet receiver = 0)
+    (howner : ∀ source packet,
+      (∑ receiver : Receiver, |ownerError source packet receiver|) =
+        |cellError source packet|)
+    (hmerge : ∀ source,
+      (∑ packet : Packet, |cellError source packet|) ≤ batchError source) :
+    (∑ receiver : Receiver,
+      (∑ source : Source, ∑ packet : Packet,
+        ownerError source packet receiver) ^ 2) ≤
+      (k : Real) * ∑ source : Source, (batchError source) ^ 2 := by
+  apply packetized_source_errors_sq_sum_le_of_degree
+    ownerError batchError incident k hdegree hzero
+  intro source
+  calc
+    _ = ∑ packet : Packet,
+          ∑ receiver : Receiver, |ownerError source packet receiver| := by
+      rw [Finset.sum_comm]
+    _ = ∑ packet : Packet, |cellError source packet| := by
+      apply Finset.sum_congr rfl
+      intro packet _
+      exact howner source packet
+    _ ≤ batchError source := hmerge source
+
 /-- Rank pieces sent from `source` to `receiver`: child receivers get the
 middle piece indexed by their child digit, and the parent gets both fringes. -/
 def wireFlowLayerSelection {d : Nat} (receiver source : KBag 64 d) : Finset Nat :=

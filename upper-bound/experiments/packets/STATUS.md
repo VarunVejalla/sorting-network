@@ -871,3 +871,18 @@ output packet embeddings at the next physical cuts, and prove that these
 targets evolve by the matching averages required by the
 heterogeneous energy-drop lemma. No global recurrence or coefficient
 improvement follows yet.
+
+Incidence-sensitive composition (GPT-6-astra-high, 2026-10-16):
+`packetized_source_errors_sq_sum_le_of_degree` proves that when each receiver
+is incident to at most `k` source cohorts, each source's routed packet errors
+have total L1 mass at most its batch error, and errors vanish off the incidence
+graph, aggregate receiver squared error is at most `k` times the sum of source
+batch-error squares. `packetized_merge_owner_errors_sq_sum_le_of_degree`
+composes this with the local merge L1 bound and exact L1 conservation under
+packet ownership. Both are kernel checked with standard axioms and registered
+in the full `PacketMergeAxioms` guard. This is a reusable invariant interface,
+not a new UB-25 recurrence: the actual active-level WireFlow factor-65 bound
+was already proved directly. The missing step remains to identify the merge
+outputs and their averaged targets with the next physical WireFlow cuts, so
+that the pairwise merge/deal energy decrement applies across stages. No global
+coefficient improvement follows.

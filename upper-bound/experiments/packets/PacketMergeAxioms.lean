@@ -1530,6 +1530,20 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.wireFlowReceiverSelectedIdealMean_eq_intervalProfile' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.wireFlowReceiverSelectedIdealMean_eq_intervalProfile
+/-- info: 'Chvatal.PacketAlignment.packetized_source_errors_sq_sum_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetized_source_errors_sq_sum_le
+/-- info: 'Chvatal.PacketAlignment.packetized_merge_owner_errors_sq_sum_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetized_merge_owner_errors_sq_sum_le
+/-- info: 'Chvatal.PacketAlignment.packetized_source_errors_sq_sum_le_of_degree' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetized_source_errors_sq_sum_le_of_degree
+/-- info: 'Chvatal.PacketAlignment.packetized_merge_owner_errors_sq_sum_le_of_degree' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.packetized_merge_owner_errors_sq_sum_le_of_degree
 /-- info: 'Chvatal.PacketAlignment.sum_receiver_selected_error_sq_le_source_pieces' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.sum_receiver_selected_error_sq_le_source_pieces
