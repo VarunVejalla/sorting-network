@@ -814,6 +814,86 @@ theorem packetFamily64BlockList_merge_output_sorted {q N : Nat} {α : Type}
     (packetPowerTree6 (α := α)) (packetFamily64BlockList packets hdis)
     hnd hdisBlocks v hRuns e he j
 
+/-- Package the grouped-merge result as a finite packet family, rather than
+as a list of 4096-wire blocks with a separate leaf index. The output packets
+are sorted, disjoint, and cover exactly the input cohort support. -/
+theorem packetFamily64BlockList_merge_outputFamily {q N : Nat} {α : Type}
+    [LinearOrder α]
+    (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y)
+    (v : Fin N → α)
+    (hpackets : ∀ a, Monotone (fun i => v (packets a i))) :
+    let blocks := packetFamily64BlockList packets hdis
+    let output : Fin q × Fin (packetPowerTree6 (α := α)).leafCount →
+        Fin 64 ↪ Fin N := fun p =>
+      genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α))
+        (packetFamily64BlockEmbedding packets hdis p.1) p.2
+    (∀ p, Monotone (fun i =>
+      (genScatterMergeTreeBatch (packetPowerTree6 (α := α)) blocks).exec v
+        (output p i))) ∧
+    (∀ p p', p ≠ p' → ∀ i j, output p i ≠ output p' j) ∧
+    (∀ w, (∃ p, w ∈ Set.range (output p)) ↔
+      ∃ a i, packets a i = w) ∧
+    (genScatterMergeTreeBatch (packetPowerTree6 (α := α)) blocks).depth ≤ 57 := by
+  dsimp only
+  let blocks := packetFamily64BlockList packets hdis
+  let output : Fin q × Fin (packetPowerTree6 (α := α)).leafCount →
+      Fin 64 ↪ Fin N := fun p =>
+    genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α))
+      (packetFamily64BlockEmbedding packets hdis p.1) p.2
+  have hsorted := packetFamily64BlockList_merge_output_sorted
+    packets hdis v hpackets
+  have hdisBlocks := packetFamily64BlockList_disjoint packets hdis
+  have hdepth := packetFamily64BlockList_merge_depth_le
+    (α := α) packets hdis
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro p
+    exact hsorted (packetFamily64BlockEmbedding packets hdis p.1)
+      (by simp [packetFamily64BlockList]) p.2
+  · intro p p' hp i j
+    rcases p with ⟨g, j₁⟩
+    rcases p' with ⟨g', j₂⟩
+    dsimp [output]
+    by_cases hblock : g = g'
+    · subst g'
+      apply genScatterMergeTreeOutputEmbedding_disjoint
+        (packetPowerTree6 (α := α)) _ (by
+          intro hj
+          apply hp
+          exact Prod.ext rfl hj) i j
+    · intro heq
+      have hblocksNe :
+          packetFamily64BlockEmbedding packets hdis g ≠
+            packetFamily64BlockEmbedding packets hdis g' := by
+        intro h
+        have hzero := congrArg (fun e : Fin 4096 ↪ Fin N => e 0) h
+        exact packetFamily64BlockEmbedding_disjoint packets hdis hblock 0 0 hzero
+      apply hdisBlocks (packetFamily64BlockEmbedding packets hdis g)
+        (by simp [packetFamily64BlockList])
+        (packetFamily64BlockEmbedding packets hdis g')
+        (by simp [packetFamily64BlockList]) hblocksNe
+        (PacketMergeTree.chunkIndex (packetPowerTree6 (α := α)) j₁ i)
+        (PacketMergeTree.chunkIndex (packetPowerTree6 (α := α)) j₂ j)
+      simpa [genScatterMergeTreeOutputEmbedding] using heq
+  · intro w
+    constructor
+    · rintro ⟨p, hi⟩
+      exact (packetFamily64BlockList_output_support packets hdis
+        (packetPowerTree6 (α := α)) w).mp
+        ⟨packetFamily64BlockEmbedding packets hdis p.1,
+          by simp [packetFamily64BlockList], p.2,
+          by simpa [output] using hi⟩
+    · intro hw
+      obtain ⟨e, he, j, hj⟩ :=
+        (packetFamily64BlockList_output_support packets hdis
+          (packetPowerTree6 (α := α)) w).mpr hw
+      have he' : ∃ g : Fin q,
+          packetFamily64BlockEmbedding packets hdis g = e := by
+        simpa only [packetFamily64BlockList, List.mem_ofFn] using he
+      obtain ⟨g, rfl⟩ := he'
+      exact ⟨(g, j), by simpa [output] using hj⟩
+  · exact hdepth
+
 /-- For any pairwise-disjoint sorted packet family whose cardinality is a
 multiple of 64, expose its consecutive full-block decomposition and the
 parallel 57-layer merge result. -/

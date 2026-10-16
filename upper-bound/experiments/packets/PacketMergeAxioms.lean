@@ -1379,6 +1379,11 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.packetFamily64BlockList_merge_output_sorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.packetFamily64BlockList_merge_output_sorted
+/-- info: 'Chvatal.PacketAlignment.packetFamily64BlockList_merge_outputFamily' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.packetFamily64BlockList_merge_outputFamily
 
 /-- info: 'Chvatal.PacketAlignment.packetFamily_divisible64_merge' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
