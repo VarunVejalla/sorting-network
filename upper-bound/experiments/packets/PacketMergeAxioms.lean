@@ -1441,6 +1441,12 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.packetPowerTree6GroupNet_heterogeneous_profile_error_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.packetPowerTree6GroupNet_heterogeneous_profile_error_le
+/-- info: 'Chvatal.PacketAlignment.packetPowerTree6GroupNet_heterogeneous_profile_error_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetPowerTree6GroupNet_heterogeneous_profile_error_exact
+/-- info: 'Chvatal.PacketAlignment.packetPowerTree6GroupNet_heterogeneous_profile_energy_le_signed_sum_sq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetPowerTree6GroupNet_heterogeneous_profile_energy_le_signed_sum_sq
 
 /-- info: 'Chvatal.PacketAlignment.genScatterMergeTreeBatch_output_threshold_profile' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in

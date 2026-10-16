@@ -278,6 +278,18 @@ errors whenever the target means sum to the batch mean. Its Lean axiom guard
 passes in `PacketMergeAxioms`. The global scheduler still needs to align these
 logical output packets and targets with the next physical cuts.
 
+The stronger signed form is now checked as well:
+`packetPowerTree6GroupNet_heterogeneous_profile_error_exact` identifies the
+batch's aggregate output L1 error with the absolute *sum* of its 64 input
+count errors, and
+`packetPowerTree6GroupNet_heterogeneous_profile_energy_le_signed_sum_sq`
+bounds output rank-profile energy by the square of that group residual. Thus
+zero-sum within-group count errors disappear exactly at reassembly, a useful
+projection effect lost by the prior triangle-inequality estimate. This is not
+a global contraction by itself: errors in the group-mean direction can
+survive or be redistributed, and that mean must still be coupled to the next
+physical-cut targets.
+
 Packet-target monotonicity bridge (GPT-6-astra-high, 2026-10-16):
 `natProfileInterp_mono_mean` proves that a monotone integer destination-count
 profile has a monotone linear interpolation even when the target crosses an
