@@ -218,3 +218,11 @@ count error, as long as selected suffixes are nested and have the right total
 size. The next step is to define those assignments from actual merge-output
 wire embeddings and `WireFlow` ports, then connect the resulting counts to the
 global receiver recurrence.
+
+The next algebraic layer is also checked: `assignedRankProfiles_aggregate_L2`
+and `_var` bound the destination-wise squared signed errors by `c` times the
+source packet-count energy, including packet-dependent fractional targets.
+This gives a quadratic aggregation inequality compatible with the existing
+source-dependent `WireFlow` means. It is still an abstract rank-owner result;
+the actual embedding-to-receiver owner map and its active-level energy sum are
+not yet proved, so it does not establish a limsup improvement.

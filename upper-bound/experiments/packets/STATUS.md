@@ -750,3 +750,19 @@ map from the merge-output wire embeddings and next-stage `WireFlow` ports,
 identify its suffix counts with the concrete routed Boolean values, and then
 sum the resulting errors at each receiver. No global rank contraction or
 improved limsup coefficient is proved.
+
+Scattered-profile squared-error aggregation (GPT-6-astra-high, 2026-10-16):
+`assignedRankProfiles_aggregate_L2` and its source-dependent-target extension
+`assignedRankProfiles_aggregate_L2_var` prove that when each source packet's
+rank positions are assigned to destinations, summing signed profile errors
+at each destination costs at most `c` times the sum of source count energy,
+where `c` is the number of contributing packets. The proof uses the exact
+scattered-rank L1 identity packet-by-packet, then Cauchy-Schwarz over
+destinations within each packet and over packets at each destination. Both
+declarations have axiom guards and compile through `PacketMergeAxioms`. The
+variable-target form matches the source-dependent ideal means already used by
+the `WireFlow` recurrence. The remaining bridge is concrete: define the owner
+map from actual merge-output wire embeddings to next-stage receiver ports,
+prove its suffix counts agree with routed Boolean counts, and sum the result
+over active levels without losing the energy contraction needed for a global
+coefficient. No limsup improvement is established by this lemma alone.

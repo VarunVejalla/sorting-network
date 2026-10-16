@@ -3,6 +3,7 @@ import PacketGenMerge
 import PacketMergeTreeGen
 import PacketReceiverResidue
 import AKS.Chvatal.ExecPlacement
+import Mathlib.Algebra.Order.Chebyshev
 
 /-! The actual repair atoms are 32-wire rank intervals. This file carries the
 sorted-profile scale transfer down to that fragment size. -/
@@ -1116,6 +1117,160 @@ theorem assignedRankProfiles_L1_exact {ι : Type} [Fintype ι] [DecidableEq ι] 
     · simp [ho]
   exact monotoneCountDecomposition_L1_exact
     (assignedRankCount owner suffix) m X q frac hX hq hfrac0 hfrac1 hsum hmono
+
+/-- After summing scattered rank counts over packets into each destination,
+the receiver's squared profile error is bounded by packet-count energy with
+only the number of source packets as multiplier. -/
+theorem assignedRankProfiles_aggregate_L2 {ι : Type} [Fintype ι] [DecidableEq ι]
+    {c m : Nat} (owner : Fin c → Fin m → ι) (suffix : Nat → Fin m → Bool)
+    (X : Fin c → Nat) (q : Nat) (frac : Real)
+    (hX : ∀ p, X p ≤ m) (hq : q < m)
+    (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1)
+    (hsuffix : ∀ z ≤ m,
+      (∑ k : Fin m, if suffix z k = true then 1 else 0) = z)
+    (hmonoSuffix : ∀ a b, a ≤ b → ∀ k, suffix a k = true → suffix b k = true) :
+    (∑ destination : ι,
+      (Finset.univ.sum (fun (packet : Fin c) =>
+        (assignedRankCount (owner packet) suffix destination (X packet) : Real) -
+          ((1 - frac) * assignedRankCount (owner packet) suffix destination q +
+            frac * assignedRankCount (owner packet) suffix destination (q + 1)))) ^ 2) ≤
+      (c : Real) * Finset.univ.sum (fun (packet : Fin c) =>
+        ((X packet : Real) - (q + frac)) ^ 2) := by
+  let err (packet : Fin c) (destination : ι) : Real :=
+    (assignedRankCount (owner packet) suffix destination (X packet) : Real) -
+      ((1 - frac) * assignedRankCount (owner packet) suffix destination q +
+        frac * assignedRankCount (owner packet) suffix destination (q + 1))
+  have hL1 (packet : Fin c) :
+      (∑ destination : ι, |err packet destination|) =
+        |(X packet : Real) - (q + frac)| := by
+    simpa [err] using assignedRankProfiles_L1_exact
+      (owner packet) suffix (X packet) q frac (hX packet) hq hfrac0 hfrac1
+      hsuffix hmonoSuffix
+  have hwithin (packet : Fin c) :
+      (∑ destination : ι, (err packet destination) ^ 2) ≤
+        ((X packet : Real) - (q + frac)) ^ 2 := by
+    calc
+      _ = ∑ destination : ι, |err packet destination| ^ 2 := by
+        apply Finset.sum_congr rfl
+        intro destination _
+        rw [sq_abs]
+      _ ≤ (∑ destination : ι, |err packet destination|) ^ 2 :=
+        Finset.sum_sq_le_sq_sum_of_nonneg (fun destination _ => abs_nonneg _)
+      _ = _ := by rw [hL1 packet, sq_abs]
+  calc
+    _ ≤ ∑ destination : ι,
+        (∑ packet : Fin c, |err packet destination|) ^ 2 := by
+      apply Finset.sum_le_sum
+      intro destination _
+      have htriangle :
+          |∑ packet : Fin c, err packet destination| ≤
+            ∑ packet : Fin c, |err packet destination| :=
+        Finset.abs_sum_le_sum_abs _ _
+      have hnonneg : 0 ≤ ∑ packet : Fin c, |err packet destination| :=
+        Finset.sum_nonneg (fun packet _ => abs_nonneg _)
+      have hleftnonneg : 0 ≤ |∑ packet : Fin c, err packet destination| :=
+        abs_nonneg _
+      calc
+        (∑ packet : Fin c, err packet destination) ^ 2 =
+            |∑ packet : Fin c, err packet destination| ^ 2 := (sq_abs _).symm
+        _ ≤ (∑ packet : Fin c, |err packet destination|) ^ 2 := by
+          nlinarith [htriangle, hleftnonneg, hnonneg]
+    _ ≤ ∑ destination : ι,
+        (c : Real) * ∑ packet : Fin c, (err packet destination) ^ 2 := by
+      apply Finset.sum_le_sum
+      intro destination _
+      have hcs := _root_.sq_sum_le_card_mul_sum_sq
+        (s := (Finset.univ : Finset (Fin c)))
+        (f := fun packet => |err packet destination|)
+      simpa [sq_abs] using hcs
+    _ = (c : Real) * ∑ packet : Fin c,
+        ∑ destination : ι, (err packet destination) ^ 2 := by
+      simp_rw [Finset.mul_sum]
+      rw [Finset.sum_comm]
+    _ ≤ (c : Real) * ∑ packet : Fin c,
+        ((X packet : Real) - (q + frac)) ^ 2 := by
+      have hc : (0 : Real) ≤ c := by positivity
+      apply mul_le_mul_of_nonneg_left _ hc
+      apply Finset.sum_le_sum
+      intro packet _
+      exact hwithin packet
+
+/-- The same receiver aggregation works when each source packet carries its
+own fractional target, as in a routed layer whose source bags have different
+profile means. -/
+theorem assignedRankProfiles_aggregate_L2_var {ι : Type} [Fintype ι] [DecidableEq ι]
+    {c m : Nat} (owner : Fin c → Fin m → ι) (suffix : Nat → Fin m → Bool)
+    (X q : Fin c → Nat) (frac : Fin c → Real)
+    (hX : ∀ p, X p ≤ m) (hq : ∀ p, q p < m)
+    (hfrac0 : ∀ p, 0 ≤ frac p) (hfrac1 : ∀ p, frac p ≤ 1)
+    (hsuffix : ∀ z ≤ m,
+      (∑ k : Fin m, if suffix z k = true then 1 else 0) = z)
+    (hmonoSuffix : ∀ a b, a ≤ b → ∀ k, suffix a k = true → suffix b k = true) :
+    (∑ destination : ι,
+      (Finset.univ.sum (fun (packet : Fin c) =>
+        (assignedRankCount (owner packet) suffix destination (X packet) : Real) -
+          ((1 - frac packet) * assignedRankCount (owner packet) suffix destination (q packet) +
+            frac packet * assignedRankCount (owner packet) suffix destination (q packet + 1)))) ^ 2) ≤
+      (c : Real) * Finset.univ.sum (fun (packet : Fin c) =>
+        ((X packet : Real) - (q packet + frac packet)) ^ 2) := by
+  let err (packet : Fin c) (destination : ι) : Real :=
+    (assignedRankCount (owner packet) suffix destination (X packet) : Real) -
+      ((1 - frac packet) * assignedRankCount (owner packet) suffix destination (q packet) +
+        frac packet * assignedRankCount (owner packet) suffix destination (q packet + 1))
+  have hL1 (packet : Fin c) :
+      (∑ destination : ι, |err packet destination|) =
+        |(X packet : Real) - (q packet + frac packet)| := by
+    simpa [err] using assignedRankProfiles_L1_exact
+      (owner packet) suffix (X packet) (q packet) (frac packet) (hX packet)
+      (hq packet) (hfrac0 packet) (hfrac1 packet) hsuffix hmonoSuffix
+  have hwithin (packet : Fin c) :
+      (∑ destination : ι, (err packet destination) ^ 2) ≤
+        ((X packet : Real) - (q packet + frac packet)) ^ 2 := by
+    calc
+      _ = ∑ destination : ι, |err packet destination| ^ 2 := by
+        apply Finset.sum_congr rfl
+        intro destination _
+        rw [sq_abs]
+      _ ≤ (∑ destination : ι, |err packet destination|) ^ 2 :=
+        Finset.sum_sq_le_sq_sum_of_nonneg (fun destination _ => abs_nonneg _)
+      _ = _ := by rw [hL1 packet, sq_abs]
+  calc
+    _ ≤ ∑ destination : ι,
+        (∑ packet : Fin c, |err packet destination|) ^ 2 := by
+      apply Finset.sum_le_sum
+      intro destination _
+      have htriangle :
+          |∑ packet : Fin c, err packet destination| ≤
+            ∑ packet : Fin c, |err packet destination| :=
+        Finset.abs_sum_le_sum_abs _ _
+      have hnonneg : 0 ≤ ∑ packet : Fin c, |err packet destination| :=
+        Finset.sum_nonneg (fun packet _ => abs_nonneg _)
+      have hleftnonneg : 0 ≤ |∑ packet : Fin c, err packet destination| :=
+        abs_nonneg _
+      calc
+        (∑ packet : Fin c, err packet destination) ^ 2 =
+            |∑ packet : Fin c, err packet destination| ^ 2 := (sq_abs _).symm
+        _ ≤ (∑ packet : Fin c, |err packet destination|) ^ 2 := by
+          nlinarith [htriangle, hleftnonneg, hnonneg]
+    _ ≤ ∑ destination : ι,
+        (c : Real) * ∑ packet : Fin c, (err packet destination) ^ 2 := by
+      apply Finset.sum_le_sum
+      intro destination _
+      have hcs := _root_.sq_sum_le_card_mul_sum_sq
+        (s := (Finset.univ : Finset (Fin c)))
+        (f := fun packet => |err packet destination|)
+      simpa [sq_abs] using hcs
+    _ = (c : Real) * ∑ packet : Fin c,
+        ∑ destination : ι, (err packet destination) ^ 2 := by
+      simp_rw [Finset.mul_sum]
+      rw [Finset.sum_comm]
+    _ ≤ (c : Real) * Finset.univ.sum (fun (packet : Fin c) =>
+        ((X packet : Real) - (q packet + frac packet)) ^ 2) := by
+      have hc : (0 : Real) ≤ c := by positivity
+      apply mul_le_mul_of_nonneg_left _ hc
+      apply Finset.sum_le_sum
+      intro packet _
+      exact hwithin packet
 
 theorem profileInterval_partition_L1_exact (m p X q : Nat) (frac : Real)
     (cuts : Nat → Nat) (hstart : cuts 0 = 0) (hcuts : Monotone cuts)

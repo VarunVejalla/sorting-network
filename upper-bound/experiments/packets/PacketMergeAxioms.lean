@@ -1463,3 +1463,9 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.assignedRankProfiles_L1_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.assignedRankProfiles_L1_exact
+/-- info: 'Chvatal.PacketAlignment.assignedRankProfiles_aggregate_L2' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.assignedRankProfiles_aggregate_L2
+/-- info: 'Chvatal.PacketAlignment.assignedRankProfiles_aggregate_L2_var' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.assignedRankProfiles_aggregate_L2_var
