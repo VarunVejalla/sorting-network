@@ -993,6 +993,130 @@ theorem profileIntervalMean_partition_sum (m p q : Nat) (frac : Real)
     simp only [sub_zero, one_mul, zero_mul, add_zero]
     exact_mod_cast profileInterval_partition_total m p m cuts hstart hcuts hend (by omega)
 
+/-- Abstract L1 conservation for any finite family of monotone count
+profiles whose total is the packet's count. This applies even when the
+destination rank sets are scattered rather than contiguous intervals. -/
+theorem monotoneCountDecomposition_L1_exact {ι : Type} [Fintype ι]
+    (F : ι → Nat → Nat) (m X q : Nat) (frac : Real)
+    (hX : X ≤ m) (hq : q < m) (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1)
+    (hsum : ∀ z ≤ m, (∑ i : ι, (F i z : Real)) = z)
+    (hmono : ∀ i a b, a ≤ b → F i a ≤ F i b) :
+    (∑ i : ι,
+      |(F i X : Real) -
+        ((1 - frac) * F i q + frac * F i (q + 1))|) =
+      |(X : Real) - (q + frac)| := by
+  have hq1 : q + 1 ≤ m := by omega
+  have hmean : (∑ i : ι,
+      ((1 - frac) * (F i q : Real) + frac * (F i (q + 1) : Real))) = q + frac := by
+    rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum,
+      hsum q (by omega), hsum (q + 1) hq1]
+    push_cast
+    ring
+  have hXsum : (∑ i : ι, (F i X : Real)) = X := hsum X hX
+  by_cases hXq : X ≤ q
+  · have hpoint : ∀ i : ι,
+        (F i X : Real) ≤ (1 - frac) * F i q + frac * F i (q + 1) := by
+      intro i
+      have hbase : F i X ≤ F i q := hmono i X q hXq
+      have hstep : F i q ≤ F i (q + 1) := hmono i q (q + 1) (by omega)
+      have hbaseR : (F i X : Real) ≤ F i q := by exact_mod_cast hbase
+      have hstepR : (F i q : Real) ≤ F i (q + 1) := by exact_mod_cast hstep
+      nlinarith [hbaseR, hstepR, hfrac0, hfrac1]
+    calc
+      _ = ∑ i : ι,
+          ((1 - frac) * (F i q : Real) + frac * (F i (q + 1) : Real) -
+            (F i X : Real)) := by
+        apply Finset.sum_congr rfl
+        intro i _
+        rw [abs_of_nonpos (by linarith [hpoint i])]
+        ring
+      _ = (q + frac) - X := by rw [Finset.sum_sub_distrib, hmean, hXsum]
+      _ = |(X : Real) - (q + frac)| := by
+        have hXR : (X : Real) ≤ q := by exact_mod_cast hXq
+        rw [abs_of_nonpos (by linarith [hXR, hfrac0])]
+        ring
+  · have hXq1 : q + 1 ≤ X := by omega
+    have hpoint : ∀ i : ι,
+        (1 - frac) * F i q + frac * F i (q + 1) ≤ (F i X : Real) := by
+      intro i
+      have hbase : F i (q + 1) ≤ F i X := hmono i (q + 1) X hXq1
+      have hstep : F i q ≤ F i (q + 1) := hmono i q (q + 1) (by omega)
+      have hbaseR : (F i (q + 1) : Real) ≤ F i X := by exact_mod_cast hbase
+      have hstepR : (F i q : Real) ≤ F i (q + 1) := by exact_mod_cast hstep
+      nlinarith [hbaseR, hstepR, hfrac0, hfrac1]
+    calc
+      _ = ∑ i : ι,
+          ((F i X : Real) -
+            ((1 - frac) * (F i q : Real) + frac * (F i (q + 1) : Real))) := by
+        apply Finset.sum_congr rfl
+        intro i _
+        rw [abs_of_nonneg (by linarith [hpoint i])]
+      _ = X - (q + frac) := by rw [Finset.sum_sub_distrib, hXsum, hmean]
+      _ = |(X : Real) - (q + frac)| := by
+        have hXR : (q : Real) + 1 ≤ X := by exact_mod_cast hXq1
+        rw [abs_of_nonneg (by linarith [hXR, hfrac1])]
+
+/-- Count the ranks in a suffix assigned to each destination by an arbitrary
+wire-to-destination map. -/
+def assignedRankCount {ι : Type} [Fintype ι] [DecidableEq ι] {m : Nat}
+    (owner : Fin m → ι) (suffix : Nat → Fin m → Bool)
+    (destination : ι) (X : Nat) : Nat :=
+  ∑ k : Fin m, if destination = owner k ∧ suffix X k = true then 1 else 0
+
+/-- For any partition of ranks among destinations, the suffix counts are
+monotone and sum to the suffix size. The preceding abstract L1 lemma then
+shows that arbitrary scattered destination subsets incur no profile error
+beyond the coarse packet-count error. -/
+theorem assignedRankProfiles_L1_exact {ι : Type} [Fintype ι] [DecidableEq ι] {m : Nat}
+    (owner : Fin m → ι) (suffix : Nat → Fin m → Bool)
+    (X q : Nat) (frac : Real)
+    (hX : X ≤ m) (hq : q < m) (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1)
+    (hsuffix : ∀ z ≤ m,
+      (∑ k : Fin m, if suffix z k = true then 1 else 0) = z)
+    (hmonoSuffix : ∀ a b, a ≤ b → ∀ k, suffix a k = true → suffix b k = true) :
+    (∑ destination : ι,
+      |(assignedRankCount owner suffix destination X : Real) -
+        ((1 - frac) * assignedRankCount owner suffix destination q +
+          frac * assignedRankCount owner suffix destination (q + 1))|) =
+      |(X : Real) - (q + frac)| := by
+  have hsum (z : Nat) (hz : z ≤ m) :
+      (∑ destination : ι,
+        (assignedRankCount owner suffix destination z : Real)) = z := by
+    have hnat :
+        (∑ destination : ι, assignedRankCount owner suffix destination z) = z := by
+      calc
+        _ = ∑ k : Fin m, ∑ destination : ι,
+            if destination = owner k ∧ suffix z k = true then 1 else 0 := by
+          simp only [assignedRankCount]
+          exact Finset.sum_comm
+        _ = ∑ k : Fin m, if suffix z k = true then 1 else 0 := by
+          apply Finset.sum_congr rfl
+          intro k _
+          by_cases hsk : suffix z k = true
+          · simp only [hsk, and_true]
+            rw [Fintype.sum_eq_single (owner k)]
+            · simp
+            · intro destination hne
+              simp [hne]
+          · simp [hsk]
+        _ = z := hsuffix z hz
+    exact_mod_cast hnat
+  have hmono : ∀ (destination : ι) a b, a ≤ b →
+      assignedRankCount owner suffix destination a ≤
+        assignedRankCount owner suffix destination b := by
+    intro destination a b hab
+    unfold assignedRankCount
+    apply Finset.sum_le_sum
+    intro k _
+    by_cases ho : destination = owner k
+    · by_cases hs : suffix a k = true
+      · have hs' := hmonoSuffix a b hab k hs
+        simp [ho, hs, hs']
+      · simp [ho, hs]
+    · simp [ho]
+  exact monotoneCountDecomposition_L1_exact
+    (assignedRankCount owner suffix) m X q frac hX hq hfrac0 hfrac1 hsum hmono
+
 theorem profileInterval_partition_L1_exact (m p X q : Nat) (frac : Real)
     (cuts : Nat → Nat) (hstart : cuts 0 = 0) (hcuts : Monotone cuts)
     (hend : cuts p = m) (hX : X ≤ m) (hq : q < m)

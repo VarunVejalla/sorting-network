@@ -209,3 +209,12 @@ theorem carries that union through the merge. The critical identification of
 logical rank packets with the next fixed physical `WireFlow` cuts remains
 open. Consequently there is still no global rank-profile recurrence or
 improved limsup coefficient.
+
+The next algebraic interface has been formalized in
+`monotoneCountDecomposition_L1_exact` and `assignedRankProfiles_L1_exact`:
+for any assignment of each sorted packet rank to a destination, the aggregate
+L1 error of the induced scattered rank subsets is exactly the coarse packet
+count error, as long as selected suffixes are nested and have the right total
+size. The next step is to define those assignments from actual merge-output
+wire embeddings and `WireFlow` ports, then connect the resulting counts to the
+global receiver recurrence.

@@ -1457,3 +1457,9 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_residue63_batch_support' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_residue63_batch_support
+/-- info: 'Chvatal.PacketAlignment.monotoneCountDecomposition_L1_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.monotoneCountDecomposition_L1_exact
+/-- info: 'Chvatal.PacketAlignment.assignedRankProfiles_L1_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.assignedRankProfiles_L1_exact

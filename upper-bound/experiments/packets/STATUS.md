@@ -737,3 +737,16 @@ Together with `genMergeTreeFullTailBatch_output_support`, this supplies exact
 support conservation through both merge configurations. Neither route
 identifies logical output ranks with the next scheduler's physical cuts; the
 global recurrence and any coefficient improvement remain open.
+
+Scattered rank-partition L1 interface (GPT-6-astra-high, 2026-10-16):
+`monotoneCountDecomposition_L1_exact` proves the exact L1 identity for any
+finite collection of monotone count profiles whose total is the packet count.
+`assignedRankProfiles_L1_exact` instantiates it for an arbitrary map assigning
+each rank position to a destination: destination rank sets need not be
+contiguous, provided the selected suffixes are nested and have the expected
+cardinalities. This removes contiguity as a mathematical requirement for the
+profile transfer. The remaining formal bridge is to define the actual owner
+map from the merge-output wire embeddings and next-stage `WireFlow` ports,
+identify its suffix counts with the concrete routed Boolean values, and then
+sum the resulting errors at each receiver. No global rank contraction or
+improved limsup coefficient is proved.
