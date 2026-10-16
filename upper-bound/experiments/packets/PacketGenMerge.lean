@@ -750,4 +750,116 @@ theorem genPacketRound_dealt_supports_disjoint {N : Nat}
     · exact hdis e he f hf hef (oddWire 64 i) (evenWire 64 j)
     · exact hdis e he f hf hef (oddWire 64 i) (oddWire 64 j)
 
+/-- The explicit packet family available as input to the next matching round. -/
+def genPacketRound_outputPackets {N : Nat} (pairs : List (Fin 128 ↪ Fin N)) :
+    List (Fin 64 ↪ Fin N) :=
+  pairs.flatMap fun e => [dealEvenEmbedding e, dealOddEmbedding e]
+
+theorem genPacketRound_outputPackets_sorted {N : Nat} {α : Type} [LinearOrder α]
+    (pairs : List (Fin 128 ↪ Fin N))
+    (hnodup : pairs.Nodup)
+    (hdis : ∀ e ∈ pairs, ∀ f ∈ pairs, e ≠ f →
+      ∀ i j, e i ≠ f j)
+    (v : Fin N → α)
+    (hsorted : ∀ e ∈ pairs,
+      Monotone (fun i : Fin 64 => v (e (Fin.castAdd 64 i))) ∧
+      Monotone (fun i : Fin 64 => v (e (Fin.natAdd 64 i)))) :
+    ∀ p ∈ genPacketRound_outputPackets pairs,
+      Monotone (fun i => (genPacketRound pairs).exec v (p i)) := by
+  intro p hp
+  simp [genPacketRound_outputPackets] at hp
+  obtain ⟨e, he, hp⟩ := hp
+  rcases hp with rfl | rfl
+  · exact (genPacketRound_dealt_lanes_sorted pairs hnodup hdis v hsorted e he).1
+  · exact (genPacketRound_dealt_lanes_sorted pairs hnodup hdis v hsorted e he).2
+
+theorem genPacketRound_outputPackets_support {N : Nat}
+    (pairs : List (Fin 128 ↪ Fin N)) (w : Fin N) :
+    (∃ p ∈ genPacketRound_outputPackets pairs, w ∈ Set.range p) ↔
+      ∃ e ∈ pairs, w ∈ Set.range e := by
+  constructor
+  · rintro ⟨p, hp, ⟨i, rfl⟩⟩
+    simp [genPacketRound_outputPackets] at hp
+    obtain ⟨e, he, hp⟩ := hp
+    rcases hp with rfl | rfl
+    · exact ⟨e, he, ⟨evenWire 64 i, rfl⟩⟩
+    · exact ⟨e, he, ⟨oddWire 64 i, rfl⟩⟩
+  · rintro ⟨e, he, ⟨i, rfl⟩⟩
+    have hw : e i ∈ Set.range (dealEvenEmbedding e) ∪ Set.range (dealOddEmbedding e) := by
+      rw [dealEmbeddings_partition e]
+      exact ⟨i, rfl⟩
+    rcases hw with hw | hw
+    · obtain ⟨j, hj⟩ := hw
+      refine ⟨dealEvenEmbedding e, ?_, ⟨j, hj⟩⟩
+      change dealEvenEmbedding e ∈ List.flatMap
+        (fun f => [dealEvenEmbedding f, dealOddEmbedding f]) pairs
+      rw [List.mem_flatMap]
+      exact ⟨e, he, by simp⟩
+    · obtain ⟨j, hj⟩ := hw
+      refine ⟨dealOddEmbedding e, ?_, ⟨j, hj⟩⟩
+      change dealOddEmbedding e ∈ List.flatMap
+        (fun f => [dealEvenEmbedding f, dealOddEmbedding f]) pairs
+      rw [List.mem_flatMap]
+      exact ⟨e, he, by simp⟩
+
+theorem genPacketRound_outputPackets_disjoint {N : Nat}
+    (pairs : List (Fin 128 ↪ Fin N))
+    (hnodup : pairs.Nodup)
+    (hdis : ∀ e ∈ pairs, ∀ f ∈ pairs, e ≠ f →
+      ∀ i j, e i ≠ f j) :
+    List.Pairwise (fun p q : Fin 64 ↪ Fin N => ∀ i j, p i ≠ q j)
+      (genPacketRound_outputPackets pairs) := by
+  have aux : ∀ (ps : List (Fin 128 ↪ Fin N)), ps.Nodup →
+      (∀ e ∈ ps, ∀ f ∈ ps, e ≠ f → ∀ i j, e i ≠ f j) →
+      List.Pairwise (fun p q : Fin 64 ↪ Fin N => ∀ i j, p i ≠ q j)
+        (genPacketRound_outputPackets ps) := by
+    intro ps
+    induction ps with
+    | nil => intro hnodup' hdis'; simp [genPacketRound_outputPackets]
+    | cons e es ih =>
+        intro hnodup' hdis'
+        have hnd := List.nodup_cons.mp hnodup'
+        have hdisTail : ∀ a ∈ es, ∀ b ∈ es, a ≠ b → ∀ i j, a i ≠ b j := by
+          intro a ha b hb hne i j
+          exact hdis' a (List.mem_cons_of_mem e ha) b (List.mem_cons_of_mem e hb) hne i j
+        have hcross : ∀ f ∈ es, ∀ i j,
+            (dealEvenEmbedding e i ≠ dealEvenEmbedding f j ∧
+             dealEvenEmbedding e i ≠ dealOddEmbedding f j) ∧
+            (dealOddEmbedding e i ≠ dealEvenEmbedding f j ∧
+             dealOddEmbedding e i ≠ dealOddEmbedding f j) := by
+          intro f hf i j
+          have hef : e ≠ f := by
+            intro heq
+            subst f
+            exact hnd.1 hf
+          have hwire := hdis' e (by simp) f (List.mem_cons_of_mem e hf) hef
+          exact ⟨⟨hwire (evenWire 64 i) (evenWire 64 j),
+              hwire (evenWire 64 i) (oddWire 64 j)⟩,
+            ⟨hwire (oddWire 64 i) (evenWire 64 j),
+              hwire (oddWire 64 i) (oddWire 64 j)⟩⟩
+        change List.Pairwise (fun p q : Fin 64 ↪ Fin N => ∀ i j, p i ≠ q j)
+          (dealEvenEmbedding e :: dealOddEmbedding e ::
+            genPacketRound_outputPackets es)
+        refine List.pairwise_cons.mpr ⟨?_, List.pairwise_cons.mpr ⟨?_,
+          ih hnd.2 hdisTail⟩⟩
+        · intro p hp
+          simp only [List.mem_cons] at hp
+          rcases hp with rfl | hp
+          · intro i j
+            exact dealEmbeddings_disjoint e i j
+          · simp [genPacketRound_outputPackets] at hp
+            obtain ⟨f, hf, rfl | rfl⟩ := hp
+            · intro i j
+              exact (hcross f hf i j).1.1
+            · intro i j
+              exact (hcross f hf i j).1.2
+        · intro p hp
+          simp [genPacketRound_outputPackets] at hp
+          obtain ⟨f, hf, rfl | rfl⟩ := hp
+          · intro i j
+            exact (hcross f hf i j).2.1
+          · intro i j
+            exact (hcross f hf i j).2.2
+  exact aux pairs hnodup hdis
+
 end Chvatal.PacketAlignment

@@ -600,3 +600,15 @@ import PacketHalfProfile
 /-- info: 'Chvatal.PacketAlignment.genPacketRound_exec_outside' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genPacketRound_exec_outside
+
+/-- info: 'Chvatal.PacketAlignment.genPacketRound_outputPackets_sorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genPacketRound_outputPackets_sorted
+
+/-- info: 'Chvatal.PacketAlignment.genPacketRound_outputPackets_support' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genPacketRound_outputPackets_support
+
+/-- info: 'Chvatal.PacketAlignment.genPacketRound_outputPackets_disjoint' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genPacketRound_outputPackets_disjoint

@@ -103,12 +103,12 @@ checks all scratch sources.
    matching-round network is now checked: `genPacketRound` runs the seven-layer
    merge on every pair in a list of pairwise disjoint 128-wire embeddings;
    each pair's even/odd outputs remain sorted after the whole network,
-   different outputs have disjoint supports, and the network depth is at most
-   7. This avoids assuming source-rank cells remain fixed physical receiver
-   packets. Still missing are the packet-family bookkeeping that turns an
-   actual matching on packet IDs into this list of embeddings, iteration across
-   rounds, and compatibility of the evolving embeddings with positional
-   `WireFlow` cuts.
+   the `genPacketRound_outputPackets` list is pairwise support-disjoint and
+   covers exactly the consumed support union, and the network depth is at most
+   7. The output list is therefore a valid next-round sorted packet family.
+   This avoids assuming source-rank cells remain fixed physical receiver
+   packets. Still missing are the matching schedule on packet IDs and its
+   compatibility with positional `WireFlow` cuts.
 3. Supply an unbounded matching family and a uniform rounded-discrepancy bound,
    including exceptional small cohorts. Finite mixing screens do not prove
    this.
