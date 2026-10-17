@@ -413,5 +413,9 @@ edge. A physical-order induction must carry ordered groups spanning both
 outputs and match across distinct groups, or use an invariant that permits
 interleaving. The companion `dealEmbeddings_crossOrdered` lemma proves that
 all four cross-pairs of outputs from two distinct ordered parent blocks remain
-separated. This validates block-level separation as a local invariant, but a
-complete hierarchical matching schedule and its contraction are still open.
+separated. `joinPacketEmbedding_crossOrdered` and
+`dealtJoinedPackets_crossOrdered` lift this from parent wires to the actual
+128-wire merge-and-deal edges, including when the two joined runs are drawn
+from different parent blocks. This validates block-level separation as a
+local invariant, but a complete hierarchical matching schedule and its
+contraction are still open.

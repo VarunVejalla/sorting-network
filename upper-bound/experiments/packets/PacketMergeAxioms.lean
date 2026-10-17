@@ -25,6 +25,14 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.dealEmbeddings_crossOrdered' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.dealEmbeddings_crossOrdered
+
+/-- info: 'Chvatal.PacketAlignment.joinPacketEmbedding_crossOrdered' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.joinPacketEmbedding_crossOrdered
+
+/-- info: 'Chvatal.PacketAlignment.dealtJoinedPackets_crossOrdered' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.dealtJoinedPackets_crossOrdered
 /-- info: 'Chvatal.PacketAlignment.joinPacketEmbedding_strictMono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.joinPacketEmbedding_strictMono

@@ -808,6 +808,62 @@ theorem joinPacketEmbedding_strictMono {m N : Nat}
       rw [← hieq, ← hjeq]
       exact hij
 
+/-- If two parent blocks are physically separated, joining any packet from
+the lower block to any packet from the upper block preserves that separation
+for the full 128-wire support. -/
+theorem joinPacketEmbedding_crossOrdered {m N : Nat}
+    (a b c d : Fin m ↪ Fin N)
+    (hab : ∀ i j, a i ≠ b j) (hcd : ∀ i j, c i ≠ d j)
+    (hblocks : ∀ i j,
+      a i < c j ∧ a i < d j ∧ b i < c j ∧ b i < d j) :
+    ∀ i j, joinPacketEmbedding a b hab i < joinPacketEmbedding c d hcd j := by
+  intro i j
+  by_cases hi : i.val < m
+  · let i' : Fin m := ⟨i.val, hi⟩
+    have hieq : i = Fin.castAdd m i' := Fin.ext rfl
+    rw [hieq, joinPacketEmbedding_left]
+    by_cases hj : j.val < m
+    · let j' : Fin m := ⟨j.val, hj⟩
+      have hjeq : j = Fin.castAdd m j' := Fin.ext rfl
+      rw [hjeq, joinPacketEmbedding_left]
+      exact (hblocks i' j').1
+    · let j' : Fin m := ⟨j.val - m, by have := j.isLt; omega⟩
+      have hjeq : j = Fin.natAdd m j' := Fin.ext (by simp [j']; omega)
+      rw [hjeq, joinPacketEmbedding_right]
+      exact (hblocks i' j').2.1
+  · let i' : Fin m := ⟨i.val - m, by have := i.isLt; omega⟩
+    have hieq : i = Fin.natAdd m i' := Fin.ext (by simp [i']; omega)
+    rw [hieq, joinPacketEmbedding_right]
+    by_cases hj : j.val < m
+    · let j' : Fin m := ⟨j.val, hj⟩
+      have hjeq : j = Fin.castAdd m j' := Fin.ext rfl
+      rw [hjeq, joinPacketEmbedding_left]
+      exact (hblocks i' j').2.2.1
+    · let j' : Fin m := ⟨j.val - m, by have := j.isLt; omega⟩
+      have hjeq : j = Fin.natAdd m j' := Fin.ext (by simp [j']; omega)
+      rw [hjeq, joinPacketEmbedding_right]
+      exact (hblocks i' j').2.2.2
+
+/-- Dealt packets from matched inputs in two distinct ordered parent blocks
+remain separated in all four lane combinations. -/
+theorem dealtJoinedPackets_crossOrdered {N : Nat}
+    (a b c d : Fin 64 ↪ Fin N)
+    (hab : ∀ i j, a i ≠ b j) (hcd : ∀ i j, c i ≠ d j)
+    (hblocks : ∀ i j,
+      a i < c j ∧ a i < d j ∧ b i < c j ∧ b i < d j)
+    (i j : Fin 64) :
+    dealEvenEmbedding (joinPacketEmbedding a b hab) i <
+        dealEvenEmbedding (joinPacketEmbedding c d hcd) j ∧
+      dealEvenEmbedding (joinPacketEmbedding a b hab) i <
+        dealOddEmbedding (joinPacketEmbedding c d hcd) j ∧
+      dealOddEmbedding (joinPacketEmbedding a b hab) i <
+        dealEvenEmbedding (joinPacketEmbedding c d hcd) j ∧
+      dealOddEmbedding (joinPacketEmbedding a b hab) i <
+        dealOddEmbedding (joinPacketEmbedding c d hcd) j := by
+  exact dealEmbeddings_crossOrdered
+    (joinPacketEmbedding a b hab) (joinPacketEmbedding c d hcd)
+    (joinPacketEmbedding_crossOrdered a b c d hab hcd hblocks) i j
+
 theorem dealEmbeddings_disjoint {N : Nat} (e : Fin 128 ↪ Fin N) :
     ∀ i j, dealEvenEmbedding e i ≠ dealOddEmbedding e j := by
   intro i j heq
