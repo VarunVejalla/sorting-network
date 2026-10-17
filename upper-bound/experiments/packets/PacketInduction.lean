@@ -894,6 +894,159 @@ structure IndexedPacketMatching (m : Nat) where
   covers : ∀ i, (∃ e ∈ edges, e.1 = i ∨ e.2 = i) ∨ i ∈ singles
   count : 2 * edges.length + singles.length = m
 
+/-- Pair the right lane of each even output block with the left lane of the
+following odd block. The two outer lanes in each pair remain singletons. -/
+def interBlockBoundaryEdges (r : Nat) :
+    List (Fin (2 * (2 * r)) × Fin (2 * (2 * r))) :=
+  (List.finRange r).map fun j =>
+    (⟨4 * j.val + 1, by omega⟩, ⟨4 * j.val + 2, by omega⟩)
+
+/-- Enumerate the untouched outer lanes in the same block order. -/
+def interBlockBoundarySingletons (r : Nat) : List (Fin (2 * (2 * r))) :=
+  (List.finRange (2 * r)).map fun i =>
+    ⟨2 * i.val + i.val % 2, by have := i.isLt; omega⟩
+
+theorem interBlockBoundaryEdges_nodup (r : Nat) :
+    (interBlockBoundaryEdges r).Nodup := by
+  unfold interBlockBoundaryEdges
+  apply List.Nodup.map_on
+  · intro j hj l hl heq
+    have hv := congrArg (fun e : Fin (2 * (2 * r)) × Fin (2 * (2 * r)) => e.1.val) heq
+    simp at hv
+    apply Fin.ext
+    omega
+  · exact List.nodup_finRange r
+
+theorem interBlockBoundaryEdges_noFixed (r : Nat) :
+    ∀ e ∈ interBlockBoundaryEdges r, e.1 ≠ e.2 := by
+  intro e he
+  simp only [interBlockBoundaryEdges, List.mem_map, List.mem_finRange] at he
+  obtain ⟨j, _, rfl⟩ := he
+  intro h
+  have hv := congrArg Fin.val h
+  simp at hv
+
+theorem interBlockBoundaryEdges_vertexDisjoint (r : Nat) :
+    ∀ e ∈ interBlockBoundaryEdges r, ∀ f ∈ interBlockBoundaryEdges r,
+      e ≠ f → e.1 ≠ f.1 ∧ e.1 ≠ f.2 ∧ e.2 ≠ f.1 ∧ e.2 ≠ f.2 := by
+  intro e he f hf hne
+  simp only [interBlockBoundaryEdges, List.mem_map, List.mem_finRange] at he hf
+  obtain ⟨j, _, rfl⟩ := he
+  obtain ⟨l, _, rfl⟩ := hf
+  have hjl : j ≠ l := by
+    intro h
+    apply hne
+    subst l
+    rfl
+  have hjlval : j.val ≠ l.val := by
+    intro h
+    apply hjl
+    exact Fin.ext h
+  refine ⟨?_, ?_, ?_, ?_⟩ <;>
+    intro h <;> have hv := congrArg Fin.val h <;> simp at hv <;> omega
+
+theorem interBlockBoundarySingletons_nodup (r : Nat) :
+    (interBlockBoundarySingletons r).Nodup := by
+  unfold interBlockBoundarySingletons
+  apply List.Nodup.map_on
+  · intro i hi j hj heq
+    have hv := congrArg Fin.val heq
+    have hlt := i.isLt
+    have hlt' := j.isLt
+    simp at hv
+    apply Fin.ext
+    omega
+  · exact List.nodup_finRange (2 * r)
+
+theorem interBlockBoundarySingletons_disjoint (r : Nat) :
+    List.Pairwise (fun i j : Fin (2 * (2 * r)) => i ≠ j)
+      (interBlockBoundarySingletons r) :=
+  (List.nodup_iff_pairwise_ne).mp (interBlockBoundarySingletons_nodup r)
+
+theorem interBlockBoundarySingletons_free (r : Nat) :
+    ∀ i ∈ interBlockBoundarySingletons r, ∀ e ∈ interBlockBoundaryEdges r,
+      e.1 ≠ i ∧ e.2 ≠ i := by
+  intro i hi e he
+  simp only [interBlockBoundarySingletons, List.mem_map, List.mem_finRange] at hi
+  obtain ⟨t, _, rfl⟩ := hi
+  simp only [interBlockBoundaryEdges, List.mem_map, List.mem_finRange] at he
+  obtain ⟨j, _, rfl⟩ := he
+  refine ⟨?_, ?_⟩ <;> intro h <;>
+    have hv := congrArg Fin.val h <;> simp at hv <;> omega
+
+theorem interBlockBoundaryMatching_covers (r : Nat) (i : Fin (2 * (2 * r))) :
+    (∃ e ∈ interBlockBoundaryEdges r, e.1 = i ∨ e.2 = i) ∨
+      i ∈ interBlockBoundarySingletons r := by
+  have hi := i.isLt
+  let j : Fin r := ⟨i.val / 4, by omega⟩
+  let t : Fin (2 * r) := ⟨i.val / 2, by omega⟩
+  by_cases h0 : i.val % 4 = 0
+  · right
+    simp only [interBlockBoundarySingletons, List.mem_map, List.mem_finRange]
+    refine ⟨t, trivial, ?_⟩
+    apply Fin.ext
+    dsimp [t]
+    have ht : (i.val / 2) % 2 = 0 := by omega
+    omega
+  · by_cases h1 : i.val % 4 = 1
+    · left
+      refine ⟨(⟨4 * j.val + 1, by omega⟩, ⟨4 * j.val + 2, by omega⟩), ?_, Or.inl ?_⟩
+      · simp [interBlockBoundaryEdges]
+      apply Fin.ext
+      dsimp [j]
+      omega
+    · by_cases h2 : i.val % 4 = 2
+      · left
+        refine ⟨(⟨4 * j.val + 1, by omega⟩, ⟨4 * j.val + 2, by omega⟩), ?_, Or.inr ?_⟩
+        · simp [interBlockBoundaryEdges]
+        · apply Fin.ext
+          dsimp [j]
+          omega
+      · right
+        simp only [interBlockBoundarySingletons, List.mem_map, List.mem_finRange]
+        refine ⟨t, trivial, ?_⟩
+        apply Fin.ext
+        dsimp [t]
+        have ht : (i.val / 2) % 2 = 1 := by omega
+        omega
+
+theorem interBlockBoundaryMatching_count (r : Nat) :
+    2 * (interBlockBoundaryEdges r).length +
+      (interBlockBoundarySingletons r).length = 2 * (2 * r) := by
+  simp [interBlockBoundaryEdges, interBlockBoundarySingletons]
+  omega
+
+/-- Concrete partial matching across the boundaries of ordered two-lane
+blocks. Every block pair contributes one edge and its two outer singleton
+lanes, so all packet IDs are accounted for exactly once. -/
+def interBlockBoundaryMatching (r : Nat) : IndexedPacketMatching (2 * (2 * r)) where
+  edges := interBlockBoundaryEdges r
+  nodup := interBlockBoundaryEdges_nodup r
+  noFixed := interBlockBoundaryEdges_noFixed r
+  vertexDisjoint := interBlockBoundaryEdges_vertexDisjoint r
+  singles := interBlockBoundarySingletons r
+  singleDisjoint := interBlockBoundarySingletons_disjoint r
+  free := interBlockBoundarySingletons_free r
+  covers := interBlockBoundaryMatching_covers r
+  count := interBlockBoundaryMatching_count r
+
+/-- If packet IDs are laid out as two lanes per physically ordered block,
+`interBlockBoundaryMatching` is oriented from lower to higher supports on
+every edge. -/
+theorem interBlockBoundaryMatching_ordered {r N : Nat}
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hblockOrdered : ∀ i j, i.val / 2 < j.val / 2 → ∀ x y,
+      packets i x < packets j y) :
+    ∀ e ∈ (interBlockBoundaryMatching r).edges, ∀ x y,
+      packets e.1 x < packets e.2 y := by
+  intro e he x y
+  change e ∈ interBlockBoundaryEdges r at he
+  simp only [interBlockBoundaryEdges, List.mem_map, List.mem_finRange] at he
+  obtain ⟨j, _, rfl⟩ := he
+  exact hblockOrdered _ _ (by
+    change (4 * j.val + 1) / 2 < (4 * j.val + 2) / 2
+    omega) x y
+
 /-- State invariant for iterating logical matching rounds. Values are recorded
 with their current wire labels; packet supports remain a fixed partition. -/
 structure IndexedPacketRoundState (m N : Nat) (α : Type)
@@ -1119,6 +1272,162 @@ theorem indexedPacketMatching_preservesPhysicalState {m N : Nat} {α : Type}
     }
     packetStrictMono := hmonoNext
   }, rfl, hdepth⟩
+
+/-- The boundary matching gives a genuine next round for a family of
+two-lane blocks. It preserves packet sortedness, disjointness, exact support,
+and strict physical order, with the checked seven-layer depth. -/
+theorem interBlockBoundaryMatching_preservesPhysicalState {r N : Nat} {α : Type}
+    [LinearOrder α]
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (v : Fin N → α)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (hsorted : ∀ i, Monotone (fun x => v (packets i x)))
+    (hmono : ∀ i, StrictMono (packets i))
+    (hblockOrdered : ∀ i j, i.val / 2 < j.val / 2 → ∀ x y,
+      packets i x < packets j y) :
+    let support := Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i))
+    ∃ next : IndexedPacketPhysicalRoundState (2 * (2 * r)) N α support,
+      next.values = (genIndexedPacketRound packets hdisjoint
+        (interBlockBoundaryMatching r).edges
+        (interBlockBoundaryMatching r).noFixed).exec v ∧
+      (genIndexedPacketRound packets hdisjoint (interBlockBoundaryMatching r).edges
+        (interBlockBoundaryMatching r).noFixed).depth ≤ 7 := by
+  let support := Finset.univ.biUnion
+    (fun i => packetEmbeddingSupport (packets i))
+  let state : IndexedPacketPhysicalRoundState (2 * (2 * r)) N α support := {
+    toIndexedPacketRoundState := {
+      packets := packets
+      values := v
+      disjoint := hdisjoint
+      sorted := hsorted
+      support_eq := rfl
+    }
+    packetStrictMono := hmono
+  }
+  have hordered := interBlockBoundaryMatching_ordered packets hblockOrdered
+  simpa [interBlockBoundaryMatching, state, support] using
+    (indexedPacketMatching_preservesPhysicalState
+      (interBlockBoundaryMatching r) state hordered)
+
+/-- Flatten the grouped output blocks in block-major, lane-minor order. -/
+def adjacentPacketMatchingFlattenedOutput {k N : Nat}
+    (packets : Fin (2 * k) → Fin 64 ↪ Fin N)
+    (hordered : ∀ p q, p.val < q.val → ∀ i j, packets p i < packets q j)
+    (i : Fin (2 * k)) : Fin 64 ↪ Fin N :=
+  adjacentPacketMatchingOutputBlock packets hordered
+    ⟨i.val / 2, by have := i.isLt; omega⟩ (decide (i.val % 2 = 1))
+
+/-- The flattened two-lane output blocks of an adjacent perfect matching form
+the exact input interface needed by `interBlockBoundaryMatching`: every
+packet remains sorted and physically increasing, different packets are
+disjoint, and all packets in an earlier block precede those in a later block. -/
+theorem adjacentPacketMatchingFlattenedOutput_contract {k N : Nat} {α : Type}
+    [LinearOrder α]
+    (packets : Fin (2 * k) → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (hordered : ∀ p q, p.val < q.val → ∀ i j, packets p i < packets q j)
+    (v : Fin N → α)
+    (hsorted : ∀ p, Monotone (fun i => v (packets p i)))
+    (hmono : ∀ p, StrictMono (packets p)) :
+    (∀ i, Monotone (fun x =>
+      (genIndexedPacketRound packets hpacketDisjoint (adjacentPacketMatching k)
+        (adjacentPacketMatching_noFixed k)).exec v
+        (adjacentPacketMatchingFlattenedOutput packets hordered i x))) ∧
+    (∀ i, StrictMono (adjacentPacketMatchingFlattenedOutput packets hordered i)) ∧
+    (∀ i j, i ≠ j → ∀ x y,
+      adjacentPacketMatchingFlattenedOutput packets hordered i x ≠
+        adjacentPacketMatchingFlattenedOutput packets hordered j y) ∧
+    (∀ i j, i.val / 2 < j.val / 2 → ∀ x y,
+      adjacentPacketMatchingFlattenedOutput packets hordered i x <
+        adjacentPacketMatchingFlattenedOutput packets hordered j y) := by
+  let block (i : Fin (2 * k)) : Fin k :=
+    ⟨i.val / 2, by have := i.isLt; omega⟩
+  let lane (i : Fin (2 * k)) : Bool := decide (i.val % 2 = 1)
+  have hcontract (i : Fin (2 * k)) :=
+    adjacentPacketMatchingOutputBlock_contract packets hpacketDisjoint hordered
+      v hsorted hmono (block i) (lane i)
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro i
+    simpa [adjacentPacketMatchingFlattenedOutput, block, lane] using (hcontract i).2.1
+  · intro i
+    simpa [adjacentPacketMatchingFlattenedOutput, block, lane] using
+      (hcontract i).2.2.1
+  · intro i j hij x y
+    by_cases hblock : block i = block j
+    · have hlane : lane i ≠ lane j := by
+        intro h
+        apply hij
+        apply Fin.ext
+        have hb := congrArg Fin.val hblock
+        have hl := congrArg id h
+        simp [block, lane] at hb hl
+        omega
+      simpa [adjacentPacketMatchingFlattenedOutput, block, lane, hblock.symm] using
+        (hcontract i).2.2.2.2.1 (lane j) x y hlane
+    · by_cases hlt : (block i).val < (block j).val
+      · have hsep := (hcontract i).2.2.2.1 (block j) hlt (lane j) x y
+        simpa [adjacentPacketMatchingFlattenedOutput, block, lane] using ne_of_lt hsep
+      · have hgt : (block j).val < (block i).val := by
+          have hne : (block i).val ≠ (block j).val := by
+            intro h
+            apply hblock
+            exact Fin.ext h
+          omega
+        have hsep := (hcontract j).2.2.2.1 (block i) hgt (lane i) y x
+        simpa [adjacentPacketMatchingFlattenedOutput, block, lane] using
+          (ne_of_lt hsep).symm
+  · intro i j hij x y
+    have hlt : (block i).val < (block j).val := by
+      simpa [block] using hij
+    simpa [adjacentPacketMatchingFlattenedOutput, block, lane] using
+      (hcontract i).2.2.2.1 (block j) hlt (lane j) x y
+
+/-- Instantiate the grouped-output adapter followed by the inter-block
+boundary matching. This proves two consecutive seven-layer rounds preserve a
+physically ordered packet state when the second round is matched across the
+first round's ordered two-lane blocks. -/
+theorem adjacentThenBoundaryMatching_preservesPhysicalState
+    {r N : Nat} {α : Type} [LinearOrder α]
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (v : Fin N → α)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (hsorted : ∀ i, Monotone (fun x => v (packets i x)))
+    (hmono : ∀ i, StrictMono (packets i))
+    (hordered : ∀ i j, i.val < j.val → ∀ x y, packets i x < packets j y) :
+    let first := genIndexedPacketRound packets hpacketDisjoint
+      (adjacentPacketMatching (2 * r)) (adjacentPacketMatching_noFixed (2 * r))
+    let output := adjacentPacketMatchingFlattenedOutput packets hordered
+    ∃ next : IndexedPacketPhysicalRoundState (2 * (2 * r)) N α
+        (Finset.univ.biUnion (fun i => packetEmbeddingSupport (output i))),
+      next.values = (genIndexedPacketRound output
+        (adjacentPacketMatchingFlattenedOutput_contract packets hpacketDisjoint
+          hordered v hsorted hmono).2.2.1
+        (interBlockBoundaryMatching r).edges
+        (interBlockBoundaryMatching r).noFixed).exec (first.exec v) ∧
+      first.depth ≤ 7 ∧
+      (genIndexedPacketRound output
+        (adjacentPacketMatchingFlattenedOutput_contract packets hpacketDisjoint
+          hordered v hsorted hmono).2.2.1
+        (interBlockBoundaryMatching r).edges
+        (interBlockBoundaryMatching r).noFixed).depth ≤ 7 := by
+  dsimp
+  let first := genIndexedPacketRound packets hpacketDisjoint
+    (adjacentPacketMatching (2 * r)) (adjacentPacketMatching_noFixed (2 * r))
+  let output := adjacentPacketMatchingFlattenedOutput packets hordered
+  have hout := adjacentPacketMatchingFlattenedOutput_contract packets
+    hpacketDisjoint hordered v hsorted hmono
+  obtain ⟨next, hnextValues, hnextDepth⟩ :=
+    interBlockBoundaryMatching_preservesPhysicalState output (first.exec v)
+      hout.2.2.1 hout.1 hout.2.1 hout.2.2.2
+  have hfirstDepth : first.depth ≤ 7 := by
+    dsimp [first]
+    exact genIndexedPacketRound_depth_le packets hpacketDisjoint
+      (adjacentPacketMatching (2 * r))
+      (adjacentPacketMatching_nodup (2 * r))
+      (adjacentPacketMatching_noFixed (2 * r))
+      (adjacentPacketMatching_vertexDisjoint (2 * r))
+  refine ⟨next, ?_, hfirstDepth, hnextDepth⟩
+  simpa [first, output] using hnextValues
 
 /-- Iterate an adaptive policy that chooses the next partial matching from
 the current physically ordered packet state. The policy must orient every

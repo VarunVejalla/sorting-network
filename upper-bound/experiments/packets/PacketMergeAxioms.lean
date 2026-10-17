@@ -1056,6 +1056,22 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.indexedPacketMatching_preservesPhysicalState' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.indexedPacketMatching_preservesPhysicalState
+
+/-- info: 'Chvatal.PacketAlignment.interBlockBoundaryMatching' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.interBlockBoundaryMatching
+
+/-- info: 'Chvatal.PacketAlignment.interBlockBoundaryMatching_preservesPhysicalState' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.interBlockBoundaryMatching_preservesPhysicalState
+
+/-- info: 'Chvatal.PacketAlignment.adjacentPacketMatchingFlattenedOutput_contract' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.adjacentPacketMatchingFlattenedOutput_contract
+
+/-- info: 'Chvatal.PacketAlignment.adjacentThenBoundaryMatching_preservesPhysicalState' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.adjacentThenBoundaryMatching_preservesPhysicalState
 /-- info: 'Chvatal.PacketAlignment.iterateIndexedOrderedPacketMatchings_step' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.iterateIndexedOrderedPacketMatchings_step
