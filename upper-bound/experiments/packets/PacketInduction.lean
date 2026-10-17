@@ -1129,6 +1129,19 @@ theorem interBlockBoundaryOutputBlocks_ordered {r N : Nat}
   have hilt := i.isLt
   apply hblockOrdered i i' (by omega) z z'
 
+/-- In particular, different regrouped blocks have disjoint physical supports. -/
+theorem interBlockBoundaryOutputBlocks_disjoint {r N : Nat}
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (hblockOrdered : ∀ i j, i.val / 2 < j.val / 2 → ∀ x y,
+      packets i x < packets j y)
+    (j l : Fin r) (hjl : j.val < l.val) (lane lane' : Fin 4)
+    (x y : Fin 64) :
+    interBlockBoundaryOutputBlock packets hdisjoint j lane x ≠
+      interBlockBoundaryOutputBlock packets hdisjoint l lane' y := by
+  exact ne_of_lt (interBlockBoundaryOutputBlocks_ordered packets hdisjoint
+    hblockOrdered j l hjl lane lane' x y)
+
 /-- State invariant for iterating logical matching rounds. Values are recorded
 with their current wire labels; packet supports remain a fixed partition. -/
 structure IndexedPacketRoundState (m N : Nat) (α : Type)
