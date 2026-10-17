@@ -21,6 +21,10 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.dealEmbeddings_interleave_of_strictMono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.dealEmbeddings_interleave_of_strictMono
+
+/-- info: 'Chvatal.PacketAlignment.dealEmbeddings_crossOrdered' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.dealEmbeddings_crossOrdered
 /-- info: 'Chvatal.PacketAlignment.joinPacketEmbedding_strictMono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.joinPacketEmbedding_strictMono

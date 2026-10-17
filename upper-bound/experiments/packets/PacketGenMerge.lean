@@ -755,6 +755,23 @@ theorem dealEmbeddings_interleave_of_strictMono {N : Nat}
   · simpa [dealEvenEmbedding, dealOddEmbedding, evenWire, oddWire] using he h01
   · simpa [dealEvenEmbedding, dealOddEmbedding, evenWire, oddWire] using he h12
 
+/-- Dealt packets from distinct, ordered parent blocks remain separated from
+one another. The separation is at block granularity: the two outputs within
+one parent block interleave, while every output in the lower block precedes
+every output in the higher block. -/
+theorem dealEmbeddings_crossOrdered {N : Nat}
+    (e f : Fin 128 ↪ Fin N)
+    (hef : ∀ i j, e i < f j) (i j : Fin 64) :
+    dealEvenEmbedding e i < dealEvenEmbedding f j ∧
+      dealEvenEmbedding e i < dealOddEmbedding f j ∧
+      dealOddEmbedding e i < dealEvenEmbedding f j ∧
+      dealOddEmbedding e i < dealOddEmbedding f j := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · exact hef (evenWire 64 i) (evenWire 64 j)
+  · exact hef (evenWire 64 i) (oddWire 64 j)
+  · exact hef (oddWire 64 i) (evenWire 64 j)
+  · exact hef (oddWire 64 i) (oddWire 64 j)
+
 /-- Concatenating two increasing packet embeddings remains increasing when
 the entire first support lies below the entire second support. -/
 theorem joinPacketEmbedding_strictMono {m N : Nat}

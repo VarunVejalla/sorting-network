@@ -411,4 +411,7 @@ interleave in physical wire order. Thus preserving monotonicity inside each
 packet is insufficient to keep the same two packets eligible for an ordered
 edge. A physical-order induction must carry ordered groups spanning both
 outputs and match across distinct groups, or use an invariant that permits
-interleaving.
+interleaving. The companion `dealEmbeddings_crossOrdered` lemma proves that
+all four cross-pairs of outputs from two distinct ordered parent blocks remain
+separated. This validates block-level separation as a local invariant, but a
+complete hierarchical matching schedule and its contraction are still open.
