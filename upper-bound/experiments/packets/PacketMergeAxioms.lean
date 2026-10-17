@@ -1447,6 +1447,9 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.packetPowerTree6GroupNet_heterogeneous_profile_energy_le_signed_sum_sq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.packetPowerTree6GroupNet_heterogeneous_profile_energy_le_signed_sum_sq
+/-- info: 'Chvatal.PacketAlignment.packetPowerTree6GroupNet_heterogeneous_profile_energy_normalized_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetPowerTree6GroupNet_heterogeneous_profile_energy_normalized_le
 
 /-- info: 'Chvatal.PacketAlignment.genScatterMergeTreeBatch_output_threshold_profile' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in

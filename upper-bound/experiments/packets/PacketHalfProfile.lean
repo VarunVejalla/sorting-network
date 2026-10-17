@@ -403,6 +403,52 @@ theorem packetPowerTree6GroupNet_heterogeneous_profile_energy_le_signed_sum_sq
         (boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j) ^ 2 := by
       rw [hL1, sq_abs]
 
+/-- With energy normalized by the 64 output rank cells, reassembly is
+nonexpansive relative to the input packet-count energy. More strongly, the
+preceding signed-residual bound shows that the within-group zero-sum modes
+are projected away. -/
+theorem packetPowerTree6GroupNet_heterogeneous_profile_energy_normalized_le
+    {N : Nat} {α : Type} [LinearOrder α]
+    (packets : Fin 64 → Fin 64 → Fin N)
+    (hdisjoint : ∀ {j k : Fin 64}, j ≠ k → ∀ (i q : Fin 64),
+      packets j i ≠ packets k q)
+    (v : Fin N → α)
+    (hpackets : ∀ j : Fin 64, Monotone (fun i => v (packets j i)))
+    (t : α) (q : Nat) (frac : Real) (μ : Fin 64 → Real)
+    (hq : q < 4096) (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1)
+    (hμ : (∑ j : Fin 64, μ j) = q + frac) :
+    (∑ j : Fin 64,
+      ((boolTrueCount (fun i : Fin 64 => decide (t ≤
+          (packetPowerTree6GroupNet (α := α) packets hdisjoint).exec v
+            (genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α))
+              (genPacketGroup64Embedding packets hdisjoint)
+              (Fin.cast (packetPowerTree6_leafCount (α := α)).symm j) i))) : Real) -
+        profileCellMean 64 q frac j.val) ^ 2) / 64 ≤
+      ∑ j : Fin 64,
+        ((boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j) ^ 2 := by
+  have henergy := packetPowerTree6GroupNet_heterogeneous_profile_energy_le_signed_sum_sq
+    packets hdisjoint v hpackets t q frac μ hq hfrac0 hfrac1 hμ
+  have hcs : (∑ j : Fin 64,
+      (boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j) ^ 2 ≤
+      64 * ∑ j : Fin 64,
+        ((boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j) ^ 2 := by
+    have h := _root_.sq_sum_le_card_mul_sum_sq
+      (s := (Finset.univ : Finset (Fin 64)))
+      (f := fun j : Fin 64 =>
+        (boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j)
+    simpa using h
+  rw [div_le_iff₀ (by norm_num : (0 : Real) < 64)]
+  calc
+    _ ≤ (∑ j : Fin 64,
+        (boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j) ^ 2 :=
+      henergy
+    _ ≤ 64 * ∑ j : Fin 64,
+        ((boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j) ^ 2 :=
+      hcs
+    _ = (∑ j : Fin 64,
+        ((boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j) ^ 2) * 64 := by
+      ring
+
 /-- The output rank-cell error of a 64-packet merge is bounded by the sum of
 the input packets' count errors against arbitrary fractional targets whose
 total is the batch target. The reassembly itself contributes no fresh L1

@@ -288,7 +288,9 @@ zero-sum within-group count errors disappear exactly at reassembly, a useful
 projection effect lost by the prior triangle-inequality estimate. This is not
 a global contraction by itself: errors in the group-mean direction can
 survive or be redistributed, and that mean must still be coupled to the next
-physical-cut targets.
+physical-cut targets. After normalizing output energy by its 64 rank cells,
+`packetPowerTree6GroupNet_heterogeneous_profile_energy_normalized_le` gives a
+nonexpansive bound by the unnormalized input count energy.
 
 Packet-target monotonicity bridge (GPT-6-astra-high, 2026-10-16):
 `natProfileInterp_mono_mean` proves that a monotone integer destination-count
