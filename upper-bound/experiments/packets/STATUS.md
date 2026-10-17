@@ -938,3 +938,13 @@ disjointness, and support while leaving unmatched packets unchanged. This
 removes the even-count/perfect-matching restriction in the logical invariant
 transport. It does not certify a contracting schedule, account for residual
 singleton energy, or align the supports with physical `WireFlow` cuts.
+
+Physical-order local gate (Codex, 2026-10-16): `joinPacketEmbedding_strictMono`
+proves that concatenating two increasing packet embeddings remains increasing
+when every wire of the first support precedes every wire of the second.
+`dealEvenEmbedding_strictMono` and `dealOddEmbedding_strictMono` show that the
+two dealt output embeddings inherit physical increasing order from the joined
+embedding. These local facts are kernel checked and guarded. They make explicit
+the ordering premise needed for a round to preserve physical-rank packet
+embeddings; no theorem yet shows the UB-25 matching schedule satisfies that
+premise across rounds.

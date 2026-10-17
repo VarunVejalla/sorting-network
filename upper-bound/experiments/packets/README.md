@@ -329,6 +329,12 @@ works for odd packet counts as well as even ones. It preserves the logical
 invariant but does not bound singleton energy or provide the required
 contracting schedule.
 
+Physical order has a separate local gate: the checked `joinPacketEmbedding_strictMono`
+and its even/odd deal corollaries preserve increasing physical wire order when
+each matched pair consists of two ordered supports with the first wholly below
+the second. The evolving UB-25 schedule has not yet been shown to maintain
+this premise.
+
 Incidence-sensitive packet-error composition (GPT-6-astra-high, 2026-10-16):
 `packetized_source_errors_sq_sum_le_of_degree` bounds aggregate receiver
 squared error by `k` times source batch-error energy when receiver indegree is

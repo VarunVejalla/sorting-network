@@ -723,6 +723,60 @@ def dealOddEmbedding {N : Nat} (e : Fin 128 ↪ Fin N) : Fin 64 ↪ Fin N :=
     change 2 * i.val + 1 = 2 * j.val + 1 at hv
     exact Fin.ext (by omega)⟩
 
+/-- Even/odd dealing preserves increasing physical wire order when the joined
+128-wire embedding itself is increasing. -/
+theorem dealEvenEmbedding_strictMono {N : Nat} (e : Fin 128 ↪ Fin N)
+    (he : StrictMono e) : StrictMono (dealEvenEmbedding e) := by
+  intro i j hij
+  exact he ((by
+    apply Fin.lt_iff_val_lt_val.mpr
+    simp [evenWire]
+    omega) : evenWire 64 i < evenWire 64 j)
+
+theorem dealOddEmbedding_strictMono {N : Nat} (e : Fin 128 ↪ Fin N)
+    (he : StrictMono e) : StrictMono (dealOddEmbedding e) := by
+  intro i j hij
+  exact he ((by
+    apply Fin.lt_iff_val_lt_val.mpr
+    simp [oddWire]
+    omega) : oddWire 64 i < oddWire 64 j)
+
+/-- Concatenating two increasing packet embeddings remains increasing when
+the entire first support lies below the entire second support. -/
+theorem joinPacketEmbedding_strictMono {m N : Nat}
+    (a b : Fin m ↪ Fin N) (hdis : ∀ i j, a i ≠ b j)
+    (ha : StrictMono a) (hb : StrictMono b)
+    (hab : ∀ i j, a i < b j) :
+    StrictMono (joinPacketEmbedding a b hdis) := by
+  intro i j hij
+  have hijv : i.val < j.val := Fin.lt_iff_val_lt_val.mp hij
+  by_cases hi : i.val < m
+  · let i' : Fin m := ⟨i.val, hi⟩
+    have hieq : i = Fin.castAdd m i' := Fin.ext rfl
+    rw [hieq]
+    by_cases hj : j.val < m
+    · let j' : Fin m := ⟨j.val, hj⟩
+      have hjeq : j = Fin.castAdd m j' := Fin.ext rfl
+      rw [hjeq, joinPacketEmbedding_left, joinPacketEmbedding_left]
+      apply ha
+      apply Fin.lt_iff_val_lt_val.mpr
+      exact hijv
+    · let j' : Fin m := ⟨j.val - m, by have := j.isLt; omega⟩
+      have hjeq : j = Fin.natAdd m j' := Fin.ext (by simp [j']; omega)
+      rw [hjeq, joinPacketEmbedding_left, joinPacketEmbedding_right]
+      exact hab i' j'
+  · by_cases hj : j.val < m
+    · omega
+    · let i' : Fin m := ⟨i.val - m, by have := i.isLt; omega⟩
+      let j' : Fin m := ⟨j.val - m, by have := j.isLt; omega⟩
+      have hieq : i = Fin.natAdd m i' := Fin.ext (by simp [i']; omega)
+      have hjeq : j = Fin.natAdd m j' := Fin.ext (by simp [j']; omega)
+      rw [hieq, hjeq, joinPacketEmbedding_right, joinPacketEmbedding_right]
+      apply hb
+      apply (Fin.natAdd_lt_natAdd_iff m).mp
+      rw [← hieq, ← hjeq]
+      exact hij
+
 theorem dealEmbeddings_disjoint {N : Nat} (e : Fin 128 ↪ Fin N) :
     ∀ i j, dealEvenEmbedding e i ≠ dealOddEmbedding e j := by
   intro i j heq

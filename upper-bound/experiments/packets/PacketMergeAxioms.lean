@@ -7,6 +7,16 @@ import PacketUnequalMerge
 import PacketMergeTree
 import PacketMergeTreeGen
 
+/-- info: 'Chvatal.PacketAlignment.dealEvenEmbedding_strictMono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.dealEvenEmbedding_strictMono
+/-- info: 'Chvatal.PacketAlignment.dealOddEmbedding_strictMono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.dealOddEmbedding_strictMono
+/-- info: 'Chvatal.PacketAlignment.joinPacketEmbedding_strictMono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.joinPacketEmbedding_strictMono
+
 /-- info: 'Chvatal.PacketAlignment.parallelDownSetEndpointRepair_exists' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.parallelDownSetEndpointRepair_exists
