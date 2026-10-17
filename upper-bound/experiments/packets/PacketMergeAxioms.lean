@@ -1751,3 +1751,18 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.wireFlowLayer_reencoded_profile_energy_recurrence' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.wireFlowLayer_reencoded_profile_energy_recurrence
+/-- info: 'Chvatal.PacketAlignment.fourLaneBoundaryOutputBlock_range' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.fourLaneBoundaryOutputBlock_range
+/-- info: 'Chvatal.PacketAlignment.fourLaneBoundaryOutputBlock_support_eq' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.fourLaneBoundaryOutputBlock_support_eq
+/-- info: 'Chvatal.PacketAlignment.fourLaneBoundaryOutputBlocks_ordered' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.fourLaneBoundaryOutputBlocks_ordered
+/-- info: 'Chvatal.PacketAlignment.fourLaneBoundaryOutputBlock_lane_contract' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.fourLaneBoundaryOutputBlock_lane_contract
+/-- info: 'Chvatal.PacketAlignment.fourLaneBoundaryGroupedOutput_lane_contract' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.fourLaneBoundaryGroupedOutput_lane_contract

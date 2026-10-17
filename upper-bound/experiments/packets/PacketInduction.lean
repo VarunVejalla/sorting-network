@@ -1039,10 +1039,39 @@ def fourLaneBoundaryEdges (s : Nat) :
     (Fin.mk (8 * j.val + 3) (by have := j.isLt; omega),
       Fin.mk (8 * j.val + 4) (by have := j.isLt; omega))
 
+theorem fourLaneBoundaryEdges_nodup (s : Nat) :
+    (fourLaneBoundaryEdges s).Nodup := by
+  unfold fourLaneBoundaryEdges
+  exact List.Nodup.map_on (l := List.finRange s)
+    (f := fun j => (Fin.mk (8 * j.val + 3) (by have := j.isLt; omega),
+      Fin.mk (8 * j.val + 4) (by have := j.isLt; omega)))
+    (fun j hj l hl heq => by
+      have hv := congrArg (fun e : Prod (Fin (8 * s)) (Fin (8 * s)) => e.1.val) heq
+      simp at hv
+      apply Fin.ext
+      omega)
+    (List.nodup_finRange s)
+
+theorem fourLaneBoundaryEdges_noFixed (s : Nat) :
+    forall e, List.Mem e (fourLaneBoundaryEdges s) -> Not (e.1 = e.2) := by
+  intro e he
+  have heMap := List.mem_map.mp he
+  cases heMap with
+  | intro j hj =>
+    cases hj with
+    | intro hj heq =>
+      cases e with
+      | mk edgeLeft edgeRight =>
+        simp only [Prod.mk.injEq] at heq
+        cases heq.1
+        cases heq.2
+        intro h
+        have hv := congrArg Fin.val h
+        simp at hv
 /-- The candidate four-lane boundary edges point from an earlier physical
 four-packet block to a later one. -/
 theorem fourLaneBoundaryEdges_ordered {s N : Nat}
-    (packets : Fin (8 * s) -> Fin 64 -> Fin N)
+    (packets : Fin (8 * s) -> Function.Embedding (Fin 64) (Fin N))
     (hblockOrdered : forall i j, i.val / 4 < j.val / 4 -> forall x y,
       packets i x < packets j y) :
     forall e, List.Mem e (fourLaneBoundaryEdges s) -> forall x y,
@@ -1070,9 +1099,249 @@ def fourLaneBoundarySingletonIndex {s : Nat} (k : Fin (6 * s)) : Fin (8 * s) :=
 def fourLaneBoundarySingletons (s : Nat) : List (Fin (8 * s)) :=
   (List.finRange (6 * s)).map fourLaneBoundarySingletonIndex
 
+theorem fourLaneBoundarySingletonIndex_mod8 (s : Nat) (k : Fin (6 * s)) :
+    And (Not ((fourLaneBoundarySingletonIndex k).val % 8 = 3))
+      (Not ((fourLaneBoundarySingletonIndex k).val % 8 = 4)) := by
+  have hrLt : k.val % 6 < 6 := Nat.mod_lt _ (by omega)
+  by_cases hr : k.val % 6 < 3
+  <;> constructor
+  <;> intro h
+  <;> simp [fourLaneBoundarySingletonIndex, hr] at h
+  <;> omega
+
+theorem fourLaneBoundarySingletons_nodup (s : Nat) :
+    (fourLaneBoundarySingletons s).Nodup := by
+  unfold fourLaneBoundarySingletons
+  exact List.Nodup.map_on (l := List.finRange (6 * s)) (f := fourLaneBoundarySingletonIndex)
+    (fun (i : Fin (6 * s)) hi (j : Fin (6 * s)) hj heq => by
+      have hv := congrArg Fin.val heq
+      have hiLt := i.isLt
+      have hjLt := j.isLt
+      by_cases hiR : i.val % 6 < 3 <;> by_cases hjR : j.val % 6 < 3
+      <;> simp [fourLaneBoundarySingletonIndex, hiR, hjR] at hv
+      <;> apply Fin.ext
+      <;> omega)
+    (List.nodup_finRange (6 * s))
+
+theorem fourLaneBoundaryEdge_mem_repr {s : Nat} {e : Prod (Fin (8 * s)) (Fin (8 * s))}
+    (he : List.Mem e (fourLaneBoundaryEdges s)) :
+    Exists (fun j : Fin s => And (e.1.val = 8 * j.val + 3) (e.2.val = 8 * j.val + 4)) := by
+  have heMap := List.mem_map.mp he
+  cases heMap with
+  | intro j hj =>
+    cases hj with
+    | intro hj heq =>
+      cases e with
+      | mk edgeLeft edgeRight =>
+        simp only [Prod.mk.injEq] at heq
+        cases heq.1
+        cases heq.2
+        exact Exists.intro j (And.intro rfl rfl)
+
+theorem fourLaneBoundaryEdges_vertexDisjoint (s : Nat) :
+    forall e, List.Mem e (fourLaneBoundaryEdges s) ->
+      forall f, List.Mem f (fourLaneBoundaryEdges s) ->
+        Not (e = f) ->
+          And (Not (e.1 = f.1)) (And (Not (e.1 = f.2))
+            (And (Not (e.2 = f.1)) (Not (e.2 = f.2)))) := by
+  intro e he f hf hne
+  have heR := fourLaneBoundaryEdge_mem_repr he
+  have hfR := fourLaneBoundaryEdge_mem_repr hf
+  cases heR with
+  | intro j heEnds =>
+    cases heEnds with
+    | intro hLeft hRight =>
+      cases hfR with
+      | intro l hfEnds =>
+        cases hfEnds with
+        | intro hfLeft hfRight =>
+          have hjl : Not (j.val = l.val) := by
+            intro h
+            apply hne
+            apply Prod.ext <;> apply Fin.ext <;> omega
+          have h11 : Not (e.1 = f.1) := by
+            intro h
+            have hv := congrArg Fin.val h
+            rw [hLeft, hfLeft] at hv
+            omega
+          have h12 : Not (e.1 = f.2) := by
+            intro h
+            have hv := congrArg Fin.val h
+            rw [hLeft, hfRight] at hv
+            omega
+          have h21 : Not (e.2 = f.1) := by
+            intro h
+            have hv := congrArg Fin.val h
+            rw [hRight, hfLeft] at hv
+            omega
+          have h22 : Not (e.2 = f.2) := by
+            intro h
+            have hv := congrArg Fin.val h
+            rw [hRight, hfRight] at hv
+            omega
+          exact And.intro h11 (And.intro h12 (And.intro h21 h22))
+
+theorem fourLaneBoundarySingletons_free (s : Nat) :
+    forall i, List.Mem i (fourLaneBoundarySingletons s) ->
+      forall e, List.Mem e (fourLaneBoundaryEdges s) ->
+        And (Not (e.1 = i)) (Not (e.2 = i)) := by
+  intro i hi e he
+  have hiMap := List.mem_map.mp hi
+  cases hiMap with
+  | intro k hk =>
+    cases hk with
+    | intro hk heq =>
+      have edgeRepr := fourLaneBoundaryEdge_mem_repr he
+      cases edgeRepr with
+      | intro j hEnds =>
+        cases hEnds with
+        | intro hLeft hRight =>
+          have hidx := congrArg (fun z : Fin (8 * s) => z.val % 8) heq
+          have hnotLeft : Not (e.1 = i) := by
+            intro hEq
+            have hval := congrArg Fin.val hEq
+            rw [hLeft] at hval
+            have hmod : i.val % 8 = 3 := by omega
+            exact (fourLaneBoundarySingletonIndex_mod8 s k).1 (hidx.trans hmod)
+          have hnotRight : Not (e.2 = i) := by
+            intro hEq
+            have hval := congrArg Fin.val hEq
+            rw [hRight] at hval
+            have hmod : i.val % 8 = 4 := by omega
+            exact (fourLaneBoundarySingletonIndex_mod8 s k).2 (hidx.trans hmod)
+          exact And.intro hnotLeft hnotRight
+
+theorem fourLaneBoundaryMatching_covers (s : Nat) (i : Fin (8 * s)) :
+    Or (Exists (fun e : Prod (Fin (8 * s)) (Fin (8 * s)) =>
+      And (List.Mem e (fourLaneBoundaryEdges s)) (Or (e.1 = i) (e.2 = i))))
+      (List.Mem i (fourLaneBoundarySingletons s)) := by
+  have hi := i.isLt
+  let j : Fin s := Fin.mk (i.val / 8) (by omega)
+  by_cases h3 : i.val % 8 = 3
+  · let e : Prod (Fin (8 * s)) (Fin (8 * s)) :=
+      (Fin.mk (8 * j.val + 3) (by omega), Fin.mk (8 * j.val + 4) (by omega))
+    have he : List.Mem e (fourLaneBoundaryEdges s) := by
+      apply List.mem_map.mpr
+      exact Exists.intro j (And.intro ((by simp)) rfl)
+    have hleft : e.1 = i := Fin.ext (by
+      dsimp [e, j]
+      omega)
+    exact Or.inl (Exists.intro e (And.intro he (Or.inl hleft)))
+  · by_cases h4 : i.val % 8 = 4
+    · let e : Prod (Fin (8 * s)) (Fin (8 * s)) :=
+        (Fin.mk (8 * j.val + 3) (by omega), Fin.mk (8 * j.val + 4) (by omega))
+      have he : List.Mem e (fourLaneBoundaryEdges s) := by
+        apply List.mem_map.mpr
+        exact Exists.intro j (And.intro ((by simp)) rfl)
+      have hright : e.2 = i := Fin.ext (by
+        dsimp [e, j]
+        omega)
+      exact Or.inl (Exists.intro e (And.intro he (Or.inr hright)))
+    · let q := i.val / 8
+      let r := i.val % 8
+      have hrLt : r < 8 := by dsimp [r]; omega
+      have hdecomp8 : r + 8 * q = i.val := by
+        dsimp [r, q]
+        exact Nat.mod_add_div i.val 8
+      have hnot3 : Not (r = 3) := by dsimp [r]; exact h3
+      have hnot4 : Not (r = 4) := by dsimp [r]; exact h4
+      let t := if r < 3 then r else r - 2
+      have htLt : t < 6 := by
+        by_cases hr : r < 3 <;> simp [t, hr] <;> omega
+      let k : Fin (6 * s) := Fin.mk (6 * q + t) (by omega)
+      have hqk : (6 * q + t) / 6 = q := by omega
+      have hrk : (6 * q + t) % 6 = t := by omega
+      have hkEq : fourLaneBoundarySingletonIndex k = i := Fin.ext (by
+        dsimp [k, fourLaneBoundarySingletonIndex]
+        rw [hqk, hrk]
+        change 8 * q + t + (if t < 3 then 0 else 2) = i.val
+        by_cases hr : r < 3
+        · simp [t, hr]
+          omega
+        · have hrGe : 5 <= r := by
+            dsimp [r] at hnot3 hnot4
+            omega
+          have htEq : t = r - 2 := by simp [t, hr]
+          have htNot : Not (t < 3) := by rw [htEq]; omega
+          simp [htNot]
+          rw [htEq]
+          omega)
+      have hk : List.Mem i (fourLaneBoundarySingletons s) := by
+        unfold fourLaneBoundarySingletons
+        apply List.mem_map.mpr
+        exact Exists.intro k (And.intro ((by simp)) hkEq)
+      exact Or.inr hk
+
+theorem fourLaneBoundarySingleton_mem_of_nonedge {s : Nat} (i : Fin (8 * s))
+    (h3 : Not (i.val % 8 = 3)) (h4 : Not (i.val % 8 = 4)) :
+    List.Mem i (fourLaneBoundarySingletons s) := by
+  cases fourLaneBoundaryMatching_covers s i with
+  | inr hsingle => exact hsingle
+  | inl hincident =>
+    cases hincident with
+    | intro e he =>
+      cases he with
+      | intro hedge hside =>
+        cases hside with
+        | inl hleft =>
+          have hrepr := fourLaneBoundaryEdge_mem_repr hedge
+          cases hrepr with
+          | intro j hvals =>
+            cases hvals with
+            | intro hv hright =>
+              have hval := congrArg Fin.val hleft
+              rw [hv] at hval
+              have hmod : i.val % 8 = 3 := by omega
+              exact False.elim (h3 hmod)
+        | inr hright =>
+          have hrepr := fourLaneBoundaryEdge_mem_repr hedge
+          cases hrepr with
+          | intro j hvals =>
+            cases hvals with
+            | intro hleft hv =>
+              have hval := congrArg Fin.val hright
+              rw [hv] at hval
+              have hmod : i.val % 8 = 4 := by omega
+              exact False.elim (h4 hmod)
+
 theorem fourLaneBoundarySingletons_length (s : Nat) :
     (fourLaneBoundarySingletons s).length = 6 * s := by
   simp [fourLaneBoundarySingletons]
+theorem fourLaneBoundaryEdges_length (s : Nat) :
+    (fourLaneBoundaryEdges s).length = s := by
+  simp [fourLaneBoundaryEdges]
+
+theorem fourLaneBoundarySingletons_disjoint (s : Nat) :
+    List.Pairwise (fun i j : Fin (8 * s) => Not (i = j)) (fourLaneBoundarySingletons s) := by
+  exact (List.nodup_iff_pairwise_ne.mp (fourLaneBoundarySingletons_nodup s))
+
+theorem fourLaneBoundaryMatching_count (s : Nat) :
+    2 * (fourLaneBoundaryEdges s).length +
+      (fourLaneBoundarySingletons s).length = 8 * s := by
+  simp [fourLaneBoundaryEdges_length, fourLaneBoundarySingletons_length]
+  omega
+
+def fourLaneBoundaryMatching (s : Nat) : IndexedPacketMatching (8 * s) where
+  edges := fourLaneBoundaryEdges s
+  nodup := fourLaneBoundaryEdges_nodup s
+  noFixed := fourLaneBoundaryEdges_noFixed s
+  vertexDisjoint := fourLaneBoundaryEdges_vertexDisjoint s
+  singles := fourLaneBoundarySingletons s
+  singleDisjoint := fourLaneBoundarySingletons_disjoint s
+  free := fourLaneBoundarySingletons_free s
+  covers := fourLaneBoundaryMatching_covers s
+  count := fourLaneBoundaryMatching_count s
+
+theorem fourLaneBoundaryMatching_ordered {s N : Nat}
+    (packets : Fin (8 * s) -> Function.Embedding (Fin 64) (Fin N))
+    (hblockOrdered : forall i j, i.val / 4 < j.val / 4 -> forall x y,
+      packets i x < packets j y) :
+    forall e, List.Mem e (fourLaneBoundaryMatching s).edges -> forall x y,
+      packets e.1 x < packets e.2 y := by
+  intro e he x y
+  change List.Mem e (fourLaneBoundaryEdges s) at he
+  exact fourLaneBoundaryEdges_ordered packets hblockOrdered e he x y
+
 /-- If packet IDs are laid out as two lanes per physically ordered block,
 `interBlockBoundaryMatching` is oriented from lower to higher supports on
 every edge. -/
@@ -1092,60 +1361,421 @@ theorem interBlockBoundaryMatching_ordered {r N : Nat}
 
 /-- The two dealt outputs of a boundary edge are members of the actual
 partial-matching round output family. -/
-theorem interBlockBoundaryMatching_dealt_mem_output {r N : Nat}
-    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
-    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
-    (j : Fin r) (lane : Bool) :
-    (if lane then
-        dealOddEmbedding (joinPacketEmbedding
-          (packets ⟨4 * j.val + 1, by omega⟩)
-          (packets ⟨4 * j.val + 2, by omega⟩) (by
-            intro x y h
-            exact hdisjoint _ _ (by
-              intro hne
-              have hv := congrArg Fin.val hne
-              simp at hv) x y h))
-      else
-        dealEvenEmbedding (joinPacketEmbedding
-          (packets ⟨4 * j.val + 1, by omega⟩)
-          (packets ⟨4 * j.val + 2, by omega⟩) (by
-            intro x y h
-            exact hdisjoint _ _ (by
-              intro hne
-              have hv := congrArg Fin.val hne
-              simp at hv) x y h))) ∈
-      genIndexedPacketRoundOutput packets hdisjoint
-        (interBlockBoundaryMatching r).edges
-        (interBlockBoundaryMatching r).noFixed := by
-  let left : Fin (2 * (2 * r)) := ⟨4 * j.val + 1, by omega⟩
-  let right : Fin (2 * (2 * r)) := ⟨4 * j.val + 2, by omega⟩
-  let joined := joinPacketEmbedding (packets left) (packets right)
-    (hdisjoint left right (by
-      intro h
-      have hv := congrArg Fin.val h
-      simp [left, right] at hv))
-  let edge : Fin (2 * (2 * r)) × Fin (2 * (2 * r)) := (left, right)
-  have hedge : edge ∈ (interBlockBoundaryMatching r).edges := by
-    change edge ∈ interBlockBoundaryEdges r
-    simp [edge, left, right, interBlockBoundaryEdges]
-  have hjoined : joined ∈ genIndexedPairSupports packets hdisjoint
-      (interBlockBoundaryMatching r).edges
-      (interBlockBoundaryMatching r).noFixed := by
-    simp only [genIndexedPairSupports, List.mem_map, List.mem_attach]
-    refine ⟨⟨edge, hedge⟩, ?_⟩
-    simp [joined, edge, left, right, interBlockBoundaryMatching,
-      interBlockBoundaryEdges]
-  change (if lane then dealOddEmbedding joined else dealEvenEmbedding joined) ∈
-    genPacketRound_outputPackets
+theorem genIndexedPacketRound_deal_mem {m N : Nat}
+    (packets : Fin m -> Function.Embedding (Fin 64) (Fin N))
+    (hdisjoint : forall i j, Not (i = j) -> forall x y, Not (packets i x = packets j y))
+    (edges : List (Prod (Fin m) (Fin m)))
+    (hnoFixed : forall e, List.Mem e edges -> Not (e.1 = e.2))
+    (joined : Function.Embedding (Fin 128) (Fin N))
+    (hjoined : List.Mem joined (genIndexedPairSupports packets hdisjoint edges hnoFixed))
+    (lane : Bool) :
+    List.Mem (if lane then dealOddEmbedding joined else dealEvenEmbedding joined)
+      (genIndexedPacketRoundOutput packets hdisjoint edges hnoFixed) := by
+  change List.Mem (if lane then dealOddEmbedding joined else dealEvenEmbedding joined)
+    (genPacketRound_outputPackets
+      (genIndexedPairSupports packets hdisjoint edges hnoFixed))
+  rw [genPacketRound_outputPackets]
+  exact List.mem_flatMap.mpr
+    (Exists.intro joined (And.intro hjoined (by cases lane <;> simp)))
+
+theorem fourLaneBoundaryMatching_dealt_mem_output {s N : Nat}
+    (packets : Fin (8 * s) -> Function.Embedding (Fin 64) (Fin N))
+    (hdisjoint : forall i j, Not (i = j) -> forall x y, Not (packets i x = packets j y))
+    (j : Fin s) (lane : Bool) :
+    List.Mem (if lane then dealOddEmbedding (joinPacketEmbedding
+        (packets (Fin.mk (8 * j.val + 3) (by omega)))
+        (packets (Fin.mk (8 * j.val + 4) (by omega))) (by
+          intro x y h
+          exact hdisjoint _ _ (by
+            intro heq
+            have hv := congrArg Fin.val heq
+            simp at hv) x y h))
+      else dealEvenEmbedding (joinPacketEmbedding
+        (packets (Fin.mk (8 * j.val + 3) (by omega)))
+        (packets (Fin.mk (8 * j.val + 4) (by omega))) (by
+          intro x y h
+          exact hdisjoint _ _ (by
+            intro heq
+            have hv := congrArg Fin.val heq
+            simp at hv) x y h)))
+      (genIndexedPacketRoundOutput packets hdisjoint
+        (fourLaneBoundaryMatching s).edges (fourLaneBoundaryMatching s).noFixed) := by
+  let left : Fin (8 * s) := Fin.mk (8 * j.val + 3) (by omega)
+  let right : Fin (8 * s) := Fin.mk (8 * j.val + 4) (by omega)
+  have hne : Not (left = right) := by
+    intro heq
+    have hv := congrArg Fin.val heq
+    simp [left, right] at hv
+  have hsep : forall x y, Not (packets left x = packets right y) := hdisjoint left right hne
+  let joined := joinPacketEmbedding (packets left) (packets right) hsep
+  let edge : Prod (Fin (8 * s)) (Fin (8 * s)) := (left, right)
+  have hedge : List.Mem edge (fourLaneBoundaryMatching s).edges := by
+    change List.Mem edge (fourLaneBoundaryEdges s)
+    simp only [fourLaneBoundaryEdges, List.mem_map]
+    exact List.mem_map.mpr (Exists.intro j (And.intro (List.mem_finRange j) rfl))
+  have hjoined : List.Mem joined
       (genIndexedPairSupports packets hdisjoint
-        (interBlockBoundaryMatching r).edges
-        (interBlockBoundaryMatching r).noFixed)
-  simp only [genPacketRound_outputPackets, List.mem_flatMap]
-  refine ⟨joined, hjoined, ?_⟩
-  cases lane <;> simp [joined]
+        (fourLaneBoundaryMatching s).edges (fourLaneBoundaryMatching s).noFixed) := by
+    apply List.mem_map.mpr
+    exact Exists.intro (Subtype.mk edge hedge)
+      (And.intro (by simp) (by simp [joined, edge, left, right]))
+  change List.Mem (if lane then dealOddEmbedding joined else dealEvenEmbedding joined)
+    (genIndexedPacketRoundOutput packets hdisjoint
+      (fourLaneBoundaryMatching s).edges (fourLaneBoundaryMatching s).noFixed)
+  exact genIndexedPacketRound_deal_mem packets hdisjoint
+    (fourLaneBoundaryMatching s).edges (fourLaneBoundaryMatching s).noFixed
+    joined hjoined lane
 
 /-- The two untouched outer packets are members of the singleton-augmented
 output family of the same round. -/
+theorem genIndexedPacketRound_singleton_mem_output {m N : Nat}
+    (packets : Fin m -> Function.Embedding (Fin 64) (Fin N))
+    (hdisjoint : forall i j, Not (i = j) -> forall x y, Not (packets i x = packets j y))
+    (edges : List (Prod (Fin m) (Fin m)))
+    (hnoFixed : forall e, List.Mem e edges -> Not (e.1 = e.2))
+    (singles : List (Fin m)) (i : Fin m) (hi : List.Mem i singles) :
+    List.Mem (packets i)
+      (genIndexedPacketRoundOutputWithSingletons packets hdisjoint edges hnoFixed singles) := by
+  apply List.mem_append.mpr
+  apply Or.inr
+  apply List.mem_map.mpr
+  exact Exists.intro i (And.intro hi rfl)
+
+def fourLaneBoundaryOutputBlock {s N : Nat}
+    (packets : Fin (8 * s) -> Function.Embedding (Fin 64) (Fin N))
+    (hdisjoint : forall i j, Not (i = j) -> forall x y, Not (packets i x = packets j y))
+    (j : Fin s) (lane : Fin 8) : Function.Embedding (Fin 64) (Fin N) :=
+  let left : Fin (8 * s) := Fin.mk (8 * j.val + 3) (by omega)
+  let right : Fin (8 * s) := Fin.mk (8 * j.val + 4) (by omega)
+  let joined := joinPacketEmbedding (packets left) (packets right) (hdisjoint left right (by
+    intro heq
+    have hv := congrArg Fin.val heq
+    simp [left, right] at hv))
+  if lane.val = 3 then dealEvenEmbedding joined
+  else if lane.val = 4 then dealOddEmbedding joined
+  else packets (Fin.mk (8 * j.val + lane.val) (by omega))
+
+theorem fourLaneBoundaryOutputBlock_mem {s N : Nat}
+    (packets : Fin (8 * s) -> Function.Embedding (Fin 64) (Fin N))
+    (hdisjoint : forall i j, Not (i = j) -> forall x y, Not (packets i x = packets j y))
+    (j : Fin s) (lane : Fin 8) :
+    List.Mem (fourLaneBoundaryOutputBlock packets hdisjoint j lane)
+      (genIndexedPacketRoundOutputWithSingletons packets hdisjoint
+        (fourLaneBoundaryMatching s).edges (fourLaneBoundaryMatching s).noFixed
+        (fourLaneBoundaryMatching s).singles) := by
+  let left : Fin (8 * s) := Fin.mk (8 * j.val + 3) (by omega)
+  let right : Fin (8 * s) := Fin.mk (8 * j.val + 4) (by omega)
+  let joined := joinPacketEmbedding (packets left) (packets right) (hdisjoint left right (by
+    intro heq
+    have hv := congrArg Fin.val heq
+    simp [left, right] at hv))
+  by_cases h3 : lane.val = 3
+  case pos =>
+    have hraw := fourLaneBoundaryMatching_dealt_mem_output packets hdisjoint j false
+    have hdealt : List.Mem (dealEvenEmbedding joined)
+        (genIndexedPacketRoundOutput packets hdisjoint
+          (fourLaneBoundaryMatching s).edges (fourLaneBoundaryMatching s).noFixed) := by
+      simpa [joined, left, right] using hraw
+    simp only [fourLaneBoundaryOutputBlock, h3]
+    exact List.mem_append.mpr (Or.inl hdealt)
+  case neg =>
+    by_cases h4 : lane.val = 4
+    case pos =>
+      have hraw := fourLaneBoundaryMatching_dealt_mem_output packets hdisjoint j true
+      have hdealt : List.Mem (dealOddEmbedding joined)
+          (genIndexedPacketRoundOutput packets hdisjoint
+            (fourLaneBoundaryMatching s).edges (fourLaneBoundaryMatching s).noFixed) := by
+        simpa [joined, left, right] using hraw
+      simp only [fourLaneBoundaryOutputBlock, h3, h4]
+      exact List.mem_append.mpr (Or.inl hdealt)
+    case neg =>
+      let i : Fin (8 * s) := Fin.mk (8 * j.val + lane.val) (by omega)
+      have h3i : Not (i.val % 8 = 3) := by simp [i]; omega
+      have h4i : Not (i.val % 8 = 4) := by simp [i]; omega
+      have his := fourLaneBoundarySingleton_mem_of_nonedge i h3i h4i
+      have hsingle := genIndexedPacketRound_singleton_mem_output packets hdisjoint
+        (fourLaneBoundaryMatching s).edges (fourLaneBoundaryMatching s).noFixed
+        (fourLaneBoundaryMatching s).singles i his
+      simpa [fourLaneBoundaryOutputBlock, h3, h4, i] using hsingle
+
+/-- The eight output lanes draw only from their corresponding eight-packet
+input block. This is the support bridge needed to compose repeated stages. -/
+theorem fourLaneBoundaryOutputBlock_range {s N : Nat}
+    (packets : Fin (8 * s) -> Function.Embedding (Fin 64) (Fin N))
+    (hdisjoint : forall i j, Not (i = j) -> forall x y, Not (packets i x = packets j y))
+    (j : Fin s) (lane : Fin 8) (x : Fin 64) :
+    Exists fun i : Fin (8 * s) => i.val / 8 = j.val /\
+      Set.range (packets i) (fourLaneBoundaryOutputBlock packets hdisjoint j lane x) := by
+  let left : Fin (8 * s) := Fin.mk (8 * j.val + 3) (by omega)
+  let right : Fin (8 * s) := Fin.mk (8 * j.val + 4) (by omega)
+  have hsep : forall a b, Not (packets left a = packets right b) := hdisjoint left right (by
+    intro h
+    have hv := congrArg Fin.val h
+    simp [left, right] at hv)
+  have hjoined : forall w, Set.range (joinPacketEmbedding (packets left) (packets right) hsep) w ->
+      Set.range (packets left) w \/ Set.range (packets right) w := by
+    intro w hw
+    rw [joinPacketEmbedding_range _ _ hsep] at hw
+    exact hw
+  by_cases h3 : lane.val = 3
+  · have hw : Set.range (joinPacketEmbedding (packets left) (packets right) hsep)
+        (dealEvenEmbedding (joinPacketEmbedding (packets left) (packets right) hsep) x) :=
+      Exists.intro (evenWire 64 x) rfl
+    obtain hw | hw := hjoined _ hw
+    · obtain ⟨z, hz⟩ := hw
+      exact Exists.intro left ⟨by simp [left]; omega, Exists.intro z (by simpa [fourLaneBoundaryOutputBlock, h3, left, right] using hz)⟩
+    · obtain ⟨z, hz⟩ := hw
+      exact Exists.intro right ⟨by simp [right]; omega, Exists.intro z (by simpa [fourLaneBoundaryOutputBlock, h3, left, right] using hz)⟩
+  · by_cases h4 : lane.val = 4
+    · have hw : Set.range (joinPacketEmbedding (packets left) (packets right) hsep)
+          (dealOddEmbedding (joinPacketEmbedding (packets left) (packets right) hsep) x) :=
+        Exists.intro (oddWire 64 x) rfl
+      obtain hw | hw := hjoined _ hw
+      · obtain ⟨z, hz⟩ := hw
+        exact Exists.intro left ⟨by simp [left]; omega, Exists.intro z (by simpa [fourLaneBoundaryOutputBlock, h3, h4, left, right] using hz)⟩
+      · obtain ⟨z, hz⟩ := hw
+        exact Exists.intro right ⟨by simp [right]; omega, Exists.intro z (by simpa [fourLaneBoundaryOutputBlock, h3, h4, left, right] using hz)⟩
+    · let i : Fin (8 * s) := Fin.mk (8 * j.val + lane.val) (by omega)
+      refine Exists.intro i ⟨?_, ?_⟩
+      · simp [i]
+        omega
+      · have hv : Not (i.val % 8 = 3) /\ Not (i.val % 8 = 4) := by
+          simp [i]
+          omega
+        have hsingle := fourLaneBoundarySingleton_mem_of_nonedge i hv.1 hv.2
+        have houtput := genIndexedPacketRound_singleton_mem_output packets hdisjoint
+          (fourLaneBoundaryMatching s).edges (fourLaneBoundaryMatching s).noFixed
+          (fourLaneBoundaryMatching s).singles i hsingle
+        exact Exists.intro x (by simpa [fourLaneBoundaryOutputBlock, h3, h4, i] using rfl)
+
+/-- Distinct eight-packet blocks remain strictly ordered after the boundary
+round, assuming the previous four-packet blocks were strictly ordered. -/
+theorem fourLaneBoundaryOutputBlocks_ordered {s N : Nat}
+    (packets : Fin (8 * s) -> Function.Embedding (Fin 64) (Fin N))
+    (hdisjoint : forall i j, Not (i = j) -> forall x y, Not (packets i x = packets j y))
+    (hblockOrdered : forall i k, i.val / 4 < k.val / 4 -> forall x y,
+      packets i x < packets k y)
+    (j l : Fin s) (hjl : j.val < l.val) (lane lane' : Fin 8) (x y : Fin 64) :
+    fourLaneBoundaryOutputBlock packets hdisjoint j lane x <
+      fourLaneBoundaryOutputBlock packets hdisjoint l lane' y := by
+  obtain ⟨i, ⟨hi, hix⟩⟩ := fourLaneBoundaryOutputBlock_range
+    packets hdisjoint j lane x
+  obtain ⟨k, ⟨hk, hky⟩⟩ := fourLaneBoundaryOutputBlock_range
+    packets hdisjoint l lane' y
+  obtain ⟨u, hu⟩ := hix
+  obtain ⟨v, hv⟩ := hky
+  calc
+    _ = packets i u := hu.symm
+    _ < packets k v := hblockOrdered i k (by
+      have hi' := i.isLt
+      have hk' := k.isLt
+      omega) u v
+    _ = _ := hv
+
+/-- Each lane is sorted by the round and remains increasing in physical wire
+order. This is the local invariant required before the next merge stage. -/
+theorem fourLaneBoundaryOutputBlock_lane_contract {s N : Nat} {alpha : Type}
+    [LinearOrder alpha]
+    (packets : Fin (8 * s) -> Function.Embedding (Fin 64) (Fin N))
+    (hdisjoint : forall i j, Not (i = j) -> forall x y, Not (packets i x = packets j y))
+    (hpacketMono : forall i, StrictMono (packets i))
+    (hblockOrdered : forall i k, i.val / 4 < k.val / 4 -> forall x y,
+      packets i x < packets k y)
+    (v : Fin N -> alpha)
+    (hsorted : forall i, Monotone (fun x => v (packets i x)))
+    (j : Fin s) (lane : Fin 8) :
+    Monotone (fun x =>
+      (genIndexedPacketRound packets hdisjoint
+        (fourLaneBoundaryMatching s).edges
+        (fourLaneBoundaryMatching s).noFixed).exec v
+        (fourLaneBoundaryOutputBlock packets hdisjoint j lane x)) /\
+    StrictMono (fourLaneBoundaryOutputBlock packets hdisjoint j lane) := by
+  let matching := fourLaneBoundaryMatching s
+  have hsingleDisjoint : List.Pairwise
+      (fun i k : Fin (8 * s) => forall x y, Not (packets i x = packets k y))
+      matching.singles := by
+    have haux : forall ids : List (Fin (8 * s)),
+        List.Pairwise (fun i k => Not (i = k)) ids ->
+        List.Pairwise (fun i k => forall x y, Not (packets i x = packets k y)) ids := by
+      intro ids hids
+      induction ids with
+      | nil => simp
+      | cons i ids ih =>
+          rcases List.pairwise_cons.mp hids with ⟨hhead, htail⟩
+          apply List.pairwise_cons.mpr
+          constructor
+          · intro k hk x y
+            exact hdisjoint i k (hhead k hk) x y
+          · exact ih htail
+    exact haux matching.singles matching.singleDisjoint
+  have hsortedOut := genIndexedPacketRound_withSingletons_contract
+    packets hdisjoint matching.edges matching.nodup matching.noFixed
+    matching.vertexDisjoint matching.singles hsingleDisjoint matching.free
+    matching.covers v hsorted
+  have hmonoOut := genIndexedPacketRound_withSingletons_output_strictMono
+    packets hdisjoint matching.edges matching.noFixed matching.singles
+    hpacketMono (fourLaneBoundaryMatching_ordered packets hblockOrdered)
+  have hmem := fourLaneBoundaryOutputBlock_mem packets hdisjoint j lane
+  exact ⟨hsortedOut.1 _ hmem, hmonoOut _ hmem⟩
+
+/-- The eight output lanes partition exactly the support of the eight input
+packets in their macroblock. -/
+theorem fourLaneBoundaryOutputBlock_support_eq {s N : Nat}
+    (packets : Fin (8 * s) -> Function.Embedding (Fin 64) (Fin N))
+    (hdisjoint : forall i j, Not (i = j) -> forall x y, Not (packets i x = packets j y))
+    (j : Fin s) :
+    ((Set.range (fourLaneBoundaryOutputBlock packets hdisjoint j 0) ∪
+      Set.range (fourLaneBoundaryOutputBlock packets hdisjoint j 1) ∪
+      Set.range (fourLaneBoundaryOutputBlock packets hdisjoint j 2)) ∪
+      (Set.range (fourLaneBoundaryOutputBlock packets hdisjoint j 3) ∪
+        Set.range (fourLaneBoundaryOutputBlock packets hdisjoint j 4)) ∪
+      (Set.range (fourLaneBoundaryOutputBlock packets hdisjoint j 5) ∪
+        Set.range (fourLaneBoundaryOutputBlock packets hdisjoint j 6) ∪
+        Set.range (fourLaneBoundaryOutputBlock packets hdisjoint j 7))) =
+    ((Set.range (packets (Fin.mk (8 * j.val) (by omega))) ∪
+      Set.range (packets (Fin.mk (8 * j.val + 1) (by omega))) ∪
+      Set.range (packets (Fin.mk (8 * j.val + 2) (by omega)))) ∪
+      (Set.range (packets (Fin.mk (8 * j.val + 3) (by omega))) ∪
+        Set.range (packets (Fin.mk (8 * j.val + 4) (by omega)))) ∪
+      (Set.range (packets (Fin.mk (8 * j.val + 5) (by omega))) ∪
+        Set.range (packets (Fin.mk (8 * j.val + 6) (by omega))) ∪
+        Set.range (packets (Fin.mk (8 * j.val + 7) (by omega))))) := by
+  let left : Fin (8 * s) := Fin.mk (8 * j.val + 3) (by omega)
+  let right : Fin (8 * s) := Fin.mk (8 * j.val + 4) (by omega)
+  have hsep : forall x y, Not (packets left x = packets right y) := hdisjoint left right (by
+    intro h
+    have hv := congrArg Fin.val h
+    simp [left, right] at hv)
+  let joined := joinPacketEmbedding (packets left) (packets right) hsep
+  change ((Set.range (packets (Fin.mk (8 * j.val) (by omega))) ∪
+      Set.range (packets (Fin.mk (8 * j.val + 1) (by omega))) ∪
+      Set.range (packets (Fin.mk (8 * j.val + 2) (by omega)))) ∪
+      (Set.range (dealEvenEmbedding joined) ∪ Set.range (dealOddEmbedding joined)) ∪
+      (Set.range (packets (Fin.mk (8 * j.val + 5) (by omega))) ∪
+        Set.range (packets (Fin.mk (8 * j.val + 6) (by omega))) ∪
+        Set.range (packets (Fin.mk (8 * j.val + 7) (by omega))))) = _
+  rw [dealEmbeddings_partition joined, joinPacketEmbedding_range _ _ hsep]
+
+/-- Flatten the proposed eight-lane macroblocks in block-major order. -/
+def fourLaneBoundaryGroupedOutput {s N : Nat}
+    (packets : Fin (8 * s) -> Function.Embedding (Fin 64) (Fin N))
+    (hdisjoint : forall i j, Not (i = j) -> forall x y, Not (packets i x = packets j y))
+    (i : Fin (8 * s)) : Function.Embedding (Fin 64) (Fin N) :=
+  let j : Fin s := Fin.mk (i.val / 8) (by have := i.isLt; omega)
+  let lane : Fin 8 := Fin.mk (i.val % 8) (by omega)
+  fourLaneBoundaryOutputBlock packets hdisjoint j lane
+
+/-- Decoding the flat block-major index recovers the advertised block/lane. -/
+theorem fourLaneBoundaryGroupedOutput_at {s N : Nat}
+    (packets : Fin (8 * s) -> Function.Embedding (Fin 64) (Fin N))
+    (hdisjoint : forall i j, Not (i = j) -> forall x y, Not (packets i x = packets j y))
+    (j : Fin s) (lane : Fin 8) :
+    fourLaneBoundaryGroupedOutput packets hdisjoint
+      (Fin.mk (8 * j.val + lane.val) (by omega)) =
+      fourLaneBoundaryOutputBlock packets hdisjoint j lane := by
+  apply Function.Embedding.ext
+  intro x
+  simp only [fourLaneBoundaryGroupedOutput]
+  have hlane := lane.isLt
+  let n := 8 * j.val + lane.val
+  have hmod : n % 8 = lane.val := by simp [n, Nat.add_mod, Nat.mod_eq_of_lt hlane]
+  have hdiv : n / 8 = j.val := by
+    have hid := Nat.mod_add_div n 8
+    rw [hmod] at hid
+    dsimp [n] at hid
+    omega
+  have hj : (Fin.mk (n / 8) (by rw [hdiv]; exact j.isLt) : Fin s) = j := Fin.ext hdiv
+  have hl : (Fin.mk (n % 8) (by rw [hmod]; exact hlane) : Fin 8) = lane := Fin.ext hmod
+  rw [hj, hl]
+
+theorem fourLaneBoundaryGroupedOutput_mem {s N : Nat}
+    (packets : Fin (8 * s) -> Function.Embedding (Fin 64) (Fin N))
+    (hdisjoint : forall i j, Not (i = j) -> forall x y, Not (packets i x = packets j y))
+    (i : Fin (8 * s)) :
+    List.Mem (fourLaneBoundaryGroupedOutput packets hdisjoint i)
+      (genIndexedPacketRoundOutputWithSingletons packets hdisjoint
+        (fourLaneBoundaryMatching s).edges (fourLaneBoundaryMatching s).noFixed
+        (fourLaneBoundaryMatching s).singles) := by
+  let j : Fin s := Fin.mk (i.val / 8) (by have := i.isLt; omega)
+  let lane : Fin 8 := Fin.mk (i.val % 8) (by omega)
+  change List.Mem (fourLaneBoundaryOutputBlock packets hdisjoint j lane) _
+  exact fourLaneBoundaryOutputBlock_mem packets hdisjoint j lane
+
+theorem fourLaneBoundaryGroupedOutput_lane_contract {s N : Nat} {alpha : Type}
+    [LinearOrder alpha]
+    (packets : Fin (8 * s) -> Function.Embedding (Fin 64) (Fin N))
+    (hdisjoint : forall i j, Not (i = j) -> forall x y, Not (packets i x = packets j y))
+    (hpacketMono : forall i, StrictMono (packets i))
+    (hblockOrdered : forall i k, i.val / 4 < k.val / 4 -> forall x y,
+      packets i x < packets k y)
+    (v : Fin N -> alpha)
+    (hsorted : forall i, Monotone (fun x => v (packets i x)))
+    (i : Fin (8 * s)) :
+    Monotone (fun x =>
+      (genIndexedPacketRound packets hdisjoint
+        (fourLaneBoundaryMatching s).edges
+        (fourLaneBoundaryMatching s).noFixed).exec v
+        (fourLaneBoundaryGroupedOutput packets hdisjoint i x)) /\
+    StrictMono (fourLaneBoundaryGroupedOutput packets hdisjoint i) := by
+  let j : Fin s := Fin.mk (i.val / 8) (by have := i.isLt; omega)
+  let lane : Fin 8 := Fin.mk (i.val % 8) (by omega)
+  change Monotone (fun x =>
+      (genIndexedPacketRound packets hdisjoint
+        (fourLaneBoundaryMatching s).edges
+        (fourLaneBoundaryMatching s).noFixed).exec v
+        (fourLaneBoundaryOutputBlock packets hdisjoint j lane x)) /\
+    StrictMono (fourLaneBoundaryOutputBlock packets hdisjoint j lane)
+  exact fourLaneBoundaryOutputBlock_lane_contract packets hdisjoint hpacketMono
+    hblockOrdered v hsorted j lane
+
+theorem interBlockBoundaryMatching_dealt_mem_output {r N : Nat}
+    (packets : Fin (2 * (2 * r)) -> Function.Embedding (Fin 64) (Fin N))
+    (hdisjoint : forall i j, Not (i = j) -> forall x y, Not (packets i x = packets j y))
+    (j : Fin r) (lane : Bool) :
+    List.Mem (if lane then dealOddEmbedding (joinPacketEmbedding
+        (packets (Fin.mk (4 * j.val + 1) (by omega)))
+        (packets (Fin.mk (4 * j.val + 2) (by omega))) (by
+          intro x y h
+          exact hdisjoint _ _ (by
+            intro heq
+            have hv := congrArg Fin.val heq
+            simp at hv) x y h))
+      else dealEvenEmbedding (joinPacketEmbedding
+        (packets (Fin.mk (4 * j.val + 1) (by omega)))
+        (packets (Fin.mk (4 * j.val + 2) (by omega))) (by
+          intro x y h
+          exact hdisjoint _ _ (by
+            intro heq
+            have hv := congrArg Fin.val heq
+            simp at hv) x y h)))
+      (genIndexedPacketRoundOutput packets hdisjoint
+        (interBlockBoundaryMatching r).edges (interBlockBoundaryMatching r).noFixed) := by
+  let left : Fin (2 * (2 * r)) := Fin.mk (4 * j.val + 1) (by omega)
+  let right : Fin (2 * (2 * r)) := Fin.mk (4 * j.val + 2) (by omega)
+  have hne : Not (left = right) := by
+    intro heq
+    have hv := congrArg Fin.val heq
+    simp [left, right] at hv
+  have hsep : forall x y, Not (packets left x = packets right y) := hdisjoint left right hne
+  let joined := joinPacketEmbedding (packets left) (packets right) hsep
+  let edge : Prod (Fin (2 * (2 * r))) (Fin (2 * (2 * r))) := (left, right)
+  have hedge : List.Mem edge (interBlockBoundaryMatching r).edges := by
+    change List.Mem edge (interBlockBoundaryEdges r)
+    simp only [interBlockBoundaryEdges, List.mem_map]
+    exact List.mem_map.mpr (Exists.intro j (And.intro (List.mem_finRange j) rfl))
+  have hjoined : List.Mem joined
+      (genIndexedPairSupports packets hdisjoint
+        (interBlockBoundaryMatching r).edges (interBlockBoundaryMatching r).noFixed) := by
+    apply List.mem_map.mpr
+    exact Exists.intro (Subtype.mk edge hedge)
+      (And.intro (by simp) (by simp [joined, edge, left, right]))
+  change List.Mem (if lane then dealOddEmbedding joined else dealEvenEmbedding joined)
+    (genIndexedPacketRoundOutput packets hdisjoint
+      (interBlockBoundaryMatching r).edges (interBlockBoundaryMatching r).noFixed)
+  exact genIndexedPacketRound_deal_mem packets hdisjoint
+    (interBlockBoundaryMatching r).edges (interBlockBoundaryMatching r).noFixed
+    joined hjoined lane
+
 theorem interBlockBoundaryMatching_singleton_mem_output {r N : Nat}
     (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
     (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)

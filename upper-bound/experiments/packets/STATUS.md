@@ -21,6 +21,22 @@ incoming packet family already has separated physical supports. That incoming
 premise is still not established by the full `WireFlow` induction, and no
 target contraction or global coefficient improvement follows yet.
 
+Four-lane boundary stage follow-up (2026-10-16, Codex / GPT-6-astra-high):
+`PacketInduction.lean` now contains a checked eight-packet boundary matching
+with one edge `(8*j+3, 8*j+4)` per macroblock and six untouched singleton
+lanes. Its matching coverage, disjointness, and exact count are proved, as is
+membership of all eight proposed output lanes. The output lanes draw support
+only from their own eight-packet input block; distinct output blocks remain
+strictly physically ordered when the previous four-packet blocks were
+ordered. Each lane also remains sorted after the round and strictly
+increasing in physical wire order. The block-major output reindexing and its
+packetwise contract are also proved, and each macroblock's eight output
+lanes preserve exactly its eight input packet supports. These results have
+axiom guards in `PacketMergeAxioms.lean`. The globally reindexed family still
+needs a proof of pairwise disjointness and exact support, followed by
+state-transition/depth composition. No improvement to the conditional
+coefficient has been established by this work.
+
 Further checkpoint: `PacketRebinning.lean` proves exact scalar count
 conservation and nonincrease of spill and centered quadratic energy under
 complementary-half rebinning. `PacketSenderCycle.lean` and
