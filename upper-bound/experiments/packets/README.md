@@ -374,5 +374,8 @@ physically separated. The strengthened state theorem
 `indexedPacketMatching_preservesPhysicalState` now carries strict physical
 monotonicity through a complete singleton-aware round, assuming every edge is
 oriented from its lower support to its higher support. It is axiom-guarded.
+The adaptive iterator `iterateIndexedOrderedPacketMatchings` now iterates a
+matching policy that chooses edges from the current physical state, with a
+one-step value/depth theorem under exactly that ordered-edge premise.
 Showing that the full schedule can choose such oriented edges at every evolving
-round, while also contracting the rank-profile error, remains open.
+round and contract the rank-profile error, remains open.

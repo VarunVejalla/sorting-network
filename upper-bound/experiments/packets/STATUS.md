@@ -965,10 +965,13 @@ state when every edge is oriented so the first support lies wholly below the
 second. The theorem is kernel checked and included in `PacketMergeAxioms`.
 Together with `packetEmbedding_eq_supportOrderEmbedding`, the next logical
 packets are therefore exactly their supports' physical rank enumerations. This
-closes the local invariant transport, not schedule existence: a global
-construction must still find an ordered matching at every evolving state and
-prove the same schedule contracts the rank-profile potential. The coefficient
-is unchanged.
+closes the local invariant transport. `iterateIndexedOrderedPacketMatchings`
+now packages an adaptive matching policy depending on the current physical
+state; its guarded step theorem gives exact value evolution and depth at most
+seven per round under the policy's ordered-edge condition. Schedule existence
+is still open: a global construction must find an ordered matching at every
+evolving state and prove the same schedule contracts the rank-profile
+potential. The coefficient is unchanged.
 
 Canonical-rank identification (Codex, 2026-10-16):
 `packetEmbedding_eq_supportOrderEmbedding` proves that any strictly increasing

@@ -1004,6 +1004,9 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.indexedPacketMatching_preservesPhysicalState' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.indexedPacketMatching_preservesPhysicalState
+/-- info: 'Chvatal.PacketAlignment.iterateIndexedOrderedPacketMatchings_step' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.iterateIndexedOrderedPacketMatchings_step
 /-- info: 'Chvatal.PacketAlignment.iterateIndexedPacketMatchings_step' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.iterateIndexedPacketMatchings_step

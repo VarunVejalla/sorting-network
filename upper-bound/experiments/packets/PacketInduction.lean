@@ -1120,6 +1120,49 @@ theorem indexedPacketMatching_preservesPhysicalState {m N : Nat} {α : Type}
     packetStrictMono := hmonoNext
   }, rfl, hdepth⟩
 
+/-- Iterate an adaptive policy that chooses the next partial matching from
+the current physically ordered packet state. The policy must orient every
+edge from the lower support to the higher one at each reached state. -/
+noncomputable def iterateIndexedOrderedPacketMatchings {m N : Nat} {α : Type}
+    [LinearOrder α] {support : Finset (Fin N)}
+    (policy : IndexedPacketPhysicalRoundState m N α support → IndexedPacketMatching m)
+    (hordered : ∀ state, ∀ e ∈ (policy state).edges, ∀ x y,
+      state.packets e.1 x < state.packets e.2 y)
+    (initial : IndexedPacketPhysicalRoundState m N α support) :
+    Nat → IndexedPacketPhysicalRoundState m N α support
+  | 0 => initial
+  | n + 1 => Classical.choose
+      (indexedPacketMatching_preservesPhysicalState (policy
+        (iterateIndexedOrderedPacketMatchings policy hordered initial n))
+        (iterateIndexedOrderedPacketMatchings policy hordered initial n)
+        (hordered (iterateIndexedOrderedPacketMatchings policy hordered initial n)))
+
+/-- Exact values and seven-layer depth for each adaptive, physically ordered
+matching step. This does not assert any rank-profile contraction. -/
+theorem iterateIndexedOrderedPacketMatchings_step {m N : Nat} {α : Type}
+    [LinearOrder α] {support : Finset (Fin N)}
+    (policy : IndexedPacketPhysicalRoundState m N α support → IndexedPacketMatching m)
+    (hordered : ∀ state, ∀ e ∈ (policy state).edges, ∀ x y,
+      state.packets e.1 x < state.packets e.2 y)
+    (initial : IndexedPacketPhysicalRoundState m N α support) (n : Nat) :
+    (iterateIndexedOrderedPacketMatchings policy hordered initial (n + 1)).values =
+      (genIndexedPacketRound
+        (iterateIndexedOrderedPacketMatchings policy hordered initial n).packets
+        (iterateIndexedOrderedPacketMatchings policy hordered initial n).disjoint
+        (policy (iterateIndexedOrderedPacketMatchings policy hordered initial n)).edges
+        (policy (iterateIndexedOrderedPacketMatchings policy hordered initial n)).noFixed).exec
+        (iterateIndexedOrderedPacketMatchings policy hordered initial n).values ∧
+      (genIndexedPacketRound
+        (iterateIndexedOrderedPacketMatchings policy hordered initial n).packets
+        (iterateIndexedOrderedPacketMatchings policy hordered initial n).disjoint
+        (policy (iterateIndexedOrderedPacketMatchings policy hordered initial n)).edges
+        (policy (iterateIndexedOrderedPacketMatchings policy hordered initial n)).noFixed).depth ≤ 7 := by
+  exact Classical.choose_spec
+    (indexedPacketMatching_preservesPhysicalState (policy
+      (iterateIndexedOrderedPacketMatchings policy hordered initial n))
+      (iterateIndexedOrderedPacketMatchings policy hordered initial n)
+      (hordered (iterateIndexedOrderedPacketMatchings policy hordered initial n)))
+
 /-- Iterate a supplied schedule of arbitrary partial matchings. Each step
 retains the state invariant, including when the packet count is odd. -/
 noncomputable def iterateIndexedPacketMatchings {m N : Nat} {α : Type}
