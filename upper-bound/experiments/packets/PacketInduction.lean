@@ -905,6 +905,13 @@ structure IndexedPacketRoundState (m N : Nat) (α : Type)
   support_eq : Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) =
     support
 
+/-- Strengthened logical state whose packet embeddings also agree with the
+physical rank order on each support. -/
+structure IndexedPacketPhysicalRoundState (m N : Nat) (α : Type)
+    [LinearOrder α] (support : Finset (Fin N))
+    extends IndexedPacketRoundState m N α support where
+  packetStrictMono : ∀ i, StrictMono (packets i)
+
 /-- Every perfect logical matching round maps a valid state back into the same
 state interface. This is the induction step needed to iterate an arbitrary
 matching schedule; the schedule still needs a separate contraction theorem. -/
@@ -971,6 +978,147 @@ theorem indexedPacketMatching_preservesState {m N : Nat} {α : Type}
       Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) =
           Finset.univ.biUnion (fun i => packetEmbeddingSupport (state.packets i)) := hsupp
       _ = support := state.support_eq
+
+/-- A physically ordered partial matching preserves the stronger state
+invariant that every logical packet embedding is the physical rank ordering
+of its support. The hypothesis that each edge joins two separated supports is
+the exact extra condition needed for this conclusion. -/
+theorem indexedPacketMatching_preservesPhysicalState {m N : Nat} {α : Type}
+    [LinearOrder α] {support : Finset (Fin N)}
+    (matching : IndexedPacketMatching m)
+    (state : IndexedPacketPhysicalRoundState m N α support)
+    (hordered : ∀ e ∈ matching.edges, ∀ x y,
+      state.packets e.1 x < state.packets e.2 y) :
+    ∃ next : IndexedPacketPhysicalRoundState m N α support,
+      next.values = (genIndexedPacketRound state.packets state.disjoint
+        matching.edges matching.noFixed).exec state.values ∧
+      (genIndexedPacketRound state.packets state.disjoint matching.edges
+        matching.noFixed).depth ≤ 7 := by
+  have hsingleDisjoint : List.Pairwise
+      (fun i j => ∀ x y, state.packets i x ≠ state.packets j y) matching.singles := by
+    have haux : ∀ ids : List (Fin m), List.Pairwise (fun i j => i ≠ j) ids →
+        List.Pairwise
+          (fun i j => ∀ x y, state.packets i x ≠ state.packets j y) ids := by
+      intro ids hids
+      induction ids with
+      | nil => simp
+      | cons i ids ih =>
+          rcases List.pairwise_cons.mp hids with ⟨hhead, htail⟩
+          apply List.pairwise_cons.mpr
+          constructor
+          · intro j hj x y
+            exact state.disjoint i j (hhead j hj) x y
+          · exact ih htail
+    exact haux matching.singles matching.singleDisjoint
+  let output := genIndexedPacketRoundOutputWithSingletons state.packets
+    state.disjoint matching.edges matching.noFixed matching.singles
+  have hcontract := genIndexedPacketRound_withSingletons_contract
+    state.packets state.disjoint matching.edges matching.nodup matching.noFixed
+    matching.vertexDisjoint matching.singles hsingleDisjoint matching.free
+    matching.covers state.values state.sorted
+  have hsortedList : ∀ p ∈ output,
+      Monotone (fun k => (genIndexedPacketRound state.packets state.disjoint
+        matching.edges matching.noFixed).exec state.values (p k)) := by
+    simpa [output, genIndexedPacketRoundOutputWithSingletons] using hcontract.1
+  have hdisjointList : List.Pairwise
+      (fun p q : Fin 64 ↪ Fin N => ∀ x y, p x ≠ q y) output := by
+    simpa [output, genIndexedPacketRoundOutputWithSingletons] using hcontract.2.1
+  have hsupportList : ∀ w,
+      (∃ p ∈ output, w ∈ Set.range p) ↔
+        ∃ i, w ∈ Set.range (state.packets i) := by
+    intro w
+    simpa [output, genIndexedPacketRoundOutputWithSingletons] using hcontract.2.2 w
+  have hdepth : (genIndexedPacketRound state.packets state.disjoint
+      matching.edges matching.noFixed).depth ≤ 7 :=
+    genIndexedPacketRound_depth_le state.packets state.disjoint matching.edges
+      matching.nodup matching.noFixed matching.vertexDisjoint
+  have hmonoList := genIndexedPacketRound_withSingletons_output_strictMono
+    state.packets state.disjoint matching.edges matching.noFixed matching.singles
+    state.packetStrictMono hordered
+  have houtputLen : output.length = m := by
+    have hmatchedLen :
+        (genIndexedPacketRoundOutput state.packets state.disjoint
+          matching.edges matching.noFixed).length = 2 * matching.edges.length := by
+      have hsum : ∀ xs : List {e // e ∈ matching.edges},
+          (xs.map fun _ => 2).sum = 2 * xs.length := by
+        intro xs
+        induction xs with
+        | nil => simp
+        | cons e xs ih =>
+            simp only [List.map_cons, List.sum_cons, List.length_cons]
+            rw [ih]
+            omega
+      simpa [genIndexedPacketRoundOutput, genPacketRound_outputPackets,
+        genIndexedPairSupports, List.length_flatMap, Function.comp_def] using
+        hsum matching.edges.attach
+    simp [output, genIndexedPacketRoundOutputWithSingletons,
+      List.length_append, List.length_map, hmatchedLen]
+    have hcount := matching.count
+    omega
+  let next : Fin m → Fin 64 ↪ Fin N := fun i =>
+    output.get (Fin.cast houtputLen.symm i)
+  have hmonoNext : ∀ i, StrictMono (next i) := by
+    intro i
+    exact hmonoList _ (List.get_mem output (Fin.cast houtputLen.symm i))
+  have hsortedNext : ∀ i, Monotone (fun k =>
+      (genIndexedPacketRound state.packets state.disjoint matching.edges
+        matching.noFixed).exec state.values (next i k)) := by
+    intro i
+    exact hsortedList _ (List.get_mem output (Fin.cast houtputLen.symm i))
+  have hdisjointNext : ∀ i j, i ≠ j → ∀ x y, next i x ≠ next j y := by
+    intro i j hij x y
+    have hne : Fin.cast houtputLen.symm i ≠ Fin.cast houtputLen.symm j := by
+      intro h
+      apply hij
+      apply Fin.ext
+      have hv := congrArg Fin.val h
+      simpa using hv
+    rcases lt_or_gt_of_ne hne with hlt | hgt
+    · exact hdisjointList.rel_get_of_lt hlt x y
+    · exact (hdisjointList.rel_get_of_lt hgt y x).symm
+  have hsupportNext : Finset.univ.biUnion
+      (fun i => packetEmbeddingSupport (next i)) =
+      Finset.univ.biUnion (fun i => packetEmbeddingSupport (state.packets i)) := by
+    ext w
+    have hout : w ∈ Finset.univ.biUnion
+        (fun i => packetEmbeddingSupport (next i)) ↔
+        ∃ p ∈ output, w ∈ Set.range p := by
+      simp only [Finset.mem_biUnion, Finset.mem_univ, true_and]
+      constructor
+      · rintro ⟨i, hi⟩
+        exact ⟨output.get (Fin.cast houtputLen.symm i),
+          List.get_mem output (Fin.cast houtputLen.symm i),
+          (packetEmbeddingSupport_mem_iff _ _).mp hi⟩
+      · rintro ⟨p, hp, hw⟩
+        obtain ⟨i, hi⟩ :=
+          (List.exists_mem_iff_get (l := output) (p := fun z => z = p)).mp
+            ⟨p, hp, rfl⟩
+        refine ⟨Fin.cast houtputLen i, ?_⟩
+        change w ∈ packetEmbeddingSupport (output.get (Fin.cast houtputLen.symm
+          (Fin.cast houtputLen i)))
+        rw [Fin.cast_trans, Fin.cast_eq_self, hi]
+        exact (packetEmbeddingSupport_mem_iff _ _).mpr hw
+    have hin : w ∈ Finset.univ.biUnion
+        (fun i => packetEmbeddingSupport (state.packets i)) ↔
+        ∃ i, w ∈ Set.range (state.packets i) := by
+      simp only [Finset.mem_biUnion, Finset.mem_univ, true_and]
+      constructor
+      · rintro ⟨i, hi⟩
+        exact ⟨i, (packetEmbeddingSupport_mem_iff _ _).mp hi⟩
+      · rintro ⟨i, hi⟩
+        exact ⟨i, (packetEmbeddingSupport_mem_iff _ _).mpr hi⟩
+    rw [hout, hsupportList w, hin]
+  refine ⟨{
+    toIndexedPacketRoundState := {
+      packets := next
+      values := (genIndexedPacketRound state.packets state.disjoint
+        matching.edges matching.noFixed).exec state.values
+      disjoint := hdisjointNext
+      sorted := hsortedNext
+      support_eq := hsupportNext.trans state.support_eq
+    }
+    packetStrictMono := hmonoNext
+  }, rfl, hdepth⟩
 
 /-- Iterate a supplied schedule of arbitrary partial matchings. Each step
 retains the state invariant, including when the packet count is odd. -/

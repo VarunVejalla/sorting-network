@@ -370,5 +370,9 @@ unchanged.
 every increasing output embedding is exactly the canonical enumeration of its
 physical support. Together with the ordered-round theorem, this identifies
 logical packets with physical rank packets whenever each matched pair is
-physically separated. Showing that the full schedule maintains this condition
-remains open.
+physically separated. The strengthened state theorem
+`indexedPacketMatching_preservesPhysicalState` now carries strict physical
+monotonicity through a complete singleton-aware round, assuming every edge is
+oriented from its lower support to its higher support. It is axiom-guarded.
+Showing that the full schedule can choose such oriented edges at every evolving
+round, while also contracting the rank-profile error, remains open.

@@ -957,6 +957,19 @@ guarded. It gives a direct reusable gate for adding physical-rank monotonicity
 to the iterative state, but the present matching iterator does not impose the
 ordered-pair hypotheses at each step.
 
+Physical-state induction (Codex, 2026-10-16): `IndexedPacketPhysicalRoundState`
+extends the fixed-count logical state with strict physical monotonicity of
+every packet embedding. `indexedPacketMatching_preservesPhysicalState` proves
+that any singleton-aware seven-layer matching step preserves this strengthened
+state when every edge is oriented so the first support lies wholly below the
+second. The theorem is kernel checked and included in `PacketMergeAxioms`.
+Together with `packetEmbedding_eq_supportOrderEmbedding`, the next logical
+packets are therefore exactly their supports' physical rank enumerations. This
+closes the local invariant transport, not schedule existence: a global
+construction must still find an ordered matching at every evolving state and
+prove the same schedule contracts the rank-profile potential. The coefficient
+is unchanged.
+
 Canonical-rank identification (Codex, 2026-10-16):
 `packetEmbedding_eq_supportOrderEmbedding` proves that any strictly increasing
 64-wire embedding is exactly the order embedding obtained by enumerating its
