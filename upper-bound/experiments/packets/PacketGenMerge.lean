@@ -1932,7 +1932,9 @@ theorem adjacentPacketMatchingOutputBlock_contract {k N : Nat} {α : Type}
           adjacentPacketMatchingOutputBlock packets hordered j lane' i') ∧
       (Set.range (adjacentPacketMatchingOutputBlock packets hordered j false) ∪
         Set.range (adjacentPacketMatchingOutputBlock packets hordered j true) =
-        Set.range (adjacentPacketJoin packets hordered j)) := by
+        Set.range (adjacentPacketJoin packets hordered j)) ∧
+      (genIndexedPacketRound packets hpacketDisjoint (adjacentPacketMatching k)
+        (adjacentPacketMatching_noFixed k)).depth ≤ 7 := by
   intro j lane
   have hmem := adjacentPacketMatching_dealt_mem_output packets hpacketDisjoint
     hordered j lane
@@ -1953,7 +1955,7 @@ theorem adjacentPacketMatchingOutputBlock_contract {k N : Nat} {α : Type}
     exact hordered e.1 e.2 hlt x y
   have hroundMono := genIndexedPacketRound_output_strictMono packets hpacketDisjoint
     (adjacentPacketMatching k) (adjacentPacketMatching_noFixed k) hmono hedgesOrdered
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · simpa [adjacentPacketMatchingOutputBlock] using hmem
   · intro i i' hii'
     exact hroundSorted _ (by simpa [adjacentPacketMatchingOutputBlock] using hmem) hii'
@@ -1985,5 +1987,8 @@ theorem adjacentPacketMatchingOutputBlock_contract {k N : Nat} {α : Type}
     · exact dealEmbeddings_disjoint (adjacentPacketJoin packets hordered j) i i'
     · exact (dealEmbeddings_disjoint (adjacentPacketJoin packets hordered j) i' i).symm
   · exact dealEmbeddings_partition (adjacentPacketJoin packets hordered j)
+  · exact genIndexedPacketRound_depth_le packets hpacketDisjoint
+      (adjacentPacketMatching k) (adjacentPacketMatching_nodup k)
+      (adjacentPacketMatching_noFixed k) (adjacentPacketMatching_vertexDisjoint k)
 
 end Chvatal.PacketAlignment
