@@ -30,12 +30,13 @@ only from their own eight-packet input block; distinct output blocks remain
 strictly physically ordered when the previous four-packet blocks were
 ordered. Each lane also remains sorted after the round and strictly
 increasing in physical wire order. The block-major output reindexing and its
-packetwise contract are also proved, and each macroblock's eight output
-lanes preserve exactly its eight input packet supports. These results have
-axiom guards in `PacketMergeAxioms.lean`. The globally reindexed family still
-needs a proof of pairwise disjointness and exact support, followed by
-state-transition/depth composition. No improvement to the conditional
-coefficient has been established by this work.
+packetwise contract are also proved; each macroblock's eight output lanes
+preserve exactly its eight input packet supports, and outputs from distinct
+macroblocks are strictly ordered/disjoint. These results have axiom guards in
+`PacketMergeAxioms.lean`. Pairwise disjointness among lanes within one
+macroblock is still needed to finish the globally reindexed state and compose
+the stage/depth transition. No improvement to the conditional coefficient
+has been established by this work.
 
 Further checkpoint: `PacketRebinning.lean` proves exact scalar count
 conservation and nonincrease of spill and centered quadratic energy under

@@ -1728,6 +1728,43 @@ theorem fourLaneBoundaryGroupedOutput_lane_contract {s N : Nat} {alpha : Type}
   exact fourLaneBoundaryOutputBlock_lane_contract packets hdisjoint hpacketMono
     hblockOrdered v hsorted j lane
 
+/-- The flattened output array is strictly physically ordered across distinct
+eight-packet macroblocks. -/
+theorem fourLaneBoundaryGroupedOutput_ordered {s N : Nat}
+    (packets : Fin (8 * s) -> Function.Embedding (Fin 64) (Fin N))
+    (hdisjoint : forall i j, Not (i = j) -> forall x y, Not (packets i x = packets j y))
+    (hblockOrdered : forall i k, i.val / 4 < k.val / 4 -> forall x y,
+      packets i x < packets k y)
+    (i k : Fin (8 * s)) (hblock : i.val / 8 < k.val / 8)
+    (x y : Fin 64) :
+    fourLaneBoundaryGroupedOutput packets hdisjoint i x <
+      fourLaneBoundaryGroupedOutput packets hdisjoint k y := by
+  let j : Fin s := Fin.mk (i.val / 8) (by have := i.isLt; omega)
+  let l : Fin s := Fin.mk (k.val / 8) (by have := k.isLt; omega)
+  let lane : Fin 8 := Fin.mk (i.val % 8) (by omega)
+  let lane' : Fin 8 := Fin.mk (k.val % 8) (by omega)
+  have hjl : j.val < l.val := hblock
+  change fourLaneBoundaryOutputBlock packets hdisjoint j lane x <
+    fourLaneBoundaryOutputBlock packets hdisjoint l lane' y
+  exact fourLaneBoundaryOutputBlocks_ordered packets hdisjoint hblockOrdered
+    j l hjl lane lane' x y
+
+/-- Outputs from distinct macroblocks have disjoint physical supports. -/
+theorem fourLaneBoundaryGroupedOutput_disjoint_of_block_ne {s N : Nat}
+    (packets : Fin (8 * s) -> Function.Embedding (Fin 64) (Fin N))
+    (hdisjoint : forall i j, Not (i = j) -> forall x y, Not (packets i x = packets j y))
+    (hblockOrdered : forall i k, i.val / 4 < k.val / 4 -> forall x y,
+      packets i x < packets k y)
+    (i k : Fin (8 * s)) (hblock : Not (i.val / 8 = k.val / 8))
+    (x y : Fin 64) :
+    fourLaneBoundaryGroupedOutput packets hdisjoint i x ≠
+      fourLaneBoundaryGroupedOutput packets hdisjoint k y := by
+  rcases Nat.lt_or_gt_of_ne hblock with hlt | hgt
+  · exact ne_of_lt (fourLaneBoundaryGroupedOutput_ordered packets hdisjoint
+      hblockOrdered i k hlt x y)
+  · exact (ne_of_lt (fourLaneBoundaryGroupedOutput_ordered packets hdisjoint
+      hblockOrdered k i hgt y x)).symm
+
 theorem interBlockBoundaryMatching_dealt_mem_output {r N : Nat}
     (packets : Fin (2 * (2 * r)) -> Function.Embedding (Fin 64) (Fin N))
     (hdisjoint : forall i j, Not (i = j) -> forall x y, Not (packets i x = packets j y))

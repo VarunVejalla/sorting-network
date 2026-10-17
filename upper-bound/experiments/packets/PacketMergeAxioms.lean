@@ -1766,3 +1766,9 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.fourLaneBoundaryGroupedOutput_lane_contract' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.fourLaneBoundaryGroupedOutput_lane_contract
+/-- info: 'Chvatal.PacketAlignment.fourLaneBoundaryGroupedOutput_ordered' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.fourLaneBoundaryGroupedOutput_ordered
+/-- info: 'Chvatal.PacketAlignment.fourLaneBoundaryGroupedOutput_disjoint_of_block_ne' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.fourLaneBoundaryGroupedOutput_disjoint_of_block_ne
