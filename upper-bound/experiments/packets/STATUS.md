@@ -1009,3 +1009,5 @@ identifies each output's logical embedding with its canonical rank embedding
 whenever the matched input supports are separated in physical wire order. The
 lemma is in the full axiom guard; it still does not prove the required edge
 separation for the actual multiround schedule.
+
+Adjacent matching output block contract (GPT-6-astra-high, 2026-10-16): `adjacentPacketMatchingOutputBlock_contract` packages the two dealt lanes of each adjacent edge as one indexed output block. Each lane is a member of the actual round output, sorted after execution, and strictly increasing on physical wires. Lanes from different output blocks remain fully separated; the two same-block lanes are disjoint and partition the joined 128-wire support. The enclosing perfect-matching round has depth at most 7. The final `PacketGenMerge` through `PacketMergeAxioms` chain passed. This closes one abstract grouped transition, but it neither provides a recursively compatible block matching schedule nor links block placement to later `WireFlow` cuts; there is no contraction or coefficient improvement yet.
