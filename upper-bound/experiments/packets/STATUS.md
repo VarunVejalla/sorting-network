@@ -920,8 +920,11 @@ showing sortedness, disjointness, support conservation, and separate seven-
 layer costs after two perfect matching rounds. Follow-up
 `IndexedPacketRoundState` packages these invariants, and
 `indexedPacketPerfectMatching_preservesState` proves a generic one-round
-induction step for any perfect matching. This provides a reusable interface
-for an arbitrary finite logical schedule, but proves no contraction for any
-particular schedule and does not establish the physical WireFlow
-correspondence; the coefficient is unchanged. Both results are included in
-the `PacketMergeAxioms` guard chain.
+induction step for any perfect matching. The noncomputable
+`iterateIndexedPacketPerfectMatchings` now iterates any supplied infinite
+schedule, and its step theorem gives the exact network/value recurrence plus
+depth at most seven per round. Thus logical sortedness, disjointness, and
+support are genuinely closed under arbitrary schedule iteration. This proves
+no contraction for any particular schedule and does not establish the
+physical WireFlow correspondence; the coefficient is unchanged. The
+iteration-step result is included in the `PacketMergeAxioms` guard chain.

@@ -341,6 +341,9 @@ disjointness, and support with a seven-layer cost per round. The state
 interface `IndexedPacketRoundState` packages these invariants, and
 `indexedPacketPerfectMatching_preservesState` proves a generic one-round
 induction step for any perfect matching. This provides an interface for an
-arbitrary finite logical schedule, but proves no contraction for a particular
-schedule and does not align logical supports with the physical `WireFlow`
-cuts; the coefficient remains unchanged.
+arbitrary schedule. `iterateIndexedPacketPerfectMatchings` realizes an
+infinite supplied schedule, and its checked step theorem gives exact value
+evolution with depth at most seven per round. Neither the induction nor its
+iteration proves contraction for a particular schedule or aligns logical
+supports with the physical `WireFlow` cuts; the coefficient remains
+unchanged.

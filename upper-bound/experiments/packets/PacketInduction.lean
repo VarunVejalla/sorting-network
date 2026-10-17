@@ -830,6 +830,8 @@ theorem indexedPacketPerfectMatching_preservesState {m N : Nat} {α : Type}
     (matching : IndexedPacketPerfectMatching m)
     (state : IndexedPacketRoundState m N α support) :
     ∃ next : IndexedPacketRoundState m N α support,
+      next.values = (genIndexedPacketRound state.packets state.disjoint
+        matching.edges matching.noFixed).exec state.values ∧
       (genIndexedPacketRound state.packets state.disjoint matching.edges
         matching.noFixed).depth ≤ 7 := by
   obtain ⟨packets, hsorted, hdisjoint, hsupp, hdepth⟩ :=
@@ -840,12 +842,47 @@ theorem indexedPacketPerfectMatching_preservesState {m N : Nat} {α : Type}
   refine ⟨⟨packets,
       (genIndexedPacketRound state.packets state.disjoint matching.edges
         matching.noFixed).exec state.values,
-      hdisjoint, ?_, ?_⟩, hdepth⟩
+      hdisjoint, ?_, ?_⟩, rfl, hdepth⟩
   · simpa using hsorted
   · calc
       Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) =
           Finset.univ.biUnion (fun i => packetEmbeddingSupport (state.packets i)) := hsupp
       _ = support := state.support_eq
+
+/-- Iterate any externally supplied sequence of perfect logical matchings.
+The state type itself carries sortedness, disjointness, and support at every
+time; `iterate..._step` records the exact network/value recurrence and its
+seven-layer per-round cost. -/
+noncomputable def iterateIndexedPacketPerfectMatchings {m N : Nat} {α : Type}
+    [LinearOrder α] {support : Finset (Fin N)}
+    (schedule : Nat → IndexedPacketPerfectMatching m)
+    (initial : IndexedPacketRoundState m N α support) :
+    Nat → IndexedPacketRoundState m N α support
+  | 0 => initial
+  | n + 1 => Classical.choose
+      (indexedPacketPerfectMatching_preservesState (schedule n)
+        (iterateIndexedPacketPerfectMatchings schedule initial n))
+
+/-- One step of the iterated matching schedule is exactly the prescribed
+seven-layer round, and has depth at most seven. -/
+theorem iterateIndexedPacketPerfectMatchings_step {m N : Nat} {α : Type}
+    [LinearOrder α] {support : Finset (Fin N)}
+    (schedule : Nat → IndexedPacketPerfectMatching m)
+    (initial : IndexedPacketRoundState m N α support) (n : Nat) :
+    (iterateIndexedPacketPerfectMatchings schedule initial (n + 1)).values =
+      (genIndexedPacketRound
+        (iterateIndexedPacketPerfectMatchings schedule initial n).packets
+        (iterateIndexedPacketPerfectMatchings schedule initial n).disjoint
+        (schedule n).edges (schedule n).noFixed).exec
+        (iterateIndexedPacketPerfectMatchings schedule initial n).values ∧
+    (genIndexedPacketRound
+        (iterateIndexedPacketPerfectMatchings schedule initial n).packets
+        (iterateIndexedPacketPerfectMatchings schedule initial n).disjoint
+        (schedule n).edges (schedule n).noFixed).depth ≤ 7 := by
+  simpa [iterateIndexedPacketPerfectMatchings] using
+    Classical.choose_spec
+      (indexedPacketPerfectMatching_preservesState (schedule n)
+        (iterateIndexedPacketPerfectMatchings schedule initial n))
 
 
 end Chvatal.PacketAlignment
