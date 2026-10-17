@@ -1030,3 +1030,22 @@ actual partial-round output, are sorted after execution, are pairwise
 disjoint, and together preserve exactly the four parent supports. Until that
 is closed, this is a geometry lemma only; there is still no repeated schedule,
 contraction result, or coefficient improvement.
+
+Boundary-round macroblock interface (Codex / GPT-6-astra-high, 2026-10-16):
+closed the same-macroblock obligations. `interBlockBoundaryOutputBlock_mem`
+shows each of the four regrouped lanes is in the actual output family of the
+partial matching round. `interBlockBoundaryOutputBlock_lane_contract` proves
+each lane is value-sorted after execution and strictly increasing in physical
+wire order. `interBlockBoundaryOutputBlock_pairwise_disjoint` proves internal
+lane support-disjointness, while `interBlockBoundaryOutputBlock_support_eq`
+proves the four lane supports exactly equal the four parent supports. These
+are packaged as `interBlockBoundaryOutputBlock_contract`. The flat
+block-major reindexing `interBlockBoundaryGroupedOutput` also has checked
+index decoding, pairwise support-disjointness across all indices, and sorted
+plus physical-monotonicity per index. The focused `check-lean.ps1 -From
+PacketInduction` chain passed through `PacketMergeAxioms`. This closes the
+local regrouping interface, but does not yet prove the flat reindexing's
+aggregate support equality (and hence does not yet construct the next
+`IndexedPacketPhysicalRoundState`). Still missing are a recursive matching
+schedule compatible with this regrouping, the link to actual `WireFlow` cuts,
+and any mixing contraction or coefficient improvement.

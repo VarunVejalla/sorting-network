@@ -1047,6 +1047,98 @@ theorem interBlockBoundaryMatching_ordered {r N : Nat}
     change (4 * j.val + 1) / 2 < (4 * j.val + 2) / 2
     omega) x y
 
+/-- The two dealt outputs of a boundary edge are members of the actual
+partial-matching round output family. -/
+theorem interBlockBoundaryMatching_dealt_mem_output {r N : Nat}
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (j : Fin r) (lane : Bool) :
+    (if lane then
+        dealOddEmbedding (joinPacketEmbedding
+          (packets ⟨4 * j.val + 1, by omega⟩)
+          (packets ⟨4 * j.val + 2, by omega⟩) (by
+            intro x y h
+            exact hdisjoint _ _ (by
+              intro hne
+              have hv := congrArg Fin.val hne
+              simp at hv) x y h))
+      else
+        dealEvenEmbedding (joinPacketEmbedding
+          (packets ⟨4 * j.val + 1, by omega⟩)
+          (packets ⟨4 * j.val + 2, by omega⟩) (by
+            intro x y h
+            exact hdisjoint _ _ (by
+              intro hne
+              have hv := congrArg Fin.val hne
+              simp at hv) x y h))) ∈
+      genIndexedPacketRoundOutput packets hdisjoint
+        (interBlockBoundaryMatching r).edges
+        (interBlockBoundaryMatching r).noFixed := by
+  let left : Fin (2 * (2 * r)) := ⟨4 * j.val + 1, by omega⟩
+  let right : Fin (2 * (2 * r)) := ⟨4 * j.val + 2, by omega⟩
+  let joined := joinPacketEmbedding (packets left) (packets right)
+    (hdisjoint left right (by
+      intro h
+      have hv := congrArg Fin.val h
+      simp [left, right] at hv))
+  let edge : Fin (2 * (2 * r)) × Fin (2 * (2 * r)) := (left, right)
+  have hedge : edge ∈ (interBlockBoundaryMatching r).edges := by
+    change edge ∈ interBlockBoundaryEdges r
+    simp [edge, left, right, interBlockBoundaryEdges]
+  have hjoined : joined ∈ genIndexedPairSupports packets hdisjoint
+      (interBlockBoundaryMatching r).edges
+      (interBlockBoundaryMatching r).noFixed := by
+    simp only [genIndexedPairSupports, List.mem_map, List.mem_attach]
+    refine ⟨⟨edge, hedge⟩, ?_⟩
+    simp [joined, edge, left, right, interBlockBoundaryMatching,
+      interBlockBoundaryEdges]
+  change (if lane then dealOddEmbedding joined else dealEvenEmbedding joined) ∈
+    genPacketRound_outputPackets
+      (genIndexedPairSupports packets hdisjoint
+        (interBlockBoundaryMatching r).edges
+        (interBlockBoundaryMatching r).noFixed)
+  simp only [genPacketRound_outputPackets, List.mem_flatMap]
+  refine ⟨joined, hjoined, ?_⟩
+  cases lane <;> simp [joined]
+
+/-- The two untouched outer packets are members of the singleton-augmented
+output family of the same round. -/
+theorem interBlockBoundaryMatching_singleton_mem_output {r N : Nat}
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (j : Fin r) (leftSide : Bool) :
+    packets (if leftSide then ⟨4 * j.val, by omega⟩
+      else ⟨4 * j.val + 3, by omega⟩) ∈
+      genIndexedPacketRoundOutputWithSingletons packets hdisjoint
+        (interBlockBoundaryMatching r).edges
+        (interBlockBoundaryMatching r).noFixed
+        (interBlockBoundaryMatching r).singles := by
+  cases leftSide with
+  | false =>
+      simp only [Bool.false_eq_true, ↓reduceIte,
+        genIndexedPacketRoundOutputWithSingletons, List.mem_append]
+      right
+      simp only [List.mem_map]
+      refine ⟨⟨4 * j.val + 3, by omega⟩, ?_, rfl⟩
+      simp only [interBlockBoundaryMatching, interBlockBoundarySingletons,
+        List.mem_map, List.mem_finRange]
+      refine ⟨⟨2 * j.val + 1, by omega⟩, by simp, ?_⟩
+      apply Fin.ext
+      simp
+      omega
+  | true =>
+      simp only [Bool.true_eq, ↓reduceIte,
+        genIndexedPacketRoundOutputWithSingletons, List.mem_append]
+      right
+      simp only [List.mem_map]
+      refine ⟨⟨4 * j.val, by omega⟩, ?_, rfl⟩
+      simp only [interBlockBoundaryMatching, interBlockBoundarySingletons,
+        List.mem_map, List.mem_finRange]
+      refine ⟨⟨2 * j.val, by omega⟩, by simp, ?_⟩
+      apply Fin.ext
+      simp
+      omega
+
 /-- Four-lane output block: two dealt lanes from the boundary edge, plus the
 two untouched outer lanes from its pair of parent blocks. -/
 def interBlockBoundaryOutputBlock {r N : Nat}
@@ -1064,6 +1156,34 @@ def interBlockBoundaryOutputBlock {r N : Nat}
   else if lane.val = 1 then dealOddEmbedding joined
   else if lane.val = 2 then packets ⟨4 * j.val, by omega⟩
   else packets ⟨4 * j.val + 3, by omega⟩
+
+/-- Every one of the four proposed macroblock lanes is present in the actual
+output family: the middle pair are dealt outputs and the outer pair are
+retained singleton packets. -/
+theorem interBlockBoundaryOutputBlock_mem {r N : Nat}
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (j : Fin r) (lane : Fin 4) :
+    interBlockBoundaryOutputBlock packets hdisjoint j lane ∈
+      genIndexedPacketRoundOutputWithSingletons packets hdisjoint
+        (interBlockBoundaryMatching r).edges
+        (interBlockBoundaryMatching r).noFixed
+        (interBlockBoundaryMatching r).singles := by
+  fin_cases lane
+  · change dealEvenEmbedding _ ∈ _
+    simp only [genIndexedPacketRoundOutputWithSingletons, List.mem_append]
+    exact Or.inl (interBlockBoundaryMatching_dealt_mem_output
+      packets hdisjoint j false)
+  · change dealOddEmbedding _ ∈ _
+    simp only [genIndexedPacketRoundOutputWithSingletons, List.mem_append]
+    exact Or.inl (interBlockBoundaryMatching_dealt_mem_output
+      packets hdisjoint j true)
+  · change packets ⟨4 * j.val, by omega⟩ ∈ _
+    exact interBlockBoundaryMatching_singleton_mem_output
+      packets hdisjoint j true
+  · change packets ⟨4 * j.val + 3, by omega⟩ ∈ _
+    exact interBlockBoundaryMatching_singleton_mem_output
+      packets hdisjoint j false
 
 /-- Every wire in a four-lane output block belongs to one of the four packet
 supports in the corresponding pair of parent blocks. -/
@@ -1107,6 +1227,261 @@ theorem interBlockBoundaryOutputBlock_range {r N : Nat}
   · exact ⟨⟨4 * j.val + 3, by omega⟩,
       by change (4 * j.val + 3) / 4 = j.val; omega, ⟨x, rfl⟩⟩
 
+/-- A dealt middle lane draws only from the two endpoint packets of its
+boundary edge. -/
+theorem interBlockBoundaryDealtOutputBlock_range {r N : Nat}
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (j : Fin r) (odd : Bool) (x : Fin 64) :
+    ∃ i, (i.val = 4 * j.val + 1 ∨ i.val = 4 * j.val + 2) ∧
+      (if odd then
+        dealOddEmbedding (joinPacketEmbedding
+          (packets ⟨4 * j.val + 1, by omega⟩)
+          (packets ⟨4 * j.val + 2, by omega⟩) (by
+            intro a b h
+            exact hdisjoint _ _ (by
+              intro hne
+              have hv := congrArg Fin.val hne
+              simp at hv) a b h))
+      else
+        dealEvenEmbedding (joinPacketEmbedding
+          (packets ⟨4 * j.val + 1, by omega⟩)
+          (packets ⟨4 * j.val + 2, by omega⟩) (by
+            intro a b h
+            exact hdisjoint _ _ (by
+              intro hne
+              have hv := congrArg Fin.val hne
+              simp at hv) a b h))) x ∈ Set.range (packets i) := by
+  let left : Fin (2 * (2 * r)) := ⟨4 * j.val + 1, by omega⟩
+  let right : Fin (2 * (2 * r)) := ⟨4 * j.val + 2, by omega⟩
+  have hsep : ∀ a b, packets left a ≠ packets right b := by
+    exact hdisjoint left right (by
+      intro h
+      have hv := congrArg Fin.val h
+      simp [left, right] at hv)
+  let joined := joinPacketEmbedding (packets left) (packets right) hsep
+  change ∃ i, (i.val = 4 * j.val + 1 ∨ i.val = 4 * j.val + 2) ∧
+    (if odd then dealOddEmbedding joined else dealEvenEmbedding joined) x ∈
+      Set.range (packets i)
+  have hmem : (if odd then dealOddEmbedding joined else dealEvenEmbedding joined) x ∈
+      Set.range joined := by
+    refine ⟨(if odd then oddWire 64 x else evenWire 64 x), ?_⟩
+    cases odd <;> rfl
+  rw [joinPacketEmbedding_range _ _ hsep] at hmem
+  rcases hmem with hmem | hmem
+  · exact ⟨left, Or.inl (by simp [left]), hmem⟩
+  · exact ⟨right, Or.inr (by simp [right]), hmem⟩
+
+/-- The dealt middle output is disjoint from either untouched outer packet in
+its own four-lane macroblock. -/
+theorem interBlockBoundaryDealtOutputBlock_disjoint_singleton {r N : Nat}
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (j : Fin r) (odd leftSide : Bool) (x y : Fin 64) :
+    (if odd then
+      dealOddEmbedding (joinPacketEmbedding
+        (packets ⟨4 * j.val + 1, by omega⟩)
+        (packets ⟨4 * j.val + 2, by omega⟩) (by
+          intro a b h
+          exact hdisjoint _ _ (by
+            intro hne
+            have hv := congrArg Fin.val hne
+            simp at hv) a b h))
+    else
+      dealEvenEmbedding (joinPacketEmbedding
+        (packets ⟨4 * j.val + 1, by omega⟩)
+        (packets ⟨4 * j.val + 2, by omega⟩) (by
+          intro a b h
+          exact hdisjoint _ _ (by
+            intro hne
+            have hv := congrArg Fin.val hne
+            simp at hv) a b h))) x ≠
+      packets (if leftSide then ⟨4 * j.val, by omega⟩
+        else ⟨4 * j.val + 3, by omega⟩) y := by
+  obtain ⟨i, hi, hmem⟩ := interBlockBoundaryDealtOutputBlock_range
+    packets hdisjoint j odd x
+  obtain ⟨z, hz⟩ := hmem
+  let singleton : Fin (2 * (2 * r)) :=
+    if leftSide then ⟨4 * j.val, by omega⟩ else ⟨4 * j.val + 3, by omega⟩
+  have hne : i ≠ singleton := by
+    intro heq
+    have hv := congrArg Fin.val heq
+    cases leftSide <;> simp [singleton] at hv
+    all_goals rcases hi with hi | hi <;> omega
+  have hsource := hdisjoint i singleton hne z y
+  intro h
+  apply hsource
+  rw [hz, h]
+
+/-- The two dealt lanes of one boundary edge have disjoint supports. -/
+theorem interBlockBoundaryDealtOutputBlock_disjoint {r N : Nat}
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (j : Fin r) (x y : Fin 64) :
+    dealEvenEmbedding (joinPacketEmbedding
+        (packets ⟨4 * j.val + 1, by omega⟩)
+        (packets ⟨4 * j.val + 2, by omega⟩) (by
+          intro a b h
+          exact hdisjoint _ _ (by
+            intro hne
+            have hv := congrArg Fin.val hne
+            simp at hv) a b h)) x ≠
+    dealOddEmbedding (joinPacketEmbedding
+        (packets ⟨4 * j.val + 1, by omega⟩)
+        (packets ⟨4 * j.val + 2, by omega⟩) (by
+          intro a b h
+          exact hdisjoint _ _ (by
+            intro hne
+            have hv := congrArg Fin.val hne
+            simp at hv) a b h)) y := by
+  exact dealEmbeddings_disjoint _ x y
+
+/-- The four lanes inside one proposed macroblock are pairwise support
+disjoint. -/
+theorem interBlockBoundaryOutputBlock_pairwise_disjoint {r N : Nat}
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (j : Fin r) (lane lane' : Fin 4) (hlane : lane ≠ lane')
+    (x y : Fin 64) :
+    interBlockBoundaryOutputBlock packets hdisjoint j lane x ≠
+      interBlockBoundaryOutputBlock packets hdisjoint j lane' y := by
+  fin_cases lane <;> fin_cases lane' <;>
+    simp_all [interBlockBoundaryOutputBlock]
+  all_goals
+    first
+    | exact interBlockBoundaryDealtOutputBlock_disjoint packets hdisjoint j x y
+    | exact fun h => (interBlockBoundaryDealtOutputBlock_disjoint
+        packets hdisjoint j y x) h.symm
+    | exact interBlockBoundaryDealtOutputBlock_disjoint_singleton
+        packets hdisjoint j false true x y
+    | exact interBlockBoundaryDealtOutputBlock_disjoint_singleton
+        packets hdisjoint j false false x y
+    | exact interBlockBoundaryDealtOutputBlock_disjoint_singleton
+        packets hdisjoint j true true x y
+    | exact interBlockBoundaryDealtOutputBlock_disjoint_singleton
+        packets hdisjoint j true false x y
+    | exact fun h => (interBlockBoundaryDealtOutputBlock_disjoint_singleton
+        packets hdisjoint j false true y x) h.symm
+    | exact fun h => (interBlockBoundaryDealtOutputBlock_disjoint_singleton
+        packets hdisjoint j false false y x) h.symm
+    | exact fun h => (interBlockBoundaryDealtOutputBlock_disjoint_singleton
+        packets hdisjoint j true true y x) h.symm
+    | exact fun h => (interBlockBoundaryDealtOutputBlock_disjoint_singleton
+        packets hdisjoint j true false y x) h.symm
+    | exact hdisjoint _ _ (by
+        intro h
+        have hv := congrArg Fin.val h
+        simp at hv
+        omega) x y
+    | exact fun h => hdisjoint _ _ (by
+        intro hne
+        have hv := congrArg Fin.val hne
+        simp at hv
+        omega) y x h.symm
+
+/-- The four regrouped lanes preserve exactly the support of the four parent
+lanes in their macroblock. -/
+theorem interBlockBoundaryOutputBlock_support_eq {r N : Nat}
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (j : Fin r) :
+    (Set.range (interBlockBoundaryOutputBlock packets hdisjoint j 0) ∪
+      Set.range (interBlockBoundaryOutputBlock packets hdisjoint j 1) ∪
+      Set.range (interBlockBoundaryOutputBlock packets hdisjoint j 2) ∪
+      Set.range (interBlockBoundaryOutputBlock packets hdisjoint j 3)) =
+    (Set.range (packets ⟨4 * j.val, by omega⟩) ∪
+      Set.range (packets ⟨4 * j.val + 1, by omega⟩) ∪
+      Set.range (packets ⟨4 * j.val + 2, by omega⟩) ∪
+      Set.range (packets ⟨4 * j.val + 3, by omega⟩)) := by
+  let left : Fin (2 * (2 * r)) := ⟨4 * j.val + 1, by omega⟩
+  let right : Fin (2 * (2 * r)) := ⟨4 * j.val + 2, by omega⟩
+  have hsep : ∀ a b, packets left a ≠ packets right b := by
+    exact hdisjoint left right (by
+      intro h
+      have hv := congrArg Fin.val h
+      simp [left, right] at hv)
+  let joined := joinPacketEmbedding (packets left) (packets right) hsep
+  change (Set.range (dealEvenEmbedding joined) ∪
+      Set.range (dealOddEmbedding joined) ∪
+      Set.range (packets ⟨4 * j.val, by omega⟩) ∪
+      Set.range (packets ⟨4 * j.val + 3, by omega⟩)) = _
+  rw [dealEmbeddings_partition joined, joinPacketEmbedding_range _ _ hsep]
+  ext w
+  simp only [Set.mem_union]
+  tauto
+
+/-- Complete local contract for regrouping one boundary round into a
+four-packet macroblock. -/
+theorem interBlockBoundaryOutputBlock_contract {r N : Nat} {α : Type}
+    [LinearOrder α]
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (hpacketMono : ∀ i, StrictMono (packets i))
+    (hblockOrdered : ∀ i j, i.val / 2 < j.val / 2 → ∀ x y,
+      packets i x < packets j y)
+    (v : Fin N → α) (hsorted : ∀ i, Monotone (fun k => v (packets i k)))
+    (j : Fin r) :
+    (∀ lane, Monotone (fun x =>
+      (genIndexedPacketRound packets hdisjoint
+        (interBlockBoundaryMatching r).edges
+        (interBlockBoundaryMatching r).noFixed).exec v
+        (interBlockBoundaryOutputBlock packets hdisjoint j lane x))) ∧
+    (∀ lane, StrictMono (interBlockBoundaryOutputBlock packets hdisjoint j lane)) ∧
+    (∀ lane lane', lane ≠ lane' → ∀ x y,
+      interBlockBoundaryOutputBlock packets hdisjoint j lane x ≠
+        interBlockBoundaryOutputBlock packets hdisjoint j lane' y) ∧
+    (Set.range (interBlockBoundaryOutputBlock packets hdisjoint j 0) ∪
+      Set.range (interBlockBoundaryOutputBlock packets hdisjoint j 1) ∪
+      Set.range (interBlockBoundaryOutputBlock packets hdisjoint j 2) ∪
+      Set.range (interBlockBoundaryOutputBlock packets hdisjoint j 3)) =
+    (Set.range (packets ⟨4 * j.val, by omega⟩) ∪
+      Set.range (packets ⟨4 * j.val + 1, by omega⟩) ∪
+      Set.range (packets ⟨4 * j.val + 2, by omega⟩) ∪
+      Set.range (packets ⟨4 * j.val + 3, by omega⟩)) ∧
+    (∀ lane, interBlockBoundaryOutputBlock packets hdisjoint j lane ∈
+      genIndexedPacketRoundOutputWithSingletons packets hdisjoint
+        (interBlockBoundaryMatching r).edges
+        (interBlockBoundaryMatching r).noFixed
+        (interBlockBoundaryMatching r).singles) := by
+  let matching := interBlockBoundaryMatching r
+  have hsingleDisjoint : List.Pairwise
+      (fun i k : Fin (2 * (2 * r)) => ∀ x y,
+        packets i x ≠ packets k y) matching.singles := by
+    have haux : ∀ ids : List (Fin (2 * (2 * r))),
+        List.Pairwise (fun i k => i ≠ k) ids →
+        List.Pairwise (fun i k => ∀ x y, packets i x ≠ packets k y) ids := by
+      intro ids hids
+      induction ids with
+      | nil => simp
+      | cons i ids ih =>
+          rcases List.pairwise_cons.mp hids with ⟨hhead, htail⟩
+          apply List.pairwise_cons.mpr
+          constructor
+          · intro k hk x y
+            exact hdisjoint i k (hhead k hk) x y
+          · exact ih htail
+    exact haux matching.singles matching.singleDisjoint
+  have hroundContract := genIndexedPacketRound_withSingletons_contract
+    packets hdisjoint matching.edges matching.nodup matching.noFixed
+    matching.vertexDisjoint matching.singles hsingleDisjoint matching.free
+    matching.covers v hsorted
+  have hmonoOutputs := genIndexedPacketRound_withSingletons_output_strictMono
+    packets hdisjoint matching.edges matching.noFixed matching.singles
+    hpacketMono (interBlockBoundaryMatching_ordered packets hblockOrdered)
+  refine ⟨?_, ?_, ?_, interBlockBoundaryOutputBlock_support_eq
+    packets hdisjoint j, ?_⟩
+  · intro lane
+    exact hroundContract.1 _ (interBlockBoundaryOutputBlock_mem
+      packets hdisjoint j lane)
+  · intro lane
+    exact hmonoOutputs _ (interBlockBoundaryOutputBlock_mem
+      packets hdisjoint j lane)
+  · intro lane lane' hne x y
+    exact interBlockBoundaryOutputBlock_pairwise_disjoint packets hdisjoint
+      j lane lane' hne x y
+  · intro lane
+    exact interBlockBoundaryOutputBlock_mem packets hdisjoint j lane
+
 /-- Regrouped output blocks inherit strict physical separation from the parent
 blocks whenever the parent blocks were strictly ordered. -/
 theorem interBlockBoundaryOutputBlocks_ordered {r N : Nat}
@@ -1141,6 +1516,152 @@ theorem interBlockBoundaryOutputBlocks_disjoint {r N : Nat}
       interBlockBoundaryOutputBlock packets hdisjoint l lane' y := by
   exact ne_of_lt (interBlockBoundaryOutputBlocks_ordered packets hdisjoint
     hblockOrdered j l hjl lane lane' x y)
+
+/-- Every lane in a regrouped boundary output block is sorted after execution
+and is increasing in physical wire order. -/
+theorem interBlockBoundaryOutputBlock_lane_contract {r N : Nat} {α : Type}
+    [LinearOrder α]
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (hpacketMono : ∀ i, StrictMono (packets i))
+    (hblockOrdered : ∀ i j, i.val / 2 < j.val / 2 → ∀ x y,
+      packets i x < packets j y)
+    (v : Fin N → α) (hsorted : ∀ i, Monotone (fun k => v (packets i k)))
+    (j : Fin r) (lane : Fin 4) :
+    Monotone (fun x =>
+      (genIndexedPacketRound packets hdisjoint
+        (interBlockBoundaryMatching r).edges
+        (interBlockBoundaryMatching r).noFixed).exec v
+        (interBlockBoundaryOutputBlock packets hdisjoint j lane x)) ∧
+    StrictMono (interBlockBoundaryOutputBlock packets hdisjoint j lane) := by
+  let matching := interBlockBoundaryMatching r
+  have hsingleDisjoint : List.Pairwise
+      (fun i k : Fin (2 * (2 * r)) => ∀ x y,
+        packets i x ≠ packets k y) matching.singles := by
+    have haux : ∀ ids : List (Fin (2 * (2 * r))),
+        List.Pairwise (fun i k => i ≠ k) ids →
+        List.Pairwise (fun i k => ∀ x y, packets i x ≠ packets k y) ids := by
+      intro ids hids
+      induction ids with
+      | nil => simp
+      | cons i ids ih =>
+          rcases List.pairwise_cons.mp hids with ⟨hhead, htail⟩
+          apply List.pairwise_cons.mpr
+          constructor
+          · intro k hk x y
+            exact hdisjoint i k (hhead k hk) x y
+          · exact ih htail
+    exact haux matching.singles matching.singleDisjoint
+  have hcontract := genIndexedPacketRound_withSingletons_contract
+    packets hdisjoint matching.edges matching.nodup matching.noFixed
+    matching.vertexDisjoint matching.singles hsingleDisjoint matching.free
+    matching.covers v hsorted
+  have hmem := interBlockBoundaryOutputBlock_mem packets hdisjoint j lane
+  have hsortedLane := hcontract.1 _ hmem
+  have hmonoOutputs := genIndexedPacketRound_withSingletons_output_strictMono
+    packets hdisjoint matching.edges matching.noFixed matching.singles
+    hpacketMono (interBlockBoundaryMatching_ordered packets hblockOrdered)
+  exact ⟨hsortedLane, hmonoOutputs _ hmem⟩
+
+/-- Reindex all four-lane macroblocks as one flat packet array in
+block-major, lane-minor order. -/
+def interBlockBoundaryGroupedOutput {r N : Nat}
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (i : Fin (2 * (2 * r))) : Fin 64 ↪ Fin N :=
+  let j : Fin r := ⟨i.val / 4, by have := i.isLt; omega⟩
+  let lane : Fin 4 := ⟨i.val % 4, by omega⟩
+  interBlockBoundaryOutputBlock packets hdisjoint j lane
+
+/-- The flat grouped-output index `4*j+lane` decodes to the specified block
+and lane. -/
+theorem interBlockBoundaryGroupedOutput_at {r N : Nat}
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (j : Fin r) (lane : Fin 4) :
+    interBlockBoundaryGroupedOutput packets hdisjoint
+      ⟨4 * j.val + lane.val, by omega⟩ =
+    interBlockBoundaryOutputBlock packets hdisjoint j lane := by
+  ext x
+  simp only [interBlockBoundaryGroupedOutput]
+  have hjlt := j.isLt
+  have hll := lane.isLt
+  let n := 4 * j.val + lane.val
+  have hmod : n % 4 = lane.val := by
+    simp [n, Nat.add_mod, Nat.mod_eq_of_lt hll]
+  have hdiv : n / 4 = j.val := by
+    have hidentity := Nat.mod_add_div n 4
+    rw [hmod] at hidentity
+    dsimp [n] at hidentity
+    omega
+  have hblock : (⟨n / 4, by rw [hdiv]; exact hjlt⟩ : Fin r) = j :=
+    Fin.ext hdiv
+  have hlane : (⟨n % 4, by rw [hmod]; exact hll⟩ : Fin 4) = lane :=
+    Fin.ext hmod
+  rw [hblock, hlane]
+
+/-- The flat regrouped outputs remain pairwise support-disjoint. -/
+theorem interBlockBoundaryGroupedOutput_disjoint {r N : Nat}
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (hblockOrdered : ∀ i j, i.val / 2 < j.val / 2 → ∀ x y,
+      packets i x < packets j y)
+    (i k : Fin (2 * (2 * r))) (hik : i ≠ k) (x y : Fin 64) :
+    interBlockBoundaryGroupedOutput packets hdisjoint i x ≠
+      interBlockBoundaryGroupedOutput packets hdisjoint k y := by
+  let j : Fin r := ⟨i.val / 4, by have := i.isLt; omega⟩
+  let l : Fin r := ⟨k.val / 4, by have := k.isLt; omega⟩
+  let lane : Fin 4 := ⟨i.val % 4, by omega⟩
+  let lane' : Fin 4 := ⟨k.val % 4, by omega⟩
+  have hiBlock : j.val = i.val / 4 := rfl
+  have hkBlock : l.val = k.val / 4 := rfl
+  have hiLane : lane.val = i.val % 4 := rfl
+  have hkLane : lane'.val = k.val % 4 := rfl
+  change interBlockBoundaryOutputBlock packets hdisjoint j lane x ≠
+    interBlockBoundaryOutputBlock packets hdisjoint l lane' y
+  by_cases hsame : j.val = l.val
+  · have hneLane : lane ≠ lane' := by
+      intro heq
+      apply hik
+      apply Fin.ext
+      have hleft := Nat.mod_add_div i.val 4
+      have hright := Nat.mod_add_div k.val 4
+      have hLaneEq := congrArg Fin.val heq
+      rw [← hiLane, ← hiBlock] at hleft
+      rw [← hkLane, ← hkBlock, ← hsame, ← hLaneEq] at hright
+      omega
+    have hsameFin : j = l := Fin.ext hsame
+    rw [← hsameFin]
+    exact interBlockBoundaryOutputBlock_pairwise_disjoint
+      packets hdisjoint j lane lane' hneLane x y
+  · rcases Nat.lt_or_gt_of_ne hsame with hlt | hgt
+    · exact ne_of_lt (interBlockBoundaryOutputBlocks_ordered
+        packets hdisjoint hblockOrdered j l hlt lane lane' x y)
+    · exact (ne_of_lt (interBlockBoundaryOutputBlocks_ordered
+        packets hdisjoint hblockOrdered l j hgt lane' lane y x)).symm
+
+/-- Every packet in the flat regrouped array is sorted after the round and is
+strictly increasing on physical wire indices. -/
+theorem interBlockBoundaryGroupedOutput_lane_contract {r N : Nat} {α : Type}
+    [LinearOrder α]
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (hpacketMono : ∀ i, StrictMono (packets i))
+    (hblockOrdered : ∀ i j, i.val / 2 < j.val / 2 → ∀ x y,
+      packets i x < packets j y)
+    (v : Fin N → α) (hsorted : ∀ i, Monotone (fun k => v (packets i k)))
+    (i : Fin (2 * (2 * r))) :
+    Monotone (fun x =>
+      (genIndexedPacketRound packets hdisjoint
+        (interBlockBoundaryMatching r).edges
+        (interBlockBoundaryMatching r).noFixed).exec v
+        (interBlockBoundaryGroupedOutput packets hdisjoint i x)) ∧
+    StrictMono (interBlockBoundaryGroupedOutput packets hdisjoint i) := by
+  let j : Fin r := ⟨i.val / 4, by have := i.isLt; omega⟩
+  let lane : Fin 4 := ⟨i.val % 4, by omega⟩
+  have h := interBlockBoundaryOutputBlock_lane_contract packets hdisjoint
+    hpacketMono hblockOrdered v hsorted j lane
+  simpa [interBlockBoundaryGroupedOutput, j, lane] using h
 
 /-- State invariant for iterating logical matching rounds. Values are recorded
 with their current wire labels; packet supports remain a fixed partition. -/
