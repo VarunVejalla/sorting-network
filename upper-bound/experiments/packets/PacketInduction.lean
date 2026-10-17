@@ -1030,6 +1030,49 @@ def interBlockBoundaryMatching (r : Nat) : IndexedPacketMatching (2 * (2 * r)) w
   covers := interBlockBoundaryMatching_covers r
   count := interBlockBoundaryMatching_count r
 
+/-- Match the last packet of each four-packet block to the first packet of the
+next block. This records the candidate edge schedule; its partition into
+singletons and matched vertices is still to be proved. -/
+def fourLaneBoundaryEdges (s : Nat) :
+    List (Prod (Fin (8 * s)) (Fin (8 * s))) :=
+  (List.finRange s).map fun j =>
+    (Fin.mk (8 * j.val + 3) (by have := j.isLt; omega),
+      Fin.mk (8 * j.val + 4) (by have := j.isLt; omega))
+
+/-- The candidate four-lane boundary edges point from an earlier physical
+four-packet block to a later one. -/
+theorem fourLaneBoundaryEdges_ordered {s N : Nat}
+    (packets : Fin (8 * s) -> Fin 64 -> Fin N)
+    (hblockOrdered : forall i j, i.val / 4 < j.val / 4 -> forall x y,
+      packets i x < packets j y) :
+    forall e, List.Mem e (fourLaneBoundaryEdges s) -> forall x y,
+      packets e.1 x < packets e.2 y := by
+  intro e he x y
+  have heMap := List.mem_map.mp he
+  cases heMap with
+  | intro j hj =>
+    cases hj with
+    | intro hj heq =>
+      cases e with
+      | mk edgeLeft edgeRight =>
+        simp only [Prod.mk.injEq] at heq
+        cases heq.1
+        cases heq.2
+        apply hblockOrdered
+        change (8 * j.val + 3) / 4 < (8 * j.val + 4) / 4
+        omega
+/-- Index the six untouched lanes in each eight-packet pair. -/
+def fourLaneBoundarySingletonIndex {s : Nat} (k : Fin (6 * s)) : Fin (8 * s) :=
+  Fin.mk (8 * (k.val / 6) + k.val % 6 + if k.val % 6 < 3 then 0 else 2) (by
+    have hk := k.isLt
+    by_cases h : k.val % 6 < 3 <;> simp [h] <;> omega)
+
+def fourLaneBoundarySingletons (s : Nat) : List (Fin (8 * s)) :=
+  (List.finRange (6 * s)).map fourLaneBoundarySingletonIndex
+
+theorem fourLaneBoundarySingletons_length (s : Nat) :
+    (fourLaneBoundarySingletons s).length = 6 * s := by
+  simp [fourLaneBoundarySingletons]
 /-- If packet IDs are laid out as two lanes per physically ordered block,
 `interBlockBoundaryMatching` is oriented from lower to higher supports on
 every edge. -/

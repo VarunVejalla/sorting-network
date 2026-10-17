@@ -1063,3 +1063,26 @@ orientation needed to define a *different*, width-four boundary matching for
 the next doubling step. That next matching and its eight-packet regrouping are
 not yet formalized; no repeated schedule, sorting/contraction theorem, or
 coefficient improvement has been obtained.
+
+Four-lane boundary schedule probe (Codex / GPT-6-astra-high, 2026-10-16):
+After a four-packet macroblock, the natural next boundary edge connects
+packet IDs `8*j+3` and `8*j+4`; they lie on opposite sides of the boundary
+between macroblocks `2*j` and `2*j+1`. `fourLaneBoundaryEdges_ordered` now
+kernel-checks that these edges are oriented from lower to higher physical
+supports whenever four-packet macroblocks are physically ordered. This only
+proves the geometric orientation of the proposed edges. It does not yet
+construct an `IndexedPacketMatching`: the six remaining IDs in each group of
+eight must be enumerated without overlap, shown free from all edge endpoints,
+and shown together with the edges to cover all packet IDs exactly once. Once
+that partition is proved, the existing boundary-round machinery can be reused
+for the next stage; the eight-packet regrouping and its state/order invariants
+remain further obligations. No new merge depth or coefficient bound follows
+yet.
+
+Singleton indexing follow-up (Codex / GPT-6-astra-high, 2026-10-16):
+`fourLaneBoundarySingletonIndex` maps `Fin (6*s)` into `Fin (8*s)` by taking
+six lanes per eight-ID group with offsets `0,1,2,5,6,7`; the list has exactly
+`6*s` entries. Its injectivity (no duplicate singleton IDs), disjointness
+from the candidate edge endpoints, and exact coverage complement are still
+unproved. Thus this is an enumeration/count interface only, not a matching
+proof.
