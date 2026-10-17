@@ -1640,6 +1640,68 @@ theorem interBlockBoundaryGroupedOutput_disjoint {r N : Nat}
     · exact (ne_of_lt (interBlockBoundaryOutputBlocks_ordered
         packets hdisjoint hblockOrdered l j hgt lane' lane y x)).symm
 
+/-- The flat block-major regrouping preserves the full finite union of packet
+supports, not only each individual four-packet block. -/
+theorem interBlockBoundaryGroupedOutput_support_eq {r N : Nat}
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (hblockOrdered : ∀ i j, i.val / 2 < j.val / 2 → ∀ x y,
+      packets i x < packets j y) :
+    Finset.univ.biUnion (fun i => packetEmbeddingSupport
+      (interBlockBoundaryGroupedOutput packets hdisjoint i)) =
+    Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) := by
+  have hOutDisjoint : ∀ i ∈ Finset.univ, ∀ k ∈ Finset.univ, i ≠ k →
+      Disjoint (packetEmbeddingSupport
+        (interBlockBoundaryGroupedOutput packets hdisjoint i))
+        (packetEmbeddingSupport
+          (interBlockBoundaryGroupedOutput packets hdisjoint k)) := by
+    intro i _ k _ hik
+    apply Finset.disjoint_left.mpr
+    intro w hw hw'
+    obtain ⟨x, hx⟩ := (packetEmbeddingSupport_mem_iff _ _).mp hw
+    obtain ⟨y, hy⟩ := (packetEmbeddingSupport_mem_iff _ _).mp hw'
+    apply (interBlockBoundaryGroupedOutput_disjoint packets hdisjoint
+      hblockOrdered i k hik x y)
+    rw [hx, hy]
+  have hInDisjoint : ∀ i ∈ Finset.univ, ∀ k ∈ Finset.univ, i ≠ k →
+      Disjoint (packetEmbeddingSupport (packets i))
+        (packetEmbeddingSupport (packets k)) := by
+    intro i _ k _ hik
+    apply Finset.disjoint_left.mpr
+    intro w hw hw'
+    obtain ⟨x, hx⟩ := (packetEmbeddingSupport_mem_iff _ _).mp hw
+    obtain ⟨y, hy⟩ := (packetEmbeddingSupport_mem_iff _ _).mp hw'
+    exact hdisjoint i k hik x y (by rw [hx, hy])
+  have hsubset :
+      Finset.univ.biUnion (fun i => packetEmbeddingSupport
+        (interBlockBoundaryGroupedOutput packets hdisjoint i)) ⊆
+      Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) := by
+    intro w hw
+    simp only [Finset.mem_biUnion, Finset.mem_univ, true_and] at hw ⊢
+    obtain ⟨i, hi⟩ := hw
+    obtain ⟨x, hx⟩ := (packetEmbeddingSupport_mem_iff _ _).mp hi
+    let j : Fin r := ⟨i.val / 4, by have := i.isLt; omega⟩
+    let lane : Fin 4 := ⟨i.val % 4, by omega⟩
+    change interBlockBoundaryOutputBlock packets hdisjoint j lane x = w at hx
+    obtain ⟨k, _, hk⟩ := interBlockBoundaryOutputBlock_range
+      packets hdisjoint j lane x
+    obtain ⟨y, hy⟩ := hk
+    refine ⟨k, (packetEmbeddingSupport_mem_iff _ _).mpr ⟨y, ?_⟩⟩
+    rw [hy, hx]
+  have hcardOut := Finset.card_biUnion hOutDisjoint
+  have hcardIn := Finset.card_biUnion hInDisjoint
+  have hcardOut' : (Finset.univ.biUnion (fun i => packetEmbeddingSupport
+      (interBlockBoundaryGroupedOutput packets hdisjoint i))).card =
+      (2 * (2 * r)) * 64 := by
+    rw [hcardOut]
+    simp [packetEmbeddingSupport_card]
+  have hcardIn' : (Finset.univ.biUnion (fun i => packetEmbeddingSupport
+      (packets i))).card = (2 * (2 * r)) * 64 := by
+    rw [hcardIn]
+    simp [packetEmbeddingSupport_card]
+  apply Finset.eq_of_subset_of_card_le hsubset
+  rw [hcardOut', hcardIn']
+
 /-- Every packet in the flat regrouped array is sorted after the round and is
 strictly increasing on physical wire indices. -/
 theorem interBlockBoundaryGroupedOutput_lane_contract {r N : Nat} {α : Type}
@@ -1663,6 +1725,54 @@ theorem interBlockBoundaryGroupedOutput_lane_contract {r N : Nat} {α : Type}
     hpacketMono hblockOrdered v hsorted j lane
   simpa [interBlockBoundaryGroupedOutput, j, lane] using h
 
+/-- Distinct flat four-lane macroblocks remain strictly ordered on physical
+wires after the boundary round. -/
+theorem interBlockBoundaryGroupedOutput_blocks_ordered {r N : Nat}
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (hblockOrdered : ∀ i j, i.val / 2 < j.val / 2 → ∀ x y,
+      packets i x < packets j y)
+    (j l : Fin r) (hjl : j.val < l.val) (lane lane' : Fin 4)
+    (x y : Fin 64) :
+    interBlockBoundaryGroupedOutput packets hdisjoint
+        ⟨4 * j.val + lane.val, by omega⟩ x <
+      interBlockBoundaryGroupedOutput packets hdisjoint
+        ⟨4 * l.val + lane'.val, by omega⟩ y := by
+  rw [interBlockBoundaryGroupedOutput_at, interBlockBoundaryGroupedOutput_at]
+  exact interBlockBoundaryOutputBlocks_ordered packets hdisjoint
+    hblockOrdered j l hjl lane lane' x y
+
+/-- After the first 2-lane boundary transition, the last lane of one
+four-packet block is strictly before the first lane of the next. This is the
+orientation condition for a new, width-four boundary matching. -/
+theorem interBlockBoundaryGroupedOutput_nextBoundaryEdge_ordered {s N : Nat}
+    (packets : Fin (2 * (2 * (2 * s))) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (hblockOrdered : ∀ i j, i.val / 2 < j.val / 2 → ∀ x y,
+      packets i x < packets j y)
+    (j : Fin s) (x y : Fin 64) :
+    interBlockBoundaryGroupedOutput packets hdisjoint
+        ⟨8 * j.val + 3, by omega⟩ x <
+      interBlockBoundaryGroupedOutput packets hdisjoint
+        ⟨8 * j.val + 4, by omega⟩ y := by
+  let leftBlock : Fin (2 * s) := ⟨2 * j.val, by omega⟩
+  let rightBlock : Fin (2 * s) := ⟨2 * j.val + 1, by omega⟩
+  have hlt : leftBlock.val < rightBlock.val := by simp [leftBlock, rightBlock]
+  have h := interBlockBoundaryGroupedOutput_blocks_ordered packets hdisjoint
+    hblockOrdered leftBlock rightBlock hlt (3 : Fin 4) (0 : Fin 4) x y
+  have hleft : (⟨4 * leftBlock.val + 3, by omega⟩ :
+      Fin (2 * (2 * (2 * s)))) = ⟨8 * j.val + 3, by omega⟩ := by
+    apply Fin.ext
+    simp [leftBlock]
+    omega
+  have hright : (⟨4 * rightBlock.val, by omega⟩ :
+      Fin (2 * (2 * (2 * s)))) = ⟨8 * j.val + 4, by omega⟩ := by
+    apply Fin.ext
+    simp [rightBlock]
+    omega
+  rw [← hleft, ← hright]
+  exact h
+
 /-- State invariant for iterating logical matching rounds. Values are recorded
 with their current wire labels; packet supports remain a fixed partition. -/
 structure IndexedPacketRoundState (m N : Nat) (α : Type)
@@ -1680,6 +1790,51 @@ structure IndexedPacketPhysicalRoundState (m N : Nat) (α : Type)
     [LinearOrder α] (support : Finset (Fin N))
     extends IndexedPacketRoundState m N α support where
   packetStrictMono : ∀ i, StrictMono (packets i)
+
+/-- One boundary matching step preserves the full physical packet state when
+the four-lane macroblocks are reindexed in block-major order. -/
+theorem interBlockBoundaryMatching_preservesGroupedPhysicalState
+    {r N : Nat} {α : Type} [LinearOrder α] {support : Finset (Fin N)}
+    (state : IndexedPacketPhysicalRoundState (2 * (2 * r)) N α support)
+    (hblockOrdered : ∀ i j, i.val / 2 < j.val / 2 → ∀ x y,
+      state.packets i x < state.packets j y) :
+    ∃ next : IndexedPacketPhysicalRoundState (2 * (2 * r)) N α support,
+      next.values = (genIndexedPacketRound state.packets state.disjoint
+        (interBlockBoundaryMatching r).edges
+        (interBlockBoundaryMatching r).noFixed).exec state.values ∧
+      (genIndexedPacketRound state.packets state.disjoint
+        (interBlockBoundaryMatching r).edges
+        (interBlockBoundaryMatching r).noFixed).depth ≤ 7 := by
+  let matching := interBlockBoundaryMatching r
+  let round := genIndexedPacketRound state.packets state.disjoint
+    matching.edges matching.noFixed
+  have hdepth := genIndexedPacketRound_depth_le state.packets state.disjoint
+    matching.edges matching.nodup matching.noFixed matching.vertexDisjoint
+  refine ⟨{
+    toIndexedPacketRoundState := {
+      packets := interBlockBoundaryGroupedOutput state.packets state.disjoint
+      values := round.exec state.values
+      disjoint := interBlockBoundaryGroupedOutput_disjoint state.packets
+        state.disjoint hblockOrdered
+      sorted := ?_
+      support_eq := ?_ }
+    packetStrictMono := ?_ }, rfl, ?_⟩
+  · intro i
+    exact (interBlockBoundaryGroupedOutput_lane_contract state.packets
+      state.disjoint state.packetStrictMono hblockOrdered state.values
+      state.sorted i).1
+  · calc
+      Finset.univ.biUnion (fun i => packetEmbeddingSupport
+          (interBlockBoundaryGroupedOutput state.packets state.disjoint i)) =
+        Finset.univ.biUnion (fun i => packetEmbeddingSupport (state.packets i)) :=
+          interBlockBoundaryGroupedOutput_support_eq state.packets state.disjoint
+            hblockOrdered
+      _ = support := state.support_eq
+  · intro i
+    exact (interBlockBoundaryGroupedOutput_lane_contract state.packets
+      state.disjoint state.packetStrictMono hblockOrdered state.values
+      state.sorted i).2
+  · exact hdepth
 
 /-- Every perfect logical matching round maps a valid state back into the same
 state interface. This is the induction step needed to iterate an arbitrary

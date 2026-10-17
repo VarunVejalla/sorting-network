@@ -1043,9 +1043,23 @@ are packaged as `interBlockBoundaryOutputBlock_contract`. The flat
 block-major reindexing `interBlockBoundaryGroupedOutput` also has checked
 index decoding, pairwise support-disjointness across all indices, and sorted
 plus physical-monotonicity per index. The focused `check-lean.ps1 -From
-PacketInduction` chain passed through `PacketMergeAxioms`. This closes the
-local regrouping interface, but does not yet prove the flat reindexing's
-aggregate support equality (and hence does not yet construct the next
-`IndexedPacketPhysicalRoundState`). Still missing are a recursive matching
-schedule compatible with this regrouping, the link to actual `WireFlow` cuts,
-and any mixing contraction or coefficient improvement.
+PacketInduction` chain passed through `PacketMergeAxioms`. The aggregate
+support equality and grouped physical-state transition were completed in the
+follow-on checkpoint below. Still missing are a recursive matching schedule
+compatible with this regrouping, the link to actual `WireFlow` cuts, and any
+mixing contraction or coefficient improvement.
+
+Grouped physical-state transition (Codex / GPT-6-astra-high, 2026-10-16):
+`interBlockBoundaryGroupedOutput_support_eq` now proves full finite support
+conservation for the flat block-major reindexing, using its proved support
+inclusion, equal packet counts and pairwise disjointness. This yields
+`interBlockBoundaryMatching_preservesGroupedPhysicalState`: one seven-layer
+boundary round returns a physical packet state with the same number of
+64-wire packets and exactly the same support, in the new grouped order. As a
+follow-on, `interBlockBoundaryGroupedOutput_nextBoundaryEdge_ordered` proves
+that after this transition the last packet of one four-packet macroblock is
+strictly before the first packet of the next. This supplies the edge
+orientation needed to define a *different*, width-four boundary matching for
+the next doubling step. That next matching and its eight-packet regrouping are
+not yet formalized; no repeated schedule, sorting/contraction theorem, or
+coefficient improvement has been obtained.
