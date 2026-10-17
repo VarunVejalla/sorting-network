@@ -39,6 +39,18 @@ theorem packetEmbeddingSupport_card {N : Nat} (p : Fin 64 ↪ Fin N) :
   rw [packetEmbeddingSupport, Finset.card_image_of_injective _ p.injective]
   simp
 
+/-- An increasing packet embedding is exactly the canonical rank enumeration
+of its physical support. -/
+theorem packetEmbedding_eq_supportOrderEmbedding {N : Nat}
+    (p : Fin 64 ↪ Fin N) (hmono : StrictMono p) :
+    ((packetEmbeddingSupport p).orderEmbOfFin (packetEmbeddingSupport_card p)).toEmbedding
+      = p := by
+  have hEq := Finset.orderEmbOfFin_unique (packetEmbeddingSupport_card p)
+    (fun i => by
+      simp [packetEmbeddingSupport]) hmono
+  ext i
+  exact congrArg Fin.val (congrFun hEq i).symm
+
 /-- The increasing physical-wire embedding of every packet in a canonical
 rank-sorted family. -/
 noncomputable def canonicalPacketEmbedding {N : Nat}

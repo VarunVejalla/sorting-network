@@ -7,6 +7,10 @@ import PacketUnequalMerge
 import PacketMergeTree
 import PacketMergeTreeGen
 
+/-- info: 'Chvatal.PacketAlignment.packetEmbedding_eq_supportOrderEmbedding' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetEmbedding_eq_supportOrderEmbedding
+
 /-- info: 'Chvatal.PacketAlignment.dealEvenEmbedding_strictMono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.dealEvenEmbedding_strictMono

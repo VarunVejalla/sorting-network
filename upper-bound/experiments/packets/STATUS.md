@@ -956,3 +956,12 @@ retains increasing embeddings for unmatched packets. This is checked and
 guarded. It gives a direct reusable gate for adding physical-rank monotonicity
 to the iterative state, but the present matching iterator does not impose the
 ordered-pair hypotheses at each step.
+
+Canonical-rank identification (Codex, 2026-10-16):
+`packetEmbedding_eq_supportOrderEmbedding` proves that any strictly increasing
+64-wire embedding is exactly the order embedding obtained by enumerating its
+support in physical order. Combined with the ordered-round result, this
+identifies each output's logical embedding with its canonical rank embedding
+whenever the matched input supports are separated in physical wire order. The
+lemma is in the full axiom guard; it still does not prove the required edge
+separation for the actual multiround schedule.

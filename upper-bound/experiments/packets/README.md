@@ -365,3 +365,10 @@ evolution with depth at most seven per round. Neither the induction nor its
 iteration proves contraction for a particular schedule or aligns logical
 supports with the physical `WireFlow` cuts; the coefficient remains
 unchanged.
+
+`packetEmbedding_eq_supportOrderEmbedding` closes one part of that alignment:
+every increasing output embedding is exactly the canonical enumeration of its
+physical support. Together with the ordered-round theorem, this identifies
+logical packets with physical rank packets whenever each matched pair is
+physically separated. Showing that the full schedule maintains this condition
+remains open.
