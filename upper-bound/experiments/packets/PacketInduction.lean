@@ -642,4 +642,114 @@ theorem genIndexedPacketRound_withSingletons_canonicalOutput {m N : Nat}
       hvertexDisjoint
   exact ⟨output.length, next, hsortedOut, hdisjointOut, hsupportOut, hdepth⟩
 
+/-- A perfect matching round can be reindexed to the same packet-count type.
+The explicit length premise is `2 * edges.length = m`; it makes the local
+sorted/disjoint/support invariant directly iterable across matching rounds. -/
+theorem genIndexedPacketRound_canonicalOutput_fixedCount {m N : Nat} {α : Type}
+    [LinearOrder α]
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges : List (Fin m × Fin m)) (hedges : edges.Nodup)
+    (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2)
+    (hvertexDisjoint : ∀ e ∈ edges, ∀ f ∈ edges, e ≠ f →
+      e.1 ≠ f.1 ∧ e.1 ≠ f.2 ∧ e.2 ≠ f.1 ∧ e.2 ≠ f.2)
+    (hcover : ∀ i, ∃ e ∈ edges, e.1 = i ∨ e.2 = i)
+    (hlen : 2 * edges.length = m)
+    (v : Fin N → α)
+    (hsorted : ∀ i, Monotone (fun k : Fin 64 => v (packets i k))) :
+    let round := genIndexedPacketRound packets hpacketDisjoint edges hnoFixed
+    ∃ next : Fin m → Fin 64 ↪ Fin N,
+      (∀ i, Monotone (fun k => round.exec v (next i k))) ∧
+      (∀ i i', i ≠ i' → ∀ x y, next i x ≠ next i' y) ∧
+      Finset.univ.biUnion (fun i => packetEmbeddingSupport (next i)) =
+        Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) ∧
+      round.depth ≤ 7 := by
+  let output := genIndexedPacketRoundOutput packets hpacketDisjoint edges hnoFixed
+  have houtputLen : output.length = m := by
+    have hlen' : output.length = 2 * edges.length := by
+      have hsum : ∀ xs : List {e // e ∈ edges},
+          (xs.map fun _ => 2).sum = 2 * xs.length := by
+        intro xs
+        induction xs with
+        | nil => simp
+        | cons e xs ih =>
+            simp only [List.map_cons, List.sum_cons, List.length_cons]
+            rw [ih]
+            omega
+      simpa [output, genIndexedPacketRoundOutput, genPacketRound_outputPackets,
+        genIndexedPairSupports, List.length_flatMap, Function.comp_def] using
+        hsum edges.attach
+    omega
+  have hcontract := genIndexedPacketRound_withSingletons_contract
+    packets hpacketDisjoint edges hedges hnoFixed hvertexDisjoint []
+    (by simp) (by simp) (fun i => Or.inl (hcover i)) v hsorted
+  have hsortedList : ∀ p ∈ output,
+      Monotone (fun k => (genIndexedPacketRound packets hpacketDisjoint
+        edges hnoFixed).exec v (p k)) := by
+    simpa [output, genIndexedPacketRoundOutputWithSingletons] using hcontract.1
+  have hdisjointList : List.Pairwise
+      (fun p p' : Fin 64 ↪ Fin N => ∀ x y, p x ≠ p' y) output := by
+    simpa [output, genIndexedPacketRoundOutputWithSingletons] using hcontract.2.1
+  have hsupportList : ∀ w,
+      (∃ p ∈ output, w ∈ Set.range p) ↔
+        ∃ i, w ∈ Set.range (packets i) := by
+    intro w
+    simpa [output, genIndexedPacketRoundOutputWithSingletons] using hcontract.2.2 w
+  let next : Fin m → Fin 64 ↪ Fin N := fun i =>
+    output.get (Fin.cast houtputLen.symm i)
+  have hsortedNext : ∀ i, Monotone (fun k =>
+      (genIndexedPacketRound packets hpacketDisjoint edges hnoFixed).exec v
+        (next i k)) := by
+    intro i
+    exact hsortedList _ (List.get_mem output (Fin.cast houtputLen.symm i))
+  have hdisjointNext : ∀ i i', i ≠ i' → ∀ x y, next i x ≠ next i' y := by
+    intro i i' hii' x y
+    have hne : Fin.cast houtputLen.symm i ≠ Fin.cast houtputLen.symm i' := by
+      intro h
+      apply hii'
+      apply Fin.ext
+      have hv := congrArg Fin.val h
+      simpa using hv
+    rcases lt_or_gt_of_ne hne with hlt | hgt
+    · exact hdisjointList.rel_get_of_lt hlt x y
+    · exact (hdisjointList.rel_get_of_lt hgt y x).symm
+  have hsupportNext : Finset.univ.biUnion
+      (fun i => packetEmbeddingSupport (next i)) =
+      Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) := by
+    ext w
+    have hout : w ∈ Finset.univ.biUnion
+        (fun i => packetEmbeddingSupport (next i)) ↔
+        ∃ p ∈ output, w ∈ Set.range p := by
+      simp only [Finset.mem_biUnion, Finset.mem_univ, true_and]
+      constructor
+      · rintro ⟨i, hi⟩
+        exact ⟨output.get (Fin.cast houtputLen.symm i),
+          List.get_mem output (Fin.cast houtputLen.symm i),
+          (packetEmbeddingSupport_mem_iff _ _).mp hi⟩
+      · rintro ⟨p, hp, hw⟩
+        obtain ⟨i, hi⟩ :=
+          (List.exists_mem_iff_get (l := output) (p := fun z => z = p)).mp
+            ⟨p, hp, rfl⟩
+        refine ⟨Fin.cast houtputLen i, ?_⟩
+        change w ∈ packetEmbeddingSupport (output.get (Fin.cast houtputLen.symm
+          (Fin.cast houtputLen i)))
+        rw [Fin.cast_trans, Fin.cast_eq_self, hi]
+        exact (packetEmbeddingSupport_mem_iff _ _).mpr hw
+    have hin : w ∈ Finset.univ.biUnion
+        (fun i => packetEmbeddingSupport (packets i)) ↔
+        ∃ i, w ∈ Set.range (packets i) := by
+      simp only [Finset.mem_biUnion, Finset.mem_univ, true_and]
+      constructor
+      · rintro ⟨i, hi⟩
+        exact ⟨i, (packetEmbeddingSupport_mem_iff _ _).mp hi⟩
+      · rintro ⟨i, hi⟩
+        exact ⟨i, (packetEmbeddingSupport_mem_iff _ _).mpr hi⟩
+    rw [hout, hsupportList w, hin]
+  have hdepth : (genIndexedPacketRound packets hpacketDisjoint
+      edges hnoFixed).depth ≤ 7 :=
+    genIndexedPacketRound_depth_le packets hpacketDisjoint edges hedges
+      hnoFixed hvertexDisjoint
+  exact ⟨next, hsortedNext, hdisjointNext, hsupportNext, hdepth⟩
+
+
 end Chvatal.PacketAlignment

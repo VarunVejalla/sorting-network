@@ -963,6 +963,10 @@ import PacketMergeTreeGen
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genIndexedPacketRound_withSingletons_canonicalOutput
 
+/-- info: 'Chvatal.PacketAlignment.genIndexedPacketRound_canonicalOutput_fixedCount' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genIndexedPacketRound_canonicalOutput_fixedCount
+
 /-- info: 'Chvatal.PacketAlignment.oddEvenMerge128_physicalHalf_counts' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.oddEvenMerge128_physicalHalf_counts

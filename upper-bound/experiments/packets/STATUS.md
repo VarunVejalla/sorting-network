@@ -900,3 +900,16 @@ pass. This closes a sound batch interface only: cohort-mean modes remain, and
 the next critical gap is matching these logical cohorts/targets to actual
 successive WireFlow cuts so the proved matching-family energy decrement can
 be applied. The coefficient is unchanged.
+
+Fixed-count matching-round adapter (Codex, 2026-10-16):
+`genIndexedPacketRound_canonicalOutput_fixedCount` reindexes the checked
+perfect-matching output family from its list length back to the original
+`Fin m` packet IDs, assuming `2 * edges.length = m`. It preserves sortedness
+after the actual seven-layer merge-and-deal network, pairwise support
+disjointness, and exact support-union conservation. This removes the varying
+existential packet-count type as an obstacle to iterating perfect matching
+rounds. `PacketInduction` and the full `PacketMergeAxioms` guard chain pass.
+Still open: build the uniformly contracting matching schedule with these
+length/coverage contracts, iterate its state-dependent supports, and reconcile
+the resulting logical packets with physical WireFlow cuts. No coefficient
+improvement follows from this adapter alone.
