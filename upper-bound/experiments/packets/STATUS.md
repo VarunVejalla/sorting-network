@@ -888,3 +888,15 @@ was already proved directly. The missing step remains to identify the merge
 outputs and their averaged targets with the next physical WireFlow cuts, so
 that the pairwise merge/deal energy decrement applies across stages. No global
 coefficient improvement follows.
+
+Divisible-cohort signed energy (Codex, 2026-10-16):
+`packetFamily64BlockList_merge_heterogeneous_profile_energy_le` lifts the
+64-packet signed-error projection to the actual `packetFamily64BlockList` of
+disjoint 4096-wire cohorts. Summing the per-cohort estimate gives output
+rank-profile energy at most the sum of squared cohort net errors, so
+within-cohort zero-sum modes are eliminated before any recurrence-level
+bookkeeping. `PacketHalfProfile` and the full `PacketMergeAxioms` guard chain
+pass. This closes a sound batch interface only: cohort-mean modes remain, and
+the next critical gap is matching these logical cohorts/targets to actual
+successive WireFlow cuts so the proved matching-family energy decrement can
+be applied. The coefficient is unchanged.

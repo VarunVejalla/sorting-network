@@ -1459,6 +1459,10 @@ import PacketMergeTreeGen
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.packetFamily64BlockList_merge_output_threshold_profile
 
+/-- info: 'Chvatal.PacketAlignment.packetFamily64BlockList_merge_heterogeneous_profile_energy_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetFamily64BlockList_merge_heterogeneous_profile_energy_le
+
 /-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_divisible64_batch_profiles' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_divisible64_batch_profiles

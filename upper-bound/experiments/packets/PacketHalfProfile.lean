@@ -314,7 +314,7 @@ Thus opposite source errors cancel completely during reassembly; the
 triangle-inequality version below loses this information. -/
 theorem packetPowerTree6GroupNet_heterogeneous_profile_error_exact {N : Nat}
     {α : Type} [LinearOrder α]
-    (packets : Fin 64 → Fin 64 → Fin N)
+    (packets : Fin 64 → Fin 64 ↪ Fin N)
     (hdisjoint : ∀ {j k : Fin 64}, j ≠ k → ∀ (i q : Fin 64),
       packets j i ≠ packets k q)
     (v : Fin N → α)
@@ -330,7 +330,7 @@ theorem packetPowerTree6GroupNet_heterogeneous_profile_error_exact {N : Nat}
               (Fin.cast (packetPowerTree6_leafCount (α := α)).symm j) i))) : Real) -
         profileCellMean 64 q frac j.val|) =
       |∑ j : Fin 64,
-        (boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j| := by
+        ((boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j)| := by
   let e := genPacketGroup64Embedding packets hdisjoint
   let X := boolTrueCount (fun i : Fin 4096 => decide (t ≤ v (e i)))
   have hsum : X = ∑ j : Fin 64,
@@ -355,14 +355,15 @@ theorem packetPowerTree6GroupNet_heterogeneous_profile_error_exact {N : Nat}
       simpa only [e, X, packetPowerTree6GroupNet] using hexact
     _ = |∑ j : Fin 64,
         ((boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j)| :=
-      congrArg abs hscalar
+      by
+        exact congrArg (fun z : Real => |z|) hscalar
 
 /-- Quadratic version of the signed cancellation law: the entire output
 rank-profile energy is bounded by the square of the group's net input error.
 In particular, a zero-sum input error vector leaves no output profile error. -/
 theorem packetPowerTree6GroupNet_heterogeneous_profile_energy_le_signed_sum_sq
     {N : Nat} {α : Type} [LinearOrder α]
-    (packets : Fin 64 → Fin 64 → Fin N)
+    (packets : Fin 64 → Fin 64 ↪ Fin N)
     (hdisjoint : ∀ {j k : Fin 64}, j ≠ k → ∀ (i q : Fin 64),
       packets j i ≠ packets k q)
     (v : Fin N → α)
@@ -378,7 +379,7 @@ theorem packetPowerTree6GroupNet_heterogeneous_profile_energy_le_signed_sum_sq
               (Fin.cast (packetPowerTree6_leafCount (α := α)).symm j) i))) : Real) -
         profileCellMean 64 q frac j.val) ^ 2) ≤
       (∑ j : Fin 64,
-        (boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j) ^ 2 := by
+        ((boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j)) ^ 2 := by
   let outErr (j : Fin 64) : Real :=
     (boolTrueCount (fun i : Fin 64 => decide (t ≤
       (packetPowerTree6GroupNet (α := α) packets hdisjoint).exec v
@@ -387,10 +388,10 @@ theorem packetPowerTree6GroupNet_heterogeneous_profile_energy_le_signed_sum_sq
           (Fin.cast (packetPowerTree6_leafCount (α := α)).symm j) i))) : Real) -
       profileCellMean 64 q frac j.val
   have hexact := packetPowerTree6GroupNet_heterogeneous_profile_error_exact
-    packets hdisjoint v hpackets t q frac μ hq hfrac0 hfrac1 hμ
+    (N := N) (packets := packets) hdisjoint v hpackets t q frac μ hq hfrac0 hfrac1 hμ
   have hL1 : (∑ j : Fin 64, |outErr j|) =
       |∑ j : Fin 64,
-        (boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j| := by
+        ((boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j)| := by
     simpa only [outErr] using hexact
   calc
     _ = ∑ j : Fin 64, |outErr j| ^ 2 := by
@@ -400,7 +401,7 @@ theorem packetPowerTree6GroupNet_heterogeneous_profile_energy_le_signed_sum_sq
     _ ≤ (∑ j : Fin 64, |outErr j|) ^ 2 :=
       Finset.sum_sq_le_sq_sum_of_nonneg (fun j _ => abs_nonneg (outErr j))
     _ = (∑ j : Fin 64,
-        (boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j) ^ 2 := by
+        ((boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j)) ^ 2 := by
       rw [hL1, sq_abs]
 
 /-- With energy normalized by the 64 output rank cells, reassembly is
@@ -409,7 +410,7 @@ preceding signed-residual bound shows that the within-group zero-sum modes
 are projected away. -/
 theorem packetPowerTree6GroupNet_heterogeneous_profile_energy_normalized_le
     {N : Nat} {α : Type} [LinearOrder α]
-    (packets : Fin 64 → Fin 64 → Fin N)
+    (packets : Fin 64 → Fin 64 ↪ Fin N)
     (hdisjoint : ∀ {j k : Fin 64}, j ≠ k → ∀ (i q : Fin 64),
       packets j i ≠ packets k q)
     (v : Fin N → α)
@@ -427,20 +428,19 @@ theorem packetPowerTree6GroupNet_heterogeneous_profile_energy_normalized_le
       ∑ j : Fin 64,
         ((boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j) ^ 2 := by
   have henergy := packetPowerTree6GroupNet_heterogeneous_profile_energy_le_signed_sum_sq
-    packets hdisjoint v hpackets t q frac μ hq hfrac0 hfrac1 hμ
-  have hcs : (∑ j : Fin 64,
-      (boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j) ^ 2 ≤
-      64 * ∑ j : Fin 64,
-        ((boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j) ^ 2 := by
+    (N := N) (packets := packets) hdisjoint v hpackets t q frac μ hq hfrac0 hfrac1 hμ
+  have hcs : (∑ j : Fin 64, ((boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j)) ^ 2 ≤
+      64 * (∑ j : Fin 64,
+        ((boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j) ^ 2) := by
     have h := _root_.sq_sum_le_card_mul_sum_sq
       (s := (Finset.univ : Finset (Fin 64)))
       (f := fun j : Fin 64 =>
-        (boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j)
+        ((boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j))
     simpa using h
   rw [div_le_iff₀ (by norm_num : (0 : Real) < 64)]
   calc
     _ ≤ (∑ j : Fin 64,
-        (boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j) ^ 2 :=
+        ((boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j)) ^ 2 :=
       henergy
     _ ≤ 64 * ∑ j : Fin 64,
         ((boolTrueCount (fun i : Fin 64 => decide (t ≤ v (packets j i))) : Real) - μ j) ^ 2 :=
@@ -581,6 +581,141 @@ theorem packetFamily64BlockList_merge_output_threshold_profile {q N : Nat}
   exact genScatterMergeTreeBatch_output_threshold_profile
     (packetPowerTree6 (α := α)) hleaf (packetFamily64BlockList packets hdis)
     hnd hdisBlocks v hRuns e he t j
+
+/-- Batch form of the signed-error contraction: each 4096-wire cohort's
+output rank-profile energy is charged only to that cohort's net input error,
+so cancellation is retained independently across all disjoint blocks. -/
+theorem packetFamily64BlockList_merge_heterogeneous_profile_energy_le
+    {q N : Nat} {α : Type} [LinearOrder α]
+    (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y)
+    (v : Fin N → α) (t : α)
+    (hpackets : ∀ a, Monotone (fun i => v (packets a i)))
+    (μ : Fin (q * 64) → Real) (targetQ : Fin q → Nat)
+    (frac : Fin q → Real)
+    (hbase : ∀ g, targetQ g < 4096)
+    (hfrac0 : ∀ g, 0 ≤ frac g) (hfrac1 : ∀ g, frac g ≤ 1)
+    (htarget : ∀ g, (∑ i : Fin 64,
+      μ (packetFamily64BlockIndex g i)) = targetQ g + frac g) :
+    (∑ g : Fin q, ∑ j : Fin 64,
+      ((boolTrueCount (fun i : Fin 64 => decide (t ≤
+          (genScatterMergeTreeBatch (packetPowerTree6 (α := α))
+            (packetFamily64BlockList packets hdis)).exec v
+            (genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α))
+              (packetFamily64BlockEmbedding packets hdis g)
+              (Fin.cast (packetPowerTree6_leafCount (α := α)).symm j) i))) : Real) -
+        profileCellMean 64 (targetQ g) (frac g) j.val) ^ 2) ≤
+    ∑ g : Fin q,
+      (∑ i : Fin 64,
+        ((boolTrueCount (fun k : Fin 64 => decide (t ≤ v
+          (packets (packetFamily64BlockIndex g i) k))) : Real) -
+          μ (packetFamily64BlockIndex g i))) ^ 2 := by
+  classical
+  let blocks := packetFamily64BlockList packets hdis
+  let batch := genScatterMergeTreeBatch (packetPowerTree6 (α := α)) blocks
+  have hprofile := packetFamily64BlockList_merge_output_threshold_profile
+    packets hdis v hpackets
+  apply Finset.sum_le_sum
+  intro g _
+  let localPackets : Fin 64 → Fin 64 ↪ Fin N :=
+    fun i => packets (packetFamily64BlockIndex g i)
+  have hinner : ∀ {i k : Fin 64}, i ≠ k → ∀ x y,
+      localPackets i x ≠ localPackets k y := by
+    intro i k hik x y
+    apply hdis (packetFamily64BlockIndex g i) (packetFamily64BlockIndex g k)
+      (by
+        intro h
+        apply hik
+        exact packetFamily64BlockIndex_injective g h) x y
+  let e := genPacketGroup64Embedding localPackets hinner
+  let X := boolTrueCount (fun k : Fin 4096 => decide (t ≤ v (e k)))
+  have hsum : X = ∑ i : Fin 64,
+      boolTrueCount (fun k : Fin 64 => decide (t ≤ v (localPackets i k))) := by
+    exact boolTrueCount_genPacketGroup64Embedding_sum localPackets hinner
+      (fun w => decide (t ≤ v w))
+  have hX : X ≤ 4096 := by
+    simpa [X, boolTrueCount] using
+      (Fintype.card_subtype_le (fun k : Fin 4096 =>
+        decide (t ≤ v (e k)) = true))
+  have he : packetFamily64BlockEmbedding packets hdis g ∈ blocks := by
+    simp [blocks, packetFamily64BlockList]
+  have hsourceProfile (j : Fin 64) :
+      boolTrueCount (fun i : Fin 64 => decide (t ≤
+        batch.exec v (genScatterMergeTreeOutputEmbedding
+          (packetPowerTree6 (α := α)) (packetFamily64BlockEmbedding packets hdis g)
+          (Fin.cast (packetPowerTree6_leafCount (α := α)).symm j) i))) =
+        profileCell 64 X j.val := by
+    have hp := hprofile t (packetFamily64BlockEmbedding packets hdis g) he j
+    simpa [batch, blocks, e, X, packetFamily64BlockEmbedding, localPackets] using hp
+  have hL1 :
+      (∑ j : Fin 64,
+        |(profileCell 64 X j.val : Real) -
+          profileCellMean 64 (targetQ g) (frac g) j.val|) =
+        |(X : Real) - (targetQ g + frac g)| := by
+    exact profileCellMean_L1_exact 64 X (targetQ g) (frac g)
+      (hbase g) hX (hfrac0 g) (hfrac1 g)
+  have hscalar : (X : Real) - (targetQ g + frac g) =
+      ∑ i : Fin 64,
+        ((boolTrueCount (fun k : Fin 64 => decide (t ≤ v (localPackets i k))) : Real) -
+          μ (packetFamily64BlockIndex g i)) := by
+    rw [Finset.sum_sub_distrib]
+    have hcounts : (∑ i : Fin 64,
+        (boolTrueCount (fun k : Fin 64 => decide (t ≤ v (localPackets i k))) : Real)) =
+        (X : Real) := by
+      exact_mod_cast hsum.symm
+    rw [hcounts, htarget g]
+  have hL1out :
+      (∑ j : Fin 64,
+        |(boolTrueCount (fun i : Fin 64 => decide (t ≤
+            batch.exec v (genScatterMergeTreeOutputEmbedding
+              (packetPowerTree6 (α := α)) (packetFamily64BlockEmbedding packets hdis g)
+              (Fin.cast (packetPowerTree6_leafCount (α := α)).symm j) i))) : Real) -
+          profileCellMean 64 (targetQ g) (frac g) j.val|) =
+        |(X : Real) - (targetQ g + frac g)| := by
+    calc
+      _ = ∑ j : Fin 64,
+          |(profileCell 64 X j.val : Real) -
+            profileCellMean 64 (targetQ g) (frac g) j.val| := by
+        apply Finset.sum_congr rfl
+        intro j _
+        rw [hsourceProfile j]
+      _ = _ := hL1
+  have hAbs :
+      |(X : Real) - (targetQ g + frac g)| =
+        |∑ i : Fin 64,
+          ((boolTrueCount (fun k : Fin 64 => decide (t ≤ v (localPackets i k))) : Real) -
+            μ (packetFamily64BlockIndex g i))| :=
+    congrArg abs hscalar
+  have henergy :
+      (∑ j : Fin 64,
+        ((boolTrueCount (fun i : Fin 64 => decide (t ≤
+            batch.exec v (genScatterMergeTreeOutputEmbedding
+              (packetPowerTree6 (α := α)) (packetFamily64BlockEmbedding packets hdis g)
+              (Fin.cast (packetPowerTree6_leafCount (α := α)).symm j) i))) : Real) -
+          profileCellMean 64 (targetQ g) (frac g) j.val) ^ 2) ≤
+      (∑ i : Fin 64,
+        ((boolTrueCount (fun k : Fin 64 => decide (t ≤ v (localPackets i k))) : Real) -
+          μ (packetFamily64BlockIndex g i))) ^ 2 := by
+    calc
+      _ = ∑ j : Fin 64,
+          |(boolTrueCount (fun i : Fin 64 => decide (t ≤
+              batch.exec v (genScatterMergeTreeOutputEmbedding
+                (packetPowerTree6 (α := α)) (packetFamily64BlockEmbedding packets hdis g)
+                (Fin.cast (packetPowerTree6_leafCount (α := α)).symm j) i))) : Real) -
+            profileCellMean 64 (targetQ g) (frac g) j.val| ^ 2 := by
+        apply Finset.sum_congr rfl
+        intro j _
+        rw [sq_abs]
+      _ ≤ (∑ j : Fin 64,
+          |(boolTrueCount (fun i : Fin 64 => decide (t ≤
+              batch.exec v (genScatterMergeTreeOutputEmbedding
+                (packetPowerTree6 (α := α)) (packetFamily64BlockEmbedding packets hdis g)
+                (Fin.cast (packetPowerTree6_leafCount (α := α)).symm j) i))) : Real) -
+            profileCellMean 64 (targetQ g) (frac g) j.val|) ^ 2 :=
+        Finset.sum_sq_le_sq_sum_of_nonneg (fun j _ => abs_nonneg _)
+      _ = |(X : Real) - (targetQ g + frac g)| ^ 2 := by rw [← hL1out]
+      _ = _ := by rw [hAbs, sq_abs]
+  exact henergy
 
 /-- Exact threshold profiles survive the disjoint full-plus-tail batch: full
 blocks retain their 64-cell profiles and the unequal tail retains its

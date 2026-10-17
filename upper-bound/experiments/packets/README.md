@@ -292,6 +292,15 @@ physical-cut targets. After normalizing output energy by its 64 rank cells,
 `packetPowerTree6GroupNet_heterogeneous_profile_energy_normalized_le` gives a
 nonexpansive bound by the unnormalized input count energy.
 
+For an actual divisible packet family, the checked batch theorem
+`packetFamily64BlockList_merge_heterogeneous_profile_energy_le` sums this
+projection separately over every 4096-wire cohort: output rank-profile energy
+is at most the sum, over cohorts, of the square of that cohort's net input
+count error. This preserves within-cohort cancellation across the real block
+list and is guarded in `PacketMergeAxioms`. It still leaves the cohort-mean
+modes untouched; connecting those means to the next physical WireFlow cuts
+and proving a cross-cohort mixing decrement remain the global bottlenecks.
+
 Packet-target monotonicity bridge (GPT-6-astra-high, 2026-10-16):
 `natProfileInterp_mono_mean` proves that a monotone integer destination-count
 profile has a monotone linear interpolation even when the target crosses an
