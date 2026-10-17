@@ -741,6 +741,20 @@ theorem dealOddEmbedding_strictMono {N : Nat} (e : Fin 128 ↪ Fin N)
     simp [oddWire]
     omega) : oddWire 64 i < oddWire 64 j)
 
+/-- Even/odd dealing preserves order within each output packet but interleaves
+their physical supports, even when the joined input occupies one increasing
+128-wire interval. Thus an induction that matches only wholly separated
+individual output packets cannot pair these two outputs on the next round. -/
+theorem dealEmbeddings_interleave_of_strictMono {N : Nat}
+    (e : Fin 128 ↪ Fin N) (he : StrictMono e) :
+    dealEvenEmbedding e 0 < dealOddEmbedding e 0 ∧
+      dealOddEmbedding e 0 < dealEvenEmbedding e 1 := by
+  have h01 : (⟨0, by omega⟩ : Fin 128) < ⟨1, by omega⟩ := by decide
+  have h12 : (⟨1, by omega⟩ : Fin 128) < ⟨2, by omega⟩ := by decide
+  constructor
+  · simpa [dealEvenEmbedding, dealOddEmbedding, evenWire, oddWire] using he h01
+  · simpa [dealEvenEmbedding, dealOddEmbedding, evenWire, oddWire] using he h12
+
 /-- Concatenating two increasing packet embeddings remains increasing when
 the entire first support lies below the entire second support. -/
 theorem joinPacketEmbedding_strictMono {m N : Nat}

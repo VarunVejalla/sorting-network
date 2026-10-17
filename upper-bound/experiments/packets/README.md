@@ -403,3 +403,12 @@ matching policy that chooses edges from the current physical state, with a
 one-step value/depth theorem under exactly that ordered-edge premise.
 Showing that the full schedule can choose such oriented edges at every evolving
 round and contract the rank-profile error, remains open.
+
+One specific obstruction is now kernel-checked:
+`dealEmbeddings_interleave_of_strictMono` shows that even when a joined pair
+has a strictly increasing physical embedding, its even and odd dealt outputs
+interleave in physical wire order. Thus preserving monotonicity inside each
+packet is insufficient to keep the same two packets eligible for an ordered
+edge. A physical-order induction must carry ordered groups spanning both
+outputs and match across distinct groups, or use an invariant that permits
+interleaving.
