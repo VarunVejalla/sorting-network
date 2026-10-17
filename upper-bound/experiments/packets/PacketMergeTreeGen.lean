@@ -554,6 +554,45 @@ theorem genScatterMergeTree_outputPackets_sorted {M N : Nat} {α : Type}
   simpa [genScatterMergeTreeOutputPackets] using
     genScatterMergeTree_outputPacket_sorted tree e v hRuns j
 
+/-- A sorted packet family whose supports form consecutive physical blocks. -/
+structure PhysicalSortedPacketFamily {α : Type} [LinearOrder α]
+    (N k : Nat) (v : Fin N → α) where
+  packet : Fin k → Fin 64 ↪ Fin N
+  disjoint : ∀ {j l : Fin k}, j ≠ l → ∀ (i q : Fin 64),
+    packet j i ≠ packet l q
+  ordered : ∀ j l, j.val < l.val → ∀ (i q : Fin 64),
+    packet j i < packet l q
+  sorted : ∀ j, Monotone (fun i => v (packet j i))
+
+/-- A merge tree maps physically ordered input wires to a canonical output
+packet state, preserving exact support and supplying the sortedness and
+physical separation needed by a later merge stage. -/
+theorem genScatterMergeTree_outputPhysicalPacketState {M N : Nat} {α : Type}
+    [LinearOrder α] (tree : PacketMergeTree α M) (e : Fin M ↪ Fin N)
+    (v : Fin N → α) (he : StrictMono e)
+    (hRuns : tree.RunsSorted (fun i => v (e i))) :
+    ∃ state : PhysicalSortedPacketFamily N tree.leafCount
+        ((genScatterMergeTree tree e).exec v),
+      state.packet = genScatterMergeTreeOutputPackets tree e ∧
+      ∀ x : Fin M, ∃ j i, state.packet j i = e x := by
+  let packets := genScatterMergeTreeOutputPackets tree e
+  have hdisjoint : ∀ {j l : Fin tree.leafCount}, j ≠ l →
+      ∀ (i q : Fin 64), packets j i ≠ packets l q := by
+    intro j l hjl i q
+    exact genScatterMergeTreeOutputPackets_disjoint tree e hjl i q
+  have hordered : ∀ j l, j.val < l.val → ∀ (i q : Fin 64),
+      packets j i < packets l q := by
+    intro j l hjl i q
+    exact genScatterMergeTreeOutputPackets_ordered tree e he hjl i q
+  have hsorted : ∀ j, Monotone (fun i =>
+      (genScatterMergeTree tree e).exec v (packets j i)) := by
+    intro j
+    simpa [packets] using genScatterMergeTree_outputPackets_sorted tree e v hRuns j
+  refine ⟨⟨packets, hdisjoint, hordered, hsorted⟩, rfl, ?_⟩
+  intro x
+  obtain ⟨j, i, hi⟩ := genScatterMergeTreeOutputEmbedding_covers tree e x
+  exact ⟨j, i, by simpa [packets, genScatterMergeTreeOutputPackets] using hi⟩
+
 /-- Ordered physical input packets yield output packets that are also
 increasing in physical wire order through the 57-layer 4096-wire merge. -/
 theorem packetPowerTree6GroupNet_outputPacket_strictMono {N : Nat} {α : Type}

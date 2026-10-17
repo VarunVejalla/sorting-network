@@ -1505,6 +1505,10 @@ import PacketMergeTreeGen
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genScatterMergeTree_outputPackets_sorted
 
+/-- info: 'Chvatal.PacketAlignment.genScatterMergeTree_outputPhysicalPacketState' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genScatterMergeTree_outputPhysicalPacketState
+
 /-- info: 'Chvatal.PacketAlignment.packetPowerTree6GroupNet_outputPackets_ordered' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.packetPowerTree6GroupNet_outputPackets_ordered

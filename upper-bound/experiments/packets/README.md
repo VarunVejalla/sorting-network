@@ -378,8 +378,10 @@ in the physical order needed by the next ordered matching round; no extra
 permutation is needed between these two merge-tree stages. The generic
 `genScatterMergeTreeOutputPackets` packages the chunks as a canonical finite
 family, with checked sortedness, disjointness, and cross-packet order
-theorems. This gives the next induction a single state object rather than
-separate output-coordinate hypotheses. This composes only
+theorems. `genScatterMergeTree_outputPhysicalPacketState` packages those
+properties and exact coverage of the input support into one axiom-guarded
+induction result. This gives the next induction a single state object rather
+than separate output-coordinate hypotheses. This composes only
 when the incoming packet family satisfies the separated-order premise, which
 the full `WireFlow` induction has not yet established. The residue-63 group
 embedding is covered by the new ordered-group lemma; its specialized cross-
