@@ -335,6 +335,11 @@ each matched pair consists of two ordered supports with the first wholly below
 the second. The evolving UB-25 schedule has not yet been shown to maintain
 this premise.
 
+The round-level theorem `genIndexedPacketRound_withSingletons_output_strictMono`
+shows this premise propagates to every dealt output when each edge is physically
+ordered; unmatched singleton embeddings remain increasing as well. The current
+generic iterator still does not constrain its schedule to use such edges.
+
 Incidence-sensitive packet-error composition (GPT-6-astra-high, 2026-10-16):
 `packetized_source_errors_sq_sum_le_of_degree` bounds aggregate receiver
 squared error by `k` times source batch-error energy when receiver indegree is

@@ -16,6 +16,12 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.joinPacketEmbedding_strictMono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.joinPacketEmbedding_strictMono
+/-- info: 'Chvatal.PacketAlignment.genIndexedPacketRound_output_strictMono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genIndexedPacketRound_output_strictMono
+/-- info: 'Chvatal.PacketAlignment.genIndexedPacketRound_withSingletons_output_strictMono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genIndexedPacketRound_withSingletons_output_strictMono
 
 /-- info: 'Chvatal.PacketAlignment.parallelDownSetEndpointRepair_exists' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in

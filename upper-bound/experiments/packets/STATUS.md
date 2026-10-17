@@ -948,3 +948,11 @@ embedding. These local facts are kernel checked and guarded. They make explicit
 the ordering premise needed for a round to preserve physical-rank packet
 embeddings; no theorem yet shows the UB-25 matching schedule satisfies that
 premise across rounds.
+
+Round-level order transfer (Codex, 2026-10-16):
+`genIndexedPacketRound_output_strictMono` lifts the ordered-pair condition to
+every dealt packet in a matching output; the singleton-aware corollary also
+retains increasing embeddings for unmatched packets. This is checked and
+guarded. It gives a direct reusable gate for adding physical-rank monotonicity
+to the iterative state, but the present matching iterator does not impose the
+ordered-pair hypotheses at each step.

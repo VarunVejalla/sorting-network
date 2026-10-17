@@ -1555,6 +1555,35 @@ theorem genIndexedPacketRound_output_sorted {m N : Nat} {α : Type}
     rw [joinPacketEmbedding_right, joinPacketEmbedding_right]
     exact hsorted edge.1.2 hij
 
+/- A physically ordered matched pair produces physically increasing dealt
+packets, so this condition can be tested independently of value sortedness. -/
+theorem genIndexedPacketRound_output_strictMono {m N : Nat}
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges : List (Fin m × Fin m))
+    (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2)
+    (hpacketMono : ∀ i, StrictMono (packets i))
+    (hordered : ∀ e ∈ edges, ∀ x y, packets e.1 x < packets e.2 y) :
+    ∀ p ∈ genIndexedPacketRoundOutput packets hpacketDisjoint edges hnoFixed,
+      StrictMono p := by
+  intro p hp
+  change p ∈ genPacketRound_outputPackets
+    (genIndexedPairSupports packets hpacketDisjoint edges hnoFixed) at hp
+  simp only [genPacketRound_outputPackets, List.mem_flatMap] at hp
+  obtain ⟨joined, hjoined, hp⟩ := hp
+  simp only [genIndexedPairSupports, List.mem_map, List.mem_attach] at hjoined
+  obtain ⟨edge, hedge, rfl⟩ := hjoined
+  have hjoinedMono : StrictMono
+      (joinPacketEmbedding (packets edge.1.1) (packets edge.1.2)
+        (hpacketDisjoint edge.1.1 edge.1.2 (hnoFixed edge.1 edge.2))) :=
+    joinPacketEmbedding_strictMono _ _ _ (hpacketMono edge.1.1)
+      (hpacketMono edge.1.2) (hordered edge.1 edge.2)
+  rcases (by simpa [genPacketRound_outputPackets] using hp) with hp | hp
+  · rw [hp]
+    exact dealEvenEmbedding_strictMono _ hjoinedMono
+  · rw [hp]
+    exact dealOddEmbedding_strictMono _ hjoinedMono
+
 theorem genIndexedPacketRound_output_support {m N : Nat}
     (packets : Fin m → Fin 64 ↪ Fin N)
     (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)

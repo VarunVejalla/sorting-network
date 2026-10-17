@@ -445,6 +445,28 @@ def genIndexedPacketRoundOutputWithSingletons {m N : Nat}
   genIndexedPacketRoundOutput packets hpacketDisjoint edges hnoFixed ++
     singles.map packets
 
+/-- A partial matching preserves increasing physical packet embeddings when
+each matched pair is ordered and each untouched singleton is increasing. -/
+theorem genIndexedPacketRound_withSingletons_output_strictMono {m N : Nat}
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges : List (Fin m × Fin m))
+    (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2)
+    (singles : List (Fin m))
+    (hpacketMono : ∀ i, StrictMono (packets i))
+    (hordered : ∀ e ∈ edges, ∀ x y, packets e.1 x < packets e.2 y) :
+    ∀ p ∈ genIndexedPacketRoundOutputWithSingletons packets hpacketDisjoint
+      edges hnoFixed singles,
+      StrictMono p := by
+  intro p hp
+  simp only [genIndexedPacketRoundOutputWithSingletons, List.mem_append] at hp
+  rcases hp with hmatched | hsingle
+  · exact genIndexedPacketRound_output_strictMono packets hpacketDisjoint edges
+      hnoFixed hpacketMono hordered p hmatched
+  · simp only [List.mem_map] at hsingle
+    obtain ⟨i, hi, rfl⟩ := hsingle
+    exact hpacketMono i
+
 /-- A partial matching together with a pairwise-disjoint list of untouched
 singletons gives a sorted, pairwise-disjoint packet family covering precisely
 the input packet support, provided every input ID is either matched or listed
