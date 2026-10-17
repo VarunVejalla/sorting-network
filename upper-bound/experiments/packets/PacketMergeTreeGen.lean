@@ -563,6 +563,8 @@ structure PhysicalSortedPacketFamily {α : Type} [LinearOrder α]
   ordered : ∀ j l, j.val < l.val → ∀ (i q : Fin 64),
     packet j i < packet l q
   sorted : ∀ j, Monotone (fun i => v (packet j i))
+  valuesOrdered : ∀ j l, j.val < l.val → ∀ (i q : Fin 64),
+    v (packet j i) ≤ v (packet l q)
 
 /-- A merge tree maps physically ordered input wires to a canonical output
 packet state, preserving exact support and supplying the sortedness and
@@ -588,7 +590,20 @@ theorem genScatterMergeTree_outputPhysicalPacketState {M N : Nat} {α : Type}
       (genScatterMergeTree tree e).exec v (packets j i)) := by
     intro j
     simpa [packets] using genScatterMergeTree_outputPackets_sorted tree e v hRuns j
-  refine ⟨⟨packets, hdisjoint, hordered, hsorted⟩, rfl, ?_⟩
+  have hglobal := genScatterMergeTree_sorts tree e v hRuns
+  have hvaluesOrdered : ∀ j l, j.val < l.val → ∀ (i q : Fin 64),
+      (genScatterMergeTree tree e).exec v (packets j i) ≤
+        (genScatterMergeTree tree e).exec v (packets l q) := by
+    intro j l hjl i q
+    have hidx : PacketMergeTree.chunkIndex tree j i ≤
+        PacketMergeTree.chunkIndex tree l q := by
+      apply Fin.mk_le_mk.mpr
+      change j.val * 64 + i.val ≤ l.val * 64 + q.val
+      omega
+    have hv := hglobal hidx
+    simpa [packets, genScatterMergeTreeOutputPackets,
+      genScatterMergeTreeOutputEmbedding] using hv
+  refine ⟨⟨packets, hdisjoint, hordered, hsorted, hvaluesOrdered⟩, rfl, ?_⟩
   intro x
   obtain ⟨j, i, hi⟩ := genScatterMergeTreeOutputEmbedding_covers tree e x
   exact ⟨j, i, by simpa [packets, genScatterMergeTreeOutputPackets] using hi⟩
