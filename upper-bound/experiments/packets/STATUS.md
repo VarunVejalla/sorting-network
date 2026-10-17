@@ -1015,3 +1015,18 @@ Adjacent matching output block contract (GPT-6-astra-high, 2026-10-16): `adjacen
 Inter-block boundary round (GPT-6-astra-high, 2026-10-16): `interBlockBoundaryMatching` matches flattened IDs `(4j+1, 4j+2)`, which are the odd lane of output block `2j` and even lane of block `2j+1`; IDs `4j` and `4j+3` remain singletons. It is a checked vertex-disjoint partial matching with exact coverage. `interBlockBoundaryMatching_ordered` proves every edge is oriented across the physical gap between the parent blocks, and `interBlockBoundaryMatching_preservesPhysicalState` applies the existing singleton-aware transition to preserve sorted packets, support, strict physical monotonicity, and the seven-layer budget.
 
 `adjacentPacketMatchingFlattenedOutput_contract` now exposes the first adjacent perfect matching's actual output blocks in block-major, lane-minor order and proves the full physical packet interface needed by that boundary round. `adjacentThenBoundaryMatching_preservesPhysicalState` composes the two seven-layer rounds. The focused chain through `PacketMergeAxioms` passes. This closes a concrete two-round induction step that respects within-block lane interleaving. It does not yet give a repeated block schedule after the second round, connect these supports to the next `WireFlow` cuts, prove mixing contraction, or improve the sorting coefficient.
+
+Boundary-round regrouping geometry (Codex / GPT-6-astra-high, 2026-10-16):
+`interBlockBoundaryOutputBlock_range` shows each wire of a proposed four-lane
+macroblock comes from one of its four parent packet supports. This implies
+`interBlockBoundaryOutputBlocks_ordered` and
+`interBlockBoundaryOutputBlocks_disjoint`: distinct regrouped macroblocks are
+strictly separated whenever their parent blocks were. Both the focused
+`PacketInduction` compilation and the full `check-lean.ps1 -From
+PacketInduction` chain through `PacketMergeAxioms` passed (the full chain ran
+before the final disjointness corollary; the source was recompiled after it).
+The same-macroblock contract remains open: prove all four lanes occur in the
+actual partial-round output, are sorted after execution, are pairwise
+disjoint, and together preserve exactly the four parent supports. Until that
+is closed, this is a geometry lemma only; there is still no repeated schedule,
+contraction result, or coefficient improvement.
