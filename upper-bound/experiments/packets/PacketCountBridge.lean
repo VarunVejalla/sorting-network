@@ -208,6 +208,44 @@ theorem senderRepair_centered_energy_le {N : Nat} (s : Finset (Fin N)) (up down 
   simp_rw [senderRepair_rebin_count s up down hs hu hc hshift hd hdiv v out hv hpres]
   exact halfRebin_centered_energy_le 32 _ (finRotate 65) μ
 
+/-- Exact dissipation formula for the actual 65-cell sender repair: its
+centered energy drops by twice the deficit-surplus overlap across the cycle. -/
+theorem senderRepair_centered_energy_drop_exact {N : Nat} (s : Finset (Fin N))
+    (up down : Nat) (hs : s.card = up + 64 * down) (hu : 2 ∣ up)
+    (hc : 64 ∣ s.card) (hshift : up / 2 % 64 = 32) (hd : 64 ≤ down)
+    (hdiv : 64 ∣ down) (v out : Fin N → Bool) (hv : PacketSortedOn s v)
+    (hpres : ∀ i : Fin 65,
+      trueCountOn (senderRepairLeft s up down i ∪ senderRepairRight s up down i) out =
+      trueCountOn (senderRepairLeft s up down i ∪ senderRepairRight s up down i) v) :
+    (∑ i : Fin 65, ((trueCountOn
+      (senderRepairLeft s up down i ∪ senderRepairRight s up down i) out : Real) - 32)^2) +
+        2 * ∑ i : Fin 65,
+          ((32 : Real) - (min 32 (trueCountOn (senderBoundaryCell s up down i) v) : Nat)) *
+            ((trueCountOn
+              (senderBoundaryCell s up down (finRotate 65 i)) v - 32 : Nat) : Real) =
+      ∑ i : Fin 65,
+        ((trueCountOn (senderBoundaryCell s up down i) v : Real) - 32)^2 := by
+  simp_rw [senderRepair_rebin_count s up down hs hu hc hshift hd hdiv v out hv hpres]
+  exact halfRebin_centered_energy_drop_exact 32
+    (fun i => trueCountOn (senderBoundaryCell s up down i) v) (finRotate 65)
+
+/-- The actual sender repair leaves every boundary-cell threshold count
+unchanged whenever all 65 incoming counts are at most half capacity. -/
+theorem senderRepair_lowCount_count_identity {N : Nat} (s : Finset (Fin N))
+    (up down : Nat) (hs : s.card = up + 64 * down) (hu : 2 ∣ up)
+    (hc : 64 ∣ s.card) (hshift : up / 2 % 64 = 32) (hd : 64 ≤ down)
+    (hdiv : 64 ∣ down) (v out : Fin N → Bool) (hv : PacketSortedOn s v)
+    (hpres : ∀ i : Fin 65,
+      trueCountOn (senderRepairLeft s up down i ∪ senderRepairRight s up down i) out =
+      trueCountOn (senderRepairLeft s up down i ∪ senderRepairRight s up down i) v)
+    (hbelow : ∀ i : Fin 65,
+      trueCountOn (senderBoundaryCell s up down i) v ≤ 32) (i : Fin 65) :
+    trueCountOn (senderRepairLeft s up down i ∪ senderRepairRight s up down i) out =
+      trueCountOn (senderBoundaryCell s up down i) v := by
+  rw [senderRepair_rebin_count s up down hs hu hc hshift hd hdiv v out hv hpres]
+  exact halfRebin_eq_self_of_le 32
+    (fun j => trueCountOn (senderBoundaryCell s up down j) v) (finRotate 65) hbelow i
+
 /-- A fixed six-layer network realizes the 65-cycle count transformation.
 No choice of its comparators depends on the input or on a threshold. -/
 theorem senderRepair_count_exists {N : Nat} (s : Finset (Fin N)) (up down : Nat)

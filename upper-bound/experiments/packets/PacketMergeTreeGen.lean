@@ -74,6 +74,34 @@ def genScatterMergeTreeOutputEmbedding {α : Type} [LinearOrder α] {M N : Nat}
     rw [PacketMergeTree.chunkIndex_val, PacketMergeTree.chunkIndex_val] at h
     omega⟩
 
+/-- Every output chunk preserves physical order when the merge-tree input
+embedding lists its wires in physical order. -/
+theorem genScatterMergeTreeOutputEmbedding_strictMono {α : Type}
+    [LinearOrder α] {M N : Nat} (tree : PacketMergeTree α M)
+    (e : Fin M ↪ Fin N) (he : StrictMono e)
+    (j : Fin tree.leafCount) :
+    StrictMono (genScatterMergeTreeOutputEmbedding tree e j) := by
+  intro i k hik
+  have hik' : i.val < k.val := Fin.lt_iff_val_lt_val.mp hik
+  apply he
+  apply Fin.lt_iff_val_lt_val.mpr
+  rw [PacketMergeTree.chunkIndex_val, PacketMergeTree.chunkIndex_val]
+  omega
+
+/-- Distinct output chunks are physically separated in their indexed order
+whenever the merge-tree input is physically increasing. -/
+theorem genScatterMergeTreeOutputEmbedding_ordered {α : Type}
+    [LinearOrder α] {M N : Nat} (tree : PacketMergeTree α M)
+    (e : Fin M ↪ Fin N) (he : StrictMono e)
+    {j k : Fin tree.leafCount} (hjk : j.val < k.val) (i q : Fin 64) :
+    genScatterMergeTreeOutputEmbedding tree e j i <
+      genScatterMergeTreeOutputEmbedding tree e k q := by
+  apply he
+  apply Fin.lt_iff_val_lt_val.mpr
+  rw [PacketMergeTree.chunkIndex_val, PacketMergeTree.chunkIndex_val]
+  have hi := i.isLt
+  omega
+
 theorem genScatterMergeTreeOutputEmbedding_disjoint {α : Type} [LinearOrder α]
     {M N : Nat} (tree : PacketMergeTree α M) (e : Fin M ↪ Fin N)
     {j k : Fin tree.leafCount} (hjk : j ≠ k) (i q : Fin 64) :
@@ -205,6 +233,73 @@ def genPacketGroup64Embedding {N : Nat} (packets : Fin 64 → Fin 64 ↪ Fin N)
       _ = packetTreeCellIndex64 cy.1 cy.2 := congrArg
         (fun p : Fin 64 × Fin 64 => packetTreeCellIndex64 p.1 p.2) hprod
       _ = y := packetTreeCellIndex64_blockCoordinates y⟩
+
+/-- Concatenating 64 physically ordered packets in rank order gives a
+physically increasing embedding of their 4096-wire group. -/
+theorem genPacketGroup64Embedding_strictMono {N : Nat}
+    (packets : Fin 64 → Fin 64 ↪ Fin N)
+    (hpacketMono : ∀ j, StrictMono (packets j))
+    (hordered : ∀ j k, j.val < k.val → ∀ i q,
+      packets j i < packets k q)
+    (hdisjoint : ∀ {j k : Fin 64}, j ≠ k → ∀ (i q : Fin 64),
+      packets j i ≠ packets k q) :
+    StrictMono (genPacketGroup64Embedding packets hdisjoint) := by
+  intro x y hxy
+  let cx := packetTreeBlockCoordinates64 x
+  let cy := packetTreeBlockCoordinates64 y
+  have hxrep : cx.1.val * 64 + cx.2.val = x.val := by
+    dsimp [cx, packetTreeBlockCoordinates64]
+    omega
+  have hyrep : cy.1.val * 64 + cy.2.val = y.val := by
+    dsimp [cy, packetTreeBlockCoordinates64]
+    omega
+  have hval : x.val < y.val := Fin.lt_iff_val_lt_val.mp hxy
+  have hblock : cx.1.val ≤ cy.1.val := by
+    omega
+  by_cases hsame : cx.1 = cy.1
+  · have hinner : cx.2.val < cy.2.val := by
+      have h := hval
+      rw [← hxrep, ← hyrep, hsame] at h
+      omega
+    change packets cx.1 cx.2 < packets cy.1 cy.2
+    rw [hsame]
+    exact hpacketMono cy.1 (Fin.mk_lt_mk.mpr hinner)
+  · have hblock' : cx.1.val < cy.1.val := by omega
+    change packets cx.1 cx.2 < packets cy.1 cy.2
+    exact hordered cx.1 cy.1 hblock' cx.2 cy.2
+
+/-- The residue-63 grouping has the same physical-order property as the
+divisible 64-packet grouping. -/
+theorem genPacketGroup63Embedding_strictMono {N : Nat}
+    (packets : Fin 63 → Fin 64 ↪ Fin N)
+    (hpacketMono : ∀ j, StrictMono (packets j))
+    (hordered : ∀ j k, j.val < k.val → ∀ i q,
+      packets j i < packets k q)
+    (hdisjoint : ∀ {j k : Fin 63}, j ≠ k → ∀ (i q : Fin 64),
+      packets j i ≠ packets k q) :
+    StrictMono (genPacketGroup63Embedding packets hdisjoint) := by
+  intro x y hxy
+  let cx := packetTreeBlockCoordinates x
+  let cy := packetTreeBlockCoordinates y
+  have hxrep : cx.1.val * 64 + cx.2.val = x.val := by
+    dsimp [cx, packetTreeBlockCoordinates]
+    omega
+  have hyrep : cy.1.val * 64 + cy.2.val = y.val := by
+    dsimp [cy, packetTreeBlockCoordinates]
+    omega
+  have hval : x.val < y.val := Fin.lt_iff_val_lt_val.mp hxy
+  have hblock : cx.1.val ≤ cy.1.val := by omega
+  by_cases hsame : cx.1 = cy.1
+  · have hinner : cx.2.val < cy.2.val := by
+      have h := hval
+      rw [← hxrep, ← hyrep, hsame] at h
+      omega
+    change packets cx.1 cx.2 < packets cy.1 cy.2
+    rw [hsame]
+    exact hpacketMono cy.1 (Fin.mk_lt_mk.mpr hinner)
+  · have hblock' : cx.1.val < cy.1.val := by omega
+    change packets cx.1 cx.2 < packets cy.1 cy.2
+    exact hordered cx.1 cy.1 hblock' cx.2 cy.2
 
 theorem genPacketGroup64Embedding_mem_packets {N : Nat}
     (packets : Fin 64 → Fin 64 ↪ Fin N)
@@ -365,6 +460,23 @@ theorem packetOddTree6GroupNet_depth_le {N : Nat} {α : Type} [LinearOrder α]
   exact genScatterMergeTree_depth_le (packetOddTree6 (α := α))
     (genPacketGroup63Embedding packets hdisjoint) packetOddTree6_depth_le
 
+/-- Strict physical packet order is preserved by every output chunk in the
+57-layer residue-63 merge tree. -/
+theorem packetOddTree6GroupNet_outputPacket_strictMono {N : Nat} {α : Type}
+    [LinearOrder α] (packets : Fin 63 → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ {j k : Fin 63}, j ≠ k → ∀ (i q : Fin 64),
+      packets j i ≠ packets k q)
+    (hpacketMono : ∀ j, StrictMono (packets j))
+    (hordered : ∀ j k, j.val < k.val → ∀ i q,
+      packets j i < packets k q)
+    (j : Fin (packetOddTree6 (α := α)).leafCount) :
+    StrictMono (genScatterMergeTreeOutputEmbedding
+      (packetOddTree6 (α := α))
+      (genPacketGroup63Embedding packets hdisjoint) j) := by
+  exact genScatterMergeTreeOutputEmbedding_strictMono
+    (packetOddTree6 (α := α)) (genPacketGroup63Embedding packets hdisjoint)
+    (genPacketGroup63Embedding_strictMono packets hpacketMono hordered hdisjoint) j
+
 def packetPowerTree6GroupNet {N : Nat} {α : Type} [LinearOrder α]
     (packets : Fin 64 → Fin 64 ↪ Fin N)
     (hdisjoint : ∀ {j k : Fin 64}, j ≠ k → ∀ (i q : Fin 64),
@@ -405,6 +517,43 @@ theorem genScatterMergeTree_outputPacket_sorted {M N : Nat} {α : Type}
   have hsorted := genScatterMergeTree_sorts tree e v hRuns
   have hmono := hsorted.comp (PacketMergeTree.chunkIndex_mono tree j)
   simpa only [genScatterMergeTreeOutputEmbedding] using hmono
+
+/-- Ordered physical input packets yield output packets that are also
+increasing in physical wire order through the 57-layer 4096-wire merge. -/
+theorem packetPowerTree6GroupNet_outputPacket_strictMono {N : Nat} {α : Type}
+    [LinearOrder α] (packets : Fin 64 → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ {j k : Fin 64}, j ≠ k → ∀ (i q : Fin 64),
+      packets j i ≠ packets k q)
+    (hpacketMono : ∀ j, StrictMono (packets j))
+    (hordered : ∀ j k, j.val < k.val → ∀ i q,
+      packets j i < packets k q)
+    (j : Fin (packetPowerTree6 (α := α)).leafCount) :
+    StrictMono (genScatterMergeTreeOutputEmbedding
+      (packetPowerTree6 (α := α))
+      (genPacketGroup64Embedding packets hdisjoint) j) := by
+  exact genScatterMergeTreeOutputEmbedding_strictMono
+    (packetPowerTree6 (α := α)) (genPacketGroup64Embedding packets hdisjoint)
+    (genPacketGroup64Embedding_strictMono packets hpacketMono hordered hdisjoint) j
+
+/-- The merge tree also preserves separation between successive physical
+output packets, so the result can be fed to an ordered matching round. -/
+theorem packetPowerTree6GroupNet_outputPackets_ordered {N : Nat} {α : Type}
+    [LinearOrder α] (packets : Fin 64 → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ {j k : Fin 64}, j ≠ k → ∀ (i q : Fin 64),
+      packets j i ≠ packets k q)
+    (hpacketMono : ∀ j, StrictMono (packets j))
+    (hordered : ∀ j k, j.val < k.val → ∀ i q,
+      packets j i < packets k q)
+    {j k : Fin (packetPowerTree6 (α := α)).leafCount}
+    (hjk : j.val < k.val) (i q : Fin 64) :
+    genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α))
+      (genPacketGroup64Embedding packets hdisjoint) j i <
+    genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α))
+      (genPacketGroup64Embedding packets hdisjoint) k q := by
+  exact genScatterMergeTreeOutputEmbedding_ordered
+    (packetPowerTree6 (α := α)) (genPacketGroup64Embedding packets hdisjoint)
+    (genPacketGroup64Embedding_strictMono packets hpacketMono hordered hdisjoint)
+    hjk i q
 
 theorem packetPowerTree6GroupNet_outputPacket_sorted {N : Nat} {α : Type}
     [LinearOrder α] (packets : Fin 64 → Fin 64 ↪ Fin N)

@@ -16,6 +16,23 @@ formula for the shifted sender's actual half-packet pairing are now checked
 in `PacketSenderCycle.lean` and `PacketCountBridge.lean`. The complete
 evolving packet partition and its use in the global recurrence remain open.
 
+The centered-energy accounting is now exact, and exposes a low-count dead
+zone. For `y_i = min(32,x_i) + (x_(σ i)-32)_+`, the checked identity is
+
+```text
+E_32(y) + 2 * sum_i (32-min(32,x_i)) * (x_(σ i)-32)_+ = E_32(x),
+E_32(x) = sum_i (x_i-32)^2.
+```
+
+This is instantiated on the actual 65-cell sender repair. If every cell has
+count at most 32, then `y=x`: the cycle is exactly the identity and has no
+contraction around any common reference. This is a real obstruction for
+rare/low-count threshold profiles, not just a weak estimate. The sender cycle
+is therefore a rebinning/repair step, not a uniform mixer by itself. Any
+successful scheduler must combine it with a merge-and-deal matching phase that
+mixes low counts, or prove an invariant that routes these profiles through a
+different operation with its own explicit cost.
+
 Status: hand-derived conditional lemma plus a finite floating-point screen.
 No explicit unbounded matching family or sorting-network improvement is
 proved.

@@ -38,6 +38,23 @@ theorem halfRebin_sum {ι : Type} [Fintype ι]
   rw [he, ← Finset.sum_add_distrib]
   exact Finset.sum_congr rfl (fun i _ => half_count_split h (x i))
 
+/-- Below the half-capacity threshold everywhere, complementary-half rebinning
+is the identity: no surplus enters any paired suffix. -/
+theorem halfRebin_eq_self_of_le {ι : Type} (h : Nat) (x : ι → Nat)
+    (σ : Equiv.Perm ι) (hbelow : ∀ i, x i ≤ h) (i : ι) :
+    halfRebin h x σ i = x i := by
+  simp [halfRebin, Nat.min_eq_right (hbelow i),
+    Nat.sub_eq_zero_of_le (hbelow (σ i))]
+
+/-- In particular, such profiles receive no energy contraction around any
+common target. This is the low-count dead zone of the local rebinning map. -/
+theorem halfRebin_centered_energy_eq_of_le {ι : Type} [Fintype ι]
+    (h : Nat) (x : ι → Nat) (σ : Equiv.Perm ι) (hbelow : ∀ i, x i ≤ h)
+    (μ : Real) :
+    (∑ i, ((halfRebin h x σ i : Real) - μ) ^ 2) =
+      ∑ i, ((x i : Real) - μ) ^ 2 := by
+  simp_rw [halfRebin_eq_self_of_le h x σ hbelow]
+
 /-- Rebinning does not create positive spill relative to any common count
 reference. This holds for every half-packet pairing permutation. -/
 theorem halfRebin_positive_spill_le {ι : Type} [Fintype ι]
@@ -99,6 +116,67 @@ private theorem half_count_square_split (h x : Nat) :
   · rw [Nat.min_eq_left (by omega)]
     have he : h + (x - h) = x := by omega
     nlinarith
+
+private theorem clipped_centered_square_split (h x : Nat) :
+    ((h : Real) - (min h x : Nat)) ^ 2 + ((x - h : Nat) : Real) ^ 2 =
+      ((x : Real) - h) ^ 2 := by
+  by_cases hx : x ≤ h
+  · rw [Nat.min_eq_right hx]
+    have hz : x - h = 0 := Nat.sub_eq_zero_of_le hx
+    simp [hz]
+    ring
+  · have hx' : h ≤ x := by omega
+    rw [Nat.min_eq_left hx']
+    rw [Nat.cast_sub hx']
+    ring
+
+/-- The exact defect dissipated by complementary-half rebinning is the
+product of an input deficit and the incoming surplus paired with it. -/
+theorem halfRebin_centered_energy_drop_exact {ι : Type} [Fintype ι]
+    (h : Nat) (x : ι → Nat) (σ : Equiv.Perm ι) :
+    (∑ i, ((halfRebin h x σ i : Real) - h) ^ 2) +
+        2 * ∑ i, ((h : Real) - (min h (x i) : Nat)) *
+          ((x (σ i) - h : Nat) : Real) =
+      ∑ i, ((x i : Real) - h) ^ 2 := by
+  let deficit : ι → Real := fun i => (h : Real) - (min h (x i) : Nat)
+  let surplus : ι → Real := fun i => ((x i - h : Nat) : Real)
+  have hcenter (i : ι) :
+      (halfRebin h x σ i : Real) - h = surplus (σ i) - deficit i := by
+    have hmin : (min h (x i) : Real) + deficit i = h := by
+      simp only [deficit, Nat.cast_min]
+      ring
+    simp only [halfRebin, Nat.cast_add, Nat.cast_min, surplus]
+    nlinarith [hmin]
+  have hpoint (i : ι) :
+      ((halfRebin h x σ i : Real) - h) ^ 2 +
+          2 * deficit i * surplus (σ i) =
+        deficit i ^ 2 + surplus (σ i) ^ 2 := by
+    rw [hcenter i]
+    ring
+  calc
+    _ = ∑ i, (((halfRebin h x σ i : Real) - h) ^ 2 +
+          2 * deficit i * surplus (σ i)) := by
+      calc
+        _ = (∑ i, ((halfRebin h x σ i : Real) - h) ^ 2) +
+            ∑ i, (2 * deficit i * surplus (σ i)) := by
+          rw [Finset.mul_sum]
+          congr 1
+          apply Finset.sum_congr rfl
+          intro i _
+          simp [deficit, surplus]
+          ring
+        _ = _ := by rw [← Finset.sum_add_distrib]
+    _ = ∑ i, (deficit i ^ 2 + surplus (σ i) ^ 2) := by
+      apply Finset.sum_congr rfl
+      intro i _
+      exact hpoint i
+    _ = ∑ i, ((x i : Real) - h) ^ 2 := by
+      rw [Finset.sum_add_distrib, Equiv.sum_comp σ (fun i => surplus i ^ 2),
+        ← Finset.sum_add_distrib]
+      apply Finset.sum_congr rfl
+      intro i _
+      dsimp [deficit, surplus]
+      exact clipped_centered_square_split h (x i)
 
 /-- Repair has no fresh quadratic-energy defect: a capped half contributes
 at most `h` to its cross term, and permutation preserves the other terms. -/

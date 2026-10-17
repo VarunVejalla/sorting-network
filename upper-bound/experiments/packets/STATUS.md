@@ -10,6 +10,17 @@ floor/ceiling count law. The new [README](README.md) is the current proof map
 and gives the reproducible check command and remaining obligations. The
 global sorting bound and the projected coefficient near 200 remain open.
 
+Physical merge-tree layout follow-up (2026-10-16): in addition to sortedness,
+the 4096-wire merge now has a checked and axiom-guarded physical-order
+interface. Ordered disjoint 64-wire input packets induce an increasing group
+embedding; every output packet remains internally increasing, and distinct
+output packets remain globally separated in index order. A corresponding
+input-order lemma is proved for the 63-packet residue group. This removes the
+layout-permutation gap between consecutive merge-tree applications when the
+incoming packet family already has separated physical supports. That incoming
+premise is still not established by the full `WireFlow` induction, and no
+target contraction or global coefficient improvement follows yet.
+
 Further checkpoint: `PacketRebinning.lean` proves exact scalar count
 conservation and nonincrease of spill and centered quadratic energy under
 complementary-half rebinning. `PacketSenderCycle.lean` and
@@ -972,6 +983,23 @@ seven per round under the policy's ordered-edge condition. Schedule existence
 is still open: a global construction must find an ordered matching at every
 evolving state and prove the same schedule contracts the rank-profile
 potential. The coefficient is unchanged.
+
+Exact sender-cycle dissipation (Codex, 2026-10-16):
+`halfRebin_centered_energy_drop_exact` proves that complementary-half
+rebinning at target `h` loses exactly
+`2 * sum_i (h - min(h,x_i)) * (x_(sigma i) - h)_+` in centered squared
+energy. `senderRepair_centered_energy_drop_exact` instantiates this for the
+actual 65 boundary cells, fixed six-layer repair, and cyclic pairing. This
+identifies the local mixing mechanism precisely: only a deficit paired with
+an incoming surplus dissipates energy. The theorem is guarded and kernel
+checked. The exact dead-zone lemmas `halfRebin_eq_self_of_le` and
+`halfRebin_centered_energy_eq_of_le` show that when every count is at most 32,
+this 65-cycle acts as the identity and contracts no common-target energy.
+`senderRepair_lowCount_count_identity` transports this conclusion to the
+actual repaired pair counts at every boundary cell. Thus it must be combined
+with a distinct phase that mixes low counts, or an invariant must route such
+profiles through a different operation with an explicit cost. The near-200
+coefficient remains conditional.
 
 Canonical-rank identification (Codex, 2026-10-16):
 `packetEmbedding_eq_supportOrderEmbedding` proves that any strictly increasing
