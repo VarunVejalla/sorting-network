@@ -102,6 +102,21 @@ theorem genScatterMergeTreeOutputEmbedding_ordered {α : Type}
   have hi := i.isLt
   omega
 
+/-- Canonical packet-family interface for the sorted output layout of a
+merge tree. -/
+def genScatterMergeTreeOutputPackets {α : Type} [LinearOrder α] {M N : Nat}
+    (tree : PacketMergeTree α M) (e : Fin M ↪ Fin N) :
+    Fin tree.leafCount → Fin 64 ↪ Fin N :=
+  fun j => genScatterMergeTreeOutputEmbedding tree e j
+
+theorem genScatterMergeTreeOutputPackets_ordered {α : Type}
+    [LinearOrder α] {M N : Nat} (tree : PacketMergeTree α M)
+    (e : Fin M ↪ Fin N) (he : StrictMono e)
+    {j k : Fin tree.leafCount} (hjk : j.val < k.val) (i q : Fin 64) :
+    genScatterMergeTreeOutputPackets tree e j i <
+      genScatterMergeTreeOutputPackets tree e k q := by
+  exact genScatterMergeTreeOutputEmbedding_ordered tree e he hjk i q
+
 theorem genScatterMergeTreeOutputEmbedding_disjoint {α : Type} [LinearOrder α]
     {M N : Nat} (tree : PacketMergeTree α M) (e : Fin M ↪ Fin N)
     {j k : Fin tree.leafCount} (hjk : j ≠ k) (i q : Fin 64) :
@@ -114,6 +129,14 @@ theorem genScatterMergeTreeOutputEmbedding_disjoint {α : Type} [LinearOrder α]
   apply hjk
   apply Fin.ext
   omega
+
+theorem genScatterMergeTreeOutputPackets_disjoint {α : Type}
+    [LinearOrder α] {M N : Nat} (tree : PacketMergeTree α M)
+    (e : Fin M ↪ Fin N) {j k : Fin tree.leafCount} (hjk : j ≠ k)
+    (i q : Fin 64) :
+    genScatterMergeTreeOutputPackets tree e j i ≠
+      genScatterMergeTreeOutputPackets tree e k q := by
+  exact genScatterMergeTreeOutputEmbedding_disjoint tree e hjk i q
 
 theorem genScatterMergeTreeOutputEmbedding_covers {α : Type} [LinearOrder α]
     {M N : Nat} (tree : PacketMergeTree α M) (e : Fin M ↪ Fin N)
@@ -517,6 +540,19 @@ theorem genScatterMergeTree_outputPacket_sorted {M N : Nat} {α : Type}
   have hsorted := genScatterMergeTree_sorts tree e v hRuns
   have hmono := hsorted.comp (PacketMergeTree.chunkIndex_mono tree j)
   simpa only [genScatterMergeTreeOutputEmbedding] using hmono
+
+/-- The canonical output packet family consists of sorted packets after the
+merge-tree network runs. -/
+theorem genScatterMergeTree_outputPackets_sorted {M N : Nat} {α : Type}
+    [LinearOrder α] (tree : PacketMergeTree α M)
+    (e : Fin M ↪ Fin N) (v : Fin N → α)
+    (hRuns : tree.RunsSorted (fun i => v (e i)))
+    (j : Fin tree.leafCount) :
+    Monotone (fun i =>
+      (genScatterMergeTree tree e).exec v
+        (genScatterMergeTreeOutputPackets tree e j i)) := by
+  simpa [genScatterMergeTreeOutputPackets] using
+    genScatterMergeTree_outputPacket_sorted tree e v hRuns j
 
 /-- Ordered physical input packets yield output packets that are also
 increasing in physical wire order through the 57-layer 4096-wire merge. -/

@@ -1493,6 +1493,18 @@ import PacketMergeTreeGen
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genScatterMergeTreeOutputEmbedding_ordered
 
+/-- info: 'Chvatal.PacketAlignment.genScatterMergeTreeOutputPackets_ordered' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genScatterMergeTreeOutputPackets_ordered
+
+/-- info: 'Chvatal.PacketAlignment.genScatterMergeTreeOutputPackets_disjoint' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genScatterMergeTreeOutputPackets_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.genScatterMergeTree_outputPackets_sorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genScatterMergeTree_outputPackets_sorted
+
 /-- info: 'Chvatal.PacketAlignment.packetPowerTree6GroupNet_outputPackets_ordered' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.packetPowerTree6GroupNet_outputPackets_ordered
