@@ -751,5 +751,101 @@ theorem genIndexedPacketRound_canonicalOutput_fixedCount {m N : Nat} {α : Type}
       hnoFixed hvertexDisjoint
   exact ⟨next, hsortedNext, hdisjointNext, hsupportNext, hdepth⟩
 
+/-- Two perfect matching rounds compose at the logical packet layer. The
+second matching acts on the fixed-count output of the first, while exact
+support coverage and the seven-layer bound are retained at both steps. -/
+theorem genIndexedPacketRounds_twoStep {m N : Nat} {α : Type}
+    [LinearOrder α]
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges₁ edges₂ : List (Fin m × Fin m))
+    (hedges₁ : edges₁.Nodup) (hedges₂ : edges₂.Nodup)
+    (hnoFixed₁ : ∀ e ∈ edges₁, e.1 ≠ e.2)
+    (hnoFixed₂ : ∀ e ∈ edges₂, e.1 ≠ e.2)
+    (hvertexDisjoint₁ : ∀ e ∈ edges₁, ∀ f ∈ edges₁, e ≠ f →
+      e.1 ≠ f.1 ∧ e.1 ≠ f.2 ∧ e.2 ≠ f.1 ∧ e.2 ≠ f.2)
+    (hvertexDisjoint₂ : ∀ e ∈ edges₂, ∀ f ∈ edges₂, e ≠ f →
+      e.1 ≠ f.1 ∧ e.1 ≠ f.2 ∧ e.2 ≠ f.1 ∧ e.2 ≠ f.2)
+    (hcover₁ : ∀ i, ∃ e ∈ edges₁, e.1 = i ∨ e.2 = i)
+    (hcover₂ : ∀ i, ∃ e ∈ edges₂, e.1 = i ∨ e.2 = i)
+    (hlen₁ : 2 * edges₁.length = m) (hlen₂ : 2 * edges₂.length = m)
+    (v : Fin N → α)
+    (hsorted : ∀ i, Monotone (fun k : Fin 64 => v (packets i k))) :
+    ∃ next₁ : Fin m → Fin 64 ↪ Fin N,
+    ∃ hnext₁ : ∀ i j, i ≠ j → ∀ x y, next₁ i x ≠ next₁ j y,
+    ∃ next₂ : Fin m → Fin 64 ↪ Fin N,
+      (∀ i, Monotone (fun k =>
+        (genIndexedPacketRound next₁ hnext₁ edges₂ hnoFixed₂).exec
+          ((genIndexedPacketRound packets hpacketDisjoint edges₁ hnoFixed₁).exec v)
+          (next₂ i k))) ∧
+      (∀ i j, i ≠ j → ∀ x y, next₂ i x ≠ next₂ j y) ∧
+      Finset.univ.biUnion (fun i => packetEmbeddingSupport (next₂ i)) =
+        Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) ∧
+      (genIndexedPacketRound packets hpacketDisjoint edges₁ hnoFixed₁).depth ≤ 7 ∧
+      (genIndexedPacketRound next₁ hnext₁ edges₂ hnoFixed₂).depth ≤ 7 := by
+  obtain ⟨next₁, hsorted₁, hnext₁, hsupp₁, hdepth₁⟩ :=
+    genIndexedPacketRound_canonicalOutput_fixedCount packets hpacketDisjoint
+      edges₁ hedges₁ hnoFixed₁ hvertexDisjoint₁ hcover₁ hlen₁ v hsorted
+  let value₁ := (genIndexedPacketRound packets hpacketDisjoint
+    edges₁ hnoFixed₁).exec v
+  have hsorted₁' : ∀ i, Monotone (fun k => value₁ (next₁ i k)) := by
+    simpa [value₁] using hsorted₁
+  obtain ⟨next₂, hsorted₂, hnext₂, hsupp₂, hdepth₂⟩ :=
+    genIndexedPacketRound_canonicalOutput_fixedCount next₁ hnext₁
+      edges₂ hedges₂ hnoFixed₂ hvertexDisjoint₂ hcover₂ hlen₂ value₁ hsorted₁'
+  refine ⟨next₁, hnext₁, next₂, ?_, hnext₂, ?_, hdepth₁, hdepth₂⟩
+  · simpa [value₁] using hsorted₂
+  · calc
+      Finset.univ.biUnion (fun i => packetEmbeddingSupport (next₂ i)) =
+          Finset.univ.biUnion (fun i => packetEmbeddingSupport (next₁ i)) := hsupp₂
+      _ = Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) := hsupp₁
+
+/-- A perfect matching on the current logical packet IDs, together with the
+combinatorial facts needed by one seven-layer round. -/
+structure IndexedPacketPerfectMatching (m : Nat) where
+  edges : List (Fin m × Fin m)
+  nodup : edges.Nodup
+  noFixed : ∀ e ∈ edges, e.1 ≠ e.2
+  vertexDisjoint : ∀ e ∈ edges, ∀ f ∈ edges, e ≠ f →
+    e.1 ≠ f.1 ∧ e.1 ≠ f.2 ∧ e.2 ≠ f.1 ∧ e.2 ≠ f.2
+  covers : ∀ i, ∃ e ∈ edges, e.1 = i ∨ e.2 = i
+  edgeCount : 2 * edges.length = m
+
+/-- State invariant for iterating logical matching rounds. Values are recorded
+with their current wire labels; packet supports remain a fixed partition. -/
+structure IndexedPacketRoundState (m N : Nat) (α : Type)
+    [LinearOrder α] (support : Finset (Fin N)) where
+  packets : Fin m → Fin 64 ↪ Fin N
+  values : Fin N → α
+  disjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y
+  sorted : ∀ i, Monotone (fun k : Fin 64 => values (packets i k))
+  support_eq : Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) =
+    support
+
+/-- Every perfect logical matching round maps a valid state back into the same
+state interface. This is the induction step needed to iterate an arbitrary
+matching schedule; the schedule still needs a separate contraction theorem. -/
+theorem indexedPacketPerfectMatching_preservesState {m N : Nat} {α : Type}
+    [LinearOrder α] {support : Finset (Fin N)}
+    (matching : IndexedPacketPerfectMatching m)
+    (state : IndexedPacketRoundState m N α support) :
+    ∃ next : IndexedPacketRoundState m N α support,
+      (genIndexedPacketRound state.packets state.disjoint matching.edges
+        matching.noFixed).depth ≤ 7 := by
+  obtain ⟨packets, hsorted, hdisjoint, hsupp, hdepth⟩ :=
+    genIndexedPacketRound_canonicalOutput_fixedCount state.packets
+      state.disjoint matching.edges matching.nodup matching.noFixed
+      matching.vertexDisjoint matching.covers matching.edgeCount state.values
+      state.sorted
+  refine ⟨⟨packets,
+      (genIndexedPacketRound state.packets state.disjoint matching.edges
+        matching.noFixed).exec state.values,
+      hdisjoint, ?_, ?_⟩, hdepth⟩
+  · simpa using hsorted
+  · calc
+      Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) =
+          Finset.univ.biUnion (fun i => packetEmbeddingSupport (state.packets i)) := hsupp
+      _ = support := state.support_eq
+
 
 end Chvatal.PacketAlignment

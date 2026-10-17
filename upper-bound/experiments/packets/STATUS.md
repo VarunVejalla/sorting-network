@@ -913,3 +913,15 @@ Still open: build the uniformly contracting matching schedule with these
 length/coverage contracts, iterate its state-dependent supports, and reconcile
 the resulting logical packets with physical WireFlow cuts. No coefficient
 improvement follows from this adapter alone.
+
+Two-round composition (Codex, 2026-10-16):
+`genIndexedPacketRounds_twoStep` now applies the fixed-count adapter twice,
+showing sortedness, disjointness, support conservation, and separate seven-
+layer costs after two perfect matching rounds. Follow-up
+`IndexedPacketRoundState` packages these invariants, and
+`indexedPacketPerfectMatching_preservesState` proves a generic one-round
+induction step for any perfect matching. This provides a reusable interface
+for an arbitrary finite logical schedule, but proves no contraction for any
+particular schedule and does not establish the physical WireFlow
+correspondence; the coefficient is unchanged. Both results are included in
+the `PacketMergeAxioms` guard chain.

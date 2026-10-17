@@ -333,3 +333,14 @@ but do not improve UB-25: the concrete active-level factor-65 estimate already
 exists. The open global bridge is still to identify merge outputs and averaged
 targets with the next physical `WireFlow` cuts so the checked pairwise
 merge/deal energy drop can be iterated across stages.
+
+Logical schedule closure: `genIndexedPacketRound_canonicalOutput_fixedCount`
+and `genIndexedPacketRounds_twoStep` show that a fixed-count perfect matching
+output can be used as the next logical round's input, preserving sortedness,
+disjointness, and support with a seven-layer cost per round. The state
+interface `IndexedPacketRoundState` packages these invariants, and
+`indexedPacketPerfectMatching_preservesState` proves a generic one-round
+induction step for any perfect matching. This provides an interface for an
+arbitrary finite logical schedule, but proves no contraction for a particular
+schedule and does not align logical supports with the physical `WireFlow`
+cuts; the coefficient remains unchanged.
