@@ -37,6 +37,18 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.adjacentPacketMatching_dealtBlocks_ordered' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.adjacentPacketMatching_dealtBlocks_ordered
+
+/-- info: 'Chvatal.PacketAlignment.adjacentPacketMatching_dealt_mem_output' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.adjacentPacketMatching_dealt_mem_output
+
+/-- info: 'Chvatal.PacketAlignment.adjacentPacketMatching_outputBlocks_ordered' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.adjacentPacketMatching_outputBlocks_ordered
+
+/-- info: 'Chvatal.PacketAlignment.adjacentPacketMatchingOutputBlock_contract' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.adjacentPacketMatchingOutputBlock_contract
 /-- info: 'Chvatal.PacketAlignment.joinPacketEmbedding_strictMono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.joinPacketEmbedding_strictMono

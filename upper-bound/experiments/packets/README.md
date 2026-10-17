@@ -427,3 +427,8 @@ every output from edge `k` for `j < k`, despite interleaving within either
 edge's two outputs. This is still only the support-order half of a
 hierarchical round; value contraction and its multi-level schedule remain to
 be proved.
+
+Concrete output-list bridge (GPT-6-astra-high, 2026-10-16):
+`adjacentPacketMatching_dealt_mem_output` proves that both dealt lanes of each adjacent edge occur in the actual indexed-round output family. `adjacentPacketMatching_outputBlocks_ordered` packages the cross-edge separation for any choice of lanes. Both pass the focused `PacketGenMerge` check and `PacketMergeAxioms` guard. The result rules out iterating by simply applying adjacent matching to the flattened output IDs: the two lanes within each parent edge interleave. A valid induction must retain those edge blocks and match across blocks, while separately connecting their placement to the `WireFlow` cuts. No contraction or improved sorting coefficient follows yet.
+
+`adjacentPacketMatchingOutputBlock_contract` now packages each adjacent edge's two lanes as a true local output block. For each lane it gives membership in the actual round output, sorted values after execution, strict physical monotonicity, and physical separation from every lane in later blocks. The two lanes have disjoint supports and partition exactly the 128-wire joined support. The theorem is kernel checked; the grouped block contract is now explicit, but it is only one layer and does not assert cross-block value order.

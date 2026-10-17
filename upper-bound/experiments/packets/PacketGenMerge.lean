@@ -1845,4 +1845,145 @@ theorem adjacentPacketMatching_dealtBlocks_ordered {k N : Nat}
     hblocks i q
   simpa [adjacentPacketJoin, p₀, p₁, r₀, r₁] using h
 
+/-- Both dealt lanes of a fixed adjacent edge are members of the actual
+indexed-round output family (not merely abstract outputs of its local merge). -/
+theorem adjacentPacketMatching_dealt_mem_output {k N : Nat}
+    (packets : Fin (2 * k) → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (hordered : ∀ p q, p.val < q.val → ∀ i j, packets p i < packets q j)
+    (j : Fin k) (lane : Bool) :
+    (if lane then dealOddEmbedding (adjacentPacketJoin packets hordered j)
+      else dealEvenEmbedding (adjacentPacketJoin packets hordered j)) ∈
+      genIndexedPacketRoundOutput packets hpacketDisjoint (adjacentPacketMatching k)
+        (adjacentPacketMatching_noFixed k) := by
+  let joined := adjacentPacketJoin packets hordered j
+  let edge : Fin (2 * k) × Fin (2 * k) :=
+    (⟨2 * j.val, by omega⟩, ⟨2 * j.val + 1, by omega⟩)
+  have hedge : edge ∈ adjacentPacketMatching k := by
+    simp only [adjacentPacketMatching, List.mem_map, List.mem_finRange]
+    exact ⟨j, trivial, rfl⟩
+  have hjoined : joined ∈ genIndexedPairSupports packets hpacketDisjoint
+      (adjacentPacketMatching k) (adjacentPacketMatching_noFixed k) := by
+    simp only [genIndexedPairSupports, List.mem_map, List.mem_attach]
+    refine ⟨⟨edge, hedge⟩, ?_⟩
+    simp [joined, adjacentPacketJoin, edge]
+  change (if lane then dealOddEmbedding joined else dealEvenEmbedding joined) ∈
+      genPacketRound_outputPackets
+        (genIndexedPairSupports packets hpacketDisjoint (adjacentPacketMatching k)
+          (adjacentPacketMatching_noFixed k))
+  simp only [genPacketRound_outputPackets, List.mem_flatMap]
+  refine ⟨joined, hjoined, ?_⟩
+  cases lane <;> simp
+
+/-- The actual output packets of distinct adjacent matching edges remain
+physically ordered, irrespective of which dealt lane is chosen on either
+edge. This packages the block-order invariant at the round-output interface. -/
+theorem adjacentPacketMatching_outputBlocks_ordered {k N : Nat}
+    (packets : Fin (2 * k) → Fin 64 ↪ Fin N)
+    (hordered : ∀ p q, p.val < q.val → ∀ i j, packets p i < packets q j)
+    (j l : Fin k) (hjl : j.val < l.val) (i q : Fin 64)
+    (lane lane' : Bool) :
+    (if lane then dealOddEmbedding (adjacentPacketJoin packets hordered j) i
+      else dealEvenEmbedding (adjacentPacketJoin packets hordered j) i) <
+    (if lane' then dealOddEmbedding (adjacentPacketJoin packets hordered l) q
+      else dealEvenEmbedding (adjacentPacketJoin packets hordered l) q) := by
+  have h := adjacentPacketMatching_dealtBlocks_ordered packets hordered j l hjl i q
+  rcases h with ⟨h00, h01, h10, h11⟩
+  cases lane <;> cases lane' <;> assumption
+
+/-- Keep the two dealt lanes of each adjacent matching edge grouped as one
+logical output block. -/
+def adjacentPacketMatchingOutputBlock {k N : Nat}
+    (packets : Fin (2 * k) → Fin 64 ↪ Fin N)
+    (hordered : ∀ p q, p.val < q.val → ∀ i j, packets p i < packets q j)
+    (j : Fin k) (lane : Bool) : Fin 64 ↪ Fin N :=
+  if lane then dealOddEmbedding (adjacentPacketJoin packets hordered j)
+    else dealEvenEmbedding (adjacentPacketJoin packets hordered j)
+
+/-- The grouped block transition is backed by the actual network round: each
+named lane occurs in its output family, remains sorted and physically
+increasing, and all lanes in an earlier output block lie before all lanes in
+a later block. -/
+theorem adjacentPacketMatchingOutputBlock_contract {k N : Nat} {α : Type}
+    [LinearOrder α]
+    (packets : Fin (2 * k) → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (hordered : ∀ p q, p.val < q.val → ∀ i j, packets p i < packets q j)
+    (v : Fin N → α)
+    (hsorted : ∀ p, Monotone (fun i => v (packets p i)))
+    (hmono : ∀ p, StrictMono (packets p)) :
+    ∀ j lane,
+      adjacentPacketMatchingOutputBlock packets hordered j lane ∈
+        genIndexedPacketRoundOutput packets hpacketDisjoint
+          (adjacentPacketMatching k) (adjacentPacketMatching_noFixed k) ∧
+      (∀ i i', i ≤ i' →
+        (genIndexedPacketRound packets hpacketDisjoint (adjacentPacketMatching k)
+          (adjacentPacketMatching_noFixed k)).exec v
+          (adjacentPacketMatchingOutputBlock packets hordered j lane i) ≤
+        (genIndexedPacketRound packets hpacketDisjoint (adjacentPacketMatching k)
+          (adjacentPacketMatching_noFixed k)).exec v
+          (adjacentPacketMatchingOutputBlock packets hordered j lane i')) ∧
+      StrictMono (adjacentPacketMatchingOutputBlock packets hordered j lane) ∧
+      (∀ l, j.val < l.val → ∀ lane' i i',
+        adjacentPacketMatchingOutputBlock packets hordered j lane i <
+          adjacentPacketMatchingOutputBlock packets hordered l lane' i') ∧
+      (∀ lane' i i', lane ≠ lane' →
+        adjacentPacketMatchingOutputBlock packets hordered j lane i ≠
+          adjacentPacketMatchingOutputBlock packets hordered j lane' i') ∧
+      (Set.range (adjacentPacketMatchingOutputBlock packets hordered j false) ∪
+        Set.range (adjacentPacketMatchingOutputBlock packets hordered j true) =
+        Set.range (adjacentPacketJoin packets hordered j)) := by
+  intro j lane
+  have hmem := adjacentPacketMatching_dealt_mem_output packets hpacketDisjoint
+    hordered j lane
+  have hroundSorted := genIndexedPacketRound_output_sorted packets hpacketDisjoint
+    (adjacentPacketMatching k) (adjacentPacketMatching_nodup k)
+    (adjacentPacketMatching_noFixed k) (adjacentPacketMatching_vertexDisjoint k)
+    v hsorted
+  have hedgesOrdered : ∀ e ∈ adjacentPacketMatching k, ∀ x y,
+      packets e.1 x < packets e.2 y := by
+    intro e he x y
+    simp only [adjacentPacketMatching, List.mem_map, List.mem_finRange] at he
+    obtain ⟨r, _, he⟩ := he
+    have h₁ := congrArg (fun z : Fin (2 * k) × Fin (2 * k) => z.1.val) he
+    have h₂ := congrArg (fun z : Fin (2 * k) × Fin (2 * k) => z.2.val) he
+    have hlt : e.1.val < e.2.val := by
+      simp at h₁ h₂
+      omega
+    exact hordered e.1 e.2 hlt x y
+  have hroundMono := genIndexedPacketRound_output_strictMono packets hpacketDisjoint
+    (adjacentPacketMatching k) (adjacentPacketMatching_noFixed k) hmono hedgesOrdered
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
+  · simpa [adjacentPacketMatchingOutputBlock] using hmem
+  · intro i i' hii'
+    exact hroundSorted _ (by simpa [adjacentPacketMatchingOutputBlock] using hmem) hii'
+  · exact hroundMono _ (by simpa [adjacentPacketMatchingOutputBlock] using hmem)
+  · intro l hjl lane' i i'
+    cases lane with
+    | false =>
+      cases lane' with
+      | false =>
+        simpa [adjacentPacketMatchingOutputBlock] using
+          adjacentPacketMatching_outputBlocks_ordered packets hordered j l hjl i i'
+            false false
+      | true =>
+        simpa [adjacentPacketMatchingOutputBlock] using
+          adjacentPacketMatching_outputBlocks_ordered packets hordered j l hjl i i'
+            false true
+    | true =>
+      cases lane' with
+      | false =>
+        simpa [adjacentPacketMatchingOutputBlock] using
+          adjacentPacketMatching_outputBlocks_ordered packets hordered j l hjl i i'
+            true false
+      | true =>
+        simpa [adjacentPacketMatchingOutputBlock] using
+          adjacentPacketMatching_outputBlocks_ordered packets hordered j l hjl i i'
+            true true
+  · intro lane' i i' hne
+    cases lane <;> cases lane' <;> simp_all [adjacentPacketMatchingOutputBlock]
+    · exact dealEmbeddings_disjoint (adjacentPacketJoin packets hordered j) i i'
+    · exact (dealEmbeddings_disjoint (adjacentPacketJoin packets hordered j) i' i).symm
+  · exact dealEmbeddings_partition (adjacentPacketJoin packets hordered j)
+
 end Chvatal.PacketAlignment
