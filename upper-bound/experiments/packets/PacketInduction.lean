@@ -1047,6 +1047,88 @@ theorem interBlockBoundaryMatching_ordered {r N : Nat}
     change (4 * j.val + 1) / 2 < (4 * j.val + 2) / 2
     omega) x y
 
+/-- Four-lane output block: two dealt lanes from the boundary edge, plus the
+two untouched outer lanes from its pair of parent blocks. -/
+def interBlockBoundaryOutputBlock {r N : Nat}
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (j : Fin r) (lane : Fin 4) : Fin 64 ↪ Fin N :=
+  let left : Fin (2 * (2 * r)) := ⟨4 * j.val + 1, by omega⟩
+  let right : Fin (2 * (2 * r)) := ⟨4 * j.val + 2, by omega⟩
+  let joined := joinPacketEmbedding (packets left) (packets right)
+    (hdisjoint left right (by
+      intro h
+      have hv := congrArg Fin.val h
+      simp [left, right] at hv))
+  if lane.val = 0 then dealEvenEmbedding joined
+  else if lane.val = 1 then dealOddEmbedding joined
+  else if lane.val = 2 then packets ⟨4 * j.val, by omega⟩
+  else packets ⟨4 * j.val + 3, by omega⟩
+
+/-- Every wire in a four-lane output block belongs to one of the four packet
+supports in the corresponding pair of parent blocks. -/
+theorem interBlockBoundaryOutputBlock_range {r N : Nat}
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (j : Fin r) (lane : Fin 4) (x : Fin 64) :
+    ∃ i, i.val / 4 = j.val ∧
+      interBlockBoundaryOutputBlock packets hdisjoint j lane x ∈ Set.range (packets i) := by
+  let left : Fin (2 * (2 * r)) := ⟨4 * j.val + 1, by omega⟩
+  let right : Fin (2 * (2 * r)) := ⟨4 * j.val + 2, by omega⟩
+  have hsep : ∀ a b, packets left a ≠ packets right b := by
+    exact hdisjoint left right (by
+      intro h
+      have hv := congrArg Fin.val h
+      simp [left, right] at hv
+      )
+  have hjoined : ∀ w ∈ Set.range (joinPacketEmbedding (packets left)
+      (packets right) hsep),
+      w ∈ Set.range (packets left) ∨ w ∈ Set.range (packets right) := by
+    intro w hw
+    rw [joinPacketEmbedding_range _ _ hsep] at hw
+    exact hw
+  rcases lane with ⟨lane, hlane⟩
+  interval_cases lane
+  · have hw : dealEvenEmbedding (joinPacketEmbedding (packets left)
+        (packets right) hsep) x ∈
+        Set.range (joinPacketEmbedding (packets left) (packets right) hsep) := by
+      exact ⟨evenWire 64 x, rfl⟩
+    rcases hjoined _ hw with hw | hw
+    · exact ⟨left, by simp [left]; omega, hw⟩
+    · exact ⟨right, by simp [right]; omega, hw⟩
+  · have hw : dealOddEmbedding (joinPacketEmbedding (packets left)
+        (packets right) hsep) x ∈
+        Set.range (joinPacketEmbedding (packets left) (packets right) hsep) := by
+      exact ⟨oddWire 64 x, rfl⟩
+    rcases hjoined _ hw with hw | hw
+    · exact ⟨left, by simp [left]; omega, hw⟩
+    · exact ⟨right, by simp [right]; omega, hw⟩
+  · exact ⟨⟨4 * j.val, by omega⟩, by simp, ⟨x, rfl⟩⟩
+  · exact ⟨⟨4 * j.val + 3, by omega⟩,
+      by change (4 * j.val + 3) / 4 = j.val; omega, ⟨x, rfl⟩⟩
+
+/-- Regrouped output blocks inherit strict physical separation from the parent
+blocks whenever the parent blocks were strictly ordered. -/
+theorem interBlockBoundaryOutputBlocks_ordered {r N : Nat}
+    (packets : Fin (2 * (2 * r)) → Fin 64 ↪ Fin N)
+    (hdisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (hblockOrdered : ∀ i j, i.val / 2 < j.val / 2 → ∀ x y,
+      packets i x < packets j y)
+    (j l : Fin r) (hjl : j.val < l.val) (lane lane' : Fin 4)
+    (x y : Fin 64) :
+    interBlockBoundaryOutputBlock packets hdisjoint j lane x <
+      interBlockBoundaryOutputBlock packets hdisjoint l lane' y := by
+  obtain ⟨i, hi, hix⟩ := interBlockBoundaryOutputBlock_range
+    packets hdisjoint j lane x
+  obtain ⟨i', hi', hiy⟩ := interBlockBoundaryOutputBlock_range
+    packets hdisjoint l lane' y
+  obtain ⟨z, hz⟩ := hix
+  obtain ⟨z', hz'⟩ := hiy
+  rw [← hz, ← hz']
+  have hi'lt := i'.isLt
+  have hilt := i.isLt
+  apply hblockOrdered i i' (by omega) z z'
+
 /-- State invariant for iterating logical matching rounds. Values are recorded
 with their current wire labels; packet supports remain a fixed partition. -/
 structure IndexedPacketRoundState (m N : Nat) (α : Type)
