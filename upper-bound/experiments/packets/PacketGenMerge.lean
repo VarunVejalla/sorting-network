@@ -1798,4 +1798,51 @@ theorem adjacentPacketMatching_covers (k : Nat) (i : Fin (2 * k)) :
       omega
 
 
+/- The joined 128-wire support for one edge of the adjacent matching. -/
+def adjacentPacketJoin {k N : Nat}
+    (packets : Fin (2 * k) → Fin 64 ↪ Fin N)
+    (hordered : ∀ p q, p.val < q.val → ∀ i j, packets p i < packets q j)
+    (j : Fin k) : Fin 128 ↪ Fin N :=
+  let p₀ : Fin (2 * k) := ⟨2 * j.val, by omega⟩
+  let p₁ : Fin (2 * k) := ⟨2 * j.val + 1, by omega⟩
+  joinPacketEmbedding (packets p₀) (packets p₁) (by
+    intro i q
+    exact ne_of_lt (hordered p₀ p₁ (by dsimp [p₀, p₁]; omega) i q))
+
+/-- Under the adjacent perfect matching, dealt packets from distinct edges
+remain separated in all four lane combinations whenever the input packet
+array is physically ordered. -/
+theorem adjacentPacketMatching_dealtBlocks_ordered {k N : Nat}
+    (packets : Fin (2 * k) → Fin 64 ↪ Fin N)
+    (hordered : ∀ p q, p.val < q.val → ∀ i j, packets p i < packets q j)
+    (j l : Fin k) (hjl : j.val < l.val) (i q : Fin 64) :
+    dealEvenEmbedding (adjacentPacketJoin packets hordered j) i <
+        dealEvenEmbedding (adjacentPacketJoin packets hordered l) q ∧
+      dealEvenEmbedding (adjacentPacketJoin packets hordered j) i <
+        dealOddEmbedding (adjacentPacketJoin packets hordered l) q ∧
+      dealOddEmbedding (adjacentPacketJoin packets hordered j) i <
+        dealEvenEmbedding (adjacentPacketJoin packets hordered l) q ∧
+      dealOddEmbedding (adjacentPacketJoin packets hordered j) i <
+        dealOddEmbedding (adjacentPacketJoin packets hordered l) q := by
+  let p₀ : Fin (2 * k) := ⟨2 * j.val, by omega⟩
+  let p₁ : Fin (2 * k) := ⟨2 * j.val + 1, by omega⟩
+  let r₀ : Fin (2 * k) := ⟨2 * l.val, by omega⟩
+  let r₁ : Fin (2 * k) := ⟨2 * l.val + 1, by omega⟩
+  have hblocks : ∀ x y,
+      packets p₀ x < packets r₀ y ∧ packets p₀ x < packets r₁ y ∧
+        packets p₁ x < packets r₀ y ∧ packets p₁ x < packets r₁ y := by
+    intro x y
+    have h00 : p₀.val < r₀.val := by dsimp [p₀, r₀]; omega
+    have h01 : p₀.val < r₁.val := by dsimp [p₀, r₁]; omega
+    have h10 : p₁.val < r₀.val := by dsimp [p₁, r₀]; omega
+    have h11 : p₁.val < r₁.val := by dsimp [p₁, r₁]; omega
+    exact ⟨hordered p₀ r₀ h00 x y, hordered p₀ r₁ h01 x y,
+      hordered p₁ r₀ h10 x y, hordered p₁ r₁ h11 x y⟩
+  have h := dealtJoinedPackets_crossOrdered
+    (packets p₀) (packets p₁) (packets r₀) (packets r₁)
+    (by intro x y; exact ne_of_lt (hordered p₀ p₁ (by dsimp [p₀, p₁]; omega) x y))
+    (by intro x y; exact ne_of_lt (hordered r₀ r₁ (by dsimp [r₀, r₁]; omega) x y))
+    hblocks i q
+  simpa [adjacentPacketJoin, p₀, p₁, r₀, r₁] using h
+
 end Chvatal.PacketAlignment

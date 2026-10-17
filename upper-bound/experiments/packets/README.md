@@ -419,3 +419,11 @@ separated. `joinPacketEmbedding_crossOrdered` and
 from different parent blocks. This validates block-level separation as a
 local invariant, but a complete hierarchical matching schedule and its
 contraction are still open.
+
+`adjacentPacketJoin` and `adjacentPacketMatching_dealtBlocks_ordered` now
+specialize the block statement to the adjacent perfect matching on an ordered
+packet array. They show that every output from edge `j` lies physically below
+every output from edge `k` for `j < k`, despite interleaving within either
+edge's two outputs. This is still only the support-order half of a
+hierarchical round; value contraction and its multi-level schedule remain to
+be proved.
