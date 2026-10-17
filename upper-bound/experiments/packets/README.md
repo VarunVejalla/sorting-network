@@ -322,6 +322,13 @@ needed for a global energy decrement. The focused
 `PacketHalfProfile` check and full axiom guard pass; the coefficient remains
 unchanged.
 
+The fixed-count output adapter also supports partial matchings: an explicit
+list of unmatched singleton packet IDs is carried through each seven-layer
+round, with `2 * edges.length + singles.length = m`. The state iterator now
+works for odd packet counts as well as even ones. It preserves the logical
+invariant but does not bound singleton energy or provide the required
+contracting schedule.
+
 Incidence-sensitive packet-error composition (GPT-6-astra-high, 2026-10-16):
 `packetized_source_errors_sq_sum_le_of_degree` bounds aggregate receiver
 squared error by `k` times source batch-error energy when receiver indegree is

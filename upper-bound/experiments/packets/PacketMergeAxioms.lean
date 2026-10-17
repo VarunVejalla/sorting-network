@@ -966,6 +966,9 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.genIndexedPacketRound_canonicalOutput_fixedCount' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genIndexedPacketRound_canonicalOutput_fixedCount
+/-- info: 'Chvatal.PacketAlignment.genIndexedPacketRound_withSingletons_canonicalOutput_fixedCount' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genIndexedPacketRound_withSingletons_canonicalOutput_fixedCount
 /-- info: 'Chvatal.PacketAlignment.genIndexedPacketRounds_twoStep' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genIndexedPacketRounds_twoStep
@@ -975,6 +978,12 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.iterateIndexedPacketPerfectMatchings_step' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.iterateIndexedPacketPerfectMatchings_step
+/-- info: 'Chvatal.PacketAlignment.indexedPacketMatching_preservesState' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.indexedPacketMatching_preservesState
+/-- info: 'Chvatal.PacketAlignment.iterateIndexedPacketMatchings_step' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.iterateIndexedPacketMatchings_step
 
 /-- info: 'Chvatal.PacketAlignment.oddEvenMerge128_physicalHalf_counts' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in

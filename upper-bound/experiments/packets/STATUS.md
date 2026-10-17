@@ -928,3 +928,13 @@ support are genuinely closed under arbitrary schedule iteration. This proves
 no contraction for any particular schedule and does not establish the
 physical WireFlow correspondence; the coefficient is unchanged. The
 iteration-step result is included in the `PacketMergeAxioms` guard chain.
+
+Odd-count induction (Codex, 2026-10-16): the fixed-count adapter is now
+generalized to partial matchings with an explicit singleton list and length
+equation `2 * edges.length + singles.length = m`. `IndexedPacketMatching`
+packages exactly this case, and `iterateIndexedPacketMatchings` iterates an
+arbitrary schedule on fixed `Fin m`, including odd `m`, preserving sortedness,
+disjointness, and support while leaving unmatched packets unchanged. This
+removes the even-count/perfect-matching restriction in the logical invariant
+transport. It does not certify a contracting schedule, account for residual
+singleton energy, or align the supports with physical `WireFlow` cuts.

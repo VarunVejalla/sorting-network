@@ -642,10 +642,11 @@ theorem genIndexedPacketRound_withSingletons_canonicalOutput {m N : Nat}
       hvertexDisjoint
   exact ⟨output.length, next, hsortedOut, hdisjointOut, hsupportOut, hdepth⟩
 
-/-- A perfect matching round can be reindexed to the same packet-count type.
-The explicit length premise is `2 * edges.length = m`; it makes the local
-sorted/disjoint/support invariant directly iterable across matching rounds. -/
-theorem genIndexedPacketRound_canonicalOutput_fixedCount {m N : Nat} {α : Type}
+/-- A partial matching round, including untouched singleton packets, can be
+reindexed to the same packet-count type. The length premise accounts for both
+dealt pairs and singletons, so odd packet counts are supported directly. -/
+theorem genIndexedPacketRound_withSingletons_canonicalOutput_fixedCount
+    {m N : Nat} {α : Type}
     [LinearOrder α]
     (packets : Fin m → Fin 64 ↪ Fin N)
     (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
@@ -653,8 +654,12 @@ theorem genIndexedPacketRound_canonicalOutput_fixedCount {m N : Nat} {α : Type}
     (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2)
     (hvertexDisjoint : ∀ e ∈ edges, ∀ f ∈ edges, e ≠ f →
       e.1 ≠ f.1 ∧ e.1 ≠ f.2 ∧ e.2 ≠ f.1 ∧ e.2 ≠ f.2)
-    (hcover : ∀ i, ∃ e ∈ edges, e.1 = i ∨ e.2 = i)
-    (hlen : 2 * edges.length = m)
+    (singles : List (Fin m))
+    (hsingleDisjoint : List.Pairwise
+      (fun i j => ∀ x y, packets i x ≠ packets j y) singles)
+    (hfree : ∀ i ∈ singles, ∀ e ∈ edges, e.1 ≠ i ∧ e.2 ≠ i)
+    (hcover : ∀ i, (∃ e ∈ edges, e.1 = i ∨ e.2 = i) ∨ i ∈ singles)
+    (hlen : 2 * edges.length + singles.length = m)
     (v : Fin N → α)
     (hsorted : ∀ i, Monotone (fun k : Fin 64 => v (packets i k))) :
     let round := genIndexedPacketRound packets hpacketDisjoint edges hnoFixed
@@ -664,9 +669,12 @@ theorem genIndexedPacketRound_canonicalOutput_fixedCount {m N : Nat} {α : Type}
       Finset.univ.biUnion (fun i => packetEmbeddingSupport (next i)) =
         Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) ∧
       round.depth ≤ 7 := by
-  let output := genIndexedPacketRoundOutput packets hpacketDisjoint edges hnoFixed
+  let output := genIndexedPacketRoundOutputWithSingletons packets hpacketDisjoint
+    edges hnoFixed singles
   have houtputLen : output.length = m := by
-    have hlen' : output.length = 2 * edges.length := by
+    have hmatchedLen :
+        (genIndexedPacketRoundOutput packets hpacketDisjoint edges hnoFixed).length =
+          2 * edges.length := by
       have hsum : ∀ xs : List {e // e ∈ edges},
           (xs.map fun _ => 2).sum = 2 * xs.length := by
         intro xs
@@ -676,13 +684,15 @@ theorem genIndexedPacketRound_canonicalOutput_fixedCount {m N : Nat} {α : Type}
             simp only [List.map_cons, List.sum_cons, List.length_cons]
             rw [ih]
             omega
-      simpa [output, genIndexedPacketRoundOutput, genPacketRound_outputPackets,
+      simpa [genIndexedPacketRoundOutput, genPacketRound_outputPackets,
         genIndexedPairSupports, List.length_flatMap, Function.comp_def] using
         hsum edges.attach
+    simp [output, genIndexedPacketRoundOutputWithSingletons,
+      List.length_append, List.length_map, hmatchedLen]
     omega
   have hcontract := genIndexedPacketRound_withSingletons_contract
-    packets hpacketDisjoint edges hedges hnoFixed hvertexDisjoint []
-    (by simp) (by simp) (fun i => Or.inl (hcover i)) v hsorted
+    packets hpacketDisjoint edges hedges hnoFixed hvertexDisjoint singles
+    hsingleDisjoint hfree hcover v hsorted
   have hsortedList : ∀ p ∈ output,
       Monotone (fun k => (genIndexedPacketRound packets hpacketDisjoint
         edges hnoFixed).exec v (p k)) := by
@@ -754,6 +764,31 @@ theorem genIndexedPacketRound_canonicalOutput_fixedCount {m N : Nat} {α : Type}
 /-- Two perfect matching rounds compose at the logical packet layer. The
 second matching acts on the fixed-count output of the first, while exact
 support coverage and the seven-layer bound are retained at both steps. -/
+theorem genIndexedPacketRound_canonicalOutput_fixedCount {m N : Nat} {α : Type}
+    [LinearOrder α]
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hpacketDisjoint : ∀ i j, i ≠ j → ∀ x y, packets i x ≠ packets j y)
+    (edges : List (Fin m × Fin m)) (hedges : edges.Nodup)
+    (hnoFixed : ∀ e ∈ edges, e.1 ≠ e.2)
+    (hvertexDisjoint : ∀ e ∈ edges, ∀ f ∈ edges, e ≠ f →
+      e.1 ≠ f.1 ∧ e.1 ≠ f.2 ∧ e.2 ≠ f.1 ∧ e.2 ≠ f.2)
+    (hcover : ∀ i, ∃ e ∈ edges, e.1 = i ∨ e.2 = i)
+    (hlen : 2 * edges.length = m)
+    (v : Fin N → α)
+    (hsorted : ∀ i, Monotone (fun k : Fin 64 => v (packets i k))) :
+    let round := genIndexedPacketRound packets hpacketDisjoint edges hnoFixed
+    ∃ next : Fin m → Fin 64 ↪ Fin N,
+      (∀ i, Monotone (fun k => round.exec v (next i k))) ∧
+      (∀ i i', i ≠ i' → ∀ x y, next i x ≠ next i' y) ∧
+      Finset.univ.biUnion (fun i => packetEmbeddingSupport (next i)) =
+        Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) ∧
+      round.depth ≤ 7 := by
+  simpa [genIndexedPacketRoundOutputWithSingletons] using
+    (genIndexedPacketRound_withSingletons_canonicalOutput_fixedCount
+      packets hpacketDisjoint edges hedges hnoFixed hvertexDisjoint
+      ([] : List (Fin m)) (by simp) (by simp)
+      (fun i => Or.inl (hcover i)) (by simpa using hlen) v hsorted)
+
 theorem genIndexedPacketRounds_twoStep {m N : Nat} {α : Type}
     [LinearOrder α]
     (packets : Fin m → Fin 64 ↪ Fin N)
@@ -811,6 +846,20 @@ structure IndexedPacketPerfectMatching (m : Nat) where
   covers : ∀ i, ∃ e ∈ edges, e.1 = i ∨ e.2 = i
   edgeCount : 2 * edges.length = m
 
+/-- A possibly partial matching plus its untouched packet IDs. This supports
+odd packet counts without adding dummy wires. -/
+structure IndexedPacketMatching (m : Nat) where
+  edges : List (Fin m × Fin m)
+  nodup : edges.Nodup
+  noFixed : ∀ e ∈ edges, e.1 ≠ e.2
+  vertexDisjoint : ∀ e ∈ edges, ∀ f ∈ edges, e ≠ f →
+    e.1 ≠ f.1 ∧ e.1 ≠ f.2 ∧ e.2 ≠ f.1 ∧ e.2 ≠ f.2
+  singles : List (Fin m)
+  singleDisjoint : List.Pairwise (fun i j => i ≠ j) singles
+  free : ∀ i ∈ singles, ∀ e ∈ edges, e.1 ≠ i ∧ e.2 ≠ i
+  covers : ∀ i, (∃ e ∈ edges, e.1 = i ∨ e.2 = i) ∨ i ∈ singles
+  count : 2 * edges.length + singles.length = m
+
 /-- State invariant for iterating logical matching rounds. Values are recorded
 with their current wire labels; packet supports remain a fixed partition. -/
 structure IndexedPacketRoundState (m N : Nat) (α : Type)
@@ -848,6 +897,79 @@ theorem indexedPacketPerfectMatching_preservesState {m N : Nat} {α : Type}
       Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) =
           Finset.univ.biUnion (fun i => packetEmbeddingSupport (state.packets i)) := hsupp
       _ = support := state.support_eq
+
+/-- A singleton-aware partial matching also preserves the packet state. -/
+theorem indexedPacketMatching_preservesState {m N : Nat} {α : Type}
+    [LinearOrder α] {support : Finset (Fin N)}
+    (matching : IndexedPacketMatching m)
+    (state : IndexedPacketRoundState m N α support) :
+    ∃ next : IndexedPacketRoundState m N α support,
+      next.values = (genIndexedPacketRound state.packets state.disjoint
+        matching.edges matching.noFixed).exec state.values ∧
+      (genIndexedPacketRound state.packets state.disjoint matching.edges
+        matching.noFixed).depth ≤ 7 := by
+  obtain ⟨packets, hsorted, hdisjoint, hsupp, hdepth⟩ :=
+    genIndexedPacketRound_withSingletons_canonicalOutput_fixedCount
+      state.packets state.disjoint matching.edges matching.nodup
+      matching.noFixed matching.vertexDisjoint matching.singles
+      (by
+        have haux : ∀ ids : List (Fin m), List.Pairwise (fun i j => i ≠ j) ids →
+            List.Pairwise
+              (fun i j => ∀ x y, state.packets i x ≠ state.packets j y) ids := by
+          intro ids hids
+          induction ids with
+          | nil => simp
+          | cons i ids ih =>
+              rcases List.pairwise_cons.mp hids with ⟨hhead, htail⟩
+              apply List.pairwise_cons.mpr
+              constructor
+              · intro j hj x y
+                exact state.disjoint i j (hhead j hj) x y
+              · exact ih htail
+        exact haux matching.singles matching.singleDisjoint)
+      matching.free matching.covers matching.count state.values state.sorted
+  refine ⟨⟨packets,
+      (genIndexedPacketRound state.packets state.disjoint matching.edges
+        matching.noFixed).exec state.values,
+      hdisjoint, ?_, ?_⟩, rfl, hdepth⟩
+  · simpa using hsorted
+  · calc
+      Finset.univ.biUnion (fun i => packetEmbeddingSupport (packets i)) =
+          Finset.univ.biUnion (fun i => packetEmbeddingSupport (state.packets i)) := hsupp
+      _ = support := state.support_eq
+
+/-- Iterate a supplied schedule of arbitrary partial matchings. Each step
+retains the state invariant, including when the packet count is odd. -/
+noncomputable def iterateIndexedPacketMatchings {m N : Nat} {α : Type}
+    [LinearOrder α] {support : Finset (Fin N)}
+    (schedule : Nat → IndexedPacketMatching m)
+    (initial : IndexedPacketRoundState m N α support) :
+    Nat → IndexedPacketRoundState m N α support
+  | 0 => initial
+  | n + 1 => Classical.choose
+      (indexedPacketMatching_preservesState (schedule n)
+        (iterateIndexedPacketMatchings schedule initial n))
+
+/-- Exact value recurrence and seven-layer cost for an arbitrary singleton-
+aware schedule step. -/
+theorem iterateIndexedPacketMatchings_step {m N : Nat} {α : Type}
+    [LinearOrder α] {support : Finset (Fin N)}
+    (schedule : Nat → IndexedPacketMatching m)
+    (initial : IndexedPacketRoundState m N α support) (n : Nat) :
+    (iterateIndexedPacketMatchings schedule initial (n + 1)).values =
+      (genIndexedPacketRound
+        (iterateIndexedPacketMatchings schedule initial n).packets
+        (iterateIndexedPacketMatchings schedule initial n).disjoint
+        (schedule n).edges (schedule n).noFixed).exec
+        (iterateIndexedPacketMatchings schedule initial n).values ∧
+    (genIndexedPacketRound
+        (iterateIndexedPacketMatchings schedule initial n).packets
+        (iterateIndexedPacketMatchings schedule initial n).disjoint
+        (schedule n).edges (schedule n).noFixed).depth ≤ 7 := by
+  simpa [iterateIndexedPacketMatchings] using
+    Classical.choose_spec
+      (indexedPacketMatching_preservesState (schedule n)
+        (iterateIndexedPacketMatchings schedule initial n))
 
 /-- Iterate any externally supplied sequence of perfect logical matchings.
 The state type itself carries sortedness, disjointness, and support at every
