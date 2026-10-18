@@ -8,6 +8,12 @@ Keep this list so nobody repeats them.
   (`(m+1)^n` column-sum vectors) against a fixed σ, not a Hoeffding artifact. Best achievable
   with a net on the column sums: constant ≈ 6.5–7 instead of 9.07 (~1–2% of the slope).
   Chebyshev/second-moment routes cannot give failure `e^{-Θ(n ln m)}`.
+  **Update 2026-10-18 (UB-29):** the `ln m` is inherent only to arguments that take a union over
+  input states. `experiments/walk-bound/WALK-BOUND.md` removes it by decomposing the centered
+  excess into per-column random walks: the adversary's choice of heights becomes one walk maximum
+  per column, and only a union over output sets `S` (cost `ln 2` per column) remains. Round 1 is a
+  reviewed hand proof (`E1 ≈ 2.35/sqrt(m)` at `n = 16`, against `sqrt(2(1+ln m)/m)`); round 2 is a
+  sketch. The McDiarmid route above is still wrong as stated.
 * **Expander ε-halvers as the separator.** Depth ∝ 1/ε (≈ 2^26 for ε = 2^-26); sort-based
   separators win for ε < 2^-4.
 * **Zone-shrinking later rounds** (multi-round where round `t` only sorts rows near the 66

@@ -1,0 +1,35 @@
+m=4 n=4 trial 0: max_c onesAboveBottom =   3  <=  B =   3.00
+m=4 n=4 trial 1: max_c onesAboveBottom =   2  <=  B =   2.50
+m=4 n=4 trial 2: max_c onesAboveBottom =   2  <=  B =   2.50
+m=4 n=4 trial 3: max_c onesAboveBottom =   3  <=  B =   3.00
+m=4 n=4 trial 4: max_c onesAboveBottom =   2  <=  B =   3.00
+m=4 n=4 trial 5: max_c onesAboveBottom =   3  <=  B =   3.00
+  ok: inequality holds for every c and i; max ratio true/B = 1.00
+m=5 n=5 trial 0: max_c onesAboveBottom =   4  <=  B =   5.20
+m=5 n=5 trial 1: max_c onesAboveBottom =   4  <=  B =   4.80
+m=5 n=5 trial 2: max_c onesAboveBottom =   4  <=  B =   4.80
+m=5 n=5 trial 3: max_c onesAboveBottom =   4  <=  B =   4.20
+m=5 n=5 trial 4: max_c onesAboveBottom =   4  <=  B =   4.20
+m=5 n=5 trial 5: max_c onesAboveBottom =   3  <=  B =   3.80
+  ok: inequality holds for every c and i; max ratio true/B = 0.95
+m=6 n=5 trial 0: max_c onesAboveBottom =   4  <=  B =   4.00
+m=6 n=5 trial 1: max_c onesAboveBottom =   4  <=  B =   5.20
+m=6 n=5 trial 2: max_c onesAboveBottom =   4  <=  B =   4.60
+m=6 n=5 trial 3: max_c onesAboveBottom =   5  <=  B =   5.00
+m=6 n=5 trial 4: max_c onesAboveBottom =   4  <=  B =   4.80
+m=6 n=5 trial 5: max_c onesAboveBottom =   5  <=  B =   5.80
+  ok: inequality holds for every c and i; max ratio true/B = 1.00
+m=6 n=6 trial 0: max_c onesAboveBottom =   5  <=  B =   5.33
+m=6 n=6 trial 1: max_c onesAboveBottom =   6  <=  B =   6.00
+m=6 n=6 trial 2: max_c onesAboveBottom =   6  <=  B =   6.67
+m=6 n=6 trial 3: max_c onesAboveBottom =   5  <=  B =   5.50
+m=6 n=6 trial 4: max_c onesAboveBottom =   6  <=  B =   6.00
+m=6 n=6 trial 5: max_c onesAboveBottom =   6  <=  B =   6.00
+  ok: inequality holds for every c and i; max ratio true/B = 1.00
+m=8 n=5 trial 0: max_c onesAboveBottom =   5  <=  B =   5.40
+m=8 n=5 trial 1: max_c onesAboveBottom =   5  <=  B =   5.80
+m=8 n=5 trial 2: max_c onesAboveBottom =   6  <=  B =   6.80
+m=8 n=5 trial 3: max_c onesAboveBottom =   5  <=  B =   6.20
+m=8 n=5 trial 4: max_c onesAboveBottom =   6  <=  B =   6.40
+m=8 n=5 trial 5: max_c onesAboveBottom =   6  <=  B =   6.60
+  ok: inequality holds for every c and i; max ratio true/B = 0.94
