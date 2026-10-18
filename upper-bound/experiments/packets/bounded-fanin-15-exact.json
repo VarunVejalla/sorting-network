@@ -1,0 +1,922 @@
+{
+  "status": "exact integer/Frobenius certificate; not Lean-checked",
+  "schedule_generator": "Python random.Random; see bounded_fanin_cycle.py",
+  "rounds": 15,
+  "seed_attempts_per_size": 32,
+  "max_packet_count": 130,
+  "per_round_matching_cost_layers": 13,
+  "cycle_cost_layers": 195,
+  "frobenius_bound": "rho <= 1/16 for every c in 1..130",
+  "matching_cycles": [
+    {
+      "c": 1,
+      "seed": 3862,
+      "frobenius_sq_numerator": 0,
+      "frobenius_sq_denominator": 1073741824,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 2,
+      "seed": 4871,
+      "frobenius_sq_numerator": 0,
+      "frobenius_sq_denominator": 4294967296,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 3,
+      "seed": 5880,
+      "frobenius_sq_numerator": 576,
+      "frobenius_sq_denominator": 9663676416,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 4,
+      "seed": 6889,
+      "frobenius_sq_numerator": 0,
+      "frobenius_sq_denominator": 17179869184,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 5,
+      "seed": 77709,
+      "frobenius_sq_numerator": 16000,
+      "frobenius_sq_denominator": 26843545600,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 6,
+      "seed": 98664,
+      "frobenius_sq_numerator": 576,
+      "frobenius_sq_denominator": 38654705664,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 7,
+      "seed": 299133,
+      "frobenius_sq_numerator": 9016,
+      "frobenius_sq_denominator": 52613349376,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 8,
+      "seed": 10925,
+      "frobenius_sq_numerator": 0,
+      "frobenius_sq_denominator": 68719476736,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 9,
+      "seed": 11934,
+      "frobenius_sq_numerator": 296784,
+      "frobenius_sq_denominator": 86973087744,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 10,
+      "seed": 162538,
+      "frobenius_sq_numerator": 86400,
+      "frobenius_sq_denominator": 107374182400,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 11,
+      "seed": 73790,
+      "frobenius_sq_numerator": 1496528,
+      "frobenius_sq_denominator": 129922760704,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 12,
+      "seed": 54853,
+      "frobenius_sq_numerator": 579456,
+      "frobenius_sq_denominator": 154618822656,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 13,
+      "seed": 75808,
+      "frobenius_sq_numerator": 2149004,
+      "frobenius_sq_denominator": 181462368256,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 14,
+      "seed": 236385,
+      "frobenius_sq_numerator": 1458240,
+      "frobenius_sq_denominator": 210453397504,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 15,
+      "seed": 297232,
+      "frobenius_sq_numerator": 7546500,
+      "frobenius_sq_denominator": 241591910400,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 16,
+      "seed": 78835,
+      "frobenius_sq_numerator": 2101248,
+      "frobenius_sq_denominator": 274877906944,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 17,
+      "seed": 189547,
+      "frobenius_sq_numerator": 24113004,
+      "frobenius_sq_denominator": 310311387136,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 18,
+      "seed": 180583,
+      "frobenius_sq_numerator": 3875040,
+      "frobenius_sq_denominator": 347892350976,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 19,
+      "seed": 181592,
+      "frobenius_sq_numerator": 46957436,
+      "frobenius_sq_denominator": 387620798464,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 20,
+      "seed": 33006,
+      "frobenius_sq_numerator": 15654400,
+      "frobenius_sq_denominator": 429496729600,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 21,
+      "seed": 313259,
+      "frobenius_sq_numerator": 78365700,
+      "frobenius_sq_denominator": 473520144384,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 22,
+      "seed": 194592,
+      "frobenius_sq_numerator": 33473440,
+      "frobenius_sq_denominator": 519691042816,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 23,
+      "seed": 105844,
+      "frobenius_sq_numerator": 90816604,
+      "frobenius_sq_denominator": 568009424896,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 24,
+      "seed": 56988,
+      "frobenius_sq_numerator": 67322880,
+      "frobenius_sq_denominator": 618475290624,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 25,
+      "seed": 187646,
+      "frobenius_sq_numerator": 204670000,
+      "frobenius_sq_denominator": 671088640000,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 26,
+      "seed": 218574,
+      "frobenius_sq_numerator": 84532448,
+      "frobenius_sq_denominator": 725849473024,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 27,
+      "seed": 309340,
+      "frobenius_sq_numerator": 209590416,
+      "frobenius_sq_denominator": 782757789696,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 28,
+      "seed": 340268,
+      "frobenius_sq_numerator": 162526336,
+      "frobenius_sq_denominator": 841813590016,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 29,
+      "seed": 151790,
+      "frobenius_sq_numerator": 249480968,
+      "frobenius_sq_denominator": 903016873984,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 30,
+      "seed": 342286,
+      "frobenius_sq_numerator": 209800800,
+      "frobenius_sq_denominator": 966367641600,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 31,
+      "seed": 133862,
+      "frobenius_sq_numerator": 245174164,
+      "frobenius_sq_denominator": 1031865892864,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 32,
+      "seed": 94979,
+      "frobenius_sq_numerator": 209100800,
+      "frobenius_sq_denominator": 1099511627776,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 33,
+      "seed": 185745,
+      "frobenius_sq_numerator": 416538144,
+      "frobenius_sq_denominator": 1169304846336,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 34,
+      "seed": 96997,
+      "frobenius_sq_numerator": 265436096,
+      "frobenius_sq_denominator": 1241245548544,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 35,
+      "seed": 117952,
+      "frobenius_sq_numerator": 518944300,
+      "frobenius_sq_denominator": 1315333734400,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 36,
+      "seed": 148880,
+      "frobenius_sq_numerator": 231911424,
+      "frobenius_sq_denominator": 1391569403904,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 37,
+      "seed": 80078,
+      "frobenius_sq_numerator": 463850056,
+      "frobenius_sq_denominator": 1469952557056,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 38,
+      "seed": 81087,
+      "frobenius_sq_numerator": 394616320,
+      "frobenius_sq_denominator": 1550483193856,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 39,
+      "seed": 281556,
+      "frobenius_sq_numerator": 760159296,
+      "frobenius_sq_denominator": 1633161314304,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 40,
+      "seed": 312484,
+      "frobenius_sq_numerator": 537420800,
+      "frobenius_sq_denominator": 1717986918400,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 41,
+      "seed": 233709,
+      "frobenius_sq_numerator": 1010778576,
+      "frobenius_sq_denominator": 1804960006144,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 42,
+      "seed": 304529,
+      "frobenius_sq_numerator": 863922528,
+      "frobenius_sq_denominator": 1894080577536,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 43,
+      "seed": 205808,
+      "frobenius_sq_numerator": 1174440424,
+      "frobenius_sq_denominator": 1985348632576,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 44,
+      "seed": 156952,
+      "frobenius_sq_numerator": 1092213760,
+      "frobenius_sq_denominator": 2078764171264,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 45,
+      "seed": 98123,
+      "frobenius_sq_numerator": 2032468200,
+      "frobenius_sq_denominator": 2174327193600,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 46,
+      "seed": 358430,
+      "frobenius_sq_numerator": 1075808256,
+      "frobenius_sq_denominator": 2272037699584,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 47,
+      "seed": 239763,
+      "frobenius_sq_numerator": 2153121136,
+      "frobenius_sq_denominator": 2371895689216,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 48,
+      "seed": 160988,
+      "frobenius_sq_numerator": 1246980096,
+      "frobenius_sq_denominator": 2473901162496,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 49,
+      "seed": 311592,
+      "frobenius_sq_numerator": 1562311492,
+      "frobenius_sq_denominator": 2578054119424,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 50,
+      "seed": 172979,
+      "frobenius_sq_numerator": 1569880000,
+      "frobenius_sq_denominator": 2684354560000,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 51,
+      "seed": 273718,
+      "frobenius_sq_numerator": 2231512344,
+      "frobenius_sq_denominator": 2792802484224,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 52,
+      "seed": 334565,
+      "frobenius_sq_numerator": 1575047552,
+      "frobenius_sq_denominator": 2903397892096,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 53,
+      "seed": 96222,
+      "frobenius_sq_numerator": 2121952308,
+      "frobenius_sq_denominator": 3016140783616,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 54,
+      "seed": 137123,
+      "frobenius_sq_numerator": 1940026464,
+      "frobenius_sq_denominator": 3131031158784,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 55,
+      "seed": 78294,
+      "frobenius_sq_numerator": 2158567400,
+      "frobenius_sq_denominator": 3248069017600,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 56,
+      "seed": 348574,
+      "frobenius_sq_numerator": 2819289088,
+      "frobenius_sq_denominator": 3367254360064,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 57,
+      "seed": 209961,
+      "frobenius_sq_numerator": 3552599556,
+      "frobenius_sq_denominator": 3488587186176,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 58,
+      "seed": 330646,
+      "frobenius_sq_numerator": 2639206016,
+      "frobenius_sq_denominator": 3612067495936,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 59,
+      "seed": 182060,
+      "frobenius_sq_numerator": 4095034476,
+      "frobenius_sq_denominator": 3737695289344,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 60,
+      "seed": 212988,
+      "frobenius_sq_numerator": 3199968000,
+      "frobenius_sq_denominator": 3865470566400,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 61,
+      "seed": 204024,
+      "frobenius_sq_numerator": 4367635380,
+      "frobenius_sq_denominator": 3995393327104,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 62,
+      "seed": 264871,
+      "frobenius_sq_numerator": 3158568672,
+      "frobenius_sq_denominator": 4127463571456,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 63,
+      "seed": 355637,
+      "frobenius_sq_numerator": 4104755676,
+      "frobenius_sq_denominator": 4261681299456,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 64,
+      "seed": 316754,
+      "frobenius_sq_numerator": 4125786112,
+      "frobenius_sq_denominator": 4398046511104,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 65,
+      "seed": 297817,
+      "frobenius_sq_numerator": 5386401800,
+      "frobenius_sq_denominator": 4536559206400,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 66,
+      "seed": 268907,
+      "frobenius_sq_numerator": 4916007360,
+      "frobenius_sq_denominator": 4677219385344,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 67,
+      "seed": 249970,
+      "frobenius_sq_numerator": 5768436824,
+      "frobenius_sq_denominator": 4820027047936,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 68,
+      "seed": 101384,
+      "frobenius_sq_numerator": 4254745856,
+      "frobenius_sq_denominator": 4964982194176,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 69,
+      "seed": 351718,
+      "frobenius_sq_numerator": 5891832720,
+      "frobenius_sq_denominator": 5112084824064,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 70,
+      "seed": 332781,
+      "frobenius_sq_numerator": 6484699200,
+      "frobenius_sq_denominator": 5261334937600,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 71,
+      "seed": 134330,
+      "frobenius_sq_numerator": 7576824640,
+      "frobenius_sq_denominator": 5412732534784,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 72,
+      "seed": 95447,
+      "frobenius_sq_numerator": 6699801600,
+      "frobenius_sq_denominator": 5566277615616,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 73,
+      "seed": 206159,
+      "frobenius_sq_numerator": 7554283820,
+      "frobenius_sq_denominator": 5721970180096,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 74,
+      "seed": 336817,
+      "frobenius_sq_numerator": 6568615328,
+      "frobenius_sq_denominator": 5879810228224,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 75,
+      "seed": 138366,
+      "frobenius_sq_numerator": 9543060000,
+      "frobenius_sq_denominator": 6039797760000,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 76,
+      "seed": 149348,
+      "frobenius_sq_numerator": 7419341312,
+      "frobenius_sq_denominator": 6201932775424,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 77,
+      "seed": 100492,
+      "frobenius_sq_numerator": 8535981300,
+      "frobenius_sq_denominator": 6366215274496,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 78,
+      "seed": 241123,
+      "frobenius_sq_numerator": 8948201184,
+      "frobenius_sq_denominator": 6532645257216,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 79,
+      "seed": 381754,
+      "frobenius_sq_numerator": 11943501556,
+      "frobenius_sq_denominator": 6701222723584,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 80,
+      "seed": 133438,
+      "frobenius_sq_numerator": 7663257600,
+      "frobenius_sq_denominator": 6871947673600,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 81,
+      "seed": 154393,
+      "frobenius_sq_numerator": 12300720264,
+      "frobenius_sq_denominator": 7044820107264,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 82,
+      "seed": 225213,
+      "frobenius_sq_numerator": 9900686560,
+      "frobenius_sq_denominator": 7219840024576,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 83,
+      "seed": 246168,
+      "frobenius_sq_numerator": 12013175980,
+      "frobenius_sq_denominator": 7397007425536,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 84,
+      "seed": 316988,
+      "frobenius_sq_numerator": 10259932032,
+      "frobenius_sq_denominator": 7576322310144,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 85,
+      "seed": 98591,
+      "frobenius_sq_numerator": 15238074100,
+      "frobenius_sq_denominator": 7757784678400,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 86,
+      "seed": 99600,
+      "frobenius_sq_numerator": 13215468640,
+      "frobenius_sq_denominator": 7941394530304,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 87,
+      "seed": 240231,
+      "frobenius_sq_numerator": 14489578908,
+      "frobenius_sq_denominator": 8127151865856,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 88,
+      "seed": 151483,
+      "frobenius_sq_numerator": 11717043712,
+      "frobenius_sq_denominator": 8315056685056,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 89,
+      "seed": 262195,
+      "frobenius_sq_numerator": 16085618276,
+      "frobenius_sq_denominator": 8505108987904,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 90,
+      "seed": 103636,
+      "frobenius_sq_numerator": 15996787200,
+      "frobenius_sq_denominator": 8697308774400,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 91,
+      "seed": 353970,
+      "frobenius_sq_numerator": 18866635424,
+      "frobenius_sq_denominator": 8891656044544,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 92,
+      "seed": 195411,
+      "frobenius_sq_numerator": 13843447552,
+      "frobenius_sq_denominator": 9088150798336,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 93,
+      "seed": 256258,
+      "frobenius_sq_numerator": 20305810836,
+      "frobenius_sq_denominator": 9286793035776,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 94,
+      "seed": 227348,
+      "frobenius_sq_numerator": 16590827040,
+      "frobenius_sq_denominator": 9487582756864,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 95,
+      "seed": 407871,
+      "frobenius_sq_numerator": 20023117700,
+      "frobenius_sq_denominator": 9690519961600,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 96,
+      "seed": 398907,
+      "frobenius_sq_numerator": 18314993664,
+      "frobenius_sq_denominator": 9895604649984,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 97,
+      "seed": 140618,
+      "frobenius_sq_numerator": 21182180612,
+      "frobenius_sq_denominator": 10102836822016,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 98,
+      "seed": 221411,
+      "frobenius_sq_numerator": 17722606944,
+      "frobenius_sq_denominator": 10312216477696,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 99,
+      "seed": 172555,
+      "frobenius_sq_numerator": 23794632576,
+      "frobenius_sq_denominator": 10523743617024,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 100,
+      "seed": 193510,
+      "frobenius_sq_numerator": 22503280000,
+      "frobenius_sq_denominator": 10737418240000,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 101,
+      "seed": 244384,
+      "frobenius_sq_numerator": 27089081932,
+      "frobenius_sq_denominator": 10953240346624,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 102,
+      "seed": 305231,
+      "frobenius_sq_numerator": 20038686624,
+      "frobenius_sq_denominator": 11171209936896,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 103,
+      "seed": 296267,
+      "frobenius_sq_numerator": 27185817116,
+      "frobenius_sq_denominator": 11391327010816,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 104,
+      "seed": 277330,
+      "frobenius_sq_numerator": 21164229632,
+      "frobenius_sq_denominator": 11613591568384,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 105,
+      "seed": 288312,
+      "frobenius_sq_numerator": 30477598200,
+      "frobenius_sq_denominator": 11838003609600,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 106,
+      "seed": 219510,
+      "frobenius_sq_numerator": 23753623104,
+      "frobenius_sq_denominator": 12064563134464,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 107,
+      "seed": 190600,
+      "frobenius_sq_numerator": 29682723196,
+      "frobenius_sq_denominator": 12293270142976,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 108,
+      "seed": 211555,
+      "frobenius_sq_numerator": 25559089920,
+      "frobenius_sq_denominator": 12524124635136,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 109,
+      "seed": 162699,
+      "frobenius_sq_numerator": 27239236032,
+      "frobenius_sq_denominator": 12757126610944,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 110,
+      "seed": 223546,
+      "frobenius_sq_numerator": 30878716000,
+      "frobenius_sq_denominator": 12992276070400,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 111,
+      "seed": 314312,
+      "frobenius_sq_numerator": 34780901616,
+      "frobenius_sq_denominator": 13229573013504,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 112,
+      "seed": 315321,
+      "frobenius_sq_numerator": 28702478336,
+      "frobenius_sq_denominator": 13469017440256,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 113,
+      "seed": 376168,
+      "frobenius_sq_numerator": 34931642540,
+      "frobenius_sq_denominator": 13710609350656,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 114,
+      "seed": 317339,
+      "frobenius_sq_numerator": 33843351456,
+      "frobenius_sq_denominator": 13954348744704,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 115,
+      "seed": 328321,
+      "frobenius_sq_numerator": 40112853300,
+      "frobenius_sq_denominator": 14200235622400,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 116,
+      "seed": 169762,
+      "frobenius_sq_numerator": 34025918080,
+      "frobenius_sq_denominator": 14448269983744,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 117,
+      "seed": 190717,
+      "frobenius_sq_numerator": 41695270344,
+      "frobenius_sq_denominator": 14698451828736,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 118,
+      "seed": 341321,
+      "frobenius_sq_numerator": 35677186720,
+      "frobenius_sq_denominator": 14950781157376,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 119,
+      "seed": 202708,
+      "frobenius_sq_numerator": 43698240376,
+      "frobenius_sq_denominator": 15205257969664,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 120,
+      "seed": 273528,
+      "frobenius_sq_numerator": 37704960000,
+      "frobenius_sq_denominator": 15461882265600,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 121,
+      "seed": 344348,
+      "frobenius_sq_numerator": 45476761484,
+      "frobenius_sq_denominator": 15720654045184,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 122,
+      "seed": 225681,
+      "frobenius_sq_numerator": 40741199232,
+      "frobenius_sq_denominator": 15981573308416,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 123,
+      "seed": 296501,
+      "frobenius_sq_numerator": 42050692404,
+      "frobenius_sq_denominator": 16244640055296,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 124,
+      "seed": 307483,
+      "frobenius_sq_numerator": 40930419968,
+      "frobenius_sq_denominator": 16509854285824,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 125,
+      "seed": 258627,
+      "frobenius_sq_numerator": 50267937500,
+      "frobenius_sq_denominator": 16777216000000,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 126,
+      "seed": 269609,
+      "frobenius_sq_numerator": 41600581344,
+      "frobenius_sq_denominator": 17046725197824,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 127,
+      "seed": 320483,
+      "frobenius_sq_numerator": 46654745400,
+      "frobenius_sq_denominator": 17318381879296,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 128,
+      "seed": 261654,
+      "frobenius_sq_numerator": 50477793280,
+      "frobenius_sq_denominator": 17592186044416,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 129,
+      "seed": 292582,
+      "frobenius_sq_numerator": 52029950292,
+      "frobenius_sq_denominator": 17868137693184,
+      "rho_le_1_over_16": true
+    },
+    {
+      "c": 130,
+      "seed": 193861,
+      "frobenius_sq_numerator": 53606664800,
+      "frobenius_sq_denominator": 18146236825600,
+      "rho_le_1_over_16": true
+    }
+  ]
+}

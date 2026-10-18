@@ -157,6 +157,51 @@ def PacketSortedOn {N : Nat} {α : Type} [Preorder α]
     (s : Finset (Fin N)) (v : Fin N → α) : Prop :=
   ∀ p : Nat, RankSortedOn (Chvatal.blockOf s (64 * p) (64 * (p + 1))) v
 
+/-- A physically increasing packet embedding whose values are monotone gives
+rank-sorted values on that packet's physical support. -/
+theorem rankSortedOn_packetEmbedding_range {N : Nat} {α : Type}
+    [Preorder α] (packet : Fin 64 ↪ Fin N) (hmono : StrictMono packet)
+    (v : Fin N → α) (hsorted : Monotone (fun i => v (packet i))) :
+    RankSortedOn (Finset.univ.image packet) v := by
+  intro x y hx hy hxy
+  rcases Finset.mem_image.mp hx with ⟨i, -, rfl⟩
+  rcases Finset.mem_image.mp hy with ⟨j, -, rfl⟩
+  have hij : i.val ≤ j.val := by
+    by_contra h
+    have hji : j.val < i.val := by omega
+    have hwire := hmono (Fin.lt_iff_val_lt_val.mpr hji)
+    simp only [Fin.lt_iff_val_lt_val] at hwire
+    omega
+  exact hsorted (Fin.le_def.mpr hij)
+
+/-- If sorted, increasing 64-wire packets are exactly the successive rank
+blocks of a support, then they establish the packet invariant on that support.
+This isolates the alignment obligation needed to iterate a macro merge. -/
+theorem packetSortedOn_of_rankAlignedFamily {N m : Nat} {α : Type}
+    [Preorder α] (s : Finset (Fin N)) (v : Fin N → α)
+    (packets : Fin m → Fin 64 ↪ Fin N)
+    (hsize : s.card = 64 * m)
+    (haligned : ∀ i, Finset.univ.image (packets i) =
+      Chvatal.blockOf s (64 * i.val) (64 * (i.val + 1)))
+    (hmono : ∀ i, StrictMono (packets i))
+    (hsorted : ∀ i, Monotone (fun j => v (packets i j))) :
+    PacketSortedOn s v := by
+  intro p
+  by_cases hp : p < m
+  · let i : Fin m := ⟨p, hp⟩
+    rw [← haligned i]
+    simpa [i] using rankSortedOn_packetEmbedding_range
+      (packets i) (hmono i) v (hsorted i)
+  · have hempty : Chvatal.blockOf s (64 * p) (64 * (p + 1)) = ∅ := by
+      apply Finset.eq_empty_iff_forall_notMem.mpr
+      intro w hw
+      have hw' := Chvatal.mem_blockOf.mp hw
+      have hlt := Chvatal.rankIn_lt_card hw'.1
+      rw [hsize] at hlt
+      omega
+    rw [hempty]
+    simp [RankSortedOn]
+
 /-- Packet sortedness on physical wires is the same invariant in the bag's
 rank-order register coordinates. -/
 theorem PacketSortedOn_orderEmb {N : Nat} {α : Type} [Preorder α]
@@ -454,6 +499,114 @@ theorem blockOf_packetCell_partition {N : Nat} (s : Finset (Fin N))
   · rintro ⟨k, hw, hlo, hhi⟩
     have hk := k.isLt
     exact ⟨hw, by omega, by omega⟩
+
+/-! ### Port-local 4096-rank grouping
+
+The following index groups consecutive 64-wire rank cells without
+transposing their positions across distinct ports. -/
+
+/-- Index the 64 consecutive 64-wire cells belonging to one 4096-wire
+macro-group in a rank-cell stream of length `64*q`. -/
+def rankPacketMacroCellIndex {q : Nat} (g : Fin q) (i : Fin 64) : Fin (q * 64) :=
+  ⟨g.val * 64 + i.val, by have hg := g.isLt; have hi := i.isLt; omega⟩
+
+/-- Grouping 64 consecutive cells of a rank-cell stream gives precisely the
+corresponding 4096-rank block of that same port. This is the alignment fact
+needed to batch within a port before pooling its short residue. -/
+theorem rankPacketCell_macroGroup {N : Nat} (s : Finset (Fin N))
+    (lo q : Nat) (g : Fin q) :
+    Chvatal.blockOf s (lo + 4096 * g.val) (lo + 4096 * (g.val + 1)) =
+      Finset.univ.biUnion (fun i : Fin 64 =>
+        rankPacketCell s lo (rankPacketMacroCellIndex g i)) := by
+  have hpartition := blockOf_packetCell_partition s (lo + 4096 * g.val) 64
+  have hbounds : lo + 4096 * (g.val + 1) =
+      lo + 4096 * g.val + 64 * 64 := by omega
+  rw [hbounds, hpartition]
+  have hcell (i : Fin 64) : rankPacketCell s (lo + 4096 * g.val) i =
+      rankPacketCell s lo (rankPacketMacroCellIndex g i) := by
+    apply Finset.ext
+    intro x
+    simp only [rankPacketCell, Chvatal.blockOf, Finset.mem_filter]
+    simp only [rankPacketMacroCellIndex, Fin.val_mk]
+    constructor <;> rintro ⟨hx, hlo', hhi'⟩ <;>
+      exact ⟨hx, by omega, by omega⟩
+  apply Finset.ext
+  intro w
+  simp only [Finset.mem_biUnion, Finset.mem_univ, true_and]
+  constructor
+  · rintro ⟨i, hi⟩
+    exact ⟨i, (Finset.ext_iff.mp (hcell i) w).mp hi⟩
+  · rintro ⟨i, hi⟩
+    exact ⟨i, (Finset.ext_iff.mp (hcell i) w).mpr hi⟩
+
+/-- Inside a rank interval of `s`, local ranks are the sender ranks with the
+interval's lower endpoint subtracted. -/
+theorem rankIn_blockOf_eq_sub {N : Nat} (s : Finset (Fin N))
+    (lo hi : Nat) {w : Fin N}
+    (hw : w ∈ Chvatal.blockOf s lo hi) :
+    Chvatal.rankIn (Chvatal.blockOf s lo hi) w = Chvatal.rankIn s w - lo := by
+  have hwr := Chvatal.mem_blockOf.mp hw
+  have hfilter : (Chvatal.blockOf s lo hi).filter (· < w) =
+      Chvatal.blockOf s lo (Chvatal.rankIn s w) := by
+    ext x
+    simp only [Finset.mem_filter, Chvatal.mem_blockOf]
+    constructor
+    · rintro ⟨⟨hx, hlow, hhigh⟩, hlt⟩
+      exact ⟨hx, hlow, Chvatal.rankIn_lt_rankIn hx hlt⟩
+    · rintro ⟨hx, hlow, hhigh⟩
+      have hxw : x < w := by
+        by_contra hnot
+        have hwx : w ≤ x := by omega
+        rcases hwx.eq_or_lt with heq | hlt
+        · subst x
+          omega
+        · have hr := Chvatal.rankIn_lt_rankIn hwr.1 hlt
+          omega
+      exact ⟨⟨hx, hlow, by omega⟩, hxw⟩
+  have hhi : Chvatal.rankIn s w ≤ s.card := by
+    exact Nat.le_of_lt (Chvatal.rankIn_lt_card hwr.1)
+  change ((Chvatal.blockOf s lo hi).filter (· < w)).card =
+    Chvatal.rankIn s w - lo
+  rw [hfilter, Chvatal.blockOf_card hhi]
+
+/-- A rank interval nested inside a port interval corresponds to the shifted
+rank interval in the sender. -/
+theorem blockOf_blockOf_eq_shift {N : Nat} (s : Finset (Fin N))
+    (lo hi a b : Nat) (hab : a ≤ b) (hb : b ≤ hi - lo) :
+    Chvatal.blockOf (Chvatal.blockOf s lo hi) a b =
+      Chvatal.blockOf s (lo + a) (lo + b) := by
+  ext w
+  simp only [Chvatal.mem_blockOf]
+  constructor
+  · rintro ⟨hwp, ha, hb'⟩
+    have hwp' : w ∈ Chvatal.blockOf s lo hi := Chvatal.mem_blockOf.mpr hwp
+    have hlocal := rankIn_blockOf_eq_sub s lo hi hwp'
+    have hsender := hwp
+    refine ⟨hsender.1, ?_, ?_⟩ <;> omega
+  · rintro ⟨hws, hlo, hhi⟩
+    have hlo' : lo ≤ Chvatal.rankIn s w := by omega
+    have hhi' : Chvatal.rankIn s w < hi := by
+      have hshift : lo + b ≤ hi := by omega
+      omega
+    have hwp : w ∈ Chvatal.blockOf s lo hi :=
+      Chvatal.mem_blockOf.mpr ⟨hws, hlo', hhi'⟩
+    have hlocal := rankIn_blockOf_eq_sub s lo hi hwp
+    refine ⟨Chvatal.mem_blockOf.mp hwp, ?_, ?_⟩ <;> omega
+
+/-- The 64 consecutive rank cells in one 4096-rank group of a port interval
+are exactly the corresponding sender wires. This connects the actual
+rank-cell repair streams to port-local macro-groups. -/
+theorem rankPacketCell_macroGroup_in_rankInterval {N : Nat}
+    (s : Finset (Fin N)) (lo hi : Nat) (g : Fin (hi / 4096))
+    (hhi : hi ≤ s.card)
+    (hg : 4096 * (g.val + 1) ≤ hi - lo) :
+    Chvatal.blockOf (Chvatal.blockOf s lo hi)
+        (4096 * g.val) (4096 * (g.val + 1)) =
+      Finset.univ.biUnion (fun i : Fin 64 =>
+        rankPacketCell s lo (rankPacketMacroCellIndex g i)) := by
+  rw [blockOf_blockOf_eq_shift s lo hi (4096 * g.val)
+    (4096 * (g.val + 1)) (by omega) (by omega)]
+  exact rankPacketCell_macroGroup s lo _ g
 
 def upSetPrefixCell {N : Nat} (s : Finset (Fin N)) {q : Nat}
     (k : Fin q) : Finset (Fin N) := rankPacketCell s 0 k
@@ -1390,6 +1543,216 @@ theorem downSetEndpointRight_card {N : Nat} (s : Finset (Fin N)) (π τ : Nat)
   have hmul : (j.val + 1) * τ ≤ 64 * τ := Nat.mul_le_mul_right τ hj
   have hend : π / 2 + (j.val + 1) * τ ≤ s.card := by omega
   rw [Chvatal.blockOf_card (by omega)]
+  omega
+
+/-- When a down-port contains at least one interior 64-cell, its repaired
+endpoint packet is not a consecutive 64-rank block: its two 32-wire halves
+remain separated by at least 64 ranks of that same port. -/
+theorem downSetEndpointPair_not_rankBlock {N : Nat}
+    (s : Finset (Fin N)) (π τ : Nat) (j : Fin 64)
+    (hlarge : 128 ≤ τ) (hτ : 64 ∣ τ)
+    (hbase : (π / 2) % 64 = 32)
+    (hwithin : π / 2 + 64 * τ ≤ s.card) :
+    ∀ lo, downSetEndpointLeft s π τ j ∪ downSetEndpointRight s π τ j ≠
+      Chvatal.blockOf s lo (lo + 64) := by
+  intro lo heq
+  have hleftCard := downSetEndpointLeft_card s π τ j (by omega) hwithin
+  have hrightCard := downSetEndpointRight_card s π τ j hτ hbase hwithin
+  obtain ⟨x, hx⟩ := Finset.card_pos.mp (by rw [hleftCard]; decide)
+  obtain ⟨y, hy⟩ := Finset.card_pos.mp (by rw [hrightCard]; decide)
+  change x ∈ Chvatal.blockOf s (π / 2 + j.val * τ)
+      (π / 2 + j.val * τ + 32) at hx
+  change y ∈ Chvatal.blockOf s
+      (π / 2 + (j.val + 1) * τ - 32) (π / 2 + (j.val + 1) * τ) at hy
+  have hxrank := Chvatal.mem_blockOf.mp hx
+  have hyrank := Chvatal.mem_blockOf.mp hy
+  have hgap : Chvatal.rankIn s x + 64 < Chvatal.rankIn s y := by
+    have hτmul : j.val * τ + τ = (j.val + 1) * τ := by
+      rw [Nat.add_mul, Nat.one_mul]
+    have hseparated : π / 2 + j.val * τ + 96 ≤
+        π / 2 + (j.val + 1) * τ - 32 := by rw [← hτmul]; omega
+    have hleftUpper : Chvatal.rankIn s x < π / 2 + j.val * τ + 32 := hxrank.2.2
+    have hrightLower : π / 2 + (j.val + 1) * τ - 32 ≤
+        Chvatal.rankIn s y := hyrank.2.1
+    omega
+  have hxblock : x ∈ Chvatal.blockOf s lo (lo + 64) := by
+    rw [← heq]
+    exact Finset.mem_union_left _ hx
+  have hyblock : y ∈ Chvatal.blockOf s lo (lo + 64) := by
+    rw [← heq]
+    exact Finset.mem_union_right _ hy
+  have hxrank' := Chvatal.mem_blockOf.mp hxblock
+  have hyrank' := Chvatal.mem_blockOf.mp hyblock
+  omega
+
+/-- The endpoint obstruction persists in any destination support containing
+the whole down-cut: the cut itself contributes at least 64 wires strictly
+between the repaired endpoint halves. -/
+theorem downSetEndpointPair_not_receiverRankBlock {N : Nat}
+    (s receiverSupport : Finset (Fin N)) (π τ : Nat) (j : Fin 64)
+    (hlarge : 128 ≤ τ) (hτ : 64 ∣ τ)
+    (hbase : (π / 2) % 64 = 32)
+    (hwithin : π / 2 + 64 * τ ≤ s.card)
+    (hreceiver : Chvatal.downSet s π τ j.val ⊆ receiverSupport) :
+    ∀ lo, downSetEndpointLeft s π τ j ∪ downSetEndpointRight s π τ j ≠
+      Chvatal.blockOf receiverSupport lo (lo + 64) := by
+  intro lo heq
+  have hleftCard := downSetEndpointLeft_card s π τ j (by omega) hwithin
+  have hrightCard := downSetEndpointRight_card s π τ j hτ hbase hwithin
+  obtain ⟨x, hx⟩ := Finset.card_pos.mp (by rw [hleftCard]; decide)
+  obtain ⟨y, hy⟩ := Finset.card_pos.mp (by rw [hrightCard]; decide)
+  change x ∈ Chvatal.blockOf s (π / 2 + j.val * τ)
+      (π / 2 + j.val * τ + 32) at hx
+  change y ∈ Chvatal.blockOf s
+      (π / 2 + (j.val + 1) * τ - 32) (π / 2 + (j.val + 1) * τ) at hy
+  have hxrank := Chvatal.mem_blockOf.mp hx
+  have hyrank := Chvatal.mem_blockOf.mp hy
+  let mid := Chvatal.blockOf s (π / 2 + j.val * τ + 32)
+    (π / 2 + j.val * τ + 96)
+  have hj : j.val + 1 ≤ 64 := by omega
+  have hτge96 : 96 ≤ τ := by omega
+  have hstep : (j.val + 1) * τ = j.val * τ + τ := by
+    rw [Nat.add_mul, Nat.one_mul]
+  have hmidEnd : π / 2 + j.val * τ + 96 ≤ s.card := by
+    have hmul : (j.val + 1) * τ ≤ 64 * τ := Nat.mul_le_mul_right τ hj
+    omega
+  have hmidCard : mid.card = 64 := by
+    dsimp [mid]
+    rw [Chvatal.blockOf_card hmidEnd]
+    omega
+  have hmidSub : mid ⊆ Chvatal.downSet s π τ j.val := by
+    intro z hz
+    have hr := Chvatal.mem_blockOf.mp hz
+    apply Chvatal.mem_blockOf.mpr
+    refine ⟨hr.1, ?_, ?_⟩
+    · omega
+    · rw [hstep]
+      omega
+  have hxDown : x ∈ Chvatal.downSet s π τ j.val := by
+    change x ∈ Chvatal.blockOf s (π / 2 + j.val * τ)
+      (π / 2 + (j.val + 1) * τ)
+    apply Chvatal.mem_blockOf.mpr
+    refine ⟨hxrank.1, hxrank.2.1, ?_⟩
+    rw [hstep]
+    omega
+  have hyDown : y ∈ Chvatal.downSet s π τ j.val := by
+    change y ∈ Chvatal.blockOf s (π / 2 + j.val * τ)
+      (π / 2 + (j.val + 1) * τ)
+    apply Chvatal.mem_blockOf.mpr
+    refine ⟨hyrank.1, ?_, hyrank.2.2⟩
+    omega
+  have hxT : x ∈ receiverSupport := hreceiver hxDown
+  have hyT : y ∈ receiverSupport := hreceiver hyDown
+  have hxCandidate : x ∈ Chvatal.blockOf receiverSupport lo (lo + 64) := by
+    rw [← heq]
+    exact Finset.mem_union_left _ hx
+  have hyCandidate : y ∈ Chvatal.blockOf receiverSupport lo (lo + 64) := by
+    rw [← heq]
+    exact Finset.mem_union_right _ hy
+  have hxCandidate' := Chvatal.mem_blockOf.mp hxCandidate
+  have hyCandidate' := Chvatal.mem_blockOf.mp hyCandidate
+  have hxnotMid : x ∉ mid := by
+    intro hxm
+    have hrm := Chvatal.mem_blockOf.mp hxm
+    omega
+  have hynotMid : y ∉ mid := by
+    intro hym
+    have hrm := Chvatal.mem_blockOf.mp hym
+    rw [hstep] at hyrank
+    omega
+  have hxy : x ≠ y := by
+    intro h
+    subst y
+    rw [hstep] at hyrank
+    omega
+  have hmidT : mid ⊆ receiverSupport := hmidSub.trans hreceiver
+  have hbetween : ∀ z ∈ mid, x.val < z.val ∧ z.val < y.val := by
+    intro z hzm
+    have hrm := Chvatal.mem_blockOf.mp hzm
+    have hxzRank : Chvatal.rankIn s x < Chvatal.rankIn s z := by
+      rw [hstep] at hyrank
+      omega
+    have hzyRank : Chvatal.rankIn s z < Chvatal.rankIn s y := by
+      rw [hstep] at hyrank
+      omega
+    have hxz : x.val < z.val := by
+      by_contra hn
+      have hle : z.val ≤ x.val := by omega
+      by_cases heqzx : z.val = x.val
+      · have : z = x := Fin.ext heqzx
+        subst z
+        omega
+      · have hlt : z.val < x.val := by omega
+        have hrev := Chvatal.rankIn_lt_rankIn hrm.1
+          (Fin.lt_iff_val_lt_val.mpr hlt)
+        omega
+    have hzy : z.val < y.val := by
+      by_contra hn
+      have hle : y.val ≤ z.val := by omega
+      by_cases heqyz : y.val = z.val
+      · have : y = z := Fin.ext heqyz
+        subst z
+        omega
+      · have hlt : y.val < z.val := by omega
+        have hrev := Chvatal.rankIn_lt_rankIn hyrank.1
+          (Fin.lt_iff_val_lt_val.mpr hlt)
+        omega
+    exact ⟨hxz, hzy⟩
+  have hmidCandidate : mid ⊆ Chvatal.blockOf receiverSupport lo (lo + 64) := by
+    intro z hz
+    have hzT := hmidT hz
+    have hzBetween := hbetween z hz
+    have hxzRank := Chvatal.rankIn_lt_rankIn hxT
+      (Fin.lt_iff_val_lt_val.mpr hzBetween.1)
+    have hzyRank := Chvatal.rankIn_lt_rankIn hzT
+      (Fin.lt_iff_val_lt_val.mpr hzBetween.2)
+    apply Chvatal.mem_blockOf.mpr
+    exact ⟨hzT, by omega, by omega⟩
+  have hdisMidX : Disjoint mid {x} := by
+    apply Finset.disjoint_left.mpr
+    intro z hzm hzx
+    have : z = x := Finset.mem_singleton.mp hzx
+    subst z
+    exact (hxnotMid hzm).elim
+  have hdisMidXY : Disjoint (mid ∪ {x}) {y} := by
+    apply Finset.disjoint_left.mpr
+    intro z hzm hzy
+    have : z = y := Finset.mem_singleton.mp hzy
+    subst z
+    rcases Finset.mem_union.mp hzm with hzm | hzx
+    · exact (hynotMid hzm).elim
+    · exact hxy (Finset.mem_singleton.mp hzx).symm
+  have hcardU : (mid ∪ {x} ∪ {y}).card = 66 := by
+    rw [Finset.card_union_of_disjoint hdisMidXY,
+      Finset.card_union_of_disjoint hdisMidX]
+    simp [hmidCard]
+  have hUsub : mid ∪ {x} ∪ {y} ⊆
+      Chvatal.blockOf receiverSupport lo (lo + 64) := by
+    intro z hz
+    rcases Finset.mem_union.mp hz with hz | hz
+    · rcases Finset.mem_union.mp hz with hzm | hzx
+      · exact hmidCandidate hzm
+      · have : z = x := Finset.mem_singleton.mp hzx
+        simpa [this] using hxCandidate
+    · have : z = y := Finset.mem_singleton.mp hz
+      simpa [this] using hyCandidate
+  have hcardCandidate := Finset.card_le_card hUsub
+  rw [hcardU, ← heq] at hcardCandidate
+  have hdisLR : Disjoint (downSetEndpointLeft s π τ j)
+      (downSetEndpointRight s π τ j) := by
+    apply Finset.disjoint_left.mpr
+    intro w hwL hwR
+    have hrL := Chvatal.mem_blockOf.mp (by simpa [downSetEndpointLeft] using hwL)
+    have hrR := Chvatal.mem_blockOf.mp (by simpa [downSetEndpointRight] using hwR)
+    have hstep : (j.val + 1) * τ = j.val * τ + τ := by
+      rw [Nat.add_mul, Nat.one_mul]
+    omega
+  have hpairCard : (downSetEndpointLeft s π τ j ∪
+      downSetEndpointRight s π τ j).card = 64 := by
+    rw [Finset.card_union_of_disjoint hdisLR]
+    rw [downSetEndpointLeft_card s π τ j (by omega) hwithin,
+      downSetEndpointRight_card s π τ j hτ hbase hwithin]
+  rw [hpairCard] at hcardCandidate
   omega
 
 theorem downSetRepairPacket_card_eq_64 {N : Nat}

@@ -119,6 +119,38 @@ theorem genMerge128_sorts {N : Nat} {α : Type} [LinearOrder α]
     · simpa using hB
   simpa only [genScatter_exec_inside] using hs
 
+/-- A merge-and-splitter on two sorted 64-wire packets leaves its lower and
+upper 64 ranks as two sorted packets, with every lower output at most every
+upper output. This is the packet-level comparator used by rank-aware dyadic
+sorting; unlike even/odd dealing, it preserves the min/max target order. -/
+theorem genCompareSplit128_outputs_sorted {N : Nat} {α : Type}
+    [LinearOrder α] (e : Fin 128 ↪ Fin N) (v : Fin N → α)
+    (hA : Monotone (fun i : Fin 64 => v (e (Fin.castAdd 64 i))))
+    (hB : Monotone (fun i : Fin 64 => v (e (Fin.natAdd 64 i)))) :
+    Monotone (fun i : Fin 64 =>
+      (genScatter (oddEvenMergeNet 7) e).exec v (e (Fin.castAdd 64 i))) ∧
+    Monotone (fun i : Fin 64 =>
+      (genScatter (oddEvenMergeNet 7) e).exec v (e (Fin.natAdd 64 i))) ∧
+    ∀ i j : Fin 64,
+      (genScatter (oddEvenMergeNet 7) e).exec v (e (Fin.castAdd 64 i)) ≤
+        (genScatter (oddEvenMergeNet 7) e).exec v (e (Fin.natAdd 64 j)) := by
+  have hs := genMerge128_sorts e v hA hB
+  refine ⟨?_, ?_, ?_⟩
+  · intro i j hij
+    apply hs
+    apply Fin.le_def.mpr
+    simpa only [Fin.val_castAdd] using (Fin.le_def.mp hij)
+  · intro i j hij
+    apply hs
+    apply Fin.le_def.mpr
+    simpa only [Fin.val_natAdd, Nat.add_le_add_iff_left] using
+      (Fin.le_def.mp hij)
+  · intro i j
+    apply hs
+    apply Fin.le_def.mpr
+    simp only [Fin.val_castAdd, Fin.val_natAdd]
+    omega
+
 theorem genMerge128_depth_le {N : Nat} (e : Fin 128 ↪ Fin N) :
     (genScatter (oddEvenMergeNet 7) e).depth ≤ 7 := by
   rw [genScatter_depth]

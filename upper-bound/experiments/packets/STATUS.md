@@ -10,6 +10,55 @@ floor/ceiling count law. The new [README](README.md) is the current proof map
 and gives the reproducible check command and remaining obligations. The
 global sorting bound and the projected coefficient near 200 remain open.
 
+Quantitative review gate (2026-10-18): the independent review recommends
+pausing further routing plumbing until the rank/error recurrence and its
+precision-versus-depth budget are explicit. The latest checked theorem,
+`flowA7_receiver_regular_partial_groups_sum_le_258`, supplies only an overlap
+count, not an error recurrence. Arithmetic clarification: the `s/(4m)` fresh
+fraction at `s=26` is `0.001587` for `m=4096` (98-stage sum about `0.156N` at
+fixed total mass), versus `0.1015625` for `m=64` (sum about `9.95N`). The
+4096-wire fraction still exceeds the existing `1/59,000,000` stage allowance
+by about 94,000 times. This discrepancy does not rescue the existing kernel;
+it means the two packet scales must not be mixed. The next gate is a complete
+one-stage recurrence with all active-level errors, tails, and frontiers, and a
+depth budget for whatever tolerance it requires. Details are indexed in
+[`INDEX.md`](INDEX.md).
+
+Global mixing follow-up (2026-10-18): Bordenave--Collins strong convergence
+for random matchings, combined with the homogeneous Haagerup inequality,
+gives a nonconstructive asymptotic existence bound `225/256` for the centered
+operator norm of eight global averaging rounds. Thus some schedule has norm at
+most `229/256` for every sufficiently large even packet count. Exact
+coefficient arithmetic and the raw budget `(15+8)*13+78=377` (188.5 per two
+bits) are checked by `free_matching_bound.py`. This closes only abstract linear L2 schedule
+existence; it is not Lean checked and does not couple to `WireFlow`, handle
+odd/frontier packets, or solve the L1 rare-tail and sorting recurrence. The
+eight-round norm bound also cannot simply offset the factor-65 flow-energy
+transfer: the same crude composition first works at 16 global rounds and costs
+240.5. The review's recurrence-first recommendation still governs the next
+step; the 188.5 estimate needs a stronger coupled coarse-mode inequality.
+
+Tail-repair screen (2026-10-18): uniform random compare-split matchings are
+also insufficient at logarithmic depth. A singleton threshold count reaches
+the final ordered packet only when it is directly paired with that packet,
+with probability `1/(C-1)` per round. At `O(log C)` rounds the success
+probability tends to zero. See `random_compare_split_tail_screen.py`. This
+leaves rank-aware multiscale expander/routing schedules as the plausible
+compare-split alternative; no such schedule has been analyzed here yet.
+
+Finite batching interface (2026-10-17, GPT-6-astra-high):
+`genScatterMergeTreeBatch_exec_inside` and
+`finiteReceiverMacroBatch_of_list` are now checked and guarded. For any
+receiver family, if a supplied flattened block list is nodup and has exactly
+the union of the receiver-local blocks, and each receiver's blocks/tails
+partition its support with the stated sortedness and disjointness premises,
+then all blocks can execute in one 57-layer batch. The theorem preserves
+sorted output packets and tails and exact coverage of the union of receiver
+supports. This isolates the finite-family reasoning from the scheduler case
+analysis, but has not yet been instantiated with the actual root/interior
+receiver lists; it does not yet prove a global routing transition or improve
+the sorting coefficient.
+
 Physical merge-tree layout follow-up (2026-10-16): in addition to sortedness,
 the 4096-wire merge now has a checked and axiom-guarded physical-order
 interface. Ordered disjoint 64-wire input packets induce an increasing group
@@ -1103,3 +1152,618 @@ six lanes per eight-ID group with offsets `0,1,2,5,6,7`; the list has exactly
 from the candidate edge endpoints, and exact coverage complement are still
 unproved. Thus this is an enumeration/count interface only, not a matching
 proof.
+
+2026-10-17 checkpoint (GPT-6-astra-high): the 64-wire six-layer odd-even merge and scattered-support adapter are checked. At an actual `flowA7` receiver, child packets are grouped into sorted 4096-wire blocks; parent packets form 4096-wire blocks plus a tail of fewer than 64 packets. `flowA7_receiver_macroSource_partition` now proves exact support coverage and pairwise disjointness of every child block, parent block, and tail packet. The source and axiom-guard chain passes. The overlap-sensitive L2 and interval-target lemmas still require a macro-routing incidence bound. No global scheduler recurrence or improved coefficient is proved. Next: define one complete macro-routing cycle; bound source-error overlap, including tails and frontiers; then sum the rank-profile recurrence and charge all merge/repack costs. See `INDEX.md` for the modular gates and fast re-entry path.
+
+
+2026-10-17 continuation (GPT-6-astra-high): lowA7_receiver_macroSource_outputPartition now packages the common 57-layer receiver batch as sorted output chunks plus untouched tail packets, proving exact next-stage support coverage and pairwise disjointness. The focused PacketInduction through PacketMergeAxioms chain passes, including the new axiom guard. This closes the local one-receiver packet-state interface, not the repeated/global schedule. Next, combine partitions across all active receivers into one union batch and derive the actual block-error overlap bound, including residues and frontiers. No improved coefficient is proved. See INDEX.md for the modular map.
+
+Additional frontier finding (GPT-6-astra-high, 2026-10-17): the interior output-partition theorem assumes receiver level at least one. The root can carry positive mass (lowA7_two), so it needs separate handling. lowA7_root_receiver_packetAssembly now proves its next-stage support is a canonical sorted packet partition assembled solely from the 64 child up-ports; this theorem and its axiom guard pass. Root full-block grouping, global union batching, and top/terminal coverage remain open. See INDEX.md for the next gate.
+
+Root macro batch follow-up (GPT-6-astra-high, 2026-10-17): lowA7_root_receiver_fullBlocksBatch now feeds the root child-only packet family through canonicalPacketFamily_fullBlocks_with_tail, exposing the <64 residue, pairwise-disjoint full blocks, sorted merge output chunks, and a single ≤57-layer batch. The focused chain, including the new axiom guard, passes. This closes root-local grouping; combining root and interior families into one global batch and proving full frontier coverage remain open. See INDEX.md.
+
+Top frontier follow-up (GPT-6-astra-high, 2026-10-17): lowA7_topReceiver_wireSet_empty proves all level-d registers are empty for 2 ≤ t ≤ tf, using the active-flow window bound and wireSets_card. Its axiom guard passes. Combined with wireSets_complete, all nonempty receiver supports are at the root or interior levels. Global batch flattening remains the next gate.
+
+Global receiver batch follow-up (GPT-6-astra-high, 2026-10-17): `flowA7_globalReceiverMacroBatch` now assembles the actual root and interior receiver-local blocks into one duplicate-free list and applies the generic 57-layer batch theorem. It establishes pairwise disjoint output chunks and tails, sortedness, and exact coverage of all active receiver wires; the top receiver contributes no wires. The induction module, downstream profile chain, and explicit axiom guards for this theorem and its data-existence lemma compile. On re-entry, a key iteration gap became clear: those conclusions do not identify each output support with the corresponding consecutive 64-rank `blockOf` subset of its destination `wireSets`. The theorem therefore does not re-establish `PacketSortedOn` for the next repair stage and is not yet a repeatable transition. Prove rank alignment from the actual parent/child port ordering or add and price an explicit routing/repacking stage; only then derive block-error overlap/L2 bounds, the coupled recurrence, and a coefficient. The packet checker now passes explicit `-D linter.*=false` flags for noisy checks and captures successful Lake dependency logs in the ignored helper directory.
+
+Repeatability audit (GPT-6-astra-high, 2026-10-17): the source of the gap is explicit in the API. `CanonicalPacketPortContract` contains only sortedness of each packet, disjointness, exact union, and 64-wire cardinality; `flowA7_receiver_packetAssembly_canonical` combines parent down-port and child up-port families using only this contract. Neither theorem states that these packet supports are consecutive rank intervals in the destination register. Thus exact-cover/cardinality alone cannot justify the iteration step. The next proof must establish destination-rank alignment for the concrete port sets and preserve it through `genScatterMergeTreeOutputEmbedding`, or insert a separately accounted routing/repacking network. No new Lean theorem or coefficient was proved in this audit.
+
+Rank-alignment interface (GPT-6-astra-high, 2026-10-17): `PacketRepair64.lean` now proves `rankSortedOn_packetEmbedding_range` and `packetSortedOn_of_rankAlignedFamily`. The latter converts strict physical monotonicity plus monotone values on each output embedding, and exact equality of each packet support with its destination `blockOf` rank slice, into `PacketSortedOn` for the full support. `check-lean.ps1 -From PacketRepair64 -To PacketRepair64` and `check-lean.ps1 -From PacketMergeAxioms -To PacketMergeAxioms` pass; both new lemmas have guards. The concrete parent/child port alignment and macro-output strict physical order remain unproved, so this is an interface lemma only, not a repeated schedule.
+
+Macro support / endpoint obstruction audit (GPT-6-astra-high, 2026-10-17): `packetFamily64Block_outputEmbedding_eq_sourcePacket` is checked and guarded; the `j`th output chunk embedding is exactly the original `j`th 64-wire packet embedding. Thus the merge batch redistributes values among packet supports but does not change those supports. The prior `downSetEndpointPair_not_rankBlock` proved the repaired endpoint pair is not a rank block in the sender. This turn checked and guarded `downSetEndpointPair_not_receiverRankBlock`: if the destination support contains the entire parent down-cut, the pair is not a consecutive 64-rank block there either. The cut contains a 64-wire middle block strictly between the endpoint halves, so such a rank block would contain at least 66 wires. `PacketRepair64` and `PacketMergeAxioms` focused checks pass. This rules out the proposed unchanged-support macro transition as a way to preserve rank-aligned `PacketSortedOn`; iteration needs a different packet-state invariant or explicit, depth-accounted repacking/routing. No repeated schedule or improved coefficient has been proved.
+
+Macro-overlap geometry audit (GPT-6-astra-high, 2026-10-17): checked and axiom-guarded `flowDown7_levelTwo_timeSix_eq` and `flowDown7_levelTwo_timeSix_div4096_eq` give, for every `d ≥ 11`, an ordinary interior level-two down-port at `t = 6` of exactly `64^(d-5) - 64^(d-9)` wires, or `64^(d-7) - 64^(d-11)` complete 4096-wire groups. This grows with depth. Thus the existing 65-piece sender/receiver partition does not itself give a constant overlap bound for macro-group errors: one actual outgoing interval can span unboundedly many groups. This is a geometric result, not a counterexample to sparsity/cancellation in the actual error profiles. A constant `k` in `finiteErrorProfiles_aggregate_L2_overlap` requires a new actual-profile argument; no coefficient change follows. Focused `PacketHalfProfile` and `PacketMergeAxioms` checks pass.
+
+Macro-group interval test (GPT-6-astra-high, 2026-10-17): the proposed shortcut of summing consecutive full groups and charging only two boundary groups is not justified for the current construction. `flowA7_receiver_macroSource_partition` transposes the child packet families by their common packet index across 64 distinct child up-ports. The existing interval restriction gives a contiguous range within each individual port, but the packet-port contract does not synchronize those ranges across children; a global receiver interval could therefore make many transposed cohort groups partial. This is not yet an actual-schedule counterexample: the needed concrete `WireFlow` support-order theorem has not been tested/proved. A better candidate is to group packets consecutively within each port, then pool all fewer-than-64 packet residues and the bounded endpoint/join exceptions across ports into extra 4096-wire blocks. Those extra blocks can join the same 57-layer parallel batch, preserving its depth bound. The next work is to formalize the port-local rank-block partition, the pooled-exception exact cover and count, then derive the bounded overlap/error charge for the exceptional blocks.
+
+Port-local cell grouping (GPT-6-astra-high, 2026-10-17): `rankPacketMacroCellIndex` and `rankPacketCell_macroGroup` were added in `PacketRepair64.lean`. The checked theorem says the 64 consecutive 64-wire cells indexed by one macro-group have union exactly the corresponding 4096-rank block inside their own support `s`. This gives the exact geometry needed to instantiate the regular groups for prefix/suffix `rankPacketCell` streams and down-cut interior cells; endpoint-pair packets are excluded and remain exceptions. The theorem and its axiom guard passed the focused dependency chain from `PacketMergeTreeGen` through `PacketMergeAxioms`. No actual per-port residue partition, global repeated transition, rank-sorted receiver state, recurrence, or coefficient is proved. The support lemma alone does not resolve the already formalized packetwise-versus-aggregate target mismatch.
+
+Port rank transfer (GPT-6-astra-high, 2026-10-17): `rankIn_blockOf_eq_sub` proves local rank inside a sender rank interval is the sender rank minus the interval start. `blockOf_blockOf_eq_shift` lifts this to nested rank intervals. Together with `rankPacketCell_macroGroup`, these identify every regular 4096 group in a port-local repair stream with a `blockOf port` group, the shape required by `not_three_partial_rankGroups`. `PacketRepair64` compiles these lemmas and their axiom guards pass in the direct `PacketMergeAxioms` check. Actual shifted-stream decomposition and tail/endpoint pooling remain open, as do global iteration, target compatibility, and the coupled recurrence.
+
+Port rank-transfer follow-up (GPT-6-astra-high, 2026-10-17): `rankIn_blockOf_eq_sub`, `blockOf_blockOf_eq_shift`, and `rankPacketCell_macroGroup_in_rankInterval` now identify each regular port-local 4096 group both as a shifted sender interval and as a union of its 64 source repair cells. All three lemmas pass the focused `PacketRepair64` compile and have standard-axiom guards; `check-lean.ps1 -From PacketMergeAxioms -To PacketMergeAxioms` passes against the current objects. The existing selectors suggest at most 129 regular streams per receiver (one parent down stream and at most two child up streams per child), with fewer than 64 residue packets per stream, plus at most 65 endpoint packets. The arithmetic cap is therefore 8,192 exceptional packets, or 128 pooled 4096 blocks; the selector decomposition, pooled family construction, and its profile-overlap charge are not yet formalized. Still no repeated receiver state, all-level recurrence, or improved coefficient.
+
+Aligned stream batching interface (GPT-6-astra-high, 2026-10-17): `rankPacketCell_stream_contract` in `PacketInduction.lean` packages any complete 64-aligned rank interval as a canonical packet family. It proves every cell sorted, pairwise disjoint, exactly covering the interval, and of size 64. The source module check and `PacketMergeAxioms` guard pass. This means the existing `canonicalPacketFamily_fullBlocks_with_tail` result can be applied independently to each regular prefix, suffix, and down-cut interior stream. What is not yet formalized is extracting those stream families from the actual zero/aligned/shifted selectors, pooling their tails and endpoint packets, and bounding the pooled profiles. No repeated receiver transition or coefficient follows yet.
+
+Post-repair regular stream contract (GPT-6-astra-high, 2026-10-17): generalized `rankPacketCell_stream_contract` so it needs sortedness only for the cells in the stream, not `PacketSortedOn` for the entire sender register. It proves the stream's cells form a disjoint 64-wire packet family with exact rank-interval support, ready for `canonicalPacketFamily_fullBlocks_with_tail`. This matters because the source-port correction can disturb endpoint cells while leaving the interior stream sorted. `PacketInduction` compiles after the generalization, and the `PacketMergeAxioms` check passes. The actual selector theorem still returns one flattened parent/child family; extracting the regular streams and endpoint exceptions from its shifted/aligned branches is the next formal gate. No exception pool, repeated transition, or coefficient is established.
+
+Shifted up-port extraction (GPT-6-astra-high, 2026-10-17): added `flowA7_shiftedUp_regularStreams_contract` in `PacketInduction.lean`. It projects the actual shifted up-set selector's sortedness theorem onto the prefix and suffix rank-cell streams, proves their exact interval lengths from `HalfMisaligned` and the sender wire-flow split, and obtains canonical contracts via `rankPacketCell_stream_contract`. The endpoint pair is intentionally excluded for later exception pooling. Focused `PacketInduction` compilation and the new standard-axiom guard both pass in the chain through `PacketMergeAxioms`. This closes one of the selector branches only: aligned streams, down-cut interiors, actual per-stream batching, exception pooling, iteration, recurrence, and coefficient remain open.
+
+Shifted down-cut extraction (GPT-6-astra-high, 2026-10-17): added `flowA7_shiftedDown_interiorStream_contract` for each actual parent down-cut. It projects the interior cells from `flowA7_sourcePortRepairStage_downCutFamily`, derives the stream extent from the divisible down-flow, and proves the interior stops 32 ranks before the endpoint. Focused `PacketInduction` compilation and its standard-axiom guard pass in the chain through `PacketMergeAxioms`. The two shifted selectors are now exposed as regular streams plus separately countable endpoint packets. Aligned-selector extraction, per-stream grouping, pooled-exception bounds, repeatability, and the all-level recurrence remain open.
+
+Aligned selector extraction (GPT-6-astra-high, 2026-10-17): added `flowA7_alignedUp_regularStreams_contract` and `flowA7_alignedDown_interiorStream_contract`. They project the actual no-op up/down selector families onto complete rank intervals and package them through `rankPacketCell_stream_contract`; neither branch has endpoint-pair exceptions. Both pass focused `PacketInduction` compilation and standard-axiom guards in the chain through `PacketMergeAxioms`. All positive-flow shifted/aligned selector streams are now explicit; next use `canonicalPacketFamily_fullBlocks_with_tail` on every such stream, then prove pooled residue/endpoint cardinality and profile overlap. No repeatable schedule, recurrence, or improved coefficient is established.
+
+Stream-count audit (GPT-6-astra-high, 2026-10-17): checked `flowA7_receiver_parentPort_canonical` in source. The receiver selects the single parent down-cut indexed by `b.x % 64`, so the per-receiver estimate is one parent regular stream plus two for each of 64 child up-ports (129), with at most 65 endpoint packets. This confirms the earlier conditional bound of 8,192 exceptional packets / 128 pooled 4096-blocks; formal extraction of a common 129-stream residue bundle and endpoint pool is still outstanding.
+
+Exceptional-packet arithmetic (GPT-6-astra-high, 2026-10-17): `shiftedSelector_exceptionPool_budget` now proves that any 129 stream residues of size below 64, together with at most 65 endpoint packets, total at most 8,192 packets, hence fit in 128 groups of 64. Its explicit axiom guard permits only the standard Lean axioms. It does not establish that the actual selector tails/endpoints can be assembled into that many disjoint packets or that their profile errors have bounded overlap.
+
+Residue-index flattening (GPT-6-astra-high, 2026-10-17): `shiftedSelector_exceptionPool_index_card` uses the dependent sum `(Σ i : Fin 129, Fin (residue i))` plus a `Fin 65` endpoint-capacity model and proves the resulting finite index has cardinality at most 8,192. Its source check and standard-axiom guard pass. `Fin 65` is not yet the actual endpoint family; the concrete pool must index only existing endpoints. Packet supports, sortedness, pairwise disjointness, and exact coverage remain to prove.
+
+Canonical exception-pool interface (GPT-6-astra-high, 2026-10-17): `canonicalExceptionPool_family` takes actual per-stream residue packet functions and an endpoint type of cardinality at most 65. Given sortedness, 64-wire size, and pairwise disjointness across the flattened index, it constructs a canonical packet family on exactly the pooled support, of size at most 8,192. Its source compile and standard-axiom guard pass. The actual endpoint subtype and the concrete residue functions from selector batches are still unbuilt, so this is an interface theorem, not the pool itself.
+
+Stream residue extraction (GPT-6-astra-high, 2026-10-17): `canonicalPacketFamily_residue_contract` extracts the original last `count % 64` packets of any canonical family and proves they form a separate canonical sorted/disjoint family with the same supports. The focused source compile and standard-axiom guard pass. This makes the actual tail packets available for flattening, but does not yet instantiate the 129 concrete streams or prove cross-stream/endpoint disjointness.
+
+Residue support trace (GPT-6-astra-high, 2026-10-17): strengthened `canonicalPacketFamily_residue_contract` to expose that each extracted tail packet is a subset of its corresponding original stream packet. This allows pairwise-disjoint stream supports to prove cross-stream residue disjointness when assembling the actual exception pool. `PacketInduction` and the `PacketMergeAxioms` guard both pass. Concrete 129-stream instantiation and endpoint handling remain open.
+
+Residue-pool assembly (GPT-6-astra-high, 2026-10-17): added `canonicalStreamResidues_exceptionPool`. Given 129 residue families of fewer than 64 packets, their disjoint original stream supports, and at most 65 actual sorted/disjoint endpoint packets outside those supports, it constructs a canonical family on exactly the pooled support, with count at most 8,192. Cross-stream packet disjointness is derived from the residue-subset witnesses. The `PacketInduction` compile and `PacketMergeAxioms` standard-axiom guard pass. The theorem does not yet instantiate the residues or endpoints from `WireFlow` selectors.
+
+Shifted endpoint contracts (GPT-6-astra-high, 2026-10-17): added `flowA7_shiftedDown_endpoint_contract` and `flowA7_shiftedUp_endpoint_contract`. Each extracts the actual Unit-indexed endpoint packet from its selector’s family theorem and proves it sorted after correction, of exactly 64 wires, contained in the selected down/up port, and disjoint from every regular packet in that port. `PacketInduction` and the `PacketMergeAxioms` standard-axiom checks pass. They supply endpoint facts for pool assembly but do not yet build the concrete receiver bundle.
+
+Shifted child-port partition (GPT-6-astra-high, 2026-10-17): `flowA7_shiftedUp_port_partition` composes the two actual rank-interval stream contracts with the shifted endpoint packet and proves their union is exactly the selected up-set. It uses the concrete flow divisibility and half-misalignment residue to identify the prefix/suffix intervals and endpoint partition. `PacketInduction` compilation and its `PacketMergeAxioms` standard-axiom guard pass. The aligned-up and zero-flow selectors and the selected parent down-port are not yet assembled into the receiver-wide stream bundle.
+
+Aligned child-port partition (GPT-6-astra-high, 2026-10-17): `flowA7_alignedUp_port_partition` composes the two actual aligned regular stream contracts and proves their supports exactly cover the selected up-set, with no endpoint packet. It uses the non-misaligned residue to derive the 64-wire half boundary. Focused source compilation and the standard-axiom guard pass. Later entries close the zero-flow child and all parent selector cases.
+
+Zero-flow child-port partition (GPT-6-astra-high, 2026-10-17): `flowA7_zeroDownUp_port_partition` uses the actual no-repair packet-cell grid to cover the entire up-set as one canonical stream and supplies an empty second stream. This makes the zero-flow case fit the same two-slot representation as aligned and shifted child up-ports. Focused source compilation and the `PacketMergeAxioms` standard-axiom guard pass. The parent selector and receiver-wide assembly are addressed in later entries.
+
+Parent down-port partitions (GPT-6-astra-high, 2026-10-17): added `flowA7_shiftedDown_port_partition`, `flowA7_alignedDown_port_partition`, and `flowA7_zeroDown_port_partition`. They cover all selector cases with respectively an interior stream plus endpoint, one whole interval stream, or an empty stream. Each focused `PacketInduction` check and standard-axiom guard passes. Together with the three child up-port partition theorems, every individual selector port is now represented by the intended regular streams and actual endpoints. The remaining local assembly is to construct the receiver-indexed 129 stream families and the subtype of existing endpoints, prove their global disjointness, then invoke the checked residue-pool constructor.
+
+Positive up-stream separation (GPT-6-astra-high, 2026-10-17): strengthened `flowA7_shiftedUp_port_partition` and `flowA7_alignedUp_port_partition` with pairwise disjointness of the two regular stream supports. The shifted proof uses the exact half-fringe residue, and the aligned proof uses the zero residue. The focused `PacketInduction` check and `PacketMergeAxioms` standard-axiom guard pass.
+
+Exception-pool batching and regular-stream blocks (GPT-6-astra-high, 2026-10-17): `flowA7_receiver_exceptionPool_batch` now takes the concrete receiver pool of at most 8,192 selector residues/endpoints and groups it into at most 128 sorted 4096-wire blocks in one ≤57-layer batch, retaining fewer than 64 sorted packets. `canonicalStreamFamilies_fullBlocks_disjoint` independently groups every member of any disjoint canonical-stream family and proves the resulting full blocks remain disjoint across streams. Both focused source checks and explicit `PacketMergeAxioms` standard-axiom guards pass. The next composition is to instantiate the generic result on the actual 129 receiver streams and combine regular blocks with the exception-pool blocks/tails as an exact partition; no rank-profile transition or global recurrence is established.
+
+Actual receiver regular full blocks (GPT-6-astra-high, 2026-10-17): added `CanonicalStreamFullBlockData` and `canonicalStreamFamilies_fullBlocks_data`, then instantiated them in `flowA7_receiver_regularFullBlocks`. The theorem returns the actual receiver's 129 regular streams, exact support partition with its endpoints, and data for each stream's sorted 4096-wire blocks and fewer-than-64 sorted tails; cross-stream full blocks are disjoint. `PacketInduction` and the `PacketMergeAxioms` guards pass. Pooling these exact tails with endpoint packets and joining that batch to the regular block lists remain open; this is a local support result, not a repeatable rank-profile transition.
+
+Exact receiver tail pool (GPT-6-astra-high, 2026-10-17): exposed strict monotonicity of the canonical residue embeddings and used it to build `canonicalStreamFullBlock_exceptionPool`, a canonical pool from exactly the chosen regular-stream tails plus active endpoint packets. `canonicalStreamFullBlock_exceptionPool_partition` and its actual receiver composition `flowA7_receiver_regularTailPool` prove that the receiver support is covered exactly by the regular full blocks and this pool; the pool's own full-block batch is also packaged. `PacketInduction` passes. The explicit axiom-guard check is running. Combining regular and exception blocks into one global batch, then proving a repeatable rank-profile transition, remain open.
+
+Interior receiver regular-plus-pool batch (GPT-6-astra-high, 2026-10-17):
+canonicalStreamAndExceptionPool_fullBlocks_batch is instantiated in
+flowA7_receiver_regularTailPool_commonBatch. For each interior receiver with
+its regular stream decomposition and exact exception pool, all regular and pool
+full blocks execute in one ≤57-layer batch. The theorem proves sorted output
+chunks and exact receiver support coverage by those chunks plus a sorted pool
+tail of fewer than 64 packets. PacketInduction compiles and the standard axiom
+guard passes. It does not establish rank alignment, iteration, root/frontier
+composition, an overlap bound, or a global coefficient improvement.
+
+Regular block rank alignment (GPT-6-astra-high, 2026-10-18): added
+`packetFamily64BlockEmbedding_rankInterval_support`, proving that when the
+64 input embeddings are consecutive 64-rank cells, their grouped 4096-wire
+embedding has exactly the corresponding 4096-rank interval as support.
+`PacketInduction` and the explicit `PacketMergeAxioms` guard both pass. The
+canonical full-block-list adapter, local-to-receiver rank transport, exception
+pool overlap/error charge, and repeatable recurrence remain open.
+
+Regular block list rank alignment (GPT-6-astra-high, 2026-10-18): added
+`packetFamily64BlockList_rankIntervals`, lifting the checked one-group support
+identity across the grouped block list and retaining each group's `Fin q`
+index. Focused `PacketInduction` and explicit `PacketMergeAxioms` checks pass.
+Connecting the actual receiver's `CanonicalStreamFullBlockData` to these group
+indices, local-to-receiver rank transport, exception-pool overlap/error costs,
+and the recurrence remain open.
+
+Full-block provenance retained (GPT-6-astra-high, 2026-10-18):
+`CanonicalPacketFullBlockProvenance` now records the consecutive source packet
+embeddings, their packet indices, the grouped block embeddings, and their exact
+list relation. Both single-family and per-stream full-block data carry this
+provenance. `CanonicalStreamFullBlockData.block_rankIntervals` converts a
+consecutive rank-cell contract on the source family into exact port-local
+4096-rank intervals for every stored block. Focused `PacketInduction` and
+`PacketMergeAxioms` checks pass. Proving that rank-cell contract for each actual
+receiver stream, transferring port-local ranks to receiver ranks, and charging
+overlap errors remain open.
+
+Actual regular-stream rank-cell witnesses (GPT-6-astra-high, 2026-10-18):
+extended `flowA7_receiver_childPorts_streamPartition` to prove that each of its
+two child streams is exactly a consecutive `rankPacketCell` interval in all
+three selector modes. `flowA7_receiver_regularStreams_bundle` carries these
+witnesses together with the parent stream's offset. `PacketInduction` checks.
+The next bridge is to pass the witnesses into
+`CanonicalStreamFullBlockData.block_rankIntervals`; receiver-rank transport,
+exception overlap/error bounds, and a repeatable recurrence remain open.
+
+Actual source-port block intervals (GPT-6-astra-high, 2026-10-18): added
+`CanonicalStreamFullBlockData.rankIntervals_of_rankCellStreams`, which derives
+the full-block endpoint condition from the 64-wire cardinalities and handles
+empty block families without a spurious endpoint assumption. The new
+`flowA7_receiver_regularFullBlocks_rankIntervals` instantiates it for the
+actual 129 regular streams and records every full block as an interval in its
+source port's rank coordinates. `PacketInduction` and the standard-axiom check
+through `PacketMergeAxioms` pass. Transfer to receiver ranks, overlap/error
+accounting, and a repeatable recurrence remain open.
+
+Shifted-grid partial-overlap bound (GPT-6-astra-high, 2026-10-18): added
+`not_three_partial_rankIntervals`, generalizing the no-three-partial-groups
+argument to blocks beginning at any stream offset and using per-group
+containment in the destination. `partialRankIntervalIndices_card_le_two`
+converts it into the needed bound of at most two partial groups per
+source-stream/destination interval. `PacketHalfProfile` and the standard-axiom
+chain through `PacketMergeAxioms` pass. The theorem is still generic: next
+instantiate its group-containment premise from the actual receiver stream block
+data, then include the pooled exception and frontier error charges.
+
+Receiver-overlap instantiation (GPT-6-astra-high, 2026-10-18):
+`PacketReceiverOverlap.lean` instantiates containment for every indexed block
+in the actual 129 regular streams. It proves at most two partial groups per
+stream and a summed bound of 258 per receiver rank interval. The corrected
+aggregate theorem returns explicit stream offsets and exact receiver support
+coverage. `PacketInduction` through `PacketMergeAxioms` passes, including its
+standard-axiom guard. This is incidence only; it does not bound error energy,
+pool contributions, or the target drift.
+
+Bounded-fan-in matching screen (GPT-6-astra-high, 2026-10-18): because a
+receiver has at most 129 regular streams, equal-index block matching would
+have fan-in at most 129 regardless of stream length. Treating the pooled
+exception full blocks as one additional stream raises this to 130; the
+incomplete exception tail is still outside the cycle. The current
+`bounded_fanin_cycle.py` deterministically generates 15 near-perfect matching
+rounds for each `c=1..130` and checks their products using exact integer
+arithmetic. Every product has Frobenius norm at most `1/16`, hence spectral
+norm at most `1/16`; the worst squared Frobenius certificate is
+`804287/268435456`. At the existing factor-65 layer transfer, exact target
+coupling would give energy factor at most `65/256 = 0.25390625`. The compact
+JSON records seeds and exact numerators. This is a Python-verifiable finite
+certificate, not Lean proof, and equal-index packet matching has not been
+shown to be the repeated scheduler transition. Following the independent
+2026-10-18 review, recurrence derivation and a scaled scheduler simulation
+are the next go/no-go tasks; no further routing formalization should precede
+those tests.
+
+The recurrence screen below is only a scalar conditional calculation. In
+particular, the guarded factor-65 Lean theorem assumes each entire source
+`wireSets` profile is monotone, while the current packet invariant
+`PacketSortedOn` guarantees monotonicity only inside 64-wire cells. The
+matching certificate acts on 4096-wire blocks. A blockwise transfer theorem
+connecting these two granularities is still required before composing the
+contractions.
+
+Conditional centered 15-round recurrence screen (GPT-6-astra-high,
+2026-10-18): if the factor-65 `WireFlow` L2 transfer and exact `rho<=1/16`
+matching screen compose on the same centered state, and every matching cohort
+has zero mean error, then `V_(t+1) <= (63/125)V_t + (15/128)N + delta_t`.
+The constant mean mode is not contracted. On the centered component only, the
+zero-drift steady state is `1875/7936 ~= 0.2363`; uniform centered drift
+`delta_t<=eta*N` adds at most `(125/62)*eta`. The script
+`conditional_15_round_recurrence.py` verifies these constants exactly. This
+is not a closed scheduler recurrence: state alignment, the mean mode, target
+drift, regrouping, exceptions and frontiers remain open.
+
+Blockwise centered-L1 alternative (GPT-6-astra-high, 2026-10-18): the factor-65
+transfer cannot currently compose with the 4096-block matching state because
+its Lean hypothesis orders each entire source `wireSets`, whereas
+`PacketSortedOn` only orders 64-wire cells. A route avoiding that mismatch is
+to track centered threshold-count error per sorted 4096-block cohort and a
+separate coarse mean mode. The c<=130 spectral certificate yields centered L1
+contraction at most `sqrt(130)/16 < 713/1000`; exact pair rounding adds at
+most `15c/2` per 15-round cycle. The fine recurrence would be
+`v_next <= (713/1000)v + 15/8192 + kappa_t`, where `kappa_t` includes
+coarse-to-fine transfer, tails, and reblocking. The zero-`kappa` steady state
+`1875/293888 ~= 0.00638` applies only to the centered component. The matching
+operator preserves each cohort's mean, so the earlier scalar recurrence for
+the whole error vector was invalid; no bound on the coarse mode is available.
+`monotoneBlocks_assignedRankProfiles_L1_nonincrease` now proves, from the
+existing exact suffix-profile identity, that arbitrary reassignment of sorted
+block ranks to destination labels is L1-nonexpansive when targets use the
+induced interpolation. Its focused `PacketHalfProfile` compile and standard
+axiom guard through `PacketMergeAxioms` pass. Applying it to the actual
+`WireFlow` owner map and matching the induced targets to the next stage remain
+open. `conditional_l1_cycle_recurrence.py` now explicitly screens only centered
+error and separately reports the exact allocation tail budget.
+`exception_tail_budget.py` finds at most `3.9349e-6 N` total unmatched tail
+wires over ordinary stages for each checked depth `7..80`; this is finite
+range evidence, not a bound on its profile-error effect. A uniform geometric
+envelope now proves the wire-mass sum is at most `N/86016` at every depth:
+the per-output-time bound is `64^(omega+2-d)N`, and summing backward from
+`tau=3d-20` gives `sum_{k>=0} 64^floor((-7-k)/3)=1/86016`. The revised script
+checks the exact allocation formulas through depth 80 against this envelope.
+Under the additional assumption that tail wire mass enters centered L1 error
+with unit gain, `conditional_l1_cycle_recurrence.py` gives the conditional
+limit `22541/3526656 ≈ 0.006392`; that tail-to-error bridge is not proved.
+This still does not bound target-mismatch amplification of the unmatched tail.
+Actual two-scale transport, sufficient sorting tolerance, and the end-to-end
+schedule remain open. A 4096 rank-window sorter has a plausible 78-layer
+construction (21-layer bitonic sorts on 64 cells, then the 57-layer merge
+tree), giving conditional depth coefficient 136.5 at two bits of progress
+per stage; its stage composition is not yet formalized.
+
+Integer matching-state screen (GPT-6-astra-high, 2026-10-18):
+`integer_matching_state_screen.py` applies the exact rounded count map
+`(x,y) -> (floor((x+y)/2), ceil((x+y)/2))` to a reproducible 16-packet,
+15-round schedule. Dense half-full/half-empty profiles contract from L1 128 to
+0; a single one retains L1 `15/8` exactly. This confirms the rare-count
+obstruction at the actual integer-state level, beyond the linear spectral
+screen. It does not simulate cross-level `WireFlow` routing or close the
+coarse/fine recurrence; that full-scheduler simulation remains the next
+modeling gate before additional routing Lean work.
+
+Interior coarse-transfer calculation (GPT-6-astra-high, 2026-10-18): from the
+actual `mid` formulas in `FlowSizes7` and the conservation equation for a
+receiver, a uniform-within-bag density error transfers with parent weight
+`(64^4-1)/(64^6-1)` and equal child weights `4095*64^3/(64^6-1)`. Exact
+rational arithmetic verifies the row weights sum to one; the 64 children carry
+`16777216/16781313` of the mass. This gives a concrete near-sibling-average
+coarse operator, but only under the whole-bag uniform-density assumption. It
+does not cover rank-block errors, boundary node types, or contraction across
+changing levels. Next derive the rank-block analogue and test whether the
+stage composition removes sibling-constant modes; no recurrence or coefficient
+improvement follows from this calculation alone.
+
+Coarse subtree-cut screen (GPT-6-astra-high, 2026-10-18): treating the exact
+mid-level bag weights as a homogeneous reversible tree-averaging operator gives
+per-bag stationary weight ratio `beta/alpha` between adjacent levels and total
+stationary mass ratio `64*beta/alpha = 16777216/4097` (about 4095) between
+descendant generations. A subtree of height `h` then has one-edge
+boundary/volume ratio `alpha / sum_{j=0}^h (64*beta/alpha)^j`, about
+`5.96e-8` at `h=1`. This is an
+exact conductance calculation for the homogeneous model (with reflecting
+boundary rows), not the changing active `WireFlow` operator. It indicates that
+local sibling mixing may leave deep-subtree means almost unchanged; determine
+whether actual frontier transitions or the proposed global cross-cohort
+matching remove these modes before investing in further local recurrence
+formalization.
+
+Actual-frontier subtree screen (GPT-6-astra-high, 2026-10-18): added
+`flow_subtree_cut_screen.py`, an exact-`Fraction` mirror of the `Schedule7`,
+`FlowTable`, and `FlowSizes7` formulas. For `d=t=40`, a level-6 bag and all
+its active descendants contain `1.4552e-11` of the total mass; only the root's
+up-flow leaves this family, at `2.6721e-51` of its mass. Exact accounting
+verifies the next-stage descendant family receives the rest, giving a
+centered bag-density L2 norm ratio lower bound `0.999999999992724`. The same
+test at `d=t=80` has root-leak fraction `1.5124e-123`. This includes actual
+active-level/frontier formulas but not merge-and-deal packet-profile dynamics
+or a global cross-receiver schedule. It shows the flow transfer itself cannot
+provide uniform contraction of arbitrary bag-density modes; the next decisive
+gate is whether global matching connects these nested subtrees or packet
+profile constraints rule out the tested mode.
+
+Global coarse-mixing power screen (GPT-6-astra-high, 2026-10-18): added
+`global_matching_power_screen.py`, which applies sampled pair-average rounds
+without materializing dense matrices. At nine rounds and packet counts
+256 through 65,536, estimated centered operator norms range from 0.195 to
+0.212. A centered one-packet indicator contracts to about 0.044 for counts
+4,096 through 65,536. This is consistent with the global rounds removing the
+deep-subtree bag-density mode, within the raw `(273+9*13)/2=195` depth budget.
+The schedules are independently sampled per size and the estimates use
+floating-point power iteration; there is no uniform certificate or packet-ID
+transition. Rounded integer singleton counts still do not split, so a rare
+tail bound must accompany the fractional contraction.
+
+Dyadic compare-split SAT screen (Codex, 2026-10-18): added
+`dyadic_compare_split_screen.py` for exhaustive finite profiles and
+`dyadic_compare_split_sat_screen.py` for exact SAT failure checks. The latter
+reports a 32-ID failure at `(d=5, seed=500001)`; `(d=6, seed=0)` sorts at 32
+but fails at 64. Among tested 64-ID schedules, all seeds 0--9 fail at `d=6`,
+seeds 0--14 fail at `d=7`, and `(d=8, seed=0)` fails. These are schedule
+counterexamples only, not universal lower bounds. The sorted-run lifting fact
+is stated as CLRS 3rd ed. Exercise 28.5-3; the principal unresolved gate for
+this under-200 route is finding/proving a uniform dyadic family. The raw `d`
+budget is 7 for 4096-wire packets and 14 for 64-wire packets. At 64 IDs, SAT
+timed out inconclusively for `d=14`, seeds 0 and 1.
+
+Paired-certificate analysis (Codex, 2026-10-18): extended the SAT screen to
+greedily shrink a counterexample to disjoint 1- and 0-forcing input sets. The
+exact antichain recurrences and sorting criterion are recorded in `INDEX.md`.
+For `n=64,d=7,seed=0`, adjacent outputs `(32,33)` have disjoint inclusion-
+minimal forcing sets of sizes 31 and 29. A prototype that propagated complete
+certificate antichains exceeded 3,800 certificates on a wire by layer 20 at
+`n=16`; full enumeration is not a practical proof interface. The next
+mathematical target is a compressed recurrence bounding disjoint pairs under
+the random matching schedule.
+An alternative target recorded in `INDEX.md` is the per-output rank-correct
+certificate-size condition; whether it can be proved without tracking overlap
+remains open.
+
+Single-swap screen (Codex, 2026-10-18): added
+`dyadic_single_swap_screen.py`, a bit-parallel exhaustive check over every
+sorted Boolean threshold string with one 1/0 pair swapped across its cut. It
+checks 43,680 profiles at 64 IDs; the tested schedules `(5,500001)`, `(6,0)`,
+`(7,0)`, `(7,5)`, `(14,0)`, `(14,1)` all pass this necessary test. In
+particular, the known failing `(7,0)` schedule passes it, so its failure is not
+captured by one swapped pair across a threshold cut; this screen is not a
+sorting proof.
+The current `d=7,seed=0` SAT witness is 16 swaps from its sorted threshold
+profile (31 ones, 38 runs); radius-2 SAT minimization timed out, so 16 is not
+claimed to be the minimum failing radius.
+
+Nine-round global-mixing estimate (Codex, 2026-10-18): generalized
+`free_matching_bound.py`. The exact Haagerup ceiling sum is `11/16`; strong
+asymptotic freeness therefore yields existential schedules of centered norm
+at most `45/64` for all sufficiently large even packet counts. In the
+conditional two-scale model this changes the cross-term target to `<19/64`
+and the depth budget to 390 layers per two bits, coefficient 195. This remains
+conditional: no actual coarse/fine decomposition, `WireFlow` coupling,
+rare-tail recurrence, or sorting-sufficiency theorem is established.
+
+Fourteen-local/ten-global allocation (GPT-6-astra-high, 2026-10-18):
+`bounded_fanin_prefix_screen.py` exactly checks the 14-round prefixes of the
+existing cycles for fan-ins 1--130 and finds maximum centered Frobenius norm
+squared `425763/67108864 < (2/25)^2` (fan-in 115). `free_matching_bound.py`
+now also checks the ten-round Haagerup estimate `69/128` and conditional
+existential norm `71/128`. In the ideal two-scale model, the fine factor is
+`2*sqrt(65)/25 < 13/20`, leaving cross-mode allowance greater than `7/20`;
+the raw depth is still 390 layers per two bits, coefficient 195. These are
+conditional screens only. Following the 2026-10-18 review, the next gate is a
+scaled full-scheduler recurrence including target drift, rounding, sparse
+tails, frontiers, and sorting sufficiency, before more routing formalization.
+
+Scaled-model audit (GPT-6-astra-high, 2026-10-18): source inspection confirms
+that the current boundary-round state lemmas preserve grouped output supports
+and macroblock order but do not map logical packet ranks to the next
+`WireFlow` cuts. The global receiver merge similarly supplies a sorted logical
+run on scattered supports, without next-stage physical rank alignment. A
+fanout-4 simulation would need to invent this missing transition unless that
+map is first specified, so it cannot yet test the actual scheduler. Its
+`m=16` scale also has fresh positive-spill budget `3/8` per threshold/stage
+for 24 rounds, versus `3/2048` at `m=4096`; it is qualitative only. The
+faithful simulation gate is therefore conditional on a packet-rank-to-cut
+transition that handles residues and frontiers.
+
+Two-scale cross-map threshold refinement (GPT-6-astra-high, 2026-10-18):
+`free_matching_bound.py` now checks a block-matrix contraction criterion.
+Rather than bounding the entire off-diagonal perturbation additively, if each
+coarse-to-fine and fine-to-coarse map is bounded by `eta`, contraction follows
+from `eta^2 < (1-gamma)*(1-lambda)`. The nine-global-round diagonal bounds
+`gamma=45/64`, `lambda<=63/125` allow `eta<=383/1000`; the 14-local/10-global
+split allows `eta<=397/1000`. These rationally checked thresholds are more
+permissive than the additive gates, but remain conditional on an orthogonal
+coarse/fine decomposition and actual bounds for both cross maps. No scheduler
+recurrence or improved sorting bound follows yet.
+The same criterion also permits unequal cross bounds: if `b` and `c` are the
+coarse-to-fine and fine-to-coarse norm bounds, it is enough that
+`bc<(1-gamma)*(1-lambda)` uniformly. The checked conservative product targets
+are `147/1000 < 589/4000` for the nine-global split and
+`157/1000 < 10089/64000` for the fourteen-local/ten-global split. This uses a
+weighted two-scale norm; it still requires the common decomposition and
+uniform scheduler bounds.
+
+Mass-weighting audit (GPT-6-astra-high, 2026-10-18): inspected the checked
+factor-65 proof in `wireFlowLayer_profile_error_sq_sum_le_source_energy`.
+The factor comes from Cauchy across the receiver's 65 neighboring source bags;
+source rank-piece errors are already partitioned and charged once in L1.
+A Jensen contraction after mass-normalizing bag means would apply to uniform
+density errors, but threshold-profile errors concentrate at rank cuts, so that
+normalization does not bound the actual error state without a localization
+lemma. The exact missing object is the incidence of source threshold-cut
+errors among selected receiver pieces, composed with the 15-round packet
+matching. See `MIXING-TAIL.md`.
+
+Signed source-error routing identity (GPT-6-astra-high, 2026-10-18): added
+`profileInterval_error_nonpos_of_X_le_target`,
+`profileInterval_error_nonneg_of_target_le_X`,
+`sortedSenderOutgoing_profile_error_piecewise_sign`, and the generic exact
+partition lemma `sum_receiver_selected_errors_eq_source_pieces_of_common_sign`.
+Together they prove `wireFlowLayer_interior_source_error_mass_conserved`: for
+an interior source with a sorted threshold profile, its absolute discrepancy
+is distributed across its active receiver pieces with no loss or duplication.
+Focused `PacketHalfProfile` compilation passes. This is stronger source-wise
+accounting, not contraction: errors from distinct sources can still align at a
+receiver, and low/high frontier contributions remain separate.
+The resulting recurrence interface is now clearer: retain per-source signed
+contributions `E_(b,s)` by receiver and 4096-rank stream group until after the
+15-round cycle. The factor-65 proof collapses the 65 source contributions at a
+receiver before Cauchy, while the exact column identity preserves each
+interior source's absolute error mass. The outstanding proof must identify
+these coordinates with the actual matching-cycle packet-count vector and then
+control its cohort means; no contraction follows from column conservation
+alone.
+
+Precision-versus-depth gate (GPT-6-astra-high, 2026-10-18): exact arithmetic
+shows that reusing the existing `1/59,000,000` Chvatal allowance with 26
+rounds of conservative fresh error `s/(4m)` requires `m >= 383,500,000`, so
+the next power-of-two packet size is `2^29`. Each sorted-packet merge-deal
+round then costs 30 layers; at two bits of stage progress, 26 rounds already
+cost coefficient 390 and 60 rounds cost 900, before repair/repacking. This
+rules out only reuse of that old pointwise tolerance at sub-200 depth; a new
+moderate-error scheduler could change the gate. The review's estimated 60
+rounds is not a proved contraction bound. See `INDEX.md` for the derivation.
+
+Moderate-error fallback screen (GPT-6-astra-high, 2026-10-18): rechecked the
+review's UB-26 suggestion against the existing localized-cleanup notes. Neither
+early stopping of the current Chvatal prefix (no physical dirty interval;
+optimistic coefficient still at least 1419) nor the current row-scramble
+aggregate leakage contract (no sparse exceptional set or priced oblivious
+repair) supplies a drop-in repair for UB-25's larger error budget. This is not
+a no-go for a redesigned UB-26 algorithm. For UB-25, the next mathematical
+deliverable remains an actual-scheduler one-stage profile recurrence plus a
+sorting theorem that tolerates its error within the depth budget.
+
+Rejected zero-cost relabel shortcut (GPT-6-astra-high, 2026-10-18): inspected
+`ComparatorNetwork.scatterEmbed`; its order-embedding premise is essential.
+For a reversed two-wire embedding, a logical ascending comparator would have
+to place the smaller value at the larger physical wire, which is a descending
+comparator and is not allowed by this network model. Consequently the sorted
+logical output of a scattered merge cannot simply be declared physically
+sorted for the next `WireFlow`; prove an increasing rank-cell embedding or
+charge an actual repair. The 4096-block support identity alone is insufficient.
+`Untangle.untangle` can standardize a generalized network at equal depth when
+it sorts all inputs in a fixed output permutation, but the current merge-tree
+theorem only covers sorted-run inputs, so that result does not by itself
+remove this alignment cost.
+
+Same-cost physical block sorter (GPT-6-astra-high, 2026-10-18): added
+`bitonicSort4096OnSupport` in `PacketReceiverOverlap.lean`. For every support
+of cardinality 4096 it sorts in canonical increasing wire order, leaves all
+outside wires unchanged, and has depth at most 78, by the checked 12-bit
+bitonic sorter. `PacketReceiverOverlap` focused compilation passes. This
+formally realizes the local substitution of a physical 78-layer sorter for
+the 21+57 scattered reassembly at the same depth. It is not yet instantiated
+on the actual receiver's complete block-and-residue partition; relative order
+between separate output blocks and a repeatable next-stage packet state remain
+open. The focused check through `PacketMergeAxioms` passed; guards report only
+`propext`, `Classical.choice`, and `Quot.sound` for the new depth/sortedness
+theorems.
+
+4096 rank-block crosswalk (GPT-6-astra-high, 2026-10-18): strengthened
+`fourLaneBoundaryMatching_preservesGroupedPhysicalState` to expose the exact
+reindexed output packet array. Added `eightPacketBlockSupport_eq_blockOf`,
+`sixtyFourPacketBlockSupport_eq_blockOf`, and
+`fourLaneBoundaryMatching_4096_rank_block`. Thus the grouped 64-output support
+is exactly one 4096-wire rank interval in the physical support. Focused
+`PacketInduction` and `PacketReceiverOverlap` checks pass. This is support/rank
+alignment only: it does not prove value-sortedness within the block, the
+parity-lane target equality with the selected 66 intervals, or frontier and
+residue handling. The matching-cycle recurrence remains open.
+
+Physical sorting on the exact grouped block (GPT-6-astra-high, 2026-10-18):
+added `fourLaneBoundaryMatching_4096Block_physicalSort`. It derives the block's
+cardinality from the indexed physical state, then applies the checked 78-layer
+bitonic sorter on its increasing support embedding. The result is sorted on
+the exact 4096-wire rank interval and all 64 consecutive 64-wire subcells
+within it. The focused `PacketReceiverOverlap` check and the new
+`PacketMergeAxioms` guard pass. This closes the local value-sortedness seam
+for a full grouped block; it does not align parity-lane
+targets with the next 66 `WireFlow` intervals, handle incomplete blocks or
+frontiers, or yield a repeatable global recurrence. The check also exposed and
+fixed a syntax issue in the support-cardinality helper before the module
+compiled.
+
+Fine-mode overlap threshold audit (GPT-6-astra-high, 2026-10-18): revalidated
+all 130 rows in `bounded-fanin-15-exact.json` with the certificate checker.
+The exact maximum squared Frobenius bound is `804287/268435456` at fan-in 125,
+stronger than the published `1/256` cap. If the actual macro reblocking could
+be shown to have at most 258 nonzero source-error contributions per
+destination, the overlap-L2 estimate would give factor
+`258*804287/268435456 = 103753023/134217728 < 1` on the centered fine mode.
+This is conditional: the existing theorem bounding 258 partial groups is not
+an error-overlap theorem, and local matchings preserve cohort means. No Lean
+change or improved global bound follows from this arithmetic audit.
+
+Two-scale additive-error screen correction (GPT-6-astra-high, 2026-10-18):
+the earlier L1/L2 mixed calculation was retracted. `free_matching_bound.py`
+now normalizes the L2 state by `m*sqrt(C*K)` and uses the exact per-round
+rounding residual bound `1/(2*m)`. Conservatively charging all 24 rounds to
+each mode gives the 9+15 allocation stationary total about `0.01578` at zero
+cross-mode transfer and `0.03259` at cross norm `0.2`.
+At the sufficient contraction boundary `eta=383/1000`, the affine error bound
+is about `8.14`; even a `0.02` target requires `eta<0.082784`. These remain
+conditional model thresholds.
+This is still only a sensitivity calculation; actual projections, cross-map
+norms, and sorting tolerance remain unknown. Matrix contraction alone does
+not close the error budget; see the final section of `MIXING-TAIL.md`.
+
+Source recovery (Codex, 2026-10-18): `PacketReceiverOverlap.lean` had been
+truncated to zero bytes. Reconstructed its required declarations from the
+surviving compiled signatures and current packet interfaces: the 4096-wire
+support sorter with depth and rank-sortedness theorems,
+`fourLaneBoundaryMatching_4096Block_physicalSort`, and the per-stream and
+aggregate partial-group bounds. The rebuilt module and `PacketMergeAxioms`
+compile from source, including all guarded axiom checks. This restores the
+required source-level results without relying on the stale `.olean` artifact.
+
+Rank-target drift screen (GPT-6-astra-high, 2026-10-18): the free-product
+spectral estimate contracts packet-count deviations from a global constant,
+not deviations from the rank-sorted threshold target. On 64 sorted 4096-wire
+packets, one antipodal compare-split matching creates normalized aggregate
+profile error `16/63`. Therefore the coarse-mode contraction cannot be inserted
+into a sorting recurrence without charging target drift through reassembly.
+The exact formula and its scope are in the final section of `MIXING-TAIL.md`.
+A more general spectral lower bound gives asymptotic drift at least
+`167/12288` for the nine-global-round candidate, after charging integer
+rounding and before target-aware rebinning. This is conditional on
+rank-agnostic matching on rank-indexed packets; the subsequent target map
+must be analyzed separately. Consequently, the earlier `0.01578` affine
+fixed-point figure is not an upper bound for the actual scheduler: its
+recurrence omitted this target-drift term.
+
+
+Rank-span refinement (GPT-6-astra-high, 2026-10-18): for any one perfect
+matching on `C` sorted singleton-key packets, direct threshold accounting gives
+aggregate rank-target L1 drift exactly `m * sum_edges |i-j|`. After
+normalization by `C*m*(C-1)`, this is `sum_edges |i-j|/(C*(C-1))`. A random
+perfect matching has expected normalized drift `(C+1)/(6*(C-1)) -> 1/6`;
+keeping one-round drift below `0.02` requires average edge span at most
+`0.04*(C-1)`. `rank_target_drift.py` checks the identity directly for all 124
+perfect matchings through eight packets and reproduces adjacent/antipodal
+values `1/126` and `16/63` at 64 packets. This is a one-round diagnostic only;
+it neither models later rank-aware correction nor proves impossibility.
+
+Global-mixer drift extension (GPT-6-astra-high, 2026-10-18): for a product of
+matching averages, summed L1 error on all rank-step profiles equals the sum of
+expected absolute packet-ID displacement in the induced time-inhomogeneous
+walk. The path-enumeration screen in `global_matching_power_screen.py` gives
+normalized pre-reassembly drift about `0.333` after nine sampled uniform
+matchings at 64, 256, and 1024 IDs; centered operator norm estimates are
+`0.156`, `0.191`, and `0.205`. Dense profile evaluation agrees through 256 IDs.
+This is sampled floating-point evidence only; it indicates that the mixer
+nearly erases the rank target before reassembly, whose bounded-depth recovery
+remains unproved.
+
+The historical source-recovery search and failed decompilation are superseded by
+the rebuilt source and focused checks recorded in the recovery entry above.
+
+Rank-drift implication (GPT-6-astra-high, 2026-10-18): in the sampled
+nine-round matching products, normalized rank-target drift remains about
+`1/3`. The proposed 78-layer sorter is applied independently to each
+4096-wire packet and preserves every packet's threshold count, so it cannot
+repair this drift. That sampled schedule misses the conditional `0.02`
+aggregate-error target unless a cross-packet rank-aware correction is added;
+no such correction is included in the 195-layer budget. This is a refutation of
+the sampled implementation, not of all possible schedules.
+
+Rank-ramp variance obstruction (GPT-6-astra-high, 2026-10-18): strengthened the
+pre-reassembly rank-drift lower bound. For a doubly stochastic packet-matching
+product with centered L2 norm at most `gamma`, the induced rank walks have
+summed conditional variance `||r||_2^2-||Pr||_2^2`, where `r_i=i-mean(i)`.
+Using `|X-i| >= (X-i)^2/(C-1)` gives normalized rank-target drift at least
+`(1-gamma^2)*(C+1)/(12*(C-1))`. Subtracting the exact per-round rounding
+allowance `R/(2m)`, the nine-round `gamma=45/64` candidate still has lower
+bound `132188237/3221176320 ~= 0.04104` at `C=65,536,m=4096`; the ten-round
+`gamma=71/128` candidate gives `242552597/4294901760 ~= 0.05647`. Both exceed
+the conditional `0.02` tolerance. Exact assertions pass in
+`free_matching_bound.py`. This excludes direct rank-indexed composition under
+the stated norm gates; a target-aware rebinning that changes the state remains
+outside the result.
+
+Permutation-robust rank-drift bound (GPT-6-astra-high, 2026-10-18): for a rank
+step with `h` high packet targets, its centered squared norm is
+`sigma^2=h(C-h)/C`. If the fractional mixer contracts centered L2 norm by
+`gamma`, then for any set of `h` output packet labels, Cauchy bounds their
+captured high mass by `h^2/C + gamma*sigma^2`. Thus the L1 error after the
+best possible whole-packet permutation is at least `2*(1-gamma)*sigma^2`.
+Summing over all rank cuts gives normalized lower bound
+`(1-gamma)*(C+1)/(3*C)`, before rounding. At `C=65,536,m=4096`, after rounding,
+the nine-round gate gives `1231379/12582912 ~= 0.09786`; the ten-round gate
+gives `1234963/8388608 ~= 0.14722`. Both exceed `0.02`. A whole-packet
+relabeling cannot rescue direct use of these spectral mixers; value comparisons
+across packet boundaries or a different rank-aware state are needed. This is
+conditional on the stated direct rank-indexed model; exact checks are in
+`free_matching_bound.py`.
+
+Dyadic compare-split follow-up (GPT-6-astra-high, 2026-10-18): ran the seed-0,
+`d=14` candidate through exact SAT with a 60-second timeout. At 64 packet IDs
+it sorts all Boolean inputs (`unsat` for any adjacent inversion) in 168
+comparator layers. At 128 IDs the check returns `unknown` after 60 seconds;
+this is inconclusive. The 64-ID success meets only the finite case. If a
+uniform family with this structure were proved, 64-wire packets cost seven
+binary layers per packet comparator, giving raw asymptotic coefficient
+`14*2*7=196`, before finite startup. No all-size proof is known. This
+supersedes the earlier 20-second timeout record for seed 0 at 64 IDs.
+
+
+Extended dyadic SAT check (Codex, 2026-10-18): reran the 128-ID, 14-round, seed-0 candidate with a 180-second Z3 timeout. It remains unknown; no counterexample or proof was obtained. The 64-ID unsat result remains the only exact finite success. Do not count this as evidence for the all-size schedule.
+
+
+UB-26 fallback audit (Codex, 2026-10-18): inspected the current sibling worktree. Its overlap-seam cleanup recurrence is a conditional composition lemma, not a sorting improvement until a binary prefix localizes all Boolean disorder to O(n^theta) physical wires. The current Chvatal early-stop invariant is rank/key based and does not imply that positional contract; the optimistic cost screen is already worse than 1419. Existing reuse screens do not meet the approximately 150-per-bit prefix budget at theta=1/4. Preserve UB-26 only as a search for a genuinely new positional prefix; do not prioritize formalizing its cleanup lemma in isolation. Details: .claude/worktrees/ub-26/upper-bound/experiments/localized-cleanup/.
+
+Dyadic schedule counterexample (Codex, 2026-10-18): the default SMT solver timed out on the same 128-ID instance, but the SAT tactic found a failure. Added an --engine sat option to dyadic_compare_split_sat_screen.py; rerunning the checked script extracts input 00000000000010100001011000110100100000000010000000101010000010101100111011101011110111111010101011111111011111011111101110011110, with an output inversion at wires (64,65). The input has 63 ones and 16 displaced ones; the minimized forcing certificates for output 64 equal to 1 and output 65 equal to 0 are disjoint. Thus the seed-0, 14-round schedule fails at 128 IDs and its conditional coefficient 196 is rejected. This is not a lower bound against other seeds or schedules. Reproduce with python upper-bound/experiments/packets/dyadic_compare_split_sat_screen.py --n 128 --rounds 14 --seed 0 --timeout-ms 180000 --engine sat.
+
+Additional dyadic screens (Codex, 2026-10-18): the same SAT tactic finds seed 1 at 14 rounds fails for 128 IDs, with an inversion at (62,63), 65 input ones, and 15 displaced ones. Seed 0 at 15 rounds per pass has 210 layers but returns unknown after 180 seconds. The first result rejects a second specific schedule; the second is inconclusive. Neither is a lower bound on the family.
+
+Nested dyadic schedule screen (Codex, 2026-10-18): added --nested mode, keying each local cross-matching by seed, scale, pass, round, and block so common local matchings persist as n and d grow. Seed 0, d=14 sorts at 64 IDs but fails at 128 (62,63; 65 ones); d=15 also fails at 128. At 128, d=16 is unknown after 180 seconds, while d=17 and d=20 are SAT-certified sorters. At 256, d=17 and d=20 are unknown after 180 seconds. With 64-wire compare-splitters, d=17 has conditional raw coefficient 238. This finite success at 128 is not a uniform sorting-family proof; keep 238 explicitly conditional.
+
+Direct scalar-depth correction (Codex, 2026-10-18): the dyadic schedule itself consists of ordinary scalar comparators; its depth on 2^k wires is exactly 2*d*k. Thus the nested d=17 SAT result at n=128 is a finite scalar sorter at depth 238, and a proof for every power of two would yield coefficient 34 after the checked depth-nonincreasing wire restriction to arbitrary n. The earlier coefficient 238 is also the packet-lifted cost only when each scalar comparator is implemented by a 64+64, seven-layer merge. No all-powers sorting theorem is known; n=256 remains solver-unknown.
+
+
+Follow-up dyadic screen (Codex, 2026-10-18): nested seed 0 at n=256, d=18 returned `unknown` with the SAT engine and solver seed 2 at a 90-second timeout. This is inconclusive; it neither rejects nor certifies the coefficient-36 scalar candidate. Together with the earlier d=20 unknown and d=17 counterexample, no tested nested schedule gives an all-powers sorting theorem. These are finite screens and do not alter the proved 1419 endpoint.
+
+SAT encoding check (Codex, 2026-10-18): added an optional explicit Tseitin-CNF engine to `dyadic_compare_split_sat_screen.py`, with each comparator's AND/OR outputs shared through fresh Boolean variables. On a 16-wire failing schedule, both the expression-based SAT engine and CNF engine return `fails` (with different witnesses). On nested `d=18`, `n=256`, solver seed 2, the CNF engine also returns `unknown` after a 30-second timeout. This does not improve the decisive all-powers gate; further solver-seed cycling is low priority absent a more structural certificate.
+
+Kernel-checked rank-drift obstruction (Codex, 2026-10-18): added `RankDriftBound.lean`. `selected_sum_centered_le` proves the selected-mass Cauchy bound, and `rank_step_l1_error_lower_bound` proves that any fractional profile with mass `h`, entries in `[0,1]`, and centered variance at most `gamma^2*h*(C-h)/C` has L1 distance at least `2*(1-gamma)*h*(C-h)/C` from every rank-step labeling of size `h`. `#print axioms` gives only `propext`, `Classical.choice`, and `Quot.sound`. The cross-cut sum, rounding charge, and application of the variance premise to an actual scheduler remain open; this formalizes the per-cut obstruction underlying the direct rank-indexed correction model, but proves no scheduler-level no-go until its variance premise is instantiated.

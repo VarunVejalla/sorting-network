@@ -711,7 +711,7 @@ def evenWire (m : Nat) (i : Fin m) : Fin (2 * m) :=
 def oddWire (m : Nat) (i : Fin m) : Fin (2 * m) :=
   ⟨2 * i.val + 1, by omega⟩
 
-private def parityEquiv (m : Nat) : Fin m ⊕ Fin m ≃ Fin (2 * m) where
+def parityEquiv (m : Nat) : Fin m ⊕ Fin m ≃ Fin (2 * m) where
   toFun := Sum.elim (evenWire m) (oddWire m)
   invFun j := if h : j.val % 2 = 0 then Sum.inl ⟨j.val / 2, by have := j.isLt; omega⟩
     else Sum.inr ⟨j.val / 2, by have := j.isLt; omega⟩

@@ -1,6 +1,34 @@
 # UB-25 packet proof workstream
 
+For the current checkpoint, dependency-ordered remaining gates, and focused
+check command, start with [INDEX.md](INDEX.md). `STATUS.md` retains the longer
+chronological research log.
+
 Current local proof checkpoint: 2026-10-16, Codex (GPT-6-astra-high).
+
+2026-10-17 follow-up: the exact interval-owner bridge is now kernel checked
+in `PacketHalfProfile.lean`. A selected sender rank piece maps into the
+designated next receiver register, and for every wire in that piece its
+`wireSetOwner` is that receiver if and only if the receiver selects the piece
+(`wireFlowLayer_pieceOwner_iff_selected`). The selected ideal mean already
+has an exact interval-count interpolation formula
+(`wireFlowReceiverSelectedIdealMean_eq_intervalProfile`), while the signed
+receiver discrepancy is exactly actual register count minus that selected
+mean (`wireFlowLayer_receiver_signed_error_eq_register`). Thus piece ownership
+and target interpolation are no longer conjectural. The remaining adapter is
+to express the actual 64-wire parity-cohort rank-owner profile in these sender
+interval coordinates. The finite owner map is explicit:
+`wireFlowLayerPieceOwner` assigns each interior sender piece to its unique
+active receiver, and `wireFlowLayerPieceOwner_profileCount_eq_selected`
+equates its integer profile to the selected interval profile at every cutoff.
+`wireFlowLayerPieceOwner_profileMean_eq_selected` then proves the interpolated
+owner target equals the selected interval mean exactly. The cohort L2 estimate
+still must be instantiated on the actual parity-rank supports. The pointwise
+theorem `wireFlowLayer_selectedPiece_owner_eq_pieceOwner` confirms that the
+physical next-stage owner is constant across each such interval. The remaining
+crosswalk is between actual 64-wire packet/lane ranks and these sender
+intervals, followed by coupling to the across-level recurrence. No improved
+limsup coefficient is yet proved.
 
 The ordinary odd-even merge proof is complete for all power-of-two widths.
 This includes merging two ascending 32-wire runs on their original wire
@@ -13,6 +41,7 @@ the accepted sorting bound remains 1419.
 | Module | Result and scope |
 | --- | --- |
 | `OddEvenMerge64.lean` | `oddEvenMergeNet_sorts_two_runs` proves the actual recursive network correct on any two ascending runs. `oddEvenMergeNet64_sorts_two_runs` and `oddEvenMergeNet64_depth_le` specialize to 64 wires and depth six. Scatter correctness and depth preserve this on any increasing 64-wire embedding. The dealt lanes are sorted and have exact floor/ceiling Boolean counts. |
+| `PacketUnequalMerge.lean` | Proves the unequal 32+31 recursive merge core and the equal 32+32 parity-correction step. `standard64Merge_sorts_two_runs` and its scatter adapter give correctness on any increasing 64-wire support at depth six; this is the same standard bound, packaged for packet-support use. |
 | `PacketAlignment.lean` | Scheduled flow residues, fragment counts, separated endpoint supports and sender disjointness. Historical bitonic fallback lemmas remain available. |
 | `PacketRepair64.lean` | An input-independent ordinary network repairs two physically separated 32-wire supports in six layers. Actual shifted down-cut/up-fringe fragments are sorted under `PacketSortedOn`, which orders each packet but imposes no inter-packet value order. Disjoint repair families have depth at most six and act as the corresponding local merger on each pair. `flowA7_sourcePortRepairStage_depth_le` chooses the shared-port repair on every eligible source bag and composes these networks through the actual `stageNet`, preserving the six-layer depth bound globally. `flowA7_sourcePortRepairNet_layout` lifts the chosen Boolean repair contract to arbitrary linearly ordered values by thresholding. `flowA7_sourcePortRepairStage_layout` proves every designated support sorted on its physical-wire image. `flowA7_sourcePortRepairStage_sourcePackets` combines the actual up-set and all 64 down-cut packet families into one indexed family of pairwise-disjoint sorted 64-wire supports whose union is the full sender register after correction. The canonical parent/child port selectors handle zero, aligned, and repaired cuts, and `flowA7_receiver_allCases_canonical` proves the full local receiver transition for every combination. The remaining gap is carrying these packet embeddings through matching rounds while keeping them compatible with later positional `WireFlow` cuts. |
 | `PacketGenMerge.lean` | An arbitrary injective placement of an ordinary network preserves execution and depth in `Untangle.GenNetwork`. `genMerge_sorts_two_runs` and `genMerge_depth_le` apply at every power-of-two width, including seven layers for 64+64 packets and thirteen for 4096+4096. `genScatterBatch` composes any fixed local network across a list of disjoint supports, proves the global depth is at most local depth, and proves exact local execution on every support. Dealing has exact floor/ceiling counts, including all value thresholds. |
@@ -22,8 +51,24 @@ the accepted sorting bound remains 1419.
 | `PacketSenderCycle.lean` | The 65 shifted boundary cells are distinct whole source packets. Actual child and parent repairs consume complementary halves in a fixed cycle and cover exactly those cells. A fixed ordinary six-layer network sorts all 65 repaired pairs and leaves other wires unchanged. `scheduled_senderRepair_exists` instantiates this on actual ordinary scheduled bags with positive down-flow and shifted half-fringes. |
 | `PacketCountBridge.lean` | Enumeration-independent true counts, exact prefix/suffix counts of sorted packets, and pairwise count conservation through parallel execution. `senderRepair_count_exists` gives one fixed six-layer network with sorting, exact cycle counts, sender-centered squared-energy nonincrease for every real reference, and unchanged wires outside the boundary cells. `senderRepair_centered_energy_drop_exact` sharpens this at the natural half-capacity target: energy loss equals twice the deficit-surplus overlap across the actual 65-cycle. `senderRepair_lowCount_count_identity` proves that if all cell counts are at most 32, the actual repaired boundary counts are unchanged. `senderRepair_count_at_threshold` transfers its Boolean count contract to all value thresholds of that same network. This is a local sender result, not a destination or global recurrence. |
 | `PacketProfile.lean` | Kernel-checked sorted Boolean packet profile for 4096-wire packets split into 64-wire cells. Actual cell counts have the ideal clamp formula. Across any cohort and fractional common mean, aggregate cell-profile L1 error equals the coarse packet-count L1 error exactly; its square is bounded by cohort size times coarse squared error. Connecting this profile to scheduler ports and destination reassembly remains open. |
-| `PacketHalfProfile.lean` | Checked clamp-profile and exact L1 / squared-error transfer for 32-wire halves and arbitrary rank intervals. It identifies actual `WireFlow.blockOf` counts with ideal profiles, and the 66 rank pieces (64 child blocks plus both parent-fringe halves) of each sender form a packet-specific partition. Heterogeneous sender sizes and per-sender means are allowed. `wireFlowReceiver_count_error_actual` instantiates the 65-source parent/children pattern on actual `wireSets` and flow sizes, assuming each sender's post-stage threshold profile is sorted. `wireFlowReceiver_selected_count_eq_register` proves the selected source-piece counts equal the threshold count in the actual `execPlacement` receiver register, using injectivity and disjointness. The corollary `wireFlowReceiver_register_count_error_actual` bounds that register's discrepancy from the selected source-profile means by the sum of the source count errors. The finite-type `sum_receiver_profile_errors_le_source_count_errors` is instantiated on all `KBag 64 d` bags by `wireFlowLayer_profile_error_sum_le`; `wireFlowLayerSelection` has a checked range bound and pairwise disjointness for the actual parent/child piece routing, with root fringe routing excluded. `wireFlowLayerSelection_receiverSource` matches the global selector with the local selector on every receiver neighbor; `wireFlowLayerSelection_eq_empty_of_not_neighbor` and `wireFlowLayerSelection_receiverSum_eq` prove support and exact source-sum reindexing onto its 65 actual neighbors. `wireFlowLayer_receiver_signed_error_eq_register` connects each active receiver's all-bag signed error exactly to its actual register count minus the selected ideal mean. `wireFlowLayer_register_error_sum_le_source_count_error` then aggregates over every interior receiver in the layer and charges each source coarse count error only once. These results are axiom-guarded. `profileIntervalMean_bounds` and `wireFlowReceiverSelectedIdealMean_bounds` prove that each selected target lies between zero and the receiver capacity, using the exact selected-piece capacity sum. Thus heterogeneous port means define a valid next threshold target. `profileIntervalMean_mono_mean` and `wireFlowReceiverSelectedIdealMean_mono` prove that monotone source target profiles induce monotone receiver targets, including across integer-floor changes. `wireFlowLayer_register_error_sum_le_source_count_error_multi` sums the fresh errors across all interior bag levels and any finite threshold family without a level or port factor. `realTarget_has_integer_fraction` re-encodes every bounded receiver target in the strict `q < capacity`, `frac ? [0,1]` form needed at the next layer. Still open: establish the source profile invariant from the scheduler and prove rank-energy contraction through merge/deal. |
+| `PacketHalfProfile.lean` | Checked clamp-profile and exact L1 / squared-error transfer for 32-wire halves and arbitrary rank intervals. It identifies actual `WireFlow.blockOf` counts with ideal profiles, and the 66 rank pieces (64 child blocks plus both parent-fringe halves) of each sender form a packet-specific partition. Heterogeneous sender sizes and per-sender means are allowed. `wireFlowReceiver_count_error_actual` instantiates the 65-source parent/children pattern on actual `wireSets` and flow sizes, assuming each sender's post-stage threshold profile is sorted. `wireFlowReceiver_selected_count_eq_register` proves the selected source-piece counts equal the threshold count in the actual `execPlacement` receiver register, using injectivity and disjointness. The corollary `wireFlowReceiver_register_count_error_actual` bounds that register's discrepancy from the selected source-profile means by the sum of the source count errors. The finite-type `sum_receiver_profile_errors_le_source_count_errors` is instantiated on all `KBag 64 d` bags by `wireFlowLayer_profile_error_sum_le`; `wireFlowLayerSelection` has a checked range bound and pairwise disjointness for the actual parent/child piece routing, with root fringe routing excluded. `wireFlowLayerSelection_receiverSource` matches the global selector with the local selector on every receiver neighbor; `wireFlowLayerSelection_eq_empty_of_not_neighbor` and `wireFlowLayerSelection_receiverSum_eq` prove support and exact source-sum reindexing onto its 65 actual neighbors. `wireFlowLayer_receiver_signed_error_eq_register` connects each active receiver's all-bag signed error exactly to its actual register count minus the selected ideal mean. `wireFlowLayer_register_error_sum_le_source_count_error` then aggregates over every interior receiver in the layer and charges each source coarse count error only once. These results are axiom-guarded. `profileIntervalMean_bounds` and `wireFlowReceiverSelectedIdealMean_bounds` prove that each selected target lies between zero and the receiver capacity, using the exact selected-piece capacity sum. Thus heterogeneous port means define a valid next threshold target. `profileIntervalMean_mono_mean` and `wireFlowReceiverSelectedIdealMean_mono` prove that monotone source target profiles induce monotone receiver targets, including across integer-floor changes. `wireFlowLayer_register_error_sum_le_source_count_error_multi` sums the fresh errors across all interior bag levels and any finite threshold family without a level or port factor. `realTarget_has_integer_fraction` re-encodes every bounded receiver target in the strict `q < capacity`, `frac ? [0,1]` form needed at the next layer. It also proves the exact 64-wire phase profile: for total Boolean count `H`, the physical 32-wire halves have counts `min 32 (H-32)` and `min 32 H`, with doubled centered energy `2*min(H,64-H)^2`; at `H=32`, these are `(0,32)` while the logical even/odd lanes are `(16,16)`. The dealt-lane doubled centered energy is exactly 0 for even `H` and 2 for odd `H`, by `oddEvenMerge64_dealt_doubledEnergy` (guarded in `PacketMergeAxioms`). The arithmetic theorem `parityEnergy_le_twoRunInputEnergy` proves this residual is bounded by the doubled centered input imbalance `2(A-B)^2`. `oddEvenMerge64_dealt_energy_le_input` composes the two facts into an actual one-merge count-energy nonincrease theorem. `oddEvenMerge64_scatteredFamily_dealt_energy_le_input` sums that contraction over arbitrary scattered packet embeddings, assuming monotone threshold profiles. `canonicalPacketFamily_dealt_energy_le_input` adapts the existing port contract, and `flowA7_receiver_allCases_packetEnergy_contraction_multi` proves the resulting nonincrease at an actual receiver for any finite monotone threshold family. New: `oddEvenMerge64_assignedParityProfiles_L2_le` upgrades the exact parity-lane L1 identity to a squared-error bound over both lanes and arbitrary destinations, with no extra factor for the lane split. This is local and owner-agnostic; matching the lane ownership to actual scheduled destinations, proving signed recombination into next rank cuts, and closing the global recurrence remain open. |
 | `PacketMergeAxioms.lean` | Compile-time axiom guards for the headline local results. Only `propext`, `Classical.choice`, and `Quot.sound` are permitted by the checked messages. |
+
+Parity ownership follow-up: `oddEvenMerge64_assignedParity_signed_error_eq`
+proves destination-by-destination signed recombination of both induced lane
+errors into the parent 64-rank error, for arbitrary parent-rank ownership.
+`oddEvenMerge64_assignedParity_cohort_signed_error_eq` lifts the identity over
+any finite source cohort. `oddEvenMerge64_assignedParity_cohort_L2_le` now
+uses this signed identity before squaring and applies
+`assignedRankProfiles_aggregate_L2_var` to the parent rank profiles. It proves
+that the sum of squared destination errors for a cohort is at most the cohort
+size times the sum of its parent scalar profile energies, with no extra
+two-lane loss. The theorem is guarded and passes the focused check through
+`PacketMergeAxioms`. This removes the cohort-energy elaboration gap. The key
+remaining bridge is still to instantiate its arbitrary owner map by the
+actual next-stage `WireFlow` registers and identify its interpolated parent
+rank targets with the scheduler's selected-cut targets; after that, the
+coupled recurrence must be summed across active levels.
 
 `PacketHalfProfile.lean` also proves the exact phase-specific doubled-energy
 baseline `oddEvenMerge128_physicalHalf_doubledEnergy`. The finite heuristic
@@ -131,9 +176,14 @@ checks all scratch sources.
    As a first concrete instance, `adjacentPacketMatching` gives a perfect
    matching on every even-sized packet-ID family; its no-self-edge,
    vertex-disjointness, coverage, and duplicate-free properties are checked.
-3. Supply an unbounded matching family and a uniform rounded-discrepancy bound,
-   including exceptional small cohorts. Finite mixing screens do not prove
-   this.
+3. The abstract uniform-family gate now has a nonconstructive route: strong
+   asymptotic freeness for random matchings plus a Haagerup estimate gives a
+   eight-round centered L2 norm below `229/256` for some schedule at every
+   sufficiently large even packet count. This is an external theorem lead,
+   not Lean checked, and the spectral bound does not contract singleton L1
+   error. Still missing are a schedule compatible with the actual packet-ID
+   transition, odd-size/frontier handling, and a rounded discrepancy bound
+   that controls rare cohorts.
 4. Close the coupled bag-mean/rank and within-bag variance recurrence across
    the actual selected port fragments and rebinning. The existing tiny-error
    Chvatal invariant cannot simply be reused with the screened packet errors.
@@ -153,6 +203,16 @@ The number 197.5 is still a conditional cost model:
 remove local obstacles; they do not establish the 57-layer receiver budget,
 the scheduler's two-bit scale rate, its global quality invariant, or a new
 limsup theorem. The full UB-25 construction remains a research lead.
+
+The current best raw cost model is `((15+8)*13+78)/2 = 188.5`: fifteen
+within-stream rounds, eight global rounds, and 78-layer receiver reblocking
+per two bits of scale. It leaves 11.5 layers per log unit for additional
+costs. This remains
+conditional on replacing the fifteen-round screen with the actual recurrence,
+coupling the global schedule to routed packet IDs, and proving a
+sorting-sufficient error budget. It cannot be justified by composing the
+current factor-65 energy bound with the 8-round norm: that crude route first
+closes at 16 global rounds and costs 240.5.
 
 See `MIXING-TAIL.md` for the detailed mathematical history and recurrence
 interfaces; this README supersedes its historical statements that the
@@ -436,3 +496,98 @@ Concrete output-list bridge (GPT-6-astra-high, 2026-10-16):
 A compatible second matching is now formalized (GPT-6-astra-high, 2026-10-16). After the adjacent perfect matching outputs two interleaving lanes per ordered parent block, `interBlockBoundaryMatching` pairs the odd lane of block `2j` with the even lane of block `2j+1`; the two outside lanes remain singletons. The packet indices are enumerated explicitly, and the matching's duplicate-free, vertex-disjoint, singleton-free, cover, and count properties are proved. `interBlockBoundaryMatching_ordered` gets its edge orientation from cross-block physical order. The existing physical-state transition then proves a valid next state with depth at most seven.
 
 `adjacentPacketMatchingFlattenedOutput_contract` proves that the first merge's actual output lanes, flattened block-major, retain sortedness, strict physical monotonicity, pairwise disjoint supports, and strict separation between different blocks. `adjacentThenBoundaryMatching_preservesPhysicalState` composes this with the boundary matching, giving two consecutive checked 7-layer rounds. The `PacketInduction` through `PacketMergeAxioms` chain passes. The second round is still a local induction step: a recursively compatible grouped schedule, matching to later `WireFlow` rank cuts, uniform contraction, and the near-200 limsup proof remain open.
+
+Depth-free parity residual (Codex / GPT-6-astra-high, 2026-10-17): for a sorted 64-wire Boolean threshold profile, the odd/even rank-lane energy is exactly 0 or 2 according to whether the packet's threshold count is even or odd. This uses that the merge network fixes an already sorted packet, so the transition is just rank reindexing. `canonicalPacketFamily_parity_energy_eq_residual` and `flowA7_receiver_allCases_parityEnergy_exact_multi` sum this exact residual over actual receiver packets and any finite monotone threshold family. The focused `PacketHalfProfile` through `PacketMergeAxioms` chain passes with guards. This gives an exact local residual, but still does not identify parity lanes with the next scheduler's rank cuts or provide a global recurrence/coefficient.
+
+Concrete parity-support bridge (Codex / GPT-6-astra-high, 2026-10-17): `packetEvenRankEmbedding` and `packetOddRankEmbedding` turn each increasing canonical 64-wire packet embedding into its two actual increasing-by-rank 32-wire support embeddings. `packetParityRankSupports_partition` proves their physical supports partition the parent packet, and `canonicalPacketParitySupports_partition` lifts this to the exact actual `WireFlow` receiver register. All three declarations have axiom guards; the focused chain from `PacketInduction` through `PacketMergeAxioms` passes. This resolves support accounting for the depth-free parity residual. It still does not establish cross-packet ordering or match these 32-wire supports to the next scheduler's 64-wire rank cuts, so the global recurrence and coefficient remain open.
+
+Monotonicity follow-up (Codex / GPT-6-astra-high, 2026-10-17): added `packetEvenRankEmbedding_strictMono`, `packetOddRankEmbedding_strictMono`, and `canonicalPacketParityEmbeddings_strictMono`. Thus the two support pieces are not just a partition: each is individually an increasing 32-wire embedding whenever the receiver port is canonical and rank sorted. Their guards pass in the focused chain. The support/value interface is now explicit, but it still lacks an ordering relation across different receiver packets and a match to the next `WireFlow` cuts.
+
+64-wire active-phase contraction (Codex / GPT-6-astra-high, 2026-10-17):
+`oddEvenMerge64_monotone_energy_drop_ge_three_quarters` strengthens the
+integer active-count gate: on each sorted threshold profile with count 2..62,
+the dealt parity energy is at most one quarter of the physical-half input
+energy. Counts 0 and 64 have zero input energy; counts 1 and 63 are the only
+nonzero modes with zero dissipation. The theorem is axiom-guarded and the
+focused `PacketHalfProfile` through `PacketMergeAxioms` check passes. This is
+a sharper local contraction constant, but it still does not align parity-lane
+owners with the next stage's selected rank intervals or close the global
+moving-target recurrence.
+
+Parity-rebin interface (GPT-6-astra-high, 2026-10-17): `oddEvenMerge64_parity_rebin_L1_exact` proves that for every sorted Boolean threshold packet and every fractional target `q + frac` (`q < 64`, `0 ≤ frac ≤ 1`), the sum of the even/odd lane errors against the induced floor/ceiling parity targets equals the original packet error exactly. `canonicalPacketFamily_parity_rebin_L1_exact` lifts this with no family-size loss, and `flowA7_receiver_allCases_parity_rebin_L1_exact` packages it at the actual repaired `WireFlow` receiver boundary. These declarations pass the focused source and `PacketMergeAxioms` guard chain. Together with `flowA7_receiver_allCases_parityOwnerCount`, this gives an error-preserving decomposition whose lane supports partition and reindex the real receiver register. It still does not identify the new lane targets with the following stage's scheduled targets, nor show the scattered lanes satisfy the next merge's sorted-run premises; no global recurrence or coefficient improvement follows yet.
+The induced lane targets also preserve target ordering: `oddEvenMerge64_parityMean_mono` is the monotonicity closure for each parity lane whenever the parent fractional targets are ordered. Its guard passes in the same chain. This supports feeding rank-interpolated targets into a later ownership recurrence, but does not itself establish the required cross-stage identification.
+
+Correction-energy exception accounting (GPT-6-astra-high, 2026-10-17): `oddEvenMerge64_monotone_energy_drop_with_exception` states the exact 64-wire threshold-profile inequality: `3 * inputEnergy ≤ 4 * energyDrop + 6 * exceptional`, where exceptional is one exactly at threshold counts 1 or 63. Its finite-family sum is proved without loss, and `canonicalPacketFamily_energy_drop_with_exception` plus `flowA7_receiver_allCases_energy_drop_with_exception` carry the same bound to the actual repaired receiver packets. The source and axiom guard chain from `PacketHalfProfile` through `PacketMergeAxioms` passes. This isolates the only local failure of the 3/4 contraction as an explicit singleton/co-singleton count. The global proof still needs to control the sum of those exceptions for its chosen threshold family and align receiver parity ranks with the next scheduler's physical cuts; this does not yet change the coefficient.
+
+Owner-aware parity rebin (GPT-6-astra-high, 2026-10-17): `oddEvenMerge64_ownedParityProfile_rebin_L1_exact` composes an exact per-lane destination-error accounting with the 64-to-32 parity rebin identity. If each lane's arbitrary destination assignment has aggregate L1 error equal to that lane's profile error against its induced fractional target, then summing across both lanes recovers the parent packet's L1 error exactly. The theorem is axiom-guarded and passes the focused chain through `PacketMergeAxioms`. The existing `assignedRankProfiles_L1_exact` supplies the premise for suffix-ranked ownership whenever the lane target is encoded as `qLane + fracLane`; instantiating those codes and owner maps at the actual next `WireFlow` cuts is still needed.
+
+Unconditional owner-aware parity rebin (GPT-6-astra-high, 2026-10-17): `oddEvenMerge64_assignedParityProfiles_L1_exact` now proves the lane-owned destination L1 identity without a supplied per-lane accounting premise. It uses monotone Boolean suffix identification and a valid induced 32-rank target code; the saturated odd lane at parent floor 63 is represented by `31 + 1`. The theorem is axiom-guarded and the focused packet chain passes. This removes the local owner-profile gap, but it does not yet establish the signed per-destination recombination needed for the global next-cut recurrence.
+Parity target encoding and owned profile closure (GPT-6-astra-high, 2026-10-17): the new parity code represents every induced lane target as an admissible 32-rank integer-plus-fraction target, handling the full odd lane at parent floor 63 via `31 + 1`. Together with the monotone-Boolean suffix characterization and `assignedRankProfiles_L1_exact`, `oddEvenMerge64_assignedParityProfiles_L1_exact` proves exact total L1 accounting for arbitrary finite ownership maps on both actual parity lanes, without a conditional owner hypothesis. The theorem and helpers pass the focused axiom-guarded source chain. Still open: signed errors must be recombined destination-by-destination before the source-packet L2 aggregation, and the resulting ideal targets must match the next scheduler cuts over every active level.
+
+2026-10-17 follow-up: the actual divisible-64 batch theorem now also carries
+`packetFamily64BlockList_merge_output_valuesOrdered`: within each 4096-wire
+merge block, output packet indices are globally ordered by value, in addition
+to each packet having the exact 4096-to-64 threshold profile. This certifies a
+sorted *logical run* for each block. It does not give order in increasing
+physical-wire order: `packetFamily64BlockEmbedding` concatenates arbitrary
+disjoint packet embeddings, and the merge tree's output embeddings remain
+scattered through that support. Thus it helps only if the next recurrence can
+consume logical packet ranks with their induced physical owners, or if a new
+layout invariant makes the embeddings compatible with the scheduler cuts.
+The immediate next test is to trace those output-rank embeddings through the
+actual receiver register and see whether their owner map factors through the
+66 sender intervals. If it does not, this generic value-order theorem cannot
+close the recurrence adapter by itself.
+
+A more promising adapter to test than the parity-lane crosswalk is to keep the
+4096-wire merge as one logical rank domain. The output merge sorts all 4096
+logical positions, and its embedding sends each rank to its actual physical
+wire. Thus one can assign rank `k` directly to `wireSetOwner` of that embedded
+wire and apply the generic rank-owner inequality at width 4096, without first
+identifying each 32-wire parity lane with a 66-interval sender piece. The key
+unproved condition is target compatibility: for a chosen grouping of 64 input
+packets into each 4096-block, the block's single interpolated count target
+must equal (or be controlled by) the next receiver's selected interval mean.
+The squared error in this regrouping must also be charged without an extra
+factor 64 that erases the gain. This is the next structural gate to prove or
+disprove; the new output-order theorem supplies the sorted-rank premise, not
+the target identity.
+
+The whole-block arbitrary-owner L2 adapter is now endpoint-safe. For a full
+4096-one threshold, it encodes the target as `4095 + 1`, which gives the same
+interpolated destination profile and avoids requiring a nonexistent rank above
+capacity. The target condition is now `targetQ <= 4096`, with zero fractional
+part at equality. This handles the saturation edge case for the rank-owner
+inequality. It still does not identify each block target with the selected
+WireFlow interval mean or show that the block error squares charge the active
+level recurrence at a useful constant.
+
+The parity cohort also has an exact next-register count interface now:
+`flowA7_receiver_allCases_parityOwnerCount_intersection` says that assigning
+each actual lane rank to its next-time `wireSetOwner` recovers the physical
+threshold count on the intersection of the current receiver support and any
+next register. This removes an owner/count reindexing step from the adapter.
+The remaining obstacle is on the ideal side: the interpolated lane targets
+still need to sum to the selected sender-interval target for that next
+register. In particular, prove (or disprove) that the canonical packet ranks
+coincide with the physical 64-rank cells that define the sender cuts.
+
+Target alignment is now isolated as the obstruction. The selected-mean theorem is exact for whole sender pieces, but canonical packet contracts permit scattered supports; for example, even/odd wires on `0..127` split physical 64-rank cells and packet parity lanes differently. The actual `flowA7` packets are assembled from sender pieces, so the next viable step is either to prove a stronger support-order property for those concrete pieces or to charge a new discrepancy between packet-rank targets and physical scheduler-cut means. The current contract alone cannot yield the desired equality.
+
+Refinement: each actual next-register contribution from a receiver is a single interval in that receiver's physical rank order (`senderOutgoingPiece_eq_blockOf`). Its intersection with any increasing packet embedding is therefore a contiguous packet-rank interval. This may let the existing parity signed-error recombination match interval targets without requiring packets to be globally contiguous. The remaining identity is between the sum of packet-local suffix targets restricted to that interval and the aggregate receiver-profile interval mean used by the scheduler; packet partition and sortedness alone do not show that these ideal targets agree.
+
+The needed target equality does not follow even from packet target totals summing correctly: two interleaved 64-rank packets with targets 0 and 64 disagree with the aggregate 64-of-128 suffix target by 32 on the first physical half. This is only an abstract stress test, not a counterexample to `flowA7`; the scheduler may constrain this interleaving. The next proof obligation is to establish that restriction or bound the mismatch by upstream energy.
+
+A stronger stress test uses contiguous packets: first cell target 64, second cell target 0. Although their totals sum to receiver target 64, the first cell receives 64 under packet-local ideals and 0 under the receiver's global suffix ideal. So physical packet/cell alignment alone is insufficient; packet targets must agree with the aggregate profile on selected intervals, or their mismatch must be charged.
+
+`profileInterval_packetwise_vs_aggregate_counterexample` now formalizes the target mismatch and passes the source and axiom-guard checks (only `propext`). The parity adapter cannot get an exact scalar target bridge from conservation and alignment alone. The promising alternatives are a packetwise target state through correction, or merging groups of `g` packets into sorted `64g`-wire blocks; the latter trades merge depth against an owner-energy factor of about `ceil(packetCount/g)` and is a concrete next coefficient experiment.
+
+Best continuation after the checked mismatch witness: use the existing 57-layer merge of 64 sorted packets into a globally sorted 4096-rank block. `packetFamily64BlockList_merge_output_blockSorted` and `packetPowerTree6GroupNet_heterogeneous_profile_error_exact` already provide sorted output and exact signed-error recombination for heterogeneous input targets. The main task shifts to the induction: organize those blocks into macro-registers with bounded source incidence and prove a uniform replacement for the current number-of-blocks owner-energy factor. This is consistent with, but does not prove, the conditional 197.5 depth model.
+
+A reusable overlap-sensitive aggregation theorem is now checked: `finiteErrorProfiles_aggregate_L2_overlap` replaces the total number of source blocks by a bound on how many nonzero source discrepancies reach one destination. It is guarded in `PacketMergeAxioms`. The next concrete obligation is to prove a dimension-independent overlap bound for the actual 4096-block errors under two-level `WireFlow`; without that scheduler geometry, this is only a conditional refinement.
+
+Latest target-geometry result (GPT-6-astra-high, 2026-10-17): the exact restriction laws in `PacketHalfProfile.lean` show that every subinterval of a sender's rank cell inherits an ordinary local suffix target, including fractional targets. This supports a future source-local grouping argument, but a scheduler-level bound on overlap across 4096-block merges is still open; no new global coefficient follows yet.
+
+The existing 65-way parent-plus-children overlap bound is already formalized for the ordinary WireFlow. The remaining structural task is to lift that incidence and once-only error charging to the 4096-rank macro-block stage; exact local target restriction is now available for contiguous cells, but a macro routing map is not yet defined.
+
+A new conditional theorem, `packetFamily64BlockList_merge_wholeBlock_owner_L2_le_of_overlap`, replaces the global block-count L2 factor by the maximum number of block discrepancies active at one destination. It is kernel checked and axiom guarded. Its overlap premise is still the missing scheduler theorem; this remains a conditional route, not a new upper bound. Exact cell-local target restriction is also checked and supplies target compatibility for contiguous source rank cells.

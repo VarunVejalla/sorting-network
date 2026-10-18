@@ -6,7 +6,14 @@ package «chvatal1830» where
   packagesDir := "../../.lake/packages"
   leanOptions := #[
     ⟨`autoImplicit, false⟩,
-    ⟨`weak.linter.style.multiGoal, true⟩
+    ⟨`weak.linter.style.multiGoal, false⟩,
+    ⟨`linter.unusedSimpArgs, false⟩,
+    ⟨`linter.unusedVariables, false⟩,
+    ⟨`linter.unnecessarySimpa, false⟩,
+    ⟨`linter.unusedTactic, false⟩,
+    ⟨`linter.unreachableTactic, false⟩,
+    ⟨`weak.linter.unnecessarySeqFocus, false⟩,
+    ⟨`linter.deprecated, false⟩
   ]
 
 require "leanprover-community" / "mathlib" @ git "master"

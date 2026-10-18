@@ -554,6 +554,26 @@ theorem genScatterMergeTree_outputPackets_sorted {M N : Nat} {α : Type}
   simpa [genScatterMergeTreeOutputPackets] using
     genScatterMergeTree_outputPacket_sorted tree e v hRuns j
 
+/-- A merge tree's output packets are globally ordered by value in their
+logical rank order, even when the input embedding scatters them physically. -/
+theorem genScatterMergeTree_outputPackets_valuesOrdered {M N : Nat} {α : Type}
+    [LinearOrder α] (tree : PacketMergeTree α M)
+    (e : Fin M ↪ Fin N) (v : Fin N → α)
+    (hRuns : tree.RunsSorted (fun i => v (e i))) :
+    ∀ j l, j.val < l.val → ∀ i q,
+      (genScatterMergeTree tree e).exec v
+          (genScatterMergeTreeOutputPackets tree e j i) ≤
+        (genScatterMergeTree tree e).exec v
+          (genScatterMergeTreeOutputPackets tree e l q) := by
+  have hglobal := genScatterMergeTree_sorts tree e v hRuns
+  intro j l hjl i q
+  have hidx : PacketMergeTree.chunkIndex tree j i ≤
+      PacketMergeTree.chunkIndex tree l q := by
+    apply Fin.mk_le_mk.mpr
+    change j.val * 64 + i.val ≤ l.val * 64 + q.val
+    omega
+  exact hglobal hidx
+
 /-- A sorted packet family whose supports form consecutive physical blocks. -/
 structure PhysicalSortedPacketFamily {α : Type} [LinearOrder α]
     (N k : Nat) (v : Fin N → α) where
@@ -683,6 +703,18 @@ def genScatterMergeTreeBatch {α : Type} [LinearOrder α] {M N : Nat}
     (tree : PacketMergeTree α M) (supports : List (Fin M ↪ Fin N)) : GenNetwork N :=
   genScatterBatch tree.network supports
 
+/-- A disjoint merge-tree batch acts on each embedded block exactly as its
+local merge tree. -/
+theorem genScatterMergeTreeBatch_exec_inside {α : Type} [LinearOrder α]
+    {M N : Nat} (tree : PacketMergeTree α M) (supports : List (Fin M ↪ Fin N))
+    (hnd : supports.Nodup)
+    (hdis : ∀ e ∈ supports, ∀ f ∈ supports, e ≠ f → ∀ i j, e i ≠ f j)
+    (v : Fin N → α) (e : Fin M ↪ Fin N) (he : e ∈ supports) (i : Fin M) :
+    (genScatterMergeTreeBatch tree supports).exec v (e i) =
+      (genScatter tree.network e).exec v (e i) := by
+  change (genScatterBatch tree.network supports).exec v (e i) = _
+  exact genScatterBatch_exec_inside tree.network supports hnd hdis v e he i
+
 theorem genScatterMergeTreeBatch_depth_le {α : Type} [LinearOrder α]
     {M N : Nat} (tree : PacketMergeTree α M)
     (supports : List (Fin M ↪ Fin N)) (hnd : supports.Nodup)
@@ -747,6 +779,35 @@ def packetFamily64BlockEmbedding {q N : Nat}
         apply hik
         exact packetFamily64BlockIndex_injective j h
       · exact heq)
+
+/-- The `j`th output packet of a 64-by-64 merge block stays on the support
+of its `j`th input packet. The merge changes values on these wires, not the
+packet supports; any next-stage rank alignment must already hold (or be
+provided by an additional routing stage). -/
+theorem packetFamily64Block_outputEmbedding_eq_sourcePacket {q N : Nat}
+    {α : Type} [LinearOrder α]
+    (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y)
+    (g : Fin q) (j : Fin 64) (i : Fin 64) :
+    genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α))
+        (packetFamily64BlockEmbedding packets hdis g)
+        (Fin.cast (packetPowerTree6_leafCount (α := α)).symm j) i =
+      packets (packetFamily64BlockIndex g j) i := by
+  let tree := packetPowerTree6 (α := α)
+  let j' : Fin tree.leafCount := Fin.cast packetPowerTree6_leafCount.symm j
+  have hjval : j'.val = j.val := by simp [j', tree, packetPowerTree6_leafCount]
+  have hcoord : packetTreeBlockCoordinates64 (PacketMergeTree.chunkIndex tree j' i) =
+      (j, i) := by
+    apply Prod.ext
+    · apply Fin.ext
+      simp [packetTreeBlockCoordinates64, PacketMergeTree.chunkIndex_val, hjval]
+      omega
+    · apply Fin.ext
+      simp [packetTreeBlockCoordinates64, PacketMergeTree.chunkIndex_val, hjval]
+  change packets (packetFamily64BlockIndex g
+    (packetTreeBlockCoordinates64 (PacketMergeTree.chunkIndex tree j' i)).1)
+    (packetTreeBlockCoordinates64 (PacketMergeTree.chunkIndex tree j' i)).2 = _
+  rw [hcoord]
 
 theorem packetFamily64BlockEmbedding_disjoint {q N : Nat}
     (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
@@ -1053,6 +1114,105 @@ theorem packetFamily64BlockList_merge_output_sorted {q N : Nat} {α : Type}
     (packetPowerTree6 (α := α)) (packetFamily64BlockList packets hdis)
     hnd hdisBlocks v hRuns e he j
 
+/-- Each actual 4096-wire block exits sorted in its full logical rank order.
+This exposes the rank domain needed to assign each output rank directly to
+the physical owner of its scattered wire. -/
+theorem packetFamily64BlockList_merge_output_blockSorted {q N : Nat} {α : Type}
+    [LinearOrder α]
+    (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y)
+    (v : Fin N → α)
+    (hpackets : ∀ a, Monotone (fun i => v (packets a i))) :
+    ∀ e ∈ packetFamily64BlockList packets hdis, Monotone (fun i =>
+      (genScatterMergeTreeBatch (packetPowerTree6 (α := α))
+        (packetFamily64BlockList packets hdis)).exec v (e i)) := by
+  have hnd := packetFamily64BlockList_nodup packets hdis
+  have hdisBlocks := packetFamily64BlockList_disjoint packets hdis
+  have hRuns : ∀ e ∈ packetFamily64BlockList packets hdis,
+      (packetPowerTree6 (α := α)).RunsSorted (fun i => v (e i)) := by
+    intro e he
+    simp only [packetFamily64BlockList, List.mem_ofFn] at he
+    obtain ⟨g, rfl⟩ := he
+    have hinner : ∀ {a b : Fin 64}, a ≠ b → ∀ x y,
+        packets (packetFamily64BlockIndex g a) x ≠
+          packets (packetFamily64BlockIndex g b) y := by
+      intro a b hab x y
+      apply hdis _ _ ?_ x y
+      intro h
+      apply hab
+      exact packetFamily64BlockIndex_injective g h
+    exact packetPowerTree6_runsSorted_of_packets
+      (fun a => packets (packetFamily64BlockIndex g a)) hinner v
+      (fun a => hpackets (packetFamily64BlockIndex g a))
+  intro e he
+  have hlocal := genScatterMergeTree_sorts
+    (packetPowerTree6 (α := α)) e v (hRuns e he)
+  intro i k hik
+  change (genScatterMergeTreeBatch (packetPowerTree6 (α := α))
+      (packetFamily64BlockList packets hdis)).exec v (e i) ≤
+    (genScatterMergeTreeBatch (packetPowerTree6 (α := α))
+      (packetFamily64BlockList packets hdis)).exec v (e k)
+  change (genScatterBatch (packetPowerTree6 (α := α)).network
+      (packetFamily64BlockList packets hdis)).exec v (e i) ≤
+    (genScatterBatch (packetPowerTree6 (α := α)).network
+      (packetFamily64BlockList packets hdis)).exec v (e k)
+  rw [genScatterBatch_exec_inside (packetPowerTree6 (α := α)).network
+      (packetFamily64BlockList packets hdis) hnd hdisBlocks v e he i,
+    genScatterBatch_exec_inside (packetPowerTree6 (α := α)).network
+      (packetFamily64BlockList packets hdis) hnd hdisBlocks v e he k]
+  exact hlocal hik
+
+/-- Each 4096-wire merge in a packet-family batch exits in globally
+nondecreasing packet order, not merely with each 64-wire packet sorted. -/
+theorem packetFamily64BlockList_merge_output_valuesOrdered {q N : Nat} {α : Type}
+    [LinearOrder α]
+    (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y)
+    (v : Fin N → α)
+    (hpackets : ∀ a, Monotone (fun i => v (packets a i))) :
+    ∀ e ∈ packetFamily64BlockList packets hdis,
+      ∀ j l, j.val < l.val → ∀ i k,
+        (genScatterMergeTreeBatch (packetPowerTree6 (α := α))
+          (packetFamily64BlockList packets hdis)).exec v
+            (genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α)) e j i) ≤
+        (genScatterMergeTreeBatch (packetPowerTree6 (α := α))
+          (packetFamily64BlockList packets hdis)).exec v
+            (genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α)) e l k) := by
+  have hnd := packetFamily64BlockList_nodup packets hdis
+  have hdisBlocks := packetFamily64BlockList_disjoint packets hdis
+  have hRuns : ∀ e ∈ packetFamily64BlockList packets hdis,
+      (packetPowerTree6 (α := α)).RunsSorted (fun i => v (e i)) := by
+    intro e he
+    simp only [packetFamily64BlockList, List.mem_ofFn] at he
+    obtain ⟨g, rfl⟩ := he
+    have hinner : ∀ {a b : Fin 64}, a ≠ b → ∀ x y,
+        packets (packetFamily64BlockIndex g a) x ≠
+          packets (packetFamily64BlockIndex g b) y := by
+      intro a b hab x y
+      apply hdis _ _ ?_ x y
+      intro h
+      apply hab
+      exact packetFamily64BlockIndex_injective g h
+    exact packetPowerTree6_runsSorted_of_packets
+      (fun a => packets (packetFamily64BlockIndex g a)) hinner v
+      (fun a => hpackets (packetFamily64BlockIndex g a))
+  intro e he j l hjl i k
+  have hlocal := genScatterMergeTree_outputPackets_valuesOrdered
+    (packetPowerTree6 (α := α)) e v (hRuns e he)
+  change (genScatterBatch (packetPowerTree6 (α := α)).network
+      (packetFamily64BlockList packets hdis)).exec v
+      (e (PacketMergeTree.chunkIndex (packetPowerTree6 (α := α)) j i)) ≤
+    (genScatterBatch (packetPowerTree6 (α := α)).network
+      (packetFamily64BlockList packets hdis)).exec v
+      (e (PacketMergeTree.chunkIndex (packetPowerTree6 (α := α)) l k))
+  rw [genScatterBatch_exec_inside (packetPowerTree6 (α := α)).network
+    (packetFamily64BlockList packets hdis) hnd hdisBlocks v e he
+    (PacketMergeTree.chunkIndex (packetPowerTree6 (α := α)) j i),
+    genScatterBatch_exec_inside (packetPowerTree6 (α := α)).network
+    (packetFamily64BlockList packets hdis) hnd hdisBlocks v e he
+    (PacketMergeTree.chunkIndex (packetPowerTree6 (α := α)) l k)]
+  exact hlocal j l hjl i k
+
 /-- Package the grouped-merge result as a finite packet family, rather than
 as a list of 4096-wire blocks with a separate leaf index. The output packets
 are sorted, disjoint, and cover exactly the input cohort support. -/
@@ -1146,6 +1306,8 @@ theorem packetFamily_divisible64_merge {m N : Nat} {α : Type}
       blocks.Nodup ∧
       (∀ e ∈ blocks, ∀ f ∈ blocks, e ≠ f → ∀ x y, e x ≠ f y) ∧
       (genScatterMergeTreeBatch (packetPowerTree6 (α := α)) blocks).depth ≤ 57 ∧
+      (∀ e ∈ blocks, Monotone (fun i =>
+        (genScatterMergeTreeBatch (packetPowerTree6 (α := α)) blocks).exec v (e i))) ∧
       (∀ e ∈ blocks, ∀ j : Fin (packetPowerTree6 (α := α)).leafCount,
         Monotone (fun i =>
           (genScatterMergeTreeBatch (packetPowerTree6 (α := α)) blocks).exec v
@@ -1166,10 +1328,12 @@ theorem packetFamily_divisible64_merge {m N : Nat} {α : Type}
       simpa using hv
     · exact heq
   let blocks := packetFamily64BlockList castPackets hdis'
-  refine ⟨blocks, ?_, ?_, ?_, ?_⟩
+  refine ⟨blocks, ?_, ?_, ?_, ?_, ?_⟩
   · exact packetFamily64BlockList_nodup castPackets hdis'
   · exact packetFamily64BlockList_disjoint castPackets hdis'
   · exact packetFamily64BlockList_merge_depth_le castPackets hdis'
+  · exact packetFamily64BlockList_merge_output_blockSorted castPackets hdis' v
+      (fun a => hpackets (Fin.cast hq a))
   · exact packetFamily64BlockList_merge_output_sorted castPackets hdis' v
       (fun a => hpackets (Fin.cast hq a))
 

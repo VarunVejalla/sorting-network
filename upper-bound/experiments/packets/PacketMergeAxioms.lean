@@ -3,9 +3,22 @@ import PacketGenMerge
 import PacketInduction
 import PacketRebinning
 import PacketHalfProfile
+import PacketReceiverOverlap
 import PacketUnequalMerge
 import PacketMergeTree
 import PacketMergeTreeGen
+
+/-- info: 'Chvatal.PacketAlignment.bitonicSort4096OnSupport_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.bitonicSort4096OnSupport_depth_le
+
+/-- info: 'Chvatal.PacketAlignment.bitonicSort4096OnSupport_rankSorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.bitonicSort4096OnSupport_rankSorted
+
+/-- info: 'Chvatal.PacketAlignment.fourLaneBoundaryMatching_4096Block_physicalSort' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.fourLaneBoundaryMatching_4096Block_physicalSort
 
 /-- info: 'Chvatal.PacketAlignment.packetEmbedding_eq_supportOrderEmbedding' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
@@ -203,6 +216,22 @@ import PacketMergeTreeGen
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.profileIntervalMean_partition_sum
 
+/-- info: 'Chvatal.PacketAlignment.profileIntervalMean_partition_sum_interval' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.profileIntervalMean_partition_sum_interval
+
+/-- info: 'Chvatal.PacketAlignment.profileIntervalMean_partition_sum_4096_grid' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.profileIntervalMean_partition_sum_4096_grid
+
+/-- info: 'Chvatal.PacketAlignment.blockOf_inter_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.blockOf_inter_eq
+
+/-- info: 'Chvatal.PacketAlignment.senderOutgoingPiece_inter_portMacroGroup_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.senderOutgoingPiece_inter_portMacroGroup_eq
+
 /-- info: 'Chvatal.PacketAlignment.sum_receiver_selected_errors_le_source_pieces' depends on axioms: [propext,
  Classical.choice,
  Quot.sound] -/
@@ -296,6 +325,42 @@ import PacketMergeTreeGen
  Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.wireFlowReceiver_selected_count_eq_register
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_selectedPiece_image_subset_register' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_selectedPiece_image_subset_register
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_selectedPiece_subset_nextWireSet' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_selectedPiece_subset_nextWireSet
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_pieceOwner_iff_selected' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_pieceOwner_iff_selected
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayer_selectedPiece_owner_eq_pieceOwner' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.wireFlowLayer_selectedPiece_owner_eq_pieceOwner
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayerPieceOwner_profileCount_eq_selected' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.wireFlowLayerPieceOwner_profileCount_eq_selected
+
+/-- info: 'Chvatal.PacketAlignment.wireFlowLayerPieceOwner_profileMean_eq_selected' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.wireFlowLayerPieceOwner_profileMean_eq_selected
 
 /-- info: 'Chvatal.PacketAlignment.wireFlowReceiver_register_count_error_actual' depends on axioms: [propext,
  Classical.choice,
@@ -555,6 +620,90 @@ import PacketMergeTreeGen
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.profileInterval_change_le
 
+/-- info: 'Chvatal.PacketAlignment.profileInterval_restrict_cell' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.profileInterval_restrict_cell
+
+/-- info: 'Chvatal.PacketAlignment.profileIntervalMean_restrict_cell' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.profileIntervalMean_restrict_cell
+
+/-- info: 'Chvatal.PacketAlignment.profileIntervalMean_restrict_cell_local' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.profileIntervalMean_restrict_cell_local
+
+/-- info: 'Chvatal.PacketAlignment.packetFamily64BlockList_merge_wholeBlock_owner_L2_le_of_overlap' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.packetFamily64BlockList_merge_wholeBlock_owner_L2_le_of_overlap
+
+/-- info: 'Chvatal.PacketAlignment.packetFamily64_transpose_merge' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetFamily64_transpose_merge
+
+/-- info: 'Chvatal.PacketAlignment.receiverChildFamilies_transpose_merge' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.receiverChildFamilies_transpose_merge
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_childCohorts_merge' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_childCohorts_merge
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_childCohorts_parentPartition' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_childCohorts_parentPartition
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_macroSource_partition' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_macroSource_partition
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_macroSource_commonBatch' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_macroSource_commonBatch
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_macroSource_outputPartition' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_macroSource_outputPartition
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_root_receiver_packetAssembly' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_root_receiver_packetAssembly
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_root_receiver_fullBlocksBatch' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_root_receiver_fullBlocksBatch
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_topReceiver_wireSet_empty' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_topReceiver_wireSet_empty
+
+/-- info: 'Chvatal.PacketAlignment.profileInterval_packetwise_vs_aggregate_counterexample' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.profileInterval_packetwise_vs_aggregate_counterexample
+
 /-- info: 'Chvatal.PacketAlignment.profileInterval_partition_L1_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms Chvatal.PacketAlignment.profileInterval_partition_L1_exact
@@ -810,6 +959,12 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.PacketSortedOn_orderEmb_of_card_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.PacketSortedOn_orderEmb_of_card_eq
+/-- info: 'Chvatal.PacketAlignment.rankSortedOn_packetEmbedding_range' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.rankSortedOn_packetEmbedding_range
+/-- info: 'Chvatal.PacketAlignment.packetSortedOn_of_rankAlignedFamily' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetSortedOn_of_rankAlignedFamily
 
 /-- info: 'Chvatal.PacketAlignment.rankIn_univ_eq_val' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
@@ -991,6 +1146,68 @@ import PacketMergeTreeGen
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.canonicalPacketFamily_toEmbeddings
 
+/-- info: 'Chvatal.PacketAlignment.canonicalPacketFamily_fullBlocks_with_tail' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalPacketFamily_fullBlocks_with_tail
+
+/-- info: 'Chvatal.PacketAlignment.canonicalStreamFamilies_fullBlocks_disjoint' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalStreamFamilies_fullBlocks_disjoint
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_regularTailPool_commonBatch' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_regularTailPool_commonBatch
+/-- info: 'Chvatal.PacketAlignment.canonicalStreamAndExceptionPool_fullBlocks_batch' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalStreamAndExceptionPool_fullBlocks_batch
+/-- info: 'Chvatal.PacketAlignment.canonicalStreamFullBlock_blocks_disjoint_exceptionPool' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalStreamFullBlock_blocks_disjoint_exceptionPool
+/-- info: 'Chvatal.PacketAlignment.packetBlockListSupport_eq_outputChunks' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetBlockListSupport_eq_outputChunks
+/-- info: 'Chvatal.PacketAlignment.canonicalStreamFamilies_fullBlocks_data' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalStreamFamilies_fullBlocks_data
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_regularFullBlocks' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_regularFullBlocks
+/-- info: 'Chvatal.PacketAlignment.canonicalStreamFullBlock_exceptionPool' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalStreamFullBlock_exceptionPool
+/-- info: 'Chvatal.PacketAlignment.canonicalStreamFullBlock_exceptionPool_partition' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalStreamFullBlock_exceptionPool_partition
+/-- info: 'Chvatal.PacketAlignment.canonicalPacketFamily_fullBlocks_data' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalPacketFamily_fullBlocks_data
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_regularTailPool' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_regularTailPool
+
 /-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_embeddingFamily' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_embeddingFamily
@@ -1106,6 +1323,239 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.oddEvenMerge128_physicalHalf_doubledEnergy' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.oddEvenMerge128_physicalHalf_doubledEnergy
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_physicalHalf_counts' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_physicalHalf_counts
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_balanced_deal_vs_physical_halves' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_balanced_deal_vs_physical_halves
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_physicalHalf_doubledEnergy' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_physicalHalf_doubledEnergy
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_dealt_doubledEnergy' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_dealt_doubledEnergy
+
+/-- info: 'Chvatal.PacketAlignment.parityEnergy_le_twoRunInputEnergy' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.parityEnergy_le_twoRunInputEnergy
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_dealt_energy_le_input' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_dealt_energy_le_input
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_parallel_dealt_energy_le_input' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_parallel_dealt_energy_le_input
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_monotone_parity_energy_le_input' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_monotone_parity_energy_le_input
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_monotone_parity_energy_eq_residual' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_monotone_parity_energy_eq_residual
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_monotone_input_energy_eq_phase' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_monotone_input_energy_eq_phase
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_monotone_energy_drop_eq_phase' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_monotone_energy_drop_eq_phase
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_phase_drop_ge_eight' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_phase_drop_ge_eight
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_phase_drop_eq_zero_iff' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_phase_drop_eq_zero_iff
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_monotone_energy_drop_ge_eight' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_monotone_energy_drop_ge_eight
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_monotone_energy_drop_ge_three_quarters' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_monotone_energy_drop_ge_three_quarters
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_monotone_energy_drop_with_exception' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_monotone_energy_drop_with_exception
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_family_energy_drop_with_exception' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_family_energy_drop_with_exception
+
+/-- info: 'Chvatal.PacketAlignment.canonicalPacketFamily_energy_drop_with_exception' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalPacketFamily_energy_drop_with_exception
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_energy_drop_with_exception' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_energy_drop_with_exception
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_parity_rebin_L1_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_parity_rebin_L1_exact
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_ownedParityProfile_rebin_L1_exact' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_ownedParityProfile_rebin_L1_exact
+
+/-- info: 'Chvatal.PacketAlignment.monotoneBool_eq_countSuffix' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.monotoneBool_eq_countSuffix
+
+/-- info: 'Chvatal.PacketAlignment.boolTrueCount_countSuffix' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.boolTrueCount_countSuffix
+
+/-- info: 'Chvatal.PacketAlignment.monotoneBits_assignedRankProfiles_L1_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.monotoneBits_assignedRankProfiles_L1_exact
+/-- info: 'Chvatal.PacketAlignment.monotoneBits_assignedRankProfiles_aggregate_L2_var' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.monotoneBits_assignedRankProfiles_aggregate_L2_var
+/-- info: 'Chvatal.PacketAlignment.monotoneBits_assignedRankProfiles_aggregate_L2_var_allow_endpoint' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.monotoneBits_assignedRankProfiles_aggregate_L2_var_allow_endpoint
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_assignedParityProfiles_L1_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_assignedParityProfiles_L1_exact
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_assignedParityProfiles_L2_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_assignedParityProfiles_L2_le
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_assignedParity_signed_error_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_assignedParity_signed_error_eq
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_assignedParity_cohort_signed_error_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_assignedParity_cohort_signed_error_eq
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_assignedParity_cohort_L2_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_assignedParity_cohort_L2_le
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_parityMean_mono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_parityMean_mono
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_parityMean_eq_code' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_parityMean_eq_code
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_parityCode_valid' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_parityCode_valid
+
+/-- info: 'Chvatal.PacketAlignment.canonicalPacketFamily_parity_rebin_L1_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalPacketFamily_parity_rebin_L1_exact
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_parity_rebin_L1_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_parity_rebin_L1_exact
+
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_family_active_drop_lower_bound' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_family_active_drop_lower_bound
+
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_parallel_monotone_parity_energy_le_input' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_parallel_monotone_parity_energy_le_input
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_scatteredFamily_dealt_energy_le_input' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_scatteredFamily_dealt_energy_le_input
+
+/-- info: 'Chvatal.PacketAlignment.oddEvenMerge64_rankSortedFamily_dealt_energy_le_input' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.oddEvenMerge64_rankSortedFamily_dealt_energy_le_input
+
+/-- info: 'Chvatal.PacketAlignment.canonicalPacketFamily_dealt_energy_le_input' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalPacketFamily_dealt_energy_le_input
+
+/-- info: 'Chvatal.PacketAlignment.canonicalPacketFamily_parity_energy_le_input' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalPacketFamily_parity_energy_le_input
+
+/-- info: 'Chvatal.PacketAlignment.canonicalPacketFamily_parity_energy_eq_residual' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalPacketFamily_parity_energy_eq_residual
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_packetEnergy_contraction' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_packetEnergy_contraction
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_packetEnergy_contraction_multi' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_packetEnergy_contraction_multi
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_parityEnergy_contraction_multi' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_parityEnergy_contraction_multi
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_parityEnergy_exact_multi' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_parityEnergy_exact_multi
+
+
+/-- info: 'Chvatal.PacketAlignment.packetParityRankSupports_partition' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetParityRankSupports_partition
+
+/-- info: 'Chvatal.PacketAlignment.packetEmbeddingSupport_parity_partition' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetEmbeddingSupport_parity_partition
+
+/-- info: 'Chvatal.PacketAlignment.packetEvenRankEmbedding_strictMono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetEvenRankEmbedding_strictMono
+
+/-- info: 'Chvatal.PacketAlignment.packetOddRankEmbedding_strictMono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetOddRankEmbedding_strictMono
+
+/-- info: 'Chvatal.PacketAlignment.canonicalPacketParitySupports_partition' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalPacketParitySupports_partition
+
+/-- info: 'Chvatal.PacketAlignment.canonicalPacketParityEmbeddings_strictMono' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalPacketParityEmbeddings_strictMono
+
+/-- info: 'Chvatal.PacketAlignment.canonicalPacketParityEmbeddings_disjoint' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalPacketParityEmbeddings_disjoint
+
+/-- info: 'Chvatal.PacketAlignment.canonicalPacketParityEmbeddings_cover' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalPacketParityEmbeddings_cover
+
+/-- info: 'Chvatal.PacketAlignment.canonicalPacketParityEmbedding_mem' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalPacketParityEmbedding_mem
+
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_parityOwnerCount' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_parityOwnerCount
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_allCases_parityOwnerCount_intersection' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_allCases_parityOwnerCount_intersection
 
 /-- info: 'Chvatal.PacketAlignment.flowA7_receiver_repairedParent_alignedChildren_packetAssembly' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
@@ -1283,6 +1733,12 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.standard64Merge_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.standard64Merge_depth_le
+/-- info: 'Chvatal.PacketAlignment.standard64Merge_scatter_sorts_two_runs' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.standard64Merge_scatter_sorts_two_runs
+/-- info: 'Chvatal.PacketAlignment.standard64Merge_scatter_depth_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.standard64Merge_scatter_depth_le
 
 /-- info: 'Chvatal.PacketAlignment.unequalMerge3Net_sorts_two_runs' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
@@ -1519,6 +1975,15 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.packetFamily64BlockList_merge_output_sorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.packetFamily64BlockList_merge_output_sorted
+/-- info: 'Chvatal.PacketAlignment.packetFamily64BlockList_merge_output_blockSorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetFamily64BlockList_merge_output_blockSorted
+/-- info: 'Chvatal.PacketAlignment.packetFamily64BlockList_merge_wholeBlock_owner_L2_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetFamily64BlockList_merge_wholeBlock_owner_L2_le
+/-- info: 'Chvatal.PacketAlignment.packetFamily64BlockList_merge_output_valuesOrdered' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetFamily64BlockList_merge_output_valuesOrdered
 /-- info: 'Chvatal.PacketAlignment.packetFamily64BlockList_merge_outputFamily' depends on axioms: [propext,
  Classical.choice,
  Quot.sound] -/
@@ -1564,6 +2029,9 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.genScatterMergeTree_outputPackets_sorted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.genScatterMergeTree_outputPackets_sorted
+/-- info: 'Chvatal.PacketAlignment.genScatterMergeTree_outputPackets_valuesOrdered' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genScatterMergeTree_outputPackets_valuesOrdered
 
 /-- info: 'Chvatal.PacketAlignment.genScatterMergeTree_outputPhysicalPacketState' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
@@ -1668,15 +2136,43 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.monotoneCountDecomposition_L1_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.monotoneCountDecomposition_L1_exact
+
+/-- info: 'Chvatal.PacketAlignment.monotoneCountDecomposition_L2_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Chvatal.PacketAlignment.monotoneCountDecomposition_L2_le
 /-- info: 'Chvatal.PacketAlignment.assignedRankProfiles_L1_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.assignedRankProfiles_L1_exact
+/-- info: 'Chvatal.PacketAlignment.monotoneBlocks_assignedRankProfiles_L1_nonincrease' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.monotoneBlocks_assignedRankProfiles_L1_nonincrease
 /-- info: 'Chvatal.PacketAlignment.assignedRankProfiles_aggregate_L2' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.assignedRankProfiles_aggregate_L2
 /-- info: 'Chvatal.PacketAlignment.assignedRankProfiles_aggregate_L2_var' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.assignedRankProfiles_aggregate_L2_var
+/-- info: 'Chvatal.PacketAlignment.finiteErrorProfiles_aggregate_L2_overlap' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.finiteErrorProfiles_aggregate_L2_overlap
+/-- info: 'Chvatal.PacketAlignment.flowDown7_levelTwo_timeSix_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowDown7_levelTwo_timeSix_eq
+/-- info: 'Chvatal.PacketAlignment.flowDown7_levelTwo_timeSix_div4096_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowDown7_levelTwo_timeSix_div4096_eq
+/-- info: 'Chvatal.PacketAlignment.not_three_partial_rankGroups' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.not_three_partial_rankGroups
+/-- info: 'Chvatal.PacketAlignment.partialRankGroupIndices_card_le_two' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.partialRankGroupIndices_card_le_two
+/-- info: 'Chvatal.PacketAlignment.not_three_partial_rankIntervals' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.not_three_partial_rankIntervals
+/-- info: 'Chvatal.PacketAlignment.partialRankIntervalIndices_card_le_two' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.partialRankIntervalIndices_card_le_two
 /-- info: 'Chvatal.PacketAlignment.wireSetOwner_mem' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.wireSetOwner_mem
@@ -1689,6 +2185,13 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.packetRankOwner_trueCountOn_eq_of_partition' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.packetRankOwner_trueCountOn_eq_of_partition
+
+/-- info: 'Chvatal.PacketAlignment.packetRankOwner_trueCountOn_eq_of_local_partition' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetRankOwner_trueCountOn_eq_of_local_partition
+/-- info: 'Chvatal.PacketAlignment.packetRankOwner_trueCountOn_intersection' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetRankOwner_trueCountOn_intersection
 /-- info: 'Chvatal.PacketAlignment.natProfileInterp_between' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.natProfileInterp_between
@@ -1772,3 +2275,302 @@ import PacketMergeTreeGen
 /-- info: 'Chvatal.PacketAlignment.fourLaneBoundaryGroupedOutput_disjoint_of_block_ne' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Chvatal.PacketAlignment.fourLaneBoundaryGroupedOutput_disjoint_of_block_ne
+/-- info: 'Chvatal.PacketAlignment.fourLaneBoundaryDealtOutputBlock_range' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.fourLaneBoundaryDealtOutputBlock_range
+/-- info: 'Chvatal.PacketAlignment.fourLaneBoundaryDealtOutputBlock_disjoint_singleton' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.fourLaneBoundaryDealtOutputBlock_disjoint_singleton
+/-- info: 'Chvatal.PacketAlignment.fourLaneBoundaryOutputBlock_pairwise_disjoint' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.fourLaneBoundaryOutputBlock_pairwise_disjoint
+/-- info: 'Chvatal.PacketAlignment.fourLaneBoundaryGroupedOutput_disjoint' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.fourLaneBoundaryGroupedOutput_disjoint
+/-- info: 'Chvatal.PacketAlignment.fourLaneBoundaryGroupedOutput_perm_output' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.fourLaneBoundaryGroupedOutput_perm_output
+/-- info: 'Chvatal.PacketAlignment.fourLaneBoundaryGroupedOutput_nodup' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.fourLaneBoundaryGroupedOutput_nodup
+/-- info: 'Chvatal.PacketAlignment.fourLaneBoundaryMatching_preservesGroupedPhysicalState' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.fourLaneBoundaryMatching_preservesGroupedPhysicalState
+/-- info: 'Chvatal.PacketAlignment.fourLaneBoundaryGroupedOutput_nextWideBoundaryEdge_ordered' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.fourLaneBoundaryGroupedOutput_nextWideBoundaryEdge_ordered
+/-- info: 'Chvatal.PacketAlignment.eightLaneBoundaryMatching_ordered' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.eightLaneBoundaryMatching_ordered
+/-- info: 'Chvatal.PacketAlignment.eightLaneBoundaryGroupedOutput_ordered' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.eightLaneBoundaryGroupedOutput_ordered
+/-- info: 'Chvatal.PacketAlignment.eightLaneBoundaryOutputBlock_lane_contract' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.eightLaneBoundaryOutputBlock_lane_contract
+/- 16-lane matching induction guards -/
+/-- info: 'Chvatal.PacketAlignment.eightLaneBoundaryGroupedOutput_at' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.eightLaneBoundaryGroupedOutput_at
+/-- info: 'Chvatal.PacketAlignment.eightLaneBoundaryGroupedOutput_nextWideBoundaryEdge_ordered' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.eightLaneBoundaryGroupedOutput_nextWideBoundaryEdge_ordered
+/- 16-lane matching induction guards -/
+/-- info: 'Chvatal.PacketAlignment.eightLaneBoundaryDealtOutputBlock_disjoint_singleton' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.eightLaneBoundaryDealtOutputBlock_disjoint_singleton
+/-- info: 'Chvatal.PacketAlignment.eightLaneBoundaryOutputBlock_pairwise_disjoint' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.eightLaneBoundaryOutputBlock_pairwise_disjoint
+/-- info: 'Chvatal.PacketAlignment.eightLaneBoundaryGroupedOutput_disjoint' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.eightLaneBoundaryGroupedOutput_disjoint
+/-- info: 'Chvatal.PacketAlignment.eightLaneBoundaryGroupedOutput_nodup' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.eightLaneBoundaryGroupedOutput_nodup
+/-- info: 'Chvatal.PacketAlignment.eightLaneBoundaryGroupedOutput_perm_output' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.eightLaneBoundaryGroupedOutput_perm_output
+/-- info: 'Chvatal.PacketAlignment.eightLaneBoundaryGroupedOutput_support_eq' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.eightLaneBoundaryGroupedOutput_support_eq
+/-- info: 'Chvatal.PacketAlignment.eightLaneBoundaryMatching_preservesGroupedPhysicalState' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.eightLaneBoundaryMatching_preservesGroupedPhysicalState
+/- Generic receiver batching interface guards. -/
+/-- info: 'Chvatal.PacketAlignment.genScatterMergeTreeBatch_exec_inside' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.genScatterMergeTreeBatch_exec_inside
+/-- info: 'Chvatal.PacketAlignment.finiteReceiverMacroBatch_of_list' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.finiteReceiverMacroBatch_of_list
+
+/- FlowA7 concrete global receiver batching guards. -/
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiverMacroData_exists' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiverMacroData_exists
+/-- info: 'Chvatal.PacketAlignment.flowA7_globalReceiverMacroBatch' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_globalReceiverMacroBatch
+/-- info: 'Chvatal.PacketAlignment.packetFamily64Block_outputEmbedding_eq_sourcePacket' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetFamily64Block_outputEmbedding_eq_sourcePacket
+/-- info: 'Chvatal.PacketAlignment.downSetEndpointPair_not_rankBlock' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.downSetEndpointPair_not_rankBlock
+/-- info: 'Chvatal.PacketAlignment.downSetEndpointPair_not_receiverRankBlock' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.downSetEndpointPair_not_receiverRankBlock
+/-- info: 'Chvatal.PacketAlignment.rankPacketCell_macroGroup' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.rankPacketCell_macroGroup
+/-- info: 'Chvatal.PacketAlignment.rankIn_blockOf_eq_sub' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.rankIn_blockOf_eq_sub
+/-- info: 'Chvatal.PacketAlignment.blockOf_blockOf_eq_shift' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.blockOf_blockOf_eq_shift
+/-- info: 'Chvatal.PacketAlignment.rankPacketCell_macroGroup_in_rankInterval' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.rankPacketCell_macroGroup_in_rankInterval
+/-- info: 'Chvatal.PacketAlignment.rankPacketCell_stream_contract' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.rankPacketCell_stream_contract
+/-- info: 'Chvatal.PacketAlignment.flowA7_shiftedUp_regularStreams_contract' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_shiftedUp_regularStreams_contract
+/-- info: 'Chvatal.PacketAlignment.flowA7_shiftedDown_interiorStream_contract' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_shiftedDown_interiorStream_contract
+/-- info: 'Chvatal.PacketAlignment.flowA7_alignedUp_regularStreams_contract' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_alignedUp_regularStreams_contract
+/-- info: 'Chvatal.PacketAlignment.flowA7_alignedDown_interiorStream_contract' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_alignedDown_interiorStream_contract
+/-- info: 'Chvatal.PacketAlignment.shiftedSelector_exceptionPool_budget' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.shiftedSelector_exceptionPool_budget
+/-- info: 'Chvatal.PacketAlignment.shiftedSelector_exceptionPool_index_card' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.shiftedSelector_exceptionPool_index_card
+/-- info: 'Chvatal.PacketAlignment.canonicalExceptionPool_family' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalExceptionPool_family
+/-- info: 'Chvatal.PacketAlignment.canonicalPacketFamily_residue_contract' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalPacketFamily_residue_contract
+/-- info: 'Chvatal.PacketAlignment.canonicalStreamResidues_exceptionPool' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.canonicalStreamResidues_exceptionPool
+/-- info: 'Chvatal.PacketAlignment.flowA7_shiftedDown_endpoint_contract' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_shiftedDown_endpoint_contract
+/-- info: 'Chvatal.PacketAlignment.flowA7_shiftedUp_endpoint_contract' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_shiftedUp_endpoint_contract
+/-- info: 'Chvatal.PacketAlignment.flowA7_shiftedUp_port_partition' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_shiftedUp_port_partition
+/-- info: 'Chvatal.PacketAlignment.flowA7_alignedUp_port_partition' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_alignedUp_port_partition
+/-- info: 'Chvatal.PacketAlignment.flowA7_zeroDownUp_port_partition' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_zeroDownUp_port_partition
+/-- info: 'Chvatal.PacketAlignment.flowA7_shiftedDown_port_partition' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_shiftedDown_port_partition
+/-- info: 'Chvatal.PacketAlignment.flowA7_alignedDown_port_partition' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_alignedDown_port_partition
+/-- info: 'Chvatal.PacketAlignment.flowA7_zeroDown_port_partition' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_zeroDown_port_partition
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_parentPort_streamPartition' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_parentPort_streamPartition
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_childPorts_streamPartition' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_childPorts_streamPartition
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_regularStreams_bundle' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_regularStreams_bundle
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_exceptionPool' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_exceptionPool
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_exceptionPool_batch' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_exceptionPool_batch
+/-- info: 'Chvatal.PacketAlignment.packetFamily64BlockEmbedding_rankInterval_support' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetFamily64BlockEmbedding_rankInterval_support
+/-- info: 'Chvatal.PacketAlignment.packetFamily64BlockList_rankIntervals' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.packetFamily64BlockList_rankIntervals
+/-- info: 'Chvatal.PacketAlignment.CanonicalPacketFullBlockProvenance.block_rankIntervals' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.CanonicalPacketFullBlockProvenance.block_rankIntervals
+/-- info: 'Chvatal.PacketAlignment.CanonicalStreamFullBlockData.block_rankIntervals' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.CanonicalStreamFullBlockData.block_rankIntervals
+/-- info: 'Chvatal.PacketAlignment.CanonicalStreamFullBlockData.rankCellStream_complete' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.CanonicalStreamFullBlockData.rankCellStream_complete
+/-- info: 'Chvatal.PacketAlignment.CanonicalStreamFullBlockData.groupBlock_rankInterval' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.CanonicalStreamFullBlockData.groupBlock_rankInterval
+/-- info: 'Chvatal.PacketAlignment.CanonicalStreamFullBlockData.rankIntervals_of_rankCellStreams' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.CanonicalStreamFullBlockData.rankIntervals_of_rankCellStreams
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_regularFullBlocks_rankIntervals' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_regularFullBlocks_rankIntervals
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_regular_partial_groups_bound' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_regular_partial_groups_bound
+/-- info: 'Chvatal.PacketAlignment.flowA7_receiver_regular_partial_groups_sum_le_258' depends on axioms: [propext,
+  Classical.choice,
+  Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Chvatal.PacketAlignment.flowA7_receiver_regular_partial_groups_sum_le_258

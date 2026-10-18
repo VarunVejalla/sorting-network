@@ -1393,3 +1393,771 @@ proves the rank-owner count equals the physical packet-slot count in that
 register. This resolves owner existence and exact counting; the hard remaining
 step is to show the fractional target induced by these destination counts is
 the dynamic selected-interval target, with a useful global contraction.
+
+### Bounded fan-in screen (2026-10-18)
+
+The active receiver selector has at most 129 regular streams. Treating its
+pooled full exception blocks as one additional stream gives fan-in at most
+130; the incomplete pool tail is still omitted. If the repeated schedule
+matches the j-th 4096-wire block across these streams, each matching cycle
+has at most 130 vertices, even when a stream has unbounded length. The new
+`bounded_fanin_cycle.py` generates a 15-round schedule for each fan-in
+`c=1..130` and verifies the product exactly using integer numerators over
+`2^15`. Every centered product has Frobenius norm at most `1/16`, which
+implies the same spectral bound. Under exact moving-target coupling, the
+checked factor-65 `WireFlow` energy transfer would therefore contract by at
+most `65/256` per stage before fresh rounding and boundary terms. The old
+26-round screen is historical; the exact current artifact is
+`bounded-fanin-15-exact.json`.
+
+This removes the need for an unbounded matching family only if the actual
+algorithm can match equal-index regular blocks and route the output packet IDs
+through the next stage. Neither that transition nor the target-average
+identity is proved. The screen is exact Python arithmetic, not a Lean theorem;
+the JSON records the seeds and certificate numerators. Following the
+2026-10-18 review, the next gate is a complete recurrence and scaled-down
+scheduler simulation; further routing formalization should wait until those
+tests show that moderate fresh error and the endpoint exceptions can be
+absorbed.
+
+### Conditional closed scalar recurrence screen (2026-10-18)
+
+There is now a sharper quantitative screen for the centered fine component.
+Let `V_t` be aggregate L2 error after subtracting each matching cohort's
+constant mean mode, and let `N=64^d` be the wire mass. Assume the checked
+factor-65 `WireFlow` transfer and the 15-round fan-in contraction act
+consecutively on this same centered state. For `K≤N` thresholds, at most
+`N/4096` active blocks, and 15 rounds, the rounded matching-cycle inequality
+gives
+
+```text
+V_(t+1) <= (sqrt(65)/16) V_t + (15/2)*sqrt((N/4096)*K) + delta_t
+        <= (63/125) V_t + (15/128)*N + delta_t.
+```
+
+The rational inequality `65/256 <= (63/125)^2` is exact. Starting from the
+crude centered bound `V_0<=128N`, 98 ordinary stages (the `d=40` count)
+reduce the zero-drift centered bound to `V/N <= 1875/7936 + negligible <=
+0.2363`; a uniform additional centered defect `delta_t<=eta*N` contributes
+at most `(125/62)*eta` in the limit. `conditional_15_round_recurrence.py`
+computes these constants with exact rational arithmetic and compactly reports
+finite-depth values.
+
+This is only a centered-component recurrence screen, not a closed scheduler
+argument. The constant mean mode is not contracted and must be tracked
+separately.
+The matching certificate is for ordinal stream blocks, while the Lean
+factor-65 theorem concerns selected receiver means. It is unproved that the
+same L2 state survives their composition; `delta_t` must still include the
+actual target drift, block regrouping, endpoint/tail exceptions and frontier
+terms. Nor is the resulting error shown sufficient for the final sorting
+induction. This gives a specific go/no-go task: identify and bound those
+terms in the actual transition before resuming routing formalization.
+
+### Blockwise L1 route (2026-10-18)
+
+The factor-65 recurrence is not the right object to compose directly: its
+Lean hypothesis orders the entire source `wireSets`, while the packet
+invariant orders only individual 64-wire cells. Instead, track one threshold
+count error per sorted 4096-wire block. The matching cycle on `c<=130` blocks
+has centered L2 contraction `rho<=1/16`; by `||z||_1<=sqrt(c)||z||_2`, its
+centered L1 contraction is at most `sqrt(130)/16 < 713/1000`. Each rounded
+pair contributes total L1 error at most one per round, so 15 rounds add at
+most `15c/2` over a c-vertex family. Summed over `C=N/4096` block vertices
+and `K<=N` thresholds, the normalized fresh term is `15/8192`.
+
+The abstract L1 routing step is now checked. `monotoneBits_assignedRankProfiles_L1_exact`
+handles arbitrary assignment of ranks of one sorted block to destination
+labels, and the new `monotoneBlocks_assignedRankProfiles_L1_nonincrease`
+sums these identities over several blocks with the triangle inequality. Thus
+for the induced suffix-interpolated destination targets, arbitrary
+repartitioning does not increase aggregate absolute count error. The focused
+Lean chain through `PacketMergeAxioms` passes, including its standard-axiom
+guard. This removes the need for a 258-fragment loss factor in this abstract
+transfer. Sorting each destination 4096-rank window preserves its total count
+and re-establishes the sorted-block invariant. But the matching contraction applies only after
+removing the constant error mode within each matching cohort. Track that coarse
+mode separately as `M_t`; port regrouping can turn it into centered error.
+The fine-scale recurrence would therefore be, under unproved transport
+conditions,
+
+```text
+v_(t+1) <= (713/1000)v_t + 15/8192 + kappa_t,
+v_t = (sum of cohort-centered absolute count errors)/(N*K).
+```
+
+The formal theorem assumes destination targets are the blockwise suffix
+interpolation induced by the rank owner map. Two lower-level pieces are already
+checked: `wireFlowLayerPieceOwner_profileMean_eq_selected` assigns the 66
+sender rank intervals to their actual selected receivers and matches their
+interpolated targets, while `wireSetPacketRankOwner` assigns physical wires
+to next-stage registers. The new `fourLaneBoundaryMatching_4096_rank_block`
+closes one support-level piece of the crosswalk: its grouped 64 outputs are
+exactly the 4096-wire rank block in the physical support, and the transition
+now exposes the grouped packet indexing. It does not yet show those packets
+are value-sorted within the block or identify each of its parity-lane targets
+with the 66-interval selected means. Here `kappa_t` still includes coarse-mode
+transfer, unmatched tails, and target mismatch. The `0.00638` stationary value
+applies only if `kappa_t=0`; there is no bound yet on `M_t` or its contribution
+to `kappa_t`.
+
+#### Exact form of the missing coarse-mode gate
+
+For a fixed threshold, write the block-count error vector as `e_t`. Let
+`Pi_t` replace each coordinate by the mean on its current matching cohort.
+The 15-round product `P_t` preserves `Pi_t e_t` exactly and contracts only
+`(I-Pi_t)e_t`; it cannot by itself improve errors that are constant within
+each cohort. Let `Q_t` be the ideal linear transfer induced by routing and
+reblocking, and let `Pi_(t+1)` use the next stage's cohorts. The missing
+coarse recurrence is therefore governed by
+
+```text
+Pi_(t+1) Q_t Pi_t e_t
+```
+
+on the global-zero-sum coarse subspace. The global sum is zero when the
+fractional targets partition the conserved threshold count, but that fact
+alone does not bound the sum of absolute cohort means. A sufficient gate is
+a uniform contraction for this coarse operator, together with bounds on the
+two cross terms `Pi_(t+1) Q_t (I-Pi_t)` and
+`(I-Pi_(t+1)) Q_t Pi_t`; the checked L1 nonincrease controls the transfer's
+total norm but does not make these terms contract. Proving such a coupled
+two-scale inequality from actual `WireFlow` rank intervals would close the
+mean-mode hole. If the induced coarse operator has norm one on nonconstant
+states, the present 15-round certificate cannot close the recurrence and a
+different cross-cohort schedule is needed. This is the decisive go/no-go
+lemma before further routing formalization.
+
+The obstruction is already present in four packets: take two matching
+cohorts and errors `(1,1)` and `(-1,-1)`. The global error is zero, the
+within-cohort centered error is zero, and every doubly stochastic matching
+product inside those cohorts leaves the errors unchanged. Thus the checked
+centered contraction, exact global count conservation, and L1 nonincrease
+can all hold while total L1 error stays positive. Only cross-cohort routing
+or matching can remove this mode.
+
+The actual checked `WireFlow` estimates explain why a naive mass-weighted
+Jensen argument does not provide the missing cross-map bound. In
+`wireFlowLayer_profile_error_sq_sum_le_source_energy`, the factor 65 enters
+when a receiver sums errors from its `Fin 65` neighboring source bags; Cauchy
+then bounds this by 65 times the sum of the source-error squares. The new
+kernel-checked `wireFlowLayer_interior_source_error_mass_conserved` sharpens
+the source-side accounting: for an interior source with sorted threshold
+profile, every rank-piece error has the same sign, and its absolute mass is
+routed across active receivers exactly once. This is an exact column-sum
+identity, before errors from distinct sources can cancel at one receiver.
+Rank-profile errors remain concentrated near each source's threshold cut, so
+replacing them by uniform density errors and applying mass-weighted Jensen is
+not justified. The checked `wireFlowLayerPieceOwner_profileMean_eq_selected`
+identifies the ideal target update but not the cancellation between source
+errors. The next incidence object is now explicit: apply the local matching
+cycle to these routed signed source contributions, then bound cancellation
+and coarse/fine transfer at receiver outputs. The exact source conservation
+does not itself contract the coarse mode.
+
+More concretely, for source `s`, receiver `b`, and threshold `theta`, define
+`E_(b,s)(theta)` as the sum of that source's 66-piece signed errors over
+`wireFlowLayerSelection b s`. The new theorem proves
+`sum_b |E_(b,s)| = |E_s|` for each interior source. The old factor-65 energy
+lemma first collapses `sum_s E_(b,s)` at the receiver and only then applies
+Cauchy, discarding precisely the stream-level cancellations that the
+15-round cycle is meant to exploit. The next recurrence should retain
+`E_(b,s)` subdivided by the actual 4096-rank stream groups until after the
+matching cycle. Existing support lemmas bound the fan-in at each receiver
+rank interval (129 regular streams, plus the exception pool), but they do not
+yet identify these signed error coordinates with the cycle's packet-count
+vector or its next-stage rank blocks. That identification, and contraction of
+the cohort-constant component, remain open.
+
+This gives a concrete budget for testing such a repair. The current
+conditional stage costs `15*13+78=273` layers per two bits, leaving room for
+at most nine additional 13-layer merge-and-deal rounds while staying below
+200 (`(273+9*13)/2=195`; ten extra rounds give `201.5`). So the route needs
+the existing reblocking to mix cohort means, or a cross-cohort correction of
+at most nine rounds; simply appending a second 15-round mixer misses the
+target before any other overhead.
+
+A small numerical screen points to a specific candidate worth testing:
+`matching_cycle_screen.py` sampled nine random perfect-matching rounds and
+found centered spectral norm about `0.20` for packet counts 256, 512, 1024,
+and 2048 (two samples per size). This suggests a nine-round expander-like
+mix across the coarse block index could fit the raw budget, if it can be made
+uniform in packet count and composed with the actual packet-ID routing. It is
+floating-point evidence only; it certifies neither an explicit family nor
+support compatibility, and should not be treated as a recurrence bound.
+
+The sparse power screen `global_matching_power_screen.py` extends this
+diagnostic without forming dense matrices. For one fixed seed per size, nine
+global matching rounds give estimated centered operator norms `0.195, 0.212,
+0.207, 0.209, 0.210` at packet counts `256, 1024, 4096, 16384, 65536`.
+A centered indicator supported on one packet contracts to norm ratio about
+`0.045` at counts 4096–65536; a `1/64`-mass indicator is about `0.04` as well.
+This directly tests a coarse cut rather than only random vectors and makes
+global mixing the leading way to defeat the bag-density subtree mode. It is
+still floating-point power iteration with independently sampled schedules at
+each size: it provides neither a uniform norm certificate nor a repeatable
+family. The exact integer screen still shows that a singleton count does not
+split under rounded merge-and-deal, so the global fractional contraction must
+be paired with a rare-tail allowance.
+
+The exact allocation script `exception_tail_budget.py` checks `7<=d<=80` and
+charges at most 4032 wires for each unmatched pool tail at each interior
+receiver. Its largest ordinary-stage sum over time is `3.9348527e-6 N` (at
+`d=80`). A uniform analytic envelope now removes the finite-depth restriction.
+At output time `tau`, active levels satisfy
+`level <= omega(tau) <= (tau+7)/3`; charging 4032 wires per receiver and
+summing the geometric level counts gives a stage tail at most
+`64^(omega(tau)+2-d) * N`. Since `tau <= 3d-20`, set
+`k=3d-20-tau >= 0`; the exponent is at most `floor((-7-k)/3)`. Hence over
+all ordinary times and all depths,
+
+```text
+sum_tau tail_wires(tau) / N
+  <= sum_(k>=0) 64^floor((-7-k)/3)
+  = 3 * sum_(j>=3) 64^(-j)
+  = 1/86016 < 1.163e-5.
+```
+
+`exception_tail_budget.py` checks the exact allocation formulas through depth
+80 against this envelope. This is a bound on unmatched-tail wire mass only;
+it does not prove that target mismatch or repartitioning amplifies profile
+error by at most that mass. If one assumes unit-gain conversion into the
+centered L1 state, the candidate limit rises from `1875/293888` to
+`22541/3526656 ~= 0.006392`; this is only a sensitivity bound. The true
+tail-to-profile-error map remains open.
+
+### Asymptotic existence bound for eight global matching rounds (research lead)
+
+The uniform-family part of the global-mixing gate has a nonconstructive route.
+For an even number `C` of packet IDs, let `S_1,...,S_8` be independent uniform
+fixed-point-free involutions (perfect matchings), and let
+`P_i=(I+S_i)/2` be the averaging operator of one merge-and-deal round on
+threshold counts. Their product is a noncommutative polynomial in the eight
+matching operators. Bordenave--Collins prove strong asymptotic freeness in
+probability for independent uniform random matchings on the zero-sum subspace;
+therefore, as `C` tends to infinity through even values, the centered operator
+norm of `P_8 ... P_1` converges in probability to the norm of the same
+polynomial in the left regular representation of the free product of eight
+groups of order two. See Theorem 3 and the matching convention in the paper:
+<https://annals.math.princeton.edu/wp-content/uploads/annals-v190-n3-p03-s.pdf>.
+
+In that free product, expanding the product gives one distinct reduced word
+for each subset of `{1,...,8}`, each with coefficient `1/256`. The
+length-`k` part has `binom(8,k)` coefficients. Haagerup's homogeneous
+word-length inequality bounds its operator norm by
+`(k+1)*sqrt(binomial(8,k))/256`; replacing each square root by its ceiling
+gives the exact rational upper bound `225/256 < 1`. (For seven rounds the
+same coarse estimate is `135/128 > 1`, so eight is the first count certified
+by this estimate.) Thus for every `epsilon>0`, with probability tending to
+one the finite centered norm is at most `225/256+epsilon`; in particular,
+for every sufficiently large even `C`, at least one eight-round schedule has
+norm at most `229/256` (take `epsilon=1/64`). Because `D(n)` is an existence
+minimum, a schedule chosen separately for each `C` is enough for an
+asymptotic upper bound; a deterministic explicit family is not required.
+
+This closes only the abstract asymptotic existence of a global linear
+contraction, conditional on the cited theorem and the standard Haagerup
+inequality. It is not a Lean-checked lemma, gives no effective cutoff for `C`,
+and does not handle odd `C` except by separately charging a leftover packet.
+Most importantly, the theorem says nothing about whether these packet-ID
+matchings compose with the actual `WireFlow` rank ownership, nor whether the
+integer rounding, coarse/fine mode conversion, exceptional packets, and
+frontiers satisfy a sorting-sufficient recurrence. Eight global rounds plus
+the 15 local rounds and 78-layer reblocking give `23*13+78=377` layers per
+two bits, or coefficient `377/2=188.5`. This leaves 11.5 layers per log unit
+for unmatched-packet or alignment overhead. The next
+go/no-go question is now whether this global mixer can be inserted into the
+actual packet state with a closed, sorting-sufficient error recurrence at
+this cost.
+
+The bound `229/256` is far too weak to simply compose with the checked
+factor-65 squared-error transfer: that crude composition would require a
+matching norm below `1/sqrt(65)`. The exact coefficient script finds that the
+Haagerup estimate first certifies this at 16 global rounds; with the same 15
+local rounds and 78-layer reblocking, the raw coefficient would be 240.5.
+Thus the 188.5 screen is useful only if the actual coupled operator has a
+better coarse-mode bound than factor 65, or the local and global mixing can be
+proved jointly to contract. It is not obtained by composing the two current
+separate bounds.
+
+A quantitative two-scale target is available. In the ideal block-diagonal
+model, bound the coarse mode by the eight-round factor `229/256` and the fine
+mode by `sqrt(65)/16` (the exact 15-round `1/16` contraction combined with the
+factor-65 flow energy bound). The coarse factor dominates. If the actual
+operator differs from this diagonal model by a combined coarse/fine
+cross-term operator of norm at most `delta`, then its norm is at most
+`229/256 + delta`; hence `delta < 27/256` suffices for strict contraction.
+This is a useful numerical go/no-go gate, not an established decomposition:
+current lemmas do not bound those cross terms, and the two factors have not
+been shown to act on compatible orthogonal subspaces. The exact margin is
+checked in `free_matching_bound.py`.
+
+There is a sharper sufficient test if the two cross maps are bounded
+separately. Suppose the operator on orthogonal coarse/fine errors has block
+norms at most `gamma`, `lambda` on the diagonal and bounds `b`, `c` on the
+coarse-to-fine and fine-to-coarse maps. For uniform bounds across stages, the
+scalar majorant `[[gamma,b],[c,lambda]]` has spectral radius below one when
+`bc < (1-gamma)*(1-lambda)`; a diagonal rescaling of the two component norms
+makes its off-diagonal bounds both `sqrt(bc)`. The symmetric special case
+`b=c=eta` therefore allows `eta^2 < (1-gamma)*(1-lambda)`. For the
+nine-global-round split, use
+`gamma=45/64` and `lambda<=63/125` (since `sqrt(65)/16 < 63/125`): the
+checked rational inequality allows each cross map to be at most `383/1000`,
+or allows their product to be `147/1000`, below the margin `589/4000`.
+The symmetric per-map threshold is larger than the coarser `19/64` additive
+perturbation allowance. For the
+14-local/10-global split, `gamma=71/128` and `lambda<=646/1000` give the
+symmetric sufficient bound `eta<=397/1000`, or asymmetric product bound
+`bc<=157/1000`, below `10089/64000`. These are conditional block-operator
+thresholds only; no current lemma gives either cross-map bound or proves the
+required orthogonal decomposition. The exact rational checks are in
+`free_matching_bound.py`.
+
+### Sharper nine-round coarse gate (2026-10-18)
+
+The same free-product/Haagerup estimate improves materially at nine rounds.
+Expanding `P_9...P_1` gives `binomial(9,k)` distinct reduced words of length
+`k`, each with coefficient `1/512`. The homogeneous Haagerup bound and
+integer ceilings give
+
+```text
+||P_9...P_1|| <= sum_(k=0..9) (k+1)*ceil(sqrt(binomial(9,k)))/512
+               = 352/512 = 11/16.
+```
+
+By strong asymptotic freeness for independent uniform perfect matchings, for
+every sufficiently large even packet count there is a nine-matching schedule
+with centered norm at most `11/16 + 1/64 = 45/64`. This is an abstract
+existence statement conditional on that external theorem; it is neither an
+explicit family nor composed with the actual `WireFlow` state. In the same
+conditional two-scale model, the fine diagonal factor remains `sqrt(65)/16`,
+so the coarse diagonal factor `45/64` dominates. A combined cross-mode
+operator bound below `1-45/64=19/64` would then suffice for strict contraction,
+versus `27/256` with eight rounds. The depth budget is
+`(15 local + 9 global)*13 + 78 = 390` layers per two bits, giving conditional
+coefficient `195` and only five layers of margin below 200. Thus the sharper
+mixing estimate enlarges the cross-mode allowance while spending most of the
+remaining depth slack; it does not close the target-coupling, coarse/fine,
+rounding, rare-tail, frontier, or sorting-sufficiency gaps.
+
+### Fourteen-local plus ten-global allocation (2026-10-18)
+
+The exact 15-round bounded-fan-in cycles can be truncated after 14 rounds.
+`bounded_fanin_prefix_screen.py` recomputes their Frobenius certificates for
+all fan-ins `1..130` and obtains
+`rho^2 <= 425763/67108864 < (2/25)^2` (worst fan-in 115). This is an exact
+finite Python check, not Lean. For ten global matching rounds, the same
+Haagerup ceiling estimate is `69/128`; strong asymptotic freeness then gives
+existential schedules of norm at most `71/128` for sufficiently large even
+packet counts, conditional on the cited theorem.
+
+In the ideal two-scale model, the fine factor squared is at most
+`65*(2/25)^2 = 52/125`, so its norm is below `13/20`; the global coarse bound
+`71/128` is smaller. The diagonal norm is therefore at most `2*sqrt(65)/25`,
+and a combined cross-mode term below `1 - 2*sqrt(65)/25` (more than `7/20`)
+would suffice for contraction. This widens the modeled cross-term allowance
+from `19/64` in the 15+9 split. The layer budget remains
+`(14+10)*13+78 = 390` per two bits, or coefficient `195`.
+
+This is a better numerical gate, not progress on the decisive proof gap. The
+one-stage state still has no proved coupling to actual `WireFlow` reblocking,
+no bound on the cross-mode term, and no sorting-sufficient recurrence for
+rounding, rare cohorts, frontiers, and startup/termination. The next work
+should test/derive that complete recurrence in a scaled scheduler model before
+adding more receiver/routing Lean plumbing.
+
+#### Why the proposed small simulation is not yet a scheduler test
+
+The current Lean transition contracts still do not define the full routing
+operator a faithful simulation would need. `fourLaneBoundaryMatching_4096_rank_block`
+now maps each grouped 64-output support to an exact 4096-wire support-rank
+interval and exposes the output packet indexing. It does not yet give the
+packet-value profile on that block or align its parity-lane targets with the
+next 66 `WireFlow` sender intervals; residues and frontiers are also open.
+Conversely, `flowA7_globalReceiverMacroBatch` provides a sorted logical merge
+output on scattered supports, but does not show those supports are the next
+physical rank cells. A reduced simulation can now use the proved full-block
+support transition, but any handling of partial packets, target values, or
+frontiers must be derived before claiming it tests the actual recurrence.
+
+The suggested fanout-4, packet-size-16 scale also magnifies rounding. For the
+14+10 split, the conservative positive-spill term `s/(4m)` is `3/8` per
+threshold per stage at `m=16`; at `m=4096` it is `3/2048` (about `0.001465`).
+Across 98 fixed-mass stages these crude totals are `36.75N` and about
+`0.1436N`, respectively. Thus the small model can probe persistence and
+rare-count behavior, but cannot decide the actual precision budget without a
+separate scale-aware error analysis.
+
+There is also a metric limitation: this operator-norm result is L2, not L1.
+After eight pairwise averaging rounds, a singleton nonnegative excess has
+support on at most `2^8=256` packet IDs and still has total mass one. For
+`C>256`, writing `q` for its output distribution and `u` for uniform mass,
+the support bound gives
+`||q-u||_1 >= 2*(1-256/C)`. The input delta had norm
+`2*(1-1/C)`, so the ratio tends to one as `C` grows. The exact integer update
+is even starker: a lone threshold occurrence remains a lone occurrence. Thus
+this result can control dense coarse modes in L2, but cannot replace the
+separate rare-tail/fringe argument or by itself give the L1 recurrence needed
+by the current sorting interface.
+
+### Uniform-random compare-split is not a tail repair
+
+A different packet operation would merge two sorted blocks and send the lower
+half to the lower packet ID and the upper half to the higher ID. Unlike
+merge-and-deal averaging, this moves a singleton threshold occurrence toward
+larger IDs. But if each round uses a uniform random perfect matching on `C`
+ordered packet IDs, the singleton can reach the final ID only when its current
+packet is paired with that ID. The conditional chance in any round is exactly
+`1/(C-1)`, regardless of its current location. Therefore after `R` rounds its
+chance of reaching the final packet is at most `R/(C-1)`. With eight rounds
+per hierarchy level and `C=64^d`, this tends to zero as `d` grows. So uniform
+random compare-split matchings also fail the all-input singleton test at
+logarithmic depth; a viable tail mechanism needs rank-aware multiscale edges,
+not merely random global pairings. The exact union-bound arithmetic is in
+`random_compare_split_tail_screen.py`. This rejects only uniform-random
+matching schedules, not expander-based or recursively routed compare-split
+constructions.
+
+Reblocking an arbitrary 4096-wire destination window has a reusable 78-layer
+construction in principle: bitonic-sort its 64 consecutive 64-wire cells in
+parallel (21 layers), then use `packetPowerTree6GroupNet` to merge the 64 runs
+(57 layers). Together with 15 thirteen-layer mixing rounds the raw budget is
+273 layers, or 136.5 per two bits of progress. The unproved core is now
+specific: formalize interval-fragment L1 nonincrease and exact target
+compatibility across the actual routing, track the coarse mode and bound its
+conversion into fine error, then prove that this two-scale error is sufficient
+for the sorting induction. No global bound follows yet.
+
+One way to reduce the sortedness pressure is to reblock by *receiver* rank
+intervals of width 4096 after routing, instead of assuming the source-port
+4096 groups remain rank-aligned. `flowA7_receiver_regular_partial_groups_sum_le_258`
+says such an interval has at most two partial source groups per each of the
+129 regular streams. These intersections are contiguous rank fragments when
+their source packet is sorted. A fixed 4096-wire sorter can handle the whole
+destination interval regardless of fragment count: bitonic-sort each of its
+64 consecutive 64-wire cells (21 layers, parallel), then use the existing
+64-run merge tree (57 layers), total 78. In combination with 15 mixing rounds
+the raw conditional budget is `(15*13+78)/2 = 136.5` per two bits of scale.
+This is a plausible sub-200 design budget, not an end-to-end bound. The
+remaining mismatch is precise: the checked factor-65 recurrence assumes each
+entire source `wireSets` is sorted, but the current `PacketSortedOn` invariant
+only sorts each 64-wire cell. A new blockwise transfer inequality must show
+how the 4096-window profile errors move through port fragments and how the
+exception tail enters the matching cycle. The current 258 count alone does
+not bound that error.
+
+### Exact integer-state screen (2026-10-18)
+
+`integer_matching_state_screen.py` tests the merge-and-deal count update itself,
+not its linear averaging relaxation. For one binary threshold, a sorted packet
+is represented by its one-count; a matched pair with counts `x,y` becomes
+`floor((x+y)/2), ceil((x+y)/2)`. With 16 packets of size 16 and a fixed
+15-round schedule, the L1 discrepancy from the conserved mean fell from 128 to
+0 on a half-full/half-empty input, and from `505/8` to `15/8` on a seeded
+random input. But a single one among 16 packets retained L1 discrepancy `15/8`
+exactly (it only moved to another packet). This confirms that dense imbalance
+mixes well in this finite example while sparse cohorts do not contract under
+integer rounding. The sparse case is why the linear spectral certificate alone
+cannot supply the required recurrence; rare-count/fringe control must be part
+of the state or paid for separately.
+
+This is a reproducible local matching-round simulation, not the scaled full
+scheduler requested by the review: it has no cross-level `WireFlow` routing,
+repartitioning, or frontier transitions. It checks the rounding dynamics but
+does not advance the formal recurrence gate by itself.
+
+### Interior bag-constant transfer (derived, not yet formalized)
+
+The actual `flowSizes7` mid-node formulas do give an explicit first model for
+the coarse transfer. Restrict to an interior receiver at level `l` at time
+`t+1`, with its parent at `l-1` and all 64 children at `l+1` also in the
+`mid` case. Assume the threshold error has constant density within each whole
+source bag, so restricting to an outgoing rank piece preserves that density.
+Then the receiver's density error is
+
+```text
+e'(b) = alpha * e(parent(b)) + beta * sum_(j=0..63) e(child_j(b)),
+alpha = (64^4 - 1)/(64^6 - 1),
+beta  = (4095 * 64^3)/(64^6 - 1).
+```
+
+Indeed, `down_parent = (64^4-1)*64^(g+1)`, each `up_child =
+4095*64^(g+4)`, and `a_receiver = 64^(g+7)-64^(g+1)` for the receiver's
+mid exponent `g`; these satisfy `down_parent + 64*up_child = a_receiver`.
+Thus `alpha + 64*beta = 1`, `alpha` is about `1/4096`, and the 64 children
+carry about `4095/4096` of the mass. This identifies the bag-level coarse
+operator as near sibling averaging and makes its slow modes concrete: errors
+constant on each sibling family pass through the child average. It is not a
+contraction proof for the packet state. The actual recurrence needs rank-block
+errors, which need not have uniform density within a bag, and must compose this
+map across changing active levels and frontiers. The next mathematical gate
+is to lift this exact flow-weight calculation to rank-block error and determine
+whether successive levels remove the sibling-constant modes.
+
+There is a sharper warning for this restricted operator. Use the displayed
+row weights on a finite 64-ary tree, and put the missing probability on a
+self-loop at the root and leaves. This artificial reflecting boundary keeps
+the same reversible edge weights; detailed balance gives stationary weight
+per bag proportional to `(beta/alpha)^l`. Because there are `64^l` bags at
+level `l`, the stationary mass of each successive level grows by
+
+```text
+R = 64 * beta / alpha = 16777216 / 4097  (about 4095).
+```
+
+A descendant subtree of height `h` has stationary mass
+`pi(root) * sum_(j=0..h) R^j`, but only one edge leaves it, with flow
+`alpha * pi(root)`. Its boundary-to-volume ratio is therefore
+`alpha / sum_(j=0..h) R^j`: about `5.96e-8` already at `h=1`, and
+`1.46e-11` at `h=2`. In the finite tree, if the subtree has stationary mass
+fraction `p`, the Rayleigh quotient of its centered indicator is exactly
+`1 - alpha / ((sum_(j=0..h) R^j) * (1-p))`. For a subtree rooted at level 1,
+`p` tends to `1/64` as the ambient depth grows. Thus the centered indicator is
+an almost preserved coarse mode in this homogeneous model. Sibling averaging alone
+does not give a depth-uniform contraction; it can rapidly erase variation
+within a sibling set while retaining biases between deep subtrees. This is
+exact rational conductance arithmetic for the bag-constant mid model, not a
+bound for the actual time-varying schedule. Actual frontier rows and the
+packet matching/reblocking operators must be included before transferring the
+obstruction to UB-25. It gives a sharper go/no-go test: the proposed at most
+nine cross-cohort rounds must actually connect these subtree modes globally,
+not just mix streams local to one receiver.
+
+### Actual flowA7 cut screen (exact arithmetic, packet state still open)
+
+`flow_subtree_cut_screen.py` replaces the artificial homogeneous boundary with
+the actual `Schedule7`/`FlowTable` allocation and up-flow formulas. At
+`d=40,t=40`, the active source levels are `4,6,...,14`; choose one level-6
+root bag and all its active descendants. Their exact mass is
+`1.45519152e-11` of the total. The only outgoing mass is the root's up-flow,
+which is `2.67211218e-51` of the subtree mass. The next-stage descendant
+family has exactly the remaining mass, verified by a `Fraction` identity in
+the script. Centering the subtree indicator by its conserved global mean gives
+a one-stage bag-density L2 norm ratio lower bound `0.999999999992724`. At
+`d=80,t=80`, the corresponding root up-flow fraction is `1.51236190e-123`.
+
+This is an exact screen of the linear transfer on densities constant within
+whole bags, and includes the real active levels and frontiers for these sample
+stages. It shows that `WireFlow` alone barely changes a deep-subtree mode; any
+receiver-local operation also sees constant density on every interior input
+piece and cannot remove that mode. It is not a counterexample to the sorting
+theorem: the centered indicator has not been shown realizable by the packet
+profile state, and no global cross-receiver matching is included. The next
+gate is now precise: show that the budgeted global packet matchings connect
+these descendant families with uniform contraction, or prove that actual
+rank-profile constraints exclude this mode. No recurrence or coefficient
+improvement follows yet.
+
+### Two-scale recurrence also needs an error-budget check (2026-10-18)
+
+The block-matrix gates in `free_matching_bound.py` show only homogeneous
+stability. The first additive-error screen mixed L1-normalized rounding terms
+with L2 operator norms and is retracted. The corrected sensitivity screen uses
+the single normalized L2 state
+`||e||₂/(m*sqrt(C*K))`, where `C` is the number of packets, `K` the number of
+thresholds, and `m=4096`. In one compare-split round, the rounding residual
+has squared norm at most `C*K/4`: each of at most `C/2` matched pairs
+contributes at most `1/2` across its two outputs per threshold. Its normalized
+norm is therefore at most `1/(2*m)` per round. With 24 rounds per stage,
+charge this entire bound to *each* orthogonal coarse/fine component, since the
+actual projections are unknown: `b_c=b_f=3/1024`.
+
+For the assumed affine recurrence
+
+```text
+(c', f') <= [[gamma, eta], [eta, lambda]] (c, f) + (b_c, b_f),
+```
+
+the fixed point is
+`c=((1-lambda)b_c+eta*b_f)/det` and
+`f=(eta*b_c+(1-gamma)b_f)/det`, with
+`det=(1-gamma)(1-lambda)-eta^2`. For nine global plus 15 local rounds,
+`gamma=45/64`, `lambda=63/125`, the conditional equilibrium total is about
+`0.01578` at `eta=0`, `0.02119` at `eta=0.1`, and `0.03259` at `eta=0.2`.
+For ten global plus 14 local rounds it is about `0.01485`, `0.01983`, and
+`0.02987`, respectively. At the respective sufficient contraction thresholds
+`eta=383/1000` and `eta=397/1000`, the equilibrium bounds grow to about `8.14`
+and `147.6`; merely meeting the determinant gate is nowhere near enough for a
+useful error invariant. For the nine-plus-15 split, a total-error target of
+`0.02` requires `eta<0.082784`, while `0.03` requires `eta<0.184049`; the
+ten-plus-14 split requires `eta<0.102537` and `eta<0.200873`, respectively.
+These are conditional sensitivity values, not a
+scheduler bound; no actual cross-map norm or sorting-sufficient tolerance is
+known. The calculation reinforces that matrix contraction alone is
+insufficient. The exact arithmetic is reproducible with
+`python upper-bound/experiments/packets/free_matching_bound.py`.
+
+### Global spectral mixing has a rank-target drift gate (2026-10-18)
+
+The nine-round spectral norm is for deviations from the *global constant*
+packet profile. It cannot be applied to sorting error until the rank-dependent
+target transport is included. An exact adversary illustrates the issue: take
+`C=2h` sorted packets of length `m=4096`, with packet `i` containing only key
+`i`, and pair each packet `i<h` with its antipodal rank `C-1-i`. After one
+merge-and-deal, both packets in every pair have `m/2` copies of each endpoint
+key. Across the `C-1` thresholds between packet keys, the total L1 packet-count
+error relative to the rank-sorted target is `m*sum_i(C-1-2i)=m*C^2/4`.
+Normalized by `C*m*(C-1)`, this is `C/(4*(C-1))`, exactly `16/63` at `C=64`
+and tending to `1/4`.
+Sorting each 4096-wire packet afterward cannot change these threshold counts;
+only a rank-aware reassignment between packet labels can correct them.
+
+This is not an obstruction to every rank-aware schedule. It shows that
+rank-agnostic cross-rank matching can create order-`1/4` sorting error on an
+already sorted state, far above the `0.02` tolerance used in the sensitivity
+screen. The global matching product may contract its own mean-centered
+operator while simultaneously destroying the rank signal. Any valid
+recurrence must track this target drift through the subsequent reassembly;
+the current coarse/fine matrix model omits it. The exact finite calculation
+is included in `free_matching_bound.py`.
+
+The antipodal example extends to an exact identity for any one perfect
+matching `M` on `C` rank-indexed packets. Start with packet `i` containing
+`m` copies of key `i`, for even `m`. For a threshold between keys `t` and
+`t+1`, an edge `(i,j)` straddling that cut makes both output packets half
+wrong, contributing `m` total L1 error. Summing over all cuts gives
+
+```text
+aggregate target drift = m * sum_(i,j in M) |i-j|,
+normalized drift        = sum_(i,j in M) |i-j| / (C*(C-1)).
+```
+
+Thus normalized drift `<=0.02` in one round requires average matching-edge
+span at most `0.04*(C-1)`. A uniformly random perfect matching has expected
+normalized drift `(C+1)/(6*(C-1))`, tending to `1/6`; the adjacent matching
+has only `1/(2*(C-1))`. The exact script
+`rank_target_drift.py` checks the identity by direct threshold counts for all
+124 perfect matchings at `C<=8`, and reports `1/126` versus `16/63` for
+adjacent and antipodal matchings at `C=64`. This is a one-round cost identity,
+not a bound after rank-aware reassembly. It quantifies why a globally mixing
+matching cannot be inserted into the target recurrence for free: the later
+reassembly must remove this drift, or the matching schedule must also encode
+rank locality.
+
+For a product `P` of rank-agnostic matching averages, the same drift has a
+useful interpretation:
+
+```text
+sum_(all rank cuts k) ||s_k - P s_k||_1
+  = sum_(start rank i) E[|X_i - i|],
+```
+
+where `X_i` is the endpoint of the time-inhomogeneous walk that, at each
+matching, stays at its current packet ID or crosses its matched edge with
+probability `1/2` (the matching order is reversed for row distributions of
+the column-product `P`). Thus target drift is the total Wasserstein-1
+displacement of rank labels. The extended `global_matching_power_screen.py`
+computes it by enumerating the at-most `2^R` walk paths per starting ID. For
+one reproducible sample of nine independent uniform matchings, the normalized
+drift is `0.33835`, `0.33477`, and `0.33296` at `C=64,256,1024`, while the
+estimated centered operator norms are `0.156`, `0.191`, and `0.205`. The dense
+profile calculation agrees with the path calculation to `1e-6` at `C<=256`.
+This is a finite floating-point sample, not a uniform-family result. It shows
+that the sampled mixer nearly erases the rank target before reassembly, so a
+future recurrence must explicitly demonstrate how its bounded-depth
+rank-aware correction restores rank information.
+
+For the sampled nine-round schedule, the proposed packet-local 4096-wire
+sorter cannot provide that correction: it preserves every packet's threshold
+count, so the `~1/3` rank-label drift is unchanged. The schedule therefore
+fails the conditional `0.02` aggregate-error target if followed only by the
+current per-packet sorter. A cross-packet rank-aware correction is necessary
+for this sampled schedule and is absent from the 195-layer accounting. This
+does not exclude a different matching family whose rank drift is smaller, nor
+does it bound the cost of a redesigned correction.
+
+There is also a pre-reassembly lower bound that uses only the claimed spectral contraction.
+For each of the `C-1` threshold cuts in a rank-sorted packet array, the ideal
+packet-count vector is a 0/1 step `s_k`, with centered squared norm
+`k(C-k)/C`. If a rank-agnostic product `P` has centered L2 norm at most
+`gamma`, then
+`||s_k-Ps_k||_2 >= (1-gamma)||s_k-mean(s_k)||_2`. Since every coordinate of
+`Ps_k` lies in `[0,1]`, the L1 drift is at least this squared L2 drift. Summing
+over cuts gives a normalized fractional-profile drift approaching
+`(1-gamma)^2/6`. Integer rounding over `R` merge-and-deal rounds can subtract
+at most `R/(2m)`. At `C=65,536`, `m=4096`, the nine-round `gamma=45/64` gate
+forces pre-reassembly drift at least `21889385/1610612736` (about `0.01359`);
+asymptotically the bound is `167/12288`. For ten rounds with
+`gamma=71/128`, the corresponding values are about `0.03183` and
+`1043/32768`. Subsequent rank-aware reassignment or rebinning can change this
+drift, which is exactly why its target map must be included in the recurrence.
+This lower bound applies only when the global product acts directly on
+rank-indexed profiles before that correction. The exact arithmetic is in
+`free_matching_bound.py`.
+
+#### Stronger rank-ramp variance bound
+
+A centered rank ramp gives a stronger lower bound for the same pre-reassembly
+model. Let `P` be doubly stochastic with operator norm at most `gamma` on
+mean-zero vectors, and let `X_i` have distribution `P[i, ·]`. The target drift
+over all rank cuts is `sum_i E|X_i-i|`. With
+`r_i=i-(C-1)/2`, the summed conditional variance is
+
+```text
+sum_i Var(X_i) = ||r||_2^2 - ||P r||_2^2
+               >= (1-gamma^2) * C*(C^2-1)/12.
+```
+
+The squared displacement dominates this variance, and
+`|X_i-i| >= (X_i-i)^2/(C-1)`. Therefore the normalized fractional drift is
+at least
+
+```text
+(1-gamma^2) * (C+1)/(12*(C-1)).
+```
+
+Each rounded compare-split round contributes at most `1/(2m)` normalized L1
+error, and later doubly stochastic rounds are L1 nonexpansive, so subtract
+`R/(2m)` for `R` rounds. For the nine-global-round gate
+`gamma=45/64`, `C=65,536`, and `m=4096`, the resulting lower bound is exactly
+`132188237/3221176320 ≈ 0.0410373` (asymptotic value `2071/49152 ≈
+0.0421346`). For ten rounds with `gamma=71/128`, it is
+`242552597/4294901760 ≈ 0.0564745` (asymptotic value `3781/65536 ≈
+0.0576935`). These exceed the `0.02` sensitivity target even after rounding.
+Thus no product satisfying those spectral gates can be used directly on
+rank-indexed profiles and then charged to the proposed `0.02` recurrence.
+The result does not rule out a rank-aware rebinning between/after mixing that
+changes the target state; that correction is precisely the missing operation.
+Exact rational checks are in `free_matching_bound.py`.
+
+#### Drift persists under every whole-packet relabeling
+
+The rank-ramp variance estimate still compares the output with its current
+labels. In fact, the spectral contraction also limits the best possible
+relabeling of whole packets. Fix a rank step `y` with `h` high packets and
+`sigma^2=h(C-h)/C`. Put `x=Py`, so `x` has mean `h/C` and centered norm at
+most `gamma*sigma`. For any choice `H` of `h` output labels to receive the
+high target ranks, Cauchy gives
+
+```text
+sum_(i in H) x_i <= h^2/C + gamma*sigma^2.
+```
+
+Because `sum_i x_i=h`, the L1 error after this relabeling is
+`2*(h-sum_(i in H)x_i)`, hence at least `2*(1-gamma)*sigma^2`. This holds
+for the best permutation, and therefore for every packet permutation. Sum
+over `h=1,...,C-1` and normalize to get
+`(1-gamma)*(C+1)/(3*C)`. After charging merge-deal rounding, the finite
+lower bounds at `C=65,536,m=4096` are `1231379/12582912 ≈ 0.0978612` for the
+nine-round `gamma=45/64` gate and `1234963/8388608 ≈ 0.147219` for the
+ten-round `gamma=71/128` gate. Both greatly exceed `0.02`.
+
+Thus a permutation of whole output packets cannot repair the rank signal.
+The mixer must be followed by comparators that move values across packet
+boundaries, or the matching product must act on a different, rank-aware state
+for which this spectral estimate does not apply. The proposed independent
+4096-wire packet sort preserves each packet's threshold count, so it is not
+such a correction. The exact rational screen is in
+`free_matching_bound.py`; this remains a conditional pre-reassembly
+obstruction, not a theorem about every possible scheduler.
+
+The per-cut inequality is now kernel-checked in `RankDriftBound.lean` as
+`selected_sum_centered_le` and `rank_step_l1_error_lower_bound`. Its hypotheses
+are explicit: a fractional packet-count vector has total mass `h`, coordinates
+in `[0,1]`, and centered squared error at most
+`gamma^2*h*(C-h)/C`. It proves the L1 error lower bound for every set of `h`
+high-rank labels, so it includes the best whole-packet relabeling. The Lean
+axiom audit reports only `propext`, `Classical.choice`, and `Quot.sound`. The
+sum over all cuts, rounding correction, and finite numeric substitutions
+remain independently checked by the exact-rational Python script; crucially,
+no theorem yet shows the actual scheduler satisfies the variance hypothesis.

@@ -839,12 +839,24 @@ theorem flowA7_receiver_allCases_divisible64_batch_profiles {d : Nat}
       blocks.Nodup ∧
       (∀ e ∈ blocks, ∀ f ∈ blocks, e ≠ f → ∀ i j, e i ≠ f j) ∧
       (genScatterMergeTreeBatch (packetPowerTree6 (α := α)) blocks).depth ≤ 57 ∧
+      (∀ e ∈ blocks, Monotone (fun i =>
+        (genScatterMergeTreeBatch (packetPowerTree6 (α := α)) blocks).exec
+          ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) (e i))) ∧
       (∀ e ∈ blocks, ∀ j : Fin 64,
         Monotone (fun i =>
           (genScatterMergeTreeBatch (packetPowerTree6 (α := α)) blocks).exec
             ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
             (genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α)) e
               (Fin.cast (packetPowerTree6_leafCount (α := α)).symm j) i))) ∧
+      (∀ e ∈ blocks, ∀ j l : Fin 64, j.val < l.val → ∀ i k,
+        (genScatterMergeTreeBatch (packetPowerTree6 (α := α)) blocks).exec
+          ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+          (genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α)) e
+            (Fin.cast (packetPowerTree6_leafCount (α := α)).symm j) i) ≤
+        (genScatterMergeTreeBatch (packetPowerTree6 (α := α)) blocks).exec
+          ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+          (genScatterMergeTreeOutputEmbedding (packetPowerTree6 (α := α)) e
+            (Fin.cast (packetPowerTree6_leafCount (α := α)).symm l) k)) ∧
       (∀ e ∈ blocks, ∀ j : Fin 64, ∀ threshold : α,
         boolTrueCount (fun i : Fin 64 => decide (threshold ≤
           (genScatterMergeTreeBatch (packetPowerTree6 (α := α)) blocks).exec
@@ -879,8 +891,14 @@ theorem flowA7_receiver_allCases_divisible64_batch_profiles {d : Nat}
   have hsortedOut := packetFamily64BlockList_merge_output_sorted castPackets hdis'
     ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
     (fun i => hsorted (Fin.cast hq i))
-  refine ⟨blocks, hnd, hdisBlocks, hdepth, ?_, ?_⟩
+  refine ⟨blocks, hnd, hdisBlocks, hdepth, ?_, ?_, ?_, ?_⟩
+  · exact packetFamily64BlockList_merge_output_blockSorted castPackets hdis'
+      ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+      (fun a => hsorted (Fin.cast hq a))
   · exact hsortedOut
+  · exact packetFamily64BlockList_merge_output_valuesOrdered castPackets hdis'
+      ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+      (fun a => hsorted (Fin.cast hq a))
   · intro e he j threshold
     exact packetFamily64BlockList_merge_output_threshold_profile
       castPackets hdis' ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
@@ -1117,6 +1135,42 @@ theorem profileInterval_formula (m X a b : Nat) (hab : a ≤ b) (hb : b ≤ m) :
   unfold profileInterval
   exact profileTail_interval_count32 m X a b hab hb
 
+/-- Restricting a suffix profile to a rank cell and then to a subinterval
+gives the same count as restricting the original profile directly. -/
+theorem profileInterval_restrict_cell (m X c d a b : Nat)
+    (hX : X ≤ m) (hcd : c ≤ d) (hd : d ≤ m)
+    (hca : c ≤ a) (hab : a ≤ b) (hbd : b ≤ d) :
+    profileInterval m X a b =
+      profileInterval (d - c) (profileInterval m X c d)
+        (a - c) (b - c) := by
+  have hlocalAB : a - c ≤ b - c := by omega
+  have hlocalB : b - c ≤ d - c := by omega
+  have hlen : (b - c) - (a - c) = b - a := by omega
+  have htail : (d - c) - (b - c) = d - b := by omega
+  rw [profileInterval_formula m X a b hab (by omega),
+    profileInterval_formula (d - c) (profileInterval m X c d)
+      (a - c) (b - c) hlocalAB hlocalB, hlen, htail,
+    profileInterval_formula m X c d hcd hd]
+  by_cases hcell : X - (m - d) ≤ d - c
+  · rw [Nat.min_eq_right hcell]
+    have hsame : X - (m - b) = (X - (m - d)) - (d - b) := by omega
+    rw [hsame]
+  · have hglobal : b - a ≤ X - (m - b) := by omega
+    have hcellFull : d - c ≤ X - (m - d) := by omega
+    rw [Nat.min_eq_left hglobal, Nat.min_eq_left hcellFull]
+    omega
+
+/-- Packet-local suffix targets need not combine into the suffix target of
+their aggregate count, even when the packet supports are consecutive physical
+cells. The first packet is full and the second empty: together they have 64
+ones, but their first-cell target is 64 while the aggregate 128-rank suffix
+target assigns zero to that cell. This rules out target recombination from
+packet totals and support alignment alone. -/
+theorem profileInterval_packetwise_vs_aggregate_counterexample :
+    profileInterval 64 64 0 64 + profileInterval 64 0 0 64 = 64 ∧
+    profileInterval 128 64 0 64 = 0 := by
+  constructor <;> norm_num [profileInterval, profileTail]
+
 /-- A fixed rank interval's ideal count changes by at most the change in
 the packet's total count. This is the local estimate needed when ports select
 different fixed rank intervals from a cohort. -/
@@ -1198,6 +1252,24 @@ def profileIntervalMean (m q : Nat) (frac : Real) (a b : Nat) : Real :=
   (1 - frac) * profileInterval m q a b +
     frac * profileInterval m (q + 1) a b
 
+/-- The fractional target also restricts exactly: first take the two
+neighboring integer target counts on the containing cell, then interpolate
+their local subinterval counts. -/
+theorem profileIntervalMean_restrict_cell (m q c d a b : Nat) (frac : Real)
+    (hq : q + 1 ≤ m) (hcd : c ≤ d) (hd : d ≤ m)
+    (hca : c ≤ a) (hab : a ≤ b) (hbd : b ≤ d) :
+    profileIntervalMean m q frac a b =
+      (1 - frac) * profileInterval (d - c)
+        (profileInterval m q c d) (a - c) (b - c) +
+        frac * profileInterval (d - c)
+          (profileInterval m (q + 1) c d) (a - c) (b - c) := by
+  unfold profileIntervalMean
+  rw [profileInterval_restrict_cell m q c d a b (by omega)
+      hcd hd hca hab hbd,
+    profileInterval_restrict_cell m (q + 1) c d a b (by omega)
+      hcd hd hca hab hbd]
+
+
 /-- Count-profile contributed by any selected family of rank intervals. A
 fixed owner assigns each interval to its eventual receiver. -/
 def profileIntervalOwnerCount {D : Type} [DecidableEq D] {m p : Nat}
@@ -1255,6 +1327,29 @@ private theorem profileInterval_mono_X (m X Y a b : Nat) (hab : a ≤ b) (hb : b
   rw [profileInterval_formula m Y a b hab hb, profileInterval_formula m X a b hab hb]
   exact min_le_min le_rfl (Nat.sub_le_sub_right hXY _)
 
+/-- On any containing rank cell, the fractional global target induces exactly
+a local fractional target. The cell's integer target increases by either zero
+or one across adjacent global thresholds; in the zero case the local
+interpolation parameter is zero. -/
+theorem profileIntervalMean_restrict_cell_local (m q c d a b : Nat) (frac : Real)
+    (hq : q + 1 ≤ m) (hcd : c ≤ d) (hd : d ≤ m)
+    (hca : c ≤ a) (hab : a ≤ b) (hbd : b ≤ d) :
+    profileIntervalMean m q frac a b =
+      profileIntervalMean (d - c) (profileInterval m q c d)
+        (if profileInterval m (q + 1) c d = profileInterval m q c d
+         then 0 else frac) (a - c) (b - c) := by
+  have hmono := profileInterval_mono_X m (q + 1) q c d hcd hd (by omega)
+  have hchange := profileInterval_change_le m (q + 1) q c d hcd hd (by omega)
+  have hstep : profileInterval m (q + 1) c d = profileInterval m q c d ∨
+      profileInterval m (q + 1) c d = profileInterval m q c d + 1 := by omega
+  rw [profileIntervalMean_restrict_cell m q c d a b frac hq hcd hd hca hab hbd]
+  by_cases heq : profileInterval m (q + 1) c d = profileInterval m q c d
+  · simp [profileIntervalMean, heq]
+    ring
+  · have hsucc : profileInterval m (q + 1) c d =
+        profileInterval m q c d + 1 := by omega
+    simp [profileIntervalMean, heq, hsucc]
+
 /-- Interpolation between adjacent integer profiles stays between those
 profiles on every rank interval. -/
 theorem profileIntervalMean_between (m q a b : Nat) (frac : Real)
@@ -1273,6 +1368,30 @@ theorem profileIntervalMean_between (m q a b : Nat) (frac : Real)
     nlinarith
   · have hprod := mul_nonneg (sub_nonneg.mpr hfrac1) hdelta
     nlinarith
+
+/-- If an actual threshold cut is to the left of its interpolated target,
+then every rank subinterval has error of the same sign. This is the local
+form of the sorted-profile L1 identity and lets the error be routed by piece
+ownership without cancellations inside one source. -/
+theorem profileInterval_error_nonpos_of_X_le_target (m X q a b : Nat) (frac : Real)
+    (hab : a ≤ b) (hb : b ≤ m) (hX : X ≤ q)
+    (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    (profileInterval m X a b : Real) ≤ profileIntervalMean m q frac a b := by
+  have hXq : profileInterval m X a b ≤ profileInterval m q a b :=
+    profileInterval_mono_X m q X a b hab hb (by omega)
+  have hqMean := (profileIntervalMean_between m q a b frac hab hb hfrac0 hfrac1).1
+  exact le_trans (by exact_mod_cast hXq) hqMean
+
+/-- If an actual threshold cut is to the right of its interpolated target,
+then every rank subinterval has error of the opposite common sign. -/
+theorem profileInterval_error_nonneg_of_target_le_X (m X q a b : Nat) (frac : Real)
+    (hab : a ≤ b) (hb : b ≤ m) (hX : q + 1 ≤ X)
+    (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    profileIntervalMean m q frac a b ≤ (profileInterval m X a b : Real) := by
+  have hqX : profileInterval m (q + 1) a b ≤ profileInterval m X a b :=
+    profileInterval_mono_X m X (q + 1) a b hab hb (by omega)
+  have hMeanq := (profileIntervalMean_between m q a b frac hab hb hfrac0 hfrac1).2
+  exact le_trans hMeanq (by exact_mod_cast hqX)
 
 /-- The interpolated interval target is monotone in its underlying real
 threshold count `q + frac`. The integer boundary case is exact, so changing
@@ -1374,7 +1493,7 @@ theorem profileIntervalMean_partition_sum (m p q : Nat) (frac : Real)
     unfold profileIntervalMean
     rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum,
       hqsum, hq1sum]
-    ring
+    ring_nf
   · have hqeq : q = m := by omega
     have hf : frac = 0 := hendpoint hqeq
     subst q
@@ -1382,6 +1501,63 @@ theorem profileIntervalMean_partition_sum (m p q : Nat) (frac : Real)
     unfold profileIntervalMean
     simp only [sub_zero, one_mul, zero_mul, add_zero]
     exact_mod_cast profileInterval_partition_total m p m cuts hstart hcuts hend (by omega)
+
+/-- Interpolated ideal counts are additive when any interval is cut into
+consecutive subintervals. This lets a receiver's selected target be refined
+at macro-block boundaries without changing the target assigned to the whole
+receiver interval. -/
+theorem profileIntervalMean_partition_sum_interval (m p q a b : Nat)
+    (frac : Real) (cuts : Nat → Nat)
+    (hstart : cuts 0 = a) (hcuts : Monotone cuts) (hend : cuts p = b)
+    (hab : a ≤ b) (hb : b ≤ m) :
+    (∑ i ∈ range p,
+      profileIntervalMean m q frac (cuts i) (cuts (i + 1))) =
+        profileIntervalMean m q frac a b := by
+  have hpartition (X : Nat) :
+      (∑ i ∈ range p,
+        profileInterval m X (cuts i) (cuts (i + 1))) =
+          profileInterval m X a b := by
+    unfold profileInterval
+    have htail : Monotone (fun i => profileTail m X (cuts i)) :=
+      (profileTail_mono_r m X).comp hcuts
+    rw [Finset.sum_range_tsub htail p, hend, hstart]
+  have hq : (∑ i ∈ range p,
+      (profileInterval m q (cuts i) (cuts (i + 1)) : Real)) =
+        (profileInterval m q a b : Real) := by
+    exact_mod_cast hpartition q
+  have hq1 : (∑ i ∈ range p,
+      (profileInterval m (q + 1) (cuts i) (cuts (i + 1)) : Real)) =
+        (profileInterval m (q + 1) a b : Real) := by
+    exact_mod_cast hpartition (q + 1)
+  unfold profileIntervalMean
+  rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum, hq, hq1]
+
+/-- A receiver interval contained in the complete-block prefix of a port can
+be cut at every 4096-rank macro boundary without changing its ideal target.
+Clamping the grid cuts to the receiver interval accounts for its two partial
+boundary blocks; zero-length pieces contribute zero. -/
+theorem profileIntervalMean_partition_sum_4096_grid (m Q q a b : Nat)
+    (frac : Real) (hab : a ≤ b) (hb : b ≤ m) (hgrid : b ≤ 4096 * Q) :
+    (∑ i ∈ range Q,
+      profileIntervalMean m q frac
+        (min b (max a (4096 * i)))
+        (min b (max a (4096 * (i + 1))))) =
+      profileIntervalMean m q frac a b := by
+  let cuts : Nat → Nat := fun i => min b (max a (4096 * i))
+  have hstart : cuts 0 = a := by
+    simp [cuts, Nat.min_eq_right hab]
+  have hcuts : Monotone cuts := by
+    intro i j hij
+    dsimp [cuts]
+    exact min_le_min_left _ (max_le_max_left _ (Nat.mul_le_mul_left 4096 hij))
+  have hend : cuts Q = b := by
+    dsimp [cuts]
+    have hbmax : b ≤ max a (4096 * Q) :=
+      le_trans hgrid (Nat.le_max_right _ _)
+    rw [Nat.min_eq_left hbmax]
+  simpa only [cuts] using
+    profileIntervalMean_partition_sum_interval m Q q a b frac cuts
+      hstart hcuts hend hab hb
 
 /-- Abstract L1 conservation for any finite family of monotone count
 profiles whose total is the packet's count. This applies even when the
@@ -1401,7 +1577,7 @@ theorem monotoneCountDecomposition_L1_exact {ι : Type} [Fintype ι]
     rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum,
       hsum q (by omega), hsum (q + 1) hq1]
     push_cast
-    ring
+    ring_nf
   have hXsum : (∑ i : ι, (F i X : Real)) = X := hsum X hX
   by_cases hXq : X ≤ q
   · have hpoint : ∀ i : ι,
@@ -1445,6 +1621,31 @@ theorem monotoneCountDecomposition_L1_exact {ι : Type} [Fintype ι]
       _ = |(X : Real) - (q + frac)| := by
         have hXR : (q : Real) + 1 ≤ X := by exact_mod_cast hXq1
         rw [abs_of_nonneg (by linarith [hXR, hfrac1])]
+
+/-- A monotone count decomposition has a once-only L2 charge: the squared
+errors of all component counts sum to at most the squared error of their
+total count. This applies to scattered packet supports as well as contiguous
+rank intervals. -/
+theorem monotoneCountDecomposition_L2_le {ι : Type} [Fintype ι]
+    (F : ι → Nat → Nat) (m X q : Nat) (frac : Real)
+    (hX : X ≤ m) (hq : q < m) (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1)
+    (hsum : ∀ z ≤ m, (∑ i : ι, (F i z : Real)) = z)
+    (hmono : ∀ i a b, a ≤ b → F i a ≤ F i b) :
+    (∑ i : ι,
+      ((F i X : Real) - ((1 - frac) * F i q + frac * F i (q + 1))) ^ 2) ≤
+      ((X : Real) - (q + frac)) ^ 2 := by
+  have hL1 := monotoneCountDecomposition_L1_exact
+    F m X q frac hX hq hfrac0 hfrac1 hsum hmono
+  calc
+    _ = ∑ i : ι,
+        |(F i X : Real) - ((1 - frac) * F i q + frac * F i (q + 1))| ^ 2 := by
+      apply Finset.sum_congr rfl
+      intro i _
+      rw [sq_abs]
+    _ ≤ (∑ i : ι,
+        |(F i X : Real) - ((1 - frac) * F i q + frac * F i (q + 1))|) ^ 2 :=
+      Finset.sum_sq_le_sq_sum_of_nonneg (fun i _ => abs_nonneg _)
+    _ = ((X : Real) - (q + frac)) ^ 2 := by rw [hL1, sq_abs]
 
 /-- Count the ranks in a suffix assigned to each destination by an arbitrary
 wire-to-destination map. -/
@@ -1679,6 +1880,70 @@ theorem assignedRankProfiles_aggregate_L2_var {ι : Type} [Fintype ι] [Decidabl
       apply Finset.sum_le_sum
       intro packet _
       exact hwithin packet
+
+/-- Overlap-sensitive form of the finite-source L2 aggregation inequality.
+If at most `r` source profiles have nonzero discrepancy at any one
+destination, the global charge is `r` rather than the total source count. -/
+theorem finiteErrorProfiles_aggregate_L2_overlap
+    {G D : Type} [Fintype G] [DecidableEq G] [Fintype D] [DecidableEq D]
+    (error : G → D → Real) (energy : G → Real) (r : Nat)
+    (hoverlap : ∀ destination,
+      ((Finset.univ : Finset G).filter (fun g => error g destination ≠ 0)).card ≤ r)
+    (hwithin : ∀ g, (∑ destination : D, (error g destination) ^ 2) ≤ energy g) :
+    (∑ destination : D, (∑ g : G, error g destination) ^ 2) ≤
+      (r : Real) * ∑ g : G, energy g := by
+  classical
+  have hpoint (destination : D) :
+      (∑ g : G, error g destination) ^ 2 ≤
+        (r : Real) * ∑ g : G, (error g destination) ^ 2 := by
+    let active := (Finset.univ : Finset G).filter
+      (fun g => error g destination ≠ 0)
+    have hsum : (∑ g : G, error g destination) =
+        ∑ g ∈ active, error g destination := by
+      symm
+      apply Finset.sum_subset (Finset.filter_subset _ _)
+      intro g hg hnot
+      have hzero : error g destination = 0 := by
+        by_contra hn
+        exact hnot (by simp [active, hn])
+      simp [hzero]
+    have hcs := _root_.sq_sum_le_card_mul_sum_sq
+      (s := active) (f := fun g => error g destination)
+    have hcard : (active.card : Real) ≤ r := by
+      exact_mod_cast hoverlap destination
+    have hnonneg : 0 ≤ ∑ g ∈ active, (error g destination) ^ 2 :=
+      Finset.sum_nonneg (fun g hg => sq_nonneg _)
+    have hactive_le :
+        (∑ g ∈ active, (error g destination) ^ 2) ≤
+          ∑ g : G, (error g destination) ^ 2 := by
+      apply Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
+      intro g hg hnot
+      exact sq_nonneg _
+    rw [hsum]
+    calc
+      (∑ g ∈ active, error g destination) ^ 2 ≤
+          (active.card : Real) * ∑ g ∈ active, (error g destination) ^ 2 := by
+        simpa using hcs
+      _ ≤ (r : Real) * ∑ g ∈ active, (error g destination) ^ 2 :=
+        mul_le_mul_of_nonneg_right hcard hnonneg
+      _ ≤ (r : Real) * ∑ g : G, (error g destination) ^ 2 :=
+        mul_le_mul_of_nonneg_left hactive_le (by positivity)
+  calc
+    _ ≤ ∑ destination : D,
+        (r : Real) * ∑ g : G, (error g destination) ^ 2 := by
+      apply Finset.sum_le_sum
+      intro destination hdestination
+      exact hpoint destination
+    _ = (r : Real) * ∑ g : G, ∑ destination : D,
+        (error g destination) ^ 2 := by
+      rw [Finset.mul_sum]
+      simp_rw [Finset.mul_sum]
+      rw [Finset.sum_comm]
+    _ ≤ (r : Real) * ∑ g : G, energy g := by
+      apply mul_le_mul_of_nonneg_left _ (by positivity)
+      apply Finset.sum_le_sum
+      intro g hg
+      exact hwithin g
 
 /-! The abstract rank-owner interface can be realized directly by the actual
 disjoint, complete `WireFlow` register partition. -/
@@ -2024,6 +2289,165 @@ theorem packetRankOwner_trueCountOn_eq_of_partition {d tf m : Nat}
   unfold trueCountOn
   exact hsum.trans hcard
 
+/-- Restricted form of the rank-owner count identity: a disjoint packet family
+that partitions one destination register suffices; it need not cover the full
+wire universe. -/
+theorem packetRankOwner_trueCountOn_eq_of_local_partition {d tf m : Nat}
+    {ι : Type} [Fintype ι] [DecidableEq ι]
+    (F : FlowSizes d tf) (t : Nat) (ht : t ≤ tf)
+    (packets : ι → Fin m ↪ Fin (64 ^ d))
+    (hdisjoint : ∀ {p p' : ι}, p ≠ p' → ∀ i j,
+      packets p i ≠ packets p' j)
+    (destination : KBag 64 d)
+    (hcover : ∀ w ∈ wireSets F t destination, ∃ p i, packets p i = w)
+    (v : Fin (64 ^ d) → Bool) :
+    (∑ p : ι,
+      assignedRankCount (wireSetPacketRankOwner F t ht packets p)
+        (fun _ i => v (packets p i)) destination 0) =
+      trueCountOn (wireSets F t destination) v := by
+  classical
+  let P : ι × Fin m → Prop := fun z =>
+    packets z.1 z.2 ∈ wireSets F t destination ∧
+      v (packets z.1 z.2) = true
+  let source := {z : ι × Fin m // P z}
+  let target := {w : {w : Fin (64 ^ d) // w ∈ wireSets F t destination} //
+    v w.val = true}
+  have hflatInj : Function.Injective (fun z : ι × Fin m => packets z.1 z.2) := by
+    intro z z' h
+    have hp : z.1 = z'.1 := by
+      by_contra hne
+      exact (hdisjoint hne z.2 z'.2) h
+    apply Prod.ext
+    · exact hp
+    · change packets z.1 z.2 = packets z'.1 z'.2 at h
+      rw [hp] at h
+      exact (packets z'.1).injective h
+  let f : source → target := fun z =>
+    ⟨⟨packets z.val.1 z.val.2,
+      z.property.1⟩, z.property.2⟩
+  have hf : Function.Bijective f := by
+    constructor
+    · intro z z' hzz'
+      apply Subtype.ext
+      exact hflatInj (congrArg (fun w : target => w.val.val) hzz')
+    · intro w
+      obtain ⟨p, i, hpi⟩ := hcover w.val.val w.val.property
+      have hmem : packets p i ∈ wireSets F t destination := by
+        simpa only [hpi] using w.val.property
+      have hv : v (packets p i) = true := by simpa [hpi] using w.property
+      refine ⟨⟨(p, i), ⟨hmem, hv⟩⟩, ?_⟩
+      apply Subtype.ext
+      apply Subtype.ext
+      exact hpi
+  have hcard : Fintype.card source = Fintype.card target :=
+    Fintype.card_congr (Equiv.ofBijective f hf)
+  have hsum : (∑ p : ι,
+      assignedRankCount (wireSetPacketRankOwner F t ht packets p)
+        (fun _ i => v (packets p i)) destination 0) = Fintype.card source := by
+    calc
+      _ = ∑ p : ι, ∑ i : Fin m, if P (p, i) then 1 else 0 := by
+        apply Finset.sum_congr rfl
+        intro p hp
+        rw [assignedRankCount_wireSetPacketRankOwner]
+      _ = ∑ p : ι, Fintype.card {i : Fin m // P (p, i)} := by
+        apply Finset.sum_congr rfl
+        intro p hp
+        exact finSum_ite_one_eq_card_subtype (fun i : Fin m => P (p, i))
+      _ = Fintype.card (Σ p : ι, {i : Fin m // P (p, i)}) := by
+        rw [Fintype.card_sigma]
+      _ = Fintype.card source := by
+        apply Fintype.card_congr
+        refine Equiv.mk (fun z => ⟨(z.1, z.2.1), z.2.2⟩)
+          (fun z => ⟨z.1.1, ⟨z.1.2, z.2⟩⟩) ?_ ?_
+        · intro z
+          rfl
+        · intro z
+          rfl
+  unfold trueCountOn
+  exact hsum.trans hcard
+
+theorem packetRankOwner_trueCountOn_intersection
+    {d tf m : Nat} {ι : Type} [Fintype ι] [DecidableEq ι]
+    (F : FlowSizes d tf) (t : Nat) (ht : t ≤ tf)
+    (packets : ι → Fin m ↪ Fin (64 ^ d))
+    (hdisjoint : ∀ {p p' : ι}, p ≠ p' → ∀ i j, packets p i ≠ packets p' j)
+    (support : Finset (Fin (64 ^ d)))
+    (hsubset : ∀ p i, packets p i ∈ support)
+    (hcover : ∀ w ∈ support, ∃ p i, packets p i = w)
+    (destination : KBag 64 d) (v : Fin (64 ^ d) → Bool) :
+    (∑ p : ι,
+      assignedRankCount (wireSetPacketRankOwner F t ht packets p)
+        (fun _ i => v (packets p i)) destination 0) =
+      trueCountOn (support ∩ wireSets F t destination) v := by
+  classical
+  let supportDest : Finset (Fin (64 ^ d)) := support ∩ wireSets F t destination
+  let P : ι × Fin m → Prop := fun z =>
+    packets z.1 z.2 ∈ support ∧
+      packets z.1 z.2 ∈ wireSets F t destination ∧
+        v (packets z.1 z.2) = true
+  let source := {z : ι × Fin m // P z}
+  let target := {w : supportDest // v w.val = true}
+  have hflatInj : Function.Injective (fun z : ι × Fin m => packets z.1 z.2) := by
+    intro z z' h
+    have hp : z.1 = z'.1 := by
+      by_contra hne
+      exact (hdisjoint hne z.2 z'.2) h
+    apply Prod.ext
+    · exact hp
+    · change packets z.1 z.2 = packets z'.1 z'.2 at h
+      rw [hp] at h
+      exact (packets z'.1).injective h
+  let f : source → target := fun z =>
+    ⟨⟨packets z.val.1 z.val.2,
+        Finset.mem_inter.mpr ⟨z.property.1, z.property.2.1⟩⟩, z.property.2.2⟩
+  have hf : Function.Bijective f := by
+    constructor
+    · intro z z' hzz'
+      apply Subtype.ext
+      exact hflatInj (congrArg (fun w : target => w.val.val) hzz')
+    · intro w
+      have hwinter := Finset.mem_inter.mp w.val.property
+      obtain ⟨p, i, hpi⟩ := hcover w.val.val hwinter.1
+      have hsupport : packets p i ∈ support := by simpa [hpi] using hwinter.1
+      have hdestination : packets p i ∈ wireSets F t destination := by
+        simpa [hpi] using hwinter.2
+      have htrue : v (packets p i) = true := by simpa [hpi] using w.property
+      refine ⟨⟨(p, i), ⟨hsupport, hdestination, htrue⟩⟩, ?_⟩
+      apply Subtype.ext
+      apply Subtype.ext
+      exact hpi
+  have hcard : Fintype.card source = Fintype.card target :=
+    Fintype.card_congr (Equiv.ofBijective f hf)
+  have hsum : (∑ p : ι,
+      assignedRankCount (wireSetPacketRankOwner F t ht packets p)
+        (fun _ i => v (packets p i)) destination 0) = Fintype.card source := by
+    calc
+      _ = ∑ p : ι, ∑ i : Fin m, if P (p, i) then 1 else 0 := by
+        apply Finset.sum_congr rfl
+        intro p _
+        rw [assignedRankCount_wireSetPacketRankOwner]
+        apply Finset.sum_congr rfl
+        intro i _
+        simp [P, hsubset p i]
+      _ = ∑ p : ι, Fintype.card {i : Fin m // P (p, i)} := by
+        apply Finset.sum_congr rfl
+        intro p _
+        exact finSum_ite_one_eq_card_subtype (fun i : Fin m => P (p, i))
+      _ = Fintype.card (Σ p : ι, {i : Fin m // P (p, i)}) := by
+        rw [Fintype.card_sigma]
+      _ = Fintype.card source := by
+        apply Fintype.card_congr
+        refine Equiv.mk (fun z => ⟨(z.1, z.2.1), z.2.2⟩)
+          (fun z => ⟨z.1.1, ⟨z.1.2, z.2⟩⟩) ?_ ?_
+        · intro z
+          rfl
+        · intro z
+          rfl
+  have htarget : trueCountOn supportDest v =
+      Fintype.card target := by
+    simp [supportDest, target, trueCountOn]
+  exact hsum.trans (hcard.trans htarget.symm)
+
 theorem profileInterval_partition_L1_exact (m p X q : Nat) (frac : Real)
     (cuts : Nat → Nat) (hstart : cuts 0 = 0) (hcuts : Monotone cuts)
     (hend : cuts p = m) (hX : X ≤ m) (hq : q < m)
@@ -2337,6 +2761,2466 @@ theorem oddEvenMerge128_physicalHalf_doubledEnergy (H : Nat) (hH : H ≤ 128) :
     have hminA : min 64 (H - 64) = H - 64 := Nat.min_eq_right hsub_le
     have hminB : min 64 H = 64 := Nat.min_eq_left hlow
     have hminH : min H (128 - H) = 128 - H := by omega
+    rw [hminA, hminB, hminH]
+    rw [Int.natCast_sub hlow, Int.natCast_sub hH]
+    ring
+
+/-- The 64-wire odd-even merge has the corresponding exact physical-half
+profile: its first and second 32-wire cells are the clamped rank intervals of
+the fully sorted output. -/
+theorem oddEvenMerge64_physicalHalf_counts (v : Fin 64 → Bool)
+    (hA : Monotone (fun i : Fin 32 => v (Fin.castAdd 32 i)))
+    (hB : Monotone (fun i : Fin 32 => v (Fin.natAdd 32 i))) :
+    let w := (oddEvenMergeNet 6).exec v
+    boolTrueCount (fun i : Fin 32 => w ⟨i.val, by omega⟩) =
+        min 32 (boolTrueCount v - 32) ∧
+      boolTrueCount (fun i : Fin 32 => w ⟨32 + i.val, by omega⟩) =
+        min 32 (boolTrueCount v) := by
+  let w := (oddEvenMergeNet 6).exec v
+  have hsorted : Monotone w := by
+    dsimp [w]
+    exact oddEvenMergeNet_sorts_two_runs 5 v ⟨hA, hB⟩
+  have hcount : boolTrueCount w = boolTrueCount v :=
+    boolTrueCount_exec (oddEvenMergeNet 6) v
+  have hfirstProfile := sortedBool_rankInterval_trueCount w hsorted 0 32
+    (by omega) (by omega)
+  have hfirst : boolTrueCount (fun i : Fin 32 => w ⟨i.val, by omega⟩) =
+      min 32 (boolTrueCount v - 32) := by
+    have hfirst' : boolTrueCount (fun i : Fin 32 => w ⟨i.val, by omega⟩) =
+        profileInterval 64 (boolTrueCount w) 0 32 := by
+      simpa [w] using hfirstProfile
+    rw [profileInterval_formula 64 (boolTrueCount w) 0 32 (by omega) (by omega),
+      hcount] at hfirst'
+    exact hfirst'
+  have hsecondProfile := sortedBool_rankInterval_trueCount w hsorted 32 64
+    (by omega) (by omega)
+  have hsecond : boolTrueCount (fun i : Fin 32 => w ⟨32 + i.val, by omega⟩) =
+      min 32 (boolTrueCount v) := by
+    have hsecond' : boolTrueCount (fun i : Fin 32 => w ⟨32 + i.val, by omega⟩) =
+        profileInterval 64 (boolTrueCount w) 32 64 := by
+      simpa [w] using hsecondProfile
+    rw [profileInterval_formula 64 (boolTrueCount w) 32 64 (by omega) (by omega),
+      hcount] at hsecond'
+    exact hsecond'
+  exact ⟨hfirst, hsecond⟩
+
+/-- At total count 32, the physical halves after the 64-wire merge have
+counts `(0,32)`, while the logical even/odd dealt packets still have `(16,16)`.
+This is the 64-wire phase offset that a cross-stage variance invariant must
+subtract. -/
+theorem oddEvenMerge64_balanced_deal_vs_physical_halves (v : Fin 64 → Bool)
+    (hA : Monotone (fun i : Fin 32 => v (Fin.castAdd 32 i)))
+    (hB : Monotone (fun i : Fin 32 => v (Fin.natAdd 32 i)))
+    (hcount : boolTrueCount v = 32) :
+    let w := (oddEvenMergeNet 6).exec v
+    (boolTrueCount (fun i : Fin 32 => w ⟨i.val, by omega⟩) = 0 ∧
+      boolTrueCount (fun i : Fin 32 => w ⟨32 + i.val, by omega⟩) = 32) ∧
+    (boolTrueCount (fun i : Fin 32 => w (evenWire 32 i)) = 16 ∧
+      boolTrueCount (fun i : Fin 32 => w (oddWire 32 i)) = 16) := by
+  let w := (oddEvenMergeNet 6).exec v
+  have hsorted : Monotone w := by
+    dsimp [w]
+    exact oddEvenMergeNet_sorts_two_runs 5 v ⟨hA, hB⟩
+  have hphys := oddEvenMerge64_physicalHalf_counts v hA hB
+  have hparity := sorted_bool_parity_counts (m := 32) w hsorted
+  rw [boolTrueCount_exec] at hparity
+  have hphysical :
+      boolTrueCount (fun i : Fin 32 => w ⟨i.val, by omega⟩) = 0 ∧
+      boolTrueCount (fun i : Fin 32 => w ⟨32 + i.val, by omega⟩) = 32 := by
+    simpa [w, hcount] using hphys
+  have hdealt :
+      boolTrueCount (fun i : Fin 32 => w (evenWire 32 i)) = 16 ∧
+      boolTrueCount (fun i : Fin 32 => w (oddWire 32 i)) = 16 := by
+    constructor <;> have h := hparity.1 <;> omega
+  exact ⟨hphysical, hdealt⟩
+
+/-- The logical parity packets after the 64-wire merge have only the parity
+residual energy: zero for even total count and two for odd total count. -/
+theorem oddEvenMerge64_dealt_doubledEnergy (v : Fin 64 → Bool)
+    (hA : Monotone (fun i : Fin 32 => v (Fin.castAdd 32 i)))
+    (hB : Monotone (fun i : Fin 32 => v (Fin.natAdd 32 i))) :
+    let w := (oddEvenMergeNet 6).exec v
+    let H := boolTrueCount v
+    (2 * (boolTrueCount (fun i : Fin 32 => w (evenWire 32 i)) : ℤ) - H) ^ 2 +
+      (2 * (boolTrueCount (fun i : Fin 32 => w (oddWire 32 i)) : ℤ) - H) ^ 2 =
+        if H % 2 = 0 then 0 else 2 := by
+  let w := (oddEvenMergeNet 6).exec v
+  let H := boolTrueCount v
+  have hsorted : Monotone w := by
+    dsimp [w]
+    exact oddEvenMergeNet_sorts_two_runs 5 v ⟨hA, hB⟩
+  have hparity := sorted_bool_parity_counts (m := 32) w hsorted
+  rw [boolTrueCount_exec] at hparity
+  dsimp [H]
+  by_cases heven : boolTrueCount v % 2 = 0
+  · let q := boolTrueCount v / 2
+    have hquot : boolTrueCount v = 2 * q := by dsimp [q]; omega
+    have hq : boolTrueCount v / 2 = q := rfl
+    have hceil : (boolTrueCount v + 1) / 2 = q := by dsimp [q]; omega
+    rw [hparity.1, hparity.2, hq, hceil, hquot]
+    have hmod : (2 * q) % 2 = 0 := by omega
+    rw [if_pos hmod]
+    push_cast
+    ring
+  · have hquot : boolTrueCount v = 2 * (boolTrueCount v / 2) + 1 := by omega
+    let q := boolTrueCount v / 2
+    have hq : boolTrueCount v / 2 = q := rfl
+    have hceil : (boolTrueCount v + 1) / 2 = q + 1 := by dsimp [q]; omega
+    have hquot' : boolTrueCount v = 2 * q + 1 := by simpa [q] using hquot
+    rw [hparity.1, hparity.2, hq, hceil, hquot']
+    have hmod : ¬(2 * q + 1) % 2 = 0 := by omega
+    rw [if_neg hmod]
+    push_cast
+    ring
+
+/-- The parity residual energy of a dealt pair is paid for by the input
+imbalance of two runs. Combined with `oddEvenMerge64_dealt_doubledEnergy`,
+this is the scalar one-merge nonincrease inequality. -/
+theorem parityEnergy_le_twoRunInputEnergy (A B : Nat) :
+    (if (A + B) % 2 = 0 then 0 else 2 : ℤ) ≤
+      (2 * (A : ℤ) - ((A + B : Nat) : ℤ)) ^ 2 +
+        (2 * (B : ℤ) - ((A + B : Nat) : ℤ)) ^ 2 := by
+  have hformula :
+      (2 * (A : ℤ) - ((A + B : Nat) : ℤ)) ^ 2 +
+        (2 * (B : ℤ) - ((A + B : Nat) : ℤ)) ^ 2 =
+          2 * ((A : ℤ) - (B : ℤ)) ^ 2 := by
+    push_cast
+    ring
+  push_cast at hformula
+  by_cases heven : (A + B) % 2 = 0
+  · simp [heven]
+    push_cast
+    rw [hformula]
+    positivity
+  · have hne : A ≠ B := by
+      intro hAB
+      subst B
+      omega
+    rw [if_neg heven]
+    push_cast
+    rw [hformula]
+    rcases lt_or_gt_of_ne hne with hlt | hgt
+    · have hgap : (1 : ℤ) ≤ (B : ℤ) - (A : ℤ) := by
+        have hn : A + 1 ≤ B := Nat.succ_le_of_lt hlt
+        omega
+      nlinarith
+    · have hgap : (1 : ℤ) ≤ (A : ℤ) - (B : ℤ) := by
+        have hn : B + 1 ≤ A := Nat.succ_le_of_lt hgt
+        omega
+      nlinarith
+
+/-- The 64-wire odd-even merge contracts the doubled centered threshold-count
+energy of two sorted input runs when measured on its dealt output lanes. -/
+theorem oddEvenMerge64_dealt_energy_le_input (v : Fin 64 → Bool)
+    (hA : Monotone (fun i : Fin 32 => v (Fin.castAdd 32 i)))
+    (hB : Monotone (fun i : Fin 32 => v (Fin.natAdd 32 i))) :
+    let A := boolTrueCount (fun i : Fin 32 => v (Fin.castAdd 32 i))
+    let B := boolTrueCount (fun i : Fin 32 => v (Fin.natAdd 32 i))
+    let w := (oddEvenMergeNet 6).exec v
+    (2 * (boolTrueCount (fun i : Fin 32 => w (evenWire 32 i)) : ℤ) -
+        boolTrueCount v) ^ 2 +
+      (2 * (boolTrueCount (fun i : Fin 32 => w (oddWire 32 i)) : ℤ) -
+        boolTrueCount v) ^ 2 ≤
+      (2 * (A : ℤ) - boolTrueCount v) ^ 2 +
+        (2 * (B : ℤ) - boolTrueCount v) ^ 2 := by
+  let A := boolTrueCount (fun i : Fin 32 => v (Fin.castAdd 32 i))
+  let B := boolTrueCount (fun i : Fin 32 => v (Fin.natAdd 32 i))
+  let w := (oddEvenMergeNet 6).exec v
+  have htotal : boolTrueCount v = A + B := by
+    dsimp [A, B]
+    exact boolTrueCount_halves (m := 32) v
+  calc
+    (2 * (boolTrueCount (fun i : Fin 32 => w (evenWire 32 i)) : ℤ) -
+        boolTrueCount v) ^ 2 +
+      (2 * (boolTrueCount (fun i : Fin 32 => w (oddWire 32 i)) : ℤ) -
+        boolTrueCount v) ^ 2 =
+          (if boolTrueCount v % 2 = 0 then 0 else 2 : ℤ) := by
+            exact oddEvenMerge64_dealt_doubledEnergy v hA hB
+    _ ≤ (2 * (A : ℤ) - boolTrueCount v) ^ 2 +
+        (2 * (B : ℤ) - boolTrueCount v) ^ 2 := by
+          have hbound := parityEnergy_le_twoRunInputEnergy A B
+          simpa [htotal] using hbound
+
+/-- Doubled centered count energy of the two logical parity lanes after the
+64-wire merge. -/
+def oddEvenMerge64DealtEnergy (v : Fin 64 → Bool) : ℤ :=
+  let w := (oddEvenMergeNet 6).exec v
+  (2 * (boolTrueCount (fun i : Fin 32 => w (evenWire 32 i)) : ℤ) -
+      boolTrueCount v) ^ 2 +
+    (2 * (boolTrueCount (fun i : Fin 32 => w (oddWire 32 i)) : ℤ) -
+      boolTrueCount v) ^ 2
+
+/-- Doubled centered count energy between the physical lower and upper
+32-wire input runs. -/
+def oddEvenMerge64InputEnergy (v : Fin 64 → Bool) : ℤ :=
+  let A := boolTrueCount (fun i : Fin 32 => v (Fin.castAdd 32 i))
+  let B := boolTrueCount (fun i : Fin 32 => v (Fin.natAdd 32 i))
+  (2 * (A : ℤ) - boolTrueCount v) ^ 2 +
+    (2 * (B : ℤ) - boolTrueCount v) ^ 2
+
+/-- Doubled centered count energy of the actual even/odd rank lanes of an
+already sorted 64-wire packet. -/
+def oddEvenMerge64ParityEnergy (v : Fin 64 → Bool) : ℤ :=
+  (2 * (boolTrueCount (fun i : Fin 32 => v (evenWire 32 i)) : ℤ) -
+      boolTrueCount v) ^ 2 +
+    (2 * (boolTrueCount (fun i : Fin 32 => v (oddWire 32 i)) : ℤ) -
+      boolTrueCount v) ^ 2
+
+/-- On an already sorted 64-wire packet, the odd-even merge is the identity.
+Thus its dealt-lane contraction is a pure rank reindexing into the actual
+even and odd 32-wire supports, with no additional comparator depth. -/
+theorem oddEvenMerge64_monotone_parity_energy_le_input (v : Fin 64 → Bool)
+    (hv : Monotone v) :
+    oddEvenMerge64ParityEnergy v ≤ oddEvenMerge64InputEnergy v := by
+  have hA : Monotone (fun i : Fin 32 => v (Fin.castAdd 32 i)) := by
+    intro i j hij
+    apply hv
+    apply Fin.mk_le_mk.mpr
+    exact Fin.mk_le_mk.mp hij
+  have hB : Monotone (fun i : Fin 32 => v (Fin.natAdd 32 i)) := by
+    intro i j hij
+    apply hv
+    apply Fin.mk_le_mk.mpr
+    have hval := Fin.mk_le_mk.mp hij
+    change 32 + i.val ≤ 32 + j.val
+    omega
+  have hcontract := oddEvenMerge64_dealt_energy_le_input v hA hB
+  have hidentity : (oddEvenMergeNet 6).exec v = v := by
+    exact (oddEvenMergeNet 6).exec_eq_of_monotone hv
+  simpa only [oddEvenMerge64DealtEnergy, oddEvenMerge64ParityEnergy,
+    oddEvenMerge64InputEnergy, hidentity] using hcontract
+
+/-- The sorted packet's two parity lanes have exactly the unavoidable
+zero-or-two residual, according to the parity of its total threshold count. -/
+theorem oddEvenMerge64_monotone_parity_energy_eq_residual (v : Fin 64 → Bool)
+    (hv : Monotone v) :
+    oddEvenMerge64ParityEnergy v =
+      if boolTrueCount v % 2 = 0 then 0 else 2 := by
+  have hA : Monotone (fun i : Fin 32 => v (Fin.castAdd 32 i)) := by
+    intro i j hij
+    apply hv
+    apply Fin.mk_le_mk.mpr
+    exact Fin.mk_le_mk.mp hij
+  have hB : Monotone (fun i : Fin 32 => v (Fin.natAdd 32 i)) := by
+    intro i j hij
+    apply hv
+    apply Fin.mk_le_mk.mpr
+    have hval := Fin.mk_le_mk.mp hij
+    change 32 + i.val ≤ 32 + j.val
+    omega
+  have hidentity : (oddEvenMergeNet 6).exec v = v := by
+    exact (oddEvenMergeNet 6).exec_eq_of_monotone hv
+  have hexact := oddEvenMerge64_dealt_doubledEnergy v hA hB
+  simpa only [oddEvenMerge64DealtEnergy, oddEvenMerge64ParityEnergy,
+    hidentity] using hexact
+
+/-- For a sorted 64-wire Boolean profile, its physical-half input energy is
+determined exactly by its total count: `2 * min(H, 64-H)^2`. -/
+theorem oddEvenMerge64_monotone_input_energy_eq_phase (v : Fin 64 → Bool)
+    (hv : Monotone v) :
+    oddEvenMerge64InputEnergy v =
+      2 * ((min (boolTrueCount v) (64 - boolTrueCount v) : Nat) : ℤ) ^ 2 := by
+  have hA : Monotone (fun i : Fin 32 => v (Fin.castAdd 32 i)) := by
+    intro i j hij
+    apply hv
+    apply Fin.mk_le_mk.mpr
+    exact Fin.mk_le_mk.mp hij
+  have hB : Monotone (fun i : Fin 32 => v (Fin.natAdd 32 i)) := by
+    intro i j hij
+    apply hv
+    apply Fin.mk_le_mk.mpr
+    have hval := Fin.mk_le_mk.mp hij
+    change 32 + i.val ≤ 32 + j.val
+    omega
+  have hidentity : (oddEvenMergeNet 6).exec v = v := by
+    exact (oddEvenMergeNet 6).exec_eq_of_monotone hv
+  have hprofile := oddEvenMerge64_physicalHalf_counts v hA hB
+  simp only [hidentity] at hprofile
+  have hH : boolTrueCount v ≤ 64 := by
+    simpa [boolTrueCount] using
+      (Fintype.card_subtype_le (fun i : Fin 64 => v i = true))
+  have hAcount : boolTrueCount
+      (fun i : Fin 32 => v (Fin.castAdd 32 i)) =
+        min 32 (boolTrueCount v - 32) := by
+    simpa [Fin.castAdd] using hprofile.1
+  have hBcount : boolTrueCount
+      (fun i : Fin 32 => v (Fin.natAdd 32 i)) =
+        min 32 (boolTrueCount v) := by
+    simpa [Fin.natAdd] using hprofile.2
+  dsimp [oddEvenMerge64InputEnergy]
+  rw [hAcount, hBcount]
+  by_cases h : boolTrueCount v ≤ 32
+  · have hAmin : min 32 (boolTrueCount v - 32) = 0 := by omega
+    have hBmin : min 32 (boolTrueCount v) = boolTrueCount v := Nat.min_eq_right h
+    have hHmin : min (boolTrueCount v) (64 - boolTrueCount v) =
+        boolTrueCount v := by omega
+    rw [hAmin, hBmin, hHmin]
+    push_cast
+    ring
+  · have hlow : 32 ≤ boolTrueCount v := by omega
+    have hsub : boolTrueCount v - 32 ≤ 32 := by omega
+    have hAmin : min 32 (boolTrueCount v - 32) = boolTrueCount v - 32 :=
+      Nat.min_eq_right hsub
+    have hBmin : min 32 (boolTrueCount v) = 32 := Nat.min_eq_left hlow
+    have hHmin : min (boolTrueCount v) (64 - boolTrueCount v) =
+        64 - boolTrueCount v := by omega
+    rw [hAmin, hBmin, hHmin]
+    rw [Int.natCast_sub hlow, Int.natCast_sub hH]
+    ring
+
+/-- Exact local dissipation on a sorted 64-wire threshold profile. It is the
+physical-half phase energy minus the parity residual of the two rank lanes. -/
+theorem oddEvenMerge64_monotone_energy_drop_eq_phase (v : Fin 64 → Bool)
+    (hv : Monotone v) :
+    oddEvenMerge64InputEnergy v - oddEvenMerge64ParityEnergy v =
+      2 * ((min (boolTrueCount v) (64 - boolTrueCount v) : Nat) : ℤ) ^ 2 -
+        (if boolTrueCount v % 2 = 0 then 0 else 2 : ℤ) := by
+  rw [oddEvenMerge64_monotone_input_energy_eq_phase v hv,
+    oddEvenMerge64_monotone_parity_energy_eq_residual v hv]
+
+/-- The ideal count in a sorted parity lane when a 64-profile has `X` ones. -/
+def oddEvenMerge64_parityCount (lane : Bool) (X : Nat) : Nat :=
+  if lane then (X + 1) / 2 else X / 2
+
+/-- Fractional ideal count for one parity lane, obtained by interpolating its
+two neighboring integer profiles. -/
+def oddEvenMerge64_parityMean (lane : Bool) (q : Nat) (frac : Real) : Real :=
+  (1 - frac) * oddEvenMerge64_parityCount lane q +
+    frac * oddEvenMerge64_parityCount lane (q + 1)
+
+/-- Integer floor code for the induced target in a parity lane. The full
+32-one endpoint is represented as `31 + 1`, so it remains admissible for the
+rank-suffix interpolation theorem. -/
+def oddEvenMerge64_parityCodeFloor (lane : Bool) (q : Nat) : Nat :=
+  min 31 (oddEvenMerge64_parityCount lane q)
+
+/-- Fractional part of the induced lane target, with the saturated endpoint
+encoded as `31 + 1`. -/
+def oddEvenMerge64_parityCodeFrac (lane : Bool) (q : Nat) (frac : Real) : Real :=
+  if oddEvenMerge64_parityCount lane q = 32 then 1
+  else if oddEvenMerge64_parityCount lane (q + 1) =
+      oddEvenMerge64_parityCount lane q + 1 then frac else 0
+
+/-- The parity-lane target always has an admissible integer-plus-fraction
+encoding on the 32 ranks, including the parent target interval `[63,64]`. -/
+theorem oddEvenMerge64_parityMean_eq_code (lane : Bool) (q : Nat)
+    (frac : Real) (hq : q < 64) :
+    oddEvenMerge64_parityMean lane q frac =
+        (oddEvenMerge64_parityCodeFloor lane q : Real) +
+          oddEvenMerge64_parityCodeFrac lane q frac := by
+  have hcount : oddEvenMerge64_parityCount lane q ≤ 32 := by
+    cases lane <;> simp [oddEvenMerge64_parityCount] <;> omega
+  have hstepLo : oddEvenMerge64_parityCount lane q ≤
+      oddEvenMerge64_parityCount lane (q + 1) := by
+    cases lane
+    · exact Nat.div_le_div_right (Nat.le_succ q)
+    · exact Nat.div_le_div_right (Nat.add_le_add_right (Nat.le_succ q) 1)
+  have hstepHi : oddEvenMerge64_parityCount lane (q + 1) ≤
+      oddEvenMerge64_parityCount lane q + 1 := by
+    cases lane <;> simp [oddEvenMerge64_parityCount] <;> omega
+  by_cases hfull : oddEvenMerge64_parityCount lane q = 32
+  · have hnext : oddEvenMerge64_parityCount lane (q + 1) = 32 := by
+      cases lane <;> simp [oddEvenMerge64_parityCount] at hfull ⊢ <;> omega
+    simp [oddEvenMerge64_parityMean, oddEvenMerge64_parityCodeFloor,
+      oddEvenMerge64_parityCodeFrac, hfull, hnext]
+    ring
+  · have hbelow : oddEvenMerge64_parityCount lane q ≤ 31 := by omega
+    have hfloor : oddEvenMerge64_parityCodeFloor lane q =
+        oddEvenMerge64_parityCount lane q := by
+      simp [oddEvenMerge64_parityCodeFloor, Nat.min_eq_right hbelow]
+    by_cases hrise : oddEvenMerge64_parityCount lane (q + 1) =
+        oddEvenMerge64_parityCount lane q + 1
+    · simp [oddEvenMerge64_parityMean, oddEvenMerge64_parityCodeFloor,
+        oddEvenMerge64_parityCodeFrac, hfull, hrise, Nat.min_eq_right hbelow]
+      push_cast
+      ring
+    · have hflat : oddEvenMerge64_parityCount lane (q + 1) =
+          oddEvenMerge64_parityCount lane q := by omega
+      simp [oddEvenMerge64_parityMean, oddEvenMerge64_parityCodeFloor,
+        oddEvenMerge64_parityCodeFrac, hfull, hrise, hflat,
+        Nat.min_eq_right hbelow]
+      push_cast
+      ring
+
+/-- The chosen lane floor is below the lane width and its fraction lies in
+the unit interval whenever the parent fraction does. -/
+theorem oddEvenMerge64_parityCode_valid (lane : Bool) (q : Nat)
+    (frac : Real) (hq : q < 64) (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    oddEvenMerge64_parityCodeFloor lane q < 32 ∧
+      0 ≤ oddEvenMerge64_parityCodeFrac lane q frac ∧
+      oddEvenMerge64_parityCodeFrac lane q frac ≤ 1 := by
+  have hcount : oddEvenMerge64_parityCount lane q ≤ 32 := by
+    cases lane <;> simp [oddEvenMerge64_parityCount] <;> omega
+  constructor
+  · simp [oddEvenMerge64_parityCodeFloor]
+  · constructor
+    · unfold oddEvenMerge64_parityCodeFrac
+      split_ifs <;> linarith
+    · unfold oddEvenMerge64_parityCodeFrac
+      split_ifs <;> linarith
+
+/-- Parity-lane targets preserve the order of fractional parent targets. This
+lets a packetwise monotone target sequence pass through the even/odd rebin. -/
+theorem oddEvenMerge64_parityMean_mono (lane : Bool)
+    (q₁ q₂ : Nat) (frac₁ frac₂ : Real)
+    (hfrac₁0 : 0 ≤ frac₁) (hfrac₁1 : frac₁ ≤ 1)
+    (hfrac₂0 : 0 ≤ frac₂) (hfrac₂1 : frac₂ ≤ 1)
+    (hmean : (q₁ : Real) + frac₁ ≤ (q₂ : Real) + frac₂) :
+    oddEvenMerge64_parityMean lane q₁ frac₁ ≤
+      oddEvenMerge64_parityMean lane q₂ frac₂ := by
+  unfold oddEvenMerge64_parityMean
+  apply natProfileInterp_mono_mean (oddEvenMerge64_parityCount lane)
+  · intro a b hab
+    cases lane
+    · exact Nat.div_le_div_right hab
+    · exact Nat.div_le_div_right (Nat.add_le_add_right hab 1)
+  · exact hfrac₁0
+  · exact hfrac₁1
+  · exact hfrac₂0
+  · exact hfrac₂1
+  · exact hmean
+
+/-- Splitting a sorted 64-wire threshold profile into its even/odd rank lanes
+preserves aggregate absolute error exactly for every fractional target. -/
+theorem oddEvenMerge64_parity_rebin_L1_exact (v : Fin 64 → Bool)
+    (hv : Monotone v) (q : Nat) (frac : Real) (hq : q < 64)
+    (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    (∑ lane : Bool,
+      |(boolTrueCount (fun i : Fin 32 =>
+          if lane then v (oddWire 32 i) else v (evenWire 32 i)) : Real) -
+        oddEvenMerge64_parityMean lane q frac|) =
+      |(boolTrueCount v : Real) - (q + frac)| := by
+  let F : Bool → Nat → Nat := oddEvenMerge64_parityCount
+  let lanes : Bool → Fin 32 → Bool := fun lane i =>
+    if lane then v (oddWire 32 i) else v (evenWire 32 i)
+  have hparity := sorted_bool_parity_counts (m := 32) v hv
+  have hprofile (lane : Bool) : boolTrueCount (lanes lane) = F lane (boolTrueCount v) := by
+    cases lane <;> simp [lanes, F, oddEvenMerge64_parityCount, hparity]
+  have htotal (z : Nat) (hz : z ≤ 64) :
+      (∑ lane : Bool, (F lane z : Real)) = z := by
+    rw [Fintype.sum_bool]
+    simp [F, oddEvenMerge64_parityCount]
+    have hdiv : z / 2 + (z + 1) / 2 = z := by
+      by_cases heven : z % 2 = 0
+      · have hdecomp := Nat.mod_add_div z 2
+        rw [heven] at hdecomp
+        have hceil : (z + 1) / 2 = z / 2 := by omega
+        omega
+      · have hmod : z % 2 = 1 := by omega
+        have hdecomp := Nat.mod_add_div z 2
+        rw [hmod] at hdecomp
+        have hceil : (z + 1) / 2 = z / 2 + 1 := by omega
+        omega
+    have hdiv' : (z + 1) / 2 + z / 2 = z := by omega
+    exact_mod_cast hdiv'
+  have hmono : ∀ lane a b, a ≤ b → F lane a ≤ F lane b := by
+    intro lane a b hab
+    cases lane
+    · exact Nat.div_le_div_right hab
+    · exact Nat.div_le_div_right (Nat.add_le_add_right hab 1)
+  calc
+    (∑ lane : Bool,
+        |(boolTrueCount (lanes lane) : Real) - oddEvenMerge64_parityMean lane q frac|) =
+      ∑ lane : Bool,
+        |(F lane (boolTrueCount v) : Real) -
+          ((1 - frac) * F lane q + frac * F lane (q + 1))| := by
+      apply Finset.sum_congr rfl
+      intro lane _
+      rw [hprofile lane]
+      rfl
+    _ = |(boolTrueCount v : Real) - (q + frac)| := by
+      simpa [F, oddEvenMerge64_parityMean] using
+        monotoneCountDecomposition_L1_exact F 64 (boolTrueCount v) q frac
+          (by simpa [boolTrueCount] using
+            (Fintype.card_subtype_le (fun i : Fin 64 => v i = true)))
+          hq hfrac0 hfrac1 htotal hmono
+
+/-- A monotone Boolean profile is exactly the terminal suffix whose length
+is its true count. -/
+theorem monotoneBool_eq_countSuffix {m : Nat} (v : Fin m → Bool)
+    (hv : Monotone v) (k : Fin m) :
+    v k = decide (m - boolTrueCount v ≤ k.val) := by
+  by_cases hk : v k = true
+  · let r := m - k.val
+    have hr : r ≤ m := by dsimp [r]; omega
+    have htail (j : Fin r) :
+        v (Fin.cast (Nat.sub_add_cancel hr) (Fin.natAdd (m - r) j)) = true := by
+      have hle : k ≤ Fin.cast (Nat.sub_add_cancel hr) (Fin.natAdd (m - r) j) :=
+        Fin.le_def.mpr (by simp only [Fin.val_cast, Fin.val_natAdd]; dsimp [r]; omega)
+      have hmono := hv hle
+      rw [hk] at hmono
+      exact Bool.le_antisymm (Bool.le_true _) hmono
+    have hcount := sortedBool_suffix_trueCount v hv hr
+    have hfull : boolTrueCount (fun j : Fin r =>
+        v (Fin.cast (Nat.sub_add_cancel hr) (Fin.natAdd (m - r) j))) = r := by
+      simp [htail, boolTrueCount]
+    rw [hfull] at hcount
+    have hloc : r ≤ boolTrueCount v := by omega
+    have hloc' : m - boolTrueCount v ≤ k.val := by dsimp [r] at hloc; omega
+    simp [hk, hloc']
+  · have hkfalse : v k = false := Bool.eq_false_of_not_eq_true hk
+    let r := k.val + 1
+    have hr : r ≤ m := by dsimp [r]; omega
+    have hprefix (i : Fin r) :
+        v (Fin.cast (Nat.add_sub_of_le hr) (Fin.castAdd (m - r) i)) = false := by
+      have hik : i.val ≤ k.val := by dsimp [r] at i; omega
+      have hle : Fin.cast (Nat.add_sub_of_le hr) (Fin.castAdd (m - r) i) ≤ k :=
+        Fin.le_def.mpr (by simp only [Fin.val_cast, Fin.val_castAdd]; exact hik)
+      have hval := hv hle
+      rw [hkfalse] at hval
+      exact Bool.le_antisymm hval (Bool.false_le _)
+    have hcount := sortedBool_prefix_trueCount v hv hr
+    have hzero : boolTrueCount (fun i : Fin r =>
+        v (Fin.cast (Nat.add_sub_of_le hr) (Fin.castAdd (m - r) i))) = 0 := by
+      simp [hprefix, boolTrueCount]
+    rw [hzero] at hcount
+    have hloc : boolTrueCount v ≤ m - (k.val + 1) := by omega
+    have hloc' : ¬ m - boolTrueCount v ≤ k.val := by omega
+    simp [hkfalse, hloc']
+
+/-- The canonical terminal suffix of length `z` has exactly `z` true bits. -/
+theorem boolTrueCount_countSuffix (m z : Nat) (hz : z ≤ m) :
+    boolTrueCount (fun k : Fin m => decide (m - z ≤ k.val)) = z := by
+  let e : {k : Fin m // decide (m - z ≤ k.val) = true} ≃ Fin z :=
+    { toFun := fun k => ⟨k.val.val - (m - z), by
+        have hk := k.property
+        simp only [decide_eq_true_eq] at hk
+        omega⟩
+      invFun := fun j => ⟨⟨m - z + j.val, by omega⟩, by
+        simp only [decide_eq_true_eq]
+        omega⟩
+      left_inv := by
+        intro k
+        apply Subtype.ext
+        apply Fin.ext
+        simp only [Fin.val_mk]
+        have hk := k.property
+        simp only [decide_eq_true_eq] at hk
+        omega
+      right_inv := by
+        intro j
+        apply Fin.ext
+        simp }
+  unfold boolTrueCount
+  rw [Fintype.card_congr e]
+  exact Fintype.card_fin z
+
+/-- Number of true lane ranks owned by one destination. -/
+def assignedBitCount {D : Type} [DecidableEq D] {m : Nat}
+    (owner : Fin m → D) (bits : Fin m → Bool) (destination : D) : Nat :=
+  ∑ k : Fin m, if destination = owner k ∧ bits k = true then 1 else 0
+
+/-- For a monotone Boolean lane, ownership by arbitrary destinations has the
+exact L1 profile error predicted by its rank-suffix interpolation. -/
+theorem monotoneBits_assignedRankProfiles_L1_exact
+    {D : Type} [Fintype D] [DecidableEq D] {m : Nat}
+    (owner : Fin m → D) (bits : Fin m → Bool) (hbits : Monotone bits)
+    (X q : Nat) (frac : Real) (hX : boolTrueCount bits = X)
+    (hq : q < m) (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    (∑ destination : D,
+      |(assignedBitCount owner bits destination : Real) -
+        ((1 - frac) * assignedRankCount owner
+            (fun z k => decide (m - z ≤ k.val)) destination q +
+          frac * assignedRankCount owner
+            (fun z k => decide (m - z ≤ k.val)) destination (q + 1))|) =
+      |(X : Real) - (q + frac)| := by
+  let suffix : Nat → Fin m → Bool := fun z k => decide (m - z ≤ k.val)
+  have hXbound : X ≤ m := by
+    rw [← hX]
+    simpa [boolTrueCount] using
+      (Fintype.card_subtype_le (fun k : Fin m => bits k = true))
+  have hactual (destination : D) :
+      assignedBitCount owner bits destination =
+        assignedRankCount owner suffix destination X := by
+    unfold assignedBitCount assignedRankCount
+    apply Finset.sum_congr rfl
+    intro k hk
+    rw [monotoneBool_eq_countSuffix bits hbits k, hX]
+  have hcard : ∀ z ≤ m,
+      (∑ k : Fin m, if suffix z k = true then 1 else 0) = z := by
+    intro z hz
+    calc
+      (∑ k : Fin m, if suffix z k = true then 1 else 0) =
+          Fintype.card {k : Fin m // suffix z k = true} :=
+        finSum_ite_one_eq_card_subtype (fun k : Fin m => suffix z k = true)
+      _ = boolTrueCount (fun k : Fin m => suffix z k) := rfl
+      _ = z := by simpa [suffix] using boolTrueCount_countSuffix m z hz
+  have hmono : ∀ a b, a ≤ b → ∀ k, suffix a k = true → suffix b k = true := by
+    intro a b hab k ha
+    simp only [suffix, decide_eq_true_eq] at ha ⊢
+    omega
+  have hassigned := assignedRankProfiles_L1_exact owner suffix X q frac
+    hXbound hq hfrac0 hfrac1 hcard hmono
+  simpa only [hactual] using hassigned
+
+/-- Destination-wise L2 aggregation for a cohort of sorted Boolean rank
+profiles with heterogeneous fractional targets. It uses the actual bits at
+each rank and charges only the number of source blocks. -/
+theorem monotoneBits_assignedRankProfiles_aggregate_L2_var
+    {D : Type} [Fintype D] [DecidableEq D] {c m : Nat}
+    (owner : Fin c → Fin m → D) (bits : Fin c → Fin m → Bool)
+    (hbits : ∀ g, Monotone (bits g))
+    (targetQ : Fin c → Nat) (frac : Fin c → Real)
+    (hq : ∀ g, targetQ g < m)
+    (hfrac0 : ∀ g, 0 ≤ frac g) (hfrac1 : ∀ g, frac g ≤ 1) :
+    (∑ destination : D,
+      (Finset.univ.sum (fun g : Fin c =>
+        (assignedBitCount (owner g) (bits g) destination : Real) -
+          ((1 - frac g) * assignedRankCount (owner g)
+            (fun z k => decide (m - z ≤ k.val)) destination (targetQ g) +
+            frac g * assignedRankCount (owner g)
+              (fun z k => decide (m - z ≤ k.val)) destination (targetQ g + 1)))) ^ 2) ≤
+      (c : Real) * Finset.univ.sum (fun g : Fin c =>
+        ((boolTrueCount (bits g) : Real) - (targetQ g + frac g)) ^ 2) := by
+  classical
+  let suffix : Nat → Fin m → Bool := fun z k => decide (m - z ≤ k.val)
+  let X : Fin c → Nat := fun g => boolTrueCount (bits g)
+  have hX : ∀ g, X g ≤ m := by
+    intro g
+    simpa [X, boolTrueCount] using
+      (Fintype.card_subtype_le (fun k : Fin m => bits g k = true))
+  have hsuffix : ∀ z ≤ m,
+      (∑ k : Fin m, if suffix z k = true then 1 else 0) = z := by
+    intro z hz
+    calc
+      (∑ k : Fin m, if suffix z k = true then 1 else 0) =
+          boolTrueCount (fun k : Fin m => decide (m - z ≤ k.val)) := by
+        exact finSum_ite_one_eq_card_subtype _
+      _ = z := boolTrueCount_countSuffix m z hz
+  have hmonoSuffix : ∀ a b, a ≤ b → ∀ k,
+      suffix a k = true → suffix b k = true := by
+    intro a b hab k ha
+    simp only [suffix, decide_eq_true_eq] at ha ⊢
+    omega
+  have hactual (g : Fin c) (destination : D) :
+      assignedBitCount (owner g) (bits g) destination =
+        assignedRankCount (owner g) suffix destination (X g) := by
+    unfold assignedBitCount assignedRankCount
+    apply Finset.sum_congr rfl
+    intro k hk
+    rw [monotoneBool_eq_countSuffix (bits g) (hbits g) k]
+  have hagg := assignedRankProfiles_aggregate_L2_var
+    (owner := owner) (suffix := suffix) (X := X) (q := targetQ) (frac := frac)
+    hX hq hfrac0 hfrac1 hsuffix hmonoSuffix
+  simpa only [hactual, suffix, X] using hagg
+
+/-- Endpoint-safe version of the monotone Boolean rank-profile bound. A full
+target `m` is represented as `(m - 1) + 1`, so it uses the already-proved
+interior interpolation theorem without asking for a nonexistent rank `m+1`.
+-/
+theorem monotoneBits_assignedRankProfiles_aggregate_L2_var_allow_endpoint
+    {D : Type} [Fintype D] [DecidableEq D] {c m : Nat} (hm : 0 < m)
+    (owner : Fin c → Fin m → D) (bits : Fin c → Fin m → Bool)
+    (hbits : ∀ g, Monotone (bits g))
+    (targetQ : Fin c → Nat) (frac : Fin c → Real)
+    (hq : ∀ g, targetQ g ≤ m)
+    (hendpoint : ∀ g, targetQ g = m → frac g = 0)
+    (hfrac0 : ∀ g, 0 ≤ frac g) (hfrac1 : ∀ g, frac g ≤ 1) :
+    (∑ destination : D,
+      (Finset.univ.sum (fun g : Fin c =>
+        (assignedBitCount (owner g) (bits g) destination : Real) -
+          ((1 - frac g) * assignedRankCount (owner g)
+            (fun z k => decide (m - z ≤ k.val)) destination (targetQ g) +
+            frac g * assignedRankCount (owner g)
+              (fun z k => decide (m - z ≤ k.val)) destination (targetQ g + 1)))) ^ 2) ≤
+      (c : Real) * Finset.univ.sum (fun g : Fin c =>
+        ((boolTrueCount (bits g) : Real) - (targetQ g + frac g)) ^ 2) := by
+  let q' : Fin c → Nat := fun g => if targetQ g < m then targetQ g else m - 1
+  let frac' : Fin c → Real := fun g => if targetQ g < m then frac g else 1
+  have hq' : ∀ g, q' g < m := by
+    intro g
+    by_cases h : targetQ g < m
+    · simp [q', h]
+    · have hbound := hq g
+      have heq : targetQ g = m := by omega
+      have hsub : m - 1 < m := by omega
+      simpa [q', h] using hsub
+  have hf0 : ∀ g, 0 ≤ frac' g := by
+    intro g
+    by_cases h : targetQ g < m <;> simp [frac', h]
+    exact hfrac0 g
+  have hf1 : ∀ g, frac' g ≤ 1 := by
+    intro g
+    by_cases h : targetQ g < m <;> simp [frac', h]
+    exact hfrac1 g
+  have htarget : ∀ g, q' g + frac' g = targetQ g + frac g := by
+    intro g
+    by_cases h : targetQ g < m
+    · simp [q', frac', h]
+    · have hbound := hq g
+      have heq : targetQ g = m := by omega
+      have hfrac := hendpoint g heq
+      have hnat : m - 1 + 1 = m := Nat.sub_add_cancel (by omega)
+      simp [q', frac', h, heq, hfrac, hnat]
+      exact_mod_cast hnat
+  have hprofile (g : Fin c) (destination : D) :
+      (1 - frac' g) * assignedRankCount (owner g)
+          (fun z k => decide (m - z ≤ k.val)) destination (q' g) +
+        frac' g * assignedRankCount (owner g)
+          (fun z k => decide (m - z ≤ k.val)) destination (q' g + 1) =
+      (1 - frac g) * assignedRankCount (owner g)
+          (fun z k => decide (m - z ≤ k.val)) destination (targetQ g) +
+        frac g * assignedRankCount (owner g)
+          (fun z k => decide (m - z ≤ k.val)) destination (targetQ g + 1) := by
+    by_cases h : targetQ g < m
+    · simp [q', frac', h]
+    · have hbound := hq g
+      have heq : targetQ g = m := by omega
+      have hfrac := hendpoint g heq
+      have hnat : m - 1 + 1 = m := Nat.sub_add_cancel (by omega)
+      simp [q', frac', h, heq, hfrac, hnat]
+  have hcore := monotoneBits_assignedRankProfiles_aggregate_L2_var
+    owner bits hbits q' frac' hq' hf0 hf1
+  simpa only [hprofile, htarget] using hcore
+
+/-- Boolean threshold values on the full logical ranks of each 4096-wire
+merge output. -/
+def packetFamily64BlockList_mergeThresholdBits {q N : Nat} {α : Type}
+    [LinearOrder α]
+    (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y)
+    (v : Fin N → α) (t : α) : Fin q → Fin 4096 → Bool :=
+  fun g k => decide (t ≤
+    (genScatterMergeTreeBatch (packetPowerTree6 (α := α))
+      (packetFamily64BlockList packets hdis)).exec v
+        (packetFamily64BlockEmbedding packets hdis g k))
+
+/-- The 57-layer full-block merge admits the arbitrary physical rank-owner L2
+estimate directly on its 4096 logical output ranks. Sortedness is discharged
+from the checked merge-tree block-order theorem, so this adapter does not
+rebin through 64 output packets. -/
+theorem packetFamily64BlockList_merge_wholeBlock_owner_L2_le
+    {q N : Nat} {α D : Type} [LinearOrder α]
+    [Fintype D] [DecidableEq D]
+    (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y)
+    (v : Fin N → α)
+    (hpackets : ∀ a, Monotone (fun i => v (packets a i)))
+    (t : α)
+    (owner : Fin q → Fin 4096 → D)
+    (targetQ : Fin q → Nat) (frac : Fin q → Real)
+    (hq : ∀ g, targetQ g ≤ 4096)
+    (hendpoint : ∀ g, targetQ g = 4096 → frac g = 0)
+    (hfrac0 : ∀ g, 0 ≤ frac g) (hfrac1 : ∀ g, frac g ≤ 1) :
+    (∑ destination : D,
+      Finset.univ.sum (fun g : Fin q =>
+        (assignedBitCount (owner g)
+          (packetFamily64BlockList_mergeThresholdBits packets hdis v t g)
+          destination : Real) -
+          ((1 - frac g) * assignedRankCount (owner g)
+            (fun z k => decide (4096 - z ≤ k.val)) destination (targetQ g) +
+            frac g * assignedRankCount (owner g)
+              (fun z k => decide (4096 - z ≤ k.val)) destination (targetQ g + 1))) ^ 2) ≤
+      (q : Real) * Finset.univ.sum (fun g : Fin q =>
+        ((boolTrueCount
+          (packetFamily64BlockList_mergeThresholdBits packets hdis v t g) : Real) -
+          (targetQ g + frac g)) ^ 2) := by
+  let bits := packetFamily64BlockList_mergeThresholdBits packets hdis v t
+  have hbits : ∀ g, Monotone (bits g) := by
+    intro g
+    let e := packetFamily64BlockEmbedding packets hdis g
+    have he : e ∈ packetFamily64BlockList packets hdis := by
+      simp [e, packetFamily64BlockList]
+    have hsorted := packetFamily64BlockList_merge_output_blockSorted
+      packets hdis v hpackets e he
+    have hthreshold : Monotone (fun x : α => decide (t ≤ x)) := by
+      intro x y hxy
+      by_cases hx : t ≤ x
+      · have hy : t ≤ y := hx.trans hxy
+        simp [hx, hy]
+      · simp [hx]
+    exact hthreshold.comp (by simpa [bits, e] using hsorted)
+  have henergy := monotoneBits_assignedRankProfiles_aggregate_L2_var_allow_endpoint
+    (m := 4096) (by omega) owner bits hbits targetQ frac hq hendpoint hfrac0 hfrac1
+  simpa only [bits] using henergy
+
+private theorem blockOf_rankOrder_of_separated {N : Nat}
+    (p : Finset (Fin N)) (lo₁ hi₁ lo₂ hi₂ : Nat)
+    (hhi₁ : hi₁ ≤ p.card) (hhi₂ : hi₂ ≤ p.card) (hsep : hi₁ ≤ lo₂)
+    {x y : Fin N}
+    (hx : x ∈ Chvatal.blockOf p lo₁ hi₁)
+    (hy : y ∈ Chvatal.blockOf p lo₂ hi₂) : x.val < y.val := by
+  have hx' := Chvatal.mem_blockOf.mp hx
+  have hy' := Chvatal.mem_blockOf.mp hy
+  have hrank : Chvatal.rankIn p x < Chvatal.rankIn p y := by omega
+  by_contra hn
+  have hback : y.val ≤ x.val := by omega
+  by_cases heq : y.val = x.val
+  · have hxy : y = x := Fin.ext heq
+    subst y
+    omega
+  · have hlt : y.val < x.val := by omega
+    have hrev := Chvatal.rankIn_lt_rankIn hy'.1
+      (Fin.lt_iff_val_lt_val.mpr hlt)
+    omega
+
+/-- Intersecting two rank intervals of the same support is again the rank
+interval with the intersected endpoints. This is the set-level bridge between
+a port-local macro block and one of its outgoing WireFlow pieces. -/
+theorem blockOf_inter_eq {N : Nat} (s : Finset (Fin N))
+    (a b c d : Nat) :
+    Chvatal.blockOf s a b ∩ Chvatal.blockOf s c d =
+      Chvatal.blockOf s (max a c) (min b d) := by
+  ext w
+  simp only [Finset.mem_inter, Chvatal.mem_blockOf]
+  constructor
+  · rintro ⟨⟨hw, ha, hb⟩, ⟨_, hc, hd⟩⟩
+    exact ⟨hw, max_le ha hc, lt_min hb hd⟩
+  · rintro ⟨hw, hlo, hhi⟩
+    exact ⟨⟨hw, le_trans (le_max_left _ _) hlo,
+        lt_of_lt_of_le hhi (min_le_left _ _)⟩,
+      ⟨hw, le_trans (le_max_right _ _) hlo,
+        lt_of_lt_of_le hhi (min_le_right _ _)⟩⟩
+
+private theorem blockOf_convex_of_wireOrder {N : Nat}
+    (s : Finset (Fin N)) (lo hi : Nat)
+    {x z y : Fin N} (hx : x ∈ Chvatal.blockOf s lo hi)
+    (hzs : z ∈ s) (hy : y ∈ Chvatal.blockOf s lo hi)
+    (hxz : x.val < z.val) (hzy : z.val < y.val) :
+    z ∈ Chvatal.blockOf s lo hi := by
+  have hx' := Chvatal.mem_blockOf.mp hx
+  have hy' := Chvatal.mem_blockOf.mp hy
+  have hxzRank := Chvatal.rankIn_lt_rankIn hx'.1
+    (Fin.lt_iff_val_lt_val.mpr hxz)
+  have hzyRank := Chvatal.rankIn_lt_rankIn hzs
+    (Fin.lt_iff_val_lt_val.mpr hzy)
+  apply Chvatal.mem_blockOf.mpr
+  exact ⟨hzs, by omega, by omega⟩
+
+/-- A physical rank interval can partially cut at most two consecutive
+4096-rank groups of any sub-support. This is the geometric fact needed for
+port-local grouping; it does not apply to groups transposed across ports. -/
+theorem not_three_partial_rankGroups {N : Nat}
+    (s p : Finset (Fin N)) (hps : p ⊆ s) (lo hi Q : Nat)
+    (hQ : 4096 * Q ≤ p.card)
+    (k₁ k₂ k₃ : Fin Q) (h₁₂ : k₁.val < k₂.val) (h₂₃ : k₂.val < k₃.val)
+    (hpartial₁ : ((Chvatal.blockOf p (4096 * k₁.val)
+      (4096 * (k₁.val + 1))) ∩ Chvatal.blockOf s lo hi).Nonempty)
+    (hpartial₂ : ((Chvatal.blockOf p (4096 * k₂.val)
+      (4096 * (k₂.val + 1))) \ Chvatal.blockOf s lo hi).Nonempty)
+    (hpartial₃ : ((Chvatal.blockOf p (4096 * k₃.val)
+      (4096 * (k₃.val + 1))) ∩ Chvatal.blockOf s lo hi).Nonempty) : False := by
+  obtain ⟨x, hx⟩ := hpartial₁
+  obtain ⟨z, hz⟩ := hpartial₂
+  obtain ⟨y, hy⟩ := hpartial₃
+  have hx' := Finset.mem_inter.mp hx
+  have hy' := Finset.mem_inter.mp hy
+  have hz' := Finset.mem_sdiff.mp hz
+  have hk₁ : 4096 * (k₁.val + 1) ≤ p.card := by
+    have hk : k₁.val + 1 ≤ Q := by omega
+    omega
+  have hk₂ : 4096 * (k₂.val + 1) ≤ p.card := by
+    have hk : k₂.val + 1 ≤ Q := by omega
+    omega
+  have hk₃ : 4096 * (k₃.val + 1) ≤ p.card := by
+    have hk : k₃.val + 1 ≤ Q := by omega
+    omega
+  have hxz := blockOf_rankOrder_of_separated p
+    (4096 * k₁.val) (4096 * (k₁.val + 1))
+    (4096 * k₂.val) (4096 * (k₂.val + 1)) hk₁ hk₂ (by omega)
+    hx'.1 hz'.1
+  have hzy := blockOf_rankOrder_of_separated p
+    (4096 * k₂.val) (4096 * (k₂.val + 1))
+    (4096 * k₃.val) (4096 * (k₃.val + 1)) hk₂ hk₃ (by omega)
+    hz'.1 hy'.1
+  have hzP := (Chvatal.mem_blockOf.mp hz'.1).1
+  have hzInS := hps hzP
+  have hzInInterval := blockOf_convex_of_wireOrder s lo hi hx'.2 hzInS
+    hy'.2 hxz hzy
+  exact hz'.2 hzInInterval
+
+/-- Rank-group indices whose groups meet a destination interval both inside
+and outside. -/
+def partialRankGroupIndices {N : Nat} (s p : Finset (Fin N))
+    (lo hi Q : Nat) : Finset (Fin Q) :=
+  Finset.univ.filter fun k =>
+    (Chvatal.blockOf p (4096 * k.val) (4096 * (k.val + 1)) ∩
+      Chvatal.blockOf s lo hi).Nonempty ∧
+    (Chvatal.blockOf p (4096 * k.val) (4096 * (k.val + 1)) \
+      Chvatal.blockOf s lo hi).Nonempty
+
+/-- For a sub-support p of s, a single rank interval in s has at most two
+partially intersected consecutive 4096-rank groups of p. This turns the
+geometric no-three theorem into the cardinality form used by overlap bounds. -/
+theorem partialRankGroupIndices_card_le_two {N : Nat}
+    (s p : Finset (Fin N)) (hps : p ⊆ s) (lo hi Q : Nat)
+    (hQ : 4096 * Q ≤ p.card) :
+    (partialRankGroupIndices s p lo hi Q).card ≤ 2 := by
+  by_contra hcard
+  have ⟨a, ha, b, hb, c, hc, hab, hac, hbc⟩ :=
+    Finset.two_lt_card.mp (by omega : 2 < (partialRankGroupIndices s p lo hi Q).card)
+  have horder :
+      (a.val < b.val ∧ b.val < c.val) ∨
+      (a.val < c.val ∧ c.val < b.val) ∨
+      (b.val < a.val ∧ a.val < c.val) ∨
+      (b.val < c.val ∧ c.val < a.val) ∨
+      (c.val < a.val ∧ a.val < b.val) ∨
+      (c.val < b.val ∧ b.val < a.val) := by omega
+  have hpartial (k : Fin Q) (hk : k ∈ partialRankGroupIndices s p lo hi Q) :=
+    (Finset.mem_filter.mp hk).2
+  rcases horder with h | h | h | h | h | h
+  all_goals
+    have hna := hpartial a ha
+    have hnb := hpartial b hb
+    have hnc := hpartial c hc
+    rcases h with ⟨h₁, h₂⟩
+    rcases hna with ⟨haIn, haOut⟩
+    rcases hnb with ⟨hbIn, hbOut⟩
+    rcases hnc with ⟨hcIn, hcOut⟩
+    first
+    | exact (not_three_partial_rankGroups s p hps lo hi Q hQ a b c h₁ h₂
+        haIn hbOut hcIn).elim
+    | exact (not_three_partial_rankGroups s p hps lo hi Q hQ a c b h₁ h₂
+        haIn hcOut hbIn).elim
+    | exact (not_three_partial_rankGroups s p hps lo hi Q hQ b a c h₁ h₂
+        hbIn haOut hcIn).elim
+    | exact (not_three_partial_rankGroups s p hps lo hi Q hQ b c a h₁ h₂
+        hbIn hcOut haIn).elim
+    | exact (not_three_partial_rankGroups s p hps lo hi Q hQ c a b h₁ h₂
+        hcIn haOut hbIn).elim
+    | exact (not_three_partial_rankGroups s p hps lo hi Q hQ c b a h₁ h₂
+        hcIn hbOut haIn).elim
+
+/-- A rank interval cannot partially cut three ordered equal-width rank
+groups even when their grid is shifted, provided the groups lie in the
+destination support. -/
+theorem not_three_partial_rankIntervals {N : Nat}
+    (source destination : Finset (Fin N)) (base lo hi Q : Nat)
+    (hcomplete : base + 4096 * Q ≤ source.card)
+    (hcontained : ∀ k : Fin Q,
+      Chvatal.blockOf source (base + 4096 * k.val)
+        (base + 4096 * (k.val + 1)) ⊆ destination)
+    (k₁ k₂ k₃ : Fin Q) (h₁₂ : k₁.val < k₂.val) (h₂₃ : k₂.val < k₃.val)
+    (hpartial₁ : ((Chvatal.blockOf source (base + 4096 * k₁.val)
+      (base + 4096 * (k₁.val + 1))) ∩ Chvatal.blockOf destination lo hi).Nonempty)
+    (hpartial₂ : ((Chvatal.blockOf source (base + 4096 * k₂.val)
+      (base + 4096 * (k₂.val + 1))) \
+        Chvatal.blockOf destination lo hi).Nonempty)
+    (hpartial₃ : ((Chvatal.blockOf source (base + 4096 * k₃.val)
+      (base + 4096 * (k₃.val + 1))) ∩ Chvatal.blockOf destination lo hi).Nonempty) :
+    False := by
+  obtain ⟨x, hx⟩ := hpartial₁
+  obtain ⟨z, hz⟩ := hpartial₂
+  obtain ⟨y, hy⟩ := hpartial₃
+  have hx' := Finset.mem_inter.mp hx
+  have hy' := Finset.mem_inter.mp hy
+  have hz' := Finset.mem_sdiff.mp hz
+  have hk₁ : base + 4096 * (k₁.val + 1) ≤ source.card := by
+    have hk : k₁.val + 1 ≤ Q := by omega
+    calc
+      base + 4096 * (k₁.val + 1) ≤ base + 4096 * Q :=
+        Nat.add_le_add_left (Nat.mul_le_mul_left 4096 hk) _
+      _ ≤ source.card := hcomplete
+  have hk₂ : base + 4096 * (k₂.val + 1) ≤ source.card := by
+    have hk : k₂.val + 1 ≤ Q := by omega
+    calc
+      base + 4096 * (k₂.val + 1) ≤ base + 4096 * Q :=
+        Nat.add_le_add_left (Nat.mul_le_mul_left 4096 hk) _
+      _ ≤ source.card := hcomplete
+  have hk₃ : base + 4096 * (k₃.val + 1) ≤ source.card := by
+    have hk : k₃.val + 1 ≤ Q := by omega
+    calc
+      base + 4096 * (k₃.val + 1) ≤ base + 4096 * Q :=
+        Nat.add_le_add_left (Nat.mul_le_mul_left 4096 hk) _
+      _ ≤ source.card := hcomplete
+  have hgap₁₂ : base + 4096 * (k₁.val + 1) ≤ base + 4096 * k₂.val := by
+    have hk : k₁.val + 1 ≤ k₂.val := by omega
+    exact Nat.add_le_add_left (Nat.mul_le_mul_left 4096 hk) _
+  have hgap₂₃ : base + 4096 * (k₂.val + 1) ≤ base + 4096 * k₃.val := by
+    have hk : k₂.val + 1 ≤ k₃.val := by omega
+    exact Nat.add_le_add_left (Nat.mul_le_mul_left 4096 hk) _
+  have hxz := blockOf_rankOrder_of_separated source
+    (base + 4096 * k₁.val) (base + 4096 * (k₁.val + 1))
+    (base + 4096 * k₂.val) (base + 4096 * (k₂.val + 1))
+    hk₁ hk₂ hgap₁₂ hx'.1 hz'.1
+  have hzy := blockOf_rankOrder_of_separated source
+    (base + 4096 * k₂.val) (base + 4096 * (k₂.val + 1))
+    (base + 4096 * k₃.val) (base + 4096 * (k₃.val + 1))
+    hk₂ hk₃ hgap₂₃ hz'.1 hy'.1
+  have hzDestination := hcontained k₂ hz'.1
+  have hzInInterval := blockOf_convex_of_wireOrder destination lo hi
+    hx'.2 hzDestination hy'.2 hxz hzy
+  exact hz'.2 hzInInterval
+
+/-- Indices of shifted source-rank groups partially intersecting one
+destination rank interval. -/
+def partialRankIntervalIndices {N : Nat} (source destination : Finset (Fin N))
+    (base lo hi Q : Nat) : Finset (Fin Q) :=
+  Finset.univ.filter fun k =>
+    (Chvatal.blockOf source (base + 4096 * k.val)
+      (base + 4096 * (k.val + 1)) ∩ Chvatal.blockOf destination lo hi).Nonempty ∧
+    (Chvatal.blockOf source (base + 4096 * k.val)
+      (base + 4096 * (k.val + 1)) \
+        Chvatal.blockOf destination lo hi).Nonempty
+
+/-- The shifted-grid geometric lemma gives a cardinal overlap bound of two
+partial groups per source stream and destination interval. -/
+theorem partialRankIntervalIndices_card_le_two {N : Nat}
+    (source destination : Finset (Fin N)) (base lo hi Q : Nat)
+    (hcomplete : base + 4096 * Q ≤ source.card)
+    (hcontained : ∀ k : Fin Q,
+      Chvatal.blockOf source (base + 4096 * k.val)
+        (base + 4096 * (k.val + 1)) ⊆ destination) :
+    (partialRankIntervalIndices source destination base lo hi Q).card ≤ 2 := by
+  let A := partialRankIntervalIndices source destination base lo hi Q
+  have hno (a b c : Fin Q) (ha : a ∈ A) (hb : b ∈ A) (hc : c ∈ A)
+      (hab : a.val < b.val) (hbc : b.val < c.val) : False := by
+    have hpa := (Finset.mem_filter.mp ha).2
+    have hpb := (Finset.mem_filter.mp hb).2
+    have hpc := (Finset.mem_filter.mp hc).2
+    exact not_three_partial_rankIntervals source destination base lo hi Q
+      hcomplete hcontained a b c hab hbc hpa.1 hpb.2 hpc.1
+  by_contra hcard
+  change ¬ A.card ≤ 2 at hcard
+  have hthree : 2 < A.card := by omega
+  have ⟨a, ha, b, hb, c, hc, hab, hac, hbc⟩ := Finset.two_lt_card.mp hthree
+  have horder :
+      (a.val < b.val ∧ b.val < c.val) ∨
+      (a.val < c.val ∧ c.val < b.val) ∨
+      (b.val < a.val ∧ a.val < c.val) ∨
+      (b.val < c.val ∧ c.val < a.val) ∨
+      (c.val < a.val ∧ a.val < b.val) ∨
+      (c.val < b.val ∧ b.val < a.val) := by omega
+  rcases horder with h | h | h | h | h | h
+  · exact hno a b c ha hb hc h.1 h.2
+  · exact hno a c b ha hc hb h.1 h.2
+  · exact hno b a c hb ha hc h.1 h.2
+  · exact hno b c a hb hc ha h.1 h.2
+  · exact hno c a b hc ha hb h.1 h.2
+  · exact hno c b a hc hb ha h.1 h.2
+
+/-- At time six, level two is an ordinary interior node. Its down-port length
+is exactly the displayed power difference, so the number of 4096-wire groups
+spanned by one port grows with dimension. This is a concrete scale check for
+the macro-overlap audit; it does not assert that every such group has nonzero
+profile error. -/
+theorem flowDown7_levelTwo_timeSix_eq {d : Nat} (hd : 11 ≤ d) :
+    flowDown7 d (by omega) 2 6 = 64 ^ (d - 5) - 64 ^ (d - 9) := by
+  have hd7 : 7 ≤ d := by omega
+  have hα : alpha7 d 6 = 0 := by
+    simp [alpha7, alphaStarLower, ceilParity,
+      show 6 ≠ 0 by omega, show 6 ≠ 1 by omega,
+      show 6 + 5 ≤ d by omega]
+  have hω : omega7 d 6 = 4 := by
+    norm_num [omega7, omegaStarLower, ceilParity]
+  have hactive : Active d 2 6 := by
+    unfold Active
+    rw [hα, hω]
+    refine ⟨?_, by omega, by omega, by norm_num⟩
+    unfold tf7
+    omega
+  have hcast := cast_flowDown7 d hd7 2 6 (by omega) (by unfold tf7; omega)
+  have hflow : flowDown d 2 6 =
+      (64 : Rat) ^ (d - 5) - 64 ^ (d - 9) := by
+    rw [flowDown_mid d hactive (by intro hi; rw [hα] at hi; omega)
+      (by rw [hω]; omega)]
+    rw [capacity_eq_pow d 2 6 (d - 4) (by omega)]
+    push_cast
+    have hratio :
+        ((4096 * 64 - (1 / 64 : Rat)) * (64 : Rat) ^ (d - 4) /
+            (4096 * 64 ^ 2 : Rat)) =
+          (64 : Rat) ^ (d - 4) / 64 - (64 : Rat) ^ (d - 4) / 64 ^ 5 := by
+      norm_num
+      ring
+    rw [hratio]
+    have hpow1 : (64 : Rat) ^ (d - 4) / 64 = (64 : Rat) ^ (d - 5) := by
+      rw [show d - 4 = (d - 5) + 1 by omega, pow_succ]
+      norm_num
+    have hpow5 : (64 : Rat) ^ (d - 4) / 64 ^ 5 = (64 : Rat) ^ (d - 9) := by
+      rw [show d - 4 = (d - 9) + 5 by omega, pow_add]
+      norm_num
+    rw [hpow1, hpow5]
+  have hle : 64 ^ (d - 9) ≤ 64 ^ (d - 5) :=
+    Nat.pow_le_pow_right (by omega) (by omega)
+  have hRat : (flowDown7 d hd7 2 6 : Rat) =
+      ((64 ^ (d - 5) - 64 ^ (d - 9) : Nat) : Rat) := by
+    rw [hcast, hflow, Nat.cast_sub hle]
+    push_cast
+    rfl
+  apply Nat.cast_injective (R := Rat)
+  exact hRat
+
+/-- Exact number of complete 4096-wire groups in the time-six down-port at
+level two; this count diverges with `d`. -/
+theorem flowDown7_levelTwo_timeSix_div4096_eq {d : Nat} (hd : 11 ≤ d) :
+    flowDown7 d (by omega) 2 6 / 4096 = 64 ^ (d - 7) - 64 ^ (d - 11) := by
+  rw [flowDown7_levelTwo_timeSix_eq hd]
+  have hfirst : 64 ^ (d - 5) = 4096 * 64 ^ (d - 7) := by
+    rw [show d - 5 = (d - 7) + 2 by omega, pow_add]
+    norm_num
+    ring
+  have hsecond : 64 ^ (d - 9) = 4096 * 64 ^ (d - 11) := by
+    rw [show d - 9 = (d - 11) + 2 by omega, pow_add]
+    norm_num
+    ring
+  rw [hfirst, hsecond]
+  omega
+
+/-- If each destination receives nonzero rank-profile discrepancy from at
+most `k` of the 4096-rank merge blocks, their aggregate squared error is
+charged with `k`, independent of the total number of blocks. Each individual
+block's destination errors have energy at most its scalar rank-count error;
+the unresolved scheduler obligation is the stated support-overlap bound. -/
+theorem packetFamily64BlockList_merge_wholeBlock_owner_L2_le_of_overlap
+    {q N : Nat} {α D : Type} [LinearOrder α]
+    [Fintype D] [DecidableEq D]
+    (packets : Fin (q * 64) → Fin 64 ↪ Fin N)
+    (hdis : ∀ a b, a ≠ b → ∀ x y, packets a x ≠ packets b y)
+    (v : Fin N → α)
+    (hpackets : ∀ a, Monotone (fun i => v (packets a i)))
+    (t : α)
+    (owner : Fin q → Fin 4096 → D)
+    (targetQ : Fin q → Nat) (frac : Fin q → Real)
+    (hq : ∀ g, targetQ g ≤ 4096)
+    (hendpoint : ∀ g, targetQ g = 4096 → frac g = 0)
+    (hfrac0 : ∀ g, 0 ≤ frac g) (hfrac1 : ∀ g, frac g ≤ 1)
+    (k : Nat)
+    (hoverlap : ∀ destination,
+      ((Finset.univ : Finset (Fin q)).filter (fun g =>
+        (assignedBitCount (owner g)
+            (packetFamily64BlockList_mergeThresholdBits packets hdis v t g)
+            destination : Real) -
+          ((1 - frac g) * assignedRankCount (owner g)
+              (fun z j => decide (4096 - z ≤ j.val)) destination (targetQ g) +
+            frac g * assignedRankCount (owner g)
+              (fun z j => decide (4096 - z ≤ j.val)) destination (targetQ g + 1)) ≠ 0)).card ≤ k) :
+    (Finset.univ.sum (fun (destination : D) =>
+      (let total : Real := Finset.univ.sum (fun (g : Fin q) =>
+        (assignedBitCount (owner g)
+            (packetFamily64BlockList_mergeThresholdBits packets hdis v t g)
+            destination : Real) -
+          ((1 - frac g) * assignedRankCount (owner g)
+              (fun z j => decide (4096 - z ≤ j.val)) destination (targetQ g) +
+            frac g * assignedRankCount (owner g)
+              (fun z j => decide (4096 - z ≤ j.val)) destination (targetQ g + 1)))
+       total ^ 2))) ≤
+      (k : Real) * Finset.univ.sum (fun (g : Fin q) =>
+        ((boolTrueCount
+          (packetFamily64BlockList_mergeThresholdBits packets hdis v t g) : Real) -
+            (targetQ g + frac g)) ^ 2) := by
+  let bits := packetFamily64BlockList_mergeThresholdBits packets hdis v t
+  let err (g : Fin q) (destination : D) : Real :=
+    (assignedBitCount (owner g) (bits g) destination : Real) -
+      ((1 - frac g) * assignedRankCount (owner g)
+          (fun z j => decide (4096 - z ≤ j.val)) destination (targetQ g) +
+        frac g * assignedRankCount (owner g)
+          (fun z j => decide (4096 - z ≤ j.val)) destination (targetQ g + 1))
+  let energy (g : Fin q) : Real :=
+    ((boolTrueCount (bits g) : Real) - (targetQ g + frac g)) ^ 2
+  have hbits : ∀ g, Monotone (bits g) := by
+    intro g
+    let e := packetFamily64BlockEmbedding packets hdis g
+    have he : e ∈ packetFamily64BlockList packets hdis := by
+      simp [e, packetFamily64BlockList]
+    have hsorted := packetFamily64BlockList_merge_output_blockSorted
+      packets hdis v hpackets e he
+    have hthreshold : Monotone (fun x : α => decide (t ≤ x)) := by
+      intro x y hxy
+      by_cases hx : t ≤ x
+      · have hy : t ≤ y := hx.trans hxy
+        simp [hx, hy]
+      · simp [hx]
+    exact hthreshold.comp (by simpa [bits, e] using hsorted)
+  have hwithin (g : Fin q) : ∑ destination : D, (err g destination) ^ 2 ≤ energy g := by
+    let ownerOne : Fin 1 → Fin 4096 → D := fun _ => owner g
+    let bitsOne : Fin 1 → Fin 4096 → Bool := fun _ => bits g
+    have hsingle := monotoneBits_assignedRankProfiles_aggregate_L2_var_allow_endpoint
+      (D := D) (c := 1) (m := 4096) (by norm_num)
+      ownerOne bitsOne (by intro i; exact hbits g)
+      (fun _ => targetQ g) (fun _ => frac g)
+      (by intro i; exact hq g) (by intro i; exact hendpoint g)
+      (by intro i; exact hfrac0 g) (by intro i; exact hfrac1 g)
+    simp only [ownerOne, bitsOne, Fin.sum_univ_succ] at hsingle
+    simp only [Fin.sum_univ_zero, add_zero] at hsingle
+    simp only [Nat.cast_one, one_mul] at hsingle
+    change (∑ destination : D,
+      ((assignedBitCount (owner g) (bits g) destination : Real) -
+        ((1 - frac g) * assignedRankCount (owner g)
+            (fun z j => decide (4096 - z ≤ j.val)) destination (targetQ g) +
+          frac g * assignedRankCount (owner g)
+            (fun z j => decide (4096 - z ≤ j.val)) destination (targetQ g + 1))) ^ 2) ≤
+      ((boolTrueCount (bits g) : Real) - (targetQ g + frac g)) ^ 2
+    simpa only [ownerOne, bitsOne] using hsingle
+  have hoverlap' : ∀ destination,
+      ((Finset.univ : Finset (Fin q)).filter (fun g => err g destination ≠ 0)).card ≤ k := by
+    intro destination
+    simpa only [err] using hoverlap destination
+  have haggregate := finiteErrorProfiles_aggregate_L2_overlap
+    err energy k hoverlap' hwithin
+  simpa only [err, energy] using haggregate
+
+set_option maxHeartbeats 1000000
+/-- The actual even/odd ranks of a sorted 64-bit profile may be assigned to
+arbitrary destinations lane by lane. Their suffix-interpolated destination
+errors still sum exactly to the original 64-rank error. -/
+theorem oddEvenMerge64_assignedParityProfiles_L1_exact
+    {D : Type} [Fintype D] [DecidableEq D]
+    (v : Fin 64 → Bool) (hv : Monotone v)
+    (owner : Bool → Fin 32 → D) (q : Nat) (frac : Real)
+    (hq : q < 64) (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    (∑ lane : Bool, ∑ destination : D,
+      |(assignedBitCount (owner lane)
+          (fun i : Fin 32 => if lane then v (oddWire 32 i) else v (evenWire 32 i))
+          destination : Real) -
+        ((1 - oddEvenMerge64_parityCodeFrac lane q frac) *
+            assignedRankCount (owner lane)
+              (fun z k => decide (32 - z ≤ k.val)) destination
+              (oddEvenMerge64_parityCodeFloor lane q) +
+          oddEvenMerge64_parityCodeFrac lane q frac *
+            assignedRankCount (owner lane)
+              (fun z k => decide (32 - z ≤ k.val)) destination
+              (oddEvenMerge64_parityCodeFloor lane q + 1))|) =
+      |(boolTrueCount v : Real) - (q + frac)| := by
+  let laneBits : Bool → Fin 32 → Bool := fun lane i =>
+    if lane then v (oddWire 32 i) else v (evenWire 32 i)
+  have hbits (lane : Bool) : Monotone (laneBits lane) := by
+    intro i j hij
+    cases lane
+    · change v (evenWire 32 i) ≤ v (evenWire 32 j)
+      apply hv
+      apply Fin.le_def.mpr
+      simp only [evenWire, Fin.val_mk]
+      omega
+    · change v (oddWire 32 i) ≤ v (oddWire 32 j)
+      apply hv
+      apply Fin.le_def.mpr
+      simp only [oddWire, Fin.val_mk]
+      omega
+  have hparity := sorted_bool_parity_counts (m := 32) v hv
+  have hprofile (lane : Bool) :
+      boolTrueCount (laneBits lane) =
+        oddEvenMerge64_parityCount lane (boolTrueCount v) := by
+    cases lane <;> simp [laneBits, oddEvenMerge64_parityCount, hparity]
+  have hlane (lane : Bool) :
+      (∑ destination : D,
+        |(assignedBitCount (owner lane) (laneBits lane) destination : Real) -
+          ((1 - oddEvenMerge64_parityCodeFrac lane q frac) *
+              assignedRankCount (owner lane)
+                (fun z k => decide (32 - z ≤ k.val)) destination
+                (oddEvenMerge64_parityCodeFloor lane q) +
+            oddEvenMerge64_parityCodeFrac lane q frac *
+              assignedRankCount (owner lane)
+                (fun z k => decide (32 - z ≤ k.val)) destination
+                (oddEvenMerge64_parityCodeFloor lane q + 1))|) =
+        |(boolTrueCount (laneBits lane) : Real) -
+          oddEvenMerge64_parityMean lane q frac| := by
+    have hvalid := oddEvenMerge64_parityCode_valid lane q frac hq hfrac0 hfrac1
+    have hexact := monotoneBits_assignedRankProfiles_L1_exact
+      (owner lane) (laneBits lane) (hbits lane)
+      (boolTrueCount (laneBits lane))
+      (oddEvenMerge64_parityCodeFloor lane q)
+      (oddEvenMerge64_parityCodeFrac lane q frac) rfl
+      hvalid.1 hvalid.2.1 hvalid.2.2
+    simpa only [oddEvenMerge64_parityMean_eq_code lane q frac hq,
+      Nat.cast_add] using hexact
+  calc
+    _ = ∑ lane : Bool,
+        |(boolTrueCount (laneBits lane) : Real) -
+          oddEvenMerge64_parityMean lane q frac| := by
+      apply Finset.sum_congr rfl
+      intro lane hlaneMem
+      exact hlane lane
+    _ = |(boolTrueCount v : Real) - (q + frac)| := by
+      simpa [laneBits] using
+        oddEvenMerge64_parity_rebin_L1_exact v hv q frac hq hfrac0 hfrac1
+
+/-- Squaring the destination errors after splitting a sorted 64-wire packet
+into its parity lanes costs no extra factor of two: the total squared error is
+bounded by the square of the original packet's scalar count error. This is
+the energy form needed before matching the parity supports to next-stage
+cuts. -/
+theorem oddEvenMerge64_assignedParityProfiles_L2_le
+    {D : Type} [Fintype D] [DecidableEq D]
+    (v : Fin 64 → Bool) (hv : Monotone v)
+    (owner : Bool → Fin 32 → D) (q : Nat) (frac : Real)
+    (hq : q < 64) (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    (∑ lane : Bool, ∑ destination : D,
+      ((assignedBitCount (owner lane)
+          (fun i : Fin 32 => if lane then v (oddWire 32 i) else v (evenWire 32 i))
+          destination : Real) -
+        ((1 - oddEvenMerge64_parityCodeFrac lane q frac) *
+            assignedRankCount (owner lane)
+              (fun z k => decide (32 - z ≤ k.val)) destination
+              (oddEvenMerge64_parityCodeFloor lane q) +
+          oddEvenMerge64_parityCodeFrac lane q frac *
+            assignedRankCount (owner lane)
+              (fun z k => decide (32 - z ≤ k.val)) destination
+              (oddEvenMerge64_parityCodeFloor lane q + 1))) ^ 2) ≤
+      ((boolTrueCount v : Real) - (q + frac)) ^ 2 := by
+  let err (lane : Bool) (destination : D) : Real :=
+    (assignedBitCount (owner lane)
+        (fun i : Fin 32 => if lane then v (oddWire 32 i) else v (evenWire 32 i))
+        destination : Real) -
+      ((1 - oddEvenMerge64_parityCodeFrac lane q frac) *
+          assignedRankCount (owner lane)
+            (fun z k => decide (32 - z ≤ k.val)) destination
+            (oddEvenMerge64_parityCodeFloor lane q) +
+        oddEvenMerge64_parityCodeFrac lane q frac *
+          assignedRankCount (owner lane)
+            (fun z k => decide (32 - z ≤ k.val)) destination
+            (oddEvenMerge64_parityCodeFloor lane q + 1))
+  have hL1 : (∑ lane : Bool, ∑ destination : D, |err lane destination|) =
+      |(boolTrueCount v : Real) - (q + frac)| := by
+    simpa only [err] using
+      oddEvenMerge64_assignedParityProfiles_L1_exact
+        v hv owner q frac hq hfrac0 hfrac1
+  have hinner (lane : Bool) :
+      (∑ destination : D, (err lane destination) ^ 2) ≤
+        (∑ destination : D, |err lane destination|) ^ 2 := by
+    simpa using Finset.sum_sq_le_sq_sum_of_nonneg
+      (fun destination _ => abs_nonneg (err lane destination))
+  have houter :
+      (∑ lane : Bool, (∑ destination : D, |err lane destination|) ^ 2) ≤
+        (∑ lane : Bool, ∑ destination : D, |err lane destination|) ^ 2 := by
+    exact Finset.sum_sq_le_sq_sum_of_nonneg
+      (fun lane _ => Finset.sum_nonneg (fun destination _ => abs_nonneg (err lane destination)))
+  calc
+    (∑ lane : Bool, ∑ destination : D, (err lane destination) ^ 2) ≤
+        ∑ lane : Bool, (∑ destination : D, |err lane destination|) ^ 2 :=
+      Finset.sum_le_sum (fun lane _ => hinner lane)
+    _ ≤ (∑ lane : Bool, ∑ destination : D, |err lane destination|) ^ 2 := houter
+    _ = |(boolTrueCount v : Real) - (q + frac)| ^ 2 := by rw [hL1]
+    _ = ((boolTrueCount v : Real) - (q + frac)) ^ 2 := by rw [sq_abs]
+
+/-- The two parity lanes partition the parent ranks, so their actual
+destination counts recombine exactly for every owner map. -/
+theorem oddEvenMerge64_assignedBitCount_parity_split
+    {D : Type} [DecidableEq D]
+    (v : Fin 64 → Bool) (owner : Fin 64 → D) (destination : D) :
+    (∑ lane : Bool,
+      assignedBitCount
+        (fun i : Fin 32 => owner (if lane then oddWire 32 i else evenWire 32 i))
+        (fun i : Fin 32 => if lane then v (oddWire 32 i) else v (evenWire 32 i))
+        destination) =
+      assignedBitCount owner v destination := by
+  let p : Fin 32 ⊕ Fin 32 → Prop
+    | Sum.inl i => destination = owner (evenWire 32 i) ∧ v (evenWire 32 i) = true
+    | Sum.inr i => destination = owner (oddWire 32 i) ∧ v (oddWire 32 i) = true
+  have hp (s : Fin 32 ⊕ Fin 32) :
+      p s ↔ destination = owner (parityEquiv 32 s) ∧ v (parityEquiv 32 s) = true := by
+    cases s <;> rfl
+  let e : {k : Fin 64 // destination = owner k ∧ v k = true} ≃
+      ({i : Fin 32 // destination = owner (evenWire 32 i) ∧
+        v (evenWire 32 i) = true} ⊕
+       {i : Fin 32 // destination = owner (oddWire 32 i) ∧
+        v (oddWire 32 i) = true}) :=
+    ((parityEquiv 32).subtypeEquiv hp).symm.trans Equiv.subtypeSum
+  unfold assignedBitCount
+  change
+    (∑ lane : Bool, ∑ i : Fin 32,
+      if destination = owner (if lane then oddWire 32 i else evenWire 32 i) ∧
+          (if lane then v (oddWire 32 i) else v (evenWire 32 i)) = true
+      then 1 else 0) =
+    ∑ k : Fin 64, if destination = owner k ∧ v k = true then 1 else 0
+  rw [Fintype.sum_bool]
+  rw [finSum_ite_one_eq_card_subtype, finSum_ite_one_eq_card_subtype]
+  rw [finSum_ite_one_eq_card_subtype]
+  rw [← Fintype.card_sum]
+  exact (Fintype.card_congr (e.trans (Equiv.sumComm _ _))).symm
+
+/-- At every integer parent cut, the two lane suffix profiles assigned to a
+destination sum exactly to that destination's parent-rank suffix count. -/
+theorem oddEvenMerge64_assignedRankCount_parity_split
+    {D : Type} [Fintype D] [DecidableEq D]
+    (owner : Fin 64 → D) (destination : D) (z : Nat) (hz : z ≤ 64) :
+    (∑ lane : Bool,
+      assignedRankCount
+        (fun i : Fin 32 => owner (if lane then oddWire 32 i else evenWire 32 i))
+        (fun r k => decide (32 - r ≤ k.val)) destination
+        (oddEvenMerge64_parityCount lane z)) =
+      assignedRankCount owner (fun r k => decide (64 - r ≤ k.val)) destination z := by
+  let v : Fin 64 → Bool := fun k => decide (64 - z ≤ k.val)
+  have hv : Monotone v := by
+    intro i j hij
+    change decide (64 - z ≤ i.val) ≤ decide (64 - z ≤ j.val)
+    by_cases hi : 64 - z ≤ i.val
+    · have hj : 64 - z ≤ j.val := le_trans hi (Fin.le_def.mp hij)
+      simp [hi, hj]
+    · simp [hi]
+  have hvcount : boolTrueCount v = z := by
+    simpa [v] using boolTrueCount_countSuffix 64 z hz
+  have hlaneCount (lane : Bool) :
+      boolTrueCount (fun i : Fin 32 =>
+        if lane then v (oddWire 32 i) else v (evenWire 32 i)) =
+          oddEvenMerge64_parityCount lane z := by
+    have hparity := sorted_bool_parity_counts (m := 32) v hv
+    cases lane <;> simp [oddEvenMerge64_parityCount, hvcount, hparity]
+  have hprofile (lane : Bool) (i : Fin 32) :
+      (if lane then v (oddWire 32 i) else v (evenWire 32 i)) =
+        decide (32 - oddEvenMerge64_parityCount lane z ≤ i.val) := by
+    rw [monotoneBool_eq_countSuffix (fun i : Fin 32 =>
+      if lane then v (oddWire 32 i) else v (evenWire 32 i))]
+    · rw [hlaneCount lane]
+    · intro i j hij
+      cases lane
+      · change v (evenWire 32 i) ≤ v (evenWire 32 j)
+        apply hv
+        apply Fin.le_def.mpr
+        simp [evenWire]
+        omega
+      · change v (oddWire 32 i) ≤ v (oddWire 32 j)
+        apply hv
+        apply Fin.le_def.mpr
+        simp [oddWire]
+        omega
+  have hsplit := oddEvenMerge64_assignedBitCount_parity_split v owner destination
+  have hlane (lane : Bool) :
+      assignedBitCount
+          (fun i : Fin 32 => owner (if lane then oddWire 32 i else evenWire 32 i))
+          (fun i : Fin 32 => if lane then v (oddWire 32 i) else v (evenWire 32 i))
+          destination =
+        assignedRankCount
+          (fun i : Fin 32 => owner (if lane then oddWire 32 i else evenWire 32 i))
+          (fun r k => decide (32 - r ≤ k.val)) destination
+          (oddEvenMerge64_parityCount lane z) := by
+    unfold assignedBitCount assignedRankCount
+    apply Finset.sum_congr rfl
+    intro i _
+    have hi := congrArg (fun b : Bool =>
+      if destination = owner (if lane then oddWire 32 i else evenWire 32 i) ∧ b = true
+      then (1 : Nat) else 0) (hprofile lane i)
+    simpa using hi
+  have hparent : assignedBitCount owner v destination =
+      assignedRankCount owner (fun r k => decide (64 - r ≤ k.val)) destination z := by
+    unfold assignedBitCount assignedRankCount
+    apply Finset.sum_congr rfl
+    intro k _
+    rfl
+  simp_rw [hlane] at hsplit
+  rw [hparent] at hsplit
+  exact hsplit
+
+/-- The encoded integer/fraction pair for one parity lane is precisely the
+interpolation of its rank profiles at the parent cuts `q` and `q+1`. -/
+theorem oddEvenMerge64_parityAssignedRankInterp_eq
+    (lane : Bool) (q : Nat) (frac : Real) (hq : q < 64)
+    (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) (C : Nat → Real) :
+    (1 - oddEvenMerge64_parityCodeFrac lane q frac) *
+        C (oddEvenMerge64_parityCodeFloor lane q) +
+      oddEvenMerge64_parityCodeFrac lane q frac *
+        C (oddEvenMerge64_parityCodeFloor lane q + 1) =
+      (1 - frac) * C (oddEvenMerge64_parityCount lane q) +
+        frac * C (oddEvenMerge64_parityCount lane (q + 1)) := by
+  have hcount : oddEvenMerge64_parityCount lane q ≤ 32 := by
+    cases lane <;> simp [oddEvenMerge64_parityCount] <;> omega
+  have hstepLo : oddEvenMerge64_parityCount lane q ≤
+      oddEvenMerge64_parityCount lane (q + 1) := by
+    cases lane
+    · exact Nat.div_le_div_right (Nat.le_succ q)
+    · exact Nat.div_le_div_right (Nat.add_le_add_right (Nat.le_succ q) 1)
+  have hstepHi : oddEvenMerge64_parityCount lane (q + 1) ≤
+      oddEvenMerge64_parityCount lane q + 1 := by
+    cases lane <;> simp [oddEvenMerge64_parityCount] <;> omega
+  by_cases hfull : oddEvenMerge64_parityCount lane q = 32
+  · have hnext : oddEvenMerge64_parityCount lane (q + 1) = 32 := by
+      cases lane <;> simp [oddEvenMerge64_parityCount] at hfull ⊢ <;> omega
+    simp [oddEvenMerge64_parityCodeFloor, oddEvenMerge64_parityCodeFrac,
+      hfull, hnext]
+    ring
+  · have hbelow : oddEvenMerge64_parityCount lane q ≤ 31 := by omega
+    by_cases hrise : oddEvenMerge64_parityCount lane (q + 1) =
+        oddEvenMerge64_parityCount lane q + 1
+    · simp [oddEvenMerge64_parityCodeFloor, oddEvenMerge64_parityCodeFrac,
+        hfull, hrise, Nat.min_eq_right hbelow]
+    · have hflat : oddEvenMerge64_parityCount lane (q + 1) =
+          oddEvenMerge64_parityCount lane q := by omega
+      simp [oddEvenMerge64_parityCodeFloor, oddEvenMerge64_parityCodeFrac,
+        hfull, hrise, hflat, Nat.min_eq_right hbelow]
+      ring
+
+set_option maxHeartbeats 5000000
+/-- For an owner of the original 64 ranks, the two parity-lane errors
+recombine with their signs, destination by destination, to the parent error.
+This is the cancellation-preserving bridge needed before source aggregation. -/
+theorem oddEvenMerge64_assignedParity_signed_error_eq
+    {D : Type} [Fintype D] [DecidableEq D]
+    (v : Fin 64 → Bool) (owner : Fin 64 → D) (destination : D)
+    (q : Nat) (frac : Real) (hq : q < 64)
+    (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1) :
+    (∑ lane : Bool,
+      ((assignedBitCount
+          (fun i : Fin 32 => owner (if lane then oddWire 32 i else evenWire 32 i))
+          (fun i : Fin 32 => if lane then v (oddWire 32 i) else v (evenWire 32 i))
+          destination : Real) -
+        ((1 - oddEvenMerge64_parityCodeFrac lane q frac) *
+            assignedRankCount
+              (fun i : Fin 32 => owner (if lane then oddWire 32 i else evenWire 32 i))
+              (fun z k => decide (32 - z ≤ k.val)) destination
+              (oddEvenMerge64_parityCodeFloor lane q) +
+          oddEvenMerge64_parityCodeFrac lane q frac *
+            assignedRankCount
+              (fun i : Fin 32 => owner (if lane then oddWire 32 i else evenWire 32 i))
+              (fun z k => decide (32 - z ≤ k.val)) destination
+              (oddEvenMerge64_parityCodeFloor lane q + 1)))) =
+      (assignedBitCount owner v destination : Real) -
+        ((1 - frac) * assignedRankCount owner
+            (fun z k => decide (64 - z ≤ k.val)) destination q +
+          frac * assignedRankCount owner
+            (fun z k => decide (64 - z ≤ k.val)) destination (q + 1)) := by
+  let C (lane : Bool) (z : Nat) : Real :=
+    assignedRankCount
+      (fun i : Fin 32 => owner (if lane then oddWire 32 i else evenWire 32 i))
+      (fun r k => decide (32 - r ≤ k.val)) destination z
+  let A (lane : Bool) : Real :=
+    assignedBitCount
+      (fun i : Fin 32 => owner (if lane then oddWire 32 i else evenWire 32 i))
+      (fun i : Fin 32 => if lane then v (oddWire 32 i) else v (evenWire 32 i))
+      destination
+  let T (lane : Bool) : Real :=
+    (1 - oddEvenMerge64_parityCodeFrac lane q frac) *
+        C lane (oddEvenMerge64_parityCodeFloor lane q) +
+      oddEvenMerge64_parityCodeFrac lane q frac *
+        C lane (oddEvenMerge64_parityCodeFloor lane q + 1)
+  have hactualNat := oddEvenMerge64_assignedBitCount_parity_split v owner destination
+  have hactual :
+      (∑ lane : Bool, A lane) =
+        (assignedBitCount owner v destination : Real) := by
+    have hcast := congrArg (fun n : Nat => (n : Real)) hactualNat
+    simpa only [A, Nat.cast_sum] using hcast
+  have htarget : (∑ lane : Bool, T lane) =
+        (1 - frac) * assignedRankCount owner
+            (fun z k => decide (64 - z ≤ k.val)) destination q +
+          frac * assignedRankCount owner
+            (fun z k => decide (64 - z ≤ k.val)) destination (q + 1) := by
+    calc
+      _ = ∑ lane : Bool,
+          ((1 - frac) * C lane (oddEvenMerge64_parityCount lane q) +
+            frac * C lane (oddEvenMerge64_parityCount lane (q + 1))) := by
+        apply Finset.sum_congr rfl
+        intro lane _
+        exact oddEvenMerge64_parityAssignedRankInterp_eq lane q frac hq
+          hfrac0 hfrac1 (C lane)
+      _ = (1 - frac) *
+            (∑ lane : Bool, C lane (oddEvenMerge64_parityCount lane q)) +
+          frac * (∑ lane : Bool, C lane (oddEvenMerge64_parityCount lane (q + 1))) := by
+        rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum]
+      _ = _ := by
+        have hqSplit := oddEvenMerge64_assignedRankCount_parity_split
+          owner destination q (by omega)
+        have hq1Split := oddEvenMerge64_assignedRankCount_parity_split
+          owner destination (q + 1) (by omega)
+        have hqR :
+            (∑ lane : Bool, C lane (oddEvenMerge64_parityCount lane q)) =
+              (assignedRankCount owner
+                (fun z k => decide (64 - z ≤ k.val)) destination q : Real) := by
+          dsimp [C]
+          exact_mod_cast hqSplit
+        have hq1R :
+            (∑ lane : Bool, C lane (oddEvenMerge64_parityCount lane (q + 1))) =
+              (assignedRankCount owner
+                (fun z k => decide (64 - z ≤ k.val)) destination (q + 1) : Real) := by
+          dsimp [C]
+          exact_mod_cast hq1Split
+        rw [hqR, hq1R]
+  have hsum : (∑ lane : Bool, (A lane - T lane)) =
+      (∑ lane : Bool, A lane) - (∑ lane : Bool, T lane) := by
+    simp only [Fintype.sum_bool]
+    ring
+  calc
+    _ = (∑ lane : Bool, A lane) - (∑ lane : Bool, T lane) := by
+      simpa only [A, T, C] using hsum
+    _ = _ := congrArg₂ (· - ·) hactual htarget
+
+/-- One destination's signed error on a parity lane of a parent 64-rank
+profile, using the induced fractional lane cut. -/
+def oddEvenMerge64_assignedParityLaneError {D : Type} [Fintype D] [DecidableEq D]
+    (bits : Fin 64 → Bool) (owner : Fin 64 → D) (destination : D)
+    (q : Nat) (frac : Real) (lane : Bool) : Real :=
+  (assignedBitCount
+      (fun i : Fin 32 => owner (if lane then oddWire 32 i else evenWire 32 i))
+      (fun i : Fin 32 => if lane then bits (oddWire 32 i) else bits (evenWire 32 i))
+      destination : Real) -
+    ((1 - oddEvenMerge64_parityCodeFrac lane q frac) *
+        assignedRankCount
+          (fun i : Fin 32 => owner (if lane then oddWire 32 i else evenWire 32 i))
+          (fun z k => decide (32 - z ≤ k.val)) destination
+          (oddEvenMerge64_parityCodeFloor lane q) +
+      oddEvenMerge64_parityCodeFrac lane q frac *
+        assignedRankCount
+          (fun i : Fin 32 => owner (if lane then oddWire 32 i else evenWire 32 i))
+          (fun z k => decide (32 - z ≤ k.val)) destination
+          (oddEvenMerge64_parityCodeFloor lane q + 1))
+
+/-- Signed parity errors also recombine after summing any finite cohort of
+source packets, with no lane multiplicity. -/
+theorem oddEvenMerge64_assignedParity_cohort_signed_error_eq
+    {D : Type} [Fintype D] [DecidableEq D] {c : Nat}
+    (bits : Fin c → Fin 64 → Bool)
+    (owner : Fin c → Fin 64 → D)
+    (q : Fin c → Nat) (frac : Fin c → Real)
+    (hq : ∀ packet, q packet < 64)
+    (hfrac0 : ∀ packet, 0 ≤ frac packet)
+    (hfrac1 : ∀ packet, frac packet ≤ 1)
+    (destination : D) :
+    (∑ packet : Fin c, ∑ lane : Bool,
+      oddEvenMerge64_assignedParityLaneError (bits packet) (owner packet)
+        destination (q packet) (frac packet) lane) =
+      ∑ packet : Fin c,
+        ((assignedBitCount (owner packet) (bits packet) destination : Real) -
+          ((1 - frac packet) * assignedRankCount (owner packet)
+              (fun z k => decide (64 - z ≤ k.val)) destination (q packet) +
+            frac packet * assignedRankCount (owner packet)
+              (fun z k => decide (64 - z ≤ k.val)) destination (q packet + 1))) := by
+  apply Finset.sum_congr rfl
+  intro packet _
+  simpa only [oddEvenMerge64_assignedParityLaneError] using
+    oddEvenMerge64_assignedParity_signed_error_eq
+      (bits packet) (owner packet) destination (q packet) (frac packet)
+      (hq packet) (hfrac0 packet) (hfrac1 packet)
+
+set_option maxHeartbeats 1000000
+
+/-- The signed parity errors can be recombined before squaring across a
+cohort: when each parent packet is sorted, the aggregate destination energy
+is bounded by the cohort size times the original scalar profile energy. This
+avoids the spurious factor of two incurred by bounding the two lanes
+separately. -/
+theorem oddEvenMerge64_assignedParity_cohort_L2_le
+    {D : Type} [Fintype D] [DecidableEq D] {c : Nat}
+    (bits : Fin c → Fin 64 → Bool)
+    (hbits : ∀ packet, Monotone (bits packet))
+    (owner : Fin c → Fin 64 → D)
+    (q : Fin c → Nat) (frac : Fin c → Real)
+    (hq : ∀ packet, q packet < 64)
+    (hfrac0 : ∀ packet, 0 ≤ frac packet)
+    (hfrac1 : ∀ packet, frac packet ≤ 1) :
+    (∑ destination : D,
+      (∑ packet : Fin c, ∑ lane : Bool,
+        oddEvenMerge64_assignedParityLaneError (bits packet) (owner packet)
+          destination (q packet) (frac packet) lane) ^ 2) ≤
+      (c : Real) * (∑ packet : Fin c,
+        ((boolTrueCount (bits packet) : Real) -
+          (q packet + frac packet)) ^ 2) := by
+  classical
+  let suffix : Nat → Fin 64 → Bool :=
+    fun z k => decide (64 - z ≤ k.val)
+  let X : Fin c → Nat := fun packet => boolTrueCount (bits packet)
+  have hX : ∀ packet, X packet ≤ 64 := by
+    intro packet
+    exact Fintype.card_subtype_le (fun k : Fin 64 => bits packet k = true)
+  have hsuffix : ∀ z ≤ 64,
+      (∑ k : Fin 64, if suffix z k = true then 1 else 0) = z := by
+    intro z hz
+    calc
+      (∑ k : Fin 64, if suffix z k = true then 1 else 0) =
+          boolTrueCount (fun k : Fin 64 => decide (64 - z ≤ k.val)) := by
+        exact finSum_ite_one_eq_card_subtype _
+      _ = z := boolTrueCount_countSuffix 64 z hz
+  have hmonoSuffix : ∀ a b, a ≤ b → ∀ k,
+      suffix a k = true → suffix b k = true := by
+    intro a b hab k ha
+    simp only [suffix, decide_eq_true_eq] at ha ⊢
+    omega
+  have hcount (packet : Fin c) (destination : D) :
+      assignedBitCount (owner packet) (bits packet) destination =
+        assignedRankCount (owner packet) suffix destination (X packet) := by
+    unfold assignedBitCount assignedRankCount
+    apply Finset.sum_congr rfl
+    intro k hk
+    rw [monotoneBool_eq_countSuffix (bits packet) (hbits packet) k]
+  have hagg := assignedRankProfiles_aggregate_L2_var
+    (owner := owner) (suffix := suffix) (X := X) (q := q) (frac := frac)
+    hX hq hfrac0 hfrac1 hsuffix hmonoSuffix
+  have hsigned (destination : D) :
+      (∑ packet : Fin c, ∑ lane : Bool,
+        oddEvenMerge64_assignedParityLaneError (bits packet) (owner packet)
+          destination (q packet) (frac packet) lane) =
+      ∑ packet : Fin c,
+        ((assignedRankCount (owner packet) suffix destination (X packet) : Real) -
+          ((1 - frac packet) *
+              assignedRankCount (owner packet) suffix destination (q packet) +
+            frac packet *
+              assignedRankCount (owner packet) suffix destination (q packet + 1))) := by
+    rw [oddEvenMerge64_assignedParity_cohort_signed_error_eq
+      bits owner q frac hq hfrac0 hfrac1 destination]
+    apply Finset.sum_congr rfl
+    intro packet _
+    rw [hcount packet destination]
+  calc
+    _ = ∑ destination : D,
+        (∑ packet : Fin c,
+          ((assignedRankCount (owner packet) suffix destination (X packet) : Real) -
+            ((1 - frac packet) *
+                assignedRankCount (owner packet) suffix destination (q packet) +
+              frac packet *
+                assignedRankCount (owner packet) suffix destination (q packet + 1)))) ^ 2 := by
+      apply Finset.sum_congr rfl
+      intro destination _
+      rw [hsigned destination]
+    _ ≤ (c : Real) * ∑ packet : Fin c,
+        ((X packet : Real) - (q packet + frac packet)) ^ 2 := hagg
+    _ = _ := by simp [X]
+
+set_option maxHeartbeats 200000
+
+/-- If each parity lane's destination errors are exactly accounted for by its
+own profile error, then the two lane errors sum exactly to the parent error.
+`assignedRankProfiles_L1_exact` supplies the lane premise for arbitrary
+rank-owner maps. -/
+theorem oddEvenMerge64_ownedParityProfile_rebin_L1_exact
+    {D : Type} [Fintype D]
+    (v : Fin 64 → Bool) (hv : Monotone v)
+    (laneBits : Bool → Fin 32 → Bool)
+    (hprofile : ∀ lane,
+      boolTrueCount (laneBits lane) =
+        oddEvenMerge64_parityCount lane (boolTrueCount v))
+    (q : Nat) (frac : Real) (hq : q < 64)
+    (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1)
+    (laneError : Bool → D → Real)
+    (howner : ∀ lane,
+      (∑ destination : D, |laneError lane destination|) =
+        |(boolTrueCount (laneBits lane) : Real) -
+          oddEvenMerge64_parityMean lane q frac|) :
+    (∑ lane : Bool, ∑ destination : D, |laneError lane destination|) =
+      |(boolTrueCount v : Real) - (q + frac)| := by
+  calc
+    _ = ∑ lane : Bool,
+        |(boolTrueCount (laneBits lane) : Real) -
+          oddEvenMerge64_parityMean lane q frac| := by
+      apply Finset.sum_congr rfl
+      intro lane _
+      exact howner lane
+    _ = |(boolTrueCount v : Real) - (q + frac)| := by
+      calc
+        _ = ∑ lane : Bool,
+            |(oddEvenMerge64_parityCount lane (boolTrueCount v) : Real) -
+              oddEvenMerge64_parityMean lane q frac| := by
+          apply Finset.sum_congr rfl
+          intro lane _
+          rw [hprofile lane]
+        _ = |(boolTrueCount v : Real) - (q + frac)| := by
+          have hparity := sorted_bool_parity_counts (m := 32) v hv
+          simpa [oddEvenMerge64_parityMean, oddEvenMerge64_parityCount, hparity] using
+            oddEvenMerge64_parity_rebin_L1_exact v hv q frac hq hfrac0 hfrac1
+
+/-- Every nontrivial, non-singleton threshold count loses at least eight
+units of doubled centered energy in this 64-wire phase. -/
+theorem oddEvenMerge64_phase_drop_ge_eight (H : Nat) (hH : H ≤ 64)
+    (hlo : 2 ≤ H) (hhi : H ≤ 62) :
+    8 ≤ 2 * ((min H (64 - H) : Nat) : ℤ) ^ 2 -
+      (if H % 2 = 0 then 0 else 2 : ℤ) := by
+  interval_cases H <;> norm_num
+
+/-- The phase has zero energy drop exactly at the empty/full and singleton /
+complement-singleton threshold counts. -/
+theorem oddEvenMerge64_phase_drop_eq_zero_iff (H : Nat) (hH : H ≤ 64) :
+    (2 * ((min H (64 - H) : Nat) : ℤ) ^ 2 -
+      (if H % 2 = 0 then 0 else 2 : ℤ) = 0) ↔
+      (H = 0 ∨ H = 1 ∨ H = 63 ∨ H = 64) := by
+  interval_cases H <;> norm_num
+
+/-- Applied to an actual sorted packet, the sole noncontracting threshold
+counts are 0, 1, 63, and 64; all others lose at least eight. -/
+theorem oddEvenMerge64_monotone_energy_drop_ge_eight
+    (v : Fin 64 → Bool) (hv : Monotone v)
+    (hlo : 2 ≤ boolTrueCount v) (hhi : boolTrueCount v ≤ 62) :
+    8 ≤ oddEvenMerge64InputEnergy v - oddEvenMerge64ParityEnergy v := by
+  rw [oddEvenMerge64_monotone_energy_drop_eq_phase v hv]
+  exact oddEvenMerge64_phase_drop_ge_eight (boolTrueCount v)
+    (by simpa [boolTrueCount] using
+      (Fintype.card_subtype_le (fun i : Fin 64 => v i = true))) hlo hhi
+
+/-- On every active threshold, the merge removes at least three quarters of
+the input phase energy. -/
+theorem oddEvenMerge64_monotone_energy_drop_ge_three_quarters
+    (v : Fin 64 → Bool) (hv : Monotone v)
+    (hlo : 2 ≤ boolTrueCount v) (hhi : boolTrueCount v ≤ 62) :
+    3 * oddEvenMerge64InputEnergy v ≤
+      4 * (oddEvenMerge64InputEnergy v - oddEvenMerge64ParityEnergy v) := by
+  conv_lhs => rw [oddEvenMerge64_monotone_input_energy_eq_phase v hv]
+  conv_rhs => rw [oddEvenMerge64_monotone_energy_drop_eq_phase v hv]
+  have hcount : boolTrueCount v ≤ 64 := by
+    simpa [boolTrueCount] using
+      (Fintype.card_subtype_le (fun i : Fin 64 => v i = true))
+  have hm : 2 ≤ min (boolTrueCount v) (64 - boolTrueCount v) :=
+    Nat.le_min.mpr ⟨hlo, by omega⟩
+  have hr : 0 ≤ (if boolTrueCount v % 2 = 0 then 0 else 2 : Int) ∧
+      (if boolTrueCount v % 2 = 0 then 0 else 2 : Int) ≤ 2 := by
+    split <;> norm_num
+  rcases hr with ⟨hr0, hr2⟩
+  have hmcast : (2 : Int) ≤
+      ((min (boolTrueCount v) (64 - boolTrueCount v) : Nat) : Int) := by
+    exact_mod_cast hm
+  nlinarith [sq_nonneg ((min (boolTrueCount v) (64 - boolTrueCount v) : Int) - 2)]
+
+/-- Exact correction-layer exception bound: the 3/4 drop holds except for
+singleton and co-singleton threshold profiles, each of which costs six units
+in this scaled inequality. -/
+theorem oddEvenMerge64_monotone_energy_drop_with_exception
+    (v : Fin 64 → Bool) (hv : Monotone v) :
+    3 * oddEvenMerge64InputEnergy v ≤
+      4 * (oddEvenMerge64InputEnergy v - oddEvenMerge64ParityEnergy v) +
+        (if boolTrueCount v = 1 ∨ boolTrueCount v = 63 then 6 else 0) := by
+  by_cases hlo : 2 ≤ boolTrueCount v
+  · by_cases hhi : boolTrueCount v ≤ 62
+    · have h := oddEvenMerge64_monotone_energy_drop_ge_three_quarters v hv hlo hhi
+      by_cases hex : boolTrueCount v = 1 ∨ boolTrueCount v = 63
+      · simp [hex]
+        linarith [h]
+      · simp [hex]
+        exact h
+    · have hcount : boolTrueCount v ≤ 64 := by
+        simpa [boolTrueCount] using
+          (Fintype.card_subtype_le (fun i : Fin 64 => v i = true))
+      have hgt : 62 < boolTrueCount v := Nat.lt_of_not_ge hhi
+      let H := boolTrueCount v
+      have hHle : H ≤ 64 := hcount
+      have hHgt : 62 < H := hgt
+      by_cases hH64 : H = 64
+      · have h64 : boolTrueCount v = 64 := by simpa [H] using hH64
+        have hI : oddEvenMerge64InputEnergy v = 0 := by
+          rw [oddEvenMerge64_monotone_input_energy_eq_phase v hv, h64]
+          norm_num
+        have hD : oddEvenMerge64InputEnergy v - oddEvenMerge64ParityEnergy v = 0 := by
+          rw [oddEvenMerge64_monotone_energy_drop_eq_phase v hv, h64]
+          norm_num
+        have hP : oddEvenMerge64ParityEnergy v = 0 := by omega
+        rw [hI, hP]
+        simp [h64]
+      · have hHeq : H = 63 := by omega
+        have h63 : boolTrueCount v = 63 := by simpa [H] using hHeq
+        have hI : oddEvenMerge64InputEnergy v = 2 := by
+          rw [oddEvenMerge64_monotone_input_energy_eq_phase v hv, h63]
+          norm_num
+        have hD : oddEvenMerge64InputEnergy v - oddEvenMerge64ParityEnergy v = 0 := by
+          rw [oddEvenMerge64_monotone_energy_drop_eq_phase v hv, h63]
+          norm_num
+        have hP : oddEvenMerge64ParityEnergy v = 2 := by omega
+        rw [hI, hP]
+        simp [h63]
+  · have hcount : boolTrueCount v ≤ 64 := by
+      simpa [boolTrueCount] using
+        (Fintype.card_subtype_le (fun i : Fin 64 => v i = true))
+    have hsmall : boolTrueCount v = 0 ∨ boolTrueCount v = 1 := by omega
+    rcases hsmall with hzero | hone
+    · have hI : oddEvenMerge64InputEnergy v = 0 := by
+        rw [oddEvenMerge64_monotone_input_energy_eq_phase v hv, hzero]
+        norm_num
+      have hD : oddEvenMerge64InputEnergy v - oddEvenMerge64ParityEnergy v = 0 := by
+        rw [oddEvenMerge64_monotone_energy_drop_eq_phase v hv, hzero]
+        norm_num
+      have hP : oddEvenMerge64ParityEnergy v = 0 := by omega
+      rw [hI, hP]
+      simp [hzero]
+    · have hI : oddEvenMerge64InputEnergy v = 2 := by
+        rw [oddEvenMerge64_monotone_input_energy_eq_phase v hv, hone]
+        norm_num
+      have hD : oddEvenMerge64InputEnergy v - oddEvenMerge64ParityEnergy v = 0 := by
+        rw [oddEvenMerge64_monotone_energy_drop_eq_phase v hv, hone]
+        norm_num
+      have hP : oddEvenMerge64ParityEnergy v = 2 := by omega
+      rw [hI, hP]
+      simp [hone]
+
+/-- The local exception inequality sums without loss over any finite family
+of sorted Boolean 64-profiles. -/
+theorem oddEvenMerge64_family_energy_drop_with_exception
+    {I : Type} [Fintype I] [DecidableEq I]
+    (bits : I → Fin 64 → Bool) (hsorted : ∀ i, Monotone (bits i)) :
+    3 * (Finset.univ.sum (fun i : I => oddEvenMerge64InputEnergy (bits i))) ≤
+      4 * (Finset.univ.sum (fun i : I =>
+        oddEvenMerge64InputEnergy (bits i) - oddEvenMerge64ParityEnergy (bits i))) +
+        6 * (Finset.univ.sum (fun i : I =>
+          if boolTrueCount (bits i) = 1 ∨ boolTrueCount (bits i) = 63
+          then (1 : ℤ) else 0)) := by
+  classical
+  have hlocal (i : I) := oddEvenMerge64_monotone_energy_drop_with_exception
+    (bits i) (hsorted i)
+  calc
+    3 * (Finset.univ.sum (fun i : I => oddEvenMerge64InputEnergy (bits i))) =
+        Finset.univ.sum (fun i : I => 3 * oddEvenMerge64InputEnergy (bits i)) := by
+      rw [Finset.mul_sum]
+    _ ≤ Finset.univ.sum (fun i : I =>
+        4 * (oddEvenMerge64InputEnergy (bits i) - oddEvenMerge64ParityEnergy (bits i)) +
+          if boolTrueCount (bits i) = 1 ∨ boolTrueCount (bits i) = 63 then 6 else 0) := by
+      apply Finset.sum_le_sum
+      intro i hi
+      exact hlocal i
+    _ = 4 * (Finset.univ.sum (fun i : I =>
+          oddEvenMerge64InputEnergy (bits i) - oddEvenMerge64ParityEnergy (bits i))) +
+        6 * (Finset.univ.sum (fun i : I =>
+          if boolTrueCount (bits i) = 1 ∨ boolTrueCount (bits i) = 63
+          then (1 : ℤ) else 0)) := by
+      have hexsum : Finset.univ.sum (fun i : I =>
+          if boolTrueCount (bits i) = 1 ∨ boolTrueCount (bits i) = 63
+          then (6 : ℤ) else 0) =
+          6 * Finset.univ.sum (fun i : I =>
+            if boolTrueCount (bits i) = 1 ∨ boolTrueCount (bits i) = 63
+            then (1 : ℤ) else 0) := by
+        calc
+          _ = Finset.univ.sum (fun i : I =>
+              6 * (if boolTrueCount (bits i) = 1 ∨ boolTrueCount (bits i) = 63
+                then (1 : ℤ) else 0)) := by
+            apply Finset.sum_congr rfl
+            intro i hi
+            by_cases hp : boolTrueCount (bits i) = 1 ∨ boolTrueCount (bits i) = 63
+            · simp [hp]
+            · simp [hp]
+          _ = _ := by rw [Finset.mul_sum]
+      calc
+        _ = Finset.univ.sum (fun i : I =>
+              4 * (oddEvenMerge64InputEnergy (bits i) -
+                oddEvenMerge64ParityEnergy (bits i))) +
+            Finset.univ.sum (fun i : I =>
+              if boolTrueCount (bits i) = 1 ∨ boolTrueCount (bits i) = 63
+              then (6 : ℤ) else 0) := by rw [Finset.sum_add_distrib]
+        _ = _ := by rw [← Finset.mul_sum, hexsum]
+
+def canonicalPacketThresholdBits {N : Nat} (P : CanonicalPacketFamily N)
+    (support : Finset (Fin N)) {A : Type} [LinearOrder A]
+    (value : Fin N → A) (threshold : A → Bool)
+    (hcontract : CanonicalPacketPortContract P support value)
+    (i : Fin P.count) : Fin 64 → Bool := fun j =>
+  threshold (value ((P.packet i).orderEmbOfFin (hcontract.2.2.2 i) j))
+
+/-- Actual canonical receiver packets inherit the aggregated phase-drop
+inequality, with the exceptional-profile count exposed packetwise. -/
+theorem canonicalPacketFamily_energy_drop_with_exception
+    {N : Nat} (P : CanonicalPacketFamily N) (support : Finset (Fin N))
+    {A : Type} [LinearOrder A] (value : Fin N → A)
+    (threshold : A → Bool) (hthreshold : Monotone threshold)
+    (hcontract : CanonicalPacketPortContract P support value) :
+    3 * (Finset.univ.sum (fun i : Fin P.count => oddEvenMerge64InputEnergy
+      (canonicalPacketThresholdBits P support value threshold hcontract i))) ≤
+      4 * (Finset.univ.sum (fun i : Fin P.count =>
+        oddEvenMerge64InputEnergy
+          (canonicalPacketThresholdBits P support value threshold hcontract i) -
+        oddEvenMerge64ParityEnergy
+          (canonicalPacketThresholdBits P support value threshold hcontract i))) +
+        6 * (Finset.univ.sum (fun i : Fin P.count =>
+          if boolTrueCount (canonicalPacketThresholdBits P support value threshold hcontract i) = 1 ∨
+             boolTrueCount (canonicalPacketThresholdBits P support value threshold hcontract i) = 63
+          then (1 : ℤ) else 0)) := by
+  let bits : Fin P.count → Fin 64 → Bool := fun i =>
+    canonicalPacketThresholdBits P support value threshold hcontract i
+  have hsorted (i : Fin P.count) : Monotone (bits i) := by
+    intro j k hjk
+    apply hthreshold
+    exact hcontract.1 i
+      (Finset.orderEmbOfFin_mem (P.packet i) (hcontract.2.2.2 i) j)
+      (Finset.orderEmbOfFin_mem (P.packet i) (hcontract.2.2.2 i) k)
+      (Fin.le_def.mp (((P.packet i).orderEmbOfFin (hcontract.2.2.2 i)).monotone hjk))
+  simpa [bits, canonicalPacketThresholdBits] using
+    oddEvenMerge64_family_energy_drop_with_exception bits hsorted
+
+/-- The explicit singleton exception budget is available on the actual
+repaired receiver packet family produced by `flowA7`. -/
+theorem flowA7_receiver_allCases_energy_drop_with_exception
+    {d : Nat} {A : Type} [LinearOrder A]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchildLevel : b.l < d)
+    (v : Fin (64 ^ d) → A)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v)
+    (threshold : A → Bool) (hthreshold : Monotone threshold) :
+    ∃ receiver : CanonicalPacketFamily (64 ^ d),
+      ∃ hcontract : CanonicalPacketPortContract receiver
+        (wireSets (flowSizes7 d hd) (t + 1) b)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v),
+        3 * (Finset.univ.sum (fun i : Fin receiver.count =>
+          oddEvenMerge64InputEnergy (canonicalPacketThresholdBits receiver
+            (wireSets (flowSizes7 d hd) (t + 1) b)
+            ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+            threshold hcontract i))) ≤
+          4 * (Finset.univ.sum (fun i : Fin receiver.count =>
+            oddEvenMerge64InputEnergy (canonicalPacketThresholdBits receiver
+              (wireSets (flowSizes7 d hd) (t + 1) b)
+              ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+              threshold hcontract i) -
+            oddEvenMerge64ParityEnergy (canonicalPacketThresholdBits receiver
+              (wireSets (flowSizes7 d hd) (t + 1) b)
+              ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+              threshold hcontract i))) +
+          6 * (Finset.univ.sum (fun i : Fin receiver.count =>
+            if boolTrueCount (canonicalPacketThresholdBits receiver
+                (wireSets (flowSizes7 d hd) (t + 1) b)
+                ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+                threshold hcontract i) = 1 ∨
+               boolTrueCount (canonicalPacketThresholdBits receiver
+                (wireSets (flowSizes7 d hd) (t + 1) b)
+                ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+                threshold hcontract i) = 63
+            then (1 : ℤ) else 0)) := by
+  obtain ⟨receiver, hcontract⟩ := flowA7_receiver_allCases_canonical
+    hd t ht2 ht b hb hchildLevel v hpack
+  exact ⟨receiver, hcontract, canonicalPacketFamily_energy_drop_with_exception
+    receiver (wireSets (flowSizes7 d hd) (t + 1) b)
+    ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+    threshold hthreshold hcontract⟩
+
+/-- In a finite family of sorted profiles, every packet with between two and
+62 ones contributes at least eight units of energy drop; all other profiles
+still contribute a nonnegative amount. -/
+theorem oddEvenMerge64_family_active_drop_lower_bound
+    {I : Type} [Fintype I] [DecidableEq I]
+    (bits : I -> Fin 64 -> Bool) (hsorted : forall i, Monotone (bits i)) :
+    (8 : Int) * (((Finset.univ.filter (fun i : I =>
+      2 <= boolTrueCount (bits i) /\ boolTrueCount (bits i) <= 62)).card : Int)) <=
+      Finset.univ.sum (fun i : I =>
+        oddEvenMerge64InputEnergy (bits i) - oddEvenMerge64ParityEnergy (bits i)) := by
+  classical
+  let active := Finset.univ.filter (fun i : I =>
+    2 <= boolTrueCount (bits i) /\ boolTrueCount (bits i) <= 62)
+  have hsubset := Finset.filter_subset (fun i : I => 2 <= boolTrueCount (bits i) /\ boolTrueCount (bits i) <= 62) Finset.univ
+  have hnonneg (i : I) :
+      0 <= oddEvenMerge64InputEnergy (bits i) - oddEvenMerge64ParityEnergy (bits i) := by
+    have h := oddEvenMerge64_monotone_parity_energy_le_input (bits i) (hsorted i)
+    omega
+  have hactive (i : I) (hi : 2 <= boolTrueCount (bits i) /\
+      boolTrueCount (bits i) <= 62) :
+      8 <= oddEvenMerge64InputEnergy (bits i) - oddEvenMerge64ParityEnergy (bits i) := by
+    exact oddEvenMerge64_monotone_energy_drop_ge_eight (bits i) (hsorted i)
+      hi.1 hi.2
+  calc
+    (8 : Int) * (active.card : Int) = active.sum (fun _ => (8 : Int)) := by
+      simp [active, mul_comm]
+    _ <= active.sum (fun i =>
+        oddEvenMerge64InputEnergy (bits i) - oddEvenMerge64ParityEnergy (bits i)) := by
+      apply Finset.sum_le_sum
+      intro i hi
+      exact hactive i (Finset.mem_filter.mp hi).2
+    _ <= Finset.univ.sum (fun i =>
+        oddEvenMerge64InputEnergy (bits i) - oddEvenMerge64ParityEnergy (bits i)) :=
+      Finset.sum_le_sum_of_subset_of_nonneg hsubset (by
+        intro i hi hnot
+        exact hnonneg i)
+/-- Summed over a canonical sorted packet family, parity-lane energy is
+exactly twice the number of odd threshold counts. -/
+theorem canonicalPacketFamily_parity_energy_eq_residual
+    {N : Nat} (P : CanonicalPacketFamily N) (support : Finset (Fin N))
+    {A : Type} [LinearOrder A] (value : Fin N → A) (threshold : A → Bool)
+    (hthreshold : Monotone threshold)
+    (hcontract : CanonicalPacketPortContract P support value) :
+    (∑ i : Fin P.count, oddEvenMerge64ParityEnergy
+      (fun j => threshold
+        (value ((P.packet i).orderEmbOfFin (hcontract.2.2.2 i) j)))) =
+      ∑ i : Fin P.count,
+        if boolTrueCount (fun j => threshold
+          (value ((P.packet i).orderEmbOfFin (hcontract.2.2.2 i) j))) % 2 = 0
+        then 0 else 2 := by
+  apply Finset.sum_congr rfl
+  intro i hi
+  apply oddEvenMerge64_monotone_parity_energy_eq_residual
+  intro j k hjk
+  apply hthreshold
+  exact hcontract.1 i
+    (Finset.orderEmbOfFin_mem (P.packet i) (hcontract.2.2.2 i) j)
+    (Finset.orderEmbOfFin_mem (P.packet i) (hcontract.2.2.2 i) k)
+    (Fin.le_def.mp (((P.packet i).orderEmbOfFin (hcontract.2.2.2 i)).monotone hjk))
+
+/-- Across an actual canonical receiver packet family, splitting every sorted
+64-wire threshold profile into parity lanes preserves the sum of fractional
+target L1 errors exactly, packet by packet. -/
+theorem canonicalPacketFamily_parity_rebin_L1_exact
+    {N : Nat} (P : CanonicalPacketFamily N) (support : Finset (Fin N))
+    {A : Type} [LinearOrder A] (value : Fin N → A)
+    (threshold : A → Bool) (hthreshold : Monotone threshold)
+    (q : Fin P.count → Nat) (frac : Fin P.count → Real)
+    (hq : ∀ i, q i < 64) (hfrac0 : ∀ i, 0 ≤ frac i)
+    (hfrac1 : ∀ i, frac i ≤ 1)
+    (hcontract : CanonicalPacketPortContract P support value) :
+    (∑ i : Fin P.count, ∑ lane : Bool,
+      |(boolTrueCount (fun j : Fin 32 =>
+          threshold (value ((P.packet i).orderEmbOfFin (hcontract.2.2.2 i)
+            (if lane then oddWire 32 j else evenWire 32 j)))) : Real) -
+        oddEvenMerge64_parityMean lane (q i) (frac i)|) =
+      ∑ i : Fin P.count,
+        |(boolTrueCount (fun j : Fin 64 =>
+          threshold (value ((P.packet i).orderEmbOfFin (hcontract.2.2.2 i) j))) : Real) -
+          (q i + frac i)| := by
+  apply Finset.sum_congr rfl
+  intro i hi
+  let bits : Fin 64 → Bool := fun j =>
+    threshold (value ((P.packet i).orderEmbOfFin (hcontract.2.2.2 i) j))
+  have hbits : Monotone bits := by
+    intro j k hjk
+    apply hthreshold
+    exact hcontract.1 i
+      (Finset.orderEmbOfFin_mem (P.packet i) (hcontract.2.2.2 i) j)
+      (Finset.orderEmbOfFin_mem (P.packet i) (hcontract.2.2.2 i) k)
+      (Fin.le_def.mp (((P.packet i).orderEmbOfFin (hcontract.2.2.2 i)).monotone hjk))
+  have hlocal := oddEvenMerge64_parity_rebin_L1_exact bits hbits
+    (q i) (frac i) (hq i) (hfrac0 i) (hfrac1 i)
+  simpa [bits] using hlocal
+
+/-- The exact parity-lane L1 rebinning identity holds at the actual
+`WireFlow` receiver boundary, for the repaired values and any packetwise
+fractional target. -/
+theorem flowA7_receiver_allCases_parity_rebin_L1_exact
+    {d : Nat} {A : Type} [LinearOrder A]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchildLevel : b.l < d)
+    (v : Fin (64 ^ d) → A)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v)
+    (threshold : A → Bool) (hthreshold : Monotone threshold)
+    (q : Nat → Nat) (frac : Nat → Real)
+    (hq : ∀ i : Nat, q i < 64)
+    (hfrac0 : ∀ i : Nat, 0 ≤ frac i)
+    (hfrac1 : ∀ i : Nat, frac i ≤ 1) :
+    ∃ receiver : CanonicalPacketFamily (64 ^ d),
+      ∃ hcontract : CanonicalPacketPortContract receiver
+        (wireSets (flowSizes7 d hd) (t + 1) b)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v),
+        (∑ i : Fin receiver.count, ∑ lane : Bool,
+          |(boolTrueCount (fun j : Fin 32 =>
+              threshold ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v
+                ((receiver.packet i).orderEmbOfFin (hcontract.2.2.2 i)
+                  (if lane then oddWire 32 j else evenWire 32 j)))) : Real) -
+            oddEvenMerge64_parityMean lane (q i.val) (frac i.val)|) =
+        ∑ i : Fin receiver.count,
+          |(boolTrueCount (fun j : Fin 64 =>
+              threshold ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v
+                ((receiver.packet i).orderEmbOfFin (hcontract.2.2.2 i) j))) : Real) -
+            (q i.val + frac i.val)| := by
+  obtain ⟨receiver, hcontract⟩ := flowA7_receiver_allCases_canonical
+    hd t ht2 ht b hb hchildLevel v hpack
+  refine ⟨receiver, hcontract, ?_⟩
+  exact canonicalPacketFamily_parity_rebin_L1_exact receiver
+    (wireSets (flowSizes7 d hd) (t + 1) b)
+    ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+    threshold hthreshold (fun i => q i.val) (fun i => frac i.val)
+    (fun i => hq i.val) (fun i => hfrac0 i.val) (fun i => hfrac1 i.val) hcontract
+
+/-- Exact actual-receiver parity-energy residual, summed over packets and any
+finite family of monotone thresholds. -/
+theorem flowA7_receiver_allCases_parityEnergy_exact_multi
+    {d : Nat} {A T : Type} [LinearOrder A] [Fintype T] [DecidableEq T]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchildLevel : b.l < d)
+    (v : Fin (64 ^ d) → A)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v)
+    (threshold : T → A → Bool)
+    (hthreshold : ∀ theta, Monotone (threshold theta)) :
+    ∃ receiver : CanonicalPacketFamily (64 ^ d),
+      ∃ hcontract : CanonicalPacketPortContract receiver
+        (wireSets (flowSizes7 d hd) (t + 1) b)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v),
+        (∑ theta : T, ∑ i : Fin receiver.count, oddEvenMerge64ParityEnergy
+          (fun j => threshold theta ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v
+            ((receiver.packet i).orderEmbOfFin (hcontract.2.2.2 i) j)))) =
+        ∑ theta : T, ∑ i : Fin receiver.count,
+          if boolTrueCount (fun j => threshold theta
+            ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v
+              ((receiver.packet i).orderEmbOfFin (hcontract.2.2.2 i) j))) % 2 = 0
+          then 0 else 2 := by
+  obtain ⟨receiver, hcontract⟩ := flowA7_receiver_allCases_canonical
+    hd t ht2 ht b hb hchildLevel v hpack
+  refine ⟨receiver, hcontract, ?_⟩
+  apply Finset.sum_congr rfl
+  intro theta htheta
+  exact canonicalPacketFamily_parity_energy_eq_residual receiver
+    (wireSets (flowSizes7 d hd) (t + 1) b)
+    ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+    (threshold theta) (hthreshold theta) hcontract
+
+/-- Exact doubled centered energy of the two physical 32-rank halves after a
+64-wire merge with `H` Boolean ones. -/
+theorem oddEvenMerge64_parallel_monotone_parity_energy_le_input
+    {I : Type} [Fintype I] [DecidableEq I] (v : I → Fin 64 → Bool)
+    (hsorted : ∀ p, Monotone (v p)) :
+    (∑ p : I, oddEvenMerge64ParityEnergy (v p)) ≤
+      ∑ p : I, oddEvenMerge64InputEnergy (v p) := by
+  apply Finset.sum_le_sum
+  intro p hp
+  exact oddEvenMerge64_monotone_parity_energy_le_input (v p) (hsorted p)
+
+theorem oddEvenMerge64_parallel_dealt_energy_le_input {I : Type}
+    [Fintype I] [DecidableEq I] (v : I → Fin 64 → Bool)
+    (hA : ∀ p, Monotone (fun i : Fin 32 => v p (Fin.castAdd 32 i)))
+    (hB : ∀ p, Monotone (fun i : Fin 32 => v p (Fin.natAdd 32 i))) :
+    (∑ p : I, oddEvenMerge64DealtEnergy (v p)) ≤
+      ∑ p : I, oddEvenMerge64InputEnergy (v p) := by
+  apply Finset.sum_le_sum
+  intro p hp
+  simpa only [oddEvenMerge64DealtEnergy, oddEvenMerge64InputEnergy] using
+    oddEvenMerge64_dealt_energy_le_input (v p) (hA p) (hB p)
+
+theorem oddEvenMerge64_scatteredFamily_dealt_energy_le_input
+    {I : Type} [Fintype I] [DecidableEq I] {N : Nat}
+    (e : I → Fin 64 ↪o Fin N) (bits : Fin N → Bool)
+    (hsorted : ∀ p, Monotone (fun i : Fin 64 => bits (e p i))) :
+    (∑ p : I, oddEvenMerge64DealtEnergy (fun i => bits (e p i))) ≤
+      ∑ p : I, oddEvenMerge64InputEnergy (fun i => bits (e p i)) := by
+  apply oddEvenMerge64_parallel_dealt_energy_le_input
+  · intro p
+    apply (hsorted p).comp
+    intro i j hij
+    apply Fin.mk_le_mk.mpr
+    exact Fin.mk_le_mk.mp hij
+  · intro p
+    apply (hsorted p).comp
+    intro i j hij
+    apply Fin.mk_le_mk.mpr
+    have hv := Fin.mk_le_mk.mp hij
+    change 32 + i.val ≤ 32 + j.val
+    omega
+
+theorem oddEvenMerge64_rankSortedFamily_dealt_energy_le_input
+    {I : Type} [Fintype I] [DecidableEq I] {N : Nat} {A : Type}
+    [Preorder A] (e : I → Fin 64 ↪o Fin N)
+    (support : I → Finset (Fin N)) (value : Fin N → A) (threshold : A → Bool)
+    (hthreshold : Monotone threshold)
+    (hsorted : ∀ p, RankSortedOn (support p) value)
+    (hempty : ∀ p i, e p i ∈ support p) :
+    (∑ p : I, oddEvenMerge64DealtEnergy
+      (fun i => threshold (value (e p i)))) ≤
+      ∑ p : I, oddEvenMerge64InputEnergy
+        (fun i => threshold (value (e p i))) := by
+  apply oddEvenMerge64_scatteredFamily_dealt_energy_le_input e
+    (fun w => threshold (value w))
+  intro p i j hij
+  apply hthreshold
+  exact hsorted p (hempty p i) (hempty p j)
+    (Fin.le_def.mp ((e p).monotone hij))
+
+theorem canonicalPacketFamily_dealt_energy_le_input
+    {N : Nat} (P : CanonicalPacketFamily N) (support : Finset (Fin N))
+    {A : Type} [LinearOrder A] (value : Fin N → A) (threshold : A → Bool)
+    (hthreshold : Monotone threshold)
+    (hcontract : CanonicalPacketPortContract P support value) :
+    (∑ i : Fin P.count, oddEvenMerge64DealtEnergy
+      (fun j => threshold
+        (value ((P.packet i).orderEmbOfFin (hcontract.2.2.2 i) j)))) ≤
+      ∑ i : Fin P.count, oddEvenMerge64InputEnergy
+        (fun j => threshold
+          (value ((P.packet i).orderEmbOfFin (hcontract.2.2.2 i) j))) := by
+  let e : Fin P.count → Fin 64 ↪o Fin N := fun i =>
+    (P.packet i).orderEmbOfFin (hcontract.2.2.2 i)
+  apply oddEvenMerge64_rankSortedFamily_dealt_energy_le_input
+    e P.packet value threshold hthreshold hcontract.1
+  intro i j
+  exact Finset.orderEmbOfFin_mem (P.packet i) (hcontract.2.2.2 i) j
+
+theorem canonicalPacketFamily_parity_energy_le_input
+    {N : Nat} (P : CanonicalPacketFamily N) (support : Finset (Fin N))
+    {A : Type} [LinearOrder A] (value : Fin N → A) (threshold : A → Bool)
+    (hthreshold : Monotone threshold)
+    (hcontract : CanonicalPacketPortContract P support value) :
+    (∑ i : Fin P.count, oddEvenMerge64ParityEnergy
+      (fun j => threshold
+        (value ((P.packet i).orderEmbOfFin (hcontract.2.2.2 i) j)))) ≤
+      ∑ i : Fin P.count, oddEvenMerge64InputEnergy
+        (fun j => threshold
+          (value ((P.packet i).orderEmbOfFin (hcontract.2.2.2 i) j))) := by
+  apply Finset.sum_le_sum
+  intro i hi
+  apply oddEvenMerge64_monotone_parity_energy_le_input
+  intro j k hjk
+  apply hthreshold
+  exact hcontract.1 i
+    (Finset.orderEmbOfFin_mem (P.packet i) (hcontract.2.2.2 i) j)
+    (Finset.orderEmbOfFin_mem (P.packet i) (hcontract.2.2.2 i) k)
+    (Fin.le_def.mp (((P.packet i).orderEmbOfFin (hcontract.2.2.2 i)).monotone hjk))
+
+/-- The local dealt-lane contraction at the actual next WireFlow receiver,
+summed over any finite family of monotone Boolean thresholds. -/
+theorem flowA7_receiver_allCases_packetEnergy_contraction_multi
+    {d : Nat} {A T : Type} [LinearOrder A] [Fintype T] [DecidableEq T]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchildLevel : b.l < d)
+    (v : Fin (64 ^ d) → A)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v)
+    (threshold : T → A → Bool)
+    (hthreshold : ∀ theta, Monotone (threshold theta)) :
+    ∃ receiver : CanonicalPacketFamily (64 ^ d),
+      ∃ hcontract : CanonicalPacketPortContract receiver
+        (wireSets (flowSizes7 d hd) (t + 1) b)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v),
+        (∑ theta : T, ∑ i : Fin receiver.count, oddEvenMerge64DealtEnergy
+          (fun j => threshold theta ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v
+            ((receiver.packet i).orderEmbOfFin (hcontract.2.2.2 i) j)))) ≤
+        ∑ theta : T, ∑ i : Fin receiver.count, oddEvenMerge64InputEnergy
+          (fun j => threshold theta ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v
+            ((receiver.packet i).orderEmbOfFin (hcontract.2.2.2 i) j))) := by
+  obtain ⟨receiver, hcontract⟩ := flowA7_receiver_allCases_canonical
+    hd t ht2 ht b hb hchildLevel v hpack
+  refine ⟨receiver, hcontract, ?_⟩
+  apply Finset.sum_le_sum
+  intro theta htheta
+  exact canonicalPacketFamily_dealt_energy_le_input receiver
+    (wireSets (flowSizes7 d hd) (t + 1) b)
+    ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+    (threshold theta) (hthreshold theta) hcontract
+
+/-- Specialization of the receiver contraction to one threshold. -/
+theorem flowA7_receiver_allCases_packetEnergy_contraction
+    {d : Nat} {A : Type} [LinearOrder A]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchildLevel : b.l < d)
+    (v : Fin (64 ^ d) → A)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v)
+    (threshold : A → Bool) (hthreshold : Monotone threshold) :
+    ∃ receiver : CanonicalPacketFamily (64 ^ d),
+      ∃ hcontract : CanonicalPacketPortContract receiver
+        (wireSets (flowSizes7 d hd) (t + 1) b)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v),
+        (∑ i : Fin receiver.count, oddEvenMerge64DealtEnergy
+          (fun j => threshold ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v
+            ((receiver.packet i).orderEmbOfFin (hcontract.2.2.2 i) j)))) ≤
+        ∑ i : Fin receiver.count, oddEvenMerge64InputEnergy
+          (fun j => threshold ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v
+            ((receiver.packet i).orderEmbOfFin (hcontract.2.2.2 i) j))) := by
+  obtain ⟨receiver, hcontract⟩ := flowA7_receiver_allCases_canonical
+    hd t ht2 ht b hb hchildLevel v hpack
+  refine ⟨receiver, hcontract, ?_⟩
+  exact canonicalPacketFamily_dealt_energy_le_input receiver
+    (wireSets (flowSizes7 d hd) (t + 1) b)
+    ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+    threshold hthreshold hcontract
+
+/-- The exact parity residual is bounded by input energy at each receiver,
+for any finite threshold family. -/
+theorem flowA7_receiver_allCases_parityEnergy_contraction_multi
+    {d : Nat} {A T : Type} [LinearOrder A] [Fintype T] [DecidableEq T]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchildLevel : b.l < d)
+    (v : Fin (64 ^ d) → A)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v)
+    (threshold : T → A → Bool)
+    (hthreshold : ∀ theta, Monotone (threshold theta)) :
+    ∃ receiver : CanonicalPacketFamily (64 ^ d),
+      ∃ hcontract : CanonicalPacketPortContract receiver
+        (wireSets (flowSizes7 d hd) (t + 1) b)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v),
+        (∑ theta : T, ∑ i : Fin receiver.count, oddEvenMerge64ParityEnergy
+          (fun j => threshold theta ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v
+            ((receiver.packet i).orderEmbOfFin (hcontract.2.2.2 i) j)))) ≤
+        ∑ theta : T, ∑ i : Fin receiver.count, oddEvenMerge64InputEnergy
+          (fun j => threshold theta ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v
+            ((receiver.packet i).orderEmbOfFin (hcontract.2.2.2 i) j))) := by
+  obtain ⟨receiver, hcontract⟩ := flowA7_receiver_allCases_canonical
+    hd t ht2 ht b hb hchildLevel v hpack
+  refine ⟨receiver, hcontract, ?_⟩
+  apply Finset.sum_le_sum
+  intro theta htheta
+  exact canonicalPacketFamily_parity_energy_le_input receiver
+    (wireSets (flowSizes7 d hd) (t + 1) b)
+    ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v)
+    (threshold theta) (hthreshold theta) hcontract
+
+/-- The even/odd 32-rank lanes of an actual canonical receiver partition
+reindex the next `WireFlow` register's threshold count exactly. This is the
+local owner-map bridge from parity supports to scheduled destination counts. -/
+theorem flowA7_receiver_allCases_parityOwnerCount
+    {d : Nat} {A : Type} [LinearOrder A]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchildLevel : b.l < d)
+    (v : Fin (64 ^ d) → A)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v)
+    (threshold : A → Bool) :
+    ∃ receiver : CanonicalPacketFamily (64 ^ d),
+      ∃ hcontract : CanonicalPacketPortContract receiver
+        (wireSets (flowSizes7 d hd) (t + 1) b)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v),
+        (∑ z : Fin receiver.count × Bool,
+          assignedRankCount
+            (wireSetPacketRankOwner (flowSizes7 d hd) (t + 1) (by omega)
+              (fun z => canonicalPacketParityEmbedding receiver hcontract.2.2.2 z) z)
+            (fun _ i => threshold ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v
+              (canonicalPacketParityEmbedding receiver hcontract.2.2.2 z i))) b 0) =
+          trueCountOn (wireSets (flowSizes7 d hd) (t + 1) b)
+            (fun w => threshold ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v w)) := by
+  obtain ⟨receiver, hcontract⟩ := flowA7_receiver_allCases_canonical
+    hd t ht2 ht b hb hchildLevel v hpack
+  refine ⟨receiver, hcontract, ?_⟩
+  let lanes : Fin receiver.count × Bool → Fin 32 ↪ Fin (64 ^ d) :=
+    fun z => canonicalPacketParityEmbedding receiver hcontract.2.2.2 z
+  have hdis : ∀ {z z' : Fin receiver.count × Bool}, z ≠ z' →
+      ∀ i j, lanes z i ≠ lanes z' j := by
+    simpa [lanes] using canonicalPacketParityEmbeddings_disjoint receiver
+      (wireSets (flowSizes7 d hd) (t + 1) b)
+      ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) hcontract
+  have hcover : ∀ w ∈ wireSets (flowSizes7 d hd) (t + 1) b,
+      ∃ z i, lanes z i = w := by
+    simpa [lanes] using canonicalPacketParityEmbeddings_cover receiver
+      (wireSets (flowSizes7 d hd) (t + 1) b)
+      ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v) hcontract
+  simpa [lanes] using packetRankOwner_trueCountOn_eq_of_local_partition
+    (flowSizes7 d hd) (t + 1) (by omega) lanes
+    hdis b hcover
+    (fun w => threshold ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v w))
+
+/-- The actual even/odd packet lanes assigned to next-time WireFlow registers
+recover the threshold count on their intersection with the current receiver.
+This is the destination-restricted form needed to turn owner-profile errors
+into physical next-register errors. -/
+theorem flowA7_receiver_allCases_parityOwnerCount_intersection
+    {d : Nat} {A : Type} [LinearOrder A]
+    (hd : 7 ≤ d) (t : Nat) (ht2 : 2 ≤ t) (ht : t < tf7 d)
+    (htnext : t + 1 < tf7 d)
+    (b : KBag 64 d) (hb : 1 ≤ b.l) (hchildLevel : b.l < d)
+    (v : Fin (64 ^ d) → A)
+    (hpack : ∀ q : KBag 64 d,
+      PacketSortedOn (wireSets (flowSizes7 d hd) t q) v)
+    (threshold : A → Bool) :
+    ∃ receiver : CanonicalPacketFamily (64 ^ d),
+      ∃ hcontract : CanonicalPacketPortContract receiver
+        (wireSets (flowSizes7 d hd) (t + 1) b)
+        ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v),
+      ∀ destination : KBag 64 d,
+        (∑ z : Fin receiver.count × Bool,
+          assignedRankCount
+            (wireSetPacketRankOwner (flowSizes7 d hd) (t + 2) (by omega)
+              (fun z => canonicalPacketParityEmbedding receiver hcontract.2.2.2 z) z)
+            (fun _ i => threshold ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v
+              (canonicalPacketParityEmbedding receiver hcontract.2.2.2 z i)))
+            destination 0) =
+          trueCountOn
+            (wireSets (flowSizes7 d hd) (t + 1) b ∩
+              wireSets (flowSizes7 d hd) (t + 2) destination)
+            (fun w => threshold ((flowA7_sourcePortRepairStage hd t ht2 ht).exec v w)) := by
+  obtain ⟨receiver, hcontract⟩ := flowA7_receiver_allCases_canonical
+    hd t ht2 ht b hb hchildLevel v hpack
+  refine ⟨receiver, hcontract, ?_⟩
+  intro destination
+  let F := flowSizes7 d hd
+  let stageV := (flowA7_sourcePortRepairStage hd t ht2 ht).exec v
+  let support := wireSets F (t + 1) b
+  let lanes : Fin receiver.count × Bool → Fin 32 ↪ Fin (64 ^ d) :=
+    fun z => canonicalPacketParityEmbedding receiver hcontract.2.2.2 z
+  have hdis : ∀ {z z' : Fin receiver.count × Bool}, z ≠ z' →
+      ∀ i j, lanes z i ≠ lanes z' j := by
+    simpa [lanes] using canonicalPacketParityEmbeddings_disjoint receiver
+      support stageV hcontract
+  have hsubset : ∀ z i, lanes z i ∈ support := by
+    intro z i
+    have hmem := canonicalPacketParityEmbedding_mem receiver
+      hcontract.2.2.2 z i
+    change lanes z i ∈ wireSets (flowSizes7 d hd) (t + 1) b
+    rw [← hcontract.2.1]
+    simp only [Finset.mem_biUnion, Finset.mem_univ, true_and]
+    exact ⟨z.1, hmem⟩
+  have hcover : ∀ w ∈ support, ∃ z i, lanes z i = w := by
+    simpa [lanes] using canonicalPacketParityEmbeddings_cover receiver
+      support stageV hcontract
+  have hcount := packetRankOwner_trueCountOn_intersection
+    F (t + 2) (by omega) lanes hdis support hsubset hcover destination
+    (fun w => threshold (stageV w))
+  simpa [F, stageV, support, lanes] using hcount
+
+theorem oddEvenMerge64_physicalHalf_doubledEnergy (H : Nat) (hH : H ≤ 64) :
+    let a : ℤ := (min 32 (H - 32) : Nat)
+    let b : ℤ := (min 32 H : Nat)
+    (2 * a - H) ^ 2 + (2 * b - H) ^ 2 =
+      2 * ((min H (64 - H) : Nat) : ℤ) ^ 2 := by
+  dsimp
+  by_cases h : H ≤ 32
+  · have hminA : min 32 (H - 32) = 0 := by omega
+    have hminB : min 32 H = H := Nat.min_eq_right h
+    have hminH : min H (64 - H) = H := by omega
+    rw [hminA, hminB, hminH]
+    ring
+  · have hlow : 32 ≤ H := by omega
+    have hsub_le : H - 32 ≤ 32 := by omega
+    have hminA : min 32 (H - 32) = H - 32 := Nat.min_eq_right hsub_le
+    have hminB : min 32 H = 32 := Nat.min_eq_left hlow
+    have hminH : min H (64 - H) = 64 - H := by omega
     rw [hminA, hminB, hminH]
     rw [Int.natCast_sub hlow, Int.natCast_sub hH]
     ring
@@ -2682,6 +5566,26 @@ theorem senderOutgoingPiece_eq_blockOf {N : Nat} (s : Finset (Fin N)) (up down :
       unfold senderOutgoingPiece
       rw [if_neg (by omega : ¬65 = 0), if_neg (by omega : ¬65 ≤ 64), hlast, hc65, hc66]
 
+/-- A regular 4096-rank group inside a port intersects an outgoing WireFlow
+piece in one sender-rank interval, with endpoints given by max/min. This is
+the concrete owner-map geometry needed to subdivide receiver targets at macro
+boundaries. -/
+theorem senderOutgoingPiece_inter_portMacroGroup_eq {N : Nat}
+    (s : Finset (Fin N)) (up down i lo hi g : Nat)
+    (hs : s.card = up + 64 * down) (hu : 2 ∣ up)
+    (hi66 : i < 66) (hhi : hi ≤ s.card)
+    (hg : 4096 * (g + 1) ≤ hi - lo) :
+    Chvatal.blockOf (Chvatal.blockOf s lo hi)
+        (4096 * g) (4096 * (g + 1)) ∩
+      senderOutgoingPiece s up down i =
+    Chvatal.blockOf s
+      (max (lo + 4096 * g) (senderRankCut up down i))
+      (min (lo + 4096 * (g + 1)) (senderRankCut up down (i + 1))) := by
+  rw [blockOf_blockOf_eq_shift s lo hi (4096 * g) (4096 * (g + 1))
+    (by omega) (by omega)]
+  rw [senderOutgoingPiece_eq_blockOf s up down hs hu i hi66]
+  exact blockOf_inter_eq s _ _ _ _
+
 theorem senderOutgoingPiece_card_eq_interval {N : Nat}
     (s : Finset (Fin N)) (up down : Nat)
     (hs : s.card = up + 64 * down) (hu : 2 ∣ up) (i : Nat) (hi : i < 66) :
@@ -2965,6 +5869,61 @@ theorem sortedSenderOutgoing_profile_error_exact_var
       intro packet _
       exact hlocal packet
 
+/-- For a sorted Boolean source, all 66 outgoing profile-error pieces have
+the same sign as the source's total threshold-count error. -/
+theorem sortedSenderOutgoing_profile_error_piecewise_sign {N : Nat}
+    (S : Finset (Fin N)) (v : Fin N → Bool) (up down q : Nat) (frac : Real)
+    (hsize : S.card = up + 64 * down) (hu : 2 ∣ up)
+    (hsorted : Monotone (v ∘ S.orderEmbOfFin rfl))
+    (hq : q ≤ S.card) (hfrac0 : 0 ≤ frac) (hfrac1 : frac ≤ 1)
+    (hendpoint : q = S.card → frac = 0) :
+    ((trueCountOn S v ≤ q → ∀ i ∈ range 66,
+      (trueCountOn (senderOutgoingPiece S up down i) v : Real) ≤
+        profileIntervalMean S.card q frac
+          (senderRankCut up down i) (senderRankCut up down (i + 1))) ∧
+     (q + 1 ≤ trueCountOn S v → ∀ i ∈ range 66,
+      profileIntervalMean S.card q frac
+          (senderRankCut up down i) (senderRankCut up down (i + 1)) ≤
+        (trueCountOn (senderOutgoingPiece S up down i) v : Real))) := by
+  have hX : trueCountOn S v ≤ S.card := by
+    unfold trueCountOn
+    simpa using (Fintype.card_subtype_le (fun w : S => v w.val = true))
+  have hcount (i : Nat) (hi : i < 66) :
+      trueCountOn (senderOutgoingPiece S up down i) v =
+        profileInterval S.card (trueCountOn S v)
+          (senderRankCut up down i) (senderRankCut up down (i + 1)) := by
+    rw [senderOutgoingPiece_eq_blockOf S up down hsize hu i hi]
+    exact trueCountOn_blockOf_profile S v hsorted
+      (senderRankCut up down i) (senderRankCut up down (i + 1))
+      (senderRankCut_mono up down (Nat.le_succ i))
+      (by calc
+        senderRankCut up down (i + 1) ≤ up + 64 * down :=
+          senderRankCut_le up down (i + 1)
+        _ = S.card := hsize.symm)
+  constructor
+  · intro hXq i hi
+    rw [hcount i (mem_range.mp hi)]
+    exact profileInterval_error_nonpos_of_X_le_target S.card
+      (trueCountOn S v) q (senderRankCut up down i)
+      (senderRankCut up down (i + 1)) frac
+      (senderRankCut_mono up down (Nat.le_succ i))
+      (by calc
+        senderRankCut up down (i + 1) ≤ up + 64 * down :=
+          senderRankCut_le up down (i + 1)
+        _ = S.card := hsize.symm) hXq
+      hfrac0 hfrac1
+  · intro hqX i hi
+    rw [hcount i (mem_range.mp hi)]
+    exact profileInterval_error_nonneg_of_target_le_X S.card
+      (trueCountOn S v) q (senderRankCut up down i)
+      (senderRankCut up down (i + 1)) frac
+      (senderRankCut_mono up down (Nat.le_succ i))
+      (by calc
+        senderRankCut up down (i + 1) ≤ up + 64 * down :=
+          senderRankCut_le up down (i + 1)
+        _ = S.card := hsize.symm) hqX
+      hfrac0 hfrac1
+
 /-- The sender's 66-piece L1 identity, stated for one source packet so it can
 be charged after receiver selections are regrouped source-by-source. -/
 theorem sortedSenderOutgoing_profile_error_exact_one {N : Nat}
@@ -3150,6 +6109,56 @@ theorem wireFlowReceiver_count_error_le {N : Nat}
   exact selectedSenderOutgoing_count_error_le_var S v up down q frac hsize hu hsorted
     hq hfrac0 hfrac1 hendpoint (receiverOutgoingSelection parentPort)
     (fun source => receiverOutgoingSelection_subset parentPort hport source)
+
+/-- If one source's piece errors all have the same sign and its pieces are
+partitioned among receivers, then routing preserves its absolute error mass
+exactly (before different sources can cancel at a receiver). -/
+theorem sum_receiver_selected_errors_eq_source_pieces_of_common_sign
+    {Receiver : Type} [Fintype Receiver] [DecidableEq Receiver]
+    (receivers : Finset Receiver) (err : Nat → Real)
+    (selected : Receiver → Finset Nat)
+    (hselected : ∀ receiver ∈ receivers, selected receiver ⊆ range 66)
+    (hdisjoint : ∀ receiver₁ ∈ receivers, ∀ receiver₂ ∈ receivers,
+      receiver₁ ≠ receiver₂ →
+      Disjoint (selected receiver₁) (selected receiver₂))
+    (hunion : receivers.biUnion selected = range 66)
+    (hsign : (∀ i ∈ range 66, 0 ≤ err i) ∨
+      (∀ i ∈ range 66, err i ≤ 0)) :
+    (∑ receiver ∈ receivers, |∑ i ∈ selected receiver, err i|) =
+      ∑ i ∈ range 66, |err i| := by
+  classical
+  have hpair : Set.PairwiseDisjoint (↑receivers : Set Receiver) selected := by
+    intro receiver hreceiver receiver' hreceiver' hne
+    exact hdisjoint receiver hreceiver receiver' hreceiver' hne
+  have hsame (receiver : Receiver) (hmem : receiver ∈ receivers) :
+      |∑ i ∈ selected receiver, err i| =
+        ∑ i ∈ selected receiver, |err i| := by
+    rcases hsign with hnonneg | hnonpos
+    · have hs : 0 ≤ ∑ i ∈ selected receiver, err i :=
+        Finset.sum_nonneg (fun i hi => hnonneg i (hselected receiver hmem hi))
+      rw [abs_of_nonneg hs]
+      apply Finset.sum_congr rfl
+      intro i hi
+      rw [abs_of_nonneg (hnonneg i (hselected receiver hmem hi))]
+    · have hs : ∑ i ∈ selected receiver, err i ≤ 0 :=
+        Finset.sum_nonpos (fun i hi => hnonpos i (hselected receiver hmem hi))
+      rw [abs_of_nonpos hs]
+      calc
+        -∑ i ∈ selected receiver, err i =
+            ∑ i ∈ selected receiver, -err i := by rw [Finset.sum_neg_distrib]
+        _ = ∑ i ∈ selected receiver, |err i| := by
+          apply Finset.sum_congr rfl
+          intro i hi
+          rw [abs_of_nonpos (hnonpos i (hselected receiver hmem hi))]
+  calc
+    (∑ receiver ∈ receivers, |∑ i ∈ selected receiver, err i|) =
+        ∑ receiver ∈ receivers, ∑ i ∈ selected receiver, |err i| := by
+      apply Finset.sum_congr rfl
+      intro receiver hmem
+      exact hsame receiver hmem
+    _ = ∑ i ∈ receivers.biUnion selected, |err i| :=
+      (Finset.sum_biUnion hpair).symm
+    _ = ∑ i ∈ range 66, |err i| := by rw [hunion]
 
 /-- Layerwise sum of receiver discrepancies charges each source rank piece at
 most once when routed selections are pairwise disjoint. -/
@@ -3640,6 +6649,88 @@ theorem wireFlowLayerSelection_mem {d : Nat} (receiver source : KBag 64 d)
           (1 ≤ source.l ∧ receiver = source.parent ∧ (i = 0 ∨ i = 65))) := by
   simp only [wireFlowLayerSelection, Finset.mem_filter]
 
+/-- Every selected sender rank piece, after the stage permutation, lies in
+its designated physical receiver register. This is the set-level routing
+fact behind `wireFlowReceiver_selected_count_eq_register`. -/
+theorem wireFlowLayer_selectedPiece_image_subset_register {d tf : Nat}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (receiver source : KBag 64 d) (hb : 1 ≤ receiver.l) (hchild : receiver.l < d)
+    (i : Nat) (hi : i ∈ wireFlowLayerSelection receiver source) :
+    (senderOutgoingPiece (wireSets F t source) (F.up source.l t)
+      (F.down source.l t) i).image (X F nets input (t + 1)) ⊆
+      (execPlacement F nets input (t + 1) (by omega)).regs receiver := by
+  classical
+  rw [wireFlowLayerSelection_mem] at hi
+  rcases hi.2 with ⟨hlev, hsource, hindex⟩ | ⟨hsourcelev, hreceiver, hfringe⟩
+  · have hport : receiver.x % 64 < 64 := Nat.mod_lt _ (by omega)
+    have hpiece := (senderOutgoingPieces_are_WireFlow_ports
+      (wireSets F t receiver.parent) (F.up receiver.parent.l t)
+      (F.down receiver.parent.l t)).2 (receiver.x % 64) hport
+    rw [execPlacement_succ_regs F nets input t ht receiver hlev]
+    apply Finset.Subset.trans ?_ Finset.subset_union_left
+    simp only [fromParentK]
+    rw [hsource, hindex, hpiece]
+    exact Finset.Subset.rfl
+  · subst receiver
+    have hparentlt : source.parent.l < d := hchild
+    have hparentSucc : source.parent.l + 1 = source.l := by
+      rw [KBag.parent_l]
+      omega
+    have jlt : source.x % 64 < 64 := Nat.mod_lt _ (by omega)
+    let j : Fin 64 := ⟨source.x % 64, jlt⟩
+    have hsourceChild : source.parent.child j.val j.isLt hparentlt = source :=
+      KBag.parent_child source hsourcelev (by norm_num) hparentlt
+    have hports := senderOutgoingPieces_are_WireFlow_ports
+      (wireSets F t source) (F.up source.l t) (F.down source.l t)
+    have hpieceUp : senderOutgoingPiece (wireSets F t source)
+        (F.up source.l t) (F.down source.l t) i ⊆
+        upSet (wireSets F t source) (F.up source.l t) := by
+      rw [← hports.1]
+      rcases hfringe with hzero | hlast
+      · rw [hzero]
+        exact Finset.subset_union_left
+      · rw [hlast]
+        exact Finset.subset_union_right
+    have himage :
+        (senderOutgoingPiece (wireSets F t source) (F.up source.l t)
+          (F.down source.l t) i).image (X F nets input (t + 1)) ⊆
+          (upSet (wireSets F t source) (F.up source.l t)).image
+            (X F nets input (t + 1)) :=
+      Finset.image_subset_image hpieceUp
+    rw [execPlacement_succ_regs F nets input t ht source.parent
+      hb]
+    apply Finset.Subset.trans ?_ Finset.subset_union_right
+    unfold fromChildrenK
+    rw [dif_pos hparentlt]
+    intro w hw
+    simp only [Finset.mem_biUnion, Finset.mem_univ, true_and]
+    refine ⟨j, ?_⟩
+    rw [hsourceChild]
+    simpa [hparentSucc] using himage hw
+
+/-- Pulling back through the stage permutation, a selected sender piece is a
+subset of the receiver's next static WireFlow wire set. Thus every rank in
+that interval has the designated next-stage owner. -/
+theorem wireFlowLayer_selectedPiece_subset_nextWireSet {d tf : Nat}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (receiver source : KBag 64 d) (hb : 1 ≤ receiver.l) (hchild : receiver.l < d)
+    (i : Nat) (hi : i ∈ wireFlowLayerSelection receiver source) :
+    senderOutgoingPiece (wireSets F t source) (F.up source.l t)
+      (F.down source.l t) i ⊆ wireSets F (t + 1) receiver := by
+  intro w hw
+  have himage := wireFlowLayer_selectedPiece_image_subset_register
+    F nets input t ht receiver source hb hchild i hi
+    (Finset.mem_image.mpr ⟨w, hw, rfl⟩)
+  change X F nets input (t + 1) w ∈
+    (wireSets F (t + 1) receiver).image (X F nets input (t + 1)) at himage
+  rcases Finset.mem_image.mp himage with ⟨w', hw', heq⟩
+  have heqw : w' = w := X_injective F nets input (t + 1) heq
+  simpa [heqw] using hw'
+
 theorem wireFlowLayerSelection_subset {d : Nat} (receiver source : KBag 64 d) :
     wireFlowLayerSelection receiver source ⊆ range 66 := by
   intro i hi
@@ -3731,8 +6822,165 @@ theorem wireFlowLayerSelection_active_cover {d : Nat}
         have hindex : i = receiver.x % 64 + 1 := by omega
         refine ⟨mem_range.mpr (by omega), Or.inl ⟨hlevel, hparent, hindex⟩⟩
 
+/-- The active receiver assigned to each of an interior sender's 66 rank
+pieces. The active-cover theorem supplies existence, and selector disjointness
+makes this owner unique. -/
+noncomputable def wireFlowLayerPieceOwner {d : Nat}
+    (source : KBag 64 d) (hlo : 2 ≤ source.l)
+    (hhi : source.l + 2 ≤ d) (i : Fin 66) : KBag 64 d :=
+  Classical.choose
+    (wireFlowLayerSelection_active_cover source hlo hhi i.val
+      (Finset.mem_range.mpr i.isLt))
+
+theorem wireFlowLayerPieceOwner_spec {d : Nat}
+    (source : KBag 64 d) (hlo : 2 ≤ source.l)
+    (hhi : source.l + 2 ≤ d) (i : Fin 66) :
+    wireFlowLayerPieceOwner source hlo hhi i ∈
+        (Finset.univ : Finset (KBag 64 d)).filter
+          (fun b => 1 ≤ b.l ∧ b.l < d) ∧
+      i.val ∈ wireFlowLayerSelection
+        (wireFlowLayerPieceOwner source hlo hhi i) source :=
+  Classical.choose_spec
+    (wireFlowLayerSelection_active_cover source hlo hhi i.val
+      (Finset.mem_range.mpr i.isLt))
+
+/-- The chosen interval owner equals a receiver exactly when that receiver
+selects the interval. This is the finite owner map needed by the abstract
+owner-count interpolation lemma. -/
+theorem wireFlowLayerPieceOwner_eq_iff_selected {d : Nat}
+    (source receiver : KBag 64 d) (hlo : 2 ≤ source.l)
+    (hhi : source.l + 2 ≤ d) (i : Fin 66) :
+    wireFlowLayerPieceOwner source hlo hhi i = receiver ↔
+      i.val ∈ wireFlowLayerSelection receiver source := by
+  constructor
+  · intro heq
+    subst receiver
+    exact (wireFlowLayerPieceOwner_spec source hlo hhi i).2
+  · intro hselected
+    by_contra hne
+    have hdis := wireFlowLayerSelection_pairwise_disjoint source
+      (wireFlowLayerPieceOwner source hlo hhi i) receiver hne
+    exact (Finset.disjoint_left.mp hdis)
+      (wireFlowLayerPieceOwner_spec source hlo hhi i).2 hselected
+
+/-- The integer count profile induced by the chosen interval-owner map is
+exactly the profile of the intervals selected for that receiver. -/
+theorem wireFlowLayerPieceOwner_profileCount_eq_selected {d m : Nat}
+    (source receiver : KBag 64 d) (hlo : 2 ≤ source.l)
+    (hhi : source.l + 2 ≤ d) (cuts : Nat → Nat) (X : Nat) :
+    profileIntervalOwnerCount (m := m) cuts
+        (wireFlowLayerPieceOwner source hlo hhi) receiver X =
+      profileIntervalSelectedCount (m := m) cuts
+        (wireFlowLayerSelection receiver source) X := by
+  classical
+  unfold profileIntervalOwnerCount profileIntervalSelectedCount
+  let f : Nat → Nat := fun i => if hi : i < 66 then
+    if wireFlowLayerPieceOwner source hlo hhi ⟨i, hi⟩ = receiver then
+      profileInterval m X (cuts i) (cuts (i + 1)) else 0 else 0
+  change (∑ i : Fin 66, f i.val) =
+    ∑ i ∈ wireFlowLayerSelection receiver source,
+      profileInterval m X (cuts i) (cuts (i + 1))
+  rw [Fin.sum_univ_eq_sum_range f 66]
+  change (∑ i ∈ range 66, f i) =
+    ∑ i ∈ (range 66).filter (fun i =>
+      (1 ≤ receiver.l ∧ source = receiver.parent ∧ i = receiver.x % 64 + 1) ∨
+      (1 ≤ source.l ∧ receiver = source.parent ∧ (i = 0 ∨ i = 65))),
+      profileInterval m X (cuts i) (cuts (i + 1))
+  rw [Finset.sum_filter]
+  apply Finset.sum_congr rfl
+  intro i hi
+  have hi66 : i < 66 := Finset.mem_range.mp hi
+  have howner := wireFlowLayerPieceOwner_eq_iff_selected
+    source receiver hlo hhi ⟨i, hi66⟩
+  simp [f, hi66, howner, wireFlowLayerSelection, Fin.val_mk]
+
+/-- The interpolated owner target for the 66 sender intervals is exactly the
+selected-interval target. This is the target equality needed by the cohort
+parity L2 estimate. -/
+theorem wireFlowLayerPieceOwner_profileMean_eq_selected {d m : Nat}
+    (source receiver : KBag 64 d) (hlo : 2 ≤ source.l)
+    (hhi : source.l + 2 ≤ d) (cuts : Nat → Nat) (q : Nat) (frac : Real) :
+    (∑ i : Fin 66,
+      if wireFlowLayerPieceOwner source hlo hhi i = receiver then
+        profileIntervalMean m q frac (cuts i.val) (cuts (i.val + 1)) else 0) =
+      (∑ i ∈ wireFlowLayerSelection receiver source,
+        profileIntervalMean m q frac (cuts i) (cuts (i + 1))) := by
+  rw [profileIntervalOwnerMean_eq_interp
+    (m := m) (p := 66) cuts (wireFlowLayerPieceOwner source hlo hhi)
+    receiver q frac]
+  rw [profileIntervalSelectedMean_eq_interp cuts
+    (wireFlowLayerSelection receiver source) q frac]
+  unfold natProfileInterp
+  rw [wireFlowLayerPieceOwner_profileCount_eq_selected
+      source receiver hlo hhi cuts q,
+    wireFlowLayerPieceOwner_profileCount_eq_selected
+      source receiver hlo hhi cuts (q + 1)]
+
+/-- On an interior sender, a rank wire belongs to receiver `b` at the next
+WireFlow time exactly when its unique outgoing rank piece is selected by
+`b`. This is the pointwise owner/cut alignment needed to identify the
+parity-rebinned target with the selected-interval target. -/
+theorem wireFlowLayer_pieceOwner_iff_selected {d tf : Nat}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (source receiver : KBag 64 d) (hsourceLo : 2 ≤ source.l)
+    (hsourceHi : source.l + 2 ≤ d)
+    (hb : 1 ≤ receiver.l) (hreceiverChild : receiver.l < d)
+    (i : Nat) (hi : i ∈ range 66) (w : Fin (64 ^ d))
+    (hw : w ∈ senderOutgoingPiece (wireSets F t source)
+      (F.up source.l t) (F.down source.l t) i) :
+    wireSetOwner F (t + 1) (by omega) w = receiver ↔
+      i ∈ wireFlowLayerSelection receiver source := by
+  constructor
+  · intro howner
+    have hnext : t + 1 ≤ tf := by omega
+    have hmem : w ∈ wireSets F (t + 1) receiver :=
+      (wireSetOwner_eq_iff_mem F (t + 1) hnext w receiver).1 howner
+    have hrExist : ∃ r : KBag 64 d,
+        r ∈ (Finset.univ : Finset (KBag 64 d)).filter
+          (fun b => 1 ≤ b.l ∧ b.l < d) ∧
+          i ∈ wireFlowLayerSelection r source :=
+      wireFlowLayerSelection_active_cover source hsourceLo hsourceHi i hi
+    obtain ⟨r, hractive, hrsel⟩ := hrExist
+    have hrlevel := (Finset.mem_filter.mp hractive).2
+    have hmemr := wireFlowLayer_selectedPiece_subset_nextWireSet
+      F nets input t ht r source hrlevel.1 hrlevel.2 i hrsel hw
+    have hrEq : r = receiver := by
+      by_contra hne
+      have hdis := wireSets_disjoint F hnext r receiver hne
+      exact (Finset.disjoint_left.mp hdis) hmemr hmem
+    simpa [hrEq] using hrsel
+  · intro hsel
+    have hnext : t + 1 ≤ tf := by omega
+    have hmem := wireFlowLayer_selectedPiece_subset_nextWireSet
+      F nets input t ht receiver source hb hreceiverChild i hsel hw
+    exact (wireSetOwner_eq_iff_mem F (t + 1) hnext w receiver).2 hmem
+
+/-- On every wire of an interior sender piece, the physical next-stage owner
+is exactly the receiver selected by the finite piece-owner map. -/
+theorem wireFlowLayer_selectedPiece_owner_eq_pieceOwner {d tf : Nat}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (source : KBag 64 d) (hsourceLo : 2 ≤ source.l)
+    (hsourceHi : source.l + 2 ≤ d) (i : Fin 66)
+    (w : Fin (64 ^ d))
+    (hw : w ∈ senderOutgoingPiece (wireSets F t source)
+      (F.up source.l t) (F.down source.l t) i.val) :
+    wireSetOwner F (t + 1) (by omega) w =
+      wireFlowLayerPieceOwner source hsourceLo hsourceHi i := by
+  have hspec := wireFlowLayerPieceOwner_spec source hsourceLo hsourceHi i
+  have hactive := (Finset.mem_filter.mp hspec.1).2
+  have hselected := hspec.2
+  have hi : i.val ∈ range 66 := Finset.mem_range.mpr i.isLt
+  exact (wireFlowLayer_pieceOwner_iff_selected F nets input t ht source
+    (wireFlowLayerPieceOwner source hsourceLo hsourceHi i)
+    hsourceLo hsourceHi hactive.1 hactive.2 i.val hi w hw).2 hselected
+
 /-- On interior source levels, the active receiver selectors partition the
 whole 66-piece sender profile, not merely a subset of it. -/
+
 theorem wireFlowLayerSelection_active_union_eq_range {d : Nat}
     (source : KBag 64 d) (hlo : 2 ≤ source.l) (hhi : source.l + 2 ≤ d) :
     (Finset.univ.filter (fun b : KBag 64 d => 1 ≤ b.l ∧ b.l < d)).biUnion
@@ -4526,6 +7774,91 @@ noncomputable def wireFlowLayerSenderPieceError {d tf : Nat}
     (frac : KBag 64 d → Real) (source : KBag 64 d) (i : Nat) : Real :=
   (wireFlowLayerSenderPieceCount F nets input t predicate source i : Real) -
     wireFlowLayerSenderPieceMean F t q frac source i
+
+/-- For an interior source bag, the absolute threshold-error mass is routed
+across its active receiver pieces exactly once. Cancellation between distinct
+sources is deliberately left to the receiver-side recurrence. -/
+theorem wireFlowLayer_interior_source_error_mass_conserved {d tf : Nat}
+    (F : FlowSizes d tf)
+    (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
+    (input : Equiv.Perm (Fin (64 ^ d))) (t : Nat) (ht : t < tf)
+    (source : KBag 64 d) (hlo : 2 ≤ source.l) (hhi : source.l + 2 ≤ d)
+    (predicate : Fin (64 ^ d) → Bool) (q : KBag 64 d → Nat)
+    (frac : KBag 64 d → Real)
+    (hsorted : Monotone
+      ((fun w => predicate (X F nets input (t + 1) w)) ∘
+        (wireSets F t source).orderEmbOfFin rfl))
+    (hq : q source ≤ (wireSets F t source).card)
+    (hfrac0 : 0 ≤ frac source) (hfrac1 : frac source ≤ 1)
+    (hendpoint : q source = (wireSets F t source).card → frac source = 0) :
+    (∑ receiver ∈ (Finset.univ : Finset (KBag 64 d)).filter
+      (fun b => 1 ≤ b.l ∧ b.l < d),
+      |∑ i ∈ wireFlowLayerSelection receiver source,
+        wireFlowLayerSenderPieceError F nets input t predicate q frac source i|) =
+      |(trueCountOn (wireSets F t source)
+          (fun w => predicate (X F nets input (t + 1) w)) : Real) -
+        (q source + frac source)| := by
+  classical
+  let receivers := (Finset.univ : Finset (KBag 64 d)).filter
+    (fun b => 1 ≤ b.l ∧ b.l < d)
+  let v : Fin (64 ^ d) → Bool :=
+    fun w => predicate (X F nets input (t + 1) w)
+  let err (i : Nat) : Real :=
+    wireFlowLayerSenderPieceError F nets input t predicate q frac source i
+  have hsize : (wireSets F t source).card =
+      F.up source.l t + 64 * F.down source.l t := by
+    rw [wireSets_card _ (Nat.le_of_lt ht)]
+    exact F.hsplit source.l t source.hl ht
+  have hu : 2 ∣ F.up source.l t := F.hup_even source.l t ht
+  have hsign : (∀ i ∈ range 66, 0 ≤ err i) ∨
+      (∀ i ∈ range 66, err i ≤ 0) := by
+    by_cases hleft : trueCountOn (wireSets F t source) v ≤ q source
+    · right
+      intro i hi
+      have hpiece := (sortedSenderOutgoing_profile_error_piecewise_sign
+        (wireSets F t source) v (F.up source.l t) (F.down source.l t)
+        (q source) (frac source) hsize hu hsorted hq hfrac0 hfrac1
+        hendpoint).1 hleft i hi
+      dsimp [err, wireFlowLayerSenderPieceError, v,
+        wireFlowLayerSenderPieceCount, wireFlowLayerSenderPieceMean]
+      linarith
+    · left
+      have hright' : q source + 1 ≤ trueCountOn (wireSets F t source) v := by omega
+      intro i hi
+      have hpiece := (sortedSenderOutgoing_profile_error_piecewise_sign
+        (wireSets F t source) v (F.up source.l t) (F.down source.l t)
+        (q source) (frac source) hsize hu hsorted hq hfrac0 hfrac1
+        hendpoint).2 hright' i hi
+      dsimp [err, wireFlowLayerSenderPieceError, v,
+        wireFlowLayerSenderPieceCount, wireFlowLayerSenderPieceMean]
+      linarith
+  have hselected : ∀ receiver ∈ receivers,
+      wireFlowLayerSelection receiver source ⊆ range 66 := by
+    intro receiver hreceiver
+    exact wireFlowLayerSelection_subset receiver source
+  have hdisjoint : ∀ receiver₁ ∈ receivers, ∀ receiver₂ ∈ receivers,
+      receiver₁ ≠ receiver₂ →
+        Disjoint (wireFlowLayerSelection receiver₁ source)
+          (wireFlowLayerSelection receiver₂ source) := by
+    intro receiver₁ _ receiver₂ _ hne
+    exact wireFlowLayerSelection_pairwise_disjoint source receiver₁ receiver₂ hne
+  have hunion : receivers.biUnion (fun receiver =>
+      wireFlowLayerSelection receiver source) = range 66 := by
+    exact wireFlowLayerSelection_active_union_eq_range source hlo hhi
+  calc
+    (∑ receiver ∈ receivers,
+        |∑ i ∈ wireFlowLayerSelection receiver source, err i|) =
+      ∑ i ∈ range 66, |err i| :=
+        sum_receiver_selected_errors_eq_source_pieces_of_common_sign
+          receivers err (fun receiver => wireFlowLayerSelection receiver source)
+          hselected hdisjoint hunion hsign
+    _ = |(trueCountOn (wireSets F t source) v : Real) -
+        (q source + frac source)| := by
+      simpa [err, wireFlowLayerSenderPieceError, wireFlowLayerSenderPieceCount,
+        wireFlowLayerSenderPieceMean, v] using
+        (sortedSenderOutgoing_profile_error_exact_one
+          (wireSets F t source) v (F.up source.l t) (F.down source.l t)
+          (q source) (frac source) hsize hu hsorted hq hfrac0 hfrac1 hendpoint)
 
 /-- Across all root/first-level source bags, the profile error in the omitted
 fringes is bounded by their total up-flow capacity. -/
@@ -6296,3 +9629,52 @@ theorem sortedPackets_halfProfile_L1_sq {c K : Nat}
     (Finset.sum_mul_sq_le_sq_mul_sq Finset.univ
       (fun i : Fin c => |(boolTrueCount (V i) : Real) - (q + frac)|)
       (fun _ => (1 : Real)))
+
+/-- Routing the ranks of several sorted blocks to arbitrary destination labels
+does not increase their aggregate L1 count-profile error, provided each
+destination target is the sum of the blocks' suffix-interpolated targets.
+This separates the easy reblocking inequality from the still-open problem of
+controlling cohort mean errors under the repeated scheduler. -/
+theorem monotoneBlocks_assignedRankProfiles_L1_nonincrease
+    {D : Type} [Fintype D] [DecidableEq D] {c m : Nat}
+    (owner : Fin c → Fin m → D) (bits : Fin c → Fin m → Bool)
+    (hbits : ∀ g, Monotone (bits g))
+    (q : Fin c → Nat) (frac : Fin c → Real)
+    (hq : ∀ g, q g < m) (hfrac0 : ∀ g, 0 ≤ frac g)
+    (hfrac1 : ∀ g, frac g ≤ 1) :
+    (∑ destination : D,
+      |∑ g : Fin c,
+        ((assignedBitCount (owner g) (bits g) destination : Real) -
+          ((1 - frac g) * assignedRankCount (owner g)
+              (fun z k => decide (m - z ≤ k.val)) destination (q g) +
+            frac g * assignedRankCount (owner g)
+              (fun z k => decide (m - z ≤ k.val)) destination (q g + 1)))|) ≤
+      ∑ g : Fin c,
+        |(boolTrueCount (bits g) : Real) - ((q g : Real) + frac g)| := by
+  classical
+  let err (g : Fin c) (destination : D) : Real :=
+    (assignedBitCount (owner g) (bits g) destination : Real) -
+      ((1 - frac g) * assignedRankCount (owner g)
+          (fun z k => decide (m - z ≤ k.val)) destination (q g) +
+        frac g * assignedRankCount (owner g)
+          (fun z k => decide (m - z ≤ k.val)) destination (q g + 1))
+  have hlocal (g : Fin c) :
+      (∑ destination : D, |err g destination|) =
+        |(boolTrueCount (bits g) : Real) - ((q g : Real) + frac g)| := by
+    simpa [err] using
+      (monotoneBits_assignedRankProfiles_L1_exact
+        (owner g) (bits g) (hbits g) (boolTrueCount (bits g)) (q g)
+        (frac g) rfl (hq g) (hfrac0 g) (hfrac1 g))
+  calc
+    (∑ destination : D, |∑ g : Fin c, err g destination|) ≤
+        ∑ destination : D, ∑ g : Fin c, |err g destination| := by
+      apply Finset.sum_le_sum
+      intro destination _
+      exact Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ g : Fin c, ∑ destination : D, |err g destination| := by
+      exact Finset.sum_comm
+    _ = ∑ g : Fin c,
+        |(boolTrueCount (bits g) : Real) - ((q g : Real) + frac g)| := by
+      apply Finset.sum_congr rfl
+      intro g _
+      exact hlocal g

@@ -1571,6 +1571,49 @@ theorem standard64Merge_depth_le :
   · exact oddEvenMergeNet_depth_le 5
   · exact oddEvenMergeNet_depth_le 5
 
+/-- The concrete 64-wire odd-even merger remains correct when scattered onto
+any increasing physical support. This exposes the equal-run induction step
+directly at the arbitrary-support interface used by packet routing. -/
+theorem standard64Merge_scatter_sorts_two_runs {N : Nat} {α : Type}
+    [LinearOrder α] (e : Fin 64 ↪o Fin N) (v : Fin N → α)
+    (hA : Monotone (fun i : Fin 32 => v (e (Fin.castAdd 32 i))))
+    (hB : Monotone (fun i : Fin 32 => v (e (Fin.natAdd 32 i)))) :
+    Monotone (fun i =>
+      ((equalParityMergeNet (by omega : 2 ≤ 32)
+        (oddEvenMergeNet 5) (oddEvenMergeNet 5)).scatterEmbed N e).exec v (e i)) := by
+  let A : Fin 32 → α := fun i => v (e (Fin.castAdd 32 i))
+  let B : Fin 32 → α := fun i => v (e (Fin.natAdd 32 i))
+  have hinput : Fin.append A B = v ∘ e := by
+    funext i
+    by_cases hi : i.val < 32
+    · let j : Fin 32 := ⟨i.val, hi⟩
+      have hidx : i = Fin.castAdd 32 j := by
+        apply Fin.ext
+        rfl
+      rw [hidx, Fin.append_left]
+      simp [A, j]
+    · let j : Fin 32 := ⟨i.val - 32, by have := i.isLt; omega⟩
+      have hidx : i = Fin.natAdd 32 j := by
+        apply Fin.ext
+        simp [j]
+        omega
+      rw [hidx, Fin.append_right]
+      simp [B, j]
+  have hs := standard64Merge_sorts_two_runs A B (by simpa [A] using hA)
+    (by simpa [B] using hB)
+  have hs' : Monotone (((equalParityMergeNet (by omega : 2 ≤ 32)
+      (oddEvenMergeNet 5) (oddEvenMergeNet 5)).exec (v ∘ e))) := by
+    rw [← hinput]
+    exact hs
+  simpa only [ComparatorNetwork.scatterEmbed_exec_inside] using hs'
+
+/-- Scattering the six-layer 64-wire merge onto a fixed increasing support
+does not add depth. -/
+theorem standard64Merge_scatter_depth_le {N : Nat} (e : Fin 64 ↪o Fin N) :
+    ((equalParityMergeNet (by omega : 2 ≤ 32)
+      (oddEvenMergeNet 5) (oddEvenMergeNet 5)).scatterEmbed N e).depth ≤ 6 :=
+  (depth_scatterEmbed_le _ _ _).trans standard64Merge_depth_le
+
 private def unequalEvenEmbed {L : Nat} (hL : 2 ≤ L) : Fin L ↪o Fin (2 * L - 1) :=
   OrderEmbedding.ofStrictMono
     (fun i => ⟨2 * i.val, by have hi := i.isLt; omega⟩)

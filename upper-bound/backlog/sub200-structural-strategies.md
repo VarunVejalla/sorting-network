@@ -310,6 +310,12 @@ uniform in n. A compressed witness language that still has essentially
 existence inequality before investing in expander certification or Lean.
 This ticket supplies no such probability estimate yet.
 
+### Recursive k-sorting literature screen (2026-10-18)
+
+Dobrokhotova-Maikova, Kozachinskiy, and Podolskii study fixed-depth
+`k`-sorting networks and the recursion that substitutes a smaller sorter for
+each higher-arity comparator ([ITCS 2023 paper](https://drops.dagstuhl.de/storage/00lipics/lipics-vol251-itcs2023/LIPIcs.ITCS.2023.43/LIPIcs.ITCS.2023.43.pdf), Sec. 1). If a depth-`d` construction on `n` wires has arity `n^gamma`, repeated self-substitution has depth exponent `theta = log_(1/gamma)(d)` in `log n`. Their general lower bound `k >= (n/2)^(1/ceil(d/2))` forces `gamma >= 1/ceil(d/2)`, so `d*gamma > 1` for every fixed `d`; hence this direct recursion has `theta > 1` and does not itself yield a finite limsup coefficient. The paper's sharp depth-4 result (`k = Theta(n^(2/3))`) gives `theta = log_(3/2)(4) > 3`, also worse than ordinary Batcher recursion. This is a useful route for subquadratic-log-depth questions, but not a direct sub-200 route without a different, level-varying composition theorem.
+
 ## Completion criteria and relation to current work
 
 | Ticket | New mechanism | First decisive evidence | Existing work it complements |
