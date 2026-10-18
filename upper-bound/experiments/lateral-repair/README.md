@@ -83,13 +83,38 @@ The baseline is reproduced: no lateral repair gives 1419 at integer `(x,y,z) = (
   fringe need 27.9 once the fringe floor is lowered to 1024 or 64. So with the slack removed, bulk
   precision is binding, which is exactly what lateral repair relaxes.
 
-Remaining rows (S and L4 with lateral rounds, fringe floors 92160 / 1024 / 64) are in
-`sc_f92160.out`, `sc_f1024.out`, `sc_f64.out`.
+* **With lateral repair** (`sc_f*.out`; ideal, with windowed integer value in parentheses):
+
+  | variant | fringe floor | no lateral | 1 lateral round, C=1 | C=8, 2 rounds |
+  |---|---:|---:|---:|---:|
+  | S | 1024 | 893 (999) | 559 (623) | — |
+  | L4 | 92160 | 671 (765) | 682 (777) | 694 (789) |
+  | L4 | 1024 | 551 (650) | 456 (564) | 467 (576) |
+  | L4 | 64 | 551 (650) | **343 (426)** | 335 (437) |
+
+  At the proved fringe floor (92160 rows) lateral repair gains nothing: the fringe pins `lg m`
+  near 38. The gain appears only once the fringe floor is lowered, so **UB-15 is a prerequisite**.
+
+* **Fringe band balancing in the model** (`lateral_band_model.py`, `band_f64.out`,
+  `band_f1024.out`) adds nothing at a fixed floor. At floor 1024 the chosen fringe sits exactly
+  at the floor (the floor binds, not `eps_F`); at floor 64 the fringe is about 100 rows and bulk
+  precision binds at almost the same height. So band balancing's value for the fringe is as a
+  route to *proving* a low floor (UB-15), not as a cheaper fringe at today's floor.
+
+### Where the remaining cost sits
+
+At the best L4 + lateral point, `(x,y,z) = (3.5, 3.0, 2.5)`, `lg m = 16.7`: stage cost
+`3 T(16.7) + 18 = 462` layers at 0.743 stages per bit. The three column sorts dominate. The first
+exists only to make input columns monotone (AKS 1992's two-round halver: sort, scramble, sort,
+scramble, sort). If a child column is assembled from about `k+1 ≈ 12` sorted segments, merging
+them costs about `4 x 18 = 72` layers versus `T(17) = 153`; that would bring this point to about
+290. That is UB-13 (run-aware first sort), parked because it saved about 3% at `m ≈ 2^42`; it
+should be re-priced at these heights.
 
 ## Open obligations, in order
 
-1. Fill in the S/L4 lateral rows; add a fringe-gain factor for band balancing (`eps_F(f)` improved
-   by the measured per-round factor) and re-price.
+1. Lower the fringe floor (UB-15). Band balancing on the fringe is the candidate mechanism; it
+   needs a counting proof, not more simulation.
 2. Worst-case analysis: replace the structured adversaries by a counting (union-bound) argument
    for the residual after two rounds plus `R` band rounds, including merge-and-deal rounding bias,
    keys beyond the band height, and all thresholds simultaneously.
