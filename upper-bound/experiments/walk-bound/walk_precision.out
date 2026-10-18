@@ -1,0 +1,14 @@
+K1(n=16, eta=1/100) = 1.174;  K1(n=inf) = 1.043
+  lg m | one round: old      new      ratio | two rounds: old (BULK2)   new        ratio
+    16 |        1.921e-02 9.191e-03   2.09 |          5.508e-03      1.958e-03   2.81
+    20 |        5.324e-03 2.294e-03   2.32 |          7.926e-04      2.515e-04   3.15
+    25 |        1.045e-03 4.053e-04   2.58 |          6.830e-05      1.925e-05   3.55
+    30 |        2.015e-04 7.165e-05   2.81 |          5.754e-06      1.467e-06   3.92
+    35 |        3.834e-05 1.267e-05   3.03 |          4.767e-07      1.115e-07   4.27
+    42 |        3.700e-06 1.119e-06   3.31 |          1.427e-08      3.014e-09   4.73
+
+column height for the 1419 package's bulk target d = 1/59e6:
+  two rounds, BULK2 route : lg m = 41.66   (BULK2.md: 41.66)
+  two rounds, walk bound  : lg m = 38.65
+  one round,  Lemma 6.1   : lg m = 57.99
+  one round,  walk bound  : lg m = 54.09

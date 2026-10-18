@@ -1,0 +1,5 @@
+(a) original exchange-rate model (fringe floor 92160 rows, eps_F = 1/(656 f)); two-round separator
+  variant                              | old: ideal (win)   | walk bound: ideal (win)  lg m [B, F]
+  V0  Chvatal as is                    |  1317 ( 1419)     |  1259 ( 1419)         39.0 [38.9,39.0]
+  S   slack removed                    |   881 (  999)     |   746 (  866)         30.8 [30.8,30.8]
+  L4  tapered L4 (dF=1/2, assumed)     |   652 (  765)     |   650 (  765)         36.5 [34.9,36.5]

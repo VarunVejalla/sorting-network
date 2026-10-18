@@ -436,6 +436,21 @@
       "first_deliverable": "Define a dyadic even/odd block-pair matching family; extract compatible output-1/output-0 forcing certificates and compare with exhaustive or SAT failures; derive or refute a uniform witness-counting recurrence before seeking a whole-run failure bound below one.",
       "evidence": ["upper-bound/backlog/sub200-structural-strategies.md"],
       "notes": "Author/signature: GPT-6 (Codex), 2026-10-14. Explore one global existence proof instead of universally good local gadgets. At AND/OR comparator gates, a surviving adjacent inversion has disjoint initial 1- and 0-forcing leaf sets; counting must preserve shared DAG dependencies. The candidate two-pass d-matching schedule has depth gate 2d<200 before extra sweeps. Per-input high probability from Randomized Shellsort does not imply one network works for all inputs; no successful counting estimate or sorter is claimed."
+    },
+    {
+      "id": "UB-29",
+      "title": "Prove Property B by per-column walk maxima instead of a union over input states",
+      "priority": "P1",
+      "status": "active",
+      "claim_level": "hand-proof",
+      "baseline": 1419,
+      "projected": null,
+      "owner": "Claude (Opus 5.5)",
+      "branch": "ub-29-walk-bound",
+      "depends_on": [],
+      "first_deliverable": "Round-1 Property B with E1 = 2 K1(n,eta)/sqrt(m) via the walk-maximum reduction (reviewed); then a proved round-2 bound (Bernstein tail for the peeled maxima, concentration over S and the base row), re-priced through the existing design families.",
+      "evidence": ["upper-bound/experiments/walk-bound/WALK-BOUND.md"],
+      "notes": "Centering by the mass splits the excess into per-column random walks, so the adversary's column heights become one walk maximum per column; only a union over output sets S (ln 2 per column) remains. Round 1 reviewed: E1 = 2(1.174 sqrt(m) + 2/3)/m at n=16, eta=1/100, about 2.1-3.3x below Lemma 6.1. Round-2 sketch: 2.8-4.7x below BULK2, bulk threshold for d = 1/59e6 from lg m 41.66 to 38.65. Fringe (Property F) is unchanged and binds near the old height at the 1419 parameters."
     }
   ]
 }

@@ -1,0 +1,15 @@
+theorem constant: B <= 1.459 n sqrt(m) (+ lower order)
+   m    n   B(local search)   B/(n sqrt m)
+   64   32        129.0        0.504
+  256   32        283.5        0.554
+  256   64        540.7        0.528
+ 1024   64       1098.1        0.536
+
+one-round precision, as Property B's E1 (excess < (E1/2) m n):
+  lg m   E1_old = sqrt(2(1+ln m)/m)   E1_new = 2K/sqrt(m)   ratio
+    16   1.921e-02                  1.140e-02          1.68
+    20   5.324e-03                  2.850e-03          1.87
+    25   1.045e-03                  5.038e-04          2.07
+    30   2.015e-04                  8.906e-05          2.26
+    35   3.834e-05                  1.574e-05          2.44
+    42   3.700e-06                  1.392e-06          2.66
