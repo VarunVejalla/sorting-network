@@ -163,44 +163,69 @@ The localized-disorder interface and overlapping-block idea are present in
 is a **binary** preprocessor and a fully priced self-recursion, rather than
 the independent binary compilation screened in UB-08.
 
-Construct the recursive sorting family at strictly smaller sizes, using
-exact base sorters below a fixed cutoff. Its depth `F(n)` satisfies
+There is a stronger interface worth testing first. Suppose the prefix
+partitions the output wires into fixed consecutive blocks of length at most
+`n^theta`, and each block carries a **contiguous interval of global ranks**
+for every permutation input. Then recursively sorting every block in
+parallel needs just one recursive level:
 
 ```text
-F(n) <= a*log n + O(1) + 2*F(2*ceil(n^theta)),    0 < theta < 1/2.
-limsup F(n)/log n <= a/(1-2*theta).
+F(n) <= P(n) + F(ceil(n^theta)),
+P(n) <= p*log n + O(1),
+limsup F(n)/log n <= p/(1-theta).
 ```
 
-The factor **2** is essential. This is a well-founded construction, not an
-assumption of the desired sorter. Iterating the leading terms gives
-`a*log n * sum_j (2*theta)^j`. At the base cutoff, the accumulated leaf
-cost is of order `(log n)^(log_(1/theta) 2)`, which is sublinear in `log n`
-when `theta<1/2`. Constant-factor padding and rounding have the same lower
-order effect after enlarging the cutoff. A formal recurrence proof must
-bound these terms, and cover all n, not merely a sparse subsequence.
+This rank-pure-block contract is stronger than s-sortedness, but is the
+better target because cleanup does not double. To get below 200 it is enough
+to build such a prefix with `p < 200*(1-theta)`; for `theta=1/4`, this is
+`p<150`. Once the order of the rank intervals is proved, all block sorts
+run concurrently and no cross-block merge remains.
 
-| Localization exponent theta | Required preprocessing coefficient a for <200 |
-| --- | --- |
-| 1/8 | <150 |
-| 1/4 | <100 |
-| 1/3 | <200/3 |
+The checked Chvatal network already has rank-pure final blocks of
+`64^7=2^42` wires (`RealBlocks.realNets_purity` and
+`RealBlocks.finalS_image_real`). Stop its prefix earlier so those blocks
+have size `n^theta`: it uses `3(1-theta)log_64(n)+O(1)` ordinary stages,
+each of depth 2838. This gives
+`P(n)=1419*(1-theta)*log₂(n)+O(1)`, hence the recurrence above returns
+exactly 1419. This source screen is useful because it rules out a tempting
+shortcut precisely: early stopping the existing tree does not improve its
+coefficient.
 
-For example `theta=1/4, a=90` would give 180 **if the preprocessor exists**.
-Using the accepted 1419 sorter once for cleanup would instead cost
-`90+2*(1/4)*1419=799.5`. The recursive self-improvement is the reason this
-target is substantially less demanding than that one-pass calculation.
+If no cheap rank-pure partitioner is available, seek the weaker s-sorted
+contract and use a sharper cleanup than sorting two overlapping windows
+recursively. Round `s(n)` up to a power of two `B`; sort disjoint chunks of
+length `2B` recursively (combine a short final remainder with the preceding
+chunk); then merge the suffix half of each chunk with the prefix half of the
+next chunk. These seam windows are disjoint, and Batcher's odd-even merge
+network merges two sorted `B`-runs in `log2(2B)` layers. A dirty interval of
+length at most `B` either lies in one sorted chunk or crosses one chunk
+boundary, in which case the corresponding seam merge repairs it.
 
-**First deliverable / early rejection gate.** Prove the two-pass cleanup
-lemma and the all-n recurrence, then extract a localization-versus-depth
-curve from a specified multiscale comparator construction. A concrete first
-family is UB-25 packet balancing with a decreasing packet scale and fixed
-overlapping block passes; both scaling and repacking must be priced. Another
-source is a deliberately early-stopped tree schedule, but its remaining
-outsiders must be localized, not merely few. Bound both far-tail occupancy
-and the width of the resulting Boolean interval simultaneously for all inputs.
-Reject any argument replacing interval width by total outsider mass, or
-charging only one cleanup pass. A cheap localization preprocessor is the
-open construction; the conditional recurrence alone improves no bound.
+The resulting recurrence is
+
+```text
+F(n) <= a*log2(n) + O(1) + max_(k<4B(n)) F(k) + log2(2B(n)) + O(1),
+limsup F(n)/log2(n) <= (a+theta)/(1-theta),
+```
+
+for `B(n)=O(n^theta)`, `0<theta<1`. The sufficient gate for a coefficient
+below 200 is `a < 200-201*theta`; for `theta=1/4`, this is `a<149.75`.
+This is close to the rank-pure gate `a<150` and improves substantially on the
+older two-recursive-pass bound `a/(1-2*theta)`, which needed `a<100` at
+`theta=1/4`. The arbitrary-size final chunk and the all-n recurrence still
+need proof. See
+[`experiments/localized-cleanup/SEAM-CLEANUP.md`](../experiments/localized-cleanup/SEAM-CLEANUP.md)
+for the hand analysis and finite screen.
+
+**First deliverable / early rejection gate.** Prove the sort-chunks/merge-seams
+cleanup lemma and its all-n recurrence, then extract a localization-versus-
+depth curve from a specified multiscale comparator construction. Candidate
+prefixes must prove a positional interval guarantee for every Boolean input;
+outsider mass alone is insufficient. UB-25 packet balancing is one possible
+provider only if it handles bounded rare cohorts and its fixed packet layout,
+scaling and repacking are fully priced. Early stopping the current tree remains
+screened out. The cheap localization preprocessor is still open; the improved
+conditional recurrence alone does not improve the bound.
 
 ## UB-27: periodic precision restoration instead of uniform precision
 
@@ -315,7 +340,7 @@ This ticket supplies no such probability estimate yet.
 | Ticket | New mechanism | First decisive evidence | Existing work it complements |
 | --- | --- | --- | --- |
 | UB-25 | Preserve sorted packets through mixing and routing | Priced merge-and-deal provider with tails and persistent packet invariant | UB-01, UB-06, UB-13, UB-20 |
-| UB-26 | Recursively clean a power-size interval of disorder | Exact two-pass recurrence plus a cheap binary localization construction | UB-08, UB-19, UB-20 |
+| UB-26 | Recursively clean a power-size interval of disorder | Cheap physical localization prefix plus proved sort-chunks/merge-seams recurrence | UB-08, UB-19, UB-20 |
 | UB-27 | Restore precision periodically | Feasible phase-indexed transfer including forcing and actual advancement | UB-19, UB-23, UB-24 |
 | UB-28 | Global certificate for one complete randomized network | Uniform paired-witness counting inequality | Existing local profile-union investigations |
 
