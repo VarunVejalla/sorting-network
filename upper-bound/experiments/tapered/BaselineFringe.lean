@@ -275,4 +275,128 @@ theorem paddedPack2Net_fHigh_baseline {m n a : Nat} (P : F2Params) (hn : 0 < n)
   rw [hevent] at hcount
   exact hcount.trans_lt hfull
 
+/-- Symmetric low-fringe transfer for the same restricted live prefix.
+Unlike the high-side theorem, this follows by reversing the full padded
+physical network: the dummy suffix has ranks at least `a`, so it contributes
+no keys to the lowest `j` cohort. The protected fringe must fit inside the
+actual requested suffix (`u`), without charging padding. -/
+theorem paddedPack2Net_fLow_baseline {m n a : Nat} (P : F2Params) (hn : 0 < n)
+    (ha : a ≤ (m + 1) * n) (hfm : P.f ≤ m)
+    (σ₁ σ₂ : Scramble (m + 1) n)
+    (hSR : F2SmallRank P (truncateBottomScramble (flipScramble σ₁)))
+    (hR₁ : F2R1 P (truncateBottomScramble (flipScramble σ₁)))
+    (hR₂ : F2R2n P (truncateBottomScramble (flipScramble σ₂)))
+    (p : Equiv.Perm (Fin a)) (u j : Nat)
+    (hfringe : (P.f + 1) * n ≤ u)
+    (hj : 0 < j) (hja : j ≤ a) (hjmax : j ≤ P.jmax n) :
+    ((Finset.univ.filter fun c : Fin a =>
+      ((paddedPack2Net hn ha σ₁ σ₂).exec p c).val < j ∧ u ≤ c.val).card : Real) <
+        (1 / (P.J : Real)) * j := by
+  let A := (m + 1) * n
+  let net := physicalPack2Net (m + 1) n hn σ₁ σ₂
+  let x := padRankPerm ha p
+  let xf := flipPerm x
+  have hxflip : (xf : Fin A → Fin A) = fun w => Fin.rev (x (Fin.rev w)) := by
+    funext w
+    simp [xf, flipPerm, Equiv.Perm.mul_apply]
+  have hres : totalColumnOnes (filledRowResidual
+      (fun w => decide (A - j ≤ (xf w).val))) ≤ j := by
+    rw [filledRowResidual_total hn]
+    have hmarks : (Finset.univ.filter fun w : Fin A => A - j ≤ (xf w).val).card = j := by
+      have himage : (Finset.univ.filter (fun w : Fin A => A - j ≤ (xf w).val)).image xf =
+          Finset.univ.filter (fun k : Fin A => A - j ≤ k.val) := by
+        ext k
+        simp only [Finset.mem_image, Finset.mem_filter, Finset.mem_univ, true_and]
+        constructor
+        · rintro ⟨w, hw, rfl⟩
+          exact hw
+        · intro hk
+          exact ⟨xf.symm k, by simpa using hk, xf.apply_symm_apply k⟩
+      calc
+        _ = ((Finset.univ.filter (fun w : Fin A => A - j ≤ (xf w).val)).image xf).card :=
+          (Finset.card_image_of_injective _ xf.injective).symm
+        _ = (Finset.univ.filter (fun k : Fin A => A - j ≤ k.val)).card := by rw [himage]
+        _ = j := by rw [card_filter_val_ge _ _ (Nat.sub_le _ _)]; simp [A]; omega
+    apply le_trans (Finset.card_le_card ?_)
+    · exact_mod_cast (Nat.le_of_eq hmarks)
+    · intro w hw
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and, decide_eq_true_eq] at hw ⊢
+      exact hw.2
+  have hsem := baseline_semantic_F2 P hn hfm (flipScramble σ₁) (flipScramble σ₂)
+    hSR hR₁ hR₂
+    (fun w => decide (A - j ≤ (xf w).val)) j hj hres hjmax
+  have hphysical := physical_threshold_count_eq_semantic2 hn
+    (flipScramble σ₁) (flipScramble σ₂) xf j (P.f + 1)
+  have hhigh : ((Finset.univ.filter fun c : Fin A =>
+      A - j ≤ ((physicalPack2Net (m + 1) n hn
+        (flipScramble σ₁) (flipScramble σ₂)).exec xf c).val ∧
+        c.val < A - (P.f + 1) * n).card : Real) <
+      (1 / (P.J : Real)) * j := by
+    have hphysicalR :
+        ((Finset.univ.filter fun c : Fin A =>
+          A - j ≤ ((physicalPack2Net (m + 1) n hn
+            (flipScramble σ₁) (flipScramble σ₂)).exec xf c).val ∧
+            c.val < A - (P.f + 1) * n).card : Real) =
+          (matrixOnesCountInRegion hn
+            (semanticExec2 hn (flipScramble σ₁) (flipScramble σ₂)
+              (fun w => decide (A - j ≤ (xf w).val))) (P.f + 1) : Real) := by
+      exact_mod_cast hphysical
+    rw [hphysicalR]
+    exact hsem
+  have hdual := physicalPack2Net_flip (m := m + 1) (n := n) hn σ₁ σ₂
+    (x : Fin A → Fin A)
+  have hrel : ∀ c : Fin A,
+      ((physicalPack2Net (m + 1) n hn (flipScramble σ₁)
+        (flipScramble σ₂)).exec xf c) =
+        Fin.rev ((net.exec x) (Fin.rev c)) := by
+    intro c
+    have h := congrFun hdual c
+    simpa [net, xf, hxflip] using h
+  have hfull : ((Finset.univ.filter fun c : Fin A =>
+      (net.exec x c).val < j ∧ u ≤ c.val).card : Real) <
+      (1 / (P.J : Real)) * j := by
+    have hcount := card_low_eq_high (net.exec x)
+      ((physicalPack2Net (m + 1) n hn
+        (flipScramble σ₁) (flipScramble σ₂)).exec xf)
+      (by intro c; exact hrel c) j u
+    have hcut : A - u ≤ A - (P.f + 1) * n := Nat.sub_le_sub_left hfringe A
+    have hsub : (Finset.univ.filter fun c : Fin A =>
+        A - j ≤ ((physicalPack2Net (m + 1) n hn
+          (flipScramble σ₁) (flipScramble σ₂)).exec xf c).val ∧
+          c.val < A - u) ⊆
+      Finset.univ.filter fun c : Fin A =>
+        A - j ≤ ((physicalPack2Net (m + 1) n hn
+          (flipScramble σ₁) (flipScramble σ₂)).exec xf c).val ∧
+          c.val < A - (P.f + 1) * n := by
+      intro c hc
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hc ⊢
+      exact ⟨hc.1, hc.2.trans_le hcut⟩
+    have hcast : ((Finset.univ.filter fun c : Fin A =>
+        (net.exec x c).val < j ∧ u ≤ c.val).card : Real) ≤
+      ((Finset.univ.filter fun c : Fin A =>
+        A - j ≤ ((physicalPack2Net (m + 1) n hn
+          (flipScramble σ₁) (flipScramble σ₂)).exec xf c).val ∧
+          c.val < A - (P.f + 1) * n).card : Real) := by
+      rw [hcount]
+      exact_mod_cast (Finset.card_le_card hsub)
+    exact hcast.trans_lt hhigh
+  have hrestrict := padding_rank_event_card ha net p
+    (fun wire rank => rank < j ∧ u ≤ wire)
+    (by
+      intro i hi
+      simp only [not_and]
+      intro hlt
+      have : j ≤ i := hja.trans hi
+      omega)
+  have hrestrict' :
+      ((Finset.univ.filter fun i : Fin A =>
+        (net.exec x i).val < j ∧ u ≤ i.val).card) =
+      ((Finset.univ.filter fun i : Fin a =>
+        ((paddedPack2Net hn ha σ₁ σ₂).exec p i).val < j ∧ u ≤ i.val).card) := by
+    simpa [net, x, paddedPack2Net] using hrestrict
+  change ((Finset.univ.filter fun c : Fin a =>
+      ((paddedPack2Net hn ha σ₁ σ₂).exec p c).val < j ∧ u ≤ c.val).card : Real) < _
+  rw [← hrestrict']
+  exact hfull
+
 end Tapered945

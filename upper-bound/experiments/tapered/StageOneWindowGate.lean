@@ -40,7 +40,7 @@ theorem candidate_bootstrap_stage_one_card_split
     (d : Nat) (hd : 14 ≤ d)
     (nets : Nat → (b : KBag 64 d) → (n : Nat) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (64 ^ d))) (a : Fin 64)
-    (j : Nat) (hj1 : 1 ≤ j) (hj62 : j ≤ 62) :
+    (j : Nat) (hj : j < 64) :
     let b := (KBag.root 64 d).child a.val a.isLt (by simp [KBag.root]; omega)
     let K := ((execPlacement (candidateSeedFlowSizes d hd) nets v 1 (by omega)).regs b).image Fin.val
     let p := bootstrapUpRows b.x * bootstrapColumns d / 2
@@ -156,7 +156,7 @@ theorem candidate_bootstrap_stage_one_wrong_rank_bound
     exact hR
   apply bootstrap_window_of_tails K p pre tau post (U + j * S) (U + (j + 1) * S)
     j b.x OL OR (2 * paperRootEpsB * (64 : Real) ^ d) (seedRootDown d)
-    (candidate_bootstrap_stage_one_card_split d hd nets v a j hj1 hj62)
+    (candidate_bootstrap_stage_one_card_split d hd nets v a j (by omega))
     (by positivity) (by positivity) (by positivity) _ hj1 hj62 hL' hR'
   change OL ≤ paperRootEpsB * (64 : Real) ^ d at hOL
   change OR ≤ paperRootEpsB * (64 : Real) ^ d at hOR

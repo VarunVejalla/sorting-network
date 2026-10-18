@@ -6,6 +6,17 @@ The current kernel-checked endpoint is `limsup D(n)/log_2 n <= 1419`; see
 Tickets record targets and evidence, not established results. A projected coefficient is conditional
 on the listed construction and proof obligations.
 
+The tapered branch's UB-23 count/ownership endpoint is documented in
+[`UB-23-FLOW-FAMILY.md`](../experiments/tapered/UB-23-FLOW-FAMILY.md).
+It supplies an initialized shape-specific integer schedule. Comparator-network
+realization and rank correctness remain separate obligations; the accepted
+sorting-depth coefficient is unchanged.
+
+UB-24 is active: [signed rank/retirement checkpoint](../experiments/tapered/UB-24-RANK-PROFILE.md).
+Exact prefix recurrences are implemented. Exact subtree balance at retirement
+needs a stronger coordinated rounding construction before the global rank
+induction can close.
+
 ## Active candidates
 
 | ID | Priority | Idea | Status | First deliverable |

@@ -101,4 +101,41 @@ theorem frontier_bottom_contract_receive (B C e : Rat) (j : Fin 64) :
   unfold frontierOrdinaryDown frontierBottomMass boundaryDebtCoeff debtStep cap rBar at *
   linear_combination C * hr
 
+/-- The first lower/upper frontier meeting has one physical receiver mass:
+the top parent's selected down port plus the 64 whole bottom registers is
+exactly the receiver's native reservoir `B`. This is the mixed meeting used
+by the candidate schedule; it is distinct from adding equal-scale top and
+bottom frontier totals. -/
+theorem frontier_first_meeting_receive (B C e : Rat) (j : Fin 64) :
+    frontierTopAdvanceDown C e j +
+      (∑ k : Fin 64, frontierBottomMass (B / 64) (4096 * C)
+        (debtStep (addressQ k.val) (debtStep (addressQ j.val) e))) = B := by
+  have hsum := frontier_bottom_mass_sum (B / 64) (4096 * C)
+    (debtStep (addressQ j.val) e)
+  rw [hsum]
+  unfold frontierTopAdvanceDown boundaryDebtCoeff debtStep
+  norm_num [cap]
+  ring
+
+/-- The first-meeting receiver can also be read as the top down port plus
+the residual cohort mass of a preceding bottom expansion. -/
+theorem frontier_terminal_meeting_decompose (B C e : Rat) (j : Fin 64) :
+    frontierTopAdvanceDown C e j +
+      frontierBottomMass B (1024 * C) (debtStep (addressQ j.val) e) -
+      frontierInteriorUp (1024 * C) (debtStep (addressQ j.val) e) = B := by
+  have hmeet := frontier_first_meeting_receive B C e j
+  have hexpand := frontier_bottom_expand_split B (1024 * C)
+    (debtStep (addressQ j.val) e)
+  have hsum :
+      (∑ k : Fin 64, frontierBottomMass (B / 64) (4096 * C)
+        (debtStep (addressQ k.val) (debtStep (addressQ j.val) e))) =
+      frontierBottomMass B (1024 * C) (debtStep (addressQ j.val) e) -
+        frontierInteriorUp (1024 * C) (debtStep (addressQ j.val) e) := by
+    have hscale : 4 * (1024 * C) = 4096 * C := by ring
+    rw [← hscale] at hmeet
+    rw [hscale] at hexpand
+    linarith [hexpand]
+  rw [hsum] at hmeet
+  nlinarith [hmeet]
+
 end Tapered945

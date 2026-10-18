@@ -5,6 +5,10 @@ namespace Tapered945
 
 def candidateTf (d : Nat) : Nat := 3 * d - 20
 
+/-- The scale-matched terminal cutoff, three stages before the old endpoint.
+The finite bootstrap can have coincident frontiers at earlier stages. -/
+def candidateTerminalCutoff (d : Nat) : Nat := candidateTf d - 3
+
 /-- Nat-arithmetic form of `max(0, floor((2*t-3*d+23)/3))`. -/
 def candidateAlphaBase (d t : Nat) : Nat := max 0 ((2 * t + 23) / 3 - d)
 
@@ -95,6 +99,98 @@ theorem candidate_meeting_capacity_exponent (d : Nat) (hd : 14 ≤ d) :
   rw [ha]
   unfold candidateTf
   omega
+
+/-- At the terminal cutoff, both frontiers are at level `d-7` and the reference
+capacity matches that level's native `64^7` reservoir. -/
+theorem candidate_terminal_cutoff_scale (d : Nat) (hd : 14 ≤ d) :
+    candidateAlpha d (candidateTerminalCutoff d) = d - 7 ∧
+    candidateOmega (candidateTerminalCutoff d) = d - 7 ∧
+    candidateReferenceCapacity d (d - 7) (candidateTerminalCutoff d) = 64 ^ 7 := by
+  have htime : candidateTerminalCutoff d = 3 * d - 23 := by
+    unfold candidateTerminalCutoff candidateTf
+    omega
+  have hdivA : (2 * (3 * d - 23) + 23) / 3 = 2 * d - 8 := by omega
+  have hdivO : (3 * d - 23 + 4) / 3 = d - 7 := by omega
+  have hparA : (d - 8) % 2 ≠ (3 * d - 23) % 2 := by omega
+  have hparO : (d - 7) % 2 = (3 * d - 23) % 2 := by omega
+  have hbaseA : candidateAlphaBase d (3 * d - 23) = d - 8 := by
+    unfold candidateAlphaBase
+    rw [hdivA]
+    omega
+  have hbaseO : candidateOmegaBase (3 * d - 23) = d - 7 := by
+    unfold candidateOmegaBase
+    rw [hdivO]
+  have hAlpha : candidateAlpha d (3 * d - 23) = d - 7 := by
+    unfold candidateAlpha
+    rw [hbaseA]
+    simp [Chvatal.ceilParity, hparA]
+    omega
+  have hOmega : candidateOmega (3 * d - 23) = d - 7 := by
+    unfold candidateOmega
+    rw [hbaseO]
+    simp [Chvatal.ceilParity, hparO]
+  have hexp : 6 * d + 6 * (d - 7) - 4 * (3 * d - 23) - 8 = 42 := by omega
+  refine ⟨?_, ?_, ?_⟩
+  · rw [htime]
+    exact hAlpha
+  · rw [htime]
+    exact hOmega
+  · rw [htime]
+    unfold candidateReferenceCapacity
+    unfold candidateCapacityExponent
+    rw [hexp]
+    norm_num
+
+/-- Capacity scales for the two bottom expansions feeding the terminal
+meeting. The lower parent has native size `64^8`; its first children have the
+meeting reservoir size `64^7`. The top parent at the meeting step has scale
+`2^40`, so the second bottom cohort has capacity `1024` times that scale. -/
+theorem candidate_terminal_cohort_scales (d : Nat) (hd : 14 ≤ d) :
+    candidateReferenceCapacity d (d - 8) (candidateTerminalCutoff d - 3) = 64 ^ 8 ∧
+    candidateReferenceCapacity d (d - 7) (candidateTerminalCutoff d - 2) =
+      4 * 64 ^ 8 ∧
+    candidateReferenceCapacity d (d - 8) (candidateTerminalCutoff d - 1) =
+      2 ^ 40 ∧
+    candidateReferenceCapacity d (d - 6) (candidateTerminalCutoff d - 1) =
+      4096 * 2 ^ 40 := by
+  have ht0 : candidateTerminalCutoff d - 3 = 3 * d - 26 := by
+    unfold candidateTerminalCutoff candidateTf
+    omega
+  have ht1 : candidateTerminalCutoff d - 2 = 3 * d - 25 := by
+    unfold candidateTerminalCutoff candidateTf
+    omega
+  have ht2 : candidateTerminalCutoff d - 1 = 3 * d - 24 := by
+    unfold candidateTerminalCutoff candidateTf
+    omega
+  have he0 : candidateCapacityExponent d (d - 8) (3 * d - 26) = 48 := by
+    unfold candidateCapacityExponent
+    omega
+  have he1 : candidateCapacityExponent d (d - 7) (3 * d - 25) = 50 := by
+    unfold candidateCapacityExponent
+    omega
+  have he2 : candidateCapacityExponent d (d - 8) (3 * d - 24) = 40 := by
+    unfold candidateCapacityExponent
+    omega
+  have he3 : candidateCapacityExponent d (d - 6) (3 * d - 24) = 52 := by
+    unfold candidateCapacityExponent
+    omega
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · rw [ht0]
+    unfold candidateReferenceCapacity
+    rw [he0]
+    norm_num
+  · rw [ht1]
+    unfold candidateReferenceCapacity
+    rw [he1]
+    norm_num
+  · rw [ht2]
+    unfold candidateReferenceCapacity
+    rw [he2]
+  · rw [ht2]
+    unfold candidateReferenceCapacity
+    rw [he3]
+    norm_num
+
 
 theorem candidate_frontiers_order (d : Nat) (hd : 14 ≤ d)
     (t : Nat) (ht : t ≤ candidateTf d) :

@@ -133,7 +133,7 @@ theorem bootstrap_prefix_tail_slack (d : Nat) (hd : 14 ≤ d) (x j : Nat)
 
 /-- The dual suffix reserve identity for the right-tail estimate. -/
 theorem bootstrap_suffix_tail_slack (d : Nat) (hd : 14 ≤ d) (x j : Nat)
-    (hj1 : 1 ≤ j) (hj62 : j ≤ 62) :
+    (hj62 : j ≤ 62) :
     (bootstrapSuffixWires d x j : Rat) + bootstrapHalfUpWires d x +
         (seedRootDown d : Rat) / (2 * cap) +
           ((j : Rat) - 31) * firstAddressDebt x * seedRootDown d / 64 =

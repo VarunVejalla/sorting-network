@@ -1,5 +1,14 @@
 # Tolerated error vs slope in Chvátal-type trees with sort-based separators
 
+The cyclic first-round discrepancy idea is audited in
+[`CYCLIC-FIRST-ROUND-AUDIT.md`](CYCLIC-FIRST-ROUND-AUDIT.md). The
+exact-mass second-round rate at `n=16`, `m≥2^30` is now kernel-checked in
+`CyclicBulkRate.lean`, conditional on a height-cap property of the first
+scramble and its flip. A concrete large-`n` counterexample rules cyclic shifts
+out as a uniform replacement for the first-round F provider. The remaining
+gate is formalizing the shift and proving that cap, then combining with R2
+and the fixed-16 first-round conditions.
+
 Research note, 2026-10-10, with subsequent 945-candidate work recorded below. The parameter model and separator screen are research calculations; the scratch Lean results are listed separately and do not establish a sorting theorem. Scripts are in this folder:
 `exchange_rate.py` (the model, all variants; output in `exchange_rate.out`), `exchange_table.py`
 (per-ε tables, `exchange_table.out`), `slack_sensitivity.out`, and `sim_locality.py`
@@ -394,3 +403,29 @@ This weakly supports δ_F ≈ 1/2 for two rounds only.
 
 Even with all of these, the model sits at ~650 ideal / ~700–780 windowed. "Few hundred" is not reached
 in this family.
+
+
+## Ordinary outsider transition prototype (October 12)
+
+TaperedOrdinaryKernel.lean defines a candidate all-order outsider invariant and a typed ordinary transition interface. Its focused check passes: conditional on the kernel's local separator/routing fields, P(t) implies P(t+1). `TaperedOrdinaryKernel.tapered_child_send_bound_of_owned_cover` also derives the child-up contribution from P plus explicit wire-cover, child-register ownership, and capacity-ratio premises. These premises are not yet instantiated by the global integer schedule. Parent-send and fringe rank fields, frontier cases, and global P remain open. See OUTSIDER-TRANSITION-AUDIT.md for the field map. The current candidate constants come from SignedReserve.lean: mu=17/71565312, delta=1/2^25, epsB=1/2^21. Earlier high-risk calculations using the legacy constants were corrected in HIGH-RISK-945.md.
+
+## Ordinary routed-placement bridge (October 12)
+
+`RaggedTreeRoute.raggedTreePlacementStep` now turns the actual address-indexed wire routing into a `PlacementStep` register cover, provided the routed wire sets are transported through an injective wire-to-key map into the next placement. At interior nodes the source-classification theorem identifies the residual sender set exactly with the child up-ports. At terminal nodes, the current total destination keeps the terminal bag's own down-ports in the residual; their numerical error is not covered by the child-up estimate. The module passed a focused Lean 4.29.0-rc4 compile using the existing scratch dependency cache. This closes only the set ownership/coverage interface: it does not instantiate integer cardinalities, `badSend0`, `fringeSend`, or the frontier transitions. See `OUTSIDER-TRANSITION-AUDIT.md`.
+## Symmetric fringe transfer checked (October 12)
+
+`BaselineFringe.paddedPack2Net_fLow_baseline` now proves the low-side counterpart to `paddedPack2Net_fHigh_baseline`, and `TruncatedPaddedWitness.fLow_baseline` exposes it using the stored flipped truncated SR/R1/R2 certificates. The proof runs the full pack on the padded permutation, applies `physicalPack2Net_flip`, bounds the reversed high cohort by the baseline-row F2 argument, and transfers the event through the live-prefix restriction. Its key geometric premise is `(f+1)*columns <= u` (the protected fringe fits the actual suffix); unlike the high-side theorem, padding cannot help this inequality. Both `BaselineFringe` and `TruncatedPaddedProvider` pass focused Lean 4.29.0-rc4 checks. Matching this theorem to every active ragged slot and proving the premise from the global schedule remain open.
+The low-fringe fit arithmetic is now also connected to the local signed-flow invariant: low_fringe_fits_of_scheduled_flow derives the required suffix size from a LocalIntegerFlow, C >= 2^34, |eta| <= 69, and the occupancy identity. The remaining work is to instantiate this flow and the padded witness for the same scheduled bag, then connect both fringe orientations to the ragged routed slots and prove arbitrary-stage input tails. The focused TruncatedPaddedProvider check passes; the full tapered package is not built.
+Same-bag integration hit a scale obstruction. SameBagScale.lean kernel-checks that every k with 4*k+8 <= d gives a distinct active schedule stage at the lower frontier with reference capacity exactly 2^34; this is a linear-size family. The padded scramble witness requires a >= 2^38 because its certified rectangle uses at least 2^34 rows and 16 columns. Thus the existing witness cannot cover this family under the intended 69-wire occupancy invariant. The first-round concentration inequality itself turns on near 17.15 billion rows for E=38/10^6, so changing only the rectangle arithmetic is insufficient. See SAME-BAG-INTEGRATION-AUDIT.md.
+The exact low-capacity family is in the ordinary interior band: SameBagScale.lean also proves candidateAlpha+2 <= candidateOmega for its stages. Therefore the 2^38 witness-size obstruction cannot be isolated to a frontier cleanup. No same-bag fringe-send theorem follows until the local separator provider works at these 2^34-scale registers or the ordinary kernel changes.
+
+October 13: `InvariantInputTails.lean` kernel-checks that the all-order
+outsider bound gives both external tails of any bag, and extends them to an
+internal cut with an additive interval-distance term. This is useful as a
+baseline but does not derive ordinary `hL`/`hR`: at the interior stage
+`t=10,l=2`, a native child interval is `2^18` times the reference capacity,
+so the one-bag outsider invariant alone permits all of a capacity-sized
+register in that interval. The ordinary rank-tail gate must use global
+descendant-mass and outside-spill accounting; see the final section of
+`OUTSIDER-TRANSITION-AUDIT.md`.
+Rate audit: within the current two-round inequalities, round one requires E >= sqrt(L/m), L=log(2(m+1))+1/2, while optimizing the round-two rate over lambda gives K <= delta^2/(4E). Thus m*K <= m^(3/2)*delta^2/(4*sqrt(L)); at m=2^30 and delta=2^-21 this is only about 0.43 versus L about 21.99. Retuning E and lambda cannot lower the row threshold by 16x; a stronger rate proof or different local construction is needed.

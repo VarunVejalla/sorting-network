@@ -240,7 +240,7 @@ theorem bootstrap_stage_one_signed_slack
   have hpost : (post : Rat) = bootstrapSuffixWires d b.x j := by
     dsimp [post, bootstrapSuffixWires]
   have hleft := bootstrap_prefix_tail_slack d hd b.x j hj1 (by omega)
-  have hright := bootstrap_suffix_tail_slack d hd b.x j hj1 hj62
+  have hright := bootstrap_suffix_tail_slack d hd b.x j hj62
   rw [← hpre, ← hhalf, ← hdebt] at hleft
   rw [← hpost, ← hhalf, ← hdebt] at hright
   have hres : 0 ≤ (seedRootDown d : Rat) / (2 * cap) := by
@@ -565,4 +565,3 @@ instance:
 -/
 
 end Tapered945
-

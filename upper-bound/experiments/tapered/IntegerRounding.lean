@@ -159,6 +159,68 @@ theorem balanced_rounding_with_total_error
       exact add_le_add (hx j) le_rfl
     _ = 1 + |(B : Rat) - ∑ i, y i| / 64 := by rfl
 
+/-- Round 64 nonnegative targets to even naturals with a prescribed even
+total. The error is two wires plus the equal share of the total correction.
+This is the version used when a whole up-port must itself be even at the next
+stage. -/
+theorem balanced_even_rounding_with_total_error
+    (y : Fin 64 → Rat) (B : Nat) (hB : Even B)
+    (hshift : ∀ j, 0 ≤ y j + ((B : Rat) - ∑ i, y i) / 64) :
+    ∃ x : Fin 64 → Nat,
+      (∑ j, x j) = B ∧
+      (∀ j, Even (x j)) ∧
+      ∀ j, |(x j : Rat) - y j| ≤
+        2 + |(B : Rat) - ∑ i, y i| / 64 := by
+  obtain ⟨half, hBhalf⟩ := hB
+  have hBcast : (B : Rat) = 2 * (half : Rat) := by
+    rw [hBhalf]
+    push_cast
+    ring
+  let delta : Rat := (B : Rat) - ∑ i, y i
+  let shifted : Fin 64 → Rat := fun j => (y j + delta / 64) / 2
+  have hshifted : ∀ j, 0 ≤ shifted j := by
+    intro j
+    exact div_nonneg (hshift j) (by norm_num)
+  have hsum : (∑ j, shifted j) = (half : Rat) := by
+    have hsumY : (∑ j : Fin 64, (y j + delta / 64)) = (B : Rat) := by
+      dsimp [delta]
+      simp only [Finset.sum_add_distrib, Finset.sum_div, Finset.sum_const,
+        Finset.card_fin, nsmul_eq_mul]
+      norm_num
+      ring
+    calc
+      (∑ j, shifted j) = (∑ j : Fin 64, (y j + delta / 64)) / 2 := by
+        simp [shifted, Finset.sum_div]
+      _ = (B : Rat) / 2 := by rw [hsumY]
+      _ = (half : Rat) := by rw [hBcast]; norm_num
+  obtain ⟨z, hzsum, hzerr⟩ := balanced_integer_rounding shifted half hshifted hsum
+  let x : Fin 64 → Nat := fun j => 2 * z j
+  refine ⟨x, ?_, ?_, ?_⟩
+  · calc
+      (∑ j, x j) = 2 * ∑ j, z j := by simp [x, Finset.mul_sum]
+      _ = 2 * half := by rw [hzsum]
+      _ = B := by omega
+  · intro j
+    exact ⟨z j, by simp [x, two_mul]⟩
+  · intro j
+    have hdecomp : (x j : Rat) - y j =
+        2 * ((z j : Rat) - shifted j) + delta / 64 := by
+      simp [x, shifted]
+      ring
+    rw [hdecomp]
+    calc
+      |2 * ((z j : Rat) - shifted j) + delta / 64|
+          ≤ |2 * ((z j : Rat) - shifted j)| + |delta / 64| := abs_add_le _ _
+      _ = 2 * |(z j : Rat) - shifted j| + |delta / 64| := by
+            rw [abs_mul, abs_of_nonneg (by norm_num : (0 : Rat) ≤ 2)]
+      _ ≤ 2 + |delta| / 64 := by
+            rw [abs_div, abs_of_pos (by norm_num : (0 : Rat) < 64)]
+            have h := hzerr j
+            dsimp [shifted] at h
+            dsimp [delta]
+            linarith
+      _ = 2 + |(B : Rat) - ∑ i, y i| / 64 := by rfl
+
 /-- End and middle child targets remain nonnegative after the equal correction
 needed to hit a prescribed integer total. -/
 theorem candidate_child_shift_nonnegative
