@@ -23,7 +23,7 @@ its numbers) · **retired** (superseded; kept in history only).
 | `expanders/` | separate Lake package | reference | UB-06 | optional expander-certificate package (own trust boundary) |
 | `localized-cleanup/` | research notes | active (Codex) | UB-26 | rank-pure partition versus localized-interval recursion; existing Chvatal early-stop screen |
 | `coupled-multiway/` | derivation + handoff notes | reference | UB-26 | active-level aggregate error sum, tapered 528 handoff, and high-arity stage screen; hand-derived, not a theorem |
-| `lateral-repair/` | scripts + notes | active (Claude, worktree `ub-20`) | UB-20 | sibling (lateral) bulk repair and band balancing: parameter model on `tapered/exchange_rate.py` plus calibration simulations; model only |
+| `lateral-repair/` | scripts + notes | parked | UB-20 | sibling (lateral) repair: mechanism sound, about 560 with average-case tails, no provable gain (worst-case overflow floor); also certified-route fringe floors and a UB-13 re-price. Start at `VERDICT.md` |
 | `packets/` (branch `ub-25-packets` only) | Lean + notes + screens | active (Codex, worktree `ub-25`) | UB-25 | persistent sorted packets / merge-and-deal; terminal gate recorded NO-GO for the fixed-round candidate (`TERMINAL-GATE.md`); not merged to `main` |
 
 ## Policy for Lean forks
