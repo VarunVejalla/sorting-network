@@ -125,3 +125,60 @@ a fixed point in `m`, plus the margin condition `m >= 1.04 k^4 (1 + ln m)`. Resu
   BULK2's Lean-facing statements.
 * The derivation treats one cut and one orientation; both orientations and all `k+1` cuts of
   `u` need the usual union (a factor `2(k+1)`, which is negligible).
+
+## 7. Review (2026-10-18) and corrections
+
+An independent reviewer checked this note against BULK2.md and DCS-TR-294. **Confirmed:** the
+shift identity (rows counted from the bottom, `v_j` keeps the `m` smallest); the tail exponent of
+§3; the arithmetic of §3 (`c(1) = 13/18`, `2 c(1)^2 = 1.043`; the margin bound solves to
+`m >= 2^15.63` at `k = 8`, not 2^15.8); and the units in §4 (`kappa = 1 + 1/(A nu) ≈ 1.71`, under a
+uniform-level assumption that should be stated).
+
+**Corrections:**
+
+1. **The margin in §1–§2 was unjustified.** What enters BULK2 is the number of *`u`'s* keys
+   ranked in `v_j`'s top-child range, divided by `n_u`. P controls only outsiders, so nothing
+   bounds how `u`'s keys in `I_j` spread over `v_j`'s children. The step `|I_j|/k ≈ a(u)/k^2`
+   confused a block size with an address width. **Replacement argument (to be checked):** at
+   every stage `u` receives `v_j`'s previous upper fringe, `v_j`'s `pi(v)/2` largest keys. By
+   (4.4) at most a `delta_F` share of them are outsiders. `v_j` holds about `c(v)/k ≫ pi(v)/2`
+   keys of its top child (keys addressed below a child, minus the few wires in ancestors), so the
+   rest lie in the top-child range. That gives a margin in `u`'s rows of
+
+   ```text
+   d0_sh ≥ m [ (1 - delta_F) (A nu k - 1) A nu / (2 A^2 k^2)  -  D/c(u) ],   D/c(u) ≈ 3 mu + slack,
+   ```
+
+   about `nu^2 k/2` times the earlier `m/k^2`. The distance-2 case keeps its block-level margin
+   `m/k`, which Lemma 4.2's count of `u`'s keys in `I_j` does control.
+2. **The floor is not independent of the margin.** It came from capping `lam ≤ 1` in BULK2's
+   lemma (d). Bennett's bound `E e^{lam(X - p)} <= exp(p(1-p)(e^lam - 1 - lam))` holds for every
+   `lam ≥ 0`, and so does `avg_exp_hit_le`. With `R = d0/(E1 m)` and `lam*` the largest `lam` with
+   `(e^lam - 1 - lam)/lam <= R`, the floor is `T = n ln(2(m+1))/lam*`. It shrinks like `1/ln R`.
+   Counting only admissible states (an `l1` ball of radius `E1 mn`) replaces `ln(2(m+1))` per
+   column by about `1 + ln(1 + E1 m) + ln 2`. The hard margin condition is gone: a smaller margin
+   simply gives a larger floor. The union also carries `ln 2` per column from the `2^n` subsets,
+   so the floor is `n ln(2(m+1))`.
+3. **§1's "only the top boundary moves" conflated rank with row.** A received key ranked in
+   child `k`'s range can still be inserted below the `B_{k-1}/B_k` row boundary, because `v_j`'s
+   own separator is imperfect. The conclusion survives: every displaced key `x` is larger than
+   the received key `y`, so `x ≥ t_j - W` and pushing `x` up creates no outsider. Sharp form: the
+   number of wrong keys at boundary `b` is at most the number of received keys ranked below the
+   lower end `L_{b+1}` of child `b+1`'s range.
+4. **§2's identification is an upper bound, not "exactly".** It also misses keys that `v_{j+1}`
+   received from its own children (order-0 outsiders there, ranked below `t_j`) and keys relayed
+   from `v_{j+2}` through phase 1. Their count is bounded by the children-inflow term of (4.2),
+   `mu delta A k/nu c(v)`. The model therefore doubles that term.
+5. **Two phases and mirror orientation.** Displacements from the two phases compose (up by keys
+   received below, then down by keys received above), so per-boundary bounds are summed over both
+   phases. Keys received from `v_{j-1}` ranked above `t_{j-1} + W`, including drifting far-right
+   outsiders, push keys *down*. This is the mirror case and needs the same lemma written out.
+6. **Fringe boundaries.** Keys pushed from `v_j`'s fringe into `B_1` or `B_k` that are `v_j`'s
+   own outsiders become order-1 outsiders at a child (the (4.5) budget). The model's overflow
+   condition (O-L) requires the fringe rows to hold everything that must go up, including the
+   co-resident loads, which covers this case. The written argument still has to say so.
+7. **Still open:** unequal sibling sizes (partial and `omega` nodes change `W` and `m`); the
+   integer form of the exact-mass step (`n(i - d0)` need not be a multiple of `n`; rounding costs
+   at most `n` in `exc`); and the union over cut positions (harmless).
+
+Model with these corrections: `lateral_floor_model2.py`, output `comp4_*.out`.

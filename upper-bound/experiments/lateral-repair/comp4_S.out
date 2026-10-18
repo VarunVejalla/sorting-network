@@ -1,0 +1,2 @@
+ variant          | ideal (win)  eps_B    eta_d2   eta_sh   eps_F    (x,y,z)          lg m [B, F, O]
+ S   slack removed |   620 (  713)  2^-5.0   1.1e-07  1.1e-06  7.8e-07  (4.5,3.5,3.0)  25.25 [12.4,25.2,25.0]
