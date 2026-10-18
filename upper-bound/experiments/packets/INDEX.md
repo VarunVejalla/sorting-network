@@ -4,12 +4,25 @@
 endpoint remains `limsup D(n)/log2(n) ≤ 1419`. The near-200 figures below are
 conditional cost budgets, not theorem statements.
 
-**Source status:** `PacketReceiverOverlap.lean` remains empty after an
-accidental truncation. The prior compiled `.olean` remains in the ignored
-helper build directory, but source verification is not reproducible. No copy
-was found in other worktrees, editor history, or Git's unreachable objects.
-The raw Lean decompilation and a generated-helper rewrite both fail to compile;
-neither is recovered source and neither should be treated as a proof check.
+**Current cost screen:** the conservative direct-composition screen is about
+240.5, conditional on two bits of progress per stage and still excluding
+physical reblocking and terminal cleanup. The 195 sub-200 screen uses 15 local
+and 9 global rounds plus a 78-layer block sort; it requires the unproved
+coarse/fine cross-map bounds of at most `383/1000` in the stated compatible
+decomposition, as well as a repeatable physical stage and a terminal sorting
+argument. Treat 195 as the target budget, not the current candidate's bound.
+
+**Source status:** `PacketReceiverOverlap.lean` has been restored as readable
+Lean source and committed in `3ad4813`. Its restored support-sort and receiver
+partial-group results were rechecked with the focused command recorded below.
+The earlier truncation/recovery note is historical and no longer describes
+the worktree.
+
+**Stage specification:** [`STAGE-SPEC.md`](STAGE-SPEC.md) records the most
+concrete candidate stage, its depth ledger, the unresolved output-to-next-stage
+map, and the terminal sorting criterion. The candidate is not yet a complete
+repeatable network: the missing map and terminal criterion are explicit
+research gates, not implicit zero-cost steps.
 
 ## Candidate algorithm
 
@@ -74,7 +87,9 @@ instantiation and complete receiver partition are still open.
   grouped into full 4096-wire blocks plus its residue. The guarded theorem
   `flowA7_receiver_regular_partial_groups_sum_le_258` proves at most 258
   partial regular groups per receiver rank interval. This is a support
-  incidence bound, not a profile-error bound.
+  incidence bound, not a profile-error bound. The latest recorded focused
+  Lean check for this receiver/profile cluster is
+  `check-lean.ps1 -From PacketInduction -To PacketMergeAxioms`.
 - `wireFlowLayer_reencoded_profile_energy_recurrence` and its squared-error
   form transport a coherent monotone threshold target through one actual
   `WireFlow` layer; the squared-error bound has factor 65. Pair merge-and-deal
@@ -162,8 +177,10 @@ Focused verification for the latest receiver-overlap and axiom-guard changes:
 powershell -NoProfile -ExecutionPolicy Bypass -File upper-bound/experiments/packets/check-lean.ps1 -From PacketInduction -To PacketMergeAxioms
 ```
 
-This passed, including the new aggregate partial-group theorem. It is not an
-end-to-end sorting-bound check.
+This passed, including the restored `PacketReceiverOverlap.lean` results and
+the aggregate partial-group theorem. It does not rebuild the earlier merge
+modules or check an end-to-end sorting bound. The first two bullets above
+predate that focused range; no last-passing command for them is recorded here.
 
 ## Quantitative gates
 
