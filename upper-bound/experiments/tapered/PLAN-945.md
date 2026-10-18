@@ -7,7 +7,23 @@ separator invariant, and global recursive construction all close. The earlier
 has since been replaced. Neither number is currently a proved sorting bound.
 For the parameter screen and equations, see [`SUB1000-CANDIDATE.md`](SUB1000-CANDIDATE.md).
 
-## October 13 checkpoint
+## October 14 rank checkpoint
+
+UB-23 closes the initialized count/ownership schedule; see
+[its endpoint](UB-23-FLOW-FAMILY.md). UB-24 now proves the actual-execution
+clipped threshold recurrence and its shared endpoint corrections. Retirement
+also requires exact native subtree totals, which the present local rounding
+contract does not force. Cumulative rounding now yields an exact-complement
+top-advance split when the coordinated stored-subtree masses and source total
+are supplied; proving that global laminar mass invariant and the signed rank
+invariant remains open. See
+[the current UB-24 proof map](UB-24-RANK-PROFILE.md). No 945 theorem is claimed.
+
+The October 13 descriptions below are historical. In particular, the old
+ordinary-only global flow wrapper and bootstrap reset are superseded, and
+the provider's half-port/support gaps remain the UB-22 obligations.
+
+## October 13 checkpoint (historical)
 
 The local small-bag scale gap is now closed for the width-16 branch.
 `CyclicSmall16PaddedWitness.lean` proves that every live size

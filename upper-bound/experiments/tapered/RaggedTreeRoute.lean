@@ -171,36 +171,25 @@ the terminal bag's retained down-ports.  This theorem supplies ownership and
 coverage, but makes no numerical claim about that residual. -/
 def raggedTreePlacementStep {d : Nat}
     (pl pl' : Placement 64 d) (P : RaggedWirePartition d)
-    (splits : \u2200 b, RaggedWireSplit (P.sets b))
-    (x : Fin (64 ^ d) \u2192 Fin (64 ^ d))
-    (hplace : \u2200 b, pl'.regs b =
+    (splits : ∀ b, RaggedWireSplit (P.sets b))
+    (x : Fin (64 ^ d) → Fin (64 ^ d))
+    (hplace : ∀ b, pl'.regs b =
       ((P.route splits raggedTreeDestination).sets b).image x) :
     PlacementStep d pl pl' where
   fromParent := fun b _ =>
     (raggedWirePort (splits (b.parent (by norm_num)))
-      (some \u27e8b.x % 64, Nat.mod_lt _ (by norm_num)\u27e9)).image x
+      (some ⟨b.x % 64, Nat.mod_lt _ (by norm_num)⟩)).image x
   fromChildren := fun b hb =>
-    pl'.regs b \\ (raggedWirePort (splits (b.parent (by norm_num)))
-      (some \u27e8b.x % 64, Nat.mod_lt _ (by norm_num)\u27e9)).image x
+    pl'.regs b \ (raggedWirePort (splits (b.parent (by norm_num)))
+      (some ⟨b.x % 64, Nat.mod_lt _ (by norm_num)⟩)).image x
   hregs := by
     intro b hb
     have hparent : (raggedWirePort (splits (b.parent (by norm_num)))
-        (some \u27e8b.x % 64, Nat.mod_lt _ (by norm_num)\u27e9)).image x \u2286 pl'.regs b := by
+        (some ⟨b.x % 64, Nat.mod_lt _ (by norm_num)⟩)).image x ⊆ pl'.regs b := by
       rw [hplace]
       apply Finset.image_subset_image
       exact raggedTreeRoute_parent_port_subset_all_depth P splits b hb
-    ext w
-    rw [hplace]
-    simp only [Finset.mem_image, Finset.mem_union, Finset.mem_sdiff]
-    constructor
-    \u00b7 rintro \u27e8u, hu, rfl\u27e9
-      by_cases hp : u \u2208 raggedWirePort (splits (b.parent (by norm_num)))
-          (some \u27e8b.x % 64, Nat.mod_lt _ (by norm_num)\u27e9)
-      \u00b7 exact Or.inl \u27e8u, hp, rfl\u27e9
-      \u00b7 exact Or.inr \u27e8u, hu, rfl, by simpa using hp\u27e9
-    \u00b7 rintro (\u27e8u, hu, rfl\u27e9 | \u27e8u, hu, rfl, hnot\u27e9)
-      \u00b7 exact \u27e8u, (hparent hu), rfl\u27e9
-      \u00b7 exact \u27e8u, hu, rfl\u27e9
+    rw [Finset.union_sdiff_of_subset hparent]
 
 /-- The actual routed child size is exactly its parent's selected width plus
 the up-widths of all its children. This is the exact ordinary-node count

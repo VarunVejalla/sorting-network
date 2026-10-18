@@ -25,6 +25,25 @@ its dated constants and inline command paths may describe earlier layouts.
 
 ### Active upper research
 
+The tapered branch now has an initialized count/ownership schedule in
+[`FrontierIntegerSchedule.lean`](../upper-bound/experiments/tapered/FrontierIntegerSchedule.lean).
+For every `d >= 14`, its actual register partitions preserve even counts,
+active-band support and the shape-specific 69-wire discrepancy through every
+six-stage segment and the terminal meeting at `3*d - 23`. Its bootstrap
+preserves static address debt instead of using the old uniform reset. See the
+[UB-23 checkpoint](../upper-bound/experiments/tapered/UB-23-FLOW-FAMILY.md)
+for verification and the remaining provider/rank obligations. This is not a
+new sorting-depth bound.
+
+UB-24 now has an exact threshold recurrence on that actual execution in
+`RaggedPrefixRoute.lean`, shared endpoint-deficit identities, threshold cohort
+conservation, and a retirement capacity gate. Cumulative rounding now connects
+to a local top-advance construction: exact native complements of even stored
+subtree masses form an allowed retiring split when they conserve the source
+count. The global schedule still does not supply those coordinated subtree
+masses. See the [UB-24 checkpoint](../upper-bound/experiments/tapered/UB-24-RANK-PROFILE.md).
+The global signed rank invariant remains open.
+
 The proposed smaller **one-round** fringe target is ruled out by a deterministic
 adversary. The current route is a joint two-round fringe guarantee, paired with
 a variance-sensitive bulk lemma. These are research arguments, not improved

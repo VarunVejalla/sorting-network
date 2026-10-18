@@ -1,6 +1,6 @@
 {
   "schema": "upper-bound/backlog/tickets.schema.md",
-  "updated": "2026-10-12",
+  "updated": "2026-10-14",
   "tickets": [
     {
       "id": "UB-00",
@@ -256,6 +256,36 @@
       "first_deliverable": "Pinned statement, trusted-base fingerprint, eventual-bound spec, improvement gate, CODEOWNERS, comparator Challenge draft",
       "evidence": ["upper-bound/TRUSTED.md", "upper-bound/contributions/README.md", "scripts/check-contribution"],
       "notes": "Comparator Challenge for the limsup statement is a draft (not run locally: needs landrun and nanoda)."
+    },
+    {
+      "id": "UB-23",
+      "title": "Give every tapered frontier its own flow and discrepancy target",
+      "priority": "P1",
+      "status": "done",
+      "claim_level": "kernel-checked",
+      "baseline": 1419,
+      "projected": null,
+      "owner": "Codex",
+      "branch": "tapered-945",
+      "depends_on": [],
+      "first_deliverable": "Replace the all-active ordinary LocalIntegerFlow wrapper by a shape-indexed family; prove receiver counts and conservation through bootstrap, a symbolic six-stage cycle, and meeting.",
+      "evidence": ["upper-bound/experiments/tapered/FrontierIntegerSchedule.lean", "upper-bound/experiments/tapered/FrontierCountStep.lean", "upper-bound/experiments/tapered/FrontierFlowAxioms.lean", "upper-bound/experiments/tapered/UB-23-FLOW-FAMILY.md"],
+      "notes": "Initialized actual ownership schedule with shape-specific even splits, empty inactive registers, count error at most 69 through bootstrap, every six-stage segment, and the terminal meeting. Fresh expansion sources generate exact cohort history for contraction. Static-debt bootstrap replaces the old uniform reset; local comparator realization and rank/native-prefix correctness remain UB-22/UB-24. Fresh 32-module source rebuild and four standard-axiom guards passed on 2026-10-14; no new sorting-depth coefficient is claimed. UB-24 additionally identifies exact subtree balance at retirement as a stronger requirement not supplied by the local rounding contract; UB-23 remains complete for its stated ownership/count scope."
+    },
+    {
+      "id": "UB-24",
+      "title": "Prove the signed native-prefix rank profile before extending the outsider induction",
+      "priority": "P1",
+      "status": "active",
+      "claim_level": "kernel-checked",
+      "baseline": 1419,
+      "projected": null,
+      "owner": "Codex",
+      "branch": "tapered-945",
+      "depends_on": ["UB-23"],
+      "first_deliverable": "Prove the clipped prefix-count identity and the exact bootstrap profile; close a symbolic six-stage ordinary/frontier rank recurrence with native-prefix cancellation, cohort errors and a valid upper-retirement rule.",
+      "evidence": ["upper-bound/experiments/tapered/UB-24-RANK-PROFILE.md", "upper-bound/experiments/tapered/ClippedPrefix.lean", "upper-bound/experiments/tapered/RaggedPrefixRoute.lean", "upper-bound/experiments/tapered/RaggedPrefixCohort.lean", "upper-bound/experiments/tapered/RetirementCapacity.lean", "upper-bound/experiments/tapered/CumulativeEvenRounding.lean", "upper-bound/experiments/tapered/RetirementCumulativeSplit.lean", "upper-bound/experiments/tapered/FrontierRankAxioms.lean"],
+      "notes": "Partial kernel-checked results only: exact clipped threshold/interval identities, separator crossing-to-deficit bound, actual initialized schedule prefix recurrence, and threshold cohort conservation. Retirement requires exact native component cardinalities. Two admissible top-advance local profiles at C=2^40 differ by two wires, so the current rounding contract alone does not force retirement balance; this is not a counterexample to the selected trace. Cumulative even rounding proves a local retirement complement lemma under exact source conservation. A formula-level audit finds global target mass is exactly 64^d, while proper active-subtree target mass generally has a nonzero native-capacity deficit C_r/cap + (16/15)eC_r. The needed laminar invariant must track the ancestor-retained reserve; independently rounding raw subtree targets cannot work. The mixed meeting real-mass identity is consistent. Next: prove and integrate the ancestor-reserve invariant, then close the exact static-debt bootstrap profile, six-stage signed rank-error recurrence, and terminal localization. No global rank invariant or improved sorting-depth constant is claimed."
     }
   ]
 }

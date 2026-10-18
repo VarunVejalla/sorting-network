@@ -3,6 +3,11 @@ import Mathlib.Tactic
 
 namespace Tapered945
 
+/-! Historical conditional ordinary-flow interface. Its frontier-error
+premises concern ordinary occupancy and are not the tapered frontier
+invariant. Use `FrontierIntegerSchedule` for the initialized, shape-specific
+actual ownership/count schedule and its coherent routed transitions. -/
+
 open Chvatal
 
 /-- An address that enters at the next step without an ordinary interior
