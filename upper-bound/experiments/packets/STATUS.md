@@ -10,6 +10,22 @@ floor/ceiling count law. The new [README](README.md) is the current proof map
 and gives the reproducible check command and remaining obligations. The
 global sorting bound and the projected coefficient near 200 remain open.
 
+Terminal-gate paper test (2026-10-18): an eight-wire fringe would make a
+singleton harmless after rank alignment, but the finite 15-round local
+spectral certificate (`rho <= 1/16`) proves deviation at most eight only for
+cohort threshold mass `H <= 8`. For nine global pair-averaging rounds, each
+output has dependency support at most 512, forcing the best possible centered
+spectral norm to stay bounded away from zero as packet count grows; the
+resulting `rho*H + 9/2` estimate cannot give a fixed fringe for unbounded `H`.
+No recurrence-preserving pointwise invariant or depth-priced cleanup emerged.
+This is a no-go for the current fixed-round spectral terminal argument at
+200, not for every packet design. The unchanged Chvatal timing does support
+two log bits per ordinary round (`3d-21` rounds for `log2(64^d)=6d`); the
+separate six-layer source-port repair would add 3 coefficient units if needed
+each round. See [TERMINAL-GATE.md](TERMINAL-GATE.md) and
+[STAGE-SPEC.md](STAGE-SPEC.md). Further `nextSlot` Lean is deferred pending a
+new terminal invariant or cleanup proposal.
+
 Quantitative review gate (2026-10-18): the independent review recommends
 pausing further routing plumbing until the rank/error recurrence and its
 precision-versus-depth budget are explicit. The latest checked theorem,

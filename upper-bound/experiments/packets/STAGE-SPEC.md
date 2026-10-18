@@ -31,11 +31,13 @@ For each level, with the actual active receiver set and actual packet IDs:
 
 ```text
 STAGE(state):
-  1. Advance through the actual scheduled flowA7 layer. Its depth is inherited
-     from the baseline construction and is not included in the packet-mixing
-     subtotal below. If the six-layer source-port repair from
-     `PacketRepair64.lean` is needed to preserve the packet invariant, apply
-     it here and charge six layers. Retain the 129 regular streams, endpoint
+  1. Advance through the actual scheduled flowA7 port transfer. This is wire
+     routing and costs zero comparator layers. The separate checked
+     `flowA7_sourcePortRepairStage` costs at most six layers per ordinary
+     round when used to repair half-misaligned 64-wire packet boundaries.
+     Whether the 78-layer full-block sort later in this stage makes that
+     repair unnecessary is unresolved; do not charge it as zero without the
+     physical rank-map proof. Retain the 129 regular streams, endpoint
      packets, and each stream's <4096-wire residue as distinct, physically
      supported objects.
 
@@ -98,21 +100,29 @@ would simulate an invented scheduler rather than this construction.
 
 The local cycle costs `15 * 13 = 195` layers per stage, and the physical
 4096-wire block sort costs 78 layers. Nine global rounds cost `9 * 13 = 117`
-layers. Thus the packet-processing subtotal is 390 layers. Under the unproved
-assumption that each such stage advances two bits of `log2(n)`, its arithmetic
-coefficient is 195. This subtotal additionally omits the inherited flow
-schedule and any required six-layer source-port repair. It is not a bound:
-output routing, incomplete tails, frontiers, startup, and terminal cleanup are
-also unpriced, and the global matching family remains unspecified. The
-two-scale recurrence needs the unproved coarse/fine cross-map bounds of at
-most `383/1000` in the required compatible decomposition.
+layers. Thus the packet-processing subtotal is 390 layers. If this entire
+packet transition fits into one ordinary round of the unchanged flow schedule,
+its arithmetic coefficient is 195. The original flow timing has three
+ordinary rounds per scale-depth increment: `ordinaryRounds(d) = 3*d - 21`
+while `log2(64^d) = 6*d`, so two bits per ordinary round is exact, up to
+additive endpoints. The unproved assumption is that this full packet
+transition fits in each such round. If the six-layer port repair is
+required every ordinary round, it adds six layers per round, or 3 to this
+coefficient; if the packet redesign changes the flow schedule, its progress
+rate must be derived again. This is not a bound: output routing, incomplete
+tails, frontiers, startup, and terminal cleanup are unpriced, and the global
+matching family remains unspecified. The two-scale recurrence needs the
+unproved coarse/fine cross-map bounds of at most `383/1000` in the required
+compatible decomposition.
 
 As a conservative conditional comparison, directly composing the checked
 factor-65 flow estimate with the abstract global contraction requires 16
 global rounds. Together with 15 local rounds and a 78-layer block sort, that
-is `(15*13 + 16*13 + 78)/2 = 240.5` under the same two-bits-per-stage
-assumption. This is the current conservative cost screen, not an established
-limsup coefficient. The 136.5 local-only subtotal is not viable because
+is `(15*13 + 16*13 + 78)/2 = 240.5` if that full packet transition fits one
+ordinary round, or 243.5 if the six-layer repair is required per ordinary
+round.
+This is the current conservative cost screen, not an established limsup
+coefficient. The 136.5 local-only subtotal is not viable because
 `flowA7` alone does not contract coarse modes. No unconditional improved
 coefficient is currently proved; the accepted one remains 1419.
 
@@ -133,6 +143,29 @@ uniform random compare-split rounds do not repair such a value in bounded
 rounds as the packet count grows. No final oblivious cleanup network, outsider
 bound accepted by such a cleanup, or rare-rank mechanism has been specified
 and depthed.
+
+The proposed rare-key probe has a precise but narrow outcome. For the checked
+15-round local cycle on at most 130 streams, `rho <= 1/16`, so
+
+```text
+max_j |x_out[j] - H/c| <= H/16 + 15/2.
+```
+
+An eight-wire fringe around the target count is certified by this estimate
+only when `H <= 8`. Thus a singleton is harmless if packets are already
+rank-aligned, but the bound does not control larger rare cohorts. For a fixed
+nine-round global matching product, each output depends on at most `2^9`
+input packet IDs. If `C > 2^9`, this support bound forces its centered spectral
+norm to satisfy
+
+```text
+rho >= sqrt((C/2^9 - 1)/(C - 1)),
+```
+
+which tends to `1/sqrt(512)`. The corresponding `rho*H + 9/2` estimate cannot
+certify a fixed eight-wire fringe for unbounded `H`. This rules out the
+proposed fixed-round spectral estimate as a uniform terminal proof; it does
+not rule out a rank-aware multiscale schedule or a stronger count invariant.
 
 Therefore the terminal gate is presently **NO-GO for the current candidate**:
 before adding routing Lean, specify either (a) a rare-rank-safe cleanup whose

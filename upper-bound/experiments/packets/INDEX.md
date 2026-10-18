@@ -4,13 +4,17 @@
 endpoint remains `limsup D(n)/log2(n) ≤ 1419`. The near-200 figures below are
 conditional cost budgets, not theorem statements.
 
-**Current cost screen:** the conservative direct-composition screen is about
-240.5, conditional on two bits of progress per stage and still excluding
-physical reblocking and terminal cleanup. The 195 sub-200 screen uses 15 local
-and 9 global rounds plus a 78-layer block sort; it requires the unproved
-coarse/fine cross-map bounds of at most `383/1000` in the stated compatible
-decomposition, as well as a repeatable physical stage and a terminal sorting
-argument. Treat 195 as the target budget, not the current candidate's bound.
+**Current cost screen:** the conservative direct-composition subtotal is
+240.5, conditional on fitting one candidate packet transition into each
+ordinary round of the baseline flow, and excluding physical reblocking and
+terminal cleanup. Each such round represents two log bits asymptotically. If the separate six-layer
+source-port repair is required once per ordinary round, add 3 to that
+coefficient; whether the 78-layer full-block sort subsumes it is unresolved.
+The 195 sub-200 subtotal uses 15 local and 9 global rounds plus a 78-layer
+block sort; it requires the unproved coarse/fine cross-map bounds of at most
+`383/1000` in the stated compatible decomposition, a repeatable physical
+stage, and a terminal sorting argument. Treat it as a target budget, not a
+bound for the current candidate.
 
 **Source status:** `PacketReceiverOverlap.lean` has been restored as readable
 Lean source and committed in `3ad4813`. Its restored support-sort and receiver
@@ -23,6 +27,18 @@ concrete candidate stage, its depth ledger, the unresolved output-to-next-stage
 map, and the terminal sorting criterion. The candidate is not yet a complete
 repeatable network: the missing map and terminal criterion are explicit
 research gates, not implicit zero-cost steps.
+
+**Terminal-gate result (2026-10-18):** the proposed fixed-round spectral
+estimate does not establish an 8-wire fringe invariant for all thresholds or
+packet counts. A singleton is harmless only after rank alignment is proved;
+the estimate certifies at most 8 units of per-packet deviation only when the
+cohort threshold mass is at most 8 for the 15-round local cycle. The analogous
+fixed 9-round global cycle has bounded dependency support as the cohort grows,
+so its spectral estimate cannot give a uniform fixed-fringe guarantee for
+unbounded threshold mass. No cleanup or pointwise invariant that reaches exact
+sorting was found. This is a **no-go for the current fixed-round spectral
+terminal argument at 200**, not an impossibility result for redesigned packet
+schedules. See [`TERMINAL-GATE.md`](TERMINAL-GATE.md).
 
 ## Candidate algorithm
 
