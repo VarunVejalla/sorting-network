@@ -1,0 +1,2 @@
+ variant          | ideal (win)  eps_B    eta_d2   eta_sh   eps_F    (x,y,z)          lg m [B, F, O]
+ L4' dF=1/8       |   550 (  663)  2^-4.0   8.7e-06  6.5e-05  1.2e-04  (3.0,2.5,2.0)  19.00 [10.9,18.9,18.9]

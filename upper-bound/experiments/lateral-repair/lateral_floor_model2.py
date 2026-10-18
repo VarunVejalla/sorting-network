@@ -33,6 +33,7 @@ import exchange_rate as E  # noqa: E402
 from lateral_certfloor_model import FLOOR  # noqa: E402
 
 LADDER = np.arange(12.0, 40.01, 0.25)
+RUNAWARE = os.environ.get("RUNAWARE", "0") == "1"
 LAM_TAB = np.linspace(1e-4, 30, 30000)
 RATIO_TAB = (np.expm1(LAM_TAB) - LAM_TAB) / LAM_TAB      # increasing in lam
 
@@ -107,11 +108,16 @@ def search(P, L=2.0, t=6.0, integer=False, step=0.5, wstep=0.5):
         with np.errstate(all="ignore"):
             lgm_O = np.where(g > 0, np.log2(2 * t * t * P["side"] * eB / (A * nu * np.maximum(g, 1e-300) ** 2)), np.inf)
         ok = base_ok & (G >= lgm_B) & (G >= lgm_O)
-        if integer:
-            Lw = np.ceil(G - 1e-9) + 1
-            cost = (sorts * Lw * (Lw + 1) / 2 + 2 * Lw) * spb
+        Gc = np.ceil(G - 1e-9) + 1 if integer else G
+        full = Gc * (Gc + 1) / 2
+        if RUNAWARE:
+            # first sort replaced by a merge tree over the sorted runs of an assembled column:
+            # about 2Ak/nu child-fringe segments (height f) plus the parent's block segments
+            R = 2 * A * k / nu + k
+            first = np.minimum(full, np.ceil(np.log2(R)) * (Gc + 1))
         else:
-            cost = (sorts * G * (G + 1) / 2 + 2 * (G + 1)) * spb
+            first = full
+        cost = (first + (sorts - 1) * full + 2 * (Gc + (0 if integer else 1))) * spb
         cost = np.where(ok, cost, np.inf)
         i = np.unravel_index(np.argmin(cost), cost.shape)
         if np.isfinite(cost[i]) and (best is None or cost[i] < best["obj"]):

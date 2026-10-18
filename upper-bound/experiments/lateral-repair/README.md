@@ -176,3 +176,24 @@ should be re-priced at these heights.
 * `lateral_selfconsistent.py`: residual derived from per-column statistics; `C` and rounds `R`.
 * `sim_lateral_residual.py`: calibration of `rho` for the cross-sibling merge.
 * `sim_band_fringe.py`: band-balancing effect on fringe misses.
+
+## Run-aware first sort (UB-13) re-priced at small column heights (2026-10-18)
+
+`RUNAWARE=1 python -I lateral_floor_model2.py` (output `comp5_ra_*.out`). The earlier hope was
+that at `lg m ≈ 20` merging a column's sorted runs would be much cheaper than `T(lg m)`. The flow
+table rules this out. A node `v` gets only a `1/(kA nu)` share of its wires from the parent's
+block; the rest are its children's fringes. Each fringe is a sorted run only
+`f ≈ nu m/(2Ak)` rows tall, so an assembled column contains about `R ≈ 2Ak/nu + k` runs (about
+1000 at the model optimum). A merge tree then costs `ceil(lg R)(lg m + 1) ≈ 220` layers, against
+`T(21) ≈ 236`.
+
+| variant | without run-aware | with run-aware |
+|---|---:|---:|
+| L4', `delta_F = 1/16` | 560 (632) | 560 (632) |
+| L4', `delta_F = 1/8` | 559 (663) | 550 (663) |
+| L4', `delta_F = 1/5` | 576 (683) | 573 (683) |
+
+**Verdict: no meaningful gain in this regime** (at most 2% ideal, none windowed). Skipping part
+of the first sort does not help either. Leaving `R'` runs per column raises the union bound's
+input entropy by a factor of about `R'`, so precision degrades like `sqrt(R' ln m/m)`; even
+`R' = 30` would need `m` about 30x larger. UB-13 stays parked.
