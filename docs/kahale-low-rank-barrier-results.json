@@ -1,0 +1,360 @@
+{
+  "selector_checks": [
+    {
+      "wires": 2,
+      "selected": 1,
+      "depth": 1,
+      "input_checks": 3
+    },
+    {
+      "wires": 2,
+      "selected": 2,
+      "depth": 1,
+      "input_checks": 4
+    },
+    {
+      "wires": 3,
+      "selected": 1,
+      "depth": 2,
+      "input_checks": 4
+    },
+    {
+      "wires": 3,
+      "selected": 2,
+      "depth": 3,
+      "input_checks": 7
+    },
+    {
+      "wires": 3,
+      "selected": 3,
+      "depth": 3,
+      "input_checks": 8
+    },
+    {
+      "wires": 4,
+      "selected": 1,
+      "depth": 2,
+      "input_checks": 5
+    },
+    {
+      "wires": 4,
+      "selected": 2,
+      "depth": 4,
+      "input_checks": 11
+    },
+    {
+      "wires": 4,
+      "selected": 3,
+      "depth": 5,
+      "input_checks": 15
+    },
+    {
+      "wires": 5,
+      "selected": 1,
+      "depth": 3,
+      "input_checks": 6
+    },
+    {
+      "wires": 5,
+      "selected": 2,
+      "depth": 5,
+      "input_checks": 16
+    },
+    {
+      "wires": 5,
+      "selected": 3,
+      "depth": 7,
+      "input_checks": 26
+    },
+    {
+      "wires": 6,
+      "selected": 1,
+      "depth": 3,
+      "input_checks": 7
+    },
+    {
+      "wires": 6,
+      "selected": 2,
+      "depth": 6,
+      "input_checks": 22
+    },
+    {
+      "wires": 6,
+      "selected": 3,
+      "depth": 8,
+      "input_checks": 42
+    },
+    {
+      "wires": 7,
+      "selected": 1,
+      "depth": 3,
+      "input_checks": 8
+    },
+    {
+      "wires": 7,
+      "selected": 2,
+      "depth": 6,
+      "input_checks": 29
+    },
+    {
+      "wires": 7,
+      "selected": 3,
+      "depth": 9,
+      "input_checks": 64
+    },
+    {
+      "wires": 8,
+      "selected": 1,
+      "depth": 3,
+      "input_checks": 9
+    },
+    {
+      "wires": 8,
+      "selected": 2,
+      "depth": 6,
+      "input_checks": 37
+    },
+    {
+      "wires": 8,
+      "selected": 3,
+      "depth": 9,
+      "input_checks": 93
+    },
+    {
+      "wires": 9,
+      "selected": 1,
+      "depth": 4,
+      "input_checks": 10
+    },
+    {
+      "wires": 9,
+      "selected": 2,
+      "depth": 7,
+      "input_checks": 46
+    },
+    {
+      "wires": 9,
+      "selected": 3,
+      "depth": 10,
+      "input_checks": 130
+    },
+    {
+      "wires": 10,
+      "selected": 1,
+      "depth": 4,
+      "input_checks": 11
+    },
+    {
+      "wires": 10,
+      "selected": 2,
+      "depth": 8,
+      "input_checks": 56
+    },
+    {
+      "wires": 10,
+      "selected": 3,
+      "depth": 11,
+      "input_checks": 176
+    },
+    {
+      "wires": 11,
+      "selected": 1,
+      "depth": 4,
+      "input_checks": 12
+    },
+    {
+      "wires": 11,
+      "selected": 2,
+      "depth": 8,
+      "input_checks": 67
+    },
+    {
+      "wires": 11,
+      "selected": 3,
+      "depth": 12,
+      "input_checks": 232
+    },
+    {
+      "wires": 12,
+      "selected": 1,
+      "depth": 4,
+      "input_checks": 13
+    },
+    {
+      "wires": 12,
+      "selected": 2,
+      "depth": 8,
+      "input_checks": 79
+    },
+    {
+      "wires": 12,
+      "selected": 3,
+      "depth": 12,
+      "input_checks": 299
+    }
+  ],
+  "pair_terminal_examples": [
+    {
+      "wires": 4,
+      "pair_terminal_images": 2,
+      "maximum_remaining_depth": 1,
+      "image": [
+        0,
+        8,
+        12,
+        13,
+        14,
+        15
+      ],
+      "prefix": [
+        [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        [
+          [
+            2,
+            3
+          ]
+        ]
+      ],
+      "suffix": [
+        [
+          [
+            0,
+            1
+          ]
+        ]
+      ]
+    },
+    {
+      "wires": 5,
+      "pair_terminal_images": 9,
+      "maximum_remaining_depth": 3,
+      "image": [
+        0,
+        16,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31
+      ],
+      "prefix": [
+        [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            4
+          ]
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            3,
+            4
+          ]
+        ]
+      ],
+      "suffix": [
+        [
+          [
+            1,
+            2
+          ]
+        ],
+        [
+          [
+            0,
+            1
+          ]
+        ],
+        [
+          [
+            1,
+            2
+          ]
+        ]
+      ]
+    }
+  ],
+  "star_hidden_cube_checks": [
+    {
+      "wires": 4,
+      "prefix_depth": 5,
+      "hidden_cube_dimension": 2
+    },
+    {
+      "wires": 5,
+      "prefix_depth": 7,
+      "hidden_cube_dimension": 3
+    },
+    {
+      "wires": 6,
+      "prefix_depth": 9,
+      "hidden_cube_dimension": 4
+    },
+    {
+      "wires": 7,
+      "prefix_depth": 11,
+      "hidden_cube_dimension": 5
+    },
+    {
+      "wires": 8,
+      "prefix_depth": 13,
+      "hidden_cube_dimension": 6
+    },
+    {
+      "wires": 9,
+      "prefix_depth": 15,
+      "hidden_cube_dimension": 7
+    },
+    {
+      "wires": 10,
+      "prefix_depth": 17,
+      "hidden_cube_dimension": 8
+    }
+  ],
+  "status": "Exact finite checks of a derived general selector argument; no Lean or improved coefficient"
+}

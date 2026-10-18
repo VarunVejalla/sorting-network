@@ -1,0 +1,259 @@
+{
+  "wires": 4,
+  "states": 261,
+  "complete": true,
+  "scales": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "initial": [
+    32,
+    32,
+    32,
+    32
+  ],
+  "terminal": [
+    32,
+    49,
+    55,
+    56
+  ],
+  "exact_hypergraph_updates": 6264,
+  "exact_adjacent_baseline_shifts": 1692,
+  "distinct_layer_constraints": 82,
+  "maximum_scale_ratios": [
+    "1",
+    "5/4",
+    "5/4",
+    "51/40"
+  ],
+  "witnesses": [
+    {
+      "prefix": [],
+      "layer": [
+        [
+          2,
+          3
+        ]
+      ],
+      "before": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "after": [
+        32,
+        36,
+        36,
+        36
+      ]
+    },
+    {
+      "prefix": [],
+      "layer": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "before": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "after": [
+        32,
+        40,
+        40,
+        40
+      ]
+    },
+    {
+      "prefix": [],
+      "layer": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "before": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "after": [
+        32,
+        40,
+        40,
+        40
+      ]
+    },
+    {
+      "prefix": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "layer": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ]
+      ],
+      "before": [
+        32,
+        40,
+        40,
+        40
+      ],
+      "after": [
+        32,
+        46,
+        50,
+        51
+      ]
+    }
+  ],
+  "numerical_nonnegative_weight_screen": [
+    {
+      "rate": 1.18,
+      "feasible": true,
+      "weights": [
+        0.28000000000000025,
+        0.10080000000000032,
+        0.6191999999999994,
+        0.0
+      ],
+      "endpoint_amplification": 1.4985999999999997,
+      "finite_depth_bound": 2.444084894762131,
+      "maximum_constraint_residual": 2.220446049250313e-16
+    },
+    {
+      "rate": 1.2,
+      "feasible": true,
+      "weights": [
+        0.20000000000000018,
+        0.07999999999999968,
+        0.7200000000000002,
+        0.0
+      ],
+      "endpoint_amplification": 1.56,
+      "finite_depth_bound": 2.4390194395059632,
+      "maximum_constraint_residual": 1.1102230246251565e-16
+    },
+    {
+      "rate": 1.22,
+      "feasible": true,
+      "weights": [
+        0.1200000000000001,
+        0.05280000000000044,
+        0.8271999999999995,
+        0.0
+      ],
+      "endpoint_amplification": 1.6226,
+      "finite_depth_bound": 2.434134828651306,
+      "maximum_constraint_residual": 6.245004513516506e-17
+    },
+    {
+      "rate": 1.25,
+      "feasible": true,
+      "weights": [
+        0.0,
+        0.0,
+        1.0,
+        -0.0
+      ],
+      "endpoint_amplification": 1.71875,
+      "finite_depth_bound": 2.4271249571990454,
+      "maximum_constraint_residual": 0.0
+    },
+    {
+      "rate": 1.275,
+      "feasible": true,
+      "weights": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "endpoint_amplification": 1.75,
+      "finite_depth_bound": 2.303455815342844,
+      "maximum_constraint_residual": 0.0
+    },
+    {
+      "rate": 1.3,
+      "feasible": true,
+      "weights": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "endpoint_amplification": 1.75,
+      "finite_depth_bound": 2.1329726023139988,
+      "maximum_constraint_residual": -1.0
+    },
+    {
+      "rate": 1.4,
+      "feasible": true,
+      "weights": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "endpoint_amplification": 1.75,
+      "finite_depth_bound": 1.6631856273045669,
+      "maximum_constraint_residual": -4.799999999999997
+    },
+    {
+      "rate": 1.5,
+      "feasible": true,
+      "weights": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "endpoint_amplification": 1.75,
+      "finite_depth_bound": 1.3801823553856478,
+      "maximum_constraint_residual": -8.0
+    },
+    {
+      "rate": 2.0,
+      "feasible": true,
+      "weights": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "endpoint_amplification": 1.75,
+      "finite_depth_bound": 0.8073549220576041,
+      "maximum_constraint_residual": -24.0
+    }
+  ],
+  "status": "Exact finite hypergraph checks; numerical LP; no universal rate or improved coefficient"
+}

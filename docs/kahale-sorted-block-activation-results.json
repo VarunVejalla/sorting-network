@@ -1,0 +1,63 @@
+{
+  "family": "Two sorted blocks; one layer compares corresponding positions",
+  "cases": [
+    {
+      "block_size": 2,
+      "wires": 4,
+      "before_sum": 40,
+      "increase_sum": 11,
+      "exact_ratio": "51/40",
+      "ratio": 1.275
+    },
+    {
+      "block_size": 4,
+      "wires": 8,
+      "before_sum": 1792,
+      "increase_sum": 546,
+      "exact_ratio": "167/128",
+      "ratio": 1.3046875
+    },
+    {
+      "block_size": 8,
+      "wires": 16,
+      "before_sum": 1441792,
+      "increase_sum": 489236,
+      "exact_ratio": "43887/32768",
+      "ratio": 1.339324951171875
+    },
+    {
+      "block_size": 16,
+      "wires": 32,
+      "before_sum": 326417514496,
+      "increase_sum": 122335290728,
+      "exact_ratio": "2952321087/2147483648",
+      "ratio": 1.374781637918204
+    },
+    {
+      "block_size": 32,
+      "wires": 64,
+      "before_sum": 5165088340638674452480,
+      "increase_sum": 2098731397110493325264,
+      "exact_ratio": "64855533372760426587/46116860184273879040",
+      "ratio": 1.4063302036090597
+    },
+    {
+      "block_size": 64,
+      "wires": 128,
+      "before_sum": 364782697339246032832737579166855522680832,
+      "increase_sum": 157482156786017810235587778295991987520416,
+      "exact_ratio": "243593681961410374565450260010656487967/170141183460469231731687303715884105728",
+      "ratio": 1.4317149852081943
+    },
+    {
+      "block_size": 128,
+      "wires": 256,
+      "before_sum": 485400438082829491215609569156419709720907775718365244453406192161171839450611712,
+      "increase_sum": 218887195418216421844170303356954334587862293953429153356095469930917986322044736,
+      "exact_ratio": "84003773079800323599687484794057018643698720142151049357049339467090866623647/57896044618658097711785492504343953926634992332820282019728792003956564819968",
+      "ratio": 1.4509414871621216
+    }
+  ],
+  "limiting_ratio": "3/2 (derived using binomial concentration)",
+  "status": "Exact integer certificate counts, derived limit; not Lean checked; no sorting-depth improvement"
+}

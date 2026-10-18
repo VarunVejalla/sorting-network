@@ -1,0 +1,668 @@
+{
+  "fixed_poset_antichains": [
+    {
+      "wires": 4,
+      "stages": [
+        {
+          "depth": 1,
+          "states": 10,
+          "complete": true,
+          "minimum_poset_width": 2,
+          "witness": [
+            [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ]
+            ]
+          ]
+        },
+        {
+          "depth": 2,
+          "states": 26,
+          "complete": true,
+          "minimum_poset_width": 1,
+          "witness": [
+            [
+              [
+                0,
+                3
+              ],
+              [
+                1,
+                2
+              ]
+            ],
+            [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ]
+            ]
+          ]
+        },
+        {
+          "depth": 3,
+          "states": 40,
+          "complete": true,
+          "minimum_poset_width": 1,
+          "witness": [
+            [],
+            [
+              [
+                0,
+                3
+              ],
+              [
+                1,
+                2
+              ]
+            ],
+            [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ]
+            ]
+          ]
+        }
+      ],
+      "status": "Exact finite height/poset search; not a sorting or universal depth theorem"
+    },
+    {
+      "wires": 5,
+      "stages": [
+        {
+          "depth": 1,
+          "states": 26,
+          "complete": true,
+          "minimum_poset_width": 3,
+          "witness": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ]
+          ]
+        },
+        {
+          "depth": 2,
+          "states": 133,
+          "complete": true,
+          "minimum_poset_width": 2,
+          "witness": [
+            [
+              [
+                3,
+                4
+              ]
+            ],
+            [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ]
+            ]
+          ]
+        },
+        {
+          "depth": 3,
+          "states": 315,
+          "complete": true,
+          "minimum_poset_width": 1,
+          "witness": [
+            [
+              [
+                3,
+                4
+              ]
+            ],
+            [
+              [
+                0,
+                3
+              ],
+              [
+                1,
+                2
+              ]
+            ],
+            [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ]
+            ]
+          ]
+        }
+      ],
+      "status": "Exact finite height/poset search; not a sorting or universal depth theorem"
+    },
+    {
+      "wires": 6,
+      "stages": [
+        {
+          "depth": 1,
+          "states": 76,
+          "complete": true,
+          "minimum_poset_width": 3,
+          "witness": [
+            [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ]
+        },
+        {
+          "depth": 2,
+          "states": 832,
+          "complete": true,
+          "minimum_poset_width": 2,
+          "witness": [
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ],
+            [
+              [
+                0,
+                2
+              ],
+              [
+                1,
+                4
+              ]
+            ]
+          ]
+        },
+        {
+          "depth": 3,
+          "states": 3164,
+          "complete": true,
+          "minimum_poset_width": 1,
+          "witness": [
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ],
+            [
+              [
+                0,
+                4
+              ],
+              [
+                1,
+                2
+              ]
+            ],
+            [
+              [
+                0,
+                1
+              ],
+              [
+                3,
+                4
+              ]
+            ]
+          ]
+        }
+      ],
+      "status": "Exact finite height/poset search; not a sorting or universal depth theorem"
+    }
+  ],
+  "output_image_cubes": [
+    {
+      "wires": 4,
+      "perfect_layers_only": false,
+      "stages": [
+        {
+          "depth": 1,
+          "states": 10,
+          "complete": true,
+          "minimum_largest_image_cube_dimension": 2,
+          "witness": [
+            [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ]
+            ]
+          ],
+          "witness_free_mask": 5,
+          "witness_fixed_ones": 10
+        },
+        {
+          "depth": 2,
+          "states": 31,
+          "complete": true,
+          "minimum_largest_image_cube_dimension": 2,
+          "witness": [
+            [],
+            [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ]
+            ]
+          ],
+          "witness_free_mask": 5,
+          "witness_fixed_ones": 10
+        },
+        {
+          "depth": 3,
+          "states": 58,
+          "complete": true,
+          "minimum_largest_image_cube_dimension": 1,
+          "witness": [
+            [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              [
+                0,
+                2
+              ],
+              [
+                1,
+                3
+              ]
+            ],
+            [
+              [
+                1,
+                2
+              ]
+            ]
+          ],
+          "witness_free_mask": 1,
+          "witness_fixed_ones": 14
+        }
+      ],
+      "status": "Exact Boolean image-cube enumeration; incomplete searches cannot establish a minimum"
+    },
+    {
+      "wires": 5,
+      "perfect_layers_only": false,
+      "stages": [
+        {
+          "depth": 1,
+          "states": 26,
+          "complete": true,
+          "minimum_largest_image_cube_dimension": 3,
+          "witness": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ]
+          ],
+          "witness_free_mask": 11,
+          "witness_fixed_ones": 20
+        },
+        {
+          "depth": 2,
+          "states": 161,
+          "complete": true,
+          "minimum_largest_image_cube_dimension": 3,
+          "witness": [
+            [],
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ]
+          ],
+          "witness_free_mask": 11,
+          "witness_fixed_ones": 20
+        },
+        {
+          "depth": 3,
+          "states": 551,
+          "complete": true,
+          "minimum_largest_image_cube_dimension": 2,
+          "witness": [
+            [
+              [
+                3,
+                4
+              ]
+            ],
+            [
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              [
+                0,
+                1
+              ],
+              [
+                3,
+                4
+              ]
+            ]
+          ],
+          "witness_free_mask": 5,
+          "witness_fixed_ones": 26
+        }
+      ],
+      "status": "Exact Boolean image-cube enumeration; incomplete searches cannot establish a minimum"
+    },
+    {
+      "wires": 6,
+      "perfect_layers_only": false,
+      "stages": [
+        {
+          "depth": 1,
+          "states": 76,
+          "complete": true,
+          "minimum_largest_image_cube_dimension": 3,
+          "witness": [
+            [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "witness_free_mask": 21,
+          "witness_fixed_ones": 42
+        },
+        {
+          "depth": 2,
+          "states": 1036,
+          "complete": true,
+          "minimum_largest_image_cube_dimension": 3,
+          "witness": [
+            [],
+            [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "witness_free_mask": 21,
+          "witness_fixed_ones": 42
+        },
+        {
+          "depth": 3,
+          "states": 6596,
+          "complete": true,
+          "minimum_largest_image_cube_dimension": 2,
+          "witness": [
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ],
+            [
+              [
+                2,
+                4
+              ],
+              [
+                3,
+                5
+              ]
+            ],
+            [
+              [
+                0,
+                1
+              ],
+              [
+                3,
+                4
+              ]
+            ]
+          ],
+          "witness_free_mask": 5,
+          "witness_fixed_ones": 58
+        }
+      ],
+      "status": "Exact Boolean image-cube enumeration; incomplete searches cannot establish a minimum"
+    },
+    {
+      "wires": 8,
+      "perfect_layers_only": true,
+      "stages": [
+        {
+          "depth": 1,
+          "states": 105,
+          "complete": true,
+          "minimum_largest_image_cube_dimension": 4,
+          "witness": [
+            [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ],
+              [
+                6,
+                7
+              ]
+            ]
+          ],
+          "witness_free_mask": 85,
+          "witness_fixed_ones": 170
+        },
+        {
+          "depth": 2,
+          "states": 945,
+          "complete": true,
+          "minimum_largest_image_cube_dimension": 4,
+          "witness": [
+            [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ],
+              [
+                6,
+                7
+              ]
+            ],
+            [
+              [
+                0,
+                2
+              ],
+              [
+                1,
+                3
+              ],
+              [
+                4,
+                6
+              ],
+              [
+                5,
+                7
+              ]
+            ]
+          ],
+          "witness_free_mask": 102,
+          "witness_fixed_ones": 136
+        },
+        {
+          "depth": 3,
+          "states": 2555,
+          "complete": true,
+          "minimum_largest_image_cube_dimension": 2,
+          "witness": [
+            [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ],
+              [
+                6,
+                7
+              ]
+            ],
+            [
+              [
+                0,
+                2
+              ],
+              [
+                1,
+                3
+              ],
+              [
+                4,
+                6
+              ],
+              [
+                5,
+                7
+              ]
+            ],
+            [
+              [
+                0,
+                4
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                5,
+                6
+              ]
+            ]
+          ],
+          "witness_free_mask": 10,
+          "witness_fixed_ones": 132
+        }
+      ],
+      "status": "Exact Boolean image-cube enumeration; incomplete searches cannot establish a minimum"
+    }
+  ]
+}

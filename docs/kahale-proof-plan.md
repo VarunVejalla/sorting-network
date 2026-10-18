@@ -2,6 +2,49 @@
 
 ## Decision
 
+The [amortized witness-charge screen](kahale-witness-charge.md) now gives
+exact primal/dual barriers for additive mixed witnesses, even signed and
+at full order. A short four-wire dual proof explains the loss. Signed
+quadratic interactions between witness obligations on neighboring ranks
+escape it and recover the finite depths 3 and 5. The next task is to
+simplify those interactions and prove a scale-compatible charge; no
+asymptotic improvement or Lean promotion follows from the fitted optima.
+
+The [shared-polarity screen](kahale-joint-polarity.md) gives an actual
+counterexample to deterministic rankwise inversion closure and derives
+exact transport using mixed witnesses from a single input. Parallel
+output pairs can require two ones and two zeros across two gates.
+Order-four input witnesses determine one step of pair transport, but
+fixed-order closure and an accumulated depth penalty remain unproved.
+The next charge must retain these compatible witnesses across rank cuts,
+and survive simultaneous resolution and the preparation counterexamples.
+
+The [residual-image benchmark](kahale-image-difficulty.md) now computes
+exact completion depths of every reachable image through five wires.
+A joint rank-incidence cone model has a derived one-layer inequality and
+an explicit three-layer obstruction missed by individual fan-in/fan-out.
+But pure cones have a `log_2 n` ceiling on powers of two, and adding cube
+and gathering costs double-counts work. The next target is shared
+two-output logical feasibility, retaining comparator min/max semantics
+across rank cuts, before another asymptotic or Lean claim.
+
+The [preparation investigation](kahale-certificate-preparation.md) now
+shows that recursive aligned prefixes attain amortized raw certificate
+growth rate `3/2` even from the initial state. Merely averaging the local
+spikes over preparation is insufficient. The same family leaves an almost
+full-size unrestricted sorting problem and therefore has a derived
+family-specific total coefficient `4.270559...`. This is not universal.
+The next structural target is a prefix/suffix tradeoff using sorting
+difficulty in the actual Boolean image; comparison-graph width alone fails.
+
+The latest [growing-order activation screen](kahale-activation-scales.md)
+provides exact hypergraph transport and adjacent-baseline identities.
+Four- and five-wire weighted scale fits are only finite feasibility evidence.
+An aligned layer on two already sorted blocks makes full conditional
+certificate cost grow by a factor approaching `3/2`, ruling out a useful
+uniform one-layer cap for that unmodified potential. The next quantitative
+target must charge preparation or retain shared certificate obligations.
+
 **Current research direction:** [coupled Boolean faces](kahale-coupled-faces.md).
 The exact two-discrepancy model, irreversible collision accounting, and a
 sufficient full sorting criterion are checked in Lean. The

@@ -1,0 +1,10920 @@
+{
+  "catalogues": [
+    {
+      "wires": 4,
+      "reachable_states": 201,
+      "transitions": 1809
+    },
+    {
+      "wires": 5,
+      "reachable_states": 11793,
+      "transitions": 294825
+    }
+  ],
+  "histogram_masks": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12
+  ],
+  "correction_scaling": "Stored coefficients represent three times h; divide by 3",
+  "signatures": 694,
+  "unique_constraints": 6371,
+  "terminal_signatures": 6,
+  "initial_signatures": 1,
+  "identical_signature_violations": 0,
+  "lp_status": 0,
+  "lp_message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+  "status": "Finite feasibility screen; no Lean or asymptotic improvement",
+  "exact_rational_feasible": true,
+  "correction_table": [
+    {
+      "histogram": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        2,
+        2,
+        2,
+        1
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        2,
+        2,
+        1,
+        1,
+        1,
+        0,
+        2
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        2,
+        2,
+        1,
+        2
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        1,
+        1,
+        0,
+        2,
+        1,
+        0,
+        2,
+        1
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        1,
+        0,
+        0,
+        0,
+        2,
+        0,
+        4,
+        1
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        2,
+        1,
+        2,
+        1,
+        0,
+        1,
+        2
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        2,
+        0,
+        1,
+        4
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        2,
+        1,
+        2,
+        2
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        2,
+        1,
+        0,
+        4
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        2,
+        2,
+        0,
+        3
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
+        3,
+        2,
+        1
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        2,
+        0,
+        2,
+        3
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        3,
+        0,
+        2,
+        4
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        3,
+        2,
+        3,
+        1
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        3,
+        2,
+        0,
+        4
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
+        3,
+        1,
+        2
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        2,
+        2,
+        0,
+        1,
+        1,
+        0,
+        3
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        2,
+        0,
+        3,
+        1,
+        0,
+        1,
+        2
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0,
+        4,
+        2
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        2,
+        1,
+        1,
+        0,
+        0,
+        3
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        2,
+        0,
+        1,
+        0,
+        0,
+        4
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        2,
+        0,
+        3,
+        2
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        3,
+        2,
+        1,
+        3
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        1,
+        2,
+        1,
+        0,
+        0,
+        3
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        3,
+        1,
+        2,
+        3
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        1,
+        0,
+        3,
+        1,
+        0,
+        2,
+        1
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        1,
+        0,
+        2,
+        1,
+        0,
+        3,
+        1
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        2,
+        1,
+        0,
+        0,
+        4
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        2,
+        0,
+        0,
+        5
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        1,
+        4,
+        1
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        1,
+        2,
+        0,
+        4,
+        1
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        4,
+        2
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        5,
+        1
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        2,
+        0,
+        0,
+        6
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        3,
+        1,
+        3,
+        2
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        2,
+        0,
+        2,
+        1,
+        0,
+        1,
+        3
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        1,
+        1,
+        4
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        2,
+        0,
+        1,
+        4
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        2,
+        4
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        2,
+        0,
+        1,
+        5
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        2,
+        1,
+        0,
+        5
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        2,
+        0,
+        0,
+        5
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
+        3,
+        0,
+        3
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0,
+        3,
+        3
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0,
+        5,
+        1
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        3,
+        2,
+        1
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        3,
+        0,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        3,
+        0,
+        0,
+        6
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        2,
+        3,
+        1
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        3,
+        3
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        2,
+        0,
+        4
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        3,
+        0,
+        1,
+        5
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        3,
+        1,
+        2
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        3,
+        1,
+        0,
+        0,
+        3
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        2,
+        1,
+        3
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        1,
+        1,
+        0,
+        0,
+        5
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        0,
+        1,
+        0,
+        0,
+        6
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        3,
+        0,
+        3,
+        3
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        1,
+        2,
+        3
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        1,
+        0,
+        1,
+        0,
+        0,
+        5
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        3,
+        1,
+        0,
+        5
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        1,
+        0,
+        5
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        1,
+        5
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        5,
+        1
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        0,
+        6
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        1,
+        3,
+        2
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        2,
+        1,
+        2,
+        0,
+        0,
+        0,
+        2,
+        4,
+        2,
+        1
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        2,
+        4,
+        1,
+        1,
+        2,
+        0,
+        2
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        1,
+        2,
+        0,
+        2,
+        4,
+        1,
+        2
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        1,
+        2,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        1,
+        2,
+        2,
+        0,
+        0,
+        0,
+        2,
+        2,
+        4,
+        1
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        2,
+        1,
+        4,
+        1,
+        0,
+        2,
+        2
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        1,
+        0,
+        2,
+        2,
+        1,
+        4,
+        2
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        2
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        2,
+        2,
+        0,
+        2,
+        2,
+        1,
+        4
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        1,
+        2,
+        0,
+        4,
+        1,
+        0,
+        2,
+        2
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        2,
+        0,
+        2,
+        2,
+        1,
+        2,
+        4
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        2,
+        2,
+        1,
+        2,
+        2,
+        0,
+        4
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        1,
+        1,
+        0,
+        2,
+        2,
+        0,
+        4,
+        2
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        2,
+        1,
+        2,
+        2,
+        0,
+        2,
+        4
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        1,
+        2,
+        0,
+        2,
+        4,
+        0,
+        3
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
+        6,
+        2,
+        1
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        1,
+        0,
+        2,
+        2,
+        0,
+        4,
+        3
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        3,
+        2,
+        6,
+        1
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        3
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        3,
+        3,
+        2,
+        4
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        1,
+        1,
+        0,
+        2,
+        2,
+        0,
+        4,
+        3
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        3,
+        2,
+        3,
+        4
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        3,
+        3,
+        3,
+        1
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        3,
+        3,
+        0,
+        4
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        1,
+        0,
+        0,
+        0,
+        3,
+        0,
+        6,
+        1
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        3,
+        0,
+        3,
+        4
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
+        6,
+        1,
+        2
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        2,
+        4,
+        0,
+        1,
+        2,
+        0,
+        3
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        1,
+        1,
+        1,
+        2,
+        2,
+        3,
+        1,
+        1,
+        1,
+        2
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        3,
+        3,
+        4,
+        2
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        3,
+        2,
+        4,
+        1,
+        0,
+        1,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        2,
+        0,
+        3,
+        2,
+        1,
+        2,
+        4
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        3,
+        3,
+        1,
+        1,
+        1,
+        0,
+        3
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        3,
+        3,
+        0,
+        1,
+        1,
+        0,
+        4
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        3,
+        0,
+        4,
+        1,
+        0,
+        1,
+        3
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        1,
+        2,
+        1,
+        0,
+        6
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        2,
+        0,
+        3,
+        2,
+        0,
+        2,
+        4
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        2,
+        1,
+        2,
+        0,
+        0,
+        6
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        3,
+        2
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        2,
+        1,
+        2,
+        2,
+        0,
+        3,
+        4
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        3,
+        2,
+        4,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        2,
+        0,
+        2,
+        2,
+        0,
+        3,
+        4
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        2,
+        1,
+        6
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        3,
+        3,
+        1,
+        3
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        3,
+        0,
+        4,
+        3
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        3,
+        0,
+        1,
+        6
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        1,
+        2,
+        3,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        1,
+        2,
+        3,
+        0,
+        0,
+        0,
+        2,
+        2,
+        4,
+        1
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        3,
+        4,
+        2,
+        1,
+        1,
+        0,
+        3
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        3,
+        4,
+        2,
+        3
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        1,
+        1,
+        0,
+        3,
+        1,
+        0,
+        3,
+        1
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        1,
+        0,
+        0,
+        0,
+        2,
+        0,
+        6,
+        1
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        0,
+        1,
+        0,
+        4,
+        1,
+        0,
+        3,
+        1
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        0,
+        1,
+        0,
+        3,
+        1,
+        0,
+        4,
+        1
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        1,
+        2,
+        6
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        2,
+        0,
+        4,
+        1,
+        0,
+        3,
+        2
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        1,
+        2,
+        2,
+        0,
+        0,
+        6
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        1,
+        0,
+        3,
+        2,
+        0,
+        4,
+        2
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        2,
+        3,
+        0,
+        2,
+        2,
+        0,
+        5
+      ],
+      "three_times_correction": "5"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        5,
+        4,
+        1
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        0,
+        0,
+        0,
+        1,
+        2,
+        0,
+        6,
+        1
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        7,
+        1
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        1,
+        4,
+        5
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        1,
+        0,
+        2,
+        2,
+        0,
+        5,
+        3
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        3,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        1,
+        3,
+        0,
+        6,
+        1
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        1,
+        1,
+        1,
+        2,
+        3,
+        2,
+        1,
+        1,
+        1,
+        2
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        3,
+        4,
+        3,
+        2
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        2,
+        3,
+        0,
+        2,
+        2,
+        1,
+        4
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        3,
+        1,
+        6,
+        2
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        2,
+        0,
+        4,
+        1,
+        0,
+        2,
+        3
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        3,
+        1,
+        3,
+        1,
+        0,
+        1,
+        3
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        1,
+        0,
+        2,
+        0,
+        1,
+        6
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        3,
+        0,
+        3,
+        1,
+        0,
+        1,
+        4
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        5,
+        1,
+        4
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        1,
+        5,
+        4
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        2,
+        0,
+        2,
+        2,
+        0,
+        3,
+        5
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        1,
+        2,
+        0,
+        1,
+        6
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        0,
+        2,
+        0,
+        1,
+        7
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        3,
+        0,
+        1,
+        6
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        3,
+        2,
+        2
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        2,
+        2,
+        1,
+        2,
+        3,
+        0,
+        4
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        3,
+        1,
+        3,
+        3
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        3,
+        1,
+        0,
+        6
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        2,
+        2,
+        0,
+        2,
+        3,
+        0,
+        5
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        2,
+        0,
+        3,
+        2,
+        0,
+        2,
+        5
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        0,
+        2,
+        1,
+        0,
+        7
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        3,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        2,
+        1,
+        0,
+        3,
+        1,
+        0,
+        3,
+        1
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        2,
+        0,
+        0,
+        0,
+        2,
+        0,
+        6,
+        1
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        3,
+        2,
+        3,
+        1,
+        0,
+        1,
+        3
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        2,
+        0,
+        2,
+        0,
+        1,
+        6
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        3,
+        2,
+        3,
+        3
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        3,
+        2,
+        0,
+        6
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        2,
+        1,
+        3,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        2,
+        1,
+        3,
+        0,
+        0,
+        0,
+        2,
+        4,
+        2,
+        1
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        2,
+        1,
+        2,
+        1,
+        3,
+        1,
+        1,
+        2,
+        1,
+        1
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        1,
+        3,
+        0,
+        2,
+        4,
+        1,
+        2
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        2,
+        1,
+        0,
+        4,
+        1,
+        0,
+        3,
+        1
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        1,
+        3,
+        1,
+        1
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        2,
+        4,
+        1,
+        1,
+        3,
+        0,
+        2
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        2,
+        1,
+        0,
+        3,
+        1,
+        0,
+        4,
+        1
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        3,
+        2,
+        3,
+        1,
+        0,
+        1,
+        4
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        2,
+        0,
+        2,
+        2,
+        0,
+        2,
+        5
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        0,
+        2,
+        7
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        4,
+        1
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        4,
+        0,
+        5
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        5,
+        1
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        2,
+        1,
+        2,
+        0,
+        1,
+        0,
+        2,
+        4,
+        2,
+        1
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        0,
+        1,
+        0,
+        3,
+        6,
+        2,
+        1
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        2,
+        0,
+        0,
+        1,
+        2,
+        0,
+        6,
+        1
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        4,
+        2
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        2,
+        1,
+        2,
+        0,
+        0,
+        0,
+        2,
+        5,
+        2,
+        1
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        1,
+        2,
+        0,
+        2,
+        5,
+        0,
+        3
+      ],
+      "three_times_correction": "5"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        2,
+        0,
+        0,
+        0,
+        2,
+        0,
+        7,
+        1
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        2,
+        0,
+        2,
+        2,
+        0,
+        2,
+        6
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        2,
+        0,
+        5,
+        1,
+        0,
+        2,
+        2
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0,
+        7,
+        2
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        4,
+        1,
+        1,
+        0,
+        0,
+        4
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        4,
+        0,
+        1,
+        0,
+        0,
+        5
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        1,
+        2,
+        4,
+        1,
+        1,
+        2,
+        0,
+        2
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        1,
+        0,
+        0,
+        0,
+        3,
+        6,
+        1,
+        2
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        4,
+        2,
+        1,
+        0,
+        0,
+        4
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        3,
+        2,
+        1,
+        6
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        2,
+        5,
+        1,
+        1,
+        2,
+        0,
+        2
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        2,
+        5,
+        0,
+        1,
+        2,
+        0,
+        3
+      ],
+      "three_times_correction": "5"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        2,
+        0,
+        6,
+        1,
+        0,
+        2,
+        2
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        3,
+        2,
+        0,
+        7
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        2,
+        0,
+        5,
+        1,
+        0,
+        3,
+        2
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        4,
+        1,
+        1,
+        0,
+        0,
+        5
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        1,
+        0,
+        2,
+        2,
+        0,
+        5,
+        2
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        4,
+        1,
+        4
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        1,
+        1,
+        2,
+        0,
+        2,
+        4,
+        1,
+        2
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        2,
+        1,
+        2,
+        0,
+        1,
+        6
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        4,
+        2,
+        4
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        1,
+        0,
+        3,
+        2,
+        0,
+        5,
+        2
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        4,
+        1,
+        5
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        1,
+        2,
+        0,
+        2,
+        5,
+        1,
+        2
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        1,
+        0,
+        2,
+        2,
+        0,
+        6,
+        2
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        2,
+        0,
+        2,
+        0,
+        1,
+        7
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        3,
+        3,
+        2,
+        1,
+        1,
+        0,
+        3
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        3,
+        3,
+        2,
+        3
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        3,
+        0,
+        2,
+        6
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        2,
+        2,
+        1,
+        0,
+        6
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        1,
+        2,
+        2,
+        1,
+        1,
+        3,
+        1,
+        1,
+        2,
+        1
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        1,
+        0,
+        3,
+        2,
+        1,
+        4,
+        2
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        1,
+        2,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        3,
+        1
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        3,
+        3,
+        2,
+        1,
+        1,
+        0,
+        4
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        2,
+        1,
+        4,
+        1,
+        0,
+        3,
+        2
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        2,
+        2,
+        0,
+        2,
+        2,
+        0,
+        5
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        4,
+        1
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        4,
+        5
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        2,
+        0,
+        7
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        1,
+        2,
+        2,
+        0,
+        0,
+        1,
+        2,
+        2,
+        4,
+        1
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        4,
+        2
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        1,
+        3,
+        2,
+        6,
+        1
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        1,
+        2,
+        2,
+        0,
+        0,
+        0,
+        2,
+        2,
+        5,
+        1
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        2,
+        2,
+        0,
+        2,
+        2,
+        0,
+        6
+      ],
+      "three_times_correction": "5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        1,
+        4,
+        1,
+        0,
+        0,
+        4
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        4,
+        1,
+        0,
+        0,
+        5
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        1,
+        2,
+        1,
+        4,
+        1,
+        0,
+        2,
+        2
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        1,
+        0,
+        0,
+        0,
+        3,
+        1,
+        6,
+        2
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        2,
+        4,
+        1,
+        0,
+        0,
+        4
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        3,
+        1,
+        2,
+        6
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        2,
+        1,
+        5,
+        1,
+        0,
+        2,
+        2
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        3,
+        0,
+        2,
+        7
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        2,
+        0,
+        5,
+        1,
+        0,
+        2,
+        3
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        1,
+        4,
+        1,
+        0,
+        0,
+        5
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        1,
+        4,
+        4
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        1,
+        1,
+        0,
+        2,
+        2,
+        1,
+        4,
+        2
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        1,
+        2,
+        2,
+        1,
+        0,
+        6
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        2,
+        4,
+        4
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        1,
+        0,
+        2,
+        2,
+        1,
+        5,
+        2
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        2,
+        2,
+        1,
+        0,
+        7
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        3,
+        3,
+        3,
+        2
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        1,
+        0,
+        0,
+        0,
+        3,
+        0,
+        6,
+        2
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        3
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        1,
+        2,
+        0,
+        4,
+        1,
+        0,
+        2,
+        3
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        1,
+        4
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        5,
+        4
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        2,
+        2,
+        1,
+        2,
+        2,
+        1,
+        4
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        2,
+        4
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        2,
+        2,
+        0,
+        2,
+        2,
+        1,
+        5
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        1,
+        2,
+        0,
+        5,
+        1,
+        0,
+        2,
+        2
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        1,
+        0,
+        0,
+        0,
+        3,
+        0,
+        7,
+        2
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        1,
+        4,
+        4
+      ],
+      "three_times_correction": "-2"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        2,
+        1,
+        2,
+        2,
+        1,
+        2,
+        4
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        2,
+        4,
+        4
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        2,
+        0,
+        2,
+        2,
+        1,
+        2,
+        5
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        2,
+        0,
+        2,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        2,
+        2,
+        1,
+        2,
+        2,
+        0,
+        5
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        2,
+        2,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        1,
+        1,
+        0,
+        2,
+        2,
+        0,
+        5,
+        2
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        2,
+        1,
+        2,
+        2,
+        0,
+        2,
+        5
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
+        6,
+        0,
+        3
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        3,
+        3,
+        3,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        3,
+        3,
+        5,
+        1
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        3,
+        0,
+        5,
+        4
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        3,
+        6,
+        1
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        3,
+        2,
+        5
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        2,
+        1
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        0,
+        3
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        6,
+        1
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        2,
+        5
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0,
+        6,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        3,
+        3,
+        0,
+        6
+      ],
+      "three_times_correction": "5"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        6,
+        4
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        3,
+        5,
+        3,
+        1
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        3,
+        5,
+        0,
+        4
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        6,
+        3,
+        1
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        2,
+        3,
+        5
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        2,
+        4,
+        1
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        2,
+        0,
+        5
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        4,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        6,
+        0,
+        4
+      ],
+      "three_times_correction": "5"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        3,
+        0,
+        3,
+        6
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        1,
+        1,
+        2,
+        0,
+        2,
+        4,
+        0,
+        3
+      ],
+      "three_times_correction": "-9"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        1,
+        0,
+        0,
+        0,
+        3,
+        6,
+        0,
+        3
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        2,
+        1,
+        2,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        1,
+        3,
+        0,
+        2,
+        4,
+        0,
+        3
+      ],
+      "three_times_correction": "5"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        1,
+        0,
+        3,
+        2,
+        0,
+        4,
+        3
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        4,
+        0,
+        6
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        2,
+        0,
+        2,
+        0,
+        0,
+        8
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0,
+        8,
+        1
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        6,
+        2,
+        1
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        6,
+        0,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        1,
+        0,
+        0,
+        0,
+        3,
+        6,
+        2,
+        1
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        3,
+        0,
+        2,
+        7
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        6,
+        3,
+        1
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        1,
+        3,
+        0,
+        8,
+        1
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        6,
+        2,
+        2
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
+        7,
+        2,
+        1
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
+        7,
+        0,
+        3
+      ],
+      "three_times_correction": "5"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0,
+        9,
+        1
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        0,
+        2,
+        8
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        1,
+        0,
+        0,
+        0,
+        3,
+        0,
+        6,
+        3
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        1,
+        2,
+        2,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        4,
+        6
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        2,
+        2,
+        0,
+        0,
+        8
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2,
+        6,
+        1
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        6,
+        3
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        1,
+        0,
+        0,
+        0,
+        3,
+        2,
+        6,
+        1
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        3,
+        2,
+        0,
+        7
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        3,
+        6,
+        1
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2,
+        6,
+        2
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        3,
+        2,
+        7,
+        1
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        2,
+        0,
+        8
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0,
+        7,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        3,
+        0,
+        7
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        3,
+        7
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        3,
+        1
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        3,
+        5
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        3,
+        4,
+        1
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        3,
+        0,
+        5
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        3,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        3,
+        4,
+        3
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        0,
+        4
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        4,
+        4
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        6,
+        1
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        6,
+        2
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0,
+        7,
+        1
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        0,
+        0,
+        8
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        1,
+        0,
+        0,
+        0,
+        3,
+        0,
+        8,
+        1
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        6,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        3,
+        0,
+        4,
+        5
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        3,
+        5,
+        2
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        3,
+        3,
+        1,
+        5
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        3,
+        1,
+        6
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        1,
+        2
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        5,
+        2
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        1,
+        6
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        3,
+        3,
+        3,
+        1,
+        1,
+        0,
+        3
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        3,
+        2,
+        0,
+        0,
+        6
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        3,
+        5,
+        1,
+        1,
+        1,
+        0,
+        3
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        6,
+        1,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        3,
+        5,
+        0,
+        1,
+        1,
+        0,
+        4
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        2,
+        5,
+        3
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        3,
+        0,
+        4,
+        1,
+        0,
+        1,
+        5
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        2,
+        1,
+        1,
+        0,
+        0,
+        4
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        2,
+        0,
+        1,
+        0,
+        0,
+        5
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        3,
+        1,
+        0,
+        0,
+        4
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        1,
+        1,
+        0,
+        0,
+        6
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        3,
+        0,
+        3,
+        1,
+        0,
+        1,
+        6
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        2,
+        1,
+        0,
+        0,
+        5
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        0,
+        1,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        0,
+        1,
+        8
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        6,
+        1,
+        2
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        3,
+        0,
+        1,
+        8
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        0,
+        1,
+        0,
+        3,
+        6,
+        1,
+        2
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        1,
+        3,
+        0,
+        7,
+        2
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        6,
+        1,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
+        7,
+        1,
+        2
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0,
+        8,
+        2
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        0,
+        1,
+        9
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        1,
+        2,
+        4,
+        0,
+        1,
+        2,
+        0,
+        3
+      ],
+      "three_times_correction": "-9"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        2,
+        1,
+        7
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        2,
+        4,
+        0,
+        1,
+        3,
+        0,
+        3
+      ],
+      "three_times_correction": "5"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        2,
+        0,
+        4,
+        1,
+        0,
+        3,
+        3
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        4,
+        0,
+        1,
+        0,
+        0,
+        6
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        3,
+        2,
+        1,
+        0,
+        6
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        3,
+        0,
+        6,
+        1,
+        0,
+        1,
+        3
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        7,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        4,
+        1,
+        0,
+        0,
+        6
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        1,
+        2,
+        7
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        2,
+        0,
+        3,
+        2,
+        0,
+        3,
+        4
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        1,
+        3
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        5,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        3,
+        1,
+        1,
+        0,
+        0,
+        4
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        3,
+        0,
+        1,
+        0,
+        0,
+        5
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        3,
+        3,
+        1,
+        0,
+        0,
+        4
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        3,
+        3,
+        1,
+        1,
+        1,
+        0,
+        5
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        3,
+        1,
+        1,
+        0,
+        0,
+        6
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        3,
+        2,
+        1,
+        0,
+        0,
+        5
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        3,
+        3,
+        0,
+        1,
+        1,
+        0,
+        6
+      ],
+      "three_times_correction": "5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        3,
+        0,
+        1,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        4,
+        1,
+        0,
+        0,
+        4
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        1,
+        6
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        2,
+        6
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        1,
+        2,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        0,
+        2,
+        0,
+        0,
+        8
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        2,
+        1,
+        2,
+        1,
+        0,
+        6
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        3,
+        1,
+        6
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        2,
+        0,
+        2,
+        1,
+        0,
+        7
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        3,
+        6
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        3,
+        2,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        1,
+        2,
+        1,
+        0,
+        8
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        1,
+        2,
+        0,
+        1,
+        8
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        1,
+        2,
+        0,
+        0,
+        9
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2,
+        1,
+        6
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        3,
+        6
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        1,
+        2,
+        0,
+        0,
+        8
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2,
+        2,
+        6
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        3,
+        3,
+        3,
+        3
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        0,
+        3,
+        6
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        3,
+        5,
+        1,
+        3
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        2,
+        1,
+        4
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        3,
+        4
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        3,
+        0,
+        3,
+        6
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        3,
+        0,
+        6,
+        3
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        3,
+        2,
+        1,
+        6
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        0,
+        3,
+        7
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        3,
+        1,
+        4
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        3,
+        3,
+        4
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        4,
+        4
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        0,
+        1,
+        7
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        3,
+        0,
+        1,
+        8
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        5,
+        2,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        3,
+        4,
+        0,
+        1,
+        1,
+        0,
+        5
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        3,
+        1,
+        5,
+        1,
+        0,
+        1,
+        3
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        1,
+        6,
+        3
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        3,
+        0,
+        5,
+        1,
+        0,
+        1,
+        4
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        1,
+        2,
+        1,
+        0,
+        0,
+        4
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        1,
+        0,
+        1,
+        0,
+        0,
+        6
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        3,
+        4,
+        0,
+        5
+      ],
+      "three_times_correction": "5"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        3,
+        1,
+        5,
+        3
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        1,
+        2,
+        4
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        1,
+        0,
+        6
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        3,
+        1,
+        0,
+        3,
+        1,
+        0,
+        3,
+        1
+      ],
+      "three_times_correction": "-8"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        3,
+        0,
+        0,
+        0,
+        2,
+        0,
+        6,
+        1
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        1,
+        3,
+        1,
+        0,
+        0,
+        4
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        1,
+        3,
+        4
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        3,
+        1,
+        0,
+        0,
+        5
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        1,
+        1,
+        0,
+        5,
+        1,
+        0,
+        3,
+        1
+      ],
+      "three_times_correction": "-8"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        1,
+        3,
+        6
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        0,
+        1,
+        0,
+        5,
+        1,
+        0,
+        4,
+        1
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        1,
+        1,
+        0,
+        3,
+        1,
+        0,
+        5,
+        1
+      ],
+      "three_times_correction": "-8"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        1,
+        3,
+        1,
+        0,
+        0,
+        6
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        0,
+        1,
+        0,
+        4,
+        1,
+        0,
+        5,
+        1
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        1,
+        0,
+        2,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        3,
+        0,
+        2,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        1,
+        0,
+        0,
+        2,
+        2,
+        0,
+        6,
+        1
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        0,
+        0,
+        0,
+        2,
+        2,
+        0,
+        7,
+        1
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        1,
+        0,
+        0,
+        0,
+        2,
+        0,
+        8,
+        1
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        1,
+        0,
+        2,
+        0,
+        0,
+        9
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        0,
+        0,
+        0,
+        1,
+        2,
+        0,
+        8,
+        1
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        0,
+        1,
+        0,
+        6,
+        1,
+        0,
+        3,
+        1
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        2,
+        3,
+        1,
+        0,
+        0,
+        5
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        0,
+        1,
+        0,
+        3,
+        1,
+        0,
+        6,
+        1
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        3,
+        1,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        2,
+        6
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        1,
+        0,
+        8
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        3,
+        1,
+        0,
+        8
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        3,
+        1,
+        2,
+        6
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        1,
+        0,
+        9
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        3,
+        1,
+        7,
+        2
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        1,
+        0,
+        2,
+        0,
+        0,
+        8
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        1,
+        0,
+        2,
+        1,
+        0,
+        8
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        1,
+        2,
+        2,
+        0,
+        1,
+        6
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        2,
+        2,
+        0,
+        1,
+        7
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        5,
+        0,
+        5
+      ],
+      "three_times_correction": "5"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        1,
+        4,
+        5
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        1,
+        8,
+        1
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        8,
+        2
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        5,
+        5
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        4,
+        1
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        0,
+        5
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        5,
+        1
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        4,
+        2
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        0,
+        6
+      ],
+      "three_times_correction": "5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        0,
+        6
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        5,
+        1
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        4,
+        6
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        5,
+        5
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        9,
+        1
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        4,
+        1
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        5
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        0,
+        0,
+        0,
+        3,
+        2,
+        0,
+        6,
+        1
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        6,
+        4
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        7,
+        1
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2,
+        7,
+        1
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        7,
+        3
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        9,
+        1
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        0,
+        2,
+        0,
+        0,
+        10
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        4,
+        5
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        1,
+        0,
+        9
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        5,
+        5
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        0,
+        7
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        1,
+        7
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        3,
+        0,
+        7
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        2,
+        7
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        3,
+        0,
+        0,
+        9
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        3,
+        0,
+        0,
+        9
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        0,
+        0,
+        10
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        1,
+        3,
+        0,
+        6,
+        3
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        5,
+        3,
+        2
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        3,
+        1,
+        3,
+        5
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        1,
+        4,
+        2
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        3,
+        3,
+        3,
+        1,
+        0,
+        1,
+        3
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        3,
+        0,
+        2,
+        0,
+        1,
+        6
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        6,
+        2
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        1,
+        3,
+        1,
+        6,
+        2
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        1,
+        4,
+        3
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        3,
+        1,
+        3,
+        1,
+        0,
+        1,
+        5
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        1,
+        0,
+        2,
+        0,
+        1,
+        8
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        1,
+        1,
+        8
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        2,
+        8
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        1,
+        4
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        2,
+        4
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        1,
+        5
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        1,
+        5
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        1,
+        9
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        1,
+        4
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        5,
+        4
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        3,
+        2,
+        0,
+        1,
+        6
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        4,
+        6
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2,
+        1,
+        7
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        3,
+        7
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        0,
+        2,
+        0,
+        1,
+        9
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        3,
+        0,
+        3,
+        6
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        3,
+        3,
+        3,
+        3
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        3,
+        3,
+        0,
+        6
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        1,
+        0,
+        7
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        3,
+        0,
+        7
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        3,
+        1,
+        0,
+        8
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        0,
+        2,
+        1,
+        0,
+        9
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        2,
+        3,
+        1,
+        0,
+        0,
+        4
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        2,
+        3,
+        4
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        0,
+        1,
+        0,
+        5,
+        1,
+        0,
+        3,
+        1
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        3,
+        6
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        0,
+        1,
+        0,
+        3,
+        1,
+        0,
+        5,
+        1
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        3,
+        1,
+        0,
+        0,
+        6
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        0,
+        0,
+        0,
+        2,
+        2,
+        0,
+        6,
+        1
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        3,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        8,
+        1
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        0,
+        2,
+        0,
+        0,
+        9
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        2,
+        4,
+        3
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        3,
+        0,
+        5,
+        1,
+        0,
+        1,
+        3
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        6,
+        3
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        3,
+        0,
+        3,
+        1,
+        0,
+        1,
+        5
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        2,
+        2,
+        0,
+        1,
+        6
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        0,
+        2,
+        0,
+        1,
+        8
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        3,
+        0,
+        5,
+        3
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        3,
+        0,
+        3,
+        5
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        3,
+        0,
+        2,
+        6
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        3,
+        0,
+        0,
+        8
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        3,
+        0,
+        0,
+        9
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        4,
+        5
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        2,
+        7
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        4,
+        4,
+        1
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        8,
+        1
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        4,
+        5
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        5,
+        4,
+        1
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        5,
+        0,
+        5
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        4,
+        4,
+        2
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        4,
+        0,
+        5
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        0,
+        9
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        4,
+        1,
+        5
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        4,
+        5,
+        1
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        2,
+        0,
+        0,
+        0,
+        1,
+        0,
+        3,
+        6,
+        0,
+        3
+      ],
+      "three_times_correction": "5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        6,
+        0,
+        4
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        5,
+        1,
+        0,
+        0,
+        4
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        1,
+        5,
+        1,
+        0,
+        0,
+        4
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        5,
+        1,
+        0,
+        0,
+        5
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        7,
+        2
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        7,
+        2
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        4,
+        1,
+        4
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        5,
+        4
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        1,
+        1,
+        0,
+        0,
+        8
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        5,
+        1,
+        1,
+        0,
+        0,
+        4
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        5,
+        0,
+        1,
+        0,
+        0,
+        5
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        4,
+        2,
+        4
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        2,
+        1,
+        0,
+        0,
+        8
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        0,
+        1,
+        0,
+        0,
+        9
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        1,
+        1,
+        0,
+        0,
+        9
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        6,
+        1,
+        0,
+        0,
+        4
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        5,
+        4
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        1,
+        5,
+        4
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        1,
+        8
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        5,
+        1,
+        4
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        6,
+        4
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        2,
+        3
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        3,
+        3,
+        0,
+        1,
+        1,
+        0,
+        5
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        3,
+        2,
+        1,
+        0,
+        0,
+        4
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        3,
+        0,
+        1,
+        0,
+        0,
+        6
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        3,
+        3,
+        0,
+        5
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        3,
+        2,
+        4
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        3,
+        0,
+        6
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        3,
+        0,
+        0,
+        8
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        3,
+        0,
+        0,
+        2,
+        1,
+        0,
+        8
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        0,
+        5
+      ],
+      "three_times_correction": "-1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2,
+        0,
+        7
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        4,
+        0,
+        6
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        4,
+        4
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        1,
+        0,
+        1,
+        0,
+        0,
+        8
+      ],
+      "three_times_correction": "-3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2,
+        4,
+        4
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        2,
+        0,
+        1,
+        0,
+        0,
+        8
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        1,
+        0,
+        1,
+        0,
+        0,
+        9
+      ],
+      "three_times_correction": "3"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        1,
+        0,
+        8
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        2,
+        0,
+        8
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        4,
+        3,
+        2
+      ],
+      "three_times_correction": "-4"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        3,
+        4,
+        2
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        0,
+        2,
+        0,
+        0,
+        0,
+        1,
+        3,
+        0,
+        6,
+        2
+      ],
+      "three_times_correction": "-5"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        7,
+        2,
+        1
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        7,
+        0,
+        3
+      ],
+      "three_times_correction": "5"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        3,
+        2,
+        1
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        3,
+        0,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        3,
+        3
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        3,
+        2,
+        5
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        4,
+        2,
+        1
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        4,
+        0,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        4,
+        3,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        6,
+        1
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        2,
+        5
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        0,
+        10
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        2,
+        7,
+        1
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2,
+        3,
+        1
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2,
+        0,
+        4
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2,
+        3,
+        5
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2,
+        4,
+        1
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        4,
+        3
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2,
+        0,
+        5
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        3,
+        4,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2,
+        0,
+        8
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        2,
+        8
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        8,
+        1
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        8,
+        1
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        8,
+        2
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        7,
+        2,
+        1
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        7,
+        0,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        0,
+        9
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        1,
+        9
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        9,
+        1
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        0,
+        9
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        7,
+        1
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        4,
+        3,
+        1
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        4,
+        0,
+        4
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        3,
+        5
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        0,
+        8
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        3,
+        4,
+        1
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        4,
+        4
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        3,
+        0,
+        5
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        0,
+        8
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        7,
+        1,
+        2
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        3,
+        1,
+        2
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        3,
+        5,
+        2
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        4,
+        1,
+        2
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        5,
+        2
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        1,
+        6
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        2,
+        1,
+        7
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2,
+        1,
+        3
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2,
+        5,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2,
+        1,
+        4
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        3,
+        4
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        2,
+        1,
+        1,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        3,
+        3,
+        4
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        0,
+        1,
+        0,
+        0,
+        10
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        1,
+        8
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        1,
+        8
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        7,
+        1,
+        2
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        1,
+        7
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        4,
+        1,
+        3
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        5,
+        3
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        3,
+        1,
+        4
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        1,
+        1,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "-8"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        0,
+        1,
+        0,
+        0,
+        8
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        1,
+        2,
+        7
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        2,
+        3
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        2,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        2,
+        4
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        1,
+        2,
+        1,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        0,
+        6
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        3,
+        4
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        1,
+        0,
+        1,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        1,
+        0,
+        7
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        0,
+        8
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        0,
+        10
+      ],
+      "three_times_correction": "0"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        1,
+        7,
+        2
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        3,
+        2
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        3,
+        2
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        4,
+        2
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1,
+        4,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2,
+        3,
+        4
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        2,
+        0,
+        1,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "-6"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        2,
+        0,
+        7
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2,
+        4,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        1,
+        1,
+        1,
+        0,
+        0,
+        8
+      ],
+      "three_times_correction": "1"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        4,
+        0,
+        2,
+        7
+      ],
+      "three_times_correction": "-8"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        4,
+        2,
+        3
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        3,
+        2,
+        4
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        4,
+        0,
+        2,
+        1,
+        0,
+        0,
+        7
+      ],
+      "three_times_correction": "-8"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        3,
+        0,
+        6
+      ],
+      "three_times_correction": "2"
+    },
+    {
+      "histogram": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        7,
+        2
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        4,
+        3,
+        2
+      ],
+      "three_times_correction": "-7"
+    },
+    {
+      "histogram": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        3,
+        4,
+        2
+      ],
+      "three_times_correction": "-7"
+    }
+  ],
+  "polynomial_screens": [
+    {
+      "degree": 1,
+      "features": 10,
+      "lp_status": 2
+    },
+    {
+      "degree": 2,
+      "features": 65,
+      "lp_status": 0,
+      "exact_rational_feasible": true,
+      "weights": [
+        {
+          "monomial": [
+            0
+          ],
+          "three_times_coefficient": "450127403963544569940911193083884361534632480346627753141/4770874077780103544079464570456131966515302380331238150176441107200"
+        },
+        {
+          "monomial": [
+            1
+          ],
+          "three_times_coefficient": "760585801391100987389447449730638493713225552253997502539934287121/2385437038890051772039732285228065983257651190165619075088220553600"
+        },
+        {
+          "monomial": [
+            2
+          ],
+          "three_times_coefficient": "-1119201606392271386927313310660193475431488770531573762413/2385437038890051772039732285228065983257651190165619075088220553600"
+        },
+        {
+          "monomial": [
+            3
+          ],
+          "three_times_coefficient": "14462055147795484445981825507968724012202351396215669511053253293/17038835992071798371712373465914757023268937072611564822058718240"
+        },
+        {
+          "monomial": [
+            4
+          ],
+          "three_times_coefficient": "-233752692827729000923960330061407840317021670969505292443/2385437038890051772039732285228065983257651190165619075088220553600"
+        },
+        {
+          "monomial": [
+            5
+          ],
+          "three_times_coefficient": "-605186949441499343999423359576959745239353665245284719/42597089980179495929280933664786892558172342681528912055146795600"
+        },
+        {
+          "monomial": [
+            6
+          ],
+          "three_times_coefficient": "955635/1589224"
+        },
+        {
+          "monomial": [
+            7
+          ],
+          "three_times_coefficient": "-95893618468356311/2928582393456365928510153345"
+        },
+        {
+          "monomial": [
+            8
+          ],
+          "three_times_coefficient": "-11957101232356853/50203638783179700"
+        },
+        {
+          "monomial": [
+            9
+          ],
+          "three_times_coefficient": "-318545/794612"
+        },
+        {
+          "monomial": [
+            0,
+            0
+          ],
+          "three_times_coefficient": "682722340253212454158287166993818610103932520354161188090040309799/4770874077780103544079464570456131966515302380331238150176441107200"
+        },
+        {
+          "monomial": [
+            0,
+            1
+          ],
+          "three_times_coefficient": "1288592503104860596647242853222159808697916044359311041330962909/136310687936574386973698987727318056186151496580892518576469745920"
+        },
+        {
+          "monomial": [
+            0,
+            2
+          ],
+          "three_times_coefficient": "-17209678626080323791901079692813781386563977131077361162511289607/397572839815008628673288714204677663876275198360936512514703425600"
+        },
+        {
+          "monomial": [
+            0,
+            3
+          ],
+          "three_times_coefficient": "7308226375245988492096855930284162443113349342348445476427070327/93546550544707912629009109224630038559123576084926238238753747200"
+        },
+        {
+          "monomial": [
+            0,
+            4
+          ],
+          "three_times_coefficient": "987728102308211198903935700544070568863001929393618367/21298544990089747964640466832393446279086171340764456027573397800"
+        },
+        {
+          "monomial": [
+            0,
+            5
+          ],
+          "three_times_coefficient": "5181983030124033602301418226328583775512326017132168999333967169/37272453732657058938120816956688530988400799846337798048253446150"
+        },
+        {
+          "monomial": [
+            0,
+            6
+          ],
+          "three_times_coefficient": "45353191542014928048853505715233665586291505236518554377/681553439682871934868494938636590280930757482904462592882348729600"
+        },
+        {
+          "monomial": [
+            0,
+            7
+          ],
+          "three_times_coefficient": "3800583015228405601996670556919583491965401497011766739549198881/132524279938336209557762904734892554625425066120312170838234475200"
+        },
+        {
+          "monomial": [
+            0,
+            8
+          ],
+          "three_times_coefficient": "1057458361876361092714121425169408242303538279774318271902165173/13252427993833620955776290473489255462542506612031217083823447520"
+        },
+        {
+          "monomial": [
+            0,
+            9
+          ],
+          "three_times_coefficient": "7276957686214315181052762852858207751817202636920830047537090479/99393209953752157168322178551169415969068799590234128128675856400"
+        },
+        {
+          "monomial": [
+            1,
+            1
+          ],
+          "three_times_coefficient": "-7267205068357955330674833223530352477760393068946960728212119107/39757283981500862867328871420467766387627519836093651251470342560"
+        },
+        {
+          "monomial": [
+            1,
+            2
+          ],
+          "three_times_coefficient": "1374271317967596265646886787235738502919836873833472206758675000559/2385437038890051772039732285228065983257651190165619075088220553600"
+        },
+        {
+          "monomial": [
+            1,
+            3
+          ],
+          "three_times_coefficient": "-109683268910681013244182045653085333093289293853925966470634684377/596359259722512943009933071307016495814412797541404768772055138400"
+        },
+        {
+          "monomial": [
+            1,
+            4
+          ],
+          "three_times_coefficient": "3271439164040550031754066116935656961308186081980514868469102477/3636336949527517945182518727481807901307395106959785175439360600"
+        },
+        {
+          "monomial": [
+            1,
+            5
+          ],
+          "three_times_coefficient": "1503018668005303587514891613718516899034340210937966297/119271851944502588601986614261403299162882559508280953754411027680"
+        },
+        {
+          "monomial": [
+            1,
+            6
+          ],
+          "three_times_coefficient": "44956850287365279013334141133841534584434196402479911860267612101/596359259722512943009933071307016495814412797541404768772055138400"
+        },
+        {
+          "monomial": [
+            1,
+            7
+          ],
+          "three_times_coefficient": "140974835252706662590945003235719174991151093272132148222448781/9736477709755313355264213409094146870439392612920894184033553280"
+        },
+        {
+          "monomial": [
+            1,
+            8
+          ],
+          "three_times_coefficient": "-43992172078972846537234937235143640199118823090083606027/2385437038890051772039732285228065983257651190165619075088220553600"
+        },
+        {
+          "monomial": [
+            1,
+            9
+          ],
+          "three_times_coefficient": "65099694181348793101279605746683990880476174044363899654776638841/397572839815008628673288714204677663876275198360936512514703425600"
+        },
+        {
+          "monomial": [
+            2,
+            2
+          ],
+          "three_times_coefficient": "-142480905141184316742331161602966568810910565994784848735036439513/2385437038890051772039732285228065983257651190165619075088220553600"
+        },
+        {
+          "monomial": [
+            2,
+            3
+          ],
+          "three_times_coefficient": "-1164065104260845113758448283640183055332523482285488908782381573131/2385437038890051772039732285228065983257651190165619075088220553600"
+        },
+        {
+          "monomial": [
+            2,
+            4
+          ],
+          "three_times_coefficient": "-18173192465486677997392060525468186941771656243200711439/681553439682871934868494938636590280930757482904462592882348729600"
+        },
+        {
+          "monomial": [
+            2,
+            5
+          ],
+          "three_times_coefficient": "218499327358744434764455624971564748481232201480274930428583423/10371465386478485965390140370556808622859353000720082935166176320"
+        },
+        {
+          "monomial": [
+            2,
+            7
+          ],
+          "three_times_coefficient": "-16733388112586310766987555581773880175789965153245815166379904093/238543703889005177203973228522806598325765119016561907508822055360"
+        },
+        {
+          "monomial": [
+            2,
+            8
+          ],
+          "three_times_coefficient": "-255399580926712205443567109357694722331064014491570305138279929/1113649411246522769392965586007500459037185429582455217128020800"
+        },
+        {
+          "monomial": [
+            2,
+            9
+          ],
+          "three_times_coefficient": "-272376254006648271789609299934715416810603735458502325942146422041/397572839815008628673288714204677663876275198360936512514703425600"
+        },
+        {
+          "monomial": [
+            3,
+            3
+          ],
+          "three_times_coefficient": "-2127616615684440630035773503773486091076105171799197285855039931/14545347798110071780730074909927231605229580427839140701757442400"
+        },
+        {
+          "monomial": [
+            3,
+            4
+          ],
+          "three_times_coefficient": "73824673442946622857617127493017921855951998463647653575609931/332418762387130960429171165722974635348056185920515478691223600"
+        },
+        {
+          "monomial": [
+            3,
+            5
+          ],
+          "three_times_coefficient": "1661132680068708195554330555737772894146505838131244589/298179629861256471504966535653508247907206398770702384386027569200"
+        },
+        {
+          "monomial": [
+            3,
+            6
+          ],
+          "three_times_coefficient": "-3876903493185273545493630311441670056969342385956302542826237631/14545347798110071780730074909927231605229580427839140701757442400"
+        },
+        {
+          "monomial": [
+            3,
+            7
+          ],
+          "three_times_coefficient": "-33745779450214807332527651591398752670444243502179908181111710091/298179629861256471504966535653508247907206398770702384386027569200"
+        },
+        {
+          "monomial": [
+            3,
+            8
+          ],
+          "three_times_coefficient": "-2251532493511456776751009490662311405126716432441394757608274333/59635925972251294300993307130701649581441279754140476877205513840"
+        },
+        {
+          "monomial": [
+            3,
+            9
+          ],
+          "three_times_coefficient": "7457814988410261310569022496737929315463428822582462950831785627/132524279938336209557762904734892554625425066120312170838234475200"
+        },
+        {
+          "monomial": [
+            4,
+            4
+          ],
+          "three_times_coefficient": "-144595060677404137464510646131048692126705290301971601688708416021/2385437038890051772039732285228065983257651190165619075088220553600"
+        },
+        {
+          "monomial": [
+            4,
+            5
+          ],
+          "three_times_coefficient": "-55204329936628475027098581381767544558838047855047650782066389197/170388359920717983717123734659147570232689370726115648220587182400"
+        },
+        {
+          "monomial": [
+            4,
+            6
+          ],
+          "three_times_coefficient": "6489033954010149041218037637202457945879935047420577232991828569/19878641990750431433664435710233883193813759918046825625735171280"
+        },
+        {
+          "monomial": [
+            4,
+            7
+          ],
+          "three_times_coefficient": "-80880094675771744837970398585100178764137968751529166114493483163/397572839815008628673288714204677663876275198360936512514703425600"
+        },
+        {
+          "monomial": [
+            4,
+            8
+          ],
+          "three_times_coefficient": "-7905164950331750363130316924586074607934136773359645429376013151/11927185194450258860198661426140329916288255950828095375441102768"
+        },
+        {
+          "monomial": [
+            4,
+            9
+          ],
+          "three_times_coefficient": "-63722715441171575673877544162331216872866912744869296938582009087/596359259722512943009933071307016495814412797541404768772055138400"
+        },
+        {
+          "monomial": [
+            5,
+            5
+          ],
+          "three_times_coefficient": "25193/947255"
+        },
+        {
+          "monomial": [
+            5,
+            7
+          ],
+          "three_times_coefficient": "-936/64417"
+        },
+        {
+          "monomial": [
+            5,
+            8
+          ],
+          "three_times_coefficient": "-41087/424657"
+        },
+        {
+          "monomial": [
+            5,
+            9
+          ],
+          "three_times_coefficient": "-19901/899351"
+        },
+        {
+          "monomial": [
+            6,
+            6
+          ],
+          "three_times_coefficient": "-191127/1589224"
+        },
+        {
+          "monomial": [
+            6,
+            7
+          ],
+          "three_times_coefficient": "91807/965882"
+        },
+        {
+          "monomial": [
+            6,
+            8
+          ],
+          "three_times_coefficient": "11036/729975"
+        },
+        {
+          "monomial": [
+            6,
+            9
+          ],
+          "three_times_coefficient": "63709/794612"
+        },
+        {
+          "monomial": [
+            7,
+            7
+          ],
+          "three_times_coefficient": "-13746/428015"
+        },
+        {
+          "monomial": [
+            7,
+            8
+          ],
+          "three_times_coefficient": "-25939/238724"
+        },
+        {
+          "monomial": [
+            7,
+            9
+          ],
+          "three_times_coefficient": "-25405/914271"
+        },
+        {
+          "monomial": [
+            8,
+            8
+          ],
+          "three_times_coefficient": "12661/778959"
+        },
+        {
+          "monomial": [
+            8,
+            9
+          ],
+          "three_times_coefficient": "12661/778959"
+        }
+      ]
+    }
+  ],
+  "six_wire_sample": {
+    "seed": 20261011,
+    "paths": 400,
+    "transitions": 3200,
+    "worst_drop": "3378249324617049069699976524607333987828570112562800112457190291/1587469191807931525314817403656654381049900969497971877831557600",
+    "unit_drop_passed": false,
+    "worst_transition": {
+      "prefix": [
+        [
+          [
+            0,
+            1
+          ],
+          [
+            3,
+            5
+          ]
+        ]
+      ],
+      "next_layer": [
+        [
+          0,
+          5
+        ],
+        [
+          1,
+          3
+        ]
+      ],
+      "drop": "3378249324617049069699976524607333987828570112562800112457190291/1587469191807931525314817403656654381049900969497971877831557600"
+    },
+    "scope": "Random actual prefixes; not exhaustive. Tests this fitted polynomial only."
+  }
+}
