@@ -5,6 +5,14 @@ Ticket UB-20 · branch `ub-20-lateral` · owner Claude (Opus 5.5) · started 202
 **Claim level: simulation / parameter model.** No sorting bound is proved here. The accepted
 coefficient remains 1419.
 
+> **Status (2026-10-18): parked. See [VERDICT.md](VERDICT.md).** Lateral repair lowers the
+> L4' model to about 560 (632–683 windowed) **only with average-case tails** for the merge
+> residual. With worst-case (union-bound) tools, the per-column overflow condition is 100–500x
+> over its order-1 budget at the model optima, and closing the gap needs `lg m ≥ 25`, where the
+> design without lateral repair already sits. So there is no provable gain. The tables below,
+> including the withdrawn 343 / 426 / 480–540 figures, are kept for their mechanisms and
+> calibrations.
+
 ## Question
 
 Every Chvatal-type tree with sort-based separators is limited by the *flux law*
@@ -101,6 +109,44 @@ The baseline is reproduced: no lateral repair gives 1419 at integer `(x,y,z) = (
   precision binds at almost the same height. So band balancing's value for the fringe is as a
   route to *proving* a low floor (UB-15), not as a cheaper fringe at today's floor.
 
+### Realistic fringe floors (`fringe_general_screen.py`, `lateral_certfloor_model.py`)
+
+The fixed floors above (92160 / 1024 / 64 rows) are replaced by the smallest fringe height the
+existing two-round fringe proof route (F2ROUND) certifies at the precision `eps_F = 1/J` a design
+actually needs. The screen re-evaluates F2ROUND's general bounds at the clamped worst point
+`n = max(16, E J / D)`. That clamp matters: the original `cert.py` closed forms assume
+`n = E J / D`, which is below the proof's `n >= 16` at moderate `J`. It is a float screen,
+calibrated on the documented points: it passes 131040 and 92160, fails 91136, and gives about
+84000 at the old precision because it maximises over integer subset sizes. Output:
+`fgen_J*.out`, `fgen_all.txt`.
+
+| `J = 1/eps_F` | `delta=128/4095` | `1/16` | `1/8` | `1/5` |
+|---|---:|---:|---:|---:|
+| `2^10` | 234 | | | |
+| `2^12` | 474 | 576 | 875 | 1662 |
+| `2^14` | 979 | 1192 | 1915 | 2836 |
+| `2^16` | 2016 | 2457 | 3447 | 5851 |
+
+The floor grows like `J^0.45–0.52`. **`delta_F = 1/2` is impossible on this route**: its R1a
+Chernoff step needs `Delta + 1 > e delta f`, so `delta < 1/e`. The tapered study's L4 variant
+(which assumed 1/2) is replaced by L4' at the achievable fractions.
+
+Model with these floors (ideal, windowed in parentheses):
+
+| variant | no lateral | lateral, proved `C=25.3` | lateral, simulated `C=0.5` |
+|---|---:|---:|---:|
+| V0 | 1286 (1418) | 1227 (1370) | 1224 (1339) |
+| S, slack removed | 893 (999) | 682 (755) | 556 (632) |
+| L4', `delta=1/16` | 758 (856) | 615 (686) | **480 (583)** |
+| L4', `delta=1/8` | 690 (792) | 564 (637) | 490 (608) |
+| L4', `delta=1/5` | 626 (726) | **543 (660)** | 535 (660) |
+
+Without lateral repair, bulk precision binds in every slack-free row, and lateral repair removes
+13–25%. With the simulated constant, the fringe binds again (for example `lg m` 17.7 fringe
+versus 15.3 bulk at `delta=1/8`). The earlier 343/426 figures assumed a 64-row floor and
+`delta_F = 1/2`, which this proof route cannot supply. **Current realistic range: about 540
+(proved constant) to 480 (simulated constant).**
+
 ### Where the remaining cost sits
 
 At the best L4 + lateral point, `(x,y,z) = (3.5, 3.0, 2.5)`, `lg m = 16.7`: stage cost
@@ -128,3 +174,24 @@ should be re-priced at these heights.
 * `lateral_selfconsistent.py`: residual derived from per-column statistics; `C` and rounds `R`.
 * `sim_lateral_residual.py`: calibration of `rho` for the cross-sibling merge.
 * `sim_band_fringe.py`: band-balancing effect on fringe misses.
+
+## Run-aware first sort (UB-13) re-priced at small column heights (2026-10-18)
+
+`RUNAWARE=1 python -I lateral_floor_model2.py` (output `comp5_ra_*.out`). The earlier hope was
+that at `lg m ≈ 20` merging a column's sorted runs would be much cheaper than `T(lg m)`. The flow
+table rules this out. A node `v` gets only a `1/(kA nu)` share of its wires from the parent's
+block; the rest are its children's fringes. Each fringe is a sorted run only
+`f ≈ nu m/(2Ak)` rows tall, so an assembled column contains about `R ≈ 2Ak/nu + k` runs (about
+1000 at the model optimum). A merge tree then costs `ceil(lg R)(lg m + 1) ≈ 220` layers, against
+`T(21) ≈ 236`.
+
+| variant | without run-aware | with run-aware |
+|---|---:|---:|
+| L4', `delta_F = 1/16` | 560 (632) | 560 (632) |
+| L4', `delta_F = 1/8` | 559 (663) | 550 (663) |
+| L4', `delta_F = 1/5` | 576 (683) | 573 (683) |
+
+**Verdict: no meaningful gain in this regime** (at most 2% ideal, none windowed). Skipping part
+of the first sort does not help either. Leaving `R'` runs per column raises the union bound's
+input entropy by a factor of about `R'`, so precision degrades like `sqrt(R' ln m/m)`; even
+`R' = 30` would need `m` about 30x larger. UB-13 stays parked.

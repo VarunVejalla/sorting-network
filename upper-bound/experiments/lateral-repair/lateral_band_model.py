@@ -4,7 +4,7 @@
 Parameter model only (heuristic, not a proof).  Builds on lateral_selfconsistent.py.
 
 Bulk: R lateral rounds, residual rho = (2 sqrt(C/(pi lam)))^R with lam = side*eps_B*m/(A nu);
-      cost R*(lg m + 1) layers.
+      cost 2R(lg m + 1) layers (full-column merges in two phases: even, then odd boundaries).
 Fringe: the two-round fringe law eps_F(f) = 1/(cF f) is improved by RF band-balancing rounds on the
       fringe bands (height h = 4f), each after the first dividing misses by gF (measured 3-6 in
       sim_band_fringe.out; default 3).  Cost RF*lg(8 f) layers, f = m * f_over_m(k, A, nu) rows.
@@ -37,13 +37,13 @@ def evaluate(eps_sep, C, R, RF, gF, x, y, z, P):
     with np.errstate(all="ignore"):
         f_rows = m * E.f_over_m(k, A, nu)
         GF = RF * np.log2(np.maximum(8 * f_rows, 2))
-        G = R * (lgm + 1) + GF
+        G = 2 * R * (lgm + 1) + GF   # two phases (even, odd boundaries) per lateral round
         ok = np.isfinite(ideal)
         spb = det["spb"]
         ideal = np.where(ok, (sorts * lgm * (lgm + 1) / 2 + G) * spb, np.inf)
         Lw = np.ceil(lgm - 1e-9) + 1
         GFw = RF * np.ceil(np.log2(np.maximum(8 * f_rows, 2)))
-        win = np.where(ok, (sorts * Lw * (Lw + 1) / 2 + R * Lw + GFw) * spb, np.inf)
+        win = np.where(ok, (sorts * Lw * (Lw + 1) / 2 + 2 * R * Lw + GFw) * spb, np.inf)
     return lgm, ideal, win, dict(lgm_B=lgm_B, lgm_F=det0["lgm_F"], spb=spb, rho=rho, f=f_rows, G=G)
 
 
