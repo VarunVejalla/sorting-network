@@ -79,8 +79,14 @@ set in `v_j`, bottom extreme set in `v_{j+1}`),
 sum_c |p_c - lam| <= n sqrt(lam) + sqrt( 2 P ( ln binom(m+n, m) + ln(4 m n) ) ).
 ```
 
-*Proof.* Union bound over the at most `mn` values of `P`, both orientations, and at most
-`binom(m+n,m)` profiles, using Lemmas 1–2 with `t^2 = 2P(ln binom(m+n,m) + ln(4mn))`. ∎
+*Proof.* Union bound over both orientations and the at most `binom(m+n,m)` profiles. Each
+profile fixes its own `P = sum_i a_i`, so no separate union over `P` is needed. With
+`t^2 = 2P(ln binom(m+n,m) + ln(4mn))`, Lemma 2 gives each event probability at most
+`1/(4mn binom(m+n,m))`, for a total of at most `2 binom(m+n,m) / (4mn binom(m+n,m)) = 1/(2mn)`. ∎
+
+(Corrected after review on 2026-10-18. The first version also took a union over the `mn` values
+of `P`, which made the stated total `1/2` rather than `1/(2mn)`. The bound itself is unchanged.)
+The residual bound below assumes `P = Q`; the net drift `|P - Q|` is charged separately.
 
 The same random choice must also satisfy the separator's existing Properties B and F. Their
 failure budgets are separate events, so existence of a common `sigma2` needs only the total failure

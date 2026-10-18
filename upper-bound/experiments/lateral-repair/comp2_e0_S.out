@@ -1,0 +1,3 @@
+ variant          case      | ideal (win)  eps_B    eps_F    f rows   (x,y,z)          lg m [B, F, O]        spb
+ S   slack removed L=2 t=6   |   514 (  670)  2^-9.0   2.1e-04     732  (3.0,2.5,2.0)   18.2 [18.2,18.1,14.1]  0.917
+ S   slack removed L=2 t=10  |   514 (  670)  2^-9.0   2.1e-04     732  (3.0,2.5,2.0)   18.2 [18.2,18.1,15.6]  0.917

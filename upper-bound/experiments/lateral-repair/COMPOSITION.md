@@ -16,7 +16,7 @@ references are to DCS-TR-294 (`docs/dcs-tr-294.pdf`, printed page numbers).
    in the fringe rows of one sibling and goes **up** whenever it fits. Only the per-column
    overflow beyond the fringe height goes down. The governing condition changes from
    Chvatal's "the spill fits the fringe" (`lam ≲ delta_F f`) to "the per-column residual fits the
-   fringe" (`t sqrt(lam) ≲ f`), at the cost of a fringe-load factor `L ≤ 3` from sibling drift
+   fringe" (`t sqrt(lam) ≲ f`), at the cost of a fringe-load factor `L = 2` from sibling drift
    (§4).
 3. §5 lists the resulting conditions, which replace (4.2)–(4.5) for the cost model.
 
@@ -107,14 +107,17 @@ O_j = sum_c ( |p_c + far_c - q_c| - f )_+
 goes down as order-1 error. That overflow is a far-tail event. The spill itself no longer has
 to fit the fringe; only its per-column imbalance does.
 
-**Drift of far outsiders.** A far-right outsider of `v_j` is larger than every key of `v_{j+1}`,
-so phase 1 moves it to `v_{j+1}`'s top and phase 2 moves it on to `v_{j+2}`'s top. Interior
-siblings receive at most two siblings' far loads; the rightmost receives at most three. Far
-outsiders still leave through *some* sibling's fringe, and all siblings' fringes go to `u`, so
-the flow is unchanged. The fringe rows of one sibling, however, may carry up to `L = 3` times
-the per-node far load. Property F must hold for that combined extreme set. Because the
-siblings' scrambles are independent, the combined column counts are a sum of independent
-staircases: a fringe event at fraction `L delta_F`.
+**Drift of far outsiders.** A far-right outsider of `v_j` is larger
+than every non-far key of `v_{j+1}`, so phase 1 moves it to `v_{j+1}`'s top and phase 2 moves it
+on to `v_{j+2}`'s top. With `k` a power of two (even), every sibling, ends included, receives at
+most `L = 2` siblings' far loads (checked by the reviewer's simulation of both phases; `L = 3`
+occurs only for odd `k`). Far outsiders still leave through *some* sibling's fringe, and all
+siblings' fringes go to `u`, so the flow is unchanged. The fringe rows of one sibling, however,
+may carry up to `L = 2` times the per-node far load, so a per-column fringe statement must hold
+for that combined extreme set. If each sibling index uses its own independent scramble, the
+combined column counts are a sum of independent staircases, a fringe event at fraction
+`L delta_F`. With one shared network the adversary can align the column sets row by row, and this
+fails (open lemma 2, §6).
 
 ## 5. Conditions replacing (4.2)–(4.5)
 
@@ -123,30 +126,58 @@ the spill per column, and `f = m nu/(2Ak)` for the fringe height.
 
 * **(4.2-L)** Order-0 outsiders *other than spill* (`u`'s outsiders, sibling hiding, slack, and
   the separator's distance-2 spill `eps_2` that lateral repair cannot cancel) satisfy Chvatal's
-  (4.2) with `eps_B` replaced by `eps_2`. Heuristically `eps_2 = O(eps_B^2)`
-  (`../tapered/NOTES.md` §2.2, simulation only).
-* **(4.4-L)** `L mu ≤ (delta_F/2)(A nu k - 1)/(A^2 k^2)`, with Property F certified at fraction
-  `delta_F`, so each node may use `delta_F/L`.
-* **(O)** Overflow fits the order-1 budget: `O_j/(side eps_B a(u)) ≤ eta`, where `eta` enters
-  (4.5) as `eps_F/(A nu) + delta^2 A k/nu + eta side eps_B/(mu A^2 nu^2) ≤ delta`. A sufficient
-  heuristic is `f ≥ t sqrt(lam)` with a tail factor `t` (Gaussian scale: `t ≈ 6–8`), that is,
-  `m ≥ t^2 (2Ak/nu)^2 side eps_B/(A nu)`.
-* **(4.3), (4.5)** As in Chvatal or the L-variant, with `mu` from (4.2-L) and (4.4-L).
+  (4.2) with `eps_B` replaced by `eps_2`, in the exact form
+  `eps_2 <= mu (A nu - 1) - slack - mu((k-1) sib + delta A^2 k)`. Heuristically
+  `eps_2 = O(eps_B^2)` (`../tapered/NOTES.md` §2.2, simulation only).
+* **(4.4-L)** `L mu ≤ (delta_F/2)(A nu k - 1)/(A^2 k^2)`, with the fringe statement certified at
+  the combined fraction `delta_F`, so each node may use `delta_F/L`.
+* **(4.5-L)** A child receives the fringe misses of up to `L` siblings' far loads:
+  `L eps_F/(A nu) + delta^2 A k/nu + (overflow term) ≤ delta`.
+* **(O-L)** The per-column residual must fit the fringe rows *together with* everything sharing
+  them: up to `L` siblings' far loads, `u`'s residual outsiders, sibling hiding, the distance-2
+  spill, and the drift mean `D/n` (net drift `D = P - Q` shifts each column's mean). A
+  sufficient heuristic is `f - m (L mu + (3 mu + slack + eps_2)/(A nu)) ≥ t sqrt(2 lam)`, with a
+  Gaussian tail factor `t ≈ 6–10`.
+* **Top and small nodes.** A top node at descent (`pi = 0`) has no fringe, so residual cannot go
+  up. At the model's design point a node of size `Ak^2/nu` holds only a few spill keys, so (4.3)
+  cannot simply be dropped. Nodes whose size does not allow columns of height `m` (near
+  `alpha(t)`, partial `omega(t)` nodes, the root) cannot satisfy (O-L). **Proposed handling:** sort
+  every node with `a ≤ m^1.7` exactly. That costs `T(lg a) ≤ 3 T(lg m)`, so it fits inside the
+  stage depth, and it creates no outsiders (the UB-22 idea). The induction then needs this case
+  split stated.
 * **Cost per stage**: `3 T(lg m) + 2 (lg m + 1)`.
 
-**What (O) needs proved.** A worst-case tail bound for `sum_c (|p_c + far_c - q_c| - f)_+`. The
-McDiarmid argument of LATERAL-LEMMA.md is far too weak for a rare-event sum (its deviation term
-does not decrease with `f`). This needs an F2ROUND-style argument: counting inputs by their tops,
-and Chernoff bounds over sets of overfull columns, applied to the difference of two independent
-staircases. It is the natural joint form of UB-15 and UB-20.
+## 6. Review (2026-10-18) and status
 
-## 6. Status
+An independent reviewer (fresh context, primary source only) checked this note and
+LATERAL-LEMMA.md. **Confirmed:** the summary of Chvatal's argument; §3's diagnosis and its 36x
+figure (recomputed as 36.5; about 56 with (4.3) kept); the deterministic full-column case
+analysis; the timing; and Lemma 1 and the concentration inequality of LATERAL-LEMMA.md (McDiarmid,
+sampling without replacement).
 
-* §3 is a correction to this branch's earlier model results (README.md, `lateral_*_model.py`):
-  the claimed 343 / 426 / 480–540 slopes do not follow.
-* §4–§5 are a derivation sketch. Open points: the drift argument across both phases at the ends
-  of a sibling family; the interaction of the separator's own fringe with spill occupying the top
-  rows (far outsiders are larger than spill, so they keep the top `delta_F` share, but this needs
-  checking against Property F's exact statement); and whether `eps_2 = O(eps_B^2)` holds in the
-  worst case.
-* Re-pricing with §5 is in `lateral_composed_model.py`.
+**Fixed after review:** `L = 2` instead of 3; the factor `L` in (4.5); co-resident loads and the
+drift mean in (O); the union count in LATERAL-LEMMA.md; the exact form of the flux law
+(`eps_B <= mu (A nu - 1) - slack`, a factor of about 3.4 tighter than `mu A nu` at `A nu = 1.41`);
+and a case split for top and small nodes (§5).
+
+**Open lemmas, required before any coefficient is claimed:**
+
+1. **Spill locality.** A full-column merge inserts keys below `t_j` into `v_j`. If such keys can
+   lie anywhere in `I_j`, they shift `v_j`'s own internal cuts by up to
+   `side eps_B a(v)/(A nu)` rows, which is far above the `O(eps_B^2)` budget of (4.2-L). Property
+   B does not localize the spill. Needed: the spill across a cut lies within the top `X` ranks of
+   `I_j`, with `X` below the width of `v_j`'s last child block. For sort-based separators this is
+   plausible (spill keys sit near the cut row of their columns, and column profiles track global
+   rank), but it must be proved for every input.
+2. **Joint per-column fringe statement.** After merging, one column's fringe rows hold extreme
+   keys from up to `L` siblings' separators. Property F is a set-level statement about one
+   separator, and F2ROUND's proof does not transfer. Needed: a per-column overflow bound for a sum
+   of staircases. This requires **distinct scrambles per sibling index**; with one shared network,
+   an adversary can align column sets row by row.
+3. **Restated invariant `P'`.** At time `t+1` the full spill is still present, so P fails for
+   order 0. State `P' = P` plus a structured spill class (spill counts per cut, extreme within
+   the node), and re-prove Lemmas 4.2–4.4 for the post-merge configuration, which is not itself a
+   separator output.
+
+Model consequences of the fixes are in `lateral_composed_model.py` (rows `comp2_*.out`). Every
+figure there is conditional on the three open lemmas.

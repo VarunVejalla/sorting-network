@@ -7,8 +7,10 @@ Parameter model only.  Differences from lateral_certfloor_model.py:
            eps_2 = c2 * eps_B^2 remains (heuristic, ../tapered/NOTES.md sec. 2.2);
   (4.4-L)  each node may use fringe fraction delta_F / L (L = fringe-load factor from sibling drift),
            while Property F is certified at delta_F (fringe floors from fringe_general_screen.py);
-  (O)      the per-column residual must fit the fringe rows: f >= t sqrt(lam), i.e.
-           m >= t^2 (2 A k/nu)^2 side eps_B / (A nu); overflow is then treated as negligible in (4.5);
+  (4.5-L)  fringe misses of L siblings' far loads reach one child, so eps_F is needed at eps_F/L;
+  (O-L)    the per-column residual must fit the fringe rows together with the co-resident loads
+           (L far loads, drift mean, sibling hiding, distance-2 spill): m g >= t sqrt(2 lam);
+           overflow is then treated as negligible in (4.5).  L = 2 for even k (review, 2026-10-18);
   cost     3 T(lg m) + 2 (lg m + 1) per stage (two full-column merge phases).
 
 Run:  python -I lateral_composed_model.py [variant-substring ...]
@@ -34,10 +36,18 @@ def evaluate(eps_sep, L, t, c2, x, y, z, P):
     _, ideal0, _, det = E.evaluate(eps2, x, y, z, P2)                     # (4.2-L), (4.4-L), (4.5)
     Af, pf = FLOOR[P["dF"]]
     with np.errstate(all="ignore"):
-        f_need = Af * (1.0 / det["epsF"]) ** pf
+        # (4.5-L): a child receives the fringe misses of L siblings' far loads, so the fringe precision
+        # must be eps_F / L, certified at the combined fraction delta_F.
+        f_need = Af * (L / det["epsF"]) ** pf
         fom = E.f_over_m(k, A, nu)
         lgm_F = np.log2(f_need / fom)
-        lgm_O = np.log2(t * t * (2 * A * k / nu) ** 2 * P["side"] * eps_sep / (A * nu))
+        # (O-L): the fringe rows also hold L siblings' far loads (L mu per row of height), the drift mean
+        # D/n (u's residual outsiders, sibling hiding ~2 mu, slack, distance-2 spill), and the residual
+        # tail t sqrt(2 lam).  Need m * g >= t sqrt(2 lam), g = f/m minus the co-resident loads.
+        mu = det["mu"]
+        slack_v = P["slack"] * (A * nu * k - 2 * A * nu + 1) / (2 * A * A * k * k)
+        g = fom - (L * mu + (3 * mu + slack_v + eps2) / (A * nu))
+        lgm_O = np.where(g > 0, np.log2(2 * t * t * P["side"] * eps_sep / (A * nu * np.maximum(g, 1e-300) ** 2)), np.inf)
     lgm_B = E.lgm_for(eps_sep, P["rounds"])
     lgm = np.maximum.reduce([lgm_F, lgm_B, lgm_O, 2 * (x + y) + 0 * eps_sep])
     sorts = 2 if P["rounds"] == 1 else 3
@@ -77,7 +87,7 @@ VARIANTS = [
     ("L4' dF=1/8", dict(L4, dF=1 / 8)),
     ("L4' dF=1/5", dict(L4, dF=1 / 5)),
 ]
-CASES = [("L=1 t=6", 1.0, 6.0), ("L=3 t=6", 3.0, 6.0), ("L=3 t=10", 3.0, 10.0)]
+CASES = [("L=2 t=6", 2.0, 6.0), ("L=2 t=10", 2.0, 10.0)]
 
 
 def main():

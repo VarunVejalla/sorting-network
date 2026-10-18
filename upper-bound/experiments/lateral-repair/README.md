@@ -5,6 +5,16 @@ Ticket UB-20 · branch `ub-20-lateral` · owner Claude (Opus 5.5) · started 202
 **Claim level: simulation / parameter model.** No sorting bound is proved here. The accepted
 coefficient remains 1419.
 
+> **Status (2026-10-18, after review):** the lateral-repair slopes in the "Results so far" tables
+> below (343 / 426 / 456 / 480–540) are **withdrawn**. They charged the post-merge residual to the
+> order-0 budget; it is order-1 error unless routed up (COMPOSITION.md §3). The corrected design
+> merges full columns so the residual leaves through the fringe rows. With the review's fixes
+> (`lateral_composed_model.py`, `comp2_*.out`) it models at **486–560 ideal (608–663 windowed)**
+> for L4' at `delta_F` in {1/16, 1/8, 1/5}, with either distance-2 spill model. That is
+> conditional on three open lemmas: spill locality, a joint per-column fringe statement, and a
+> restated invariant P' (COMPOSITION.md §6). The tables below are kept for their mechanisms and
+> calibrations.
+
 ## Question
 
 Every Chvatal-type tree with sort-based separators is limited by the *flux law*
