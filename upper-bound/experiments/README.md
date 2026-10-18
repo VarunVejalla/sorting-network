@@ -1,5 +1,8 @@
 # Upper-bound experiments
 
+- `direct-multiway/`: active jointly designed all-cut partitioner and weighted-potential route; see `RESEARCH-SEQUENCE.md`.
+- `ajtai-multiway/`: parked row-scramble screens and certificates; its tail/repair audit is summarized in `../backlog/ajtai-row-scramble-tail.md`.
+
 Keep candidate improvements separate from `../best`. Promote only after checking
 the complete sorting guarantee, global depth, and headline axiom dependencies.
 
@@ -8,7 +11,6 @@ the complete sorting guarantee, global depth, and headline axiom dependencies.
   stage composition); a copy of the former 1770 package. Its design and roadmap are in
   `DESIGN.md` / `ROADMAP.md`. At the two-round column height (m ≈ 2^42) its payoff is only a few
   percent, so it is parked until the larger levers are exhausted.
-- `tapered/`: model and notes on what invariant changes could lower the slope (`NOTES.md` verdict; `SURVEY.md` comparison of AKS-family invariants). Key finding: removing the schedule slack (non-uniform block sizes) is the one lever with a large modeled payoff (~1025 windowed).
 - `fringe-single-round/`: analysis and scripts for the one-round fringe constants.
 - `expanders/`: optional standalone certificate and expander package; native
   evaluation and C FFI are separate from the best proof's trust boundary.

@@ -25,11 +25,36 @@ its dated constants and inline command paths may describe earlier layouts.
 
 ### Active upper research
 
-The proposed smaller **one-round** fringe target is ruled out by a deterministic
-adversary. The current route is a joint two-round fringe guarantee, paired with
-a variance-sensitive bulk lemma. These are research arguments, not improved
-kernel-checked endpoints. See [the obstruction](chvatal-fringe-obstruction.md)
-and [the small-rank branch](chvatal-two-round-small-ranks.md).
+The earlier Chvatal fringe-repair experiments below are historical context for
+the 1770-era design; the promoted endpoint is now 1419. The current high-upside
+structural lead is multiway partitioning and its missing global composition
+argument, tracked below.
+
+The older global-cost audit contains an 86-layer fringe-funnel candidate and
+a 107-layer central bulk-repair target, but neither has its universal proof.
+These remain experimental context, not the route underlying 1419; see the
+[global cost audit](../upper-bound/experiments/global-cost-audit/README.md) and
+[the verified endpoint](../upper-bound/best/README.md).
+
+The latest audit adds a joint-column fringe exponential-tail argument and
+explicit bulk localization with a 631-layer band-cut repair baseline. The
+universal fringe profile count and the reduction of bulk repair to 107 layers
+remain open. See [central bulk feasibility](../upper-bound/experiments/global-cost-audit/central-bulk-feasibility.md)
+and [the joint fringe tail](../upper-bound/experiments/global-cost-audit/funnel-joint-tail.md).
+
+The active structural route is now a direct jointly designed multiway
+partitioner with all-cut and fringe guarantees, tracked in the [direct
+multiway research sequence](../upper-bound/experiments/direct-multiway/RESEARCH-SEQUENCE.md).
+Its first gate is an explicit contract-to-invariant table and a priced finite
+construction. The older Ajtai–Komlós–Szemerédi row-scramble branch has
+all-cuts aggregate screens, but no composable repair; its exceptional-column
+tail audit is parked at [the backlog note](../upper-bound/backlog/ajtai-row-scramble-tail.md).
+
+The [1419 cost audit](upper-bound-1419-cost-audit.md) identifies the 2838-layer
+ordinary node as the repeated leading cost and the hand-certified two-tail
+Variant B as a possible route to 1354.5; its lower window and exact-mass
+first-round proof are not yet formalized. It also compares the AKS core against
+the promoted node interface.
 
 ## Historical proof map
 
@@ -296,3 +321,28 @@ Unused earlier scaffolding is archived, unbuilt, in
   upstream `docs/` describe inherited infrastructure. Some progress/trust
   descriptions are historical; use Lean declarations and current axiom checks
   as the evidence for proof status. `docs/old/` is historical planning material.
+
+The latest profile-budgeted funnel recurrence couples exterior mass and root blockers and finds substantial fixed-profile expectation slack numerically. It still does not handle the common-witness profile union. The 107-layer bulk target has no construction; the next candidate is a shared multiway approximate separator checked against the exact central contract. See [profile-budgeted funnels](../upper-bound/experiments/global-cost-audit/profile-budgeted-funnels.md).
+
+A candidate screen confirms that the cited two-round k-halver is not itself the central 107-layer repair: it handles one cut, has percent-scale error, and a direct Batcher simulation costs 156�182 layers for k=4096�8192. The proposed p-way composition needs an explicit finite analysis before expander work is justified. See [the 107-layer screen](../upper-bound/experiments/global-cost-audit/central-107-screen.md).
+
+A finite Batcher-priced check narrows the 107-layer AKS route: k=512 costs 90 layers for the two sorter rounds and leaves 17 for the unquantified p-way combination; the stated arbitrary-input halver error is still about 0.22�0.27. The published sketch gives no finite combination bound, so this does not yet define a candidate network.
+
+A row-scramble-specific two-height profile shows the two-round k=512 core leaves expected leakage at least delta/4 for every fixed row permutation. Under the candidate geometry this is about 110x the central allowance, so the final 17 layers need a localized multiscale repair or a stronger first-scramble promise. This is conditional on the L1 profile class; reachability under the first scramble remains open. See [the central 107-layer screen](../upper-bound/experiments/global-cost-audit/central-107-screen.md).
+
+A further screen of the 17-layer finisher finds simple candidates insufficient on the same two-height profile: random cross-boundary matchings leave about 0.0418 delta expected leakage and exact Batcher sorting of 32-wire blocks about ~0.06998 delta, versus the conditional ~0.0022 delta stress threshold. The later common localization promise excludes this profile on its good event (mass beyond the band about 8 million per column versus A=4,096--8,192), so it is not necessary for the revised reachable class if that informal promise holds. These are model-specific diagnostics, not lower bounds on arbitrary finishers.
+
+
+The localized 17-layer repair target now has a matching-graph criterion: on the aligned iid boundary profile, degree 17 already contributes about `0.001879*delta` isolated highs, leaving `0.000321*delta` under the conditional `0.0022*delta` stress threshold. Sampled cyclic-shift schedules leave about `0.044*delta`; this is a limited simulation screen, not a lower bound on general networks. See [the central 107-layer screen](../upper-bound/experiments/global-cost-audit/central-107-screen.md).
+
+A finite matching-schedule diagnostic trains each layer to maximize expected immediate repairs: validation residual was `0.047394` at 64 positions, against `0.051465` for five random schedules, still over 21x target. The next check is graph capacity via per-input maximum matching versus the fixed edge order. See [the script and central screen](../upper-bound/experiments/global-cost-audit/central-107-screen.md).
+
+Four bipartite multigraphs formed from 17 random perfect matchings (4,096 positions, 500 balanced samples each) left `0.0436` residual under fixed edge order but only `0.00250`--`0.00261` under per-input maximum matching. The graph has near-target capacity; realizing it with one fixed 17-layer schedule is the bottleneck in this model. This is a finite diagnostic only. See [the capacity screen](../upper-bound/experiments/global-cost-audit/matching_capacity_screen.py) and [analysis](../upper-bound/experiments/global-cost-audit/central-107-screen.md).
+
+A two-row within-row butterfly compactor was screened by exact four-state distribution propagation. Exhaustively placing the 17 layers within the family of butterfly dimensions plus pointwise cross-row cancellation gives best leakage `0.007162` on `2^16` positions, still 3.25x above the conditional `0.0022` stress threshold. Ideal block compaction would leave about `0.001102` from count imbalance alone, so a substantial gain requires changing the compactor structure, not just layer placement. This remains an iid local diagnostic. See [the script](../upper-bound/experiments/global-cost-audit/butterfly_compaction_screen.py) and [analysis](../upper-bound/experiments/global-cost-audit/central-107-screen.md).
+A first Monte Carlo screen of random perfect-matching compaction layers on 256 wires is substantially worse than butterfly schedules: three sampled 16-layer networks per orientation leave 0.047-0.051 leakage, versus 0.029449 for the best 17-layer butterfly/cancellation schedule. This is an initial rejection of unstructured random topologies, not a limitation on designed networks. See [the screen](../upper-bound/experiments/global-cost-audit/random_compaction_screen.py) and [central analysis](../upper-bound/experiments/global-cost-audit/central-107-screen.md).
+A truncated 16-layer bitonic network also leaves about 0.0495 leakage on 64, 256, and 1,024 wires, sampled iid, worse than the best 17-layer butterfly/cancellation schedule on 256 wires. Random and generic sorting-network prefixes fail this screen; investigate a distribution-tailored coarse-to-fine compactor. See [the screen](../upper-bound/experiments/global-cost-audit/bitonic_prefix_screen.py) and [analysis](../upper-bound/experiments/global-cost-audit/central-107-screen.md). Finite sorter searches such as [SorterHunter](https://github.com/bertdobbelaere/SorterHunter) can seed local gadget search but optimize exact sorting and cover at most 64 wires; the exact 64-position iid compaction imbalance floor is still 0.03519. Thus use finite gadgets only within a recursively composed profile-combining design. The `0.0022` threshold is conditional on an L1-admissible two-height profile not yet shown reachable; the actual repair contract is cut- and input-dependent. See [the repair contract](../upper-bound/experiments/global-cost-audit/repair-contract.md). A cut-sensitive retuning also appears to close the 631-layer band baseline reserve: lowering protected-window error from 2048 to 896 and adjusting beta leaves at least 128 counts per column under the conservative allowance, with sampled worst probability margins 1.695 (window) and 3.397 (bulk tail). This is still informal and does not supply the desired 107-layer network. See [calculation](../upper-bound/experiments/global-cost-audit/central_slack_envelope.py) and [derivation](../upper-bound/experiments/global-cost-audit/central-bulk-feasibility.md).
+
+A fixed-matching search on 64-position iid quarter-density inputs found a 17-layer schedule with validation leakage 0.02138, versus 0.04525 for repeated butterfly and 0.03637 for a random schedule. This is only a finite iid topology screen, not a bound for the scheduler-reachable localized band states. See [search code](../upper-bound/experiments/global-cost-audit/finite_repair_search.py) and [central screen](../upper-bound/experiments/global-cost-audit/central-107-screen.md). The current next step is to align the evaluator with the cut-dependent repair contract before spending effort on broader finite searches.
+
+A small exact contract-search loop now enumerates height profiles under L1/tail constraints, applies one fixed row-wise scramble and repair, and computes Q_*, Q_R, and per-cut integer slack. On an 8x4 toy geometry, a 4-layer unrestricted matching network passed 781 profiles; the same shallow random search under a central-row confinement did not. The toy cap is synthetic and the envelope is not an upstream reachability theorem. See [evaluator](../upper-bound/experiments/global-cost-audit/cut_contract_screen.py) and [results/analysis](../upper-bound/experiments/global-cost-audit/central-107-screen.md). The scheduler-shaped toy 66x2 search also failed under central confinement, but that is not a lower bound. The unrestricted 8x4 schedule touched protected rows in 46 of its 64 comparators. Details are in the [central repair screen](../upper-bound/experiments/global-cost-audit/central-107-screen.md).

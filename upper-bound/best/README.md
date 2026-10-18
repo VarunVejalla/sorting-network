@@ -76,3 +76,8 @@ These files were developed in the surrounding repository's `AKS/Chvatal/` and `A
 (see `../../docs/research-index.md` for history); this folder is the cleaned extraction. Older,
 no-longer-needed scaffolding (abstract trajectories, finite-range Batcher assembly, the
 `Sorting1830Obligation` bundle) is kept, unbuilt, under `../../archive/chvatal-scaffolding/`.
+
+The generic closed-certificate interface for independent global upper bounds is
+[`AKS/Bounds/Certificate.lean`](AKS/Bounds/Certificate.lean). The separate
+[`../contributions/README.md`](../contributions/README.md) package demonstrates how to submit a
+different construction against the same comparator-network model and minimum-depth definition.

@@ -11,6 +11,11 @@ It is a self-contained Lean package based on Chvátal's construction with a two-
 [`best/README.md`](best/README.md) for the finite bound, proof map, and build instructions.
 
 The previous best (one-round separator, 1770) is kept in `alternatives/chvatal-1770/`.
-Parked ideas, including the research track for a few-hundred coefficient and a list of ideas
-already ruled out, are in `backlog/`. Exploratory work is kept separately in `experiments/`
+The ticketed research backlog is in [`backlog/README.md`](backlog/README.md); it includes
+ordinary-node sorter depth, smaller node windows, partial sorting, schedule optimization, and
+expander/halver alternatives, with a new ticket for the 2024 k-sorting construction and its
+preliminary screen in [`experiments/k-sorting-2024`](experiments/k-sorting-2024/README.md).
+Older exploratory work is kept separately in `experiments/`
 (promote to `best/` only after the full build, the axioms guard and the headline are checked).
+For independent end-to-end proofs using the canonical network model and `D(n)`, start at
+[`contributions/README.md`](contributions/README.md).

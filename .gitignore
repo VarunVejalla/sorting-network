@@ -29,3 +29,6 @@ config
 hooks
 objects
 refs
+
+# Local export archives
+upper-bound/best/upper_bound.zip
