@@ -5,15 +5,13 @@ Ticket UB-20 · branch `ub-20-lateral` · owner Claude (Opus 5.5) · started 202
 **Claim level: simulation / parameter model.** No sorting bound is proved here. The accepted
 coefficient remains 1419.
 
-> **Status (2026-10-18, after two reviews):** the lateral-repair slopes in the "Results so far"
-> tables below (343 / 426 / 456 / 480–540) are **withdrawn**. They charged the post-merge residual
-> to the order-0 budget; it is order-1 error unless routed up (COMPOSITION.md §3). The corrected
-> design merges full columns so the residual leaves through the fringe rows. With the composition
-> review's fixes and the provable spill-locality floor (SPILL-LOCALITY.md §7,
-> `lateral_floor_model2.py`, `comp4_*.out`), it models at **559–576 ideal (632–683 windowed)** for
-> L4' at `delta_F` in {1/16, 1/8, 1/5}, and 620 (713) with slack removal alone. Open: the
-> fringe-inflow margin argument, a joint per-column fringe statement, and a restated invariant P'
-> (COMPOSITION.md §6). The tables below are kept for their mechanisms and calibrations.
+> **Status (2026-10-18): parked. See [VERDICT.md](VERDICT.md).** Lateral repair lowers the
+> L4' model to about 560 (632–683 windowed) **only with average-case tails** for the merge
+> residual. With worst-case (union-bound) tools, the per-column overflow condition is 100–500x
+> over its order-1 budget at the model optima, and closing the gap needs `lg m ≥ 25`, where the
+> design without lateral repair already sits. So there is no provable gain. The tables below,
+> including the withdrawn 343 / 426 / 480–540 figures, are kept for their mechanisms and
+> calibrations.
 
 ## Question
 

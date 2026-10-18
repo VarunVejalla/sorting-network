@@ -143,3 +143,24 @@ create no outsiders.
   item 3.
 * **The root and the first stages** (Chvatal's (4.1), `eps* <= mu/k`) are unchanged; the root's
   children have no spill class at `t = 1` beyond `eps*`.
+
+## Review (2026-10-18): not a valid sketch; route parked
+
+An independent reviewer found:
+
+1. **(O-L) cannot be proved this way.** The spill per column is `lam ≈ 4–8e4`, far above
+   `f ≈ 2.4–3.4e3`, so F2ROUND's truncated machinery does not apply to the residual. Bennett plus
+   a union over states leaves an overflow floor of about `1–3e-4` against a (4.5-L) budget of about
+   `1e-7–1e-6`, 100–500x over. The model's `t sqrt(2 lam)` had no entropy term, and its (4.5-L) had
+   no overflow term. **This is decisive; see VERDICT.md.**
+2. **Item 6 is wrong.** Exact sorting does not remove outsiders already in a node, so (4.3) is
+   still needed. Exact sorting also creates cut-drift misplacement, so "P = Q = 0" is false.
+3. **The far-load transfer to F2ROUND is wrong as stated.** The stacked matrix's trivial baseline
+   `L g2 > f` makes `Phi < 0`. Fix: the deterministic split
+   `(sum_s w_s - f)_+ <= sum_s (w_s - f/L)_+`, with per-sibling F at height `f/L`. This needs no
+   independent scrambles.
+4. **P' is inconsistent.** The spill bound and `S_R - S_L = D_j` conflict as `eps_B -> 0`.
+   `D_j` must be bounded separately by `mu c + max(j, k-j) Delta_1 + slack`. "Fresh spill" should
+   be defined by counts. `side = 1/2` needs a per-threshold Property B.
+5. Items 1, 2, 4, 5 and 7 are correct or conservative modulo wording. The doc's "one or two
+   siblings" contradicts `L = 2`.

@@ -306,16 +306,16 @@
       "id": "UB-20",
       "title": "Add adjacent-region compaction and attenuation as a repair channel",
       "priority": "P2",
-      "status": "active",
-      "claim_level": "simulation",
+      "status": "parked",
+      "claim_level": "model",
       "baseline": 1419,
       "projected": null,
       "owner": "Claude (Opus 5.5)",
       "branch": "ub-20-lateral",
       "depends_on": ["UB-19"],
       "first_deliverable": "Prove or refute a fixed even/odd adjacent-region repair family with compaction/attenuation, simultaneous threshold guarantees, far-jump leakage and a complete composable depth recurrence.",
-      "evidence": ["upper-bound/backlog/roadmap-700-200.md", "upper-bound/experiments/lateral-repair/README.md"],
-      "notes": "A new lateral comparison channel could bypass the old assumption that all repair passes through parent fringe bandwidth. No adjacent-only per-key error premise is established. Charge compaction and every serial layer; input-dependent maximum matchings are not comparator networks. For a new factor-64 macro-stage, total depth gates are 4200 for 700 and 1200 for 200."
+      "evidence": ["upper-bound/backlog/roadmap-700-200.md", "upper-bound/experiments/lateral-repair/VERDICT.md", "upper-bound/experiments/lateral-repair/README.md"],
+      "notes": "Parked 2026-10-18 (VERDICT.md, three independent reviews): full-column sibling merges cancel symmetric spill and route the residual up through fringe rows; with average-case tails the L4' model drops to about 560 (632-683 windowed), but the worst-case per-column overflow (union-bound entropy floor) exceeds its order-1 budget 100-500x at those parameters, so there is no provable gain. Revive only with a sharper worst-case overflow lemma or a flow table that routes overflow up. Original note: a new lateral comparison channel could bypass the old assumption that all repair passes through parent fringe bandwidth. No adjacent-only per-key error premise is established. Charge compaction and every serial layer; input-dependent maximum matchings are not comparator networks. For a new factor-64 macro-stage, total depth gates are 4200 for 700 and 1200 for 200."
     },
     {
       "id": "UB-21",
