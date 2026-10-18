@@ -1,0 +1,4 @@
+ variant            case                      | ideal (win)  eps_sep  eps_F    f rows  rho      (x,y,z)          lg m [B, F]   spb
+ V0  Chvatal as is  no lateral                |  1286 ( 1418)  2^-22.0  3.1e-07   15202 1.00e+00 (6.0,11.0,4.5)   36.4 [36.4,36.4]  0.630
+ V0  Chvatal as is  lateral C=25.3 (proved)   |  1227 ( 1370)  2^-21.0  1.4e-07   22855 2.12e-01 (6.0,10.0,4.5)   36.0 [35.0,36.0]  0.593
+ V0  Chvatal as is  lateral C=0.5 (sims)      |  1224 ( 1339)  2^-14.0  1.2e-06    7522 9.20e-03 (5.0,9.5,4.0)   32.4 [25.2,32.4]  0.725

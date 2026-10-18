@@ -101,6 +101,44 @@ The baseline is reproduced: no lateral repair gives 1419 at integer `(x,y,z) = (
   precision binds at almost the same height. So band balancing's value for the fringe is as a
   route to *proving* a low floor (UB-15), not as a cheaper fringe at today's floor.
 
+### Realistic fringe floors (`fringe_general_screen.py`, `lateral_certfloor_model.py`)
+
+The fixed floors above (92160 / 1024 / 64 rows) are replaced by the smallest fringe height the
+existing two-round fringe proof route (F2ROUND) certifies at the precision `eps_F = 1/J` a design
+actually needs. The screen re-evaluates F2ROUND's general bounds at the clamped worst point
+`n = max(16, E J / D)`. That clamp matters: the original `cert.py` closed forms assume
+`n = E J / D`, which is below the proof's `n >= 16` at moderate `J`. It is a float screen,
+calibrated on the documented points: it passes 131040 and 92160, fails 91136, and gives about
+84000 at the old precision because it maximises over integer subset sizes. Output:
+`fgen_J*.out`, `fgen_all.txt`.
+
+| `J = 1/eps_F` | `delta=128/4095` | `1/16` | `1/8` | `1/5` |
+|---|---:|---:|---:|---:|
+| `2^10` | 234 | | | |
+| `2^12` | 474 | 576 | 875 | 1662 |
+| `2^14` | 979 | 1192 | 1915 | 2836 |
+| `2^16` | 2016 | 2457 | 3447 | 5851 |
+
+The floor grows like `J^0.45–0.52`. **`delta_F = 1/2` is impossible on this route**: its R1a
+Chernoff step needs `Delta + 1 > e delta f`, so `delta < 1/e`. The tapered study's L4 variant
+(which assumed 1/2) is replaced by L4' at the achievable fractions.
+
+Model with these floors (ideal, windowed in parentheses):
+
+| variant | no lateral | lateral, proved `C=25.3` | lateral, simulated `C=0.5` |
+|---|---:|---:|---:|
+| V0 | 1286 (1418) | 1227 (1370) | 1224 (1339) |
+| S, slack removed | 893 (999) | 682 (755) | 556 (632) |
+| L4', `delta=1/16` | 758 (856) | 615 (686) | **480 (583)** |
+| L4', `delta=1/8` | 690 (792) | 564 (637) | 490 (608) |
+| L4', `delta=1/5` | 626 (726) | **543 (660)** | 535 (660) |
+
+Without lateral repair, bulk precision binds in every slack-free row, and lateral repair removes
+13–25%. With the simulated constant, the fringe binds again (for example `lg m` 17.7 fringe
+versus 15.3 bulk at `delta=1/8`). The earlier 343/426 figures assumed a 64-row floor and
+`delta_F = 1/2`, which this proof route cannot supply. **Current realistic range: about 540
+(proved constant) to 480 (simulated constant).**
+
 ### Where the remaining cost sits
 
 At the best L4 + lateral point, `(x,y,z) = (3.5, 3.0, 2.5)`, `lg m = 16.7`: stage cost

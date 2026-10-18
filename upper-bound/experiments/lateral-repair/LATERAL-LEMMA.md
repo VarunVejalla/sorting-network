@@ -130,5 +130,12 @@ per-node form of the Chvatal invariant still has to absorb this shift; see open 
    pair `min(n_j, n_{j+1})` columns and charge the unpaired spill.
 3. **Constant audit.** Check Lemma 2's exact constant in the source, and whether the union over
    profiles can be shared with the existing Property B/F union.
+5. **Use round 1 too (main improvement target).** The theorem unions over *every* round-2
+   profile. But the round-2 profile comes from round-1 column counts, which concentrate within
+   about `sqrt(lam)` of `lam` unless the adversary pays about `h^2/2` keys per unit of excess.
+   Only rows in that transition band carry variance, so `sum_i (a_i/n)(1-a_i/n)` is about
+   `sqrt(lam)` rather than `lam/2`. That predicts `rho ~ lam^(-3/4)`, matching the simulated decay
+   exponent of about -0.72 (`sim_lateral_residual.out`). A two-round version of the theorem would
+   shrink the effective constant well below 26.
 4. **Small fringe floor (UB-15).** The model shows lateral repair only pays off once the fringe
    floor drops below about 1024 rows.
