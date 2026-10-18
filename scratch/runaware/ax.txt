@@ -1,0 +1,3 @@
+#print axioms Chvatal.physicalPackNetBlock_exec
+#print axioms Chvatal.physicalPackNetBlock_depth_le
+#print axioms Bitonic.bitonicBlockSort_sorts

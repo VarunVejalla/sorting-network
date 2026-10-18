@@ -1,0 +1,166 @@
+✔ [2922/3002] Built AKS.Sort.Perm (52s)
+⚠ [2923/3002] Built AKS.Chvatal.GeometryScale (53s)
+warning: AKS/Chvatal/GeometryScale.lean:43:47: unused variable `hm'`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✔ [2924/3002] Built AKS.Misc.Fin (53s)
+✔ [2925/3002] Built AKS.Chvatal.Lemma62TopsCount (53s)
+✔ [2926/3002] Built AKS.Halver.MatchingCount (56s)
+✔ [2927/3002] Built AKS.Sort.Defs (60s)
+✔ [2928/3002] Built AKS.Chvatal.DepthSkeleton (59s)
+✔ [2929/3002] Built AKS.Chvatal.NodeSpec (14s)
+✔ [2930/3002] Built AKS.Chvatal.Tree (14s)
+✔ [2931/3002] Built AKS.Chvatal.Theorem51Core (79s)
+✔ [2932/3002] Built AKS.Sort.Monotone (19s)
+✔ [2933/3002] Built AKS.Chvatal.Lemma62Ratio (79s)
+✔ [2934/3002] Built AKS.Sort.Depth (19s)
+✔ [2935/3002] Built AKS.Sort.ZeroOne (16s)
+✔ [2936/3002] Built AKS.Chvatal.StageNet (17s)
+✔ [2937/3002] Built AKS.Bitonic.Net (17s)
+✔ [2938/3002] Built AKS.Sort.Untangle (17s)
+⚠ [2939/3002] Built AKS.Chvatal.F2R2Count (19s)
+warning: AKS/Chvatal/F2R2Count.lean:50:29: unused variable `K`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✔ [2940/3002] Built AKS.Chvatal.GeneralParams (19s)
+✔ [2941/3002] Built AKS.Chvatal.Lemma61 (23s)
+✔ [2942/3002] Built AKS.Chvatal.Schedule7 (30s)
+✔ [2943/3002] Built AKS.Bitonic.Sorts (16s)
+✔ [2944/3002] Built AKS.Sort.Shrink (22s)
+✔ [2945/3002] Built AKS.Chvatal.StageKernel (19s)
+✔ [2946/3002] Built AKS.Bitonic.Shrink (14s)
+⚠ [2947/3002] Built AKS.Chvatal.F2R2Num (34s)
+warning: AKS/Chvatal/F2R2Num.lean:33:32: unused variable `ht0`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✔ [2948/3002] Built AKS.Chvatal.Lemma41Real (16s)
+✔ [2949/3002] Built AKS.Chvatal.Lemma63 (41s)
+✔ [2950/3002] Built AKS.Bounds.Minimum (13s)
+⚠ [2951/3002] Built AKS.Chvatal.MatrixBridge (15s)
+warning: AKS/Chvatal/MatrixBridge.lean:145:9: unused variable `a`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: AKS/Chvatal/MatrixBridge.lean:145:11: unused variable `b`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✔ [2952/3002] Built AKS.Chvatal.SeparatorDepth (17s)
+⚠ [2953/3002] Built AKS.Chvatal.SortedColumnDecode (18s)
+warning: AKS/Chvatal/SortedColumnDecode.lean:22:11: unused variable `p`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✔ [2954/3002] Built AKS.Chvatal.FlowTable (69s)
+✔ [2955/3002] Built AKS.Chvatal.Lemma62Tail (35s)
+✔ [2956/3002] Built AKS.Chvatal.Bulk2Elem (35s)
+✔ [2957/3002] Built AKS.Chvatal.PhysicalPack (14s)
+✔ [2958/3002] Built AKS.Chvatal.Lemma62TopsClosed (106s)
+✔ [2959/3002] Built AKS.Chvatal.Lemma62Numerics (107s)
+✔ [2960/3002] Built AKS.Chvatal.PhysicalPack2 (13s)
+✔ [2961/3002] Built AKS.Chvatal.PackSpec (14s)
+✔ [2962/3002] Built AKS.Chvatal.Lemma62Bridge (18s)
+✔ [2963/3002] Built AKS.Chvatal.Bulk2Count (18s)
+⚠ [2964/3002] Built AKS.Chvatal.FlowSizes7 (27s)
+warning: AKS/Chvatal/FlowSizes7.lean:41:46: unused variable `ht`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: AKS/Chvatal/FlowSizes7.lean:48:41: unused variable `ht`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: AKS/Chvatal/FlowSizes7.lean:55:46: unused variable `ht`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: AKS/Chvatal/FlowSizes7.lean:218:20: unused variable `hd`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: AKS/Chvatal/FlowSizes7.lean:224:21: unused variable `hd`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: AKS/Chvatal/FlowSizes7.lean:230:23: unused variable `hd`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✔ [2965/3002] Built AKS.Chvatal.ScrambleMonotone (14s)
+✔ [2966/3002] Built AKS.Chvatal.Lemma62FailE (22s)
+✔ [2967/3002] Built AKS.Chvatal.Bulk2Fail (27s)
+✔ [2968/3002] Built AKS.Chvatal.F2Defs (16s)
+✔ [2969/3002] Built AKS.Chvatal.WireFlow (24s)
+✔ [2970/3002] Built AKS.Chvatal.NodeGeom (24s)
+⚠ [2971/3002] Built AKS.Chvatal.Wires31 (24s)
+warning: AKS/Chvatal/Wires31.lean:41:14: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+⚠ [2972/3002] Built AKS.Chvatal.Lemma62Round (30s)
+warning: AKS/Chvatal/Lemma62Round.lean:17:31: unused variable `hf`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✔ [2973/3002] Built AKS.Chvatal.ExecPlacement (14s)
+✔ [2974/3002] Built AKS.Chvatal.StrangerBounds (16s)
+✔ [2975/3002] Built AKS.Chvatal.KernelSetup (18s)
+✔ [2976/3002] Built AKS.Chvatal.FinalSorts (18s)
+⚠ [2977/3002] Built AKS.Chvatal.NodeKeys (18s)
+warning: AKS/Chvatal/NodeKeys.lean:100:13: This simp argument is unused:
+  Function.comp
+
+Hint: Omit it from the simp argument list.
+  simp only [F̵u̵n̵c̵t̵i̵o̵n̵.̵c̵o̵m̵p̵,̵ ̵← exec_rankPerm hxr net]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [2978/3002] Built AKS.Chvatal.F2SR (35s)
+warning: AKS/Chvatal/F2SR.lean:183:51: unused variable `hm`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [2979/3002] Built AKS.Chvatal.FlipSpec (22s)
+warning: AKS/Chvatal/FlipSpec.lean:118:69: This simp argument is unused:
+  Fin.rev_rev
+
+Hint: Omit it from the simp argument list.
+  simp only [Function.comp, columnWireEmbed_apply, rev_matrixWire,̵ ̵F̵i̵n̵.̵r̵e̵v̵_̵r̵e̵v̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+✔ [2980/3002] Built AKS.Chvatal.RealKernel (13s)
+✔ [2981/3002] Built AKS.Chvatal.FringeSendReal (15s)
+✔ [2982/3002] Built AKS.Chvatal.PackSpec2 (15s)
+✔ [2983/3002] Built AKS.Chvatal.BadSendReal (30s)
+✔ [2984/3002] Built AKS.Chvatal.FringeSendField (15s)
+✔ [2985/3002] Built AKS.Chvatal.PackNodeSpec2 (16s)
+✔ [2986/3002] Built AKS.Chvatal.Bulk2Bridge (17s)
+✔ [2987/3002] Built AKS.Chvatal.TwoRoundHyp (19s)
+✔ [2988/3002] Built AKS.Chvatal.F2Det (20s)
+✔ [2989/3002] Built AKS.Chvatal.RealInduction (19s)
+✔ [2990/3002] Built AKS.Chvatal.BadSendField (19s)
+✔ [2991/3002] Built AKS.Chvatal.Bulk2Exists (16s)
+✔ [2992/3002] Built AKS.Chvatal.RealNets (15s)
+✔ [2993/3002] Built AKS.Chvatal.RealNetwork (12s)
+✔ [2994/3002] Built AKS.Chvatal.RealBlocks (13s)
+✔ [2995/3002] Built AKS.Chvatal.F2ParamsOf (102s)
+⚠ [2996/3002] Built AKS.Chvatal.F2R2Fail (102s)
+warning: AKS/Chvatal/F2R2Fail.lean:349:41: unused variable `hm`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [2997/3002] Built AKS.Chvatal.F2R1Fail (102s)
+warning: AKS/Chvatal/F2R1Fail.lean:512:42: unused variable `hc`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: AKS/Chvatal/F2R1Fail.lean:1139:29: unused variable `hm`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✔ [2998/3002] Built AKS.Chvatal.RealSorter (11s)
+⚠ [2999/3002] Built AKS.Chvatal.F2Exists (13s)
+warning: AKS/Chvatal/F2Exists.lean:73:74: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+warning: AKS/Chvatal/F2Exists.lean:73:31: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: AKS/Chvatal/F2Exists.lean:64:66: 'done' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: AKS/Chvatal/F2Exists.lean:73:66: 'done' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: AKS/Chvatal/F2Exists.lean:73:74: 'norm_num' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+✔ [3000/3002] Built AKS.Chvatal.TwoRoundProof (10s)
+✔ [3001/3002] Built AKS.Bounds.Chvatal1830Final (91s)
+✔ [3002/3002] Built AKS.Bounds.Chvatal1830Axioms (20s)
+Build completed successfully (3002 jobs).
+EXIT 0
