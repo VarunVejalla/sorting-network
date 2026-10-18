@@ -1,0 +1,4 @@
+per-draw identity: ok (200 draws)
+lam = 16.69; predicted per-column var = 5.303 (<= lam)
+sum|p-lam|: base mean 88.58 var 89.3 | permuted counts mean 88.75 var 92.6
+bound n*sqrt(var) = 110.54 >= observed mean

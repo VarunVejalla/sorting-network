@@ -1,0 +1,9 @@
+worst-case constants: sims: C = 0.5, n >= m: C = 25.3, n = m/16: C = 44.6
+
+===== f_floor = 1024 rows, one lateral round =====
+ S   slack removed (UB-12)                    sims      C=  0.5 |   551 (  615)  2^-15.0  rho 1.68e-02 (5.0,4.5,4.0)  lg m  26.6 [26.6,25.0]  spb 0.475
+ S   slack removed (UB-12)                    n >= m    C= 25.3 |   682 (  755)  2^-19.0  rho 6.87e-02 (6.0,5.0,4.5)  lg m  32.2 [32.2,29.9]  spb 0.407
+ S   slack removed (UB-12)                    n = m/16  C= 44.6 |   710 (  784)  2^-19.0  rho 9.11e-02 (5.5,5.0,4.5)  lg m  32.2 [32.2,28.4]  spb 0.424
+ L4  locality + dF=1/2 + no (4.3) + no slack  sims      C=  0.5 |   467 (  576)  2^-9.0   rho 4.38e-03 (6.0,4.5,4.0)  lg m  25.5 [18.2,25.5]  spb 0.438
+ L4  locality + dF=1/2 + no (4.3) + no slack  n >= m    C= 25.3 |   475 (  576)  2^-14.0  rho 1.94e-01 (5.5,4.5,4.0)  lg m  25.2 [25.2,25.0]  spb 0.455
+ L4  locality + dF=1/2 + no (4.3) + no slack  n = m/16  C= 44.6 |   493 (  576)  2^-11.0  rho 3.90e-01 (4.5,3.0,2.5)  lg m  21.0 [21.0,21.0]  spb 0.667
