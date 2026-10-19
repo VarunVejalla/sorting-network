@@ -1,0 +1,23 @@
+1419 package (64, 2^12, 2^-6):
+  OK   (4.1) eps_* <= mu/k                        lhs/rhs = 1.000000
+  OK   (4.2)                                      lhs/rhs = 0.987826
+  OK   (4.3) mu <= nu/(A k^2)                     lhs/rhs = 0.999023
+  OK   (4.4) mu <= dF (A nu k - 1)/(2 A^2 k^2)    lhs/rhs = 0.999023
+  OK   (4.5)                                      lhs/rhs = 0.966102
+  OK   A nu > 1                                   lhs/rhs = 0.015625
+  OK   delta k A < 1                              lhs/rhs = 0.000049
+
+re-priced V0 (64, 2^11, 2^-5), eps_B = 2^-25, eps_F = 1/11500000, mu = (1-2^-10) 2^-28:
+  feasible delta (grid) in [1.366848e-09, 1.394022e-09]
+  chosen delta = 1.38e-9 = 1.380000e-09
+  conditions at the chosen delta:
+  OK   (4.1) eps_* <= mu/k                        lhs/rhs = 0.233875
+  OK   (4.2)                                      lhs/rhs = 0.996159
+  OK   (4.3) mu <= nu/(A k^2)                     lhs/rhs = 0.999023
+  OK   (4.4) mu <= dF (A nu k - 1)/(2 A^2 k^2)    lhs/rhs = 0.999023
+  OK   (4.5)                                      lhs/rhs = 0.990350
+  OK   A nu > 1                                   lhs/rhs = 0.015625
+  OK   delta k A < 1                              lhs/rhs = 0.000181
+  root separator needs eps_* <= mu/k = 5.8151e-11; m = 2^79 one-round gives 1.3583e-11
+
+ALL CONDITIONS HOLD
