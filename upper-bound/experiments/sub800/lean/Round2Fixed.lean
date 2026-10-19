@@ -137,20 +137,17 @@ theorem card_scramble_eq (s : ℕ) (hs : s ≤ n) :
     exact_mod_cast this
   linarith
 
-/-- **Fixed `S`, `b`: the exponential moment of `Σ_j Y_j`.** -/
-theorem fixed_mgf (S : Finset (Fin n)) (b : ℕ) (hb : b ≤ m) (hn : 0 < n)
-    (lam t α β δ : ℝ) (ht : 0 ≤ t) (hδ : 0 < δ) (htα : t < α) (htβ : t < β)
-    (hα : 1 - (S.card : ℝ) / n + (S.card : ℝ) / n * Real.exp α ≤
-      Real.exp (α * ((S.card : ℝ) / n + lam)))
-    (hβ : 1 - (1 - (S.card : ℝ) / n) + (1 - (S.card : ℝ) / n) * Real.exp β ≤
-      Real.exp (β * ((1 - (S.card : ℝ) / n) + lam))) :
+/-- **Fixed `S`, `b`: the exponential moment of `Σ_j Y_j`, given a column moment bound.** -/
+theorem fixed_mgf_core (S : Finset (Fin n)) (b : ℕ) (hb : b ≤ m)
+    (lam t Mc : ℝ) (ht : 0 ≤ t)
+    (hcol0 : ∀ j : Fin n, ∑ ζ ∈ Zs m b S.card n, Real.exp (t * max (Yplus ((S.card : ℝ) / n) lam j b ζ)
+        (Yminus ((S.card : ℝ) / n) lam j b ζ)) ≤ ((Zs m b S.card n).card : ℝ) * Mc) :
     ∑ σ : Scramble m n, Real.exp (t * ∑ j : Fin n, Round2.Ydual σ S j b lam) ≤
-      ((Fintype.card (Scramble m n) : ℕ) : ℝ) * (Lb t α δ + Lb t β δ - 1) ^ n := by
+      ((Fintype.card (Scramble m n) : ℕ) : ℝ) * Mc ^ n := by
   classical
   set s := S.card
   have hs : s ≤ n := by simpa [s] using Finset.card_le_univ S
   set p : ℝ := (s : ℝ) / n
-  set Mc := Lb t α δ + Lb t β δ - 1
   set N : ℝ := ((Zs m b s n).card : ℝ)
   have hN0 : 0 < N := by
     rw [show N = ((n.choose s : ℕ) : ℝ) ^ m from card_Zs b s hs]
@@ -192,7 +189,7 @@ theorem fixed_mgf (S : Finset (Fin n)) (b : ℕ) (hb : b ≤ m) (hn : 0 < n)
   have hcol : ∀ j : Fin n, ∑ ζ ∈ Zs m b s n, φ j (fun r => ζ r ∩ ({j} : Finset (Fin n))) ≤ N * Mc := by
     intro j
     simp_rw [hφinter]
-    exact column_mgf b s hb hs hn j lam t α β δ ht hδ htα htβ hα hβ
+    exact hcol0 j
   have hprod : ∏ j : Fin n, ∑ ζ ∈ Zs m b s n, φ j (fun r => ζ r ∩ ({j} : Finset (Fin n))) ≤
       (N * Mc) ^ n := by
     calc ∏ j : Fin n, ∑ ζ ∈ Zs m b s n, φ j (fun r => ζ r ∩ ({j} : Finset (Fin n)))
@@ -220,6 +217,42 @@ theorem fixed_mgf (S : Finset (Fin n)) (b : ℕ) (hb : b ≤ m) (hn : 0 < n)
     _ = ((Fintype.card (Scramble m n) : ℕ) : ℝ) * Mc ^ n := by
         rw [card_scramble_eq s hs, show N = ((n.choose s : ℕ) : ℝ) ^ m from card_Zs b s hs]
         ring
+
+/-- **Fixed `S`, `b`: the exponential moment of `Σ_j Y_j`.** -/
+theorem fixed_mgf (S : Finset (Fin n)) (b : ℕ) (hb : b ≤ m) (hn : 0 < n)
+    (lam t α β δ : ℝ) (ht : 0 ≤ t) (hδ : 0 < δ) (htα : t < α) (htβ : t < β)
+    (hα : 1 - (S.card : ℝ) / n + (S.card : ℝ) / n * Real.exp α ≤
+      Real.exp (α * ((S.card : ℝ) / n + lam)))
+    (hβ : 1 - (1 - (S.card : ℝ) / n) + (1 - (S.card : ℝ) / n) * Real.exp β ≤
+      Real.exp (β * ((1 - (S.card : ℝ) / n) + lam))) :
+    ∑ σ : Scramble m n, Real.exp (t * ∑ j : Fin n, Round2.Ydual σ S j b lam) ≤
+      ((Fintype.card (Scramble m n) : ℕ) : ℝ) * (Lb t α δ + Lb t β δ - 1) ^ n := by
+  have hs : S.card ≤ n := by simpa using Finset.card_le_univ S
+  exact fixed_mgf_core S b hb lam t _ ht fun j =>
+    column_mgf b S.card hb hs hn j lam t α β δ ht hδ htα htβ hα hβ
+
+/-- Markov's step from a moment bound to a failure count. -/
+theorem fail_of_mgf (S : Finset (Fin n)) (b : ℕ) (lam t x K : ℝ) (ht : 0 ≤ t)
+    (hm : ∑ σ : Scramble m n, Real.exp (t * ∑ j : Fin n, Round2.Ydual σ S j b lam) ≤ K) :
+    ((Finset.univ.filter fun σ : Scramble m n => x ≤ ∑ j : Fin n, Round2.Ydual σ S j b lam).card : ℝ) ≤
+      Real.exp (-(t * x)) * K := by
+  classical
+  set B := Finset.univ.filter fun σ : Scramble m n => x ≤ ∑ j : Fin n, Round2.Ydual σ S j b lam
+  have hmark : Real.exp (t * x) * (B.card : ℝ) ≤
+      ∑ σ : Scramble m n, Real.exp (t * ∑ j : Fin n, Round2.Ydual σ S j b lam) := by
+    calc Real.exp (t * x) * (B.card : ℝ) = ∑ σ ∈ B, Real.exp (t * x) := by
+          rw [Finset.sum_const, nsmul_eq_mul, mul_comm]
+      _ ≤ ∑ σ ∈ B, Real.exp (t * ∑ j : Fin n, Round2.Ydual σ S j b lam) :=
+          Finset.sum_le_sum fun σ hσ => Real.exp_le_exp.2
+            (mul_le_mul_of_nonneg_left (Finset.mem_filter.1 hσ).2 ht)
+      _ ≤ ∑ σ : Scramble m n, Real.exp (t * ∑ j : Fin n, Round2.Ydual σ S j b lam) :=
+          Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
+            (fun _ _ _ => (Real.exp_pos _).le)
+  have hpos : 0 < Real.exp (t * x) := Real.exp_pos _
+  have := hmark.trans hm
+  rw [show Real.exp (-(t * x)) = (Real.exp (t * x))⁻¹ from Real.exp_neg _, ← div_eq_inv_mul,
+    le_div_iff₀ hpos]
+  linarith
 
 /-- **Fixed `S`, `b`: failure count (Markov).** -/
 theorem fixed_fail (S : Finset (Fin n)) (b : ℕ) (hb : b ≤ m) (hn : 0 < n)
