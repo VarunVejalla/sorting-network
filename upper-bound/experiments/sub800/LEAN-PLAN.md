@@ -37,6 +37,8 @@ Size: about 1k lines.
 
 ## W3. Fringe witnesses at δ_F = 1/8, J = 190,000 (per-E route)
 
+First add a δ field to `F2Params`: `jmax` and the Chernoff preconditions hard-code 128/4095.
+
 The package's `F2R1Fail`/`F2R2Fail`/`F2R2Num` use closed forms that fail at these points. Lean
 needs:
 - the per-E sums (ψ* by bisection gives a rational witness);
@@ -57,7 +59,7 @@ Pieces:
 2. **Ville** for one column: P(Y⁺ ≥ x) ≤ e^{−θx} for θ ≤ θ*, as a finite-horizon exponential
    supermartingale over independent Bernoulli rows. It is a counting statement over the row
    permutations.
-3. **Negative association** for one row's uniform s-subset indicator, then closure under
+3. **Done (`lean/NegAssoc.lean`, 500 lines, standard axioms).** **Negative association** for one row's uniform s-subset indicator, then closure under
    independent rows and monotone functions of disjoint columns:
    E Π_j f_j ≤ Π_j E f_j.
    - The elementary route conditions on the overlap count, uses stochastic monotonicity (a
@@ -69,7 +71,7 @@ Pieces:
      integrals.
    - Before formalizing, check numerically that the substitute E1 still certifies the window.
 5. **Numerics:** rational witnesses from `cert_walk.py`, with θ lower enclosures and Chernoff
-   parameters per p-cell. There are many p-cells (about 220), so a uniform-in-p analytic argument
+   parameters per p-cell. There are many p-cells (258 plus 2 end cells), so a uniform-in-p analytic argument
    or a Lean-side interval evaluator may be cheaper than one lemma per cell.
 
 Size: 4–8k lines. This is the critical path.

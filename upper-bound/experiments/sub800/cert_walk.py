@@ -16,8 +16,9 @@ Every parameter (t1, lam, t2, g) is a fixed rational per cell, found by the floa
 ../walk-bound/na_precision.py at the cell centre; only its evaluation is certified (mpmath.iv,
 outward rounding), uniformly over the p-cell and the m-cell.
 
-Run:  python -I cert_walk.py [M_LO M_HI EPS_B_NUM EPS_B_DEN]
-      (default: m in [52703924, 66137831], eps_B = 1/105000)
+Run:  python -I cert_walk.py [M_LO M_HI EPS_B_NUM EPS_B_DEN]      (env NCELL_M: m-cells, default 40)
+      cert_walk.out:  NCELL_M=48 python -I cert_walk.py 50859009 67108864 1 105000
+      (m = row count of the rectangle, i.e. m+1 in R1-PROOF's padded notation)
 """
 import math
 import os
@@ -67,18 +68,18 @@ def lmgf1_up(t, p, m, K=400):
     smlo = iv.mpf(sm.a)                          # integrand decreasing in sm: use its lower end
     tt = I(t)
     assert (tt * 2 * b / (3 * smlo)).b < 1, "t1 too large for the Freedman MGF"
-    Y = 4 * float(t) + 20
+    Yq = 4 * Fr(t) + 20                          # exact rational cut point
     # integral over [0, Y]: upper Riemann sum with interval enclosure on each piece
     tot = iv.mpf(0)
     for q in range(K):
-        y = iv.mpf([Y * q / K, Y * (q + 1) / K])
+        y = iv.mpf([I(Yq * q / K).a, I(Yq * (q + 1) / K).b])
         ex = tt * y - y * y / (2 * (1 + b * y / (3 * smlo)))
-        tot += iv.exp(iv.mpf(ex.b)) * (Y / K)
+        tot += iv.exp(iv.mpf(ex.b)) * (I(Yq * (q + 1) / K) - I(Yq * q / K))
     # tail y >= Y: y^2/(2(1 + b y/(3 sm))) >= kap y with kap = Y/(2(1 + bY/(3 sm)))
-    kap = iv.mpf(Y) / (2 * (1 + b.b * Y / (3 * smlo)))
+    kap = I(Yq) / (2 * (1 + b.b * I(Yq) / (3 * smlo)))
     kap = iv.mpf(kap.a)
     assert (kap - tt).a > 0
-    tail = iv.exp((tt - kap) * Y) / (kap - tt)
+    tail = iv.exp((tt - kap) * I(Yq)) / (kap - tt)
     return iv.log(1 + tt * (tot + tail)).b
 
 
@@ -147,7 +148,7 @@ def lmgf2_up(t, a, b):
         return iv.mpf(1) if c is None else iv.mpf(c) / (iv.mpf(c) - tt)
     for c in (a, b):
         assert c is None or c > float(t)
-    ab = None if (a is None or b is None) else a + b
+    ab = None if (a is None or b is None) else iv.mpf(a) + iv.mpf(b)   # interval sum
     val = r(a) + r(b) - (iv.mpf(1) if ab is None else r(ab))
     return iv.log(val).b
 
@@ -212,7 +213,7 @@ def certify(m_lo, m_hi, epsB, ncell_m=4):
         Rp_float = float(Rn) * 16 + 16 * (g - 1) / 2
         sup2 = 0.0
         for pa, pb in [(Fr(0), P0)] + cells + [(1 - P0, Fr(1))]:
-            pc = iv.mpf([I(pa).a, I(pb).b]) if pa > 0 and pb < 1 else iv.mpf([float(pa), float(pb)])
+            pc = iv.mpf([I(pa).a, I(pb).b])            # exact rational ends (I(0) = 0, I(1) = 1)
             pm = min(max(float((pa + pb) / 2), 1e-7), 1 - 1e-7)
             lnN = 16 * NP.H(pm) + math.log(math.ceil(mb / g)) + math.log(15 / float(ETA2))
             _, lam = NP.round2_size(pm, 16, Rp_float, lnN)

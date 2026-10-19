@@ -4,7 +4,10 @@ Claude (Opus 5.5), 2026-10-19. This is a hand proof. It modifies Chvátal, DCS-T
 numbers below are printed pages, and §5–6 are the separator chapters. The numbers it needs come from
 `r1_point.py` (exact rationals), `designP_sim.py` (exact simulation), the fringe certificates
 `fringe_cert_R1_f*.out` (interval arithmetic) and `../walk-bound/ROUND2.md` (bulk; float
-constants). **Reviewed once (fresh context, 2026-10-19); this revision applies its fixes; re-review pending.** Nothing here is in Lean.
+certified by `cert_walk.py`). **Reviewed twice in fresh contexts (2026-10-19).** The second review found no
+blocking issue and judged the proof complete at the paper level, modulo the single-review
+dependencies listed at the end; its should-fix items are applied. Nothing here is in Lean beyond
+`lean/NegAssoc.lean` (LEAN-PLAN W4.3).
 
 Parameters: k = 2^4, A = 2^5, ν = 2^-3, so Aν = 4 and Aνk = 64. N = k^d, and Chvátal's capacities
 are c(i,t) = N·A^i·ν^t/(Aνk). The constants are:
@@ -112,7 +115,9 @@ Here θ_x^{(s)} is the deficit the parent assigned to x at step s, and G_x(t−2
 - θ ≤ g*·c(i,t−2) = 64·g*·c.
 - So a/c ≤ max(4160·p + 2^6·2^-15, 1) = max(1 − 2^-12 + 2^-9, 1) = 1 + 7/4096.
 
-Bottom nodes have a = R_x − G_x ≤ R_x ≤ c. Top nodes have a ≤ c by the same formula with G = 0.
+Bottom nodes have a = R_x − G_x ≤ R_x ≤ c. Top nodes have **a = c exactly**: with G = 0 at t and
+t−2, the formula gives 64·c/4096 + 4096·p·c = 1/64 + 63/64 = 1 times c after topRise, and
+k·ν·c(i+1,t−1)/(Ak) = c otherwise.
 The simulated maximum is exactly 1.001709 = 1 + 7/4096. (`r1_point.py` uses the larger,
 conservative 1 + 15/8192 from SLACKFREE §4.)
 
@@ -177,6 +182,9 @@ holds at t+1, provided
 Chvátal's, only the support step needs a word.
 - For scramble senders, Property F is the padded form of §4: j real keys, at most
   jmax = δ_F·f·n, with the protected (f+1)·n ≤ π/2. Support μc ≤ δ_F·f·n is checked per sender.
+  The package's `F2Params.jmax` and its Chernoff preconditions hard-code 128/4095 (`F2Defs.lean:75`).
+  The deterministic F2 chain uses jmax only as a number, so a δ field in `F2Params` is a
+  mechanical refactor (LEAN-PLAN W2/W3). The certificates check the preconditions at δ = 1/8.
 - For exact sorters, |F| = π/2, and no order-(r−1) outsider is sent down.
 
 **Lemma 4.5** is unchanged. c(α(t_f), t_f) < 2A²k² = 2^19, and μδ·2^19 < 1, so at t_f there are no
@@ -211,11 +219,12 @@ order-1 outsiders.
     excess < (d/2)·m·n. `cert_walk.py` certifies d ≤ ε_B = 1/105,000 in interval arithmetic:
     θ* by a concavity-based lower enclosure, a rigorous quadrature for the round-1 MGF, a continuous
     cover of p ∈ (0,1), and every m in the admitted window [2^25.6, 2^26] (`cert_walk.out`; float
-    values from 8.29e-6 at 2^25.6 to 6.8e-6 at 2^26).
+    values from 8.29e-6 at 2^25.6 to 6.74e-6 at 2^26). Here m is the rectangle's row count, which
+    is m+1 in the padded notation.
   - **The charge γ.** `paddedPack2Net_all_cut_bounds` (`../tapered/PaddedSeparator.lean`) bounds
-    each cut direction by (ε_B/2)·m·n + n, at any cut position (not only row-aligned ones) and with
+    each cut direction by (ε_B/2)·(m+1)·n + n, at any cut position (not only row-aligned ones) and with
     padding. So per block γ ≤ 2n + ε_B·((m+1)·n − a) ≤ 3n.
-    - With n ≤ π/(2(f+1)) ≤ c/(8192·7935), or n ≤ a/2^25 for topDesc, we get
+    - With n ≤ π/(2(f+1)) ≤ c/(8192·7935), or n ≤ a/2^26 + 1 for topDesc, we get
       γ/(Aν·c) < 1.2e-8 ≈ 0.0008μ, inside the 0.1μ reserve.
   - **Property F (padded).** `paddedPack2Net_fHigh_baseline` and `_fLow_baseline` give escapes
     < j/J for j ≤ jmax real keys, with no dummy-rank surcharge. They require F2ROUND's

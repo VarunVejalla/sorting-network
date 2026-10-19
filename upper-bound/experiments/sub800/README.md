@@ -2,12 +2,15 @@
 
 Ticket UB-31 · branch `ub-31-r1-sub800` · Claude (Opus 5.5) · 2026-10-19.
 
-**Claim level.** This is a parameter point plus a proof plan. The pieces have these statuses:
+**Claim level.** A paper proof, R1-PROOF.md, reviewed twice in fresh contexts. The second review
+found no blocking issue. The pieces have these statuses:
 - **Exact rationals:** the scalar conditions (4.2)–(4.5).
-- **Interval-certified:** the fringe.
-- **Reviewed hand proof, float constants:** the walk-bound bulk.
-- **Simulated exactly, real-valued:** the flow table (design P).
-- **Not yet written:** the integer table, the separator geometry and the induction write-up.
+- **Interval-certified:** the fringe (`fringe_cert_R1_f*.out`) and the walk-bound bulk
+  (`cert_walk.py`, window [2^25.6, 2^26]).
+- **Hand proofs:** the integer flow table and its invariants, and the separator geometry (§2 and §4).
+- **Exact simulation (cross-check):** the flow table, d ≤ 22.
+- **Single-review dependencies:** the walk bound (ROUND2) and the FRINGE-CERT §3 R2 tail.
+- **Lean:** only W4.3 (`lean/NegAssoc.lean`) so far.
 
 The accepted coefficient is still 1419.
 
@@ -40,7 +43,7 @@ it is 858, because the residual binds.
 | δ, ε_F | δ = 1.35e-6, J = ⌈1/ε_F⌉ = 186,215 | exact (4.5) |
 | (4.2) | 0.99909, including r* = 1.907μ and a 0.1μ rounding reserve | exact |
 | (4.3), (4.4), δkA | 0.983, 0.999, 6.9e-4 | exact |
-| bulk | d(2^25.98) = 6.82e-6 ≤ ε_B = 1/105,000 (1.40×) | ROUND2 hand proof, float |
+| bulk | d(2^25.98) = 6.82e-6 ≤ ε_B = 1/105,000 (1.40×) | ROUND2 hand proof; interval-certified (`cert_walk.out`) |
 | fringe | f = 7934, J = 190,000, δ_F = 1/8: ln(2P1) ≤ −3648, ln(2P2) ≤ −559 | interval-certified (per-E route) |
 | depth | node 3·S(26) = 1053; exact Batcher for bags a ≤ 2^45 | arithmetic |
 | coefficient | 1053 · 9/12 = **789.75** | conditional on the obligations below |
@@ -88,7 +91,7 @@ The node classes are not type-closed: 24,013 at d = 20.
    - Interior child: g′ = (2r* − g)/((k−2)Aν) ≤ g*.
    - Top nodes: G = 0.
    - The frontier roles (topRise with π = νc/(Ak), botDesc, botRise) are covered by the simulation
-     but not yet by hand.
+     in the simulation, and by hand in R1-PROOF.md §2.
 
 **Integer table (`DESIGN=Pint`, `designP_int.out`).**
 
@@ -139,7 +142,7 @@ dummies into Property F's rank count. That is fixed by this (f+1)-row padded for
    R1-PROOF.md §2.
 2. ~~The aligned-cut/padding lemma.~~ Done: γ ≤ 3n via `paddedPack2Net_all_cut_bounds` (§4).
 3. ~~Root separator, top window, final sorters, and the schedule at (4,5,3).~~ Done (§5–6).
-4. ~~Interval-certify the walk-bound constants.~~ Done: `cert_walk.py` (pending the full-window
+4. ~~Interval-certify the walk-bound constants.~~ Done: `cert_walk.py` (the full-window
    run).
 5. A complete paper proof, reviewed. R1-PROOF.md had one review; its fixes are applied, and a
    re-review is pending.
