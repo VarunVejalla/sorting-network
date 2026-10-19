@@ -25,6 +25,7 @@ its numbers) · **retired** (superseded; kept in history only).
 | `coupled-multiway/` | derivation + handoff notes | reference | UB-26 | active-level aggregate error sum, tapered 528 handoff, and high-arity stage screen; hand-derived, not a theorem |
 | `lateral-repair/` | scripts + notes | parked | UB-20 | sibling (lateral) repair: mechanism sound, about 560 with average-case tails, no provable gain (worst-case overflow floor); also certified-route fringe floors and a UB-13 re-price. Start at `VERDICT.md` |
 | `walk-bound/` | notes + scripts | active (Claude, worktree `ub-29`) | UB-29 | Property B without the union over inputs: per-column walk maxima remove Lemma 6.1's `ln m` (round 1 reviewed, round 2 sketch); re-prices the unmodified Chvatal design to about 1326 windowed. Start at `README.md` |
+| `tapered-walk/` | notes + scripts | active (Claude) | UB-30 | Tapered candidate with the walk-bound separator: rows < 2^32, conditional price 945 -> 792 on the same UB-22/UB-24 gates; 744 needs a ~1.65x lower fringe floor. Start at `README.md` |
 | `packets/` (branch `ub-25-packets` only) | Lean + notes + screens | active (Codex, worktree `ub-25`) | UB-25 | persistent sorted packets / merge-and-deal; terminal gate recorded NO-GO for the fixed-round candidate (`TERMINAL-GATE.md`); not merged to `main` |
 
 ## Policy for Lean forks

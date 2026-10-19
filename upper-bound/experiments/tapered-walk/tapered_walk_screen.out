@@ -1,0 +1,32 @@
+1. invariant scalar budget (unchanged constants)
+  margin, mu, rounding at 2^34 (SUB1000: 2.54003e-8)         2.54003e-08
+  margin, mu' = 63/64 mu, rounding at 2^34 (plan: ~1.6150e-8) 1.61502e-08
+
+2. large ordinary provider: half-port fit and cohort support (normalized by C)
+  old M = 2^34+2^28, f = 131040, C = 2^59: half-port (plan 8.7487e-8) 8.7487e-08
+                                           support   (plan 9.1697e-10) 9.16973e-10
+    same, with the padding charge 1/M: half-port             8.74297e-08
+                                       support               8.59661e-10
+  new M = 2^31+2^30+2^29 = 3758096384 (lg 31.8074); f window ~ [28114, 28551], f = 28200
+  padding: m = ceil(a/n) <= M + 393 <= M + 1024 for a > 2^55;  margins below include it
+  C = 2^55: half-port                                        9.33983e-08
+           support                                           4.51246e-10
+  C = 2^59: half-port                                        9.33983e-08
+           support                                           4.51269e-10
+  C = 2^80: half-port                                        9.33983e-08
+           support                                           4.51271e-10
+
+3. bulk (walk bound, ROUND2.md; n-uniform for n >= 16; float)
+  lg M = 31.8074: E1 = 3.8818e-05, d = 3.3446e-07 vs eps_B = 2^-21 = 4.7684e-07 (margin 1.426x, grid gamma 0.02)
+  at M + 1024: d = 3.3446e-07 (evaluated at both ends; monotonicity in m observed, not proved; p on a 1/64 grid, float constants).  BULK2 needed lg m = 34
+
+4. depth
+  rows < 2^32: node depth 3 S(32) = 1584; exact Batcher for bags a <= 2^55 (S(55) = 1540); large bags have n >= 9586980 columns (>= 16)
+  three nodes per six bits: conditional coefficient 792  (was 945 at S(35))
+  eps_F = A nu delta - A^2 k delta^2 = 511/4294967296 -> J = 8405025
+
+5. gate for rows < 2^31 (3 S(31) = 1488, coefficient 744): what the fringe would need
+  lg M = 31.0000: bulk d = 5.0782e-07 (eps_B = d), largest delta = 2.5953e-08 (was 2^-25 = 2.9802e-08)
+  -> J = 1/eps_F = 9.6492e+06; the fringe would have to certify at f <= 16314
+
+ALL SCREENS PASS

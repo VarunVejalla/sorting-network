@@ -10,6 +10,7 @@ per-E ("exact psi*") route.  The closed-form (Lean-friendly) checks are reported
 At these points EJ/D >= 2J/D >> 16, so F2ROUND's worst points n = EJ/D, (E-1)J/D, J/D are
 admissible and the n >= 16 clamp of fringe_general_screen.py never activates.
 
+Set FRINGE_DELTA (e.g. 1/8) to certify at another fringe fraction delta_F.
 Usage:  python -I fringe_cert_search.py F J            (search g1, g2, c, b at fringe height F)
         python -I fringe_cert_search.py min J F0 F1   (smallest passing F in [F0, F1], bisection)
 """
@@ -23,7 +24,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import fringe_cert_v2 as FC  # noqa: E402
 
-DELTA = Fr(128, 4095)
+DELTA = Fr(os.environ.get("FRINGE_DELTA", "128/4095"))   # fringe fraction delta_F (default: the package's)
 CS = [Fr(2, 5), Fr(1, 2)]
 
 
