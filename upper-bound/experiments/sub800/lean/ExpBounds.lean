@@ -92,6 +92,29 @@ theorem le_exp' (x : ℝ) (k : ℕ) (hy : |x / 2 ^ k| ≤ 1) (q : ℝ)
   rw [exp_eq_pow x k]
   exact hq.trans (pow_le_pow_left₀ h0 (six_le_exp _ hy) _)
 
+/-- Squaring step, upper: `exp z ≤ v` from `exp w ≤ u`, `z = 2w`, `u² ≤ v`. -/
+theorem exp_le_sq (z w u v : ℝ) (hw : z = 2 * w) (h : Real.exp w ≤ u) (hv : u ^ 2 ≤ v) :
+    Real.exp z ≤ v := by
+  rw [hw, show 2 * w = w + w by ring, Real.exp_add]
+  have h0 : 0 ≤ Real.exp w := (Real.exp_pos w).le
+  nlinarith
+
+/-- Squaring step, lower: `v ≤ exp z` from `l ≤ exp w`, `0 ≤ l`, `z = 2w`, `v ≤ l²`. -/
+theorem le_exp_sq (z w l v : ℝ) (hw : z = 2 * w) (h : l ≤ Real.exp w) (h0 : 0 ≤ l)
+    (hv : v ≤ l ^ 2) : v ≤ Real.exp z := by
+  rw [hw, show 2 * w = w + w by ring, Real.exp_add]
+  nlinarith
+
+/-- Base step, upper (Taylor, `|y| ≤ 1`). -/
+theorem exp_le_base (y u : ℝ) (hy : |y| ≤ 1)
+    (hu : 1 + y + y ^ 2 / 2 + y ^ 3 / 6 + y ^ 4 / 24 + y ^ 5 / 120 + |y| ^ 6 * (7 / 4320) ≤ u) :
+    Real.exp y ≤ u := (exp_le_six y hy).trans hu
+
+/-- Base step, lower. -/
+theorem le_exp_base (y l : ℝ) (hy : |y| ≤ 1)
+    (hl : l ≤ 1 + y + y ^ 2 / 2 + y ^ 3 / 6 + y ^ 4 / 24 + y ^ 5 / 120 - |y| ^ 6 * (7 / 4320)) :
+    l ≤ Real.exp y := hl.trans (six_le_exp y hy)
+
 -- smoke test
 example : Real.exp (3 / 2) ≤ 4.4817 := by
   apply exp_le' (3 / 2) 6 (by rw [abs_le]; constructor <;> norm_num)
