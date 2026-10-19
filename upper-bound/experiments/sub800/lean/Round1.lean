@@ -104,14 +104,14 @@ theorem onesAboveBottom_le_round1 (c : MonotoneColumnSums m n) (σ : Scramble m 
 open Classical in
 /-- **Round 1 failure count.** -/
 theorem round1_fail (hn : 0 < n) (hmn : 0 < m) (E1 : ℝ) (hE1 : 0 < E1)
-    (lam t α x : ℕ → ℝ) (δ : ℝ) (hδ : 0 < δ) (hlam : ∀ s, 0 ≤ lam s)
+    (lam t α x : ℕ → ℝ) (δ : ℕ → ℝ) (hδ : ∀ s, 0 < δ s) (hlam : ∀ s, 0 ≤ lam s)
     (ht : ∀ s, 0 ≤ t s) (htα : ∀ s, t s < α s)
     (hα : ∀ s, 1 ≤ s → s < n → 1 - (s : ℝ) / n + (s : ℝ) / n * Real.exp (α s) ≤
       Real.exp (α s * ((s : ℝ) / n + lam s)))
     (hbudget : ∀ s, 1 ≤ s → s < n → n * lam s * m + x s ≤ (E1 / 2) * (m * n)) :
     ((Finset.univ.filter fun σ : Scramble m n => ¬ HasCombinatorialPropertyBOnPipeline σ E1).card : ℝ) ≤
       ∑ s ∈ Finset.Ico 1 n, ((n.choose s : ℕ) : ℝ) *
-        (Real.exp (-(t s * x s)) * (((Fintype.card (Scramble m n) : ℕ) : ℝ) * Lb (t s) (α s) δ ^ n)) := by
+        (Real.exp (-(t s * x s)) * (((Fintype.card (Scramble m n) : ℕ) : ℝ) * Lb (t s) (α s) (δ s) ^ n)) := by
   classical
   let ev : ℕ → Finset (Fin n) → Finset (Scramble m n) := fun s S =>
     Finset.univ.filter fun σ => x s ≤ ∑ j : Fin n, Round2.Ydual σ S j 0 (lam s)
@@ -172,11 +172,11 @@ theorem round1_fail (hn : 0 < n) (hmn : 0 < m) (E1 : ℝ) (hE1 : 0 < E1)
       ≤ ∑ s ∈ Finset.Ico 1 n, ∑ S ∈ (Finset.univ : Finset (Fin n)).powersetCard s,
           ((ev s S).card : ℝ) := by exact_mod_cast hnat
     _ ≤ ∑ s ∈ Finset.Ico 1 n, ∑ S ∈ (Finset.univ : Finset (Fin n)).powersetCard s,
-          Real.exp (-(t s * x s)) * (((Fintype.card (Scramble m n) : ℕ) : ℝ) * Lb (t s) (α s) δ ^ n) := by
+          Real.exp (-(t s * x s)) * (((Fintype.card (Scramble m n) : ℕ) : ℝ) * Lb (t s) (α s) (δ s) ^ n) := by
         refine Finset.sum_le_sum fun s hs => Finset.sum_le_sum fun S hS => ?_
         rw [Finset.mem_Ico] at hs
         have hSc := (Finset.mem_powersetCard.1 hS).2
-        exact fixed_fail0 S hn (lam s) (t s) (α s) δ (x s) (ht s) hδ (htα s)
+        exact fixed_fail0 S hn (lam s) (t s) (α s) (δ s) (x s) (ht s) (hδ s) (htα s)
           (by rw [hSc]; exact hα s hs.1 hs.2)
     _ = _ := by
         refine Finset.sum_congr rfl fun s _ => ?_

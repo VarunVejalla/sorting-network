@@ -94,7 +94,7 @@ open Classical in
 theorem round2_fail (hn : 0 < n) (E1 d : ℝ) (hd : 0 < d) (hmn : 0 < m)
     (G : Finset ℕ) (hGm : ∀ b ∈ G, b ≤ m) (g' : ℝ)
     (hcover : ∀ i, 1 ≤ i → i ≤ m → ∃ b ∈ G, |(i : ℝ) - b| ≤ g')
-    (lam t α β x : ℕ → ℝ) (δ : ℝ) (hδ : 0 < δ) (hlam : ∀ s, 0 ≤ lam s)
+    (lam t α β x : ℕ → ℝ) (δ : ℕ → ℝ) (hδ : ∀ s, 0 < δ s) (hlam : ∀ s, 0 ≤ lam s)
     (ht : ∀ s, 0 ≤ t s) (htα : ∀ s, t s < α s) (htβ : ∀ s, t s < β s)
     (hα : ∀ s, 1 ≤ s → s < n → 1 - (s : ℝ) / n + (s : ℝ) / n * Real.exp (α s) ≤
       Real.exp (α s * ((s : ℝ) / n + lam s)))
@@ -104,7 +104,7 @@ theorem round2_fail (hn : 0 < n) (E1 d : ℝ) (hd : 0 < d) (hmn : 0 < m)
     ((Finset.univ.filter fun σ : Scramble m n => ¬ HasCombinatorialPropertyB2 σ E1 d).card : ℝ) ≤
       ∑ s ∈ Finset.Ico 1 n, ((n.choose s : ℕ) : ℝ) * (G.card : ℝ) *
         (Real.exp (-(t s * x s)) * ((Fintype.card (Scramble m n) : ℕ) : ℝ) *
-          (Round2Col.Lb (t s) (α s) δ + Round2Col.Lb (t s) (β s) δ - 1) ^ n) := by
+          (Round2Col.Lb (t s) (α s) (δ s) + Round2Col.Lb (t s) (β s) (δ s) - 1) ^ n) := by
   classical
   -- the bad set is covered by the union of the fixed (s, S, b) events
   let ev : ℕ → Finset (Fin n) → ℕ → Finset (Scramble m n) := fun s S b =>
@@ -131,7 +131,7 @@ theorem round2_fail (hn : 0 < n) (E1 d : ℝ) (hd : 0 < d) (hmn : 0 < m)
     refine Finset.card_biUnion_le.trans (Finset.sum_le_sum fun S _ => ?_)
     exact Finset.card_biUnion_le
   set K : ℕ → ℝ := fun s => Real.exp (-(t s * x s)) * ((Fintype.card (Scramble m n) : ℕ) : ℝ) *
-    (Round2Col.Lb (t s) (α s) δ + Round2Col.Lb (t s) (β s) δ - 1) ^ n
+    (Round2Col.Lb (t s) (α s) (δ s) + Round2Col.Lb (t s) (β s) (δ s) - 1) ^ n
   calc ((Finset.univ.filter fun σ : Scramble m n => ¬ HasCombinatorialPropertyB2 σ E1 d).card : ℝ)
       ≤ ∑ s ∈ Finset.Ico 1 n, ∑ S ∈ (Finset.univ : Finset (Fin n)).powersetCard s,
           ∑ b ∈ G, ((ev s S b).card : ℝ) := by exact_mod_cast hnat
@@ -139,7 +139,7 @@ theorem round2_fail (hn : 0 < n) (E1 d : ℝ) (hd : 0 < d) (hmn : 0 < m)
         refine Finset.sum_le_sum fun s hs => Finset.sum_le_sum fun S hS => Finset.sum_le_sum fun b hb => ?_
         rw [Finset.mem_Ico] at hs
         have hSc := (Finset.mem_powersetCard.1 hS).2
-        exact Round2Fixed.fixed_fail S b (hGm b hb) hn (lam s) (t s) (α s) (β s) δ (x s) (ht s) hδ
+        exact Round2Fixed.fixed_fail S b (hGm b hb) hn (lam s) (t s) (α s) (β s) (δ s) (x s) (ht s) (hδ s)
           (htα s) (htβ s) (by rw [hSc]; exact hα s hs.1 hs.2) (by rw [hSc]; exact hβ s hs.1 hs.2)
     _ = ∑ s ∈ Finset.Ico 1 n, ((n.choose s : ℕ) : ℝ) * (G.card : ℝ) * K s := by
         refine Finset.sum_congr rfl fun s _ => ?_
