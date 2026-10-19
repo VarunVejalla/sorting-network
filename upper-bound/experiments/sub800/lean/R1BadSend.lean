@@ -156,6 +156,7 @@ theorem bad_send0_real_gen (F : FlowTableB d tf)
     (nets : ℕ → (b : KBag 16 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (16 ^ d))) (t : ℕ) (ht : t < tf) (q : KBag 16 d) (hq : q.l < d)
     (j : ℕ) (hj : j < 16) (EB : ℝ) (Jmax : ℕ) (εF : ℝ) (G : ℕ → ℝ) (ρ : ℝ) (hρ : 0 ≤ ρ)
+    (hπ : 2 ∣ F.up t q)
     (hspec : NodeSpecAll (wireSets F t q).card (F.up t q)
       (nets t q (wireSets F t q).card) EB Jmax εF)
     (hM : ∀ h (hh : h < 16),
@@ -166,7 +167,6 @@ theorem bad_send0_real_gen (F : FlowTableB d tf)
       (q.strangers 1 id ((execPlacement F nets v t ht.le).regs q) : ℝ) + 15 * ρ +
         residG (F.up t q) (downN F t q) G j + 2 * EB := by
   classical
-  have hπ : 2 ∣ F.up t q := F.hup_even t q ht
   set bN := downN F t q with hbN
   have hsplit : F.a t q = F.up t q + ∑ h ∈ range 16, bN h := by
     rw [F.hsplit t q ht, hbN, sum_downN]

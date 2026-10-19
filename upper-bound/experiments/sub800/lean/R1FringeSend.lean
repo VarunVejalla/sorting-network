@@ -37,7 +37,7 @@ outsiders among the keys on `q`, given the node specification (Property F) and
 theorem fringe_send_real_gen (F : FlowTableB d tf)
     (nets : ℕ → (b : KBag 16 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (16 ^ d))) (t : ℕ) (ht : t < tf) (q : KBag 16 d) (hq : q.l < d)
-    (j : Fin 16) (r : ℕ) (hr : 1 ≤ r) (EB : ℝ) (Jmax : ℕ) (εF : ℝ)
+    (j : Fin 16) (r : ℕ) (hr : 1 ≤ r) (EB : ℝ) (Jmax : ℕ) (εF : ℝ) (hπe : 2 ∣ F.up t q)
     (hspec : NodeSpecAll (wireSets F t q).card (F.up t q)
       (nets t q (wireSets F t q).card) EB Jmax εF)
     (hJ : q.strangers r id ((execPlacement F nets v t ht.le).regs q) ≤ Jmax) :
@@ -111,7 +111,7 @@ theorem fringe_send_real_gen (F : FlowTableB d tf)
       have hle16 : F.off t q (j.val + 1) ≤ F.off t q 16 := F.off_mono t q (by have := j.isLt; omega)
       have hs16 : s.card = π + F.off t q 16 := by
         rw [hs, wireSets_card F ht.le q, F.hsplit t q ht, FlowTableB.off_sixteen]
-      have hev : 2 ∣ π := F.hup_even t q ht
+      have hev : 2 ∣ π := hπe
       obtain ⟨p, hp⟩ := hev
       omega
   have hle : (b.strangers (r + 1) id (fromParentK F nets v t b) : ℕ) ≤

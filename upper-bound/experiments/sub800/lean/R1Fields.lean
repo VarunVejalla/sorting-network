@@ -106,8 +106,12 @@ theorem badSend_field (F : FlowTableB d tf)
     unfold Gd
     rw [dif_pos hh, hρdef]
     exact_mod_cast h1
+  have hπe : 2 ∣ F.up t q := by
+    rcases F.hup_even t q ht' with h | h
+    · exact h
+    · have := F.hsplit t q ht'; omega
   have hmain := bad_send0_real_gen F nets v t ht' q hq j hj16 (EBv d t q.l) (JmaxR d t q.l)
-    (epsF : ℝ) (Gd F t q hq) ρ hρ (hspec t q ht' hpos) hM
+    (epsF : ℝ) (Gd F t q hq) ρ hρ hπe (hspec t q ht' hpos) hM
   have hr := hres t q hq j hj16 ht' hpos
   rw [← hbq] at hmain
   have hgoal : ((b.strangers 1 id (fromParentK F nets v t b) : ℕ) : ℝ) ≤
@@ -159,8 +163,12 @@ theorem fringeSend_field (F : FlowTableB d tf)
           _ ≤ mu * cap d q.l t * 1 := mul_le_mul_of_nonneg_left hd1 (by positivity)
           _ = _ := by ring
       exact h1.trans this
+  have hπe : 2 ∣ F.up t q := by
+    rcases F.hup_even t q ht' with h | h
+    · exact h
+    · have := F.hsplit t q ht'; omega
   have hmain := fringe_send_real_gen F nets v t ht' q hq ⟨j, hj16⟩ r hr1 (EBv d t q.l) (JmaxR d t q.l)
-    (epsF : ℝ) (hspec t q ht' hpos) hJ
+    (epsF : ℝ) hπe (hspec t q ht' hpos) hJ
   rw [← hbq] at hmain
   have : ((b.strangers (r + 1) id (fromParentK F nets v t b) : ℕ) : ℝ) ≤
       ((epsF * ((q.strangers r id ((execPlacement F nets v t ht'.le).regs q) : ℕ) : ℚ) : ℚ) : ℝ) := by

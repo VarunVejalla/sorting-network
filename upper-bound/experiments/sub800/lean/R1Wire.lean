@@ -30,7 +30,7 @@ structure FlowTableB (d tf : ℕ) where
   down : ℕ → KBag 16 d → Fin 16 → ℕ
   ha_root : a 0 (KBag.root 16 d) = 16 ^ d
   ha_init : ∀ b, b ≠ KBag.root 16 d → a 0 b = 0
-  hup_even : ∀ t b, t < tf → 2 ∣ up t b
+  hup_even : ∀ t b, t < tf → 2 ∣ up t b ∨ up t b = a t b
   hup_root : ∀ t, t < tf → up t (KBag.root 16 d) = 0
   hdown_leaf : ∀ t b j, t < tf → b.l = d → down t b j = 0
   hsplit : ∀ t b, t < tf → a t b = up t b + ∑ j, down t b j
@@ -85,11 +85,7 @@ def blockOf {n : ℕ} (s : Finset (Fin n)) (lo hi : ℕ) : Finset (Fin n) :=
 
 /-- The fringes: first `π/2` and last `π/2` positions. -/
 def upSet {n : ℕ} (s : Finset (Fin n)) (π : ℕ) : Finset (Fin n) :=
-  blockOf s 0 (π / 2) ∪ blockOf s (s.card - π / 2) s.card
-
-/-- The `j`-th middle block of `τ` positions. -/
-def downSet {n : ℕ} (s : Finset (Fin n)) (π τ j : ℕ) : Finset (Fin n) :=
-  blockOf s (π / 2 + j * τ) (π / 2 + (j + 1) * τ)
+  if π = s.card then s else blockOf s 0 (π / 2) ∪ blockOf s (s.card - π / 2) s.card
 
 section Blocks
 
@@ -100,9 +96,11 @@ theorem mem_blockOf : w ∈ blockOf s lo hi ↔ w ∈ s ∧ lo ≤ rankIn s w �
 
 theorem blockOf_subset : blockOf s lo hi ⊆ s := Finset.filter_subset _ _
 
-theorem upSet_subset : upSet s π ⊆ s := Finset.union_subset blockOf_subset blockOf_subset
+theorem upSet_subset : upSet s π ⊆ s := by
+  unfold upSet; split_ifs
+  · exact Finset.Subset.refl _
+  · exact Finset.union_subset blockOf_subset blockOf_subset
 
-theorem downSet_subset : downSet s π τ j ⊆ s := blockOf_subset
 
 theorem rankIn_lt_card (hw : w ∈ s) : rankIn s w < s.card :=
   Finset.card_lt_card (Finset.filter_ssubset.2 ⟨w, hw, by simp⟩)
@@ -138,48 +136,15 @@ theorem disjoint_blockOf (h : hi ≤ lo') :
   have := mem_blockOf.1 h2
   omega
 
-theorem upSet_card (hπ : 2 ∣ π) (hc : π ≤ s.card) : (upSet s π).card = π := by
+theorem upSet_card (hπ : 2 ∣ π ∨ π = s.card) (hc : π ≤ s.card) : (upSet s π).card = π := by
   unfold upSet
-  rw [Finset.card_union_of_disjoint (disjoint_blockOf (by omega)),
-    blockOf_card (by omega), blockOf_card (by omega)]
-  omega
-
-theorem downSet_card (hs : s.card = π + 16 * τ) (hj : j < 16) : (downSet s π τ j).card = τ := by
-  have : (j + 1) * τ ≤ 16 * τ := Nat.mul_le_mul_right _ hj
-  unfold downSet
-  rw [blockOf_card (by omega), Nat.add_mul, Nat.one_mul]
-  omega
-
-theorem disjoint_upSet_downSet (hs : s.card = π + 16 * τ) (hπ : 2 ∣ π) (hj : j < 16) :
-    Disjoint (upSet s π) (downSet s π τ j) := by
-  have : (j + 1) * τ ≤ 16 * τ := Nat.mul_le_mul_right _ hj
-  unfold upSet downSet
-  rw [Finset.disjoint_union_left]
-  exact ⟨disjoint_blockOf (by omega), (disjoint_blockOf (by omega)).symm⟩
-
-theorem disjoint_downSet (hj : j < j') :
-    Disjoint (downSet s π τ j) (downSet s π τ j') := by
-  have : (j + 1) * τ ≤ j' * τ := Nat.mul_le_mul_right _ hj
-  exact disjoint_blockOf (by omega)
-
-theorem cover (hs : s.card = π + 16 * τ) (hπ : 2 ∣ π) (hw : w ∈ s) :
-    w ∈ upSet s π ∨ ∃ j, j < 16 ∧ w ∈ downSet s π τ j := by
-  have hr := rankIn_lt_card hw
-  unfold upSet downSet
-  by_cases h1 : rankIn s w < π / 2
-  · exact .inl (Finset.mem_union_left _ (mem_blockOf.2 ⟨hw, by omega, h1⟩))
-  by_cases h3 : s.card - π / 2 ≤ rankIn s w
-  · exact .inl (Finset.mem_union_right _ (mem_blockOf.2 ⟨hw, h3, hr⟩))
-  right
-  have hτ : 0 < τ := Nat.pos_of_ne_zero (by rintro rfl; omega)
-  have h4 := Nat.div_add_mod (rankIn s w - π / 2) τ
-  have h5 := Nat.mod_lt (rankIn s w - π / 2) hτ
-  have h6 := Nat.div_mul_le_self (rankIn s w - π / 2) τ
-  refine ⟨(rankIn s w - π / 2) / τ, ?_, mem_blockOf.2 ⟨hw, by omega, ?_⟩⟩
-  · rw [Nat.div_lt_iff_lt_mul hτ]; omega
-  · rw [Nat.add_mul, Nat.one_mul]
-    rw [Nat.mul_comm] at h4
-    omega
+  split_ifs with h
+  · exact h.symm
+  · rcases hπ with hπ | hπ
+    · rw [Finset.card_union_of_disjoint (disjoint_blockOf (by omega)),
+        blockOf_card (by omega), blockOf_card (by omega)]
+      omega
+    · exact absurd hπ h
 
 end Blocks
 
@@ -193,8 +158,6 @@ def downSetB (s : Finset (Fin n)) (π : ℕ) (off : ℕ → ℕ) (j : ℕ) : Fin
 
 theorem downSetB_subset : downSetB s π off j ⊆ s := blockOf_subset
 
-/-- Equal blocks recover `WireFlow.downSet`. -/
-theorem downSetB_uniform (τ : ℕ) : downSetB s π (fun i => i * τ) j = downSet s π τ j := rfl
 
 theorem mem_downSetB : w ∈ downSetB s π off j ↔
     w ∈ s ∧ π / 2 + off j ≤ rankIn s w ∧ rankIn s w < π / 2 + off (j + 1) := mem_blockOf
@@ -211,19 +174,30 @@ theorem disjoint_downSetB (hmono : Monotone off) (hj : j < j') :
   have : off (j + 1) ≤ off j' := hmono (by omega)
   exact disjoint_blockOf (by omega)
 
-theorem disjoint_upSet_downSetB (hmono : Monotone off) (hs : s.card = π + off 16) (hπ : 2 ∣ π)
-    (hj : j < 16) : Disjoint (upSet s π) (downSetB s π off j) := by
+theorem disjoint_upSet_downSetB (hmono : Monotone off) (hs : s.card = π + off 16)
+    (hπ : 2 ∣ π ∨ π = s.card) (hj : j < 16) : Disjoint (upSet s π) (downSetB s π off j) := by
   have h1 : off (j + 1) ≤ off 16 := hmono (by omega)
+  have h2 : off j ≤ off (j + 1) := hmono (by omega)
   unfold upSet downSetB
-  rw [Finset.disjoint_union_left]
-  exact ⟨disjoint_blockOf (by omega), (disjoint_blockOf (by omega)).symm⟩
+  split_ifs with h
+  · rw [Finset.disjoint_right]
+    intro w hw
+    have := mem_blockOf.1 hw
+    omega
+  · rcases hπ with hπ | hπ
+    · rw [Finset.disjoint_union_left]
+      exact ⟨disjoint_blockOf (by omega), (disjoint_blockOf (by omega)).symm⟩
+    · exact absurd hπ h
 
 /-- Every wire is in the fringe or in exactly one (hence some) middle block. -/
 theorem cover_B (hoff0 : off 0 = 0) (hs : s.card = π + off 16)
-    (hπ : 2 ∣ π) (hw : w ∈ s) :
+    (hπ' : 2 ∣ π ∨ π = s.card) (hw : w ∈ s) :
     w ∈ upSet s π ∨ ∃ j, j < 16 ∧ w ∈ downSetB s π off j := by
   have hr := rankIn_lt_card hw
   unfold upSet
+  split_ifs with hall
+  · exact .inl hw
+  have hπ : 2 ∣ π := hπ'.resolve_right hall
   by_cases h1 : rankIn s w < π / 2
   · exact .inl (Finset.mem_union_left _ (mem_blockOf.2 ⟨hw, by omega, h1⟩))
   by_cases h3 : s.card - π / 2 ≤ rankIn s w
@@ -400,6 +374,8 @@ theorem wireSets_inv (F : FlowTableB d tf) : ∀ t, t ≤ tf →
       · rw [wireSets_zero_of_ne F hb]; exact Finset.disjoint_empty_left _
   | t + 1, ht => by
     obtain ⟨hcard, hdisj, hcomp⟩ := wireSets_inv F t (by omega)
+    have hevs : ∀ q : KBag 16 d, 2 ∣ F.up t q ∨ F.up t q = (wireSets F t q).card := fun q =>
+      (F.hup_even t q (by omega)).imp id (fun h => by rw [hcard q]; exact h)
     have ht : t < tf := ht
     have hsp : ∀ q : KBag 16 d, (wireSets F t q).card = F.up t q + ∑ j, F.down t q j :=
       fun q => by rw [hcard q, F.hsplit t q ht]
@@ -437,7 +413,7 @@ theorem wireSets_inv (F : FlowTableB d tf) : ∀ t, t ≤ tf →
         unfold childPart
         split_ifs with h1
         · rw [Finset.card_biUnion]
-          · rw [Finset.sum_congr rfl (fun j _ => upSet_card (F.hup_even t _ ht)
+          · rw [Finset.sum_congr rfl (fun j _ => upSet_card (hevs _)
               (by have := hsp (b.child j.val j.isLt h1); omega))]
           · intro j _ j' _ hne
             refine Disjoint.mono upSet_subset upSet_subset (hdisj _ _ fun he => hne ?_)
@@ -453,7 +429,7 @@ theorem wireSets_inv (F : FlowTableB d tf) : ∀ t, t ≤ tf →
       obtain rfl : q = q' := by
         by_contra hn
         exact Finset.disjoint_left.1 (hdisj q q' hn) hq hq'
-      have hev := F.hup_even t q ht
+      have hev := hevs q
       rcases hr with ⟨_, rfl, hu⟩ | ⟨_, j, hj, rfl, hd⟩ <;>
         rcases hr' with ⟨_, he, hu'⟩ | ⟨_, j', hj', he, hd'⟩
       · exact hne he.symm
@@ -466,7 +442,7 @@ theorem wireSets_inv (F : FlowTableB d tf) : ∀ t, t ≤ tf →
         · exact Finset.disjoint_left.1 (disjoint_downSetB (F.off_mono t q) hl) hd' hd
     · -- completeness
       obtain ⟨q, hq⟩ := hcomp w
-      have hev := F.hup_even t q ht
+      have hev := hevs q
       rcases cover_B (F.off_zero t q) (hs64 q) hev hq with hu | ⟨j, hj, hd⟩
       · have h1 : 1 ≤ q.l := by
           by_contra h0
