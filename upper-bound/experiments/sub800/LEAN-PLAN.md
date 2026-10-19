@@ -49,32 +49,37 @@ The certificates give every rational witness. Size: 1.5–3k lines, mostly numer
 
 ## W4. Bulk: the walk bound (ROUND2), the main new mathematics
 
-Target: the fraction of σ that fail is at most 1/100 for round 1
-(`HasCombinatorialPropertyBOnPipeline σ E1`) and at most 1/1000 for round 2
-(`HasCombinatorialPropertyB2 σ E1 d`). These are exactly the predicates `Bulk2Exists` consumes.
-Pieces:
+**Status (2026-10-19): formalized in `lean/`, standard axioms only, with the numerics left as
+explicit hypotheses.** Build with `bash lean/build.sh`.
 
-1. **Deterministic duality** (ROUND2 §2): Σ_j X_j(δ_j) ≤ λR′ + Σ_j Y_j(λ), plus the base-row grid.
-   Finite and combinatorial.
-2. **Ville** for one column: P(Y⁺ ≥ x) ≤ e^{−θx} for θ ≤ θ*, as a finite-horizon exponential
-   supermartingale over independent Bernoulli rows. It is a counting statement over the row
-   permutations.
-3. **Done (`lean/NegAssoc.lean`, 500 lines, standard axioms).** **Negative association** for one row's uniform s-subset indicator, then closure under
-   independent rows and monotone functions of disjoint columns:
-   E Π_j f_j ≤ Π_j E f_j.
-   - The elementary route conditions on the overlap count, uses stochastic monotonicity (a
-     coupling that adds one element), applies Chebyshev's sum inequality, and inducts over columns
-     and then over rows.
-   - This is the largest piece and is not in Mathlib.
-4. **Round 1** (Freedman tail of the walk maximum, then the MGF by integration) is Lean-unfriendly.
-   - Preferred: rederive round 1 by the same Ville/NA route as round 2, which avoids Freedman and
-     integrals.
-   - Before formalizing, check numerically that the substitute E1 still certifies the window.
-5. **Numerics:** rational witnesses from `cert_walk.py`, with θ lower enclosures and Chernoff
-   parameters per p-cell. There are many p-cells (258 plus 2 end cells), so a uniform-in-p analytic argument
-   or a Lean-side interval evaluator may be cheaper than one lemma per cell.
+| module | content |
+|---|---|
+| `NegAssoc` | negative association of a uniform k-subset; independent rows; product over disjoint column sets |
+| `Ville` | Ville's inequality for walks with independent rows (counting form) |
+| `LayerCake` | discrete layer cake: exponential moment from a geometric tail |
+| `RowMgf` | one column bit under a uniform k-subset |
+| `Pushforward` | uniform scramble → independent uniform row subsets |
+| `Round2Det` | reduction of `onesAboveBottom` to column walks; weak duality; displacement ≤ 2·excess + n·|i−b| |
+| `Round2Col` | split of the dual variable into forward/backward Ville walks; Ville tails; column moment |
+| `Round2Fixed` | fixed (S, b): `#{x ≤ Σ_j Y_j} ≤ e^{-tx} M^n #Scramble` |
+| `Round2Union` | `round2_fail`: failures of the package's `HasCombinatorialPropertyB2` |
+| `Round1` | `round1_fail`: failures of `HasCombinatorialPropertyBOnPipeline`, by the same route (no Freedman) |
 
-Size: 4–8k lines. This is the critical path.
+The Lean route uses two weaker but formalization-friendly steps:
+- e^{t max(a,b)} ≤ e^{ta} + e^{tb} − 1, which needs no independence of the two walks;
+- round 1 by Ville with drift instead of Freedman.
+
+Numerically this gives d = 8.74e-6 against ε_B = 9.52e-6 at 2^25.6 (float).
+
+**Remaining (W4.5): numerics.** For every n ≥ 16 and every row count in [2^25.6, 2^26], each size
+s needs parameters satisfying the hypotheses of `round1_fail` and `round2_fail`, with failure
+sums ≤ 1/100 and 1/1000.
+- Per-column reduction: choose x_s to make each union term η/(n−1). Use
+  ln C(n,s) ≤ n·H(s/n) and the decrease of ln((n−1)/η)/n.
+- With fixed parameters the conditions are monotone in m, so one check at m = ⌈2^25.6⌉ per p-cell
+  covers the window.
+- This needs a certified exp/log bound library (Taylor with remainder plus rational evaluation by
+  `norm_num`), shared with W3, and generated per-cell lemmas (round 2 is symmetric in p ↔ 1−p).
 
 ## Order
 
