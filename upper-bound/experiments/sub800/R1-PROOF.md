@@ -228,10 +228,16 @@ order-1 outsiders.
       γ/(Aν·c) < 1.2e-8 ≈ 0.0008μ, inside the 0.1μ reserve.
   - **Property F (padded).** `paddedPack2Net_fHigh_baseline` and `_fLow_baseline` give escapes
     < j/J for j ≤ jmax real keys, with no dummy-rank surcharge. They require F2ROUND's
-    small-rank, R1 and R2 witnesses for the truncated m-row scrambles at (f, J, δ_F). Those are
-    certified (per-E route, interval arithmetic):
-    - f = 7934: ln(2P₁) ≤ −3648 and ln(2P₂) ≤ −559;
-    - f = 406109: ln(2P₁) ≤ −94 and ln(2P₂) ≤ −15773.
+    small-rank, R1 and R2 witnesses for the truncated m-row scrambles at (f, J, δ_F). The
+    witness parameters (g1, g2, c, b) are:
+    - f = 7934: (2380, 7616, 1/4, 1596); interval certificate ln(2P₁) ≤ −3154, ln(2P₂) ≤ −24;
+    - f = 406109: (60916, 292398, 1/20, 150); ln(2P₁) ≤ −631, ln(2P₂) ≤ −559.
+
+    These are `fringe_cert_R1lean_f*.out` (per-E route with exact range E ≤ 60). They are also
+    proved in Lean: `Fringe7934.fringe_fail` and `Fringe406109.fringe_fail` bound each of SR, R1
+    and R2 by 1/10000 for every n ≥ 16 (LEAN-PLAN W3). They replace the earlier choices
+    (1586, 6743, 2/5, 1201) and (81221, 345192, 2/5, 31), certified in `fringe_cert_R1_f*.out`.
+    The new choices were picked so that the package's closed-form R1 lemmas apply.
 
     Notes:
     - The ln(2P) values already include both orientations: the factor 2 is F2ROUND §5's flip

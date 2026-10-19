@@ -122,9 +122,10 @@ provided the protected (f+1)·n fits in the port.
 - The large topDesc root (π = 0, no outsiders) uses a bulk-only rectangle.
 
 Every large sender (d = 14…22, all roles) fits, using only **two classes: f = 7934 and
-f = 406,109**. Both are certified at J = 190,000 and δ_F = 1/8 (`fringe_cert_R1_f7934.out`,
-`fringe_cert_R1_f406109.out`). The second is for sparse bottom senders (a/c ≈ 1/64). R1-PROOF.md
-§4 gives the hand argument for all d.
+f = 406,109**. Both are certified at J = 190,000 and δ_F = 1/8 (`fringe_cert_R1lean_f*.out`,
+interval arithmetic). They are also proved in Lean (`lean/Fringe7934.lean`,
+`lean/Fringe406109.lean`). The second class is for sparse bottom senders (a/c ≈ 1/64).
+R1-PROOF.md §4 gives the hand argument for all d.
 
 The bulk is certified in interval arithmetic over the whole admitted window [2^25.6, 2^26]
 (`cert_walk.py` → `cert_walk.out`; the earlier run on the observed range is
