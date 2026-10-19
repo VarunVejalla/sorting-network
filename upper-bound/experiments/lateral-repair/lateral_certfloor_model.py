@@ -36,7 +36,11 @@ def evaluate(eps_sep, C, R, x, y, z, P):
     k, A, nu = 2.0 ** x, 2.0 ** y, 2.0 ** -z
     shape = np.broadcast_shapes(np.shape(eps_sep), np.shape(x))
     P0 = dict(P); P0["f_floor"] = 1.0; P0["cF"] = 1e300          # take eps_F only from the model
-    _, _, _, det0 = E.evaluate(np.zeros(shape), x, y, z, P0)
+    # eps_F from the largest delta that (4.2) allows at the design's separator precision.  (Until
+    # 2026-10-18 this used eps_B = 0 here, which overstated eps_F; see walk-bound/FRINGE-CERT.md sec. 1.)  With
+    # lateral repair (R = 1) the true intrusion is rho * eps_sep <= eps_sep: conservative, and biased
+    # against the lateral rows (their eps_F would rise at rho * eps_sep).
+    _, _, _, det0 = E.evaluate(np.broadcast_to(eps_sep, shape) * np.ones(shape), x, y, z, P0)
     Af, pf = FLOOR[P["dF"]]
     with np.errstate(all="ignore"):
         f_need = Af * (1.0 / det0["epsF"]) ** pf

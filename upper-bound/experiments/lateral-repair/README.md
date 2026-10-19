@@ -133,6 +133,15 @@ Chernoff step needs `Delta + 1 > e delta f`, so `delta < 1/e`. The tapered study
 
 Model with these floors (ideal, windowed in parentheses):
 
+> **Superseded (2026-10-19).** This table came from a version of `lateral_certfloor_model.py`
+> that computed `eps_F` at `eps_B = 0` (see `../walk-bound/FRINGE-CERT.md` §1). After the fix
+> (`cf_after_epsfix.out`), the no-lateral rows are 1297 (1419), 893 (999), 758 (856), 690 (792)
+> and 626 (726). Every lateral row is now *worse* than no-lateral, for example V0 at 1342 and
+> L4′ `delta = 1/5` at 659. The fix evaluates lateral rows conservatively, at `eps_sep` rather
+> than `rho · eps_sep`, so they pay lateral's extra layers without the matching `eps_F` gain. A
+> fair comparison needs `eps_F` at `rho · eps_sep`, computed self-consistently. The parked verdict
+> (VERDICT.md) does not depend on this table.
+
 | variant | no lateral | lateral, proved `C=25.3` | lateral, simulated `C=0.5` |
 |---|---:|---:|---:|
 | V0 | 1286 (1418) | 1227 (1370) | 1224 (1339) |
