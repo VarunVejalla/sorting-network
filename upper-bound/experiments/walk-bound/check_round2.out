@@ -1,0 +1,13 @@
+(1) exhaustive deterministic check
+  m=4 n=4: ok over 175840 (state, S, base, lam) cases; max lhs - rhs = 0.000
+  m=5 n=4: ok over 432768 (state, S, base, lam) cases; max lhs - rhs = 0.000
+  m=6 n=5: ok over 11279520 (state, S, base, lam) cases; max lhs - rhs = 0.000
+  m=5 n=5: ok over 4481280 (state, S, base, lam) cases; max lhs - rhs = 0.000
+  m=8 n=4: ok over 3308256 (state, S, base, lam) cases; max lhs - rhs = 0.000
+(2) tail of Y+ = sup_h (W(h) - lam h) vs exp(-theta* x)
+  p=0.5000 lam=0.02: x=0.5/th: emp 0.567 <= 0.607;  x=1.0/th: emp 0.343 <= 0.368;  x=2.0/th: emp 0.120 <= 0.135;  x=3.0/th: emp 0.043 <= 0.050
+  p=0.0625 lam=0.01: x=0.5/th: emp 0.555 <= 0.607;  x=1.0/th: emp 0.333 <= 0.368;  x=2.0/th: emp 0.121 <= 0.135;  x=3.0/th: emp 0.042 <= 0.050
+  p=0.9375 lam=0.01: x=0.5/th: emp 0.602 <= 0.607;  x=1.0/th: emp 0.364 <= 0.368;  x=2.0/th: emp 0.134 <= 0.135;  x=3.0/th: emp 0.051 <= 0.050
+(3) moderate (m, n): sum_j Y_j at the theorem's lam vs NA Chernoff, and primal vs bound
+  m=4096 n=16 s=8: R=2396  95% bound   209.6;  dual lam R + sum Y: q95   186.7 mean   170.2;  primal mean   169.3 max   187.5
+  m=4096 n=16 s=1: R=2396  95% bound   102.9;  dual lam R + sum Y: q95    88.2 mean    81.0;  primal mean    79.1 max    93.5

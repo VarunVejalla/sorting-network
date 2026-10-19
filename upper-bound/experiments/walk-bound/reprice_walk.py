@@ -7,7 +7,8 @@ Parameter model only.  Replaces the separator precision tables of ../tapered/exc
   (b) the certified-route fringe floors (../lateral-repair/lateral_certfloor_model.py, no lateral).
 Columns: old route vs walk bound.
 
-Run:  python -I reprice_walk.py
+Run:  python -I reprice_walk.py            (walk-bound round 2 sketch, WALK-BOUND.md)
+      ROUTE=na python -I reprice_walk.py  (proved round 2, ROUND2.md; caches na_tables.npz)
 """
 import os
 import sys
@@ -23,6 +24,23 @@ import walk_precision as WP  # noqa: E402
 
 OLD = (E._E1.copy(), E._E2.copy())
 NEW = (np.array([WP.e1_new(L) for L in E._LG]), np.array([WP.d_new(L) for L in E._LG]))
+
+
+def na_tables():
+    """ROUND2.md precision (NA Chernoff both rounds, n-uniform form), on a 1-bit grid, log-interpolated; cached."""
+    cache = os.path.join(HERE, "na_tables.npz")
+    if os.path.exists(cache):
+        z = np.load(cache)
+        Ls, e1, d = z["Ls"], z["e1"], z["d"]
+    else:
+        import na_precision as NA
+        Ls, e1, d = NA.tables()
+        np.savez(cache, Ls=Ls, e1=e1, d=d)
+    return (np.exp(np.interp(E._LG, Ls, np.log(e1))), np.exp(np.interp(E._LG, Ls, np.log(d))))
+
+
+if os.environ.get("ROUTE", "sketch") == "na":
+    NEW = na_tables()
 
 
 def use(tables):
