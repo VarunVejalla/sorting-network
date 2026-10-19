@@ -10,9 +10,13 @@ found no blocking issue. The pieces have these statuses:
 - **Hand proofs:** the integer flow table and its invariants, and the separator geometry (§2 and §4).
 - **Exact simulation (cross-check):** the flow table, d ≤ 22.
 - **Single-review dependencies:** the walk bound (ROUND2) and the FRINGE-CERT §3 R2 tail.
-- **Lean:** only W4.3 (`lean/NegAssoc.lean`) so far.
+- **Lean (2026-10-19): complete.** `lean/R1Main.lean` proves
+  `R1T.limsup_minimum_div_logb_le_800` (via `limsup_minimum_div_logb_le_78975`, i.e. ≤ 789.75) for
+  the package's canonical `SortingDepth.minimum`, using only the standard axioms (propext,
+  Classical.choice, Quot.sound). Build with `bash lean/build.sh`; see LEAN-PLAN.md for the modules.
 
-The accepted coefficient is still 1419.
+The package's accepted coefficient (in `upper-bound/best`) is still 1419; this experiment's Lean
+proof of 789.75 has not yet been reviewed or promoted.
 
 ## Why this route
 

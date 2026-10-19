@@ -278,4 +278,9 @@ an additive constant.
    γ lemma, nits) are folded in.
 2. **Single-review dependencies.** ROUND2's walk bound and FRINGE-CERT §3's R2 tail have one review
    each. The per-E fringe route at δ_F = 1/8 is a parameter change of reviewed code.
-3. **Lean.** Nothing here is formalized.
+3. **Lean.** Formalized end to end in `lean/` (2026-10-19): `R1T.limsup_minimum_div_logb_le_78975`
+   and `R1T.limsup_minimum_div_logb_le_800`, standard axioms only. Two departures from the text:
+   (I3) is proved in the form a ∈ [4094, 4104]·c/4096 for non-bottom senders (a slightly wider
+   upper bound than 1 + 7/4096, still inside the geometry and Property-B budgets), and the root
+   separator at t = 0 uses the package's two-sided B2 separator on 2^42 rows (depth 3·S(42) = 2709)
+   instead of one round on 2^79 rows.
