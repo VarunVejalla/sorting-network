@@ -10,7 +10,7 @@ ext="$here/../../tapered"
 mkdir -p "$here/build"
 mods=("$@")
 if [ ${#mods[@]} -eq 0 ]; then
-  mods=(NegAssoc Ville LayerCake RowMgf Pushforward Round2Det Round2Col Round2Fixed Round2Union Round1 ExpBounds NumGlue Round1Num CellLemmas R1Cells Round2Num CellLemmas2 R2Cells F2D F2DR1 F2DSR F2DR2 F2DR2b F2DR2c F2DR2d F2DCells F2DBounds Fringe406109 Fringe7934 R1Sched R1Wire R1Exec R1NodeSpec R1Window R1BadSend R1Kernel R1Lemma41 R1FringeSend R1StageKernel R1Fields R1Induction R1Final R1Subtree R1Table R1Inv R1InvStep R1InvNext R1InvAll R1Design PrefixPadding VariableSeparator AnyCutBounds RectanglePadding PaddedSeparator PaddedFringe TruncatedScrambleMeasure BaselineFringeD SepExists)
+  mods=(NegAssoc Ville LayerCake RowMgf Pushforward Round2Det Round2Col Round2Fixed Round2Union Round1 ExpBounds NumGlue Round1Num CellLemmas R1Cells Round2Num CellLemmas2 R2Cells F2D F2DR1 F2DSR F2DR2 F2DR2b F2DR2c F2DR2d F2DCells F2DBounds Fringe406109 Fringe7934 R1Sched R1Wire R1Exec R1NodeSpec R1Window R1BadSend R1Kernel R1Lemma41 R1FringeSend R1StageKernel R1Fields R1Induction R1Final R1Subtree R1Table R1Inv R1InvStep R1InvNext R1InvAll R1Design PrefixPadding VariableSeparator AnyCutBounds RectanglePadding PaddedSeparator PaddedFringe TruncatedScrambleMeasure BaselineFringeD SepExists R1Sep)
 fi
 winbuild="$(cygpath -w "$here/build" 2>/dev/null || echo "$here/build")"
 lp="$(cd "$best" && lake env printenv LEAN_PATH)"
