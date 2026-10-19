@@ -1,0 +1,29 @@
+round 1 (NA Chernoff) and round 2 (duality + NA Chernoff), n = 16, eta1 = 1/100, eta2 = 1/1000
+  lg m | E1: L6.1     walk(McD)  NA        | d: BULK2    walk sketch  NA (E1=NA)  grid
+    16 |    1.921e-02  9.191e-03  9.094e-03 |    5.508e-03  1.958e-03    1.155e-03   0.05
+    20 |    5.324e-03  2.294e-03  2.270e-03 |    7.926e-04  2.515e-04    1.462e-04   0.05
+    25 |    1.045e-03  4.053e-04  4.012e-04 |    6.830e-05  1.925e-05    1.103e-05   0.05
+    30 |    2.015e-04  7.165e-05  7.092e-05 |    5.754e-06  1.467e-06    8.315e-07   0.02
+    35 |    3.834e-05  1.267e-05  1.254e-05 |    4.767e-07  1.115e-07    6.263e-08   0.02
+    39 |    1.010e-05  3.166e-06  3.134e-06 |    6.437e-08  1.417e-08    7.910e-09   0.02
+    42 |    3.700e-06  1.119e-06  1.108e-06 |    1.427e-08  3.014e-09    1.675e-09   0.02
+
+constants: E1 = 2 K1 / sqrt(m),  d = 2 C2 sqrt(E1 / m)
+  lg m = 20:  K1_NA = 1.162  (McDiarmid route 1.174);  C2_NA = 1.571  (sketch sqrt(K2) = 2.689)
+  lg m = 30:  K1_NA = 1.162  (McDiarmid route 1.174);  C2_NA = 1.618  (sketch sqrt(K2) = 2.840)
+  lg m = 39:  K1_NA = 1.162  (McDiarmid route 1.174);  C2_NA = 1.656  (sketch sqrt(K2) = 2.953)
+  lg m = 42:  K1_NA = 1.162  (McDiarmid route 1.174);  C2_NA = 1.669  (sketch sqrt(K2) = 2.987)
+
+per-column constants vs n (lg m = 39):  K1_NA, C2_NA
+  n =   16:  1.162  1.656
+  n =   32:  1.114  1.497
+  n =   64:  1.087  1.401
+  n =  256:  1.063  1.315
+
+column height for the 1419 package's bulk target d = 1/59e6 (two rounds):
+  BULK2 route              : lg m = 41.66   (BULK2.md: 41.66)
+  walk sketch (WALK-BOUND) : lg m = 38.65
+  NA, both rounds          : lg m = 37.53
+  NA round 2, McD round 1  : lg m = 37.54
+  NA, both rounds, n-uniform (all n >= 16, p grid 1/64): lg m = 37.57
+  at lg m = 37.5: E1 n=16 5.2712e-06, n-uniform 5.3975e-06;  d n=16 1.7185e-08 (gamma 0.02), n-uniform 1.7595e-08 (gamma 0.02)

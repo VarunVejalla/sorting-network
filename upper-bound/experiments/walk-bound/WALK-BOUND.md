@@ -1,7 +1,7 @@
 # Walk-maximum bound: Property B without the union over input states
 
 UB-29 · 2026-10-18 · Claude (Opus 5.5). **Claim level: round 1 is a hand proof (unaudited) whose
-deterministic step is checked exhaustively on small cases; round 2 is a sketch.** Notation
+deterministic step is checked exhaustively on small cases; round 2 is proved separately in [ROUND2.md](ROUND2.md).** Notation
 follows `upper-bound/best/notes/two-round/BULK2.md`.
 
 ## Summary
@@ -99,7 +99,10 @@ so `E1_new = 2.92/sqrt(m)`, against Lemma 6.1's `sqrt(2(1+ln m)/m)`.
 (`scale_walk_bound.out`). That is about 2.7 times below the theorem's constant, which is mostly
 the union over `S`, so the constant can probably be sharpened.
 
-## 4. Round 2 (sketch)
+## 4. Round 2 (sketch, superseded)
+
+**Superseded by [ROUND2.md](ROUND2.md)**, which proves round 2 by weak duality and negative
+association with a smaller constant (no `ln ln m`). The sketch is kept for the record.
 
 Round 2 acts on `c'`, the round-1 column counts at the same threshold, with exact mass
 `n i` and `sum_j |c'_j - i| = 2 exc(c', i) < R := E1 m n` by round 1. The reduction of §2 applies
