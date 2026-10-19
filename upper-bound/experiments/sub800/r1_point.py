@@ -62,14 +62,14 @@ def main():
     print(f"  (4.1) root separator needs eps_* <= mu/k = {float(mu / k):.3e} (additive constant)")
 
     import na_precision as NP
-    for m_ in (M, M + 1024):
+    for m_ in (50859009, 52703924, M, 2 ** 26):           # admitted window [2^25.6, 2^26] and the observed low end
         L = math.log2(m_)
         d = NP.d_na(L, NP.e1_na(L, uniform=True), uniform=True)[0]
         print(f"  bulk: lg m = {L:.4f}: d = {d:.4e} vs eps_B {float(eps_B):.4e} (margin {float(eps_B) / d:.3f}x)")
         ok &= d <= float(eps_B)
     pi_c = (Anu * k - 1) / Fr(A * A * k * k)
-    print(f"  fringe: f = pi/(2n) ~ (pi/c) M/2 = {float(pi_c * M / 2):.1f} rows; support needs f >= mu M/dF = "
-          f"{float(mu * M / dF):.1f}; certificate run at f = 7934, J = 190000 >= {J}"
+    print(f"  fringe classes f = 7934 and 406109 (padded (f+1)-row form, R1-PROOF.md sec. 4); "
+          f"certificates run at J = 190000 >= {J}"
           f" {'(OK: larger J is conservative)' if 190000 >= J else '(J TOO SMALL)'}")
     ok &= 190000 >= J
     S = lambda q: q * (q + 1) // 2

@@ -185,20 +185,28 @@ class Sim:
                 s.where["res"] = (t, i, role, float(c.G / cap))
             s.worst["G"] = max(s.worst["G"], c.G / cap)
             s.worst["ac"] = max(s.worst["ac"], a / cap)
-        # separator geometry for large senders (padded rectangle, arbitrary column count):
-        # fringe classes F_CLASSES; for a class f take n = floor(pi/(2f)) (so f n <= pi/2: the
-        # certified f rows lie inside the up-port), need support mu c <= delta_F f n ((4.4) form) and
-        # rows m = ceil(a/n) in [2^ROWS_LO, 2^ROWS_Q).  Use the first class that works.
-        if t >= T_MIN and role not in ("topDesc", "botRise") and a > 2 ** GEOM_CUT:
+        # separator geometry for large senders: the padded (m+1) x n rectangle of
+        # ../tapered/BaselineFringe.lean (paddedPack2Net_fHigh/fLow_baseline): fringe class f,
+        # n = floor(pi/(2(f+1))) so that (f+1) n <= pi/2 (port); support mu c <= delta_F f n
+        # (j <= jmax = delta_F f n); m = ceil(a/n) - 1 live rows, m+1 <= 2^ROWS_Q rows in total,
+        # m >= 2^ROWS_LO.  topDesc senders (pi = 0, no outsiders to protect) use a bulk-only
+        # rectangle: n = ceil(a / 2^ROWS_Q), m + 1 = ceil(a/n).
+        if t >= T_MIN and role != "botRise" and a > 2 ** GEOM_CUT:
             hit = None
-            for f in F_CLASSES:
-                n = int(pi / 2) // f
-                if n < 16:
-                    continue
-                m = -((-a.numerator) // (n * a.denominator))
-                if MU * cap <= DELTA_F * f * n and 2 ** ROWS_LO <= m < 2 ** ROWS_Q:
-                    hit = (f, n, m)
-                    break
+            if role == "topDesc":
+                n = -((-a.numerator) // (2 ** ROWS_Q * a.denominator))
+                m1 = -((-a.numerator) // (n * a.denominator))
+                if 2 ** ROWS_LO <= m1 - 1 and m1 <= 2 ** ROWS_Q:
+                    hit = (0, n, m1 - 1)
+            else:
+                for f in F_CLASSES:
+                    n = int(pi / 2) // (f + 1)
+                    if n < 16:
+                        continue
+                    m1 = -((-a.numerator) // (n * a.denominator))
+                    if MU * cap <= DELTA_F * f * n and 2 ** ROWS_LO <= m1 - 1 and m1 <= 2 ** ROWS_Q:
+                        hit = (f, n, m1 - 1)
+                        break
             key = (role, hit is not None)
             s.geom[key] = s.geom.get(key, 0) + 1
             if hit:

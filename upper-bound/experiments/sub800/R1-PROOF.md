@@ -4,7 +4,7 @@ Claude (Opus 5.5), 2026-10-19. This is a hand proof. It modifies Chvátal, DCS-T
 numbers below are printed pages, and §5–6 are the separator chapters. The numbers it needs come from
 `r1_point.py` (exact rationals), `designP_sim.py` (exact simulation), the fringe certificates
 `fringe_cert_R1_f*.out` (interval arithmetic) and `../walk-bound/ROUND2.md` (bulk; float
-constants). **Not yet reviewed.** Nothing here is in Lean.
+constants). **Reviewed once (fresh context, 2026-10-19); this revision applies its fixes; re-review pending.** Nothing here is in Lean.
 
 Parameters: k = 2^4, A = 2^5, ν = 2^-3, so Aν = 4 and Aνk = 64. N = k^d, and Chvátal's capacities
 are c(i,t) = N·A^i·ν^t/(Aνk). The constants are:
@@ -79,23 +79,42 @@ which x's parent last assigned θ_x:
     p/2 − r* = (Aν−1)/(2A²k) = (Aν−1)·g* exactly;
   - interior child: θ ≤ ⌈I/(k−2)⌉ ≤ 2r*c/(k−2) + 1, so
     g′ ≤ 2r*/((k−2)Aν) + 1/(Aνc) ≤ r*/28 + 2^-21 < g* = 2^-15, using c ≥ 2^19.
+- **The parent is a non-top node with G = 0** (so s = 0): the end child gets
+  g′ = p/(2Aν) = 63/2^21 < g*, and the interior children get 0.
 
 So I ≥ 0 always (G ≤ g*c ≤ 2r*c), and θ ≥ 0. (Simulated: max G/c = g* exactly, d ≤ 22.)
 
-**(I2) Nonnegative blocks.** b_l = G_{w_l}(t) − θ_l ≥ 0, i.e. θ_l ≤ G_{w_l}(t), where G_{w_l}(t)
-is the deficit of the inactive child. At interior nodes, G_{w_l}(t) ≥ π_{w_l}(t−1) = p·c(i+1,t−1),
-which is far above θ_l ≤ (π/2 + g*c). This is not yet written for every role; it is **checked by
-the exact simulation** (no negative blocks for d = 10…22, all roles); a hand proof
-for the sparse bottom is still owed. Chvátal's own table needs the same fact.
+**Bottom ratios.** At (4,5,3), ω*(t) = (t+2)/3, so the bottom ratio R_x/c = 2^{3t+6−9ω(t)}
+depends only on t mod 6. Checking the six residues: R/c = 1 or 1/64 at botDesc times, and 1/4096
+at botRise times. (The code agrees for all d < 500.)
 
-**(I3) Occupancy: a_x(t) ≤ η·c.** By §1.1 and the updates,
+**(I2) Nonnegative blocks.** We need b_l = G_{w_l}(t) − θ_l ≥ 0. A child w satisfies
+G_w(t) = G_w(t−1) + π_w(t−1) ≥ π_w(t−1), or G_w(t) = R_w if subtree(w) is empty.
+- **Interior and topRise senders.** Their children were active at t−1 and were not botRise, since
+  a botRise child would empty level i+1 and make x a bottom node. So
+  G_w(t) ≥ p·c(i+1,t−1) = p·A·c/ν = 256·p·c ≈ 0.0615c. Meanwhile
+  θ_l ≤ π/2 + G ≤ (p/2 + g*)·c < 1.6e-4·c, and topRise has the smaller value π/2 = c/8192.
+- **botDesc senders.** Children have empty subtrees, so G_w = R_w = R_x/k ≥ c/1024 > θ_l, using
+  the bottom ratios.
+- **topDesc:** θ = 0. **botRise:** no blocks.
 
-a_x(t) = π_x(t−2) + Σ_l π_{w_l}(t−1) + θ_x^{(t−3)} − θ_x^{(t−1)},
+(The simulation shows no negative blocks for d = 10…22.)
 
-where θ_x^{(s)} is the deficit the parent assigned to x at step s. For an interior node, the first
-two terms equal Chvátal's p·c(i,t−2) + k·p·c(i+1,t−1) = (1 − 2^-12)·c. Also θ ≤ g*·c(i,t−2) = 64·g*·c.
-So a/c ≤ 1 − 2^-12 + 2^6·2^-15 = 1 + 7/4096 = η. The simulated maximum is exactly 1.001709; other
-roles are smaller in the simulation.
+**(I3) Occupancy: a_x(t) ≤ η·c, with η = 1 + 7/4096.** By §1.1 and the updates, when x was active
+at t−2 and its children at t−1,
+
+a_x(t) = π_x(t−2) + Σ_l π_{w_l}(t−1) + θ_x^{(t−3)} − θ_x^{(t−1)}.
+
+Here θ_x^{(s)} is the deficit the parent assigned to x at step s, and G_x(t−2) = θ_x^{(t−3)}.
+- Σ_l π_{w_l}(t−1) = k·p·c(i+1,t−1) = 4096·p·c.
+- π_x(t−2) is either 64·p·c (interior or botDesc at t−2) or 64·c/4096 (topRise at t−2, in which
+  case θ_x^{(t−3)} = G_x(t−2) = 0).
+- θ ≤ g*·c(i,t−2) = 64·g*·c.
+- So a/c ≤ max(4160·p + 2^6·2^-15, 1) = max(1 − 2^-12 + 2^-9, 1) = 1 + 7/4096.
+
+Bottom nodes have a = R_x − G_x ≤ R_x ≤ c. Top nodes have a ≤ c by the same formula with G = 0.
+The simulated maximum is exactly 1.001709 = 1 + 7/4096. (`r1_point.py` uses the larger,
+conservative 1 + 15/8192 from SLACKFREE §4.)
 
 **(I4) Residual.** Let T_j = θ_1 + … + θ_j, L_j = T_{j−1} − π/2 and R_j = π/2 + G − T_j. Then
 max_j (L_j⁺ + R_j⁺) ≤ s ≤ r*·c.
@@ -155,9 +174,10 @@ holds at t+1, provided
 
 **Lemma 4.4** (p. 13) is unchanged. It uses (4.3) and Lemma 3.2 to get π/c ≥ (Aνk−1)/(A²k²), then
 (4.4), so that u's order-(r−1) outsiders number at most δ_F·|F|, and then Property F. Since π is
-Chvátal's, only the support step needs a word: |F| is the *certified* fringe f·n ≤ π/2 (§4), and
-μc ≤ δ_F·f·n is checked per sender. For exact sorters, |F| = π/2, and no order-(r−1) outsider is
-sent down.
+Chvátal's, only the support step needs a word.
+- For scramble senders, Property F is the padded form of §4: j real keys, at most
+  jmax = δ_F·f·n, with the protected (f+1)·n ≤ π/2. Support μc ≤ δ_F·f·n is checked per sender.
+- For exact sorters, |F| = π/2, and no order-(r−1) outsider is sent down.
 
 **Lemma 4.5** is unchanged. c(α(t_f), t_f) < 2A²k² = 2^19, and μδ·2^19 < 1, so at t_f there are no
 order-1 outsiders.
@@ -166,56 +186,81 @@ order-1 outsiders.
 
 - **Small senders (a ≤ 2^45):** Batcher's sort on 2^45 wires, of depth S(45) = 1035, where
   S(q) = q(q+1)/2. Then ε_B = ε_F = 0 and γ = 0.
-- **Large senders (a > 2^45):** a padded m × n rectangle with the two-round separator (sort,
-  scramble, sort, scramble, sort) of the package, with column sorts of height m < 2^26. That is
-  depth 3·S(26) = 1053.
-  - **Geometry.** Fringe classes f ∈ {7934, 406109} are tried in order. For a class, take
-    n = ⌊π/(2f)⌋, so f·n ≤ π/2, and require μc ≤ δ_F·f·n and m = ⌈a/n⌉ ∈ [2^25.6, 2^26). The
-    exact simulation finds a class for every large sender of every role (d = 18 and 22; 5,737
-    senders). A hand argument covering all d is still owed: the class choice depends only on
-    a/c ∈ [0.0156, 1.0018] and π/c.
-  - **Property B.** The walk bound gives, for every row threshold, excess < (d_m/2)·m·n (ROUND2.md).
-    Here d_m ≤ 8.07e-6 on the m range, against ε_B = 9.52e-6. The padding has m·n − a < n dummy
-    wires.
-  - **The charge γ.** A block boundary that is not row-aligned moves at most n keys relative to the
-    nearest row cut. With two cuts per block plus padding, γ ≤ 4n.
-    γ/(Aνc) ≤ 4·1.0018/(5.27×10^7·4) < 2e-8 < 0.1μ/Aν.
-  - **Property F.** For each class, F2ROUND (`../../best/notes/two-round/F2ROUND.md`) holds with
-    (f, J, δ_F) as certified (per-E route, interval arithmetic):
+- **Large senders (a > 2^45):** the padded two-round separator `paddedPack2Net` of
+  `../tapered/BaselineFringe.lean` and `PaddedSeparator.lean` (kernel-checked in the tapered
+  experiment). It uses an (m+1) × n rectangle with a ≤ (m+1)·n and m·n ≤ a, so at most one partial
+  dummy row, and three column sorts of height m + 1 ≤ 2^26. That is depth 3·S(26) = 1053.
+  - **Geometry, for every sender except topDesc.** Try the fringe classes f ∈ {7934, 406109} in
+    order. For a class, take n = ⌊π/(2(f+1))⌋, so the protected (f+1)·n ≤ π/2. Require support
+    μc ≤ δ_F·f·n, and m = ⌈a/n⌉ − 1 ∈ [2^25.6, 2^26 − 1].
+
+    By hand, for all d: n ≥ 2^19, so m = (2(f+1)·a/π)(1 + O(2^-19)). By role:
+    - **mid, and botDesc with R/c = 1:** π = p·c and a/c ∈ [1 − 2^-12 − 2^-15, 1 + 7/4096]. For
+      f = 7934, 2(f+1)/p = 6.6036×10^7, so m ∈ [6.60, 6.62]×10^7.
+    - **topRise:** π = c/4096 and a = c, so m ≈ 2·7935·4096 = 6.50×10^7.
+    - **botDesc with R/c = 1/64:** a/c ∈ [1/64 − g*, 1/64]. For f = 406109, m ≈ 5.27×10^7.
+    - **Support:** n ≥ π/(2(f+1)) − 1, so δ_F·f·n ≥ δ_F·π/2·(1 − 1/(f+1)) − δ_F·f, and
+      δ_F·π/2 = μ₄₄·c = μc/(1 − 2^-10). Since 1/(f+1) < 2^-10 and c ≥ 2^45, support holds. For
+      topRise, δ_F·π/2 = δ_F·νc/(2Ak) ≥ μc/0.9834, by (4.3).
+
+    The exact simulation agrees (d = 14…22; every large sender fits; m ∈ [5.27×10^7, 2^26 − 1]).
+  - **Large topDesc senders** (the root in the early oscillation phase, with π = 0) hold no
+    outsiders, so they need only Property B. Use n = ⌈a/2^26⌉ and m + 1 = ⌈a/n⌉ ≤ 2^26.
+    Lemma 3.2 makes every other topDesc node small.
+  - **Property B.** The walk bound (ROUND2.md, n-uniform for n ≥ 16) gives, at every row threshold,
+    excess < (d/2)·m·n. `cert_walk.py` certifies d ≤ ε_B = 1/105,000 in interval arithmetic:
+    θ* by a concavity-based lower enclosure, a rigorous quadrature for the round-1 MGF, a continuous
+    cover of p ∈ (0,1), and every m in the admitted window [2^25.6, 2^26] (`cert_walk.out`; float
+    values from 8.29e-6 at 2^25.6 to 6.8e-6 at 2^26).
+  - **The charge γ.** `paddedPack2Net_all_cut_bounds` (`../tapered/PaddedSeparator.lean`) bounds
+    each cut direction by (ε_B/2)·m·n + n, at any cut position (not only row-aligned ones) and with
+    padding. So per block γ ≤ 2n + ε_B·((m+1)·n − a) ≤ 3n.
+    - With n ≤ π/(2(f+1)) ≤ c/(8192·7935), or n ≤ a/2^25 for topDesc, we get
+      γ/(Aν·c) < 1.2e-8 ≈ 0.0008μ, inside the 0.1μ reserve.
+  - **Property F (padded).** `paddedPack2Net_fHigh_baseline` and `_fLow_baseline` give escapes
+    < j/J for j ≤ jmax real keys, with no dummy-rank surcharge. They require F2ROUND's
+    small-rank, R1 and R2 witnesses for the truncated m-row scrambles at (f, J, δ_F). Those are
+    certified (per-E route, interval arithmetic):
     - f = 7934: ln(2P₁) ≤ −3648 and ln(2P₂) ≤ −559;
     - f = 406109: ln(2P₁) ≤ −94 and ln(2P₂) ≤ −15773.
 
-    These hold for every n ≥ 16 and m ≥ f. The failure budgets (1/100 bulk round 1, 1/1000 round 2,
-    1/1000 for each fringe event) sum below 1, so for each shape (m, n, f) a scramble pair exists
-    satisfying B and F. Every node of that shape uses it.
+    Notes:
+    - The ln(2P) values already include both orientations: the factor 2 is F2ROUND §5's flip
+      doubling.
+    - For f = 406109, J/D = 3.74 < 16, so the certificate evaluates its worst points below the
+      admissible n ≥ 16. This is conservative because the ln n coefficient is negative.
+    - With the bulk budgets 1/100 (round 1) and 1/1000 (round 2), the total failure probability
+      is below 1. So for each shape (m, n, f) a scramble pair exists satisfying B and F, and every
+      node of that shape uses it.
 
 ## 5. Depth
 
 - **Per stage.** Every active node runs its module in parallel, so a stage has depth
-  max(1053, 1035) = 1053.
-- **Stage count.** The schedule meets at t_f = 3d − 14 for d ≥ 14 (simulated; t_f − d(x+y)/z is
-  bounded by Chvátal's closed forms).
-- **Constants.** The root separator at t = 0 (§6) and the final sorters on k^{d−λ}-wire blocks
-  (Lemma 4.5, λ = α(t_f) − O(1)) have depth independent of N.
+  max(1053, 1035) = 1053. Scrambles are wire permutations.
+- **Stage count.** At (4,5,3), α*(t) = (3t − 4d + 15)/5 and ω*(t) = (t+2)/3. At t = 3d − 14:
+  - α* = d − 5.4, which rounds up with parity d to d − 4;
+  - ω* = d − 4.
+
+  So t_f = 3d − 14, the meeting level is d − 4, and c(α(t_f), t_f) = 2^16. The code agrees for
+  every 6 ≤ d < 500.
+- **Constants.** The root separator at t = 0 (§6) and the final sorters on k^4 = 2^16-wire blocks
+  (Lemma 4.5) have depth independent of N.
 - **Total.** With lg N = 4d, D(N) ≤ 1053·(3d) + O(1) = 789.75·lg N + O(1). For general n, pad to
   N = 16^⌈log₁₆ n⌉ < 16n; this adds O(1) (restriction of a sorting network). Hence
   limsup D(n)/lg n ≤ 789.75.
 
 ## 6. Root separator, (4.1)
 
-At t = 0 the root splits N wires into k parts with an ε_*-separator, ε_* ≤ μ/k = 9.38e-7. As in
-the package, use a separator with a fixed number of rows (one round of Lemma 6.1 on m rows), so the
-depth is O(1):
-- Lemma 6.1 gives sqrt(2(1 + ln m)/m) ≤ 9.38e-7 for lg m ≈ 45 (the package uses m = 2^79);
-- the walk bound's round 1 reaches it at smaller m.
+At t = 0 the root splits N wires into k parts with an ε_*-separator, ε_* ≤ μ/k = 9.38e-7. Use a
+separator with a fixed number of rows (one round of Lemma 6.1 / Theorem 5.1 on m rows), so the
+depth is O(1). sqrt(2(1 + ln m)/m) ≤ 9.38e-7 needs lg m ≥ 47; the package uses m = 2^79. This is
+an additive constant.
 
-## Open items (all flagged above)
+## Open items
 
-1. A hand proof of (I2) b ≥ 0 at sparse bottom nodes (the simulation shows it).
-2. A hand proof that every large sender finds a fringe class, for all d (the simulation shows it
-   for d = 18 and 22).
-3. A hand proof of (I3) for the frontier roles.
-4. t_f closed form at (4,5,3).
-5. The γ lemma (aligned cuts and padding) written out against the package's Property B2 statement.
-6. Interval certification of the walk-bound constants (ROUND2 §7).
-7. Independent review of this document.
+1. **Review of the revision.** The first review (2026-10-19) found B1 (the padded fringe) and S1
+   (large topDesc senders); both are fixed above. Its smaller points (bulk window, hand facts,
+   γ lemma, nits) are folded in.
+2. **Single-review dependencies.** ROUND2's walk bound and FRINGE-CERT §3's R2 tail have one review
+   each. The per-E fringe route at δ_F = 1/8 is a parameter change of reviewed code.
+3. **Lean.** Nothing here is formalized.

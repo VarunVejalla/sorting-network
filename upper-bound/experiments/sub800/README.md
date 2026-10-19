@@ -61,8 +61,8 @@ The (4.2) budget, in units of μ, against a total of Aν = 4:
 With deficit G_x = R_x − W_x (keys of x's range outside its subtree), design P sends
 θ_end = π/2 + G_x − r*c to each end child and θ_int = (2r*c − G_x)/(k−2) to each interior child.
 
-The exact real-valued hash-consed simulation uses Chvátal's α/ω schedule, at d = 10…20 (tf up to
-46). It shows:
+The exact real-valued hash-consed simulation uses Chvátal's α/ω schedule, at d = 10, 14 and 18 (tf up to
+40); the integer rule runs to d = 22. It shows:
 - no negative blocks;
 - exact conservation;
 - max G/c = 3.0518e-5 = g* = k·r*/(k−1);
@@ -107,38 +107,42 @@ r*c = 15c/2^19 is an integer. The simulation (d = 10…22) shows:
 
 The 0.1μ rounding reserve is therefore needed only for the separator geometry below.
 
-## Separator geometry (`designP_sim.py`, geometry line)
+## Separator geometry (`designP_sim.py`, geometry line; R1-PROOF.md §4)
 
-Large senders (a > 2^45) use the two-round scramble separator on a padded n-column rectangle with an
-arbitrary column count:
-- Fringe classes f are tried in order. For a class f, take n = ⌊π/(2f)⌋, so that f·n ≤ π/2 and the
-  certified f rows lie inside the up-port.
-- Require support μc ≤ δ_F·f·n, the (4.4) form.
-- Require rows m = ⌈a/n⌉ ∈ [2^25.6, 2^26).
+Large senders (a > 2^45) use the padded two-round separator `paddedPack2Net` of
+`../tapered/BaselineFringe.lean`: an (m+1) × n rectangle with one partial dummy row and an
+arbitrary column count. Its Property F counts real keys only, so there is no dummy-rank surcharge,
+provided the protected (f+1)·n fits in the port.
 
-Every large sender at d = 18 and 22 (5,737 senders, all roles) fits, using only **two classes:
-f = 7934 and f = 406,109**. Both are certified at J = 190,000 and δ_F = 1/8
-(`fringe_cert_R1_f7934.out`, `fringe_cert_R1_f406109.out`). The second is for sparse bottom
-senders, where a/c goes down to 0.0156.
+- Fringe classes f are tried in order. For a class f, take n = ⌊π/(2(f+1))⌋.
+- Require support μc ≤ δ_F·f·n, and live rows m = ⌈a/n⌉ − 1 ∈ [2^25.6, 2^26 − 1].
+- The large topDesc root (π = 0, no outsiders) uses a bulk-only rectangle.
 
-The rows range over m ∈ [5.27×10^7, 6.61×10^7]. The bulk holds at both ends: d = 8.07e-6 and
-6.82e-6 against ε_B = 9.52e-6 (margins 1.18× and 1.40×).
+Every large sender (d = 14…22, all roles) fits, using only **two classes: f = 7934 and
+f = 406,109**. Both are certified at J = 190,000 and δ_F = 1/8 (`fringe_cert_R1_f7934.out`,
+`fringe_cert_R1_f406109.out`). The second is for sparse bottom senders (a/c ≈ 1/64). R1-PROOF.md
+§4 gives the hand argument for all d.
 
-Non-row-aligned block cuts and padding cost at most about 3n wires per child block. That is at most
-3·1.0017/(5.27×10^7·Aν) ≈ 1.4e-8 of the child capacity, about 0.001μ, inside the 0.1μ reserve.
-Because n is arbitrary, no divisibility grain is needed, so GATE0's escalation does not arise.
-These are hand estimates; the charge still has to be written as a lemma.
+The bulk is certified in interval arithmetic over the whole admitted window [2^25.6, 2^26]
+(`cert_walk.py` → `cert_walk.out`; the earlier run on the observed range is
+`cert_walk_observed.out`, worst d ≤ 8.36e-6 against ε_B = 9.52e-6).
+
+`paddedPack2Net_all_cut_bounds` bounds non-row-aligned cuts and padding by γ ≤ 3n per block, about
+0.0008μ, which is inside the 0.1μ reserve. Because n is arbitrary, no divisibility grain is needed.
+
+The first review (2026-10-19) caught that the unpadded fringe form with n = ⌊π/(2f)⌋ would have put
+dummies into Property F's rank count. That is fixed by this (f+1)-row padded form.
 
 ## Obligations, in order
 
-1. Hand proofs of facts 1–3 for the integer rule, including the frontier roles and a/c ≤ η. The
-   simulation is done.
-2. The aligned-cut/padding lemma for the padded rectangle. The geometry and the certificates are
-   done.
-3. The (4.1) root separator, the top window [2k², Ak²/ν] at k = 16 (μc < 1 at the top by (4.3)),
-   final sorters (Lemma 4.5), and the schedule at (4,5,3): tf, meeting, sparse bottom.
-4. A complete paper proof assembled from the 1419 package's structure with these substitutions,
-   reviewed.
-5. Interval-certify the walk-bound constants (ROUND2 §7).
+1. ~~Hand proofs of the design-P invariants, including the frontier roles and a/c ≤ η.~~ Done:
+   R1-PROOF.md §2.
+2. ~~The aligned-cut/padding lemma.~~ Done: γ ≤ 3n via `paddedPack2Net_all_cut_bounds` (§4).
+3. ~~Root separator, top window, final sorters, and the schedule at (4,5,3).~~ Done (§5–6).
+4. ~~Interval-certify the walk-bound constants.~~ Done: `cert_walk.py` (pending the full-window
+   run).
+5. A complete paper proof, reviewed. R1-PROOF.md had one review; its fixes are applied, and a
+   re-review is pending.
 6. Lean. The 1419 package must be generalized to non-uniform blocks (UB-12's Stage 1b/2 estimate
-   is 2.5–4k lines), plus the walk bound (negative association, Ville) and the per-E fringe route.
+   is 2.5–4k lines). It also needs the walk bound (negative association, Ville), the per-E fringe
+   route, and the padded separator (`paddedPack2Net` exists in the tapered experiment).

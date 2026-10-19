@@ -7,9 +7,11 @@ delta = 1.3500e-06, eps_B = 1/105000 = 9.5238e-06, J = 1/eps_F = 186215
   OK   delta k A < 1                                  lhs/rhs = 0.000691
   (4.2) budget split (units of mu): sibling 0.332, delta term 0.0221, r* 1.907, rounding 0.1, eps_B 0.636, base 1, budget 4
   (4.1) root separator needs eps_* <= mu/k = 9.379e-07 (additive constant)
+  bulk: lg m = 25.6000: d = 8.2916e-06 vs eps_B 9.5238e-06 (margin 1.149x)
+  bulk: lg m = 25.6514: d = 8.0741e-06 vs eps_B 9.5238e-06 (margin 1.180x)
   bulk: lg m = 25.9773: d = 6.8219e-06 vs eps_B 9.5238e-06 (margin 1.396x)
-  bulk: lg m = 25.9773: d = 6.8218e-06 vs eps_B 9.5238e-06 (margin 1.396x)
-  fringe: f = pi/(2n) ~ (pi/c) M/2 = 7938.0 rows; support needs f >= mu M/dF = 7930.2; certificate run at f = 7934, J = 190000 >= 186215 (OK: larger J is conservative)
+  bulk: lg m = 26.0000: d = 6.7422e-06 vs eps_B 9.5238e-06 (margin 1.413x)
+  fringe classes f = 7934 and 406109 (padded (f+1)-row form, R1-PROOF.md sec. 4); certificates run at J = 190000 >= 186215 (OK: larger J is conservative)
   depth: rows < 2^26, node 3 S(26) = 1053, exact Batcher for a <= 2^45; stages per bit (x+y)/(x z) = 9/12; coefficient 789.75
 
 ALL CONDITIONS HOLD
