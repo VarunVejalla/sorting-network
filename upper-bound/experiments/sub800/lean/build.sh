@@ -5,16 +5,20 @@
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 best="$here/../../../best"
+# Read-only sources compiled from the tapered experiment (never modified here).
+ext="$here/../../tapered"
 mkdir -p "$here/build"
 mods=("$@")
 if [ ${#mods[@]} -eq 0 ]; then
-  mods=(NegAssoc Ville LayerCake RowMgf Pushforward Round2Det Round2Col Round2Fixed Round2Union Round1 ExpBounds NumGlue Round1Num CellLemmas R1Cells Round2Num CellLemmas2 R2Cells F2D F2DR1 F2DSR F2DR2 F2DR2b F2DR2c F2DR2d F2DCells F2DBounds Fringe406109 Fringe7934)
+  mods=(NegAssoc Ville LayerCake RowMgf Pushforward Round2Det Round2Col Round2Fixed Round2Union Round1 ExpBounds NumGlue Round1Num CellLemmas R1Cells Round2Num CellLemmas2 R2Cells F2D F2DR1 F2DSR F2DR2 F2DR2b F2DR2c F2DR2d F2DCells F2DBounds Fringe406109 Fringe7934 PrefixPadding VariableSeparator AnyCutBounds RectanglePadding PaddedSeparator PaddedFringe TruncatedScrambleMeasure BaselineFringeD SepExists)
 fi
 winbuild="$(cygpath -w "$here/build" 2>/dev/null || echo "$here/build")"
 lp="$(cd "$best" && lake env printenv LEAN_PATH)"
 for m in "${mods[@]}"; do
-  [ -f "$here/$m.lean" ] || continue
+  if [ -f "$here/$m.lean" ]; then dir="$here"
+  elif [ -f "$ext/$m.lean" ]; then dir="$ext"
+  else continue; fi
   echo "== $m"
-  src="$(cygpath -w "$here/$m.lean" 2>/dev/null || echo "$here/$m.lean")"
-  (cd "$best" && LEAN_PATH="$lp;$winbuild" lean --root="$(cygpath -w "$here")" -o "$winbuild/$m.olean" "$src")
+  src="$(cygpath -w "$dir/$m.lean" 2>/dev/null || echo "$dir/$m.lean")"
+  (cd "$best" && LEAN_PATH="$lp;$winbuild" lean --root="$(cygpath -w "$dir")" -o "$winbuild/$m.olean" "$src")
 done
