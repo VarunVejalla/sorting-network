@@ -1,0 +1,12 @@
+(4,5,3) d=10 tf=16: r*=2.8610e-05  residual/c max=2.8610e-05 (ratio to r* 1.0000) at (2, 2, 'botDesc', 3.0517578125e-05); G/c max=3.0518e-05; a/c max=1.001709; integer excess over r*c max=0.000 wires at (2, 2, 'botDesc', 274877906944.0, 8388608); neg blocks=0 (min b/c 0.000e+00, first None); cons errors=0; classes=291
+   geometry (a > 2^45, rows in [2^25.6, 2^26)): {}; classes used []; m in [None, None]; failures []
+   a/c range by role (a > 2^45): {}
+(4,5,3) d=14 tf=28: r*=2.8610e-05  residual/c max=2.8610e-05 (ratio to r* 1.0000) at (2, 2, 'botDesc', 3.0517578125e-05); G/c max=3.0518e-05; a/c max=1.001709; integer excess over r*c max=0.000 wires at (2, 2, 'botDesc', 1.8014398509481984e+16, 549755813888); neg blocks=0 (min b/c 0.000e+00, first None); cons errors=0; classes=2113
+   geometry (a > 2^45, rows in [2^25.6, 2^26)): {('topRise', True): 2, ('botDesc', True): 4}; classes used [7934, 406109]; m in [52703929, 66027007]; failures []
+   a/c range by role (a > 2^45): {'topRise': (1.0, 1.0), 'botDesc': (0.015594482421875, 1.0)}
+(4,5,3) d=18 tf=40: r*=2.8610e-05  residual/c max=2.8610e-05 (ratio to r* 1.0000) at (2, 2, 'botDesc', 3.0517578125e-05); G/c max=3.0518e-05; a/c max=1.001709; integer excess over r*c max=0.000 wires at (2, 2, 'botDesc', 1.1805916207174113e+21, 36028797018963968); neg blocks=0 (min b/c 0.000e+00, first None); cons errors=0; classes=13514
+   geometry (a > 2^45, rows in [2^25.6, 2^26)): {('topRise', True): 4, ('botDesc', True): 175, ('mid', True): 45}; classes used [7934, 406109]; m in [52703924, 66137831]; failures []
+   a/c range by role (a > 2^45): {'topRise': (1.0, 1.0), 'botDesc': (0.015594482421875, 1.0), 'mid': (0.999755859375, 1.001678466796875)}
+(4,5,3) d=22 tf=52: r*=2.8610e-05  residual/c max=2.8610e-05 (ratio to r* 1.0000) at (2, 2, 'botDesc', 3.0517578125e-05); G/c max=3.0518e-05; a/c max=1.001709; integer excess over r*c max=0.000 wires at (2, 2, 'botDesc', 7.737125245533627e+25, 2361183241434822606848); neg blocks=0 (min b/c 0.000e+00, first None); cons errors=0; classes=73872
+   geometry (a > 2^45, rows in [2^25.6, 2^26)): {('topRise', True): 7, ('botDesc', True): 4225, ('mid', True): 1505}; classes used [7934, 406109]; m in [52703924, 66137831]; failures []
+   a/c range by role (a > 2^45): {'topRise': (1.0, 1.0), 'botDesc': (0.015594482421875, 1.0), 'mid': (0.999755859375, 1.001678466796875)}

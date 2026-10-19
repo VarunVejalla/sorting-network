@@ -1,0 +1,37 @@
+f=7934 J=190000: certified with g1,g2,c,b = (1586, 6743, Fraction(2, 5), 1201)  closed-form also: False
+f=7934 g1=1586 g2=6743 c=2/5 b=1201 J=190000 delta=1/8 delta*f=991.750
+  OK   0 < g1 < g2 < f
+  OK   Delta+1 >= delta f   (R1 Chernoff validity, D/(Delta+1) <= 1)
+  OK   f-g0+1 >= delta f    (SR Chernoff validity)
+  OK   (g1+1)^2 >= delta f  (tops bound monotone in k)
+  OK   c*Delta >= J/(g1+1)  (R1a decreasing in n)
+  OK   b >= J/(g1+1)        (R1b decreasing in n)
+  OK   c <= 1/2             (R2 nonincreasing in n: ceil(cE)+1 <= E for E>=2)
+  OK   Phi >= 2 b delta f / J (R2 Chernoff validity)
+  OK   (c+1/2)^2 <= b J/(4 delta f)  (kappa^2 <= n(B-1), Y-count monotone in k)
+SR    ln P <= -4249.35
+  OK   beta < 0
+  OK   lambda_a > 0
+R1a   lambda_a=157.764  beta=-3339.51  ln sum_E P <= -3649.56
+  OK   psi'(lo) > 0
+  OK   psi'(hi) < 0
+  OK   lambda_b > 0
+R1b   psi*=-3129.51 at sigma~0.1451  lambda_b=1951.47  ln sum_E P <= -3896.86
+  OK   L_Y > 0 (used by the lnY bound)
+  OK   h'(lo) > 0
+  OK   h'(hi) < 0
+R2    tail slopes: original Lambda=-2.22507 ; tight Lambda2=0.750265 (H*=-7.22178 at theta~0.161)
+  OK   Lambda or Lambda2 (R2 tail slope) > 0
+R2    worst ln P (E<=2000) <= -560.197 ; Lambda=-2.225 ; ln tail sum <= -1463.92 ; ln total <= -560.083
+sigma1 F-failure, both orientations: ln(2 P1) <= -3648.86
+sigma2 F-failure, both orientations: ln(2 P2) <= -559.39
+  OK   2*P1 <= 1/1000
+  OK   2*P2 <= 1/1000
+--- closed-form (Lean-friendly) bounds ---
+  OK   crude psi: sigma coefficient ln(eJ/D)+Delta ln(eD/Delta) <= 0
+  FAIL crude lambda_b > 0
+  OK   regime I valid up to N0: ln(N0 J/D)+1 <= Phi q0'
+  FAIL regime I slope q0' - c LY > 0
+  FAIL regime II slope > 0
+  OK   closed 2*P1 <= 1/1000
+  OK   closed 2*P2 <= 1/1000
