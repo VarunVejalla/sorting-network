@@ -8,7 +8,7 @@ best="$here/../../../best"
 mkdir -p "$here/build"
 mods=("$@")
 if [ ${#mods[@]} -eq 0 ]; then
-  mods=(NegAssoc Ville LayerCake RowMgf Pushforward Round2Det Round2Col Round2Fixed Round2Union Round1 ExpBounds NumGlue Round1Num CellLemmas R1Cells Round2Num CellLemmas2 R2Cells F2D F2DR1 F2DSR F2DR2 F2DR2b F2DR2c F2DR2d)
+  mods=(NegAssoc Ville LayerCake RowMgf Pushforward Round2Det Round2Col Round2Fixed Round2Union Round1 ExpBounds NumGlue Round1Num CellLemmas R1Cells Round2Num CellLemmas2 R2Cells F2D F2DR1 F2DSR F2DR2 F2DR2b F2DR2c F2DR2d F2DCells)
 fi
 winbuild="$(cygpath -w "$here/build" 2>/dev/null || echo "$here/build")"
 lp="$(cd "$best" && lake env printenv LEAN_PATH)"

@@ -165,11 +165,12 @@ theorem tail_sum_le_d (P : F2PD) {LY L0 : ℝ} (C : R2Common P LY L0) {m n : ℕ
     (heκ : Real.exp 1 * κ1 ≤ P.Φ)
     (hθ : ∀ θ : ℝ, 0 < θ → hR2 P L0 κ1 θ ≤ H)
     (hlam : lam = -(P.c * LY + H)) (hlam0 : 0 < lam)
-    (hmu : mu = Real.exp 2 * P.J / (P.δ * P.f) - P.c * LY) (hmu0 : 0 < mu)
+    (A0 : ℝ) (hA0le : A0 ≤ Real.exp 2 * P.J / (P.δ * P.f))
+    (hmu : mu = A0 - P.c * LY) (hmu0 : 0 < mu)
     (hMt : (P.c + 2) * (Real.exp 2 * P.J / (P.δ * P.f) * (4 / (Real.exp 1 * lam)) ^ 2 *
         (Real.exp (LY - lam / 2 * ET) / (1 - Real.exp (-(lam / 2)))) +
       2 * (2 / (Real.exp 1 * mu)) *
-        (Real.exp (LY + Real.exp 2 * P.J / (P.δ * P.f) - mu / 2 * ET) /
+        (Real.exp (LY + A0 - mu / 2 * ET) /
           (1 - Real.exp (-(mu / 2))))) ≤ Mt)
     (K : ℕ) : ∑ E ∈ Ico ET K, aR2 P m n E ≤ Mt := by
   have hδ := P.hδ
@@ -188,7 +189,7 @@ theorem tail_sum_le_d (P : F2PD) {LY L0 : ℝ} (C : R2Common P LY L0) {m n : ℕ
   have hq2 : 0 ≤ q2 := by positivity
   have hper : ∀ E ∈ Ico ET K, aR2 P m n E ≤
       (P.c + 2) * (A * q1 ^ 2 * Real.exp LY * Real.exp (-(lam / 2 * E)) +
-        2 * q2 * Real.exp (LY + A) * Real.exp (-(mu / 2 * E))) := by
+        2 * q2 * Real.exp (LY + A0) * Real.exp (-(mu / 2 * E))) := by
     intro E hE
     have hE1 := (Finset.mem_Ico.mp hE).1
     have hEr : (2 : ℝ) ≤ E := by exact_mod_cast (le_trans hET hE1)
@@ -200,9 +201,14 @@ theorem tail_sum_le_d (P : F2PD) {LY L0 : ℝ} (C : R2Common P LY L0) {m n : ℕ
     have e1 : Real.exp ((P.c * E + 1) * LY) * Real.exp (E * H) =
         Real.exp LY * Real.exp (-(lam * E)) := by
       rw [← Real.exp_add, ← Real.exp_add, hlam]; congr 1; ring
-    have e2 : Real.exp ((P.c * E + 1) * LY) * Real.exp (-(Real.exp 2 * (((E : ℝ) - 1) * P.J / D))) =
-        Real.exp (LY + A) * Real.exp (-(mu * E)) := by
-      rw [← Real.exp_add, ← Real.exp_add, hmu, hA]; congr 1; field_simp; ring
+    have e2 : Real.exp ((P.c * E + 1) * LY) * Real.exp (-(Real.exp 2 * (((E : ℝ) - 1) * P.J / D))) ≤
+        Real.exp (LY + A0) * Real.exp (-(mu * E)) := by
+      rw [← Real.exp_add, ← Real.exp_add, hmu, Real.exp_le_exp]
+      have hAe : Real.exp 2 * (((E : ℝ) - 1) * P.J / D) = A * ((E : ℝ) - 1) := by rw [hA]; ring
+      rw [hAe]
+      have : A0 * ((E : ℝ) - 1) ≤ A * ((E : ℝ) - 1) :=
+        mul_le_mul_of_nonneg_right (by rw [hA]; exact hA0le) (by linarith)
+      linarith
     have hcE : P.c * E + 2 ≤ (P.c + 2) * E := by nlinarith
     have hs1 := le_exp_scaled (lam / 4) E (by linarith)
     have hs2 := le_exp_scaled (mu / 2) E (by linarith)
@@ -228,42 +234,46 @@ theorem tail_sum_le_d (P : F2PD) {LY L0 : ℝ} (C : R2Common P LY L0) {m n : ℕ
             mul_le_mul_of_nonneg_right hs2 (Real.exp_pos _).le
         _ = _ := by rw [mul_assoc, e3]
     have hX : 0 ≤ A * E * (Real.exp LY * Real.exp (-(lam * E))) +
-        2 * (Real.exp (LY + A) * Real.exp (-(mu * E))) := by positivity
+        2 * (Real.exp (LY + A0) * Real.exp (-(mu * E))) := by positivity
     calc (P.c * E + 2) * Real.exp ((P.c * E + 1) * LY) *
           (Real.exp 2 * (E * P.J / D) * Real.exp (E * H) +
             2 * Real.exp (-(Real.exp 2 * (((E : ℝ) - 1) * P.J / D))))
-        = (P.c * E + 2) * (A * E * (Real.exp LY * Real.exp (-(lam * E))) +
-            2 * (Real.exp (LY + A) * Real.exp (-(mu * E)))) := by
-          have e1' : A * E * (Real.exp LY * Real.exp (-(lam * E))) =
-              Real.exp 2 * (E * P.J / D) * (Real.exp ((P.c * E + 1) * LY) * Real.exp (E * H)) := by
-            rw [e1, hA]; ring
-          rw [e1', ← e2]; ring
+        = (P.c * E + 2) * (Real.exp 2 * (E * P.J / D) *
+            (Real.exp ((P.c * E + 1) * LY) * Real.exp (E * H)) +
+            2 * (Real.exp ((P.c * E + 1) * LY) *
+              Real.exp (-(Real.exp 2 * (((E : ℝ) - 1) * P.J / D))))) := by ring
+      _ ≤ (P.c * E + 2) * (Real.exp 2 * (E * P.J / D) *
+            (Real.exp ((P.c * E + 1) * LY) * Real.exp (E * H)) +
+            2 * (Real.exp (LY + A0) * Real.exp (-(mu * E)))) := by gcongr
+      _ = (P.c * E + 2) * (A * E * (Real.exp LY * Real.exp (-(lam * E))) +
+            2 * (Real.exp (LY + A0) * Real.exp (-(mu * E)))) := by
+          rw [e1, hA]; ring
       _ ≤ (P.c + 2) * E * (A * E * (Real.exp LY * Real.exp (-(lam * E))) +
-            2 * (Real.exp (LY + A) * Real.exp (-(mu * E)))) := mul_le_mul_of_nonneg_right hcE hX
+            2 * (Real.exp (LY + A0) * Real.exp (-(mu * E)))) := mul_le_mul_of_nonneg_right hcE hX
       _ = (P.c + 2) * (A * Real.exp LY * (E * E * Real.exp (-(lam * E))) +
-            2 * Real.exp (LY + A) * (E * Real.exp (-(mu * E)))) := by ring
+            2 * Real.exp (LY + A0) * (E * Real.exp (-(mu * E)))) := by ring
       _ ≤ (P.c + 2) * (A * Real.exp LY * (q1 ^ 2 * Real.exp (-(lam / 2 * E))) +
-            2 * Real.exp (LY + A) * (q2 * Real.exp (-(mu / 2 * E)))) := by
+            2 * Real.exp (LY + A0) * (q2 * Real.exp (-(mu / 2 * E)))) := by
           gcongr
       _ = _ := by ring
   have hg1 := geom_exp_le (lam / 2) (by linarith) ET K
   have hg2 := geom_exp_le (mu / 2) (by linarith) ET K
   calc ∑ E ∈ Ico ET K, aR2 P m n E
       ≤ ∑ E ∈ Ico ET K, (P.c + 2) * (A * q1 ^ 2 * Real.exp LY * Real.exp (-(lam / 2 * E)) +
-        2 * q2 * Real.exp (LY + A) * Real.exp (-(mu / 2 * E))) := Finset.sum_le_sum hper
+        2 * q2 * Real.exp (LY + A0) * Real.exp (-(mu / 2 * E))) := Finset.sum_le_sum hper
     _ = (P.c + 2) * (A * q1 ^ 2 * Real.exp LY * ∑ E ∈ Ico ET K, Real.exp (-(lam / 2 * E)) +
-        2 * q2 * Real.exp (LY + A) * ∑ E ∈ Ico ET K, Real.exp (-(mu / 2 * E))) := by
+        2 * q2 * Real.exp (LY + A0) * ∑ E ∈ Ico ET K, Real.exp (-(mu / 2 * E))) := by
         rw [Finset.mul_sum, Finset.mul_sum, ← Finset.sum_add_distrib, Finset.mul_sum]
     _ ≤ (P.c + 2) * (A * q1 ^ 2 * Real.exp LY *
           (Real.exp (-(lam / 2 * ET)) / (1 - Real.exp (-(lam / 2)))) +
-        2 * q2 * Real.exp (LY + A) *
+        2 * q2 * Real.exp (LY + A0) *
           (Real.exp (-(mu / 2 * ET)) / (1 - Real.exp (-(mu / 2))))) := by
         gcongr
     _ = (P.c + 2) * (A * q1 ^ 2 * (Real.exp (LY - lam / 2 * ET) / (1 - Real.exp (-(lam / 2)))) +
-        2 * q2 * (Real.exp (LY + A - mu / 2 * ET) / (1 - Real.exp (-(mu / 2))))) := by
+        2 * q2 * (Real.exp (LY + A0 - mu / 2 * ET) / (1 - Real.exp (-(mu / 2))))) := by
         have e5 : Real.exp (LY - lam / 2 * ET) = Real.exp LY * Real.exp (-(lam / 2 * ET)) := by
           rw [← Real.exp_add, sub_eq_add_neg]
-        have e6 : Real.exp (LY + A - mu / 2 * ET) = Real.exp (LY + A) * Real.exp (-(mu / 2 * ET)) := by
+        have e6 : Real.exp (LY + A0 - mu / 2 * ET) = Real.exp (LY + A0) * Real.exp (-(mu / 2 * ET)) := by
           rw [← Real.exp_add, sub_eq_add_neg]
         rw [e5, e6]; ring
     _ ≤ Mt := hMt
