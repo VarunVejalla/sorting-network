@@ -91,4 +91,61 @@ theorem card_hits_ge_le {m n : ℕ} (hn : 0 < n) (s : ℕ) (j : Fin n) (R : Fins
   ring_nf
   exact le_refl _
 
+section SubsetModel
+
+variable {m n : ℕ}
+
+open Finset
+
+/-- Hits of column `j` in the bottom `h` rows of a row-subset family `ζ`. -/
+def Nz (ζ : Fin m → Finset (Fin n)) (j : Fin n) (h : ℕ) : ℕ :=
+  (univ.filter fun r : Fin m => m - h ≤ r.val ∧ j ∈ ζ r).card
+
+theorem Nz_mono (ζ : Fin m → Finset (Fin n)) (j : Fin n) : Monotone (Nz ζ j) := by
+  intro a b hab
+  apply Finset.card_le_card
+  intro r hr
+  simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hr ⊢
+  exact ⟨le_trans (Nat.sub_le_sub_left hab m) hr.1, hr.2⟩
+
+/-- The walk maximum against a drift `D`: `max_{h ≤ m} (N(h) − D(h))`. -/
+noncomputable def Yz (D : ℕ → ℝ) (ζ : Fin m → Finset (Fin n)) (j : Fin n) : ℝ :=
+  (Finset.range (m + 1)).sup' ⟨0, by simp⟩ fun h => (Nz ζ j h : ℝ) - D h
+
+/-- **Tail by level crossing** (subset model). If the deadlines `T k ≤ m` satisfy
+`h ≤ m → D h < k − y → h ≤ T k`, then `#{ζ : y < Y} ≤ Σ_{k ≤ m, y < k} #{ζ : k ≤ N(T k)}`. -/
+theorem card_Yz_gt_le (Z : Finset (Fin m → Finset (Fin n))) (D : ℕ → ℝ) (hD0 : ∀ h, 0 ≤ D h)
+    (j : Fin n) (y : ℝ) (T : ℕ → ℕ)
+    (hT : ∀ (k h : ℕ), h ≤ m → D h < (k : ℝ) - y → h ≤ T k) :
+    ((Z.filter fun ζ => y < Yz D ζ j).card : ℝ) ≤
+      ∑ k ∈ (Finset.range (m + 1)).filter (fun k : ℕ => y < (k : ℝ)),
+        ((Z.filter fun ζ => k ≤ Nz ζ j (T k)).card : ℝ) := by
+  classical
+  have hsub : Z.filter (fun ζ => y < Yz D ζ j) ⊆
+      ((Finset.range (m + 1)).filter (fun k : ℕ => y < (k : ℝ))).biUnion
+        (fun k : ℕ => Z.filter fun ζ => k ≤ Nz ζ j (T k)) := by
+    intro ζ hζ
+    simp only [Finset.mem_filter] at hζ
+    obtain ⟨hζZ, hy⟩ := hζ
+    obtain ⟨h, hh, hval⟩ := Finset.exists_mem_eq_sup' (s := Finset.range (m + 1))
+      ⟨0, Finset.mem_range.2 (Nat.succ_pos m)⟩ (fun h => (Nz ζ j h : ℝ) - D h)
+    rw [Yz, hval] at hy
+    have hhm : h ≤ m := Nat.lt_succ_iff.1 (Finset.mem_range.1 hh)
+    have hD : D h < (Nz ζ j h : ℝ) - y := by linarith
+    have hk : y < (Nz ζ j h : ℝ) := by linarith [hD0 h]
+    have hNm : Nz ζ j h ≤ m := by
+      unfold Nz
+      exact (Finset.card_filter_le _ _).trans (by simp)
+    simp only [Finset.mem_biUnion, Finset.mem_filter, Finset.mem_range]
+    exact ⟨Nz ζ j h, ⟨Nat.lt_succ_of_le hNm, hk⟩, hζZ, Nz_mono ζ j (hT _ h hhm hD)⟩
+  calc ((Z.filter fun ζ => y < Yz D ζ j).card : ℝ)
+      ≤ ((((Finset.range (m + 1)).filter (fun k : ℕ => y < (k : ℝ))).biUnion
+          (fun k : ℕ => Z.filter fun ζ => k ≤ Nz ζ j (T k))).card : ℝ) := by
+        exact_mod_cast Finset.card_le_card hsub
+    _ ≤ ∑ k ∈ (Finset.range (m + 1)).filter (fun k : ℕ => y < (k : ℝ)),
+          ((Z.filter fun ζ => k ≤ Nz ζ j (T k)).card : ℝ) := by
+        exact_mod_cast Finset.card_biUnion_le
+
+end SubsetModel
+
 end FringeDuality
