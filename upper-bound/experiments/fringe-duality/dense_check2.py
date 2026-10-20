@@ -21,12 +21,12 @@ n = int(float(sys.argv[1])) if len(sys.argv) > 1 else 2 ** 20
 J = int(float(sys.argv[2])) if len(sys.argv) > 2 else 190000
 delta = 1 / 8
 logfail = math.log(n * 1e4 * 100 * 50)
-lams1 = [float(v) for v in np.geomspace(1e-6, 0.5, 24)]
+lams1 = [float(v) for v in np.geomspace(1e-6, 0.5, 16)]
 S_GRID = sorted(set([1, 2, 4, 8, 16, 64, 256] + [int(v) for v in np.geomspace(1024, n - 1, 8)]))
 print(f"n = {n}, J = {J}", flush=True)
 F_CAND = int(float(sys.argv[3])) if len(sys.argv) > 3 else 1200
 for j in [J, 3 * J, 10 * J, 40 * J, int(delta * F_CAND * n) // 4, int(delta * F_CAND * n)]:
-    sk = fd.s_profile(n, j, logfail, lams1)
+    sk = fd.s_profile_fast(n, j, logfail, lams1)
     mean = j / n
     bs = sorted(set([0] + [int(mean * c) for c in (1.0, 1.2, 1.5, 2.0, 3.0)]))
     Eb = {b: fd.excess_energy(sk, b) for b in bs}

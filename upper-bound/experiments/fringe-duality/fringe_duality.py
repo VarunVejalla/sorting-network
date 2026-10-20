@@ -252,6 +252,52 @@ def s_profile(n, j, logfail, lams):
     return out
 
 
+def s_profile_fast(n, j, logfail, lams, kratio=1.06):
+    """Upper bounds on s_k = #{u : z_u >= k} for every k = 1..K, from checks at a geometric grid of k:
+    s_k is nonincreasing, so for k in [k_i, k_{i+1}) the value at k_i bounds it. s is searched on a
+    geometric grid (rounded up), so every returned bound is a feasible-set upper bound."""
+    sgrid = np.unique(np.concatenate([np.arange(0, 64), np.geomspace(64, max(64, j), 400)]).astype(np.int64))
+    kgrid = sorted(set([1, 2, 3, 4, 5, 6, 8] + [int(math.ceil(v)) for v in np.geomspace(8, 4 * math.sqrt(j) + 10, 200)]))
+    out_at = {}
+    prev = n
+    for k in kgrid:
+        cap = min(prev, j // k)
+        if cap <= 0:
+            out_at[k] = 0
+            break
+        def ok(s):
+            return all(k * s <= lam * j + x_round1(n, int(s), lam, logfail) for lam in lams)
+        cand = sgrid[sgrid <= cap]
+        # largest grid point that is feasible, then the next grid point (or cap) bounds the true max
+        lo, hi = 0, len(cand) - 1
+        if ok(cand[hi]):
+            best = cap
+        else:
+            while hi - lo > 1:
+                mid = (lo + hi) // 2
+                if ok(cand[mid]):
+                    lo = mid
+                else:
+                    hi = mid
+            best = int(cand[hi]) - 1 if hi < len(cand) else cap      # first infeasible grid point - 1
+            best = min(best, cap)
+            # every s in (cand[lo], cand[hi]) is unverified: keep the conservative bound cand[hi] - 1
+        out_at[k] = max(best, 0)
+        prev = out_at[k]
+        if prev == 0:
+            break
+    # expand to every k
+    K = max(k for k in out_at if out_at[k] > 0) if any(v > 0 for v in out_at.values()) else 0
+    ks = sorted(out_at)
+    res = []
+    for k in range(1, K + 2):
+        ka = max(kk for kk in ks if kk <= k)
+        res.append(out_at[ka])
+    while res and res[-1] == 0:
+        res.pop()
+    return res
+
+
 def excess_energy(sk, b):
     """E_b >= sum_u (z_u - b)_+^2 = sum_{k > b} (2(k - b) - 1) s_k (b integer)."""
     return float(sum((2 * (k - b) - 1) * s for k, s in enumerate(sk, start=1) if k > b))

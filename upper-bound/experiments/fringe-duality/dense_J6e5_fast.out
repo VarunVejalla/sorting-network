@@ -1,0 +1,5 @@
+n = 1048576, J = 600000
+  j =       600000 (mean     0.57): K = 2237, E_0 = 6.986e+07; least f = 1429 (binding s = 1)
+  j =      1800000 (mean     1.72): K = 3515, E_0 = 2.298e+08; least f = 2026 (binding s = 1)
+  j =      6000000 (mean     5.72): K = 6165, E_0 = 8.120e+08; least f = 2732 (binding s = 1)
+  j =     24000000 (mean    22.89): K = 12738, E_0 = 4.300e+09; least f = 4111 (binding s = 1)

@@ -93,6 +93,29 @@ true scales share one budget `j`.
 The dense regime (`j/n` not small) needs the background density `ρ = Σ_{lo} a_u/n` subtracted from
 the drift (centred form), as in `dense_check2.py`.
 
+## The 731.25 point: target and result (2026-10-20)
+
+**Target.** At `(4,5,3)` with rows in `[27254890, 2^25]` and `ε_B = 1/70000` (bulk kernel-checked:
+`R1Cells25`, `R2Cells25`), (4.2) allows `δ = 1.515e-7`, so `J ≥ 1651190`. The class-A geometry needs
+`f + 1 ∈ (3329, 4024]`; class B needs `(210012, 258048]`.
+
+**Result.** Not met with the present round-1 bound. Fast log-space screen (`dense_J6e5_fast.out`),
+`J = 600000` (easier than the point's `1.66e6`), least f per j:
+
+| j | J | 3J | 10J | 40J |
+|---|---:|---:|---:|---:|
+| least f | 1429 | 2026 | 2732 | **4111** |
+
+The window allows at most 4023, so the route fails by `40J`, and `jmax ≈ 760J`.
+* The binding term is always a single column (`s = 1`). Its bound grows like `j^{0.3}` because the
+  round-1 energy is `E₀ ≈ 120–180 j`.
+* The heuristic adversary at `40J` reaches only about `(6j)^{1/3} + j/n ≈ 550`.
+* The loss is the union over output sets of size `s ≈ j/k` for moderately tall columns
+  (`k ≲ ln(n)/t`). The per-set duality cannot see that the scales share one mass budget.
+
+**What is needed:** a round-1 energy bound close to the true `O(j)` (see "Sharper round 1"). The
+dyadic joint version did not help as implemented (`q_joint.py`: `Q/j ≈ 196–521`).
+
 ## What it would buy (R1 model, `../sub500-screen/refined.out`)
 
 | package | cost |
