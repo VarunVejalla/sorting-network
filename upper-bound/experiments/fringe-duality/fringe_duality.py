@@ -157,7 +157,7 @@ def tail_walk(p, kind, c, ys):
 YGRID = np.concatenate([np.arange(0, 2, 0.05), np.arange(2, 80, 0.5), np.geomspace(80, 2.0 ** 27, 200)])
 
 
-@lru_cache(maxsize=None)
+@lru_cache(maxsize=4096)
 def tails_cached(p, kind, c):
     return tuple(tail_walk(p, kind, c, YGRID))
 
@@ -199,7 +199,7 @@ def theta_star(p, lam):
     return lo
 
 
-@lru_cache(maxsize=None)
+@lru_cache(maxsize=4096)
 def x_round1(n, s, lam, logfail):
     """least x with n ln E e^{tY} - t x + ln binom(n,s) + logfail <= 0 (NA across columns), over t."""
     p = s / n
@@ -212,7 +212,7 @@ def x_round1(n, s, lam, logfail):
     return best
 
 
-@lru_cache(maxsize=None)
+@lru_cache(maxsize=4096)
 def x_round2(n, s, mu, logfail):
     p = s / n
     best = math.inf
@@ -258,7 +258,7 @@ def excess_energy(sk, b):
     return float(sum((2 * (k - b) - 1) * s for k, s in enumerate(sk, start=1) if k > b))
 
 
-@lru_cache(maxsize=None)
+@lru_cache(maxsize=4096)
 def x_round2c(n, s, lam, mu, b, logfail):
     p = s / n
     best = math.inf
