@@ -1,0 +1,38 @@
+fringe_cert_v2 with E2 = 60 (exact range), parameters of gen_fringe.py: f=7934 g1=2380 g2=7616 c=1/4 b=1596 J=190000 delta=1/8
+f=7934 g1=2380 g2=7616 c=1/4 b=1596 J=190000 delta=1/8 delta*f=991.750
+  OK   0 < g1 < g2 < f
+  OK   Delta+1 >= delta f   (R1 Chernoff validity, D/(Delta+1) <= 1)
+  OK   f-g0+1 >= delta f    (SR Chernoff validity)
+  OK   (g1+1)^2 >= delta f  (tops bound monotone in k)
+  OK   c*Delta >= J/(g1+1)  (R1a decreasing in n)
+  OK   b >= J/(g1+1)        (R1b decreasing in n)
+  OK   c <= 1/2             (R2 nonincreasing in n: ceil(cE)+1 <= E for E>=2)
+  OK   Phi >= 2 b delta f / J (R2 Chernoff validity)
+  OK   (c+1/2)^2 <= b J/(4 delta f)  (kappa^2 <= n(B-1), Y-count monotone in k)
+SR    ln P <= -3155.58
+  OK   beta < 0
+  OK   lambda_a > 0
+R1a   lambda_a=17.5356  beta=-3469.9  ln sum_E P <= -3499.89
+  OK   psi'(lo) > 0
+  OK   psi'(hi) < 0
+  OK   lambda_b > 0
+R1b   psi*=-4198.12 at sigma~0.1871  lambda_b=3348.18  ln sum_E P <= -6690.88
+  OK   L_Y > 0 (used by the lnY bound)
+  OK   h'(lo) > 0
+  OK   h'(hi) < 0
+R2    tail slopes: original Lambda=-1.72521 ; tight Lambda2=0.931005 (H*=-5.28179 at theta~0.2357)
+  OK   Lambda or Lambda2 (R2 tail slope) > 0
+R2    worst ln P (E<=60) <= -589.47 ; Lambda=-1.725 ; ln tail sum <= -25.6528 ; ln total <= -25.6528
+sigma1 F-failure, both orientations: ln(2 P1) <= -3154.89
+sigma2 F-failure, both orientations: ln(2 P2) <= -24.9596
+  OK   2*P1 <= 1/1000
+  OK   2*P2 <= 1/1000
+--- closed-form (Lean-friendly) bounds ---
+  OK   crude psi: sigma coefficient ln(eJ/D)+Delta ln(eD/Delta) <= 0
+  OK   crude lambda_b > 0
+  OK   regime I valid up to N0: ln(N0 J/D)+1 <= Phi q0'
+  FAIL regime I slope q0' - c LY > 0
+  FAIL regime II slope > 0
+  OK   closed 2*P1 <= 1/1000
+  OK   closed 2*P2 <= 1/1000
+EXACT (per-E) ROUTE: ALL CHECKS PASS

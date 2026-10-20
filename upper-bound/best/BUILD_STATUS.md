@@ -1,5 +1,18 @@
 # Build status
 
+2026-10-19, Lean 4.29.0-rc4: the 789.75 result (UB-31) is promoted and unconditional. From an empty
+`.lake/build`: `lake build AKS.Bounds.Chvatal1830Axioms`, then each `AKS.Sub800.*` module in import order
+(one at a time, to bound memory), then `lake build AKS.Bounds.Sub800Axioms` and a full `lake build`
+(8265 jobs, Mathlib included), all successful. No `sorry`, `native_decide`, `admit`, `axiom` or `unsafe`
+in `AKS/`. Headlines (`AKS/Bounds/Sub800Final.lean`): `SortingDepth.minimum_depth_le_78975_logb`
+(`n ≥ 16^12`: `D(n) ≤ 789.75 lg n + 3159`), `SortingDepth.limsup_minimum_div_logb_le_78975`,
+`SortingDepth.limsup_minimum_div_logb_le_800`; axioms propext, Classical.choice, Quot.sound (guard
+`AKS.Bounds.Sub800Axioms`, which also checks `R1T.r1_sorter`). `scripts/check-contribution`: fingerprint and
+status checks pass, the contributions package and `UpperBoundContrib.Axioms` build with
+`claimed = currentBest = 789.75`; `UpperBoundSolution` builds. The 1419 headlines below still build here.
+
+## Previous state (1419)
+
 2026-10-10, Lean 4.29.0-rc4: the 1419 result is unconditional.
 `lake build` (3003 jobs) and `lake build AKS.Bounds.Chvatal1830Axioms` succeed; no `sorry`,
 `native_decide`, `admit`, `axiom` or `unsafe` in `AKS/`. Headlines:

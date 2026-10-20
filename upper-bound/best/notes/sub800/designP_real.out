@@ -1,0 +1,9 @@
+(4,5,3) d=10 tf=16: r*=2.8610e-05  residual/c max=2.8610e-05 (ratio to r* 1.0000) at (1, 1, 'topRise', 0.0); G/c max=3.0406e-05; a/c max=1.001680; integer excess over r*c max=0.000 wires at (1, 1, 'topRise', 68719476736.0, 0); neg blocks=0 (min b/c 0.000e+00, first None); cons errors=0; classes=265
+   geometry (a > 2^45, rows in [2^25.6, 2^26)): {}; classes used []; m in [None, None]; failures []
+   a/c range by role (a > 2^45): {}
+(4,5,3) d=14 tf=28: r*=2.8610e-05  residual/c max=2.8610e-05 (ratio to r* 1.0000) at (1, 1, 'topRise', 0.0); G/c max=3.0511e-05; a/c max=1.001680; integer excess over r*c max=0.000 wires at (1, 1, 'topRise', 4503599627370496.0, 0); neg blocks=0 (min b/c 0.000e+00, first None); cons errors=0; classes=1532
+   geometry (a > 2^45, rows in [2^25.6, 2^26)): {('topRise', True): 2, ('botDesc', True): 4}; classes used [7934, 406109]; m in [52728102, 66026939]; failures []
+   a/c range by role (a > 2^45): {'topRise': (1.0, 1.0), 'botDesc': (0.015601634979248047, 0.9999989782060895)}
+(4,5,3) d=18 tf=40: r*=2.8610e-05  residual/c max=2.8610e-05 (ratio to r* 1.0000) at (1, 1, 'topRise', 0.0); G/c max=3.0517e-05; a/c max=1.001680; integer excess over r*c max=0.000 wires at (1, 1, 'topRise', 2.9514790517935283e+20, 0); neg blocks=0 (min b/c 0.000e+00, first None); cons errors=0; classes=9646
+   geometry (a > 2^45, rows in [2^25.6, 2^26)): {('topRise', True): 4, ('botDesc', True): 124, ('mid', True): 38}; classes used [7934, 406109]; m in [52704024, 66137366]; failures []
+   a/c range by role (a > 2^45): {'topRise': (1.0, 1.0), 'botDesc': (0.015594510361552238, 0.9999995211671505), 'mid': (0.9997864030301571, 1.001671425998211)}

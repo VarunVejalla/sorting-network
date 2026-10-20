@@ -1,8 +1,8 @@
 # Upper-bound research backlog
 
 This is the ticket index for research ideas that are not part of the current best proof.
-The current kernel-checked endpoint is `limsup D(n)/log_2 n <= 1419`; see
-[`../best/README.md`](../best/README.md) and the [1419 cost audit](../../docs/upper-bound-1419-cost-audit.md).
+The current kernel-checked endpoint is `limsup D(n)/log_2 n <= 789.75` (UB-31, promoted 2026-10-19); see
+[`../best/README.md`](../best/README.md). The previous endpoint 1419 has its [cost audit](../../docs/upper-bound-1419-cost-audit.md).
 Tickets record targets and evidence, not established results. A projected coefficient is conditional
 on the listed construction and proof obligations.
 

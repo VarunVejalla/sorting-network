@@ -1,4 +1,4 @@
-import AKS.Bounds.Chvatal1830Final
+import AKS.Bounds.Sub800Final
 import UpperBoundContrib.Spec
 import UpperBoundContrib.Best
 
@@ -14,7 +14,7 @@ so the type cannot be changed. See `README.md`. -/
 namespace UpperBoundContrib
 
 /-- The constant this contribution claims. -/
-def claimed : ℝ := 1419
+def claimed : ℝ := 789.75
 
 theorem candidate_bound : BoundSpec claimed := currentBest_spec
 

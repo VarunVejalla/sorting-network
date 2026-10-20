@@ -1,0 +1,17 @@
+(k, A, nu) = (16, 32, 1/8), delta_F = 1/8, mu = 1.500570e-05, r*/mu = 1.9066, eta = 1.001831
+delta = 1.3500e-06, eps_B = 1/105000 = 9.5238e-06, J = 1/eps_F = 186215
+  OK   (4.2) incl. rounding reserve 0.1 mu            lhs/rhs = 0.999090
+  OK   (4.3) mu <= nu/(A k^2)                         lhs/rhs = 0.983414
+  OK   (4.4) mu <= dF (A nu k - 1)/(2 A^2 k^2)        lhs/rhs = 0.999023
+  OK   (4.5) eps_F/(A nu) + delta^2 A k/nu <= delta   lhs/rhs = 0.999999
+  OK   delta k A < 1                                  lhs/rhs = 0.000691
+  (4.2) budget split (units of mu): sibling 0.332, delta term 0.0221, r* 1.907, rounding 0.1, eps_B 0.636, base 1, budget 4
+  (4.1) root separator needs eps_* <= mu/k = 9.379e-07 (additive constant)
+  bulk: lg m = 25.6000: d = 8.2916e-06 vs eps_B 9.5238e-06 (margin 1.149x)
+  bulk: lg m = 25.6514: d = 8.0741e-06 vs eps_B 9.5238e-06 (margin 1.180x)
+  bulk: lg m = 25.9773: d = 6.8219e-06 vs eps_B 9.5238e-06 (margin 1.396x)
+  bulk: lg m = 26.0000: d = 6.7422e-06 vs eps_B 9.5238e-06 (margin 1.413x)
+  fringe classes f = 7934 and 406109 (padded (f+1)-row form, R1-PROOF.md sec. 4); certificates run at J = 190000 >= 186215 (OK: larger J is conservative)
+  depth: rows < 2^26, node 3 S(26) = 1053, exact Batcher for a <= 2^45; stages per bit (x+y)/(x z) = 9/12; coefficient 789.75
+
+ALL CONDITIONS HOLD

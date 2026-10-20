@@ -26,9 +26,9 @@ def main():
     best = status["current_best_coefficient"]
     errors, warnings = [], []
 
-    m = re.search(r"def currentBest : ℝ := (\d+)",
+    m = re.search(r"def currentBest : ℝ := ([0-9.]+)",
                   read("upper-bound/contributions/UpperBoundContrib/Best.lean"))
-    if not m or int(m.group(1)) != best:
+    if not m or float(m.group(1)) != float(best):
         errors.append(f"Best.lean currentBest ({m.group(1) if m else '?'}) != STATUS.json ({best})")
 
     final = read(status["headline"]["file"])

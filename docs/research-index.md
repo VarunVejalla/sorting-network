@@ -1,12 +1,13 @@
 # Sorting-network research index
 
-## Current package layout (2026-10-10)
+## Current package layout (2026-10-19)
 
-- `upper-bound/best`: current Chvátal endpoint with the two-round separator, coefficient 1419
-  (`D(n) ≤ 1419 lg n − 43861`, `limsup ≤ 1419`). Full build and the headline guards passed on
-  2026-10-10; math notes in `upper-bound/best/notes/two-round/` (`BULK2.md`, `F2ROUND.md`).
-  The previous endpoint (1770) is `upper-bound/alternatives/chvatal-1770`; parked and ruled-out
-  ideas are in `upper-bound/backlog/`.
+- `upper-bound/best`: current endpoint, coefficient 789.75 (UB-31; `D(n) ≤ 789.75 lg n + 3159`
+  for `n ≥ 16^12`, `limsup ≤ 789.75`; headline `AKS/Bounds/Sub800Final.lean`, modules
+  `AKS/Sub800/`, paper proof `upper-bound/best/notes/sub800/R1-PROOF.md`). It keeps the 1419
+  Chvátal modules it builds on (math notes in `upper-bound/best/notes/two-round/`).
+  The previous endpoint (1419) is `upper-bound/alternatives/chvatal-1419`, the one before (1770)
+  `upper-bound/alternatives/chvatal-1770`; parked and ruled-out ideas are in `upper-bound/backlog/`.
 - `lower-bound/best`: Kahale endpoint, coefficient approximately 3.270559454.
   Its real-valued liminf boundedness premise uses the legacy upper package;
   the finite Kahale inequality itself is independent of that construction.
@@ -26,7 +27,7 @@ its dated constants and inline command paths may describe earlier layouts.
 ### Active upper research
 
 The earlier Chvatal fringe-repair experiments below are historical context for
-the 1770-era design; the promoted endpoint is now 1419. The current high-upside
+the 1770-era design; the promoted endpoint is now 789.75 (UB-31, previously 1419). The current high-upside
 structural lead is multiway partitioning and its missing global composition
 argument, tracked below.
 

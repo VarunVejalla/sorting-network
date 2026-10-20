@@ -9,7 +9,7 @@ build; build with `lake build UpperBoundSolution`. -/
 
 theorem upper_bound_certified : ∀ ε : ℝ, 0 < ε → ∃ N : ℕ, ∀ n : ℕ, N ≤ n →
     ∃ net : ComparatorNetwork n, ComparatorNetwork.Sorts.{0} net ∧
-      (net.depth : ℝ) ≤ ((1419 : ℝ) + ε) * Real.logb 2 (n : ℝ) := by
+      (net.depth : ℝ) ≤ ((789.75 : ℝ) + ε) * Real.logb 2 (n : ℝ) := by
   have h := UpperBoundContrib.candidate_bound.netSpec
   unfold UpperBoundContrib.NetSpec UpperBoundContrib.claimed at h
   exact h

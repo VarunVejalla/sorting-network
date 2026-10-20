@@ -9,9 +9,10 @@ using Lean 4.29.0-rc4.
 
 | Path | Purpose |
 | --- | --- |
-| [upper-bound/best](upper-bound/best/README.md) | Current Chvátal construction with a two-round separator: coefficient 1419 |
+| [upper-bound/best](upper-bound/best/README.md) | Current construction (UB-31, design P on a Chvátal tree with walk-bound and padded fringe separators): coefficient 789.75 |
 | [upper-bound/experiments](upper-bound/experiments/README.md) | Candidate improvements and optional expander certificates |
-| [upper-bound/alternatives/chvatal-1770](upper-bound/alternatives/chvatal-1770/README.md) | Previous best: one-round separator, coefficient 1770 |
+| [upper-bound/alternatives/chvatal-1419](upper-bound/alternatives/chvatal-1419/README.md) | Previous best: Chvátal with a two-round separator, coefficient 1419 |
+| [upper-bound/alternatives/chvatal-1770](upper-bound/alternatives/chvatal-1770/README.md) | Older best: one-round separator, coefficient 1770 |
 | [upper-bound/backlog](upper-bound/backlog/README.md) | Parked research ideas (few-hundred track) and ruled-out ideas |
 | [upper-bound/alternatives/legacy](upper-bound/alternatives/legacy/README.md) | Completed Paterson and older Seiferas constructions |
 | [lower-bound/best](lower-bound/best/README.md) | Kahale lower bound: approximately 3.270559454 |
@@ -29,8 +30,8 @@ Packages use overlapping AKS module names and are built separately.
 The upper endpoint proves
 
 ```text
-D(n) <= 1419 * log_2 n - 43861   for n >= 64^7
-limsup D(n)/log_2 n <= 1419
+D(n) <= 789.75 * log_2 n + 3159   for n >= 16^12
+limsup D(n)/log_2 n <= 789.75
 ```
 
 The lower endpoint proves

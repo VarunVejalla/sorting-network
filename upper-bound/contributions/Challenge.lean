@@ -64,8 +64,8 @@ def ComparatorNetwork.Sorts {n : ℕ} (net : ComparatorNetwork n) : Prop :=
     Monotone (net.exec v)
 
 /-- **Challenge.** For every `ε > 0`, for all large `n` there is a sorting network on `n` wires whose
-depth is at most `(C + ε) · log₂ n`, with `C = 1419` in this instance. This implies
+depth is at most `(C + ε) · log₂ n`, with `C = 789.75` in this instance. This implies
 `limsup D(n)/log₂ n ≤ C` for the minimum depth `D(n)`. -/
 theorem upper_bound_certified : ∀ ε : ℝ, 0 < ε → ∃ N : ℕ, ∀ n : ℕ, N ≤ n →
     ∃ net : ComparatorNetwork n, ComparatorNetwork.Sorts.{0} net ∧
-      (net.depth : ℝ) ≤ ((1419 : ℝ) + ε) * Real.logb 2 (n : ℝ) := sorry
+      (net.depth : ℝ) ≤ ((789.75 : ℝ) + ε) * Real.logb 2 (n : ℝ) := sorry
