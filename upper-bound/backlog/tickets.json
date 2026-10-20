@@ -793,6 +793,23 @@
         "upper-bound/backlog/sub500-routes.md"
       ],
       "notes": "Screen gates (fringe idealized away): T >= 5.5 for < 500, >= 36 for < 300, >= 101 for < 200 (model grid floor). Periodic T = 1000: P = 4 gives 302, P = 8 gives 208. The only modelled sub-300 routes; relates to UB-27 and the tapered invariant (UB-07/UB-24)."
+    },
+    {
+      "id": "UB-41",
+      "title": "Persistent columns: receive redistribution as mixing, with a rank-correct terminal invariant",
+      "priority": "P2",
+      "status": "active",
+      "claim_level": "conjecture",
+      "baseline": 789.75,
+      "projected": null,
+      "owner": "Codex (GPT-6)",
+      "branch": "sub300-structural",
+      "depends_on": [],
+      "first_deliverable": "Write the exact incoming-column count map and derive a uniform conditional column-profile recurrence and rare-fringe contract; price the unchanged global terminal-purity schedule before any Lean.",
+      "evidence": [
+        "upper-bound/experiments/persistent-columns/PLAN.md"
+      ],
+      "notes": "2026-10-20: isolated branch from main; target <=300. Explore a new persistent-column provider independently of UB-34/UB-37. No bound claimed; require fresh-context mathematical review before Lean."
     }
   ]
 }

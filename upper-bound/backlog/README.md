@@ -69,6 +69,13 @@ Notes: [high-upside architecture](high-upside-architecture.md) (UB-08 to UB-11),
 [sub-200 structural strategies](sub200-structural-strategies.md) (UB-25 to UB-28),
 [2024 k-sorting screen](../experiments/k-sorting-2024/README.md).
 
+## Independent sub300 work
+
+- **UB-41**, active on `sub300-structural`: persistent sorted columns with
+  incoming redistribution as mixing. Prove a uniform promised-input column
+  recurrence and rare-fringe contract before Lean; see
+  [the plan](../experiments/persistent-columns/PLAN.md).
+
 ## Parked or superseded
 
 - **Superseded by the 789.75 endpoint:**
