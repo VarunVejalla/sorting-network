@@ -162,4 +162,26 @@ theorem sum_sq_eq_sum_counts (z : Fin n → ℕ) (M : ℕ) (hz : ∀ T, z T ≤ 
   refine Finset.sum_congr rfl fun T _ => ?_
   split_ifs <;> simp
 
+/-- **Round-2 escapes from per-set walk bounds.** With `w = scrambledColSum c₁ σ₂`, if every set `S`
+has `Σ_u Y_u(1_S, φ) ≤ X |S|` and `X s − f s ≤ B` for all `s`, then
+`Σ_v (w_v − f)₊ ≤ Σ_u φ(c₁ u) + B`. -/
+theorem escapes_le (c₁ : MonotoneColumnSums m n) (σ₂ : Scramble m n) (φ : ℕ → ℝ) (f B : ℝ)
+    (X : ℕ → ℝ) (hX : ∀ S : Finset (Fin n), ∑ u : Fin n, walkYφ σ₂ (ind S) φ u ≤ X S.card)
+    (hB : ∀ s : ℕ, X s - f * s ≤ B) :
+    ∑ v : Fin n, max ((scrambledColSum c₁ σ₂ v : ℝ) - f) 0 ≤
+      ∑ u : Fin n, φ (c₁ u).val + B := by
+  classical
+  refine sum_posPart_le_of_sets _ f _ fun S => ?_
+  have hdual := cost_duality c₁ σ₂ (ind S) φ
+  have hsum : ∑ T : Fin n, ind S T * (scrambledColSum c₁ σ₂ T : ℝ) =
+      ∑ T ∈ S, (scrambledColSum c₁ σ₂ T : ℝ) := by
+    simp only [ind, ite_mul, one_mul, zero_mul]
+    rw [Finset.sum_ite_mem, Finset.univ_inter]
+  have hsub : ∑ v ∈ S, ((scrambledColSum c₁ σ₂ v : ℝ) - f) =
+      ∑ v ∈ S, (scrambledColSum c₁ σ₂ v : ℝ) - f * S.card := by
+    rw [Finset.sum_sub_distrib, Finset.sum_const, nsmul_eq_mul, mul_comm]
+  have := hX S
+  have := hB S.card
+  linarith [hsum ▸ hdual]
+
 end FringeDuality
