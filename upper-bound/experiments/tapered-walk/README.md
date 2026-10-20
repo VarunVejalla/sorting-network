@@ -5,7 +5,7 @@ Ticket UB-30 · branch `ub-30-tapered-walk` · Claude (Opus 5.5) · 2026-10-19.
 **Claim level.** This is a re-price of a *conditional* candidate. The tapered 945 price
 ([`../tapered/SUB1000-CANDIDATE.md`](../tapered/SUB1000-CANDIDATE.md)) depends on the open
 scheduler and rank-profile gates of UB-22 and UB-24
-([`../../backlog/tapered-recovery-plan.md`](../../backlog/tapered-recovery-plan.md),
+([`../../backlog/archive/tapered-recovery-plan.md`](../../backlog/archive/tapered-recovery-plan.md),
 [`../tapered/UB-24-RANK-PROFILE.md`](../tapered/UB-24-RANK-PROFILE.md)). This note changes only
 the large ordinary separator, so every one of those gates stays open and nothing below is a
 sorting theorem.

@@ -1,7 +1,7 @@
 # Ordinary-node depth tickets
 
-These tickets expand the leading ideas in the [backlog index](README.md). Current baseline details are in
-[`docs/upper-bound-1419-cost-audit.md`](../../docs/upper-bound-1419-cost-audit.md) and the checked Lean
+These tickets expand the leading ideas in the [backlog index](../README.md). Current baseline details are in
+[`docs/upper-bound-1419-cost-audit.md`](../../../docs/upper-bound-1419-cost-audit.md) and the checked Lean
 interfaces under `../best/AKS/Chvatal/`.
 
 ## UB-01 — Abstract the local column-sorter interface

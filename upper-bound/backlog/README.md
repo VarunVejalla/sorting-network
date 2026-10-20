@@ -1,63 +1,92 @@
 # Upper-bound research backlog
 
 This is the ticket index for research ideas that are not part of the current best proof.
-The current kernel-checked endpoint is `limsup D(n)/log_2 n <= 789.75` (UB-31, promoted 2026-10-19); see
-[`../best/README.md`](../best/README.md). The previous endpoint 1419 has its [cost audit](../../docs/upper-bound-1419-cost-audit.md).
-Tickets record targets and evidence, not established results. A projected coefficient is conditional
-on the listed construction and proof obligations.
 
-The tapered branch's UB-23 count/ownership endpoint is documented in
-[`UB-23-FLOW-FAMILY.md`](../experiments/tapered/UB-23-FLOW-FAMILY.md).
-It supplies an initialized shape-specific integer schedule. Comparator-network
-realization and rank correctness remain separate obligations; the accepted
-sorting-depth coefficient is unchanged.
+**Current endpoint.** `limsup D(n)/log_2 n <= 789.75`, kernel-checked: UB-31, promoted 2026-10-19,
+see [`../best/README.md`](../best/README.md). The Lean layer is generic in the invariant scalars, the
+separator row window and the fringe classes (`R1Scal`, `R1Point`). The 789.75 point is
+`AKS/Sub800/R1At78975.lean`. The previous endpoint, 1419, has its own
+[cost audit](../../docs/upper-bound-1419-cost-audit.md).
 
-UB-24 is active: [signed rank/retirement checkpoint](../experiments/tapered/UB-24-RANK-PROFILE.md).
-Exact prefix recurrences are implemented. Exact subtree balance at retirement
-needs a stronger coordinated rounding construction before the global rank
-induction can close.
+Tickets record targets and evidence, not results. A projected coefficient is conditional on the
+listed construction and proof obligations. The machine-readable source is
+[`tickets.json`](tickets.json) (`python3 scripts/tickets --table`; schema in
+[`tickets.schema.md`](tickets.schema.md)).
 
-## Active candidates
+## Below 500: the current program
+
+Plan and cost model: [`sub500-routes.md`](sub500-routes.md). The coefficient is
+`(sorts per stage) · S(q) · (stages per bit) = 3 · S(26) · 3/4`. The row exponent `q = 26` comes from two
+places:
+* the fringe floor `x+y+z + log₂(2(f+1))`;
+* the bulk floor (walk bound at `ε_B ≈ 2.55μ − r*`).
 
 | ID | Priority | Idea | Status | First deliverable |
 |---|---|---|---|---|
-| UB-01 | P1 | Abstract the local column-sorter interface and identify the exact reusable laws | ready | Lean interface plus a cost table for replacing bitonic without touching separator mathematics |
-| UB-02 | P1 | Search for a shallower full sorter at ordinary-node widths | research | Candidate family with a proved depth below 800 at `m` around `2^42`–`2^43`, or a documented obstruction |
-| UB-03 | P1 | Reduce the ordinary-node height using stronger/tighter separator estimates | in progress | Certified parameter window and end-to-end coefficient; two-round Variant B currently projects 1354.5 only |
-| UB-04 | P2 | Replace full column sorts with partial sorting / halving primitives | research | State the weaker invariant sufficient for the next separator round and derive a depth budget |
-| UB-05 | P2 | Jointly optimize branching factor, number of rounds, and node geometry | research | Small exact/rational parameter sweep with a valid global-schedule cost formula |
-| UB-06 | P2 | Improve expander/halver primitives and compose them with the current node contract | research | A concrete halver depth/error pair and a compatible fringe/bulk guarantee |
-| UB-07 | P3 | Tapered stranger invariant allowing larger local error | parked | Recalibrated parameter model against the 1419 endpoint, then a target below 1200 |
-| UB-08 | P1 | Compile the 2024 shallow high-arity k-sorters into binary sorters | research | An explicit finite arity schedule and a proved binary coefficient below 200, or a quantitative barrier |
-| UB-09 | P1 | Extract finite-M constants from Chvatal's M-sorter construction | research | Prove a finite `c_M` at `M=16` or `32` and check `c_M * d₂(M)/log₂ M < 200` |
-| UB-10 | P3 | Recover the reported private sub-100 AKS construction | speculative | Locate a public finite-parameter construction or identify the missing theorem/contract |
-| UB-11 | P1 | Price cumulative boundary displacement in the profile scheduler | in progress | Prove the aggregate rank-window mismatch bound and recompute the rank-1 transfer coefficient |
+| UB-37 | P1 | Re-price sweep of the R1 model under each hypothetical | ready | Script and table, every entry labelled model |
+| UB-33 | P1 | Raise μ (larger δ_F) or remove the residual r* | proposed | Fringe generator runs at δ_F ∈ {1/6, 1/4, 1/3} |
+| UB-32 | P1 | Two column sorts per stage (short repair instead of the third sort) | proposed | Uses of the third sort, and a weaker sufficient property for each |
+| UB-34 | P1 | Take the fringe off the row count | proposed | Contract sketch of a split bulk/fringe node |
+| UB-35 | P1 | Generic failure budgets and root separator in Lean | ready | Parameters in `SepExists` and `R1Point` |
+| UB-36 | P2 | Generic schedule `(x, y, z)` with per-point design-P checks | proposed | Schedule facts as finite residue checks |
+| UB-38 | P2 | Run-aware first sort and stage fusion at the R1 node | proposed | Price at R1 (≤ ~42 off) |
 
-## Ticket conventions
+Gates: three sorts need `q ≤ 20` (472.5); two sorts need `q ≤ 25` (487.5).
 
-- **P1** means a direct route to a lower coefficient with the current architecture.
-- **P2** means a potentially substantial architectural change with unresolved composition work.
-- **P3** means high-upside exploratory research with significant model or proof uncertainty.
-- `ready`, `in progress`, `research`, and `parked` describe workflow only; they do not indicate theorem status.
-- Promote a ticket to the best package only after its local guarantees, global schedule, depth theorem,
-  focused build, full build, and headline/axiom guards are checked as appropriate.
+## Other open tickets
 
-## Completed infrastructure
+| ID | Priority | Idea | Status |
+|---|---|---|---|
+| UB-01 | P1 | Local column-sorter interface and its reusable laws | ready |
+| UB-02 | P1 | Shallower full sorter at column height `2^26` (below `S(26) = 351`) | proposed |
+| UB-04 | P2 | Partial sorting / halving primitives instead of full column sorts | proposed |
+| UB-06 | P2 | Expander/halver primitives under a changed composition contract | proposed |
+| UB-15 | P1 | Lower fringe floor (smaller `f`); feeds UB-33/UB-34 | proposed |
+| UB-11 | P1 | Cumulative boundary displacement in the profile scheduler | active (another agent) |
+| UB-19 | P2 | Signed cumulative cut discrepancy in the multiway transfer | proposed |
+| UB-24 | P1 | Signed native-prefix rank profile, the two-sided invariant behind route R2 and UB-33 | active (`tapered-945`) |
+| UB-26 | P2 | Power-scale localization through recursive overlapping cleanup | active (`ub-26-localization`) |
+| UB-18 | P1 | Minimal tapered cut/rank provider contract | ready |
 
-- **UB-00 — Global certificate API:** complete. `AKS.Bounds.Certificate` fixes a construction-independent
-  interface over the canonical comparator network model and minimum-depth function. The separate
-  [`upper-bound/contributions`](../contributions/README.md) package imports that API and includes a
-  compiled smoke test. It derives the limsup coefficient from a closed network-family certificate.
+### Below 200 (different architecture)
 
-## Parked structural branch
+| ID | Priority | Idea | Status |
+|---|---|---|---|
+| UB-08 | P3 | Compile the 2024 shallow high-arity k-sorters into binary sorters | parked |
+| UB-09 | P2 | Screen feasible finite M before extracting the M-sorter constant | proposed |
+| UB-10 | P3 | Recover the reported private sub-100 AKS construction | proposed |
+| UB-25 | P2 | Persistent sorted packets with merge-and-deal balancing | proposed |
+| UB-27 | P2 | Periodic precision restoration | proposed |
+| UB-28 | P3 | Certify a whole randomized multiscale network by paired Boolean witnesses | proposed |
 
-- [AKS row-scramble tail/repair audit](ajtai-row-scramble-tail.md): equivalence-class rank inflation blocks a direct sparse-tail transfer; revisit only with a uniform discrepancy theorem or oblivious repair.
+Notes: [high-upside architecture](high-upside-architecture.md) (UB-08 to UB-11),
+[sub-200 structural strategies](sub200-structural-strategies.md) (UB-25 to UB-28),
+[2024 k-sorting screen](../experiments/k-sorting-2024/README.md).
 
-## Existing research notes
+## Parked or superseded
 
-- [Ordinary-node depth tickets](ordinary-node-tickets.md): scope, target, acceptance test, and dependencies for UB-01 through UB-07.
-- [High-upside architecture tickets](high-upside-architecture.md): the 2024 k-sorting lead (UB-08), finite-M Chvatal route (UB-09), and private Komlos report (UB-10).
-- [UB-11: cumulative boundary displacement](high-upside-architecture.md#ub-11--price-cumulative-boundary-displacement-in-the-profile-scheduler): the missing rank-1 profile-transfer bound for the active direct-multiway schedule.
-- [2024 k-sorting screen](../experiments/k-sorting-2024/README.md): theorem scope, s-sorted invariant, and preliminary binary-depth checks for UB-08.
-- [Few-hundred tapered-invariant track](few-hundred-tapered-invariant.md): older parameter-model study, calibrated to the former 1770 endpoint; retained as background for UB-07.
-- [Ruled-out and screened ideas](ruled-out.md): prior negative screens. Recheck any item whose assumptions changed under the 1419 two-round proof.
+- **Superseded by the 789.75 endpoint:**
+  - UB-03: rows `< 2^26` were reached by UB-29/UB-31;
+  - UB-05: replaced by UB-37;
+  - UB-12: replaced by design P;
+  - UB-14: rebased into UB-32;
+  - UB-07, UB-22, UB-30: the tapered route at 945 / 792 now lies above the accepted coefficient.
+- **Parked:** UB-13 (run-aware sort, rebased into UB-38) and UB-20 (adjacent-region compaction).
+- [AKS row-scramble tail/repair audit](ajtai-row-scramble-tail.md): equivalence-class rank inflation
+  blocks a direct sparse-tail transfer.
+- [Archive](archive/README.md): notes calibrated to 1770/1419 or to the tapered route.
+
+## Done
+
+UB-00 (certificate API), UB-16 (contribution pipeline hardening), UB-17 and UB-21 (audits),
+UB-23 (tapered per-frontier flow), UB-29 (walk-bound bulk, kernel-checked), UB-31 (789.75).
+
+## Conventions
+
+- **P1** is a direct route to a lower coefficient with the current architecture. **P2** is an
+  architectural change with unresolved composition work. **P3** is high-upside exploratory research.
+- The status values describe workflow only, not theorem status.
+- Promote a ticket to the best package only after its local guarantees, global schedule, depth
+  theorem, focused build, full build, and headline/axiom guards are checked as appropriate.
+- Negative results go to [ruled-out.md](ruled-out.md). Recheck any item there whose assumptions
+  changed, for example under the walk bound.

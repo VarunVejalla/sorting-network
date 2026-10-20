@@ -103,7 +103,7 @@ The key practical benefit is modularity: a network search can minimize its
 weighted kernel cost while a separate potential calculation verifies
 contraction. It also identifies exactly which fringe ranks need very strong
 protection and which bulk errors can be tolerated. The older
-[`few-hundred tapered-invariant study`](../../backlog/few-hundred-tapered-invariant.md)
+[`few-hundred tapered-invariant study`](../../backlog/archive/few-hundred-tapered-invariant.md)
 shows that merely loosening Chvatal's scalar epsilon plateaus around
 600-900; the new opportunity is to optimize a *joint p-way transfer kernel*
 and its branching schedule, rather than retune that same scalar model.
