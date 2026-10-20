@@ -230,4 +230,46 @@ theorem sum_sq_sub_eq_sum_counts (z : Fin n → ℕ) (b M : ℕ) (hz : ∀ T, z 
   refine Finset.sum_congr rfl fun T _ => ?_
   split_ifs <;> simp
 
+/-- The centred round-2 cost `φ(h) = λ' h + μ ((h − b)₊)²`. -/
+noncomputable def phiC (lam' mu : ℝ) (b : ℕ) : ℕ → ℝ := fun h => lam' * h + mu * (((h - b : ℕ) : ℝ) ^ 2)
+
+/-- **Composition (deterministic).** Round 1 gives heights `z = c₁`; given caps on the tall-column
+counts of `z`, per-set walk bounds for round 2 with the centred cost, and `X s − f s ≤ B`:
+escapes `≤ λ' · mass + μ Σ_{b ≤ k < m} (2(k−b)+1) cap k + B`. -/
+theorem escapes_of_caps (c c₁ : MonotoneColumnSums m n) (σ₁ σ₂ : Scramble m n)
+    (hc₁ : ∀ T, (c₁ T).val = scrambledColSum c σ₁ T)
+    (lam' mu : ℝ) (hμ : 0 ≤ mu) (b : ℕ) (cap : ℕ → ℕ)
+    (hcap : ∀ k, (Finset.univ.filter fun T => k < (c₁ T).val).card ≤ cap k)
+    (f B : ℝ) (X : ℕ → ℝ)
+    (hX : ∀ S : Finset (Fin n), ∑ u : Fin n, walkYφ σ₂ (ind S) (phiC lam' mu b) u ≤ X S.card)
+    (hB : ∀ s : ℕ, X s - f * s ≤ B) :
+    ∑ v : Fin n, max ((scrambledColSum c₁ σ₂ v : ℝ) - f) 0 ≤
+      lam' * ∑ j : Fin n, ((c j).val : ℝ) +
+        mu * ∑ k ∈ Finset.Ico b m, ((2 * (k - b) + 1 : ℕ) : ℝ) * (cap k : ℝ) + B := by
+  classical
+  have hesc := escapes_le c₁ σ₂ (phiC lam' mu b) f B X hX hB
+  refine hesc.trans ?_
+  have hz : ∀ T, (c₁ T).val ≤ m := fun T => Nat.le_of_lt_succ (c₁ T).isLt
+  -- Σ φ(z) = λ' Σ z + μ Σ (z − b)₊²
+  have hsplit : ∑ u : Fin n, phiC lam' mu b (c₁ u).val =
+      lam' * ∑ u : Fin n, ((c₁ u).val : ℝ) + mu * ∑ u : Fin n, ((((c₁ u).val - b : ℕ) : ℝ) ^ 2) := by
+    simp only [phiC, Finset.sum_add_distrib, Finset.mul_sum]
+  have hmass : ∑ u : Fin n, ((c₁ u).val : ℝ) = ∑ j : Fin n, ((c j).val : ℝ) := by
+    rw [← sum_scrambledColSum c σ₁]
+    exact Finset.sum_congr rfl fun T _ => by rw [hc₁]
+  have henergy : ∑ u : Fin n, ((((c₁ u).val - b : ℕ) : ℝ) ^ 2) ≤
+      ∑ k ∈ Finset.Ico b m, ((2 * (k - b) + 1 : ℕ) : ℝ) * (cap k : ℝ) := by
+    have hid := sum_sq_sub_eq_sum_counts (fun T => (c₁ T).val) b m hz
+    have hidR : ∑ u : Fin n, ((((c₁ u).val - b : ℕ) : ℝ) ^ 2) =
+        ∑ k ∈ Finset.Ico b m, ((2 * (k - b) + 1 : ℕ) : ℝ) *
+          ((Finset.univ.filter fun T => k < (c₁ T).val).card : ℝ) := by
+      have := congrArg (fun x : ℕ => (x : ℝ)) hid
+      push_cast at this ⊢
+      exact this
+    rw [hidR]
+    refine Finset.sum_le_sum fun k _ => mul_le_mul_of_nonneg_left ?_ (by positivity)
+    exact_mod_cast hcap k
+  rw [hsplit, hmass]
+  nlinarith [mul_le_mul_of_nonneg_left henergy hμ]
+
 end FringeDuality
