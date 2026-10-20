@@ -50,6 +50,20 @@ that condition or supply an independently proved exact cleanup.
 
 ## Next research decision
 
+UB-42 now tests signed prefix flux plus an affordable exact small frontier
+on the existing D2 flow. See
+[`prefix-flux/STATUS.md`](../upper-bound/experiments/prefix-flux/STATUS.md).
+Fresh review caught a missing comparator-prefix constraint; the strengthened
+oracle includes it. The larger C65536 frontier passes small samples but fails
+at d12 with epsB.01, even with an exact root. These are negative relational
+contract diagnostics, not counterexamples to all fixed comparator providers.
+No repeated routing identities or speculative Lean were added.
+The negative trace now has a scalable escape-capacity explanation in
+[`CUT-OBSTRUCTION.md`](../upper-bound/experiments/prefix-flux/CUT-OBSTRUCTION.md):
+raising any fixed exact cutoff cannot repair the tested coarse interface.
+The next provider/invariant must bound wrong-color mass against future
+subtree escape capacity, not merely a fraction of present bag size.
+
 No credible <=300 construction has yet passed the paper gates. Prioritize a
 new local/global contract rather than another scalar retune. Two precise
 possible directions remain to screen:

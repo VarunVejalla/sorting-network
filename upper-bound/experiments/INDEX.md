@@ -30,6 +30,7 @@ its numbers) · **retired** (superseded; kept in history only).
 | `packets/` (branch `ub-25-packets` only) | Lean + notes + screens | active (Codex, worktree `ub-25`) | UB-25 | persistent sorted packets / merge-and-deal; terminal gate recorded NO-GO for the fixed-round candidate (`TERMINAL-GATE.md`); not merged to `main` |
 
 | `persistent-columns/` | notes + exact count witnesses + model screen | parked | UB-41 | small-C all-profile recurrence and weak one-pass fringe promise refuted in fresh review; stronger reachable-state variants open. Start at `STATUS.md`; no improved bound. |
+| `prefix-flux/` | notes + Boolean oracle + integer replay | active (Codex, worktree `sub300`) | UB-42 | signed prefix flux with exact small frontiers; fresh review and monotone-prefix negative traces. Start at `STATUS.md`; no improved bound. |
 
 ## Policy for Lean forks
 

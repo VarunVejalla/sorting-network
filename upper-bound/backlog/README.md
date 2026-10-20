@@ -15,6 +15,11 @@ listed construction and proof obligations. The machine-readable source is
 
 ## Below 500: the current program
 
+Independent sub300 work: UB-41 (parked negative local contracts) and UB-42
+(active signed-prefix/exact-frontier paper test), branch `sub300-structural`.
+See [the search ledger](../../docs/sub300-search.md) for reviewed proof gates.
+Neither is a proved improved sorting bound.
+
 Plan and cost model: [`sub500-routes.md`](sub500-routes.md). The coefficient is
 `(sorts per stage) · S(q) · (stages per bit) = 3 · S(26) · 3/4`. The row exponent `q = 26` comes from two
 places:

@@ -813,6 +813,26 @@
         "upper-bound/experiments/persistent-columns/FRINGE-WITNESS.md"
       ],
       "notes": "2026-10-20: fresh review and exact count witnesses refute the small-C all-sorted-profile recurrence and weak one-pass fringe promise. Broader fixed-radius or reachable-state invariants remain open. No new sorter or coefficient; the overall <=300 goal continues on sub300-structural."
+    },
+    {
+      "id": "UB-42",
+      "title": "Signed prefix flux with exact small frontiers on the D2 flow",
+      "priority": "P2",
+      "status": "active",
+      "claim_level": "hand-proof",
+      "baseline": 789.75,
+      "projected": null,
+      "owner": "Codex (GPT-6)",
+      "branch": "sub300-structural",
+      "depends_on": [],
+      "first_deliverable": "Specify and test the exact Boolean threshold recurrence under feasible all-cut and rare-fringe deficits, including exact terminal native counts; decide whether an exact small frontier can tolerate coarse interior separators before any Lean.",
+      "evidence": [
+        "upper-bound/experiments/prefix-flux/PLAN.md",
+        "upper-bound/experiments/prefix-flux/STATUS.md",
+        "upper-bound/experiments/prefix-flux/REVIEW.md",
+        "upper-bound/experiments/prefix-flux/CUT-OBSTRUCTION.md"
+      ],
+      "notes": "2026-10-20: fresh-context review, exact monotone-prefix oracle replay, and scalable future-escape-capacity obstruction reject the tested coarse bulk/fringe interface even with any fixed exact frontier. Not an impossibility result for fixed providers. Next gate: actual rank-sensitive spill versus remaining subtree escape capacity. No new sorter or coefficient."
     }
   ]
 }

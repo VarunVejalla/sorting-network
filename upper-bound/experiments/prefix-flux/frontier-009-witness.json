@@ -1,0 +1,19 @@
+{
+  "config":{"depth":12,"exact_cap":65536,"eps_b":"9/1000","eps_f":"1/16","delta_f":"1/8","thresholds":"1/3","policy":"native","seed":0,"witness":"upper-bound/experiments/prefix-flux/frontier-009-witness.json","monotone":true,"approx_root":false},
+  "threshold":5592405,
+  "result":{
+    "terminal_L1":3802,
+    "wrong_bags":18,
+    "nonideal_choices":7,
+    "failures":[{"node":[8,18430],"capacity":256,"actual":203,"target":256},{"node":[8,18431],"capacity":256,"actual":0,"target":256},{"node":[8,20477],"capacity":256,"actual":228,"target":256},{"node":[8,20478],"capacity":256,"actual":0,"target":256},{"node":[8,20479],"capacity":256,"actual":0,"target":256},{"node":[8,21499],"capacity":256,"actual":228,"target":256},{"node":[8,21500],"capacity":256,"actual":0,"target":256},{"node":[8,21501],"capacity":256,"actual":0,"target":256},{"node":[8,21502],"capacity":256,"actual":0,"target":256},{"node":[8,21503],"capacity":256,"actual":0,"target":256},{"node":[8,21845],"capacity":256,"actual":256,"target":85},{"node":[8,21846],"capacity":256,"actual":256,"target":0},{"node":[8,21847],"capacity":256,"actual":256,"target":0},{"node":[8,21848],"capacity":256,"actual":256,"target":0},{"node":[8,21849],"capacity":256,"actual":256,"target":0},{"node":[8,21850],"capacity":256,"actual":256,"target":0},{"node":[8,21851],"capacity":256,"actual":256,"target":0},{"node":[8,21852],"capacity":256,"actual":194,"target":0}],
+    "trace":[
+      {"t":3,"node":[1,1],"a":262144,"pi":2048,"blocks":[72704,57344,57344,72704],"zeros":102400,"ends":[0,1024,73728,131072,188416,261120,262144],"ys":[0,1024,72549,102400,102400,102400,102400],"budget":1179,"support":128},
+      {"t":4,"node":[2,4],"a":531456,"pi":3584,"blocks":[156928,114688,114688,141568],"zeros":530277,"ends":[0,1792,158720,273408,388096,529664,531456],"ys":[0,1792,158720,272440,387128,528696,530277],"budget":2391,"support":224},
+      {"t":4,"node":[2,5],"a":516096,"pi":3584,"blocks":[141568,114688,114688,141568],"zeros":201883,"ends":[0,1792,143360,258048,372736,514304,516096],"ys":[0,1792,141038,201883,201883,201883,201883],"budget":2322,"support":224},
+      {"t":5,"node":[3,17],"a":262144,"pi":7168,"blocks":[61952,65536,65536,61952],"zeros":261176,"ends":[0,3584,65536,131072,196608,258560,262144],"ys":[0,3584,65536,131072,196608,258013,261176],"budget":1179,"support":448},
+      {"t":5,"node":[3,20],"a":260352,"pi":7168,"blocks":[60160,65536,65536,61952],"zeros":258030,"ends":[0,3584,63744,129280,194816,256768,260352],"ys":[0,3584,63744,129280,194816,255597,258030],"budget":1171,"support":448},
+      {"t":5,"node":[3,21],"a":262144,"pi":7168,"blocks":[61952,65536,65536,61952],"zeros":90882,"ends":[0,3584,65536,131072,196608,258560,262144],"ys":[0,3584,64357,89703,90882,90882,90882],"budget":1179,"support":448},
+      {"t":7,"node":[3,19],"a":66192,"pi":448,"blocks":[17696,14336,14336,19376],"zeros":65883,"ends":[0,224,17920,32256,46592,65968,66192],"ys":[0,224,17835,32171,46507,65883,65883],"budget":297,"support":28}
+    ]
+  }
+}

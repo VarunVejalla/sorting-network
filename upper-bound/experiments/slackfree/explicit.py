@@ -19,14 +19,19 @@ from fractions import Fraction as Fr
 from flowsim import Par
 
 
-def build_table(P, d, design):
+def build_table(P, d, design, horizon=None):
     k = P.k
     TF = P.tf(d)
+    if horizon is not None:
+        TF = min(TF, horizon)
+    # Only active levels and their children are read. Do not allocate all
+    # k**d leaves for a schedule that retires several levels earlier.
+    last = min(d, max([0] + [P.omega(d,t) for t in range(1,TF)]) + 1)
     R = [k ** (d - i) for i in range(d + 1)]
     # G per node, gL/gH per node (for D2) ; level i arrays of length k^i (python objects)
-    G = [[(0 if i == 0 else R[i]) for _ in range(k ** i)] for i in range(d + 1)]
-    gL = [[0] * (k ** i) for i in range(d + 1)]
-    gH = [[0] * (k ** i) for i in range(d + 1)]
+    G = [[(0 if i == 0 else R[i]) for _ in range(k ** i)] for i in range(last + 1)]
+    gL = [[0] * (k ** i) for i in range(last + 1)]
+    gH = [[0] * (k ** i) for i in range(last + 1)]
     if design == 'P':
         G = [[Fr(v) for v in row] for row in G]
     table = []   # per t: dict level -> list of (a, pi, blocks list) per node or None
@@ -37,7 +42,7 @@ def build_table(P, d, design):
         newG = [row[:] for row in G]
         newgL = [row[:] for row in gL]
         newgH = [row[:] for row in gH]
-        for i in range(d + 1):
+        for i in range(last + 1):
             act = (i == 0) if t == 0 else P.active(d, i, t)
             if not act:
                 continue
