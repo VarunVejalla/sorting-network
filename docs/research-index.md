@@ -26,6 +26,11 @@ its dated constants and inline command paths may describe earlier layouts.
 
 ### Active upper research
 
+Independent coefficient-at-most300 work is on branch `sub300-structural` in
+`.claude/worktrees/sub300`; see [its search ledger](sub300-search.md).
+The first proposed persistent-column local contract was rejected after exact
+count witnesses and fresh review (UB-41). No improved global bound is claimed.
+
 The earlier Chvatal fringe-repair experiments below are historical context for
 the 1770-era design; the promoted endpoint is now 789.75 (UB-31, previously 1419). The current high-upside
 structural lead is multiway partitioning and its missing global composition
