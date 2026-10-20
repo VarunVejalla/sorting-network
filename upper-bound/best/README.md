@@ -23,7 +23,8 @@ Paper proof: [`notes/sub800/R1-PROOF.md`](notes/sub800/R1-PROOF.md); module map:
   (`R1Design`, `R1Table`, `R1Inv*`, occupancy `R1Occ`).
 * **Bulk: the walk bound.** Property B of the two-round separator without Lemma 6.1's union
   over inputs, proved by negative association and Ville's inequality (`NegAssoc`, `Ville`,
-  `Round2*`, `Round1*`, cells `R1Cells`/`R2Cells`); this admits rows `< 2^26`.
+  `Round2*`, `Round1*`, cells `R1Cells`/`R2Cells` as kernel-checked data via `ExpCert`,
+  `CellCheck1`, `CellCheck2`); this admits rows `< 2^26`.
 * **Fringe: padded separator at `δ_F = 1/8`.** The two-round separator on an `(m+1) × n`
   rectangle with one partial dummy row (`PaddedSeparator`, `PaddedFringe`, `BaselineFringeD`,
   copied from `../experiments/tapered`) and the per-E fringe route (`F2D*`) for the two
