@@ -1,4 +1,5 @@
 import AKS.Sub800.Round2Det
+import AKS.Sub800.Round2Union
 
 /-! # Fringe by double weak duality: the deterministic part (UB-34, `experiments/fringe-duality`)
 
@@ -183,5 +184,50 @@ theorem escapes_le (c₁ : MonotoneColumnSums m n) (σ₂ : Scramble m n) (φ : 
   have := hX S
   have := hB S.card
   linarith [hsum ▸ hdual]
+
+/-- **Mass conservation**: the round preserves the number of ones. -/
+theorem sum_scrambledColSum (c : MonotoneColumnSums m n) (σ : Scramble m n) :
+    ∑ T : Fin n, (scrambledColSum c σ T : ℝ) = ∑ j : Fin n, ((c j).val : ℝ) := by
+  classical
+  have h := sum_weighted_scrambledColSum_eq c σ (fun _ => 1)
+  simp only [one_mul] at h
+  rw [h]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  unfold walkA
+  rw [Finset.sum_const, nsmul_eq_mul, mul_one]
+  have hc := Nat.le_of_lt_succ (c j).isLt
+  have : (Finset.univ.filter fun r : Fin m => m - (c j).val ≤ r.val).card = (c j).val :=
+    Round2Union.card_rows_top (c j).val hc
+  rw [this]
+
+/-- **Shifted energy from the counts**: `Σ_T ((z_T − b)₊)² = Σ_{b ≤ k < M} (2(k−b)+1) · #{T : k < z_T}`
+for heights `z ≤ M` (as naturals, `z − b` truncated). -/
+theorem sum_sq_sub_eq_sum_counts (z : Fin n → ℕ) (b M : ℕ) (hz : ∀ T, z T ≤ M) :
+    ∑ T : Fin n, (z T - b) ^ 2 =
+      ∑ k ∈ Finset.Ico b M, (2 * (k - b) + 1) * (Finset.univ.filter fun T => k < z T).card := by
+  classical
+  have h1 : ∀ T, (z T - b) ^ 2 = ∑ k ∈ Finset.Ico b M, if k < z T then 2 * (k - b) + 1 else 0 := by
+    intro T
+    rw [sq_eq_sum_odd, ← Finset.sum_filter]
+    -- range (z − b) ≃ {k ∈ [b, M) : k < z} via k ↦ k + b
+    refine Finset.sum_bij (fun i _ => i + b) ?_ ?_ ?_ ?_
+    · intro i hi
+      simp only [Finset.mem_range] at hi
+      simp only [Finset.mem_filter, Finset.mem_Ico]
+      have := hz T; omega
+    · intro i _ i' _ h
+      dsimp only at h; omega
+    · intro k hk
+      simp only [Finset.mem_filter, Finset.mem_Ico] at hk
+      exact ⟨k - b, by simp only [Finset.mem_range]; omega, by dsimp only; omega⟩
+    · intro i _
+      dsimp only
+      congr 1; omega
+  simp_rw [h1]
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  rw [Finset.card_eq_sum_ones, Finset.mul_sum, Finset.sum_filter]
+  refine Finset.sum_congr rfl fun T _ => ?_
+  split_ifs <;> simp
 
 end FringeDuality

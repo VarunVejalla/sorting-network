@@ -206,7 +206,7 @@ def x_round1(n, s, lam, logfail):
     if lam >= 1:
         return 0.0
     best = math.inf
-    for t in np.geomspace(0.05, 8.0, 40):
+    for t in np.geomspace(0.05, max(8.0, 0.9 * math.log(n)), 48):
         x = (n * log_mgf(p, "lin", lam, t) + lbinom(n, s) + logfail) / t
         best = min(best, x)
     return best
@@ -216,7 +216,7 @@ def x_round1(n, s, lam, logfail):
 def x_round2(n, s, mu, logfail):
     p = s / n
     best = math.inf
-    for t in np.geomspace(0.05, 8.0, 40):
+    for t in np.geomspace(0.05, max(8.0, 0.9 * math.log(n)), 48):
         x = (n * log_mgf(p, "quad", mu, t) + lbinom(n, s) + logfail) / t
         best = min(best, x)
     return best
@@ -262,7 +262,7 @@ def excess_energy(sk, b):
 def x_round2c(n, s, lam, mu, b, logfail):
     p = s / n
     best = math.inf
-    for t in np.geomspace(0.05, 8.0, 30):
+    for t in np.geomspace(0.05, max(8.0, 0.9 * math.log(n)), 36):
         x = (n * log_mgf(p, "cent", (lam, mu, b), t) + lbinom(n, s) + logfail) / t
         best = min(best, x)
     return best
