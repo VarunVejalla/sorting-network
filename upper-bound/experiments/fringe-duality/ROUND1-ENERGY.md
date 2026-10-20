@@ -169,3 +169,42 @@ with margin.** It is the first fringe route to do so.
    * the multi-level composition.
 4. A generic fringe interface in the padded separator (a `ColumnF2` contract), and `R1At73125`. The
    bulk `R1Cells25`/`R2Cells25` is already done.
+
+## Route (d): proof plan for the fixed-set round-1 lemma
+
+**Setting.** `U ⊆ [n]` is fixed (it depends on `σ₂` only, so it is independent of `σ₁`), `|U| = u`.
+Weights are capped at `R`, and `b ≥ 0`.
+
+**Lemma (fixed-set centred energy).** With probability `≥ 1 − η` over `σ₁`, for every input of mass
+`j` and every `a ∈ {0, …, R}^U`, with `ρ = Σ_U a_T / n`:
+
+    Σ_{T∈U} a_T (z_T − b) ≤ λ' j + Σ_c Y_c,    Y_c = max_h Σ_{r<h} (a(σ₁,r(c)) − ρ − λ'),
+
+where `b = j/n` exactly. The `ρ j` part of `λ j` cancels `b Σ a`. Then `Σ_c Y_c ≤ x(a)` on that event.
+Taking `a_T = min(R, (z_T − b)₊)` gives `Σ_U min(R,(z−b)₊)² ≤ λ' j + x(a)`.
+
+**Proof steps.**
+1. **Deterministic.** This is `weighted_duality` (Lean, `FringeDualityDet`) with `λ = ρ + λ'`, plus
+   mass conservation.
+2. **Per-column tail, two bounds, take the minimum.**
+   * Ville: let `θ*(a)` solve `e^{−θ(ρ+λ')} (1 + (1/n) Σ_U (e^{θ a_T} − 1)) = 1`. The increments are
+     iid over rows, since column `c` lands on a uniform target in each independent row. So
+     `P(Y_c ≥ y) ≤ e^{−θ* y}`.
+   * Level crossing: `Y_c > y` needs either one hit `(r, T)` with `a_T − (ρ+λ')(r+1) + (background) > y`,
+     or two or more hits in the first `H(y)` rows. In the sparse regime this gives
+     `P(Y_c > y) ≲ (1/n) Σ_T (a_T − y)₊ / λ' + P_2(y)`.
+3. **Moment.** `E e^{tY_c}` by the discrete layer cake (Lean: `sum_exp_le_layer`) on the minimum of
+   the two tails.
+4. **Across columns.** NA, as in `fixed_mgf_cost` (Lean, `FringeDualityProb`): the per-row target
+   vector is a permutation of a fixed vector; weights `≥ 0`.
+5. **Union.** Over profiles: at most `(R+1)^u` of them, organized by statistics. The profile enters
+   only through `Σ_U (e^{θ a} − 1 − θ a)`, which is at most `(Σ a²/R²)(e^{θR} − 1 − θR)` by convexity
+   with the cap. Plus a union over `U` (`n` targets `v`, or round-2 sets `S`) and over the `λ'` grid.
+
+**Composition** (multi-level, per round-2 set `S`; deterministic, partly in Lean):
+* levels `[R_i, R_{i+1})`;
+* counted rows at level `i` cost `≥ (R_i + 1 − b)²` each in the centred energy;
+* escapes are bounded through `escapes_le` and `sum_posPart_le_of_sets`.
+
+Next: a rigorous numeric screen of this lemma (Ville + level crossing with weighted jumps), replacing
+the Bernstein model in `route_d_model.py`; then interval certification.
