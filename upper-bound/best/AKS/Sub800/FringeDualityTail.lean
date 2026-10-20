@@ -172,6 +172,65 @@ theorem card_Yz_gt_le_exp (hn : 0 < n) (s : ℕ) (D : ℕ → ℝ) (hD0 : ∀ h,
   rw [card_bottomRows (T k) (hTm k)] at h
   simpa only [Nz_eq] using h
 
+/-- **Discrete layer cake.** For `0 ≤ Y ≤ y (N)` on a finite set, a nondecreasing grid `y 0 = 0`,
+and `t ≥ 0`: `Σ e^{tY} ≤ |Z| + Σ_{i < N} (e^{t y(i+1)} − e^{t y(i)}) · #{Y > y i}`. -/
+theorem sum_exp_le_layer {Ω : Type*} (Z : Finset Ω) (Y : Ω → ℝ) (t : ℝ) (ht : 0 ≤ t)
+    (y : ℕ → ℝ) (N : ℕ) (hy0 : y 0 = 0) (hymono : Monotone y) (hY0 : ∀ ω ∈ Z, 0 ≤ Y ω)
+    (hYN : ∀ ω ∈ Z, Y ω ≤ y N) :
+    ∑ ω ∈ Z, Real.exp (t * Y ω) ≤
+      (Z.card : ℝ) + ∑ i ∈ Finset.range N,
+        (Real.exp (t * y (i + 1)) - Real.exp (t * y i)) * ((Z.filter fun ω => y i < Y ω).card : ℝ) := by
+  classical
+  -- pointwise: e^{tY} ≤ 1 + Σ_{i<N} (e^{t y(i+1)} − e^{t y i}) [y i < Y]
+  have hpt : ∀ ω ∈ Z, Real.exp (t * Y ω) ≤ 1 + ∑ i ∈ Finset.range N,
+      (Real.exp (t * y (i + 1)) - Real.exp (t * y i)) * (if y i < Y ω then 1 else 0) := by
+    intro ω hω
+    -- telescoping up to the first grid point ≥ Y ω
+    have key : ∀ M : ℕ, Y ω ≤ y M → Real.exp (t * Y ω) ≤ 1 + ∑ i ∈ Finset.range M,
+        (Real.exp (t * y (i + 1)) - Real.exp (t * y i)) * (if y i < Y ω then 1 else 0) := by
+      intro M
+      induction M with
+      | zero =>
+        intro h
+        rw [hy0] at h
+        have : Y ω = 0 := le_antisymm h (hY0 ω hω)
+        simp [this]
+      | succ M ih =>
+        intro h
+        rw [Finset.sum_range_succ]
+        by_cases hM : Y ω ≤ y M
+        · have hinc : 0 ≤ (Real.exp (t * y (M + 1)) - Real.exp (t * y M)) *
+              (if y M < Y ω then 1 else 0) := by
+            apply mul_nonneg
+            · have := hymono (Nat.le_succ M)
+              have : t * y M ≤ t * y (M + 1) := mul_le_mul_of_nonneg_left this ht
+              linarith [Real.exp_le_exp.2 this]
+            · split_ifs <;> norm_num
+          linarith [ih hM]
+        · push_neg at hM
+          rw [if_pos hM, mul_one]
+          -- the sum up to M telescopes to e^{t y M} − 1 because every earlier grid point is < Y
+          have htel : ∑ i ∈ Finset.range M, (Real.exp (t * y (i + 1)) - Real.exp (t * y i)) *
+              (if y i < Y ω then 1 else 0) = Real.exp (t * y M) - Real.exp (t * y 0) := by
+            rw [← Finset.sum_range_sub (fun i => Real.exp (t * y i))]
+            refine Finset.sum_congr rfl fun i hi => ?_
+            have : y i < Y ω := lt_of_le_of_lt (hymono (Finset.mem_range.1 hi).le) hM
+            rw [if_pos this, mul_one]
+          rw [htel, hy0, mul_zero, Real.exp_zero]
+          have : t * Y ω ≤ t * y (M + 1) := mul_le_mul_of_nonneg_left h ht
+          linarith [Real.exp_le_exp.2 this]
+    exact key N (hYN ω hω)
+  calc ∑ ω ∈ Z, Real.exp (t * Y ω)
+      ≤ ∑ ω ∈ Z, (1 + ∑ i ∈ Finset.range N,
+          (Real.exp (t * y (i + 1)) - Real.exp (t * y i)) * (if y i < Y ω then 1 else 0)) :=
+        Finset.sum_le_sum hpt
+    _ = (Z.card : ℝ) + ∑ i ∈ Finset.range N,
+          (Real.exp (t * y (i + 1)) - Real.exp (t * y i)) * ((Z.filter fun ω => y i < Y ω).card : ℝ) := by
+        rw [Finset.sum_add_distrib, Finset.sum_const, nsmul_eq_mul, mul_one, Finset.sum_comm]
+        congr 1
+        refine Finset.sum_congr rfl fun i _ => ?_
+        rw [← Finset.mul_sum, Finset.sum_boole]
+
 end SubsetModel
 
 end FringeDuality
