@@ -55,103 +55,104 @@ def log_binom_tail(T, p, k):
     return -T * (q * math.log(q / p) + (1 - q) * math.log((1 - q) / (1 - p)))
 
 
-def tail_walk_grid(p, kind, c, ys, mrows=2 ** 27, ratio=1.03):
-    """Vectorised union bound over a geometric time grid (valid for every p):
-    for h in [h_i, h_{i+1}], N(h) - D(h) <= N(h_{i+1}) - D(h_i), so
-    P(Y > y) <= sum_i P(Bin(h_{i+1}, p) > y + D(h_i))  (Chernoff), plus P(N(1) > y) for h = 1."""
-    hs = np.unique(np.concatenate([np.arange(1, 64), np.geomspace(64, mrows, 600)]).astype(np.int64))
+def _drift(kind, c, h):
+    h = np.asarray(h, dtype=float)
     if kind == "lin":
-        D = c * hs
-    elif kind == "quad":
-        D = c * hs.astype(float) ** 2
-    else:                                       # 'cent': c = (lam, mu, b), D = lam h + mu (h - b)_+^2
-        lam, mu, b = c
-        hf = hs.astype(float)
-        D = lam * hf + mu * np.maximum(hf - b, 0.0) ** 2
-    H1 = hs[1:].astype(float)
-    D0 = D[:-1]
-    ys = np.asarray(ys, dtype=float)[:, None]
-    k = ys + D0[None, :]                       # need Bin(H1, p) > k
-    q = np.minimum(k / H1[None, :], 1.0)
+        return c * h
+    if kind == "quad":
+        return c * h ** 2
+    lam, mu, b = c
+    return lam * h + mu * np.maximum(h - b, 0.0) ** 2
+
+
+def _lse(lt, axis=1):
+    """log-sum-exp along axis, -inf for empty mass (rigorous: no clipping)."""
+    mx = np.max(lt, axis=axis, keepdims=True)
+    safe = np.where(np.isfinite(mx), mx, 0.0)
     with np.errstate(divide="ignore", invalid="ignore"):
-        kl = q * np.log(q / p) + (1 - q) * np.log((1 - q) / (1 - p))
-        lt = np.where(q <= p, 0.0, -H1[None, :] * kl)
-        lt = np.where(k >= H1[None, :], -np.inf, lt)   # Bin(H1, p) > k >= H1 is impossible
-    tot = np.where(np.isfinite(lt), np.exp(np.clip(lt, -745, 0)), 0.0).sum(axis=1)
-    return np.minimum(1.0, tot)
+        s = np.sum(np.exp(lt - safe), axis=axis)
+        out = np.where(np.isfinite(mx[..., 0] if axis == 1 else mx), safe[..., 0] + np.log(s), -np.inf)
+    return out
+
+
+def _log_binom_tail(T, p, k):
+    """ln P(Bin(T, p) >= k) Chernoff bound, elementwise; -inf when k > T."""
+    T = np.asarray(T, dtype=float)
+    k = np.asarray(k, dtype=float)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        q = np.where(T > 0, k / np.maximum(T, 1.0), np.inf)
+        qc = np.minimum(q, 1.0)
+        kl = qc * np.log(np.maximum(qc, 1e-300) / p) + (1 - qc) * np.log(np.maximum(1 - qc, 1e-300) / (1 - p))
+        lt = np.where(q <= p, 0.0, -T * kl)
+        lt = np.where(q == 1.0, T * np.log(p), lt)            # P(Bin(T,p) >= T) = p^T
+        lt = np.where((k > T) | (T <= 0), -np.inf, lt)
+    return lt
+
+
+def log_tail_grid(p, kind, c, ys, mrows=2 ** 27):
+    """ln P(Y > y) by a union over a geometric time grid: on [h_i, h_{i+1}],
+    N(h) - D(h) <= N(h_{i+1}) - D(h_i)  =>  P(Y > y) <= sum_i P(Bin(h_{i+1}, p) > y + D(h_i))."""
+    hs = np.unique(np.concatenate([np.arange(1, 64), np.geomspace(64, mrows, 600)]).astype(np.int64)).astype(float)
+    D = _drift(kind, c, hs)
+    ys = np.asarray(ys, dtype=float)[:, None]
+    k = np.floor(ys + D[None, :-1]) + 1                   # need Bin(h_{i+1}, p) >= k
+    lt = _log_binom_tail(np.broadcast_to(hs[None, 1:], k.shape), p, k)
+    return _lse(lt, axis=1)
+
+
+def log_tail_level(p, kind, c, ys, L=600):
+    """ln P(Y > y) by level crossing: sum over k > y of P(Bin(T_k, p) >= k), T_k the last h with D(h) < k - y."""
+    ys = np.asarray(ys, dtype=float)[:, None]
+    ks = np.floor(ys) + 1 + np.arange(L)[None, :]
+    room = ks - ys
+    if kind == "lin":
+        T = np.ceil(room / c) - 1
+    elif kind == "quad":
+        T = np.ceil(np.sqrt(room / c)) - 1
+    else:
+        lam, mu, b = c
+        lin = np.ceil(room / lam) - 1 if lam > 0 else np.full_like(room, np.inf)
+        r0 = room - lam * b
+        if mu > 0:
+            u = (-lam + np.sqrt(lam * lam + 4 * mu * np.maximum(r0, 0))) / (2 * mu)
+        elif lam > 0:
+            u = r0 / lam
+        else:
+            u = np.full_like(room, 2.0 ** 40)
+        quad = b + np.ceil(u) - 1
+        T = np.where((lam > 0) & (room / max(lam, 1e-300) <= b), lin, quad)
+    T = np.minimum(np.maximum(T, 0.0), 2.0 ** 27)
+    # levels beyond L: bounded by the grid union (which is used in the min below)
+    return _lse(_log_binom_tail(T, p, ks), axis=1)
+
+
+def log_tail_walk(p, kind, c, ys):
+    """ln P(Y > y): min of the level-crossing bound, the grid union, and Ville (linear drift)."""
+    ys = np.asarray(ys, dtype=float)
+    out = log_tail_grid(p, kind, c, ys)
+    if p <= 1e-2:
+        lev = log_tail_level(p, kind, c, ys)
+        # the level bound sums only L levels; it is valid when the grid bound shows the rest is negligible
+        out = np.minimum(out, np.logaddexp(lev, log_tail_grid(p, kind, c, ys + 590)))
+    if kind == "lin":
+        th = theta_star(p, c)
+        if th == math.inf:
+            return np.full_like(ys, -np.inf)
+        if th > 0:
+            out = np.minimum(out, -th * ys)
+    elif kind == "quad":
+        for h0 in np.geomspace(1, 2 ** 27, 160):
+            lam = 2 * c * h0
+            if lam <= p or lam >= 1:
+                continue
+            th = theta_star(p, lam)
+            out = np.minimum(out, np.where(ys > c * h0 * h0, -th * (ys - c * h0 * h0), 0.0))
+    return np.minimum(out, 0.0)
 
 
 def tail_walk(p, kind, c, ys):
-    """P(Y > y) for y in ys; kind 'lin' (D = c h), 'quad' (D = c h^2) or 'cent' (c = (lam, mu, b))."""
-    if kind == "cent":
-        out = np.asarray(tail_walk_grid(p, kind, c, ys))
-        if p <= 1e-3:
-            lam, mu, b = c
-
-            def T_of(room):
-                """largest integer h >= 0 with lam h + mu (h - b)_+^2 < room."""
-                if lam > 0 and room / lam <= b:
-                    return int(math.ceil(room / lam)) - 1
-                r0 = room - lam * b                    # remaining room at h = b (> 0 here)
-                if mu > 0:
-                    u = (-lam + math.sqrt(lam * lam + 4 * mu * r0)) / (2 * mu)
-                elif lam > 0:
-                    u = r0 / lam
-                else:
-                    return 2 ** 40
-                return b + int(math.ceil(u)) - 1
-            lev = []
-            for y in ys:
-                tot = 0.0
-                k0 = int(math.floor(y)) + 1
-                for k in range(k0, k0 + 3000):
-                    lt = log_binom_tail(T_of(k - y), p, k)
-                    if lt > -700:
-                        tot += math.exp(lt)
-                    if k > k0 + 20 and lt < -60:
-                        break
-                lev.append(min(1.0, tot))
-            out = np.minimum(out, np.asarray(lev))
-        return list(out)
-    if p > 1e-3:
-        out = tail_walk_grid(p, kind, c, ys)
-        if kind == "quad":
-            # linearise the drift at h0: mu h^2 >= 2 mu h0 h - mu h0^2, then Ville for the linear walk
-            ya = np.asarray(ys, dtype=float)
-            for h0 in np.geomspace(1, 2 ** 27, 160):
-                lam = 2 * c * h0
-                if lam <= p or lam >= 1:
-                    continue
-                th = theta_star(p, lam)
-                b = np.where(ya > c * h0 * h0, np.exp(-th * (ya - c * h0 * h0)), 1.0)
-                out = np.minimum(out, b)
-        if kind == "lin":
-            th = theta_star(p, c)
-            if th == math.inf:
-                return [0.0] * len(ys)
-            if th > 0:
-                out = np.minimum(out, np.exp(-th * np.asarray(ys)))
-        return list(out)
-    th = theta_star(p, c) if kind == "lin" else 0.0
-    out = []
-    for y in ys:
-        tot = 0.0
-        k0 = int(math.floor(y)) + 1
-        for k in range(k0, k0 + 2000):
-            room = k - y
-            if kind == "lin":
-                T = int(math.ceil(room / c)) - 1      # T_k <= T  <=>  c T_k < room
-            else:
-                T = int(math.ceil(math.sqrt(room / c))) - 1
-            lt = log_binom_tail(T, p, k)
-            if lt > -700:
-                tot += math.exp(lt)
-            if k > k0 + 20 and lt < -60:
-                break
-        if kind == "lin" and th > 0:
-            tot = min(tot, math.exp(-th * y)) if math.isfinite(th) else 0.0
-        out.append(min(1.0, tot))
-    return out
+    """P(Y > y) (kept for callers that want probabilities)."""
+    return list(np.exp(log_tail_walk(p, kind, c, ys)))
 
 
 YGRID = np.concatenate([np.arange(0, 2, 0.05), np.arange(2, 80, 0.5), np.geomspace(80, 2.0 ** 27, 200)])
@@ -159,19 +160,17 @@ YGRID = np.concatenate([np.arange(0, 2, 0.05), np.arange(2, 80, 0.5), np.geomspa
 
 @lru_cache(maxsize=4096)
 def tails_cached(p, kind, c):
-    return tuple(tail_walk(p, kind, c, YGRID))
+    return tuple(log_tail_walk(p, kind, c, YGRID))
 
 
 def log_mgf(p, kind, c, t):
-    """ln E e^{tY} <= ln(1 + sum_i (e^{t y_{i+1}} - e^{t y_i}) P(Y > y_i)), in log-sum-exp form; the tail
-    beyond the last grid point is capped by 10 e^{t y_last} P(Y > y_last)."""
-    P = np.asarray(tails_cached(p, kind, c))
+    """ln E e^{tY} <= ln(1 + sum_i (e^{t y_{i+1}} - e^{t y_i}) P(Y > y_i)), all in log space; beyond the
+    last grid point Y <= m (a walk max is at most the number of rows), so the grid covers everything."""
+    lP = np.asarray(tails_cached(p, kind, c))
     y0, y1 = YGRID[:-1], YGRID[1:]
     with np.errstate(divide="ignore"):
-        lP = np.log(P)
         terms = t * y1 + np.log(-np.expm1(-t * (y1 - y0))) + lP[:-1]
-        last = t * YGRID[-1] + lP[-1] + math.log(10)
-    allt = np.concatenate([[0.0], terms, [last]])
+    allt = np.concatenate([[0.0], terms])
     mx = np.max(allt)
     return float(mx + np.log(np.sum(np.exp(allt - mx))))
 
@@ -206,7 +205,7 @@ def x_round1(n, s, lam, logfail):
     if lam >= 1:
         return 0.0
     best = math.inf
-    for t in np.geomspace(0.05, max(8.0, 0.9 * math.log(n)), 48):
+    for t in np.geomspace(0.02, max(8.0, 0.9 * math.log(n)), 90):
         x = (n * log_mgf(p, "lin", lam, t) + lbinom(n, s) + logfail) / t
         best = min(best, x)
     return best
@@ -216,7 +215,7 @@ def x_round1(n, s, lam, logfail):
 def x_round2(n, s, mu, logfail):
     p = s / n
     best = math.inf
-    for t in np.geomspace(0.05, max(8.0, 0.9 * math.log(n)), 48):
+    for t in np.geomspace(0.02, max(8.0, 0.9 * math.log(n)), 90):
         x = (n * log_mgf(p, "quad", mu, t) + lbinom(n, s) + logfail) / t
         best = min(best, x)
     return best
@@ -262,7 +261,7 @@ def excess_energy(sk, b):
 def x_round2c(n, s, lam, mu, b, logfail):
     p = s / n
     best = math.inf
-    for t in np.geomspace(0.05, max(8.0, 0.9 * math.log(n)), 36):
+    for t in np.geomspace(0.02, max(8.0, 0.9 * math.log(n)), 90):
         x = (n * log_mgf(p, "cent", (lam, mu, b), t) + lbinom(n, s) + logfail) / t
         best = min(best, x)
     return best
