@@ -62,6 +62,37 @@ single column. The run was stopped for low memory before `30J … jmax`.
 So the route is promising but its constants are not yet good enough to claim a fringe below 7934
 across the whole range. The open step is a sharper round-1 profile bound.
 
+## Sharper round 1: a deterministic main term (plan, 2026-10-20)
+
+**Where the loss is.** The profile bound applies the set duality one height `k` at a time,
+`s_k ≲ 4j/k²`. Summing, `Q = Σ(2k−1)s_k ≈ 8j ln K`. Each scale gets its own `λ·j` budget, but the
+true scales share one budget `j`.
+* Cost view: a column of height `k` needs hits at `k` distinct rows. The cheapest are rows
+  `0..k−1`, so `s` such columns cost `≈ s k²/2`, and the hits wasted on other targets only add
+  background. The true maximum is `Q ≈ 2–3j`.
+* Splitting the walk by scale (per-scale `λ_g`) reproduces the per-`k` bound exactly. A single λ
+  over all scales is needed. A single Chernoff parameter `t` cannot handle all jump sizes, because
+  `e^{t a}` for the tallest targets clashes with the union over the many small ones.
+
+**The fix: make the main term deterministic.**
+1. **Short targets.** Columns with `z < L0` contribute at most `L0·j` to `Q`. Weight only the tall
+   targets: `a_u = z_u` (rounded) if `z_u ≥ L0`, else 0.
+2. **Duality with one λ.** `Σ_u a_u z_u ≤ λj + Σ_c max_h (A_c(h) − λh)`, with
+   `A_c(h) = Σ_{r<h} a_{σ1_r(c)}`.
+3. **Per-hit decomposition.** If a column has at most one relevant hit (row `r < a_u/λ`), its
+   maximum is `(a_u − λ(r+1))₊`. Summing over columns and using that each `σ1_r` is a bijection,
+   `Σ_c Σ_r (a_{σ_r(c)} − λ(r+1))₊ = Σ_u Σ_r (a_u − λ(r+1))₊ ≈ Σ_u a_u²/(2λ)`. This is
+   **deterministic**, so it needs no union over target sets.
+4. **Bound.** With `λ = 1`, `Q′ ≤ j + Q′/2 + Δ`, so `Q′ ≤ 2(j + Δ)`. `Δ` is the excess from columns
+   with two or more relevant hits. Relevant hits of a level-`ℓ` target lie in rows `< ℓ`, so the
+   expected relevant hits per column are `Σ_ℓ ℓ s_ℓ/n ≲ 8j/(L0 n)`: sparse. `Δ` is a collision count
+   and needs a union over target sets only for this sparse part.
+5. Result: `Q ≲ (L0 + 2 + O(collision term))·j` in place of `8j ln K`. At `Q ≈ 10j` the least f
+   at `j = J` is ≈ 490 (`Q = 3j`: 350; `30j`: 674; the present `164j`: 1120).
+
+The dense regime (`j/n` not small) needs the background density `ρ = Σ_{lo} a_u/n` subtracted from
+the drift (centred form), as in `dense_check2.py`.
+
 ## What it would buy (R1 model, `../sub500-screen/refined.out`)
 
 | package | cost |
