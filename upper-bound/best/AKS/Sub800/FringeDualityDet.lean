@@ -85,4 +85,34 @@ theorem weighted_duality (c : MonotoneColumnSums m n) (σ : Scramble m n) (a : F
   have := walkA_sub_le_walkY σ a lam j (h := (c j).val) (Nat.le_of_lt_succ (c j).isLt)
   linarith
 
+/-- The maximum of the walk against an arbitrary cost `φ` (round 2 uses a convex `φ`). -/
+noncomputable def walkYφ (σ : Scramble m n) (a : Fin n → ℝ) (φ : ℕ → ℝ) (j : Fin n) : ℝ :=
+  (Finset.range (m + 1)).sup' ⟨0, by simp⟩ fun h => walkA σ a j h - φ h
+
+/-- **Duality with an arbitrary cost**: `Σ_T a T · count(T) ≤ Σ_j φ(c j) + Σ_j max_h (A_j(h) − φ(h))`. -/
+theorem cost_duality (c : MonotoneColumnSums m n) (σ : Scramble m n) (a : Fin n → ℝ) (φ : ℕ → ℝ) :
+    ∑ T : Fin n, a T * (scrambledColSum c σ T : ℝ) ≤
+      ∑ j : Fin n, φ (c j).val + ∑ j : Fin n, walkYφ σ a φ j := by
+  rw [sum_weighted_scrambledColSum_eq, ← Finset.sum_add_distrib]
+  refine Finset.sum_le_sum fun j _ => ?_
+  have : walkA σ a j (c j).val - φ (c j).val ≤ walkYφ σ a φ j :=
+    Finset.le_sup' (fun h => walkA σ a j h - φ h)
+      (Finset.mem_range.2 (Nat.lt_succ_of_le (Nat.le_of_lt_succ (c j).isLt)))
+  linarith
+
+/-- **Escapes as a maximum over output sets**: `Σ_v (w v − f)₊ = max_S Σ_{v ∈ S} (w v − f)`; the
+inequality used is that the positive part is attained by `S = {v : w v > f}`. -/
+theorem sum_posPart_le_of_sets (w : Fin n → ℝ) (f : ℝ) (B : ℝ)
+    (hB : ∀ S : Finset (Fin n), ∑ v ∈ S, (w v - f) ≤ B) :
+    ∑ v : Fin n, max (w v - f) 0 ≤ B := by
+  classical
+  have h := hB (Finset.univ.filter fun v => f < w v)
+  calc ∑ v : Fin n, max (w v - f) 0 = ∑ v ∈ Finset.univ.filter (fun v => f < w v), (w v - f) := by
+        rw [Finset.sum_filter]
+        refine Finset.sum_congr rfl fun v _ => ?_
+        split_ifs with hv
+        · exact max_eq_left (by linarith)
+        · exact max_eq_right (by linarith)
+    _ ≤ B := h
+
 end FringeDuality
