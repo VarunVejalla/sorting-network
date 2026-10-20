@@ -135,4 +135,31 @@ theorem tall_count_le (c : MonotoneColumnSums m n) (σ : Scramble m n) (S : Fins
     exact Finset.sum_le_sum fun T hT => by exact_mod_cast hk T hT
   linarith [hsum ▸ hdual]
 
+theorem sq_eq_sum_odd (z : ℕ) : z ^ 2 = ∑ k ∈ Finset.range z, (2 * k + 1) := by
+  induction z with
+  | zero => simp
+  | succ z ih => rw [Finset.sum_range_succ, ← ih]; ring
+
+/-- **Energy from the tall-column counts**: `Σ_T z_T² = Σ_{k < M} (2k+1) · #{T : k < z_T}` for
+heights `z ≤ M`. -/
+theorem sum_sq_eq_sum_counts (z : Fin n → ℕ) (M : ℕ) (hz : ∀ T, z T ≤ M) :
+    ∑ T : Fin n, z T ^ 2 =
+      ∑ k ∈ Finset.range M, (2 * k + 1) * (Finset.univ.filter fun T => k < z T).card := by
+  classical
+  have h1 : ∀ T, z T ^ 2 = ∑ k ∈ Finset.range M, if k < z T then 2 * k + 1 else 0 := by
+    intro T
+    rw [sq_eq_sum_odd, ← Finset.sum_filter]
+    congr 1
+    ext k
+    simp only [Finset.mem_range, Finset.mem_filter]
+    constructor
+    · intro hk; exact ⟨lt_of_lt_of_le hk (hz T), hk⟩
+    · intro hk; exact hk.2
+  simp_rw [h1]
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  rw [Finset.card_eq_sum_ones, Finset.mul_sum, Finset.sum_filter]
+  refine Finset.sum_congr rfl fun T _ => ?_
+  split_ifs <;> simp
+
 end FringeDuality
