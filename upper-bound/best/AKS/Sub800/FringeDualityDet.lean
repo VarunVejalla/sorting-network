@@ -272,4 +272,25 @@ theorem escapes_of_caps (c c₁ : MonotoneColumnSums m n) (σ₁ σ₂ : Scrambl
   rw [hsplit, hmass]
   nlinarith [mul_le_mul_of_nonneg_left henergy hμ]
 
+/-- **Caps from the round-1 predicate.** If every set satisfies the walk bound `X1` at every `λ` of a
+grid `Λ`, and every size `s > cap k` is excluded by some `λ ∈ Λ`
+(`(k+1) s > λ · mass + X1 s λ`), then `#{T : k < z_T} ≤ cap k`. -/
+theorem count_le_cap (c : MonotoneColumnSums m n) (σ₁ : Scramble m n) (mass : ℝ)
+    (hmass : ∑ j : Fin n, ((c j).val : ℝ) ≤ mass) (Λ : Finset ℝ) (hΛ : ∀ lam ∈ Λ, 0 ≤ lam)
+    (X1 : ℕ → ℝ → ℝ)
+    (hP1 : ∀ S : Finset (Fin n), ∀ lam ∈ Λ, ∑ j : Fin n, walkY σ₁ (ind S) lam j ≤ X1 S.card lam)
+    (k cap : ℕ) (hex : ∀ s : ℕ, cap < s → ∃ lam ∈ Λ, lam * mass + X1 s lam < ((k + 1 : ℕ) : ℝ) * s) :
+    (Finset.univ.filter fun T => k < scrambledColSum c σ₁ T).card ≤ cap := by
+  classical
+  set S := Finset.univ.filter fun T => k < scrambledColSum c σ₁ T
+  by_contra hcon
+  push_neg at hcon
+  obtain ⟨lam, hlam, hlt⟩ := hex S.card hcon
+  have htall : ∀ T ∈ S, k + 1 ≤ scrambledColSum c σ₁ T := fun T hT => (Finset.mem_filter.1 hT).2
+  have h := tall_count_le c σ₁ S (k + 1) htall lam
+  have h1 := hP1 S lam hlam
+  have h2 : lam * ∑ j : Fin n, ((c j).val : ℝ) ≤ lam * mass :=
+    mul_le_mul_of_nonneg_left hmass (hΛ lam hlam)
+  linarith
+
 end FringeDuality
