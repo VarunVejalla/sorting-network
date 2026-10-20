@@ -154,6 +154,34 @@ Getting below 500 needs at least one of:
 * an invariant tolerating constant-factor larger error (UB-40);
 * a different global scheme with fewer stages per bit.
 
+## The fringe is loose; the best-case stack (2026-10-20, `refined.out`)
+
+**Fringe heuristic (worst-case adversary, two rounds).**
+* **Sparse regime (j ≪ n).** For an output column, each row has exactly one source column.
+  * Round 1: collecting hits at rows 0..K−1 costs `Σ(r+1)`, so one column reaches `√(2j)`.
+  * Round 2: building a load `K` needs K round-1 columns of heights 1..K, at cost `≈ K³/6`. So the
+    max load is about `(6j)^{1/3}` (≈ 105 at J = 190000).
+* **Dense regime (j up to jmax = δ_F f n).** The background load lets the adversary make about
+  `6j/(3.4f³)` columns of load `≈ 1.5f`, so escapes are `≈ 0.9 j/f²`.
+* The contract "escapes ≤ j/J" therefore needs `f ≳ √(0.9J)` ≈ 414 at J = 190000. The certified
+  route uses `f = 7934 ≈ 18√J`: **√J scaling is inherent, but the certified constant looks about
+  19× loose.**
+
+| package | cost |
+|---|---:|
+| fringe f/19 (heuristic optimum) | 690 |
+| f/19 + band | 602.5 |
+| f/19 + band + sharper walk constants (T = 1.6) | 587.5 |
+| f/19 + band + R2 κ = 1 + T = 1.6 | 528.8 |
+| f/19 + band + R2 κ = 1/2 + T = 2 | 507.8 |
+| **f/19 + band + merge + R2 κ = 1/2 + T = 2** | **480.8** |
+
+**So ≤ 500 is borderline even with every lever near its heuristic best** (five components, at q = 22).
+
+The most promising single lever is the fringe constant (UB-34). Sharpening the certified fringe
+toward `√J` would take the status quo from 789.75 toward 690–724 with no other change, at the
+same schedule.
+
 ## Caveats
 
 * The fringe fits for δ_F = 1/4 and 1/3 are extrapolated.

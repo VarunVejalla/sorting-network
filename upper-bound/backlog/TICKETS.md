@@ -40,7 +40,7 @@ Schema and rules: [`tickets.schema.md`](tickets.schema.md), [`docs/agent-protoco
 | UB-31 | P1 | done | kernel-checked | 1419 -> 789.75 | R1 at (16, 32, 1/8): design P flow table, walk-bound bulk and padded fringe, no new invariant |
 | UB-32 | P1 | proposed | model | 789.75 -> 699.8 | Two column sorts per R1 stage: replace the third sort by a short repair |
 | UB-33 | P1 | proposed | model |  | Remove the design-P residual r* (two-sided invariant); delta_F is not a lever at (4,5,3) |
-| UB-34 | P1 | proposed | model |  | Better fringe scaling: certify a smaller fringe height f at the same J (gate: 2.4x) |
+| UB-34 | P1 | proposed | model | 789.75 -> 690 | Better fringe scaling: certify a smaller fringe height f at the same J (gate: 2.4x) |
 | UB-35 | P1 | ready | none |  | Generic failure budgets and root separator in the R1 Lean layer |
 | UB-36 | P2 | proposed | none |  | Generic schedule (x, y, z) with per-point design-P checks |
 | UB-37 | P1 | done | model |  | Re-price sweep of the R1 model under each hypothetical (status quo, delta_F, r* = 0, split fringe, two sorts) |

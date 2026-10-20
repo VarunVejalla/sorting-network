@@ -669,7 +669,7 @@
       "status": "proposed",
       "claim_level": "model",
       "baseline": 789.75,
-      "projected": null,
+      "projected": 690,
       "owner": null,
       "branch": null,
       "depends_on": [],
@@ -678,7 +678,7 @@
         "upper-bound/experiments/sub500-screen/SCREEN.md",
         "upper-bound/backlog/sub500-routes.md"
       ],
-      "notes": "2026-10-20 screen: 'split fringe' is not free (finding extreme-rank wires is separation), so read this as better fringe scaling f(J). With two sorts, f/2.4 reaches 487.5 and f/10 482.6; with three sorts no fringe gain reaches 500 (the bulk floor binds)."
+      "notes": "2026-10-20 heuristic: the worst-case adversary gives max load (6j)^{1/3} for sparse tops and escapes ~0.9 j/f^2 in the dense regime, so f >~ sqrt(0.9 J) ~ 414 at J = 190000 against the certified 7934 (~18 sqrt J): the certified constant looks ~19x loose. f/19 alone prices to 690 (from 789.75); f/10 to 723.9. 2026-10-20 screen: 'split fringe' is not free (finding extreme-rank wires is separation), so read this as better fringe scaling f(J). With two sorts, f/2.4 reaches 487.5 and f/10 482.6; with three sorts no fringe gain reaches 500 (the bulk floor binds)."
     },
     {
       "id": "UB-35",
