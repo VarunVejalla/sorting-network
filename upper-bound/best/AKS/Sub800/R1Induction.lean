@@ -7,6 +7,8 @@ import AKS.Sub800.R1Fields
 
 namespace R1T
 
+variable {sc : R1Scal}
+
 open Finset
 open Chvatal (KBag Placement)
 
@@ -15,11 +17,11 @@ variable {d tf : ℕ}
 /-- `P` at stage `0`: only the root holds keys, and it has no outsiders of order `≥ 1`. -/
 theorem P_zero (F : FlowTableB d tf)
     (nets : ℕ → (b : KBag 16 d) → (n : ℕ) → ComparatorNetwork n) (v : Equiv.Perm (Fin (16 ^ d))) :
-    OutsiderBoundLe d 0 (execPlacement F nets v 0 (Nat.zero_le _)) id := by
+    OutsiderBoundLe sc d 0 (execPlacement F nets v 0 (Nat.zero_le _)) id := by
   intro b r hr
   have hc := (cap_pos d b.l 0).le
-  have hrhs : 0 ≤ mu * delta ^ r * cap d b.l 0 := by
-    have := mu_pos.le; have := delta_pos.le; positivity
+  have hrhs : 0 ≤ sc.mu * sc.delta ^ r * cap d b.l 0 := by
+    have := sc.mu_pos.le; have := sc.delta_pos.le; positivity
   by_cases hb : b = KBag.root 16 d
   · subst hb
     rw [KBag.strangers_eq_zero_of_lt_order _ (r + 1) id _ (by norm_num) (by omega)
@@ -35,9 +37,9 @@ theorem P_zero (F : FlowTableB d tf)
 /-- **`P` at every stage.** -/
 theorem P_all (F : FlowTableB d tf)
     (nets : ℕ → (b : KBag 16 d) → (n : ℕ) → ComparatorNetwork n)
-    (hspec : R1Specs F nets) (hpar : ∀ t, t ≤ tf → ParityFact F t) (hres : ResidFact F)
+    (hspec : R1Specs sc F nets) (hpar : ∀ t, t ≤ tf → ParityFact F t) (hres : ResidFact F)
     (v : Equiv.Perm (Fin (16 ^ d))) :
-    ∀ t (ht : t ≤ tf), OutsiderBoundLe d t (execPlacement F nets v t ht) id
+    ∀ t (ht : t ≤ tf), OutsiderBoundLe sc d t (execPlacement F nets v t ht) id
   | 0, _ => P_zero F nets v
   | t + 1, ht => by
     have hP := P_all F nets hspec hpar hres v t (by omega)

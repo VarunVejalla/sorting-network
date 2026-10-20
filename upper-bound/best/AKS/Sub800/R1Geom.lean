@@ -1,201 +1,152 @@
 import AKS.Sub800.R1Sep
 import AKS.Sub800.R1Occ
+import AKS.Sub800.R1GeomGen
 import AKS.Chvatal.Bulk2Exists
 
-/-! # Separator geometry and node networks (W2, step 3; R1-PROOF §4, §6)
+/-! # Separator geometry and node networks at a generic R1 point (W2, step 3; R1-PROOF §4, §6)
 
-Write `X = 2^(e−19)`, so `c = 524288 X`.
-* `geomA`: fringe class `f = 7934`, `π/2 ∈ {63X, 64X}`, `524032 X ≤ a ≤ 525312 X`.
-* `geomB`: fringe class `f = 406109`, `π/2 = 63X`, `8176 X ≤ a ≤ 8192 X`.
+An `R1Point` bundles the invariant scalars (`R1Scal`), the bulk certificate on the row window
+`[Mlo, 2^q]`, the Batcher threshold `2^s`, two fringe classes `A` (interior, rising top, and
+descending bottom with `R/c = 1`) and `B` (descending bottom with `R/c = 1/64`), and the rational
+checks of `R1GeomGen` for them. Write `X = 2^(e−19)`, so `c = 2^19 X`:
+* class `A`: `π/2 ∈ {63X, 64X}`, `524032 X ≤ a ≤ 525312 X`;
+* class `B`: `π/2 = 63X`, `8176 X ≤ a ≤ 8192 X`.
 
-Both use `n = ⌊(π/2)/(f+1)⌋` and `m = ⌊(a−1)/n⌋` (so `m + 1 = ⌈a/n⌉`), and give the window
-`50859009 ≤ m + 1 ≤ 2^26`, the fringe protection `(f+1) n ≤ π/2`, the support `μ c ≤ δ_F f n`, and
-the `Property B` budget.
-
-Then the node networks:
-* `spec_padded`: a rectangle meeting those conditions gives the padded separator, depth `≤ 1053`;
-* `spec_Bonly`: the B-only separator with `n = ⌈a/2^26⌉`, depth `≤ 1053`;
-* `spec_sorter`: Batcher's sort for `a ≤ 2^45`, depth `≤ 1035`;
+Every stage after the root has depth `≤ 3 S(q)` (`R1Point.stage`, `S(q) = q(q+1)/2`):
+* `spec_padded`: the padded separator of a fringe class;
+* `spec_Bonly`: the B-only separator with `n = ⌈a/2^q⌉` (a large root);
+* `spec_sorter`: Batcher's sort for `a ≤ 2^s` (`S(s) ≤ 3 S(q)`);
 * `spec_root`: the package's B2 separator on `2^42` rows at `t = 0`, depth `≤ 2709`. -/
 
 namespace R1T
 
 open Chvatal Tapered945 Sub800
 
-/-! ### Numeric geometry -/
+/-- A fringe class with a rational `δ_F`. -/
+structure FClass where
+  C : FringeCert
+  dF : ℚ
+  hδ : C.P.δ = (dF : ℝ)
 
-theorem gamma_def : gammaRes = mu / 10 := rfl
+/-- **A generic R1 point** at the schedule `(16, 32, 1/8)`. -/
+structure R1Point where
+  sc : R1Scal
+  bulk : BulkCert
+  /-- Batcher's sort serves the senders with `a ≤ 2^s`. -/
+  s : ℕ
+  A : FClass
+  B : FClass
+  hepsB : bulk.epsB = ((sc.epsB : ℚ) : ℝ)
+  hJA : ((sc.epsF : ℚ) : ℝ) = 1 / (A.C.P.J : ℝ)
+  hJB : ((sc.epsF : ℚ) : ℝ) = 1 / (B.C.P.J : ℝ)
+  hs : 38 ≤ s
+  batcher : bitonicDepthBudget s ≤ 3 * bitonicDepthBudget bulk.q
+  /-- The stage depth pays for the root and the final layer: `2709 + 136 ≤ 15 · 3 S(q)`. -/
+  stage_big : 2845 ≤ 15 * (3 * bitonicDepthBudget bulk.q)
+  geomA63 : GeomOK A.C.P.f 63 524032 525312 (2 ^ s / 525312 + 1) bulk.Mlo bulk.q sc.mu A.dF sc.epsB
+    sc.eta sc.gam
+  geomA64 : GeomOK A.C.P.f 64 524032 525312 (2 ^ s / 525312 + 1) bulk.Mlo bulk.q sc.mu A.dF sc.epsB
+    sc.eta sc.gam
+  geomB : GeomOK B.C.P.f 63 8176 8192 (2 ^ s / 8192 + 1) bulk.Mlo bulk.q sc.mu B.dF sc.epsB sc.eta
+    sc.gam
+  bonly : BonlyOK s bulk.Mlo bulk.q sc.epsB sc.eta sc.gam
+  /-- The root separator's budget: `ε_root/2 · 2^6 + 2^-36 ≤ (ε_B η + γ)/2`. -/
+  root : (1 / 59000000 : ℚ) / 2 * 64 + 1 / 2 ^ 36 ≤ (sc.epsB * sc.eta + sc.gam) / 2
 
-/-- **Class `f = 7934`.** -/
-theorem geomA (K a π X : ℕ) (hK : K = 63 ∨ K = 64) (hπ : π / 2 = K * X)
-    (hL : 524032 * X ≤ a) (hH : a ≤ 525312 * X) (hX : 16777216 ≤ X) :
-    ∃ m n : ℕ, 16 ≤ n ∧ a ≤ (m + 1) * n ∧ m * n ≤ a ∧ 7934 ≤ m ∧ 50859009 ≤ m + 1 ∧
-      m + 1 ≤ 2 ^ 26 ∧ π / 2 ≤ a ∧ (7934 + 1) * n ≤ π / 2 ∧
-      ((mu : ℚ) : ℝ) * ((524288 * X : ℕ) : ℝ) ≤ 1 / 8 * ((7934 : ℝ) * n) ∧
-      (1 / 105000 : ℝ) / 2 * (((m + 1 : ℕ) : ℝ) * n) + n ≤
-        ((((epsB * eta + gammaRes) * ((524288 * X : ℕ) : ℚ) / 2 : ℚ)) : ℝ) := by
-  have hn1 := Nat.div_add_mod (π / 2) 7935
-  have hn2 := Nat.mod_lt (π / 2) (show 7935 > 0 by norm_num)
-  set n := π / 2 / 7935 with hn
-  have hn16 : 16 ≤ n := by rcases hK with rfl | rfl <;> omega
-  have hnpos : 0 < n := by omega
-  have hm1 := Nat.div_add_mod (a - 1) n
-  have hm2 := Nat.mod_lt (a - 1) hnpos
-  set m := (a - 1) / n with hm
-  have hmn : n * m = m * n := Nat.mul_comm _ _
-  have hlo : 50859008 ≤ m := by
-    by_contra h
-    have h' : m * n ≤ 50859007 * n := Nat.mul_le_mul_right n (by omega)
-    rcases hK with rfl | rfl <;> omega
-  have hhi : m < 67108864 := by
-    by_contra h
-    have h' : 67108864 * n ≤ m * n := Nat.mul_le_mul_right n (by omega)
-    rcases hK with rfl | rfl <;> omega
-  have hsucc : (m + 1) * n = m * n + n := by ring
-  have hamn : a ≤ m * n + n := by omega
-  have hmna : m * n ≤ a := by omega
-  have hnX : 7935 * n ≤ 64 * X ∧ 63 * X ≤ 7935 * n + 7935 := by rcases hK with rfl | rfl <;> omega
-  refine ⟨m, n, hn16, by rw [hsucc]; exact hamn, hmna, by omega, by omega, by norm_num; omega,
-    by rcases hK with rfl | rfl <;> omega, by omega, ?_, ?_⟩
-  · have h1 : (63 : ℝ) * X ≤ 7935 * n + 7935 := by exact_mod_cast hnX.2
-    have h2 : (16777216 : ℝ) ≤ X := by exact_mod_cast hX
-    unfold mu; push_cast
-    nlinarith
-  · have h1 : (7935 : ℝ) * n ≤ 64 * X := by exact_mod_cast hnX.1
-    have h3 : ((m + 1 : ℕ) : ℝ) * n ≤ 525312 * X + n := by
-      have : (m + 1) * n ≤ 525312 * X + n := by rw [hsucc]; omega
-      exact_mod_cast this
-    rw [gamma_def]; unfold epsB eta mu; push_cast at h3 ⊢
-    nlinarith
+namespace R1Point
 
-/-- **Class `f = 406109`.** -/
-theorem geomB (a π X : ℕ) (hπ : π / 2 = 63 * X)
-    (hL : 8176 * X ≤ a) (hH : a ≤ 8192 * X) (hX : 16777216 ≤ X) :
-    ∃ m n : ℕ, 16 ≤ n ∧ a ≤ (m + 1) * n ∧ m * n ≤ a ∧ 406109 ≤ m ∧ 50859009 ≤ m + 1 ∧
-      m + 1 ≤ 2 ^ 26 ∧ π / 2 ≤ a ∧ (406109 + 1) * n ≤ π / 2 ∧
-      ((mu : ℚ) : ℝ) * ((524288 * X : ℕ) : ℝ) ≤ 1 / 8 * ((406109 : ℝ) * n) ∧
-      (1 / 105000 : ℝ) / 2 * (((m + 1 : ℕ) : ℝ) * n) + n ≤
-        ((((epsB * eta + gammaRes) * ((524288 * X : ℕ) : ℚ) / 2 : ℚ)) : ℝ) := by
-  have hn1 := Nat.div_add_mod (π / 2) 406110
-  have hn2 := Nat.mod_lt (π / 2) (show 406110 > 0 by norm_num)
-  set n := π / 2 / 406110 with hn
-  have hn16 : 16 ≤ n := by omega
-  have hnpos : 0 < n := by omega
-  have hm1 := Nat.div_add_mod (a - 1) n
-  have hm2 := Nat.mod_lt (a - 1) hnpos
-  set m := (a - 1) / n with hm
-  have hmn : n * m = m * n := Nat.mul_comm _ _
-  have hlo : 50859008 ≤ m := by
-    by_contra h
-    have h' : m * n ≤ 50859007 * n := Nat.mul_le_mul_right n (by omega)
-    omega
-  have hhi : m < 67108864 := by
-    by_contra h
-    have h' : 67108864 * n ≤ m * n := Nat.mul_le_mul_right n (by omega)
-    omega
-  have hsucc : (m + 1) * n = m * n + n := by ring
-  have hamn : a ≤ m * n + n := by omega
-  have hmna : m * n ≤ a := by omega
-  have hnX : 406110 * n ≤ 63 * X ∧ 63 * X ≤ 406110 * n + 406110 := by omega
-  refine ⟨m, n, hn16, by rw [hsucc]; exact hamn, hmna, by omega, by omega, by norm_num; omega,
-    by omega, by omega, ?_, ?_⟩
-  · have h1 : (63 : ℝ) * X ≤ 406110 * n + 406110 := by exact_mod_cast hnX.2
-    have h2 : (16777216 : ℝ) ≤ X := by exact_mod_cast hX
-    unfold mu; push_cast
-    nlinarith
-  · have h1 : (406110 : ℝ) * n ≤ 63 * X := by exact_mod_cast hnX.1
-    have h3 : ((m + 1 : ℕ) : ℝ) * n ≤ 8192 * X + n := by
-      have : (m + 1) * n ≤ 8192 * X + n := by rw [hsucc]; omega
-      exact_mod_cast this
-    rw [gamma_def]; unfold epsB eta mu; push_cast at h3 ⊢
-    nlinarith
+variable (P : R1Point)
+
+/-- The depth of a stage after the root: three column sorts of height `2^q`. -/
+def stage : ℕ := 3 * bitonicDepthBudget P.bulk.q
+
+theorem epsB_nonneg : 0 ≤ P.bulk.epsB := by
+  rw [P.hepsB]; exact_mod_cast P.sc.epsB_nonneg
+
+end R1Point
+
+/-! ### Geometry of the two classes -/
+
+/-- `X ≥ 2^s/aH + 1` from `2^s < a ≤ aH X`. -/
+theorem X0_le {s aH a X : ℕ} (hbig : 2 ^ s < a) (hH : a ≤ aH * X) : 2 ^ s / aH + 1 ≤ X := by
+  rcases Nat.eq_zero_or_pos aH with h0 | hpos
+  · subst h0; rw [zero_mul] at hH; exact absurd (lt_of_lt_of_le hbig hH) (Nat.not_lt_zero _)
+  have : 2 ^ s / aH < X :=
+    (Nat.div_lt_iff_lt_mul hpos).2 (lt_of_lt_of_le hbig (hH.trans (Nat.mul_comm _ _).le))
+  exact this
+
+/-- **Class `A`.** -/
+theorem geomA (P : R1Point) (K a π X : ℕ) (hK : K = 63 ∨ K = 64) (hπ : π / 2 = K * X)
+    (hL : 524032 * X ≤ a) (hH : a ≤ 525312 * X) (hbig : 2 ^ P.s < a) :
+    ∃ m n : ℕ, 16 ≤ n ∧ a ≤ (m + 1) * n ∧ m * n ≤ a ∧ P.A.C.P.f ≤ m ∧ P.bulk.Mlo ≤ m + 1 ∧
+      m + 1 ≤ 2 ^ P.bulk.q ∧ π / 2 ≤ a ∧ (P.A.C.P.f + 1) * n ≤ π / 2 ∧
+      ((P.sc.mu : ℚ) : ℝ) * ((524288 * X : ℕ) : ℝ) ≤ (P.A.dF : ℝ) * ((P.A.C.P.f : ℝ) * n) ∧
+      ((P.sc.epsB : ℚ) : ℝ) / 2 * (((m + 1 : ℕ) : ℝ) * n) + n ≤
+        ((((P.sc.epsB * P.sc.eta + P.sc.gam) * ((524288 * X : ℕ) : ℚ) / 2 : ℚ)) : ℝ) := by
+  have hX := X0_le hbig hH
+  rcases hK with rfl | rfl
+  · exact geom P.geomA63 a π X hπ hL hH hX
+  · exact geom P.geomA64 a π X hπ hL hH hX
+
+/-- **Class `B`.** -/
+theorem geomB (P : R1Point) (a π X : ℕ) (hπ : π / 2 = 63 * X)
+    (hL : 8176 * X ≤ a) (hH : a ≤ 8192 * X) (hbig : 2 ^ P.s < a) :
+    ∃ m n : ℕ, 16 ≤ n ∧ a ≤ (m + 1) * n ∧ m * n ≤ a ∧ P.B.C.P.f ≤ m ∧ P.bulk.Mlo ≤ m + 1 ∧
+      m + 1 ≤ 2 ^ P.bulk.q ∧ π / 2 ≤ a ∧ (P.B.C.P.f + 1) * n ≤ π / 2 ∧
+      ((P.sc.mu : ℚ) : ℝ) * ((524288 * X : ℕ) : ℝ) ≤ (P.B.dF : ℝ) * ((P.B.C.P.f : ℝ) * n) ∧
+      ((P.sc.epsB : ℚ) : ℝ) / 2 * (((m + 1 : ℕ) : ℝ) * n) + n ≤
+        ((((P.sc.epsB * P.sc.eta + P.sc.gam) * ((524288 * X : ℕ) : ℚ) / 2 : ℚ)) : ℝ) :=
+  geom P.geomB a π X hπ hL hH (X0_le hbig hH)
 
 /-! ### Depths -/
 
-theorem budget26 : bitonicDepthBudget 26 = 351 := by rw [bitonicDepthBudget_eq]
 theorem budget42 : bitonicDepthBudget 42 = 903 := by rw [bitonicDepthBudget_eq]
-theorem budget45 : bitonicDepthBudget 45 = 1035 := by rw [bitonicDepthBudget_eq]
 
-theorem padded_depth {m n a : ℕ} (hn : 0 < n) (ha : a ≤ (m + 1) * n) (σ1 σ2 : Scramble (m + 1) n)
-    (hm : m + 1 ≤ 2 ^ 26) : (paddedPack2Net hn ha σ1 σ2).depth ≤ 1053 := by
+theorem padded_depth {q m n a : ℕ} (hn : 0 < n) (ha : a ≤ (m + 1) * n) (σ1 σ2 : Scramble (m + 1) n)
+    (hm : m + 1 ≤ 2 ^ q) : (paddedPack2Net hn ha σ1 σ2).depth ≤ 3 * bitonicDepthBudget q := by
   refine (paddedPack2Net_depth_le hn ha σ1 σ2).trans
     ((physicalPack2Net_depth_le_budget _ _ hn σ1 σ2).trans ?_)
-  have := bitonicDepthBudget_mono (Nat.clog_le_of_le_pow hm)
-  rw [budget26] at this
-  omega
+  exact Nat.mul_le_mul_left 3 (bitonicDepthBudget_mono (Nat.clog_le_of_le_pow hm))
 
 /-! ### Node networks -/
 
-theorem epsF_real : ((epsF : ℚ) : ℝ) = 1 / (190000 : ℝ) := by unfold epsF; push_cast; ring
-
 open Classical in
-/-- **The padded separator with fringe class `P`.** -/
-theorem spec_padded (P : F2PD)
-    (hF : ∀ {m n : ℕ}, 16 ≤ n →
-      ((Finset.univ.filter fun σ : Scramble m n => ¬ SRd P σ).card : ℝ) ≤
-          (1 / 10000) * Fintype.card (Scramble m n) ∧
-        ((Finset.univ.filter fun σ : Scramble m n => ¬ R1d P σ).card : ℝ) ≤
-          (1 / 10000) * Fintype.card (Scramble m n) ∧
-        ((Finset.univ.filter fun σ : Scramble m n => ¬ R2nd P σ).card : ℝ) ≤
-          (1 / 10000) * Fintype.card (Scramble m n))
-    (hPJ : (P.J : ℝ) = 190000)
+/-- **The padded separator with fringe class `F`.** -/
+theorem spec_padded (P : R1Point) (F : FClass) (hJ : ((P.sc.epsF : ℚ) : ℝ) = 1 / (F.C.P.J : ℝ))
     {a π : ℕ} (m n : ℕ) (hn16 : 16 ≤ n) (ha : a ≤ (m + 1) * n) (hlive : m * n ≤ a)
-    (hfm : P.f ≤ m) (hmlo : 50859009 ≤ m + 1) (hmhi : m + 1 ≤ 2 ^ 26) (hπa : π / 2 ≤ a)
-    (hfr : (P.f + 1) * n ≤ π / 2) (Jmax : ℕ) (hJ : Jmax ≤ P.jmax n) (EB : ℝ)
-    (hEB : (1 / 105000 : ℝ) / 2 * (((m + 1 : ℕ) : ℝ) * n) + n ≤ EB) :
-    ∃ net : ComparatorNetwork a, NodeSpecAll a π net EB Jmax ((epsF : ℚ) : ℝ) ∧ net.depth ≤ 1053 := by
+    (hfm : F.C.P.f ≤ m) (hmlo : P.bulk.Mlo ≤ m + 1) (hmhi : m + 1 ≤ 2 ^ P.bulk.q) (hπa : π / 2 ≤ a)
+    (hfr : (F.C.P.f + 1) * n ≤ π / 2) (Jmax : ℕ) (hJm : Jmax ≤ F.C.P.jmax n) (EB : ℝ)
+    (hEB : ((P.sc.epsB : ℚ) : ℝ) / 2 * (((m + 1 : ℕ) : ℝ) * n) + n ≤ EB) :
+    ∃ net : ComparatorNetwork a, NodeSpecAll a π net EB Jmax ((P.sc.epsF : ℚ) : ℝ) ∧
+      net.depth ≤ P.stage := by
   have hn : 0 < n := by omega
-  obtain ⟨σ1, σ2, hgood⟩ := sep_pair_exists_of P hF (m := m) (n := n) (by exact_mod_cast hmlo) hmhi hn16
+  obtain ⟨σ1, σ2, hgood⟩ := sep_pair_exists_of P.bulk F.C (m := m) (n := n)
+    (by exact_mod_cast hmlo) hmhi hn16
   refine ⟨paddedPack2Net hn ha σ1 σ2, ?_, padded_depth hn ha σ1 σ2 hmhi⟩
-  have := nodeSpec_padded P hn ha hlive hfm σ1 σ2 hgood π hπa hfr Jmax hJ EB hEB
-  rwa [epsF_real, ← hPJ]
+  have := nodeSpec_padded F.C.P P.bulk.epsB P.epsB_nonneg hn ha hlive hfm σ1 σ2 hgood π hπa hfr
+    Jmax hJm EB (by rw [P.hepsB]; exact hEB)
+  rwa [hJ]
 
-/-- **The B-only separator**, `n = ⌈a/2^26⌉` (no fringe). -/
-theorem spec_Bonly {a : ℕ} (π : ℕ) (ha45 : 2 ^ 45 < a) (EB εF : ℝ)
-    (hEB : (1 / 105000 : ℝ) / 2 * ((a : ℝ) + a / 2 ^ 26 + 1) + (a / 2 ^ 26 + 1) ≤ EB) :
-    ∃ net : ComparatorNetwork a, NodeSpecAll a π net EB 0 εF ∧ net.depth ≤ 1053 := by
-  have hn1 := Nat.div_add_mod (a + 67108863) 67108864
-  have hn2 := Nat.mod_lt (a + 67108863) (show 67108864 > 0 by norm_num)
-  set n := (a + 67108863) / 67108864 with hn
-  have h45 : (35184372088832 : ℕ) < a := by norm_num at ha45; exact ha45
-  have hn16 : 16 ≤ n := by omega
+/-- **The B-only separator** for a large root, `n = ⌈a/2^q⌉` (no fringe). -/
+theorem spec_Bonly (P : R1Point) {a : ℕ} (π : ℕ) (hbig : 2 ^ P.s < a) (e : ℕ)
+    (ha : (a : ℚ) ≤ 4104 * 2 ^ e / 4096) (εF : ℝ) :
+    ∃ net : ComparatorNetwork a, NodeSpecAll a π net
+      ((((P.sc.epsB * P.sc.eta + P.sc.gam) * 2 ^ e / 2 : ℚ)) : ℝ) 0 εF ∧ net.depth ≤ P.stage := by
+  obtain ⟨m, n, hn16, ha', hmlo, hmhi, hEB⟩ := bonly P.bonly a e hbig ha
   have hnpos : 0 < n := by omega
-  have hm1 := Nat.div_add_mod (a - 1) n
-  have hm2 := Nat.mod_lt (a - 1) hnpos
-  set m := (a - 1) / n with hm
-  have hmn : n * m = m * n := Nat.mul_comm _ _
-  have hhi : m < 67108864 := by
-    by_contra h
-    have h' : 67108864 * n ≤ m * n := Nat.mul_le_mul_right n (by omega)
-    omega
-  have hlo : 50859008 ≤ m := by
-    by_contra h
-    have h' : m * n ≤ 50859007 * n := Nat.mul_le_mul_right n (by omega)
-    omega
-  have hsucc : (m + 1) * n = m * n + n := by ring
-  have ha : a ≤ (m + 1) * n := by rw [hsucc]; omega
-  obtain ⟨σ1, σ2, hgood⟩ := sep_pair_exists_of Fringe7934.P Fringe7934.fringe_fail (m := m) (n := n)
-    (by exact_mod_cast (show 50859009 ≤ m + 1 by omega)) (by norm_num; omega) hn16
-  refine ⟨paddedPack2Net hnpos ha σ1 σ2, ?_, padded_depth hnpos ha σ1 σ2 (by norm_num; omega)⟩
-  refine nodeSpec_Bonly hnpos ha σ1 σ2 (1 / 105000) (by norm_num) hgood.1.2.2.2 hgood.2.2.2.2 π EB εF
-    (le_trans ?_ hEB)
-  have hnR : (n : ℝ) ≤ a / 2 ^ 26 + 1 := by
-    have : (67108864 : ℝ) * n ≤ a + 67108863 := by exact_mod_cast (show 67108864 * n ≤ a + 67108863 by omega)
-    norm_num; linarith
-  have hMR : ((m + 1 : ℕ) : ℝ) * n ≤ a + n := by
-    have : (m + 1) * n ≤ a + n := by rw [hsucc]; omega
-    exact_mod_cast this
-  linarith
+  obtain ⟨σ1, σ2, hgood⟩ := sep_pair_exists_of P.bulk P.A.C (m := m) (n := n)
+    (by exact_mod_cast hmlo) hmhi hn16
+  refine ⟨paddedPack2Net hnpos ha' σ1 σ2, ?_, padded_depth hnpos ha' σ1 σ2 hmhi⟩
+  exact nodeSpec_Bonly hnpos ha' σ1 σ2 P.bulk.epsB P.epsB_nonneg hgood.1.2.2.2 hgood.2.2.2.2 π _ εF
+    (by rw [P.hepsB]; exact hEB)
 
-/-- **Batcher's sort** for `a ≤ 2^45`. -/
-theorem spec_sorter {a : ℕ} (π : ℕ) (ha : a ≤ 2 ^ 45) {EB εF : ℝ} (hEB : 0 ≤ EB) (hε : 0 < εF)
-    {Jmax : ℕ} (hJ : Jmax ≤ π / 2) :
-    ∃ net : ComparatorNetwork a, NodeSpecAll a π net EB Jmax εF ∧ net.depth ≤ 1053 := by
+/-- **Batcher's sort** for `a ≤ 2^s`. -/
+theorem spec_sorter (P : R1Point) {a : ℕ} (π : ℕ) (ha : a ≤ 2 ^ P.s) {EB εF : ℝ} (hEB : 0 ≤ EB)
+    (hε : 0 < εF) {Jmax : ℕ} (hJ : Jmax ≤ π / 2) :
+    ∃ net : ComparatorNetwork a, NodeSpecAll a π net EB Jmax εF ∧ net.depth ≤ P.stage := by
   refine ⟨bitonicNetwork a, nodeSpec_sorter π _ (bitonicNetwork_sorts a) hEB hε hJ, ?_⟩
   refine (bitonicNetwork_depth_le_budget a).trans ?_
-  have := bitonicDepthBudget_mono (Nat.clog_le_of_le_pow ha)
-  rw [budget45] at this
-  omega
+  exact (bitonicDepthBudget_mono (Nat.clog_le_of_le_pow ha)).trans P.batcher
 
 /-- **The root at `t = 0`**: the package's B2 separator on `2^42` rows. -/
 theorem spec_root {d : ℕ} (hd : 12 ≤ d) (π : ℕ) (EB εF : ℝ)
@@ -211,7 +162,7 @@ theorem spec_root {d : ℕ} (hd : 12 ≤ d) (π : ℕ) (EB εF : ℝ)
   have ha : 16 ^ d ≤ 2 ^ 42 * n := hmn.le
   obtain ⟨σ1, σ2, ⟨-, hB⟩, ⟨-, hB'⟩⟩ := ExistsScrambleSeparator_twoSided_B2 (m := 2 ^ 42) (n := n)
     le_rfl hn16 (fun _ => True) (by
-      simp only [not_true_eq_false, Finset.filter_False, Finset.card_empty, Nat.cast_zero]
+      simp only [not_true_eq_false, Finset.filter_false, Finset.card_empty, Nat.cast_zero]
       positivity)
   refine ⟨paddedPack2Net hnpos ha σ1 σ2, ?_, ?_⟩
   · refine nodeSpec_Bonly hnpos ha σ1 σ2 (1 / 59000000) (by norm_num) hB hB' π EB εF (le_trans ?_ hEB)

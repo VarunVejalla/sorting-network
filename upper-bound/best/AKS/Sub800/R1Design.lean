@@ -284,9 +284,9 @@ theorem designP_resid (hd : 10 ≤ d) : ResidFact (designP hd) := by
 /-- **W1: the tree with design P.** For `d ≥ 10` and node networks meeting `R1Specs` on the
 design-P table, there is a sorting network on `16^d` wires whose depth is at most the `t_f` stages
 plus the final layer of bitonic sorters on `2^16`-wire blocks. -/
-theorem r1_sorter_designP {d : ℕ} (hd : 10 ≤ d)
+theorem r1_sorter_designP {d : ℕ} (sc : R1Scal) (hd : 10 ≤ d)
     (nets : ℕ → (b : KBag 16 d) → (n : ℕ) → ComparatorNetwork n)
-    (hspec : R1Specs (designP hd) nets) :
+    (hspec : R1Specs sc (designP hd) nets) :
     ∃ T : ComparatorNetwork (16 ^ d), ComparatorNetwork.Sorts.{0} T ∧
       T.depth ≤ (stagesNet (designP hd) nets (tf d)).depth +
         (stageNet (finalS (designP hd)) (fun _ n => bitonicNetwork n)).depth :=

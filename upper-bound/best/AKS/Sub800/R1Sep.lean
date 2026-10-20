@@ -71,19 +71,20 @@ theorem nodeSpec_sorter {a : ℕ} (π : ℕ) (net : ComparatorNetwork a)
     simpa using mul_pos hε this
 
 /-- **The padded two-round separator with fringe.** -/
-theorem nodeSpec_padded {m n a : ℕ} (P : F2PD) (hn : 0 < n) (ha : a ≤ (m + 1) * n)
+theorem nodeSpec_padded {m n a : ℕ} (P : F2PD) (eps : ℝ) (heps : 0 ≤ eps) (hn : 0 < n)
+    (ha : a ≤ (m + 1) * n)
     (hlive : m * n ≤ a) (hfm : P.f ≤ m) (σ1 σ2 : Scramble (m + 1) n)
     (hgood : (SRd P (truncateBottomScramble σ1) ∧ R1d P (truncateBottomScramble σ1) ∧
-        R2nd P (truncateBottomScramble σ2) ∧ HasPackSemanticPropertyB2 hn σ1 σ2 (1 / 105000)) ∧
+        R2nd P (truncateBottomScramble σ2) ∧ HasPackSemanticPropertyB2 hn σ1 σ2 eps) ∧
       (SRd P (truncateBottomScramble (flipScramble σ1)) ∧
         R1d P (truncateBottomScramble (flipScramble σ1)) ∧
         R2nd P (truncateBottomScramble (flipScramble σ2)) ∧
-        HasPackSemanticPropertyB2 hn (flipScramble σ1) (flipScramble σ2) (1 / 105000)))
+        HasPackSemanticPropertyB2 hn (flipScramble σ1) (flipScramble σ2) eps))
     (π : ℕ) (hπa : π / 2 ≤ a) (hfringe : (P.f + 1) * n ≤ π / 2) (Jmax : ℕ) (hJ : Jmax ≤ P.jmax n)
-    (EB : ℝ) (hEB : (1 / 105000 : ℝ) / 2 * (((m + 1 : ℕ) : ℝ) * n) + n ≤ EB) :
+    (EB : ℝ) (hEB : eps / 2 * (((m + 1 : ℕ) : ℝ) * n) + n ≤ EB) :
     NodeSpecAll a π (paddedPack2Net hn ha σ1 σ2) EB Jmax (1 / (P.J : ℝ)) := by
   obtain ⟨⟨hSR, hR1, hR2, hB⟩, ⟨hSR', hR1', hR2', hB'⟩⟩ := hgood
-  have hcut := fun p r hr => paddedPack2Net_all_cut_bounds hn ha σ1 σ2 (1 / 105000) (by norm_num)
+  have hcut := fun p r hr => paddedPack2Net_all_cut_bounds hn ha σ1 σ2 eps heps
     hB hB' p r hr
   refine ⟨?_, ?_, ?_, ?_⟩
   · intro x p hp

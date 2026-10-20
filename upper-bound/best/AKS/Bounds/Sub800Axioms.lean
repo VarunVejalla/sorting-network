@@ -7,6 +7,10 @@ import AKS.Bounds.Sub800Final
 #guard_msgs in
 #print axioms R1T.r1_sorter
 
+/-- info: 'R1T.r1_sorter_78975' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms R1T.r1_sorter_78975
+
 /-- info: 'SortingDepth.minimum_depth_le_78975_logb' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms SortingDepth.minimum_depth_le_78975_logb

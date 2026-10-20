@@ -10,6 +10,8 @@ interval of ranks, followed by bitonic sorters on the blocks, untangles into a s
 
 namespace R1T
 
+variable {sc : R1Scal}
+
 open Chvatal (KBag)
 
 /-- A strictly monotone map `Fin m → ℕ` landing in `[base, base + m)` is `k ↦ base + k`. -/
@@ -219,12 +221,13 @@ theorem finalS_card_cases (b : KBag 16 d) : (finalS F b).card = 0 ∨ (finalS F 
 /-- **Purity at `t_f`** (Lemma 4.5): `μ · c(d−4, t_f) = μ · 2^16 < 1`. -/
 theorem purity (hd : 10 ≤ d) (nets : ℕ → (b : KBag 16 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (16 ^ d)))
-    (hP : OutsiderBoundLe d (tf d) (execPlacement F nets v (tf d) le_rfl) id)
+    (hP : OutsiderBoundLe sc d (tf d) (execPlacement F nets v (tf d) le_rfl) id)
     (b : KBag 16 d) (hb : b.l = meet d) :
     b.strangers 1 id ((execPlacement F nets v (tf d) le_rfl).regs b) (by norm_num : 1 ≤ 16) = 0 := by
   have h := hP b 0 (Nat.zero_le d)
   rw [hb, cap_eq_pow d (meet d) (tf d) 16 (by have := exp_meet d hd; push_cast; omega)] at h
-  have hlt : (mu * delta ^ 0 * ((2 ^ 16 : ℕ) : ℚ)) < 1 := by unfold mu; norm_num
+  have hlt : (sc.mu * sc.delta ^ 0 * ((2 ^ 16 : ℕ) : ℚ)) < 1 := by
+    have := sc.mu_final; push_cast; simpa using this
   have : ((b.strangers (0 + 1) id ((execPlacement F nets v (tf d) le_rfl).regs b) : ℕ) : ℚ) < 1 :=
     lt_of_le_of_lt h hlt
   have h1 : b.strangers (0 + 1) id ((execPlacement F nets v (tf d) le_rfl).regs b) < 1 := by
@@ -234,7 +237,7 @@ theorem purity (hd : 10 ≤ d) (nets : ℕ → (b : KBag 16 d) → (n : ℕ) →
 /-- Purity turns each final block into a rank interval. -/
 theorem finalS_image (hd : 10 ≤ d) (nets : ℕ → (b : KBag 16 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (16 ^ d)))
-    (hP : OutsiderBoundLe d (tf d) (execPlacement F nets v (tf d) le_rfl) id) (b : KBag 16 d) :
+    (hP : OutsiderBoundLe sc d (tf d) (execPlacement F nets v (tf d) le_rfl) id) (b : KBag 16 d) :
     (finalS F b).image (X F nets v (tf d)) =
       Finset.univ.filter (fun x : Fin (16 ^ d) =>
         b.x * 2 ^ 16 ≤ x.val ∧ x.val < b.x * 2 ^ 16 + (finalS F b).card) := by
@@ -280,7 +283,7 @@ end Blocks
 /-- **The sorter from the flow facts.** -/
 theorem r1_sorter_of_facts {d : ℕ} (hd : 10 ≤ d) (F : FlowTableB d (tf d))
     (nets : ℕ → (b : KBag 16 d) → (n : ℕ) → ComparatorNetwork n)
-    (hspec : R1Specs F nets) (hpar : ∀ t, t ≤ tf d → ParityFact F t) (hres : ResidFact F)
+    (hspec : R1Specs sc F nets) (hpar : ∀ t, t ≤ tf d → ParityFact F t) (hres : ResidFact F)
     (hfin : FinalFact F) :
     ∃ T : ComparatorNetwork (16 ^ d), ComparatorNetwork.Sorts.{0} T ∧
       T.depth ≤ (stagesNet F nets (tf d)).depth +

@@ -104,6 +104,18 @@ inside a proof blocks parallel checking). Build times: R1Cells 197 s → 42 s, R
 Fringe7934 76 s → 28 s, Fringe406109 118 s → 22 s; generated source 27k → 4.6k lines. Re-pricing a
 point means rerunning the generators (`certgen.py` holds the shared certificate emitters).
 
+**Generic R1 point (2026-10-20).** The R1 layer is proved once for every point at the fixed schedule
+`(16, 32, 1/8)` with design P. `R1Scal` holds μ, δ, ε_B, ε_F, η and the geometry reserve γ with the
+conditions the invariant uses ((4.2′), (4.5), the sibling series, μ·2^16 < 1, μ·8192 ≤ 1,
+μ·2^19 ≤ 63); `R1Kernel` … `R1Occ` take `sc : R1Scal`. `R1Point` (`R1Geom`) adds the bulk certificate
+(`BulkCert`, row window `[Mlo, 2^q]`), the Batcher threshold `2^s`, two fringe classes (`FClass`:
+`FringeCert` plus rational δ_F) and the rational checks `GeomOK`/`BonlyOK` (`R1GeomGen`, proved once by
+`geom`/`bonly`), the root budget and `S(s) ≤ 3 S(q)`. `R1Nets.r1_sorter P` has depth
+`2709 + 3 S(q) (3d − 15) + 136`, and `R1Main` gives `limsup D(n)/lg n ≤ 3 · 3S(q)/4`. The only
+module with concrete values is `R1At78975` (the 789.75 point; its geometry checks are one
+`decide +kernel` each). `SepExists` no longer imports the numerics, so the R1 chain builds in parallel
+with `R1Cells`/`R2Cells`/`Fringe*`, and re-pricing rebuilds only the numerics and `R1At78975`.
+
 ## Assembly (done, 2026-10-19)
 
 | module | content |

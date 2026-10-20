@@ -25,6 +25,9 @@ Paper proof: [`notes/sub800/R1-PROOF.md`](notes/sub800/R1-PROOF.md); module map:
   over inputs, proved by negative association and Ville's inequality (`NegAssoc`, `Ville`,
   `Round2*`, `Round1*`, cells `R1Cells`/`R2Cells` as kernel-checked data via `ExpCert`,
   `CellCheck1`, `CellCheck2`); this admits rows `< 2^26`.
+* **Generic point.** The R1 layer is proved once for any scalars, separator row window and fringe
+  classes meeting rational checks (`R1Scal`, `R1Point`, `R1GeomGen`); the 789.75 point is
+  `R1At78975`, the only module with concrete values.
 * **Fringe: padded separator at `δ_F = 1/8`.** The two-round separator on an `(m+1) × n`
   rectangle with one partial dummy row (`PaddedSeparator`, `PaddedFringe`, `BaselineFringeD`,
   copied from `../experiments/tapered`) and the per-E fringe route (`F2D*`) for the two
