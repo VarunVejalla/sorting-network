@@ -11,7 +11,7 @@
     ],
     "guard": "AKS.Bounds.Sub800Axioms"
   },
-  "verified": "2026-10-19: from-scratch build (8265 jobs incl. Mathlib) and axiom guard AKS.Bounds.Sub800Axioms; axioms propext, Classical.choice, Quot.sound",
+  "verified": "2026-10-19: from-scratch build (8265 jobs incl. Mathlib; 3584 after targeted imports) and axiom guard AKS.Bounds.Sub800Axioms; axioms propext, Classical.choice, Quot.sound",
   "historical_coefficients": [6991, 1830, 1770, 1419, 1354],
   "previous_best": {"coefficient": 1419, "package": "upper-bound/alternatives/chvatal-1419"},
   "docs_to_scan": [

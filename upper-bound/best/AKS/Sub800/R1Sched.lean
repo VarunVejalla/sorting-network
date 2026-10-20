@@ -1,4 +1,4 @@
-import Mathlib
+import Mathlib.Tactic
 
 /-! # Schedule of the R1 point (LEAN-PLAN W1, step 1)
 

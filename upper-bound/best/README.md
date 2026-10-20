@@ -64,11 +64,10 @@ lake build AKS.Bounds.Sub800Axioms
 lake build AKS.Bounds.Chvatal1830Axioms
 ```
 
-The package shares the Mathlib checkout of the repository root. All targets succeed (8265 jobs including
-Mathlib, 2026-10-19). `Sub800Axioms` accepts only `propext`, `Classical.choice`, `Quot.sound` for the
+The package shares the Mathlib checkout of the repository root. All targets succeed (3584 jobs, 2026-10-19). `Sub800Axioms` accepts only `propext`, `Classical.choice`, `Quot.sound` for the
 789.75 headlines and `R1T.r1_sorter`; `Chvatal1830Axioms` does the same for the 1419 headlines and
-`Chvatal.twoRoundSeparatorExists`. The `AKS/Sub800/` modules are memory-heavy: on a small machine build them
-one at a time in import order (`lake build AKS.Sub800.<Module>`). See [BUILD_STATUS.md](BUILD_STATUS.md).
+`Chvatal.twoRoundSeparatorExists`. Import targeted Mathlib modules, never bare `import Mathlib`: loading all of
+Mathlib costs about 60 s per file (against about 15 s for `Mathlib.Tactic`) and multiplies memory in parallel builds. See [BUILD_STATUS.md](BUILD_STATUS.md).
 
 ## Layout
 
