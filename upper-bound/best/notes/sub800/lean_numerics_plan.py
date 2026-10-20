@@ -29,10 +29,10 @@ sys.path.insert(0, os.path.join(HERE, "..", "..", "..", "experiments", "walk-bou
 import na_precision as NP  # noqa: E402
 
 iv.dps = 30
-M_LO = 50859009                    # ceil(2^25.6)
-M_HI = 2 ** 26
+M_LO = int(os.environ.get("R1_M_LO", 50859009))       # ceil(2^25.6) at the 789.75 point
+M_HI = int(os.environ.get("R1_M_HI", 2 ** 26))
 ETA1, ETA2 = Fr(1, 100), Fr(1, 1000)
-EPS_B = Fr(1, 105000)
+EPS_B = Fr(os.environ.get("R1_EPS_B", "1/105000"))
 DELTA_T = Fr(1, 1000)              # t * delta in the layer cake
 
 
@@ -148,7 +148,8 @@ def plan_round1(E1):
 
 def main():
     # round 1: find the smallest E1 for which every cell closes (bisection on a grid)
-    lo, hi = 3.0e-4, 4.5e-4
+    sc = math.sqrt(50859009 / M_LO)
+    lo, hi = 3.0e-4 * sc, 4.5e-4 * sc
     ok_cells = None
     for _ in range(14):
         mid = (lo + hi) / 2
