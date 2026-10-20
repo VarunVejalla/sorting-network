@@ -78,9 +78,12 @@ def evaluate(x, y, z, H):
         sib = d * k * A * A / (1 - (d * k * A) ** 2)
         budget = mu * A * nu - mu - (k - 1) * mu * sib - mu * d * A * A * k - rstar - 0.1 * mu
         epsF = A * nu * d - A * A * k * d * d
+        kap = H.get("R2")            # SLACKFREE route R2: residual kappa (mu + eps_B/2)/(A nu - 1), no r*
+        if kap is not None:
+            budget -= kap * mu / (A * nu - 1)
         if budget <= 0 or epsF <= 0:
             continue
-        epsB = tol * budget / ETA
+        epsB = tol * budget / (ETA + (kap / (2 * (A * nu - 1)) if kap is not None else 0.0))
         lb = lgm_bulk(epsB, rounds)
         if H.get("fexp") is not None:   # hypothetical fringe scaling f = 7934 (J/190000)^fexp / fdiv
             f = 7934 * (1 / (epsF * 190000)) ** H["fexp"] / H.get("fdiv", 1.0)

@@ -121,6 +121,39 @@ Two of the idealized stage models above are too optimistic. These versions repla
 * The band repair's tail is the limiting piece of UB-32. A per-column tail bound stronger than `1/W`
   would need more than the walk bound's union over output sets `S`.
 
+## Barrier for the current architecture (2026-10-20, `refined.out`)
+
+The 496 package above assumes a residual of exactly 0 at `Aν = 2`, i.e. schedule (4,4,3).
+SLACKFREE §3–4 shows that is not achievable:
+* any P-type accounting leaves `r* = (k−1)/(2A²k²)`;
+* route R2 (D2 table plus a two-sided invariant Q) leaves `κ(μ + ε_B/2)/(Aν − 1)`, which is
+  infeasible at `Aν = 2` for `κ = 1`.
+
+Pricing R2's residual instead of zero:
+
+| package (R2 residual) | cost |
+|---|---:|
+| R2 κ = 1, three sorts | 731.2 |
+| R2 κ = 1/2, three sorts | 702 |
+| R2 κ = 1, band + merge | 616.9 |
+| R2 κ = 1/2, band + merge | 561.3 |
+| R2 κ = 1, band + merge, fringe f/5 or f/10 | 537 |
+| no fringe floor, band, R2 κ = 1/2 | 556.5 |
+| no fringe floor, band, r* = 0 (not achievable) | 514 |
+
+**So the Chvátal tree with column-sort separators bottoms out around 537–580 in this model, even
+with all four improvements.**
+
+The reason is structural. The tolerated separator error is
+`ε_B ≲ μ·Aν ≈ ½δ_F·ν/(Ak)·Aν` (about 1e-5 at the good schedules). The fringe forces
+`J ≈ k²A/ν` and `f ≈ 18√J`. Both force column heights near `2^24–2^26`, and each stage needs about
+two full column sorts plus a cleanup of that height, at stages per bit `(x+y)/(xz) ≥ 2/3`.
+
+Getting below 500 needs at least one of:
+* a separator whose cost grows much more slowly than `S(lg(1/ε))` (not column sorts);
+* an invariant tolerating constant-factor larger error (UB-40);
+* a different global scheme with fewer stages per bit.
+
 ## Caveats
 
 * The fringe fits for δ_F = 1/4 and 1/3 are extrapolated.
