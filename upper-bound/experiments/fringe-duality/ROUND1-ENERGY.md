@@ -101,3 +101,37 @@ and needs a union over just `n` choices of `v` (or over round-2 sets `S`, with `
 
 **To do.** Make step 3 rigorous: the collision term with weights, Bernstein over the union, and
 `ρ_U` as a random quantity. Then model the numbers at the 731.25 point.
+
+### Route (d) with a row split: model numbers (`route_d_model.py`, `route_d_model.out`)
+
+Split v's rows at `R0 = c (6j)^{1/3}`:
+* **Rows `< R0`.** Use the source-set energy on `U = {u_r : r < R0}` with weights capped at `R0`. The
+  counted rows only need `z_{u_r} ≥ r + 1`, so the cap is free. Entropy `R0 ln R0`, deviation
+  `~ R0² ln R0 ≪ j`.
+* **Rows `≥ R0`.** These need a round-1 column taller than `R0`. There are at most
+  `s_{R0} ≲ 9 j/R0²` (profile bound), and each serves about one of v's rows.
+
+At `J = 1.66e6` (the 731.25 point), least f for one round-2 column:
+
+| j | n = 2^20 | n = 2^40 |
+|---|---:|---:|
+| J | 369 | 360 |
+| 10 J | 821 | 717 |
+| 40 J | 1471 | 1076 |
+| 100 J | 2231 | 1367 |
+| 300 J (≈ jmax at 2^20) | **3711** | 1743 |
+| 800 J | (beyond jmax) | 1959 |
+
+Round-1 energy on the source sets is `Q/j ≈ 4–6` sparse (true value ≈ 3) and up to ≈ 13 near jmax at
+`n = 2^20`.
+* **Inside the ceiling 4023 everywhere checked.** The binding case is `n = 2^20` near jmax, where the
+  background `b = j/n ≈ 475` is large.
+* For larger n, `b ≤ δ_F f = 500` stays bounded, the allowance `j/J` grows faster than the load, and
+  the worst case stays near 2000.
+
+**Status: model only.** The 40–60× loss of the earlier route is gone. Still open:
+1. a rigorous round-1 lemma on fixed sets with capped weights (main term `Σ a²/(2(λ−ρ))`, the
+   collision/background term, Bernstein over the union of capped profiles);
+2. the high-row count, via a union over tall sets;
+3. multi-column escapes (sets `S`, `|U| = R0 s2`);
+4. certification and Lean.
