@@ -115,4 +115,24 @@ theorem sum_posPart_le_of_sets (w : Fin n → ℝ) (f : ℝ) (B : ℝ)
         · exact max_eq_right (by linarith)
     _ ≤ B := h
 
+/-- Indicator weights of a set of output columns. -/
+noncomputable def ind (S : Finset (Fin n)) : Fin n → ℝ := fun T => if T ∈ S then 1 else 0
+
+/-- **Tall-column count.** If every column of `S` reaches height `≥ k` after the round, then
+`k · |S| ≤ λ · (input mass) + Σ_j Y_j(1_S, λ)`. -/
+theorem tall_count_le (c : MonotoneColumnSums m n) (σ : Scramble m n) (S : Finset (Fin n))
+    (k : ℕ) (hk : ∀ T ∈ S, k ≤ scrambledColSum c σ T) (lam : ℝ) :
+    (k : ℝ) * S.card ≤
+      lam * ∑ j : Fin n, ((c j).val : ℝ) + ∑ j : Fin n, walkY σ (ind S) lam j := by
+  classical
+  have hdual := weighted_duality c σ (ind S) lam
+  have hsum : ∑ T : Fin n, ind S T * (scrambledColSum c σ T : ℝ) =
+      ∑ T ∈ S, (scrambledColSum c σ T : ℝ) := by
+    simp only [ind, ite_mul, one_mul, zero_mul]
+    rw [Finset.sum_ite_mem, Finset.univ_inter]
+  have hk' : (k : ℝ) * S.card ≤ ∑ T ∈ S, (scrambledColSum c σ T : ℝ) := by
+    rw [mul_comm, ← nsmul_eq_mul, ← Finset.sum_const]
+    exact Finset.sum_le_sum fun T hT => by exact_mod_cast hk T hT
+  linarith [hsum ▸ hdual]
+
 end FringeDuality
