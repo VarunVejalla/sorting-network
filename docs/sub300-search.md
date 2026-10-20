@@ -63,6 +63,19 @@ The negative trace now has a scalable escape-capacity explanation in
 raising any fixed exact cutoff cannot repair the tested coarse interface.
 The next provider/invariant must bound wrong-color mass against future
 subtree escape capacity, not merely a fraction of present bag size.
+The follow-up [moderate-rank tail](../upper-bound/experiments/prefix-flux/MODERATE-TAIL.md)
+has independent hand review and interval-checked local values excluding the
+old obstruction's critical choices. A centered ragged core keeps local sort
+height fixed, with reviewed bulk surcharge4r per direction for r extra cells.
+The nominal292.5 budget remains conditional: a global capacity invariant,
+tiny-rank termination and a common certified provider are still missing.
+Before the next global test, implement the actual static-label interleaving
+from R1Wire/R1Exec; see
+[ORDERED-GATE](../upper-bound/experiments/prefix-flux/ORDERED-GATE.md).
+Fresh source review found that the old concatenation oracle omits this
+reachability restriction. An exact-root diagnostic must be error-free in
+the faithful ordered model; a real proof needs a precise constant-depth root
+and contraction from its nonzero initial error.
 
 No credible <=300 construction has yet passed the paper gates. Prioritize a
 new local/global contract rather than another scalar retune. Two precise

@@ -830,9 +830,11 @@
         "upper-bound/experiments/prefix-flux/PLAN.md",
         "upper-bound/experiments/prefix-flux/STATUS.md",
         "upper-bound/experiments/prefix-flux/REVIEW.md",
-        "upper-bound/experiments/prefix-flux/CUT-OBSTRUCTION.md"
+        "upper-bound/experiments/prefix-flux/CUT-OBSTRUCTION.md",
+        "upper-bound/experiments/prefix-flux/MODERATE-TAIL.md",
+        "upper-bound/experiments/prefix-flux/ORDERED-GATE.md"
       ],
-      "notes": "2026-10-20: fresh-context review, exact monotone-prefix oracle replay, and scalable future-escape-capacity obstruction reject the tested coarse bulk/fringe interface even with any fixed exact frontier. Not an impossibility result for fixed providers. Next gate: actual rank-sensitive spill versus remaining subtree escape capacity. No new sorter or coefficient."
+      "notes": "2026-10-20: fresh-context review, exact monotone-prefix oracle replay, and scalable future-escape-capacity obstruction reject the tested coarse bulk/fringe interface even with any fixed exact frontier. Not an impossibility result for fixed providers. Next gate: actual rank-sensitive spill versus remaining subtree escape capacity. No new sorter or coefficient. Follow-up: fresh-reviewed moderate-rank entropy tail, centered ragged fringe extension and4r bulk coupling; outward interval checks exclude the old critical choices. New source audit found actual static-label interleaving absent from the concatenation oracle; next implement that stronger reachability before further global tests. Nominal292.5 remains conditional, with tiny-rank and global induction open."
     }
   ]
 }

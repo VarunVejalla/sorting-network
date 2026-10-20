@@ -1,0 +1,9 @@
+﻿LOCAL TAIL SCREEN; optimized dyadics, outward interval evaluation; not Lean
+Common probability budget eta=.001; no union over fringe widths needed.
+t3 node[1, 1] minority=102400, coarse escape=101376; new float bound=101403.694, interval-checked integer bound<=101403, n=64 L=4096 f=16 extra<=0
+t4 node[2, 4] minority=1310, coarse escape=1099; new float bound=530.065, interval-checked integer bound<=530, n=130 L=4088 f=13 extra<=0
+t4 node[2, 5] minority=202014, coarse escape=200222; new float bound=200393.606, interval-checked integer bound<=200393, n=126 L=4096 f=14 extra<=0
+t5 node[3, 17] minority=1099, coarse escape=678; new float bound=132.638, interval-checked integer bound<=132, n=64 L=4096 f=56 extra<=0
+t5 node[3, 20] minority=2580, coarse escape=1301; new float bound=410.248, interval-checked integer bound<=410, n=64 L=4068 f=56 extra<=0
+t5 node[3, 21] minority=91271, coarse escape=87687; new float bound=87771.330, interval-checked integer bound<=87771, n=64 L=4096 f=56 extra<=0
+t7 node[3, 19] minority=309, coarse escape=85; new float bound=170.764, interval-checked integer bound<=170, n=17 L=3893 f=13 extra<=0

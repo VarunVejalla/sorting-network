@@ -58,3 +58,24 @@ No Lean build or contribution validation: no claimed sorting bound.
 Next: derive a capacity-compatible rank-sensitive spill contract for an actual
 fixed provider, using the existing tail work first. Do not formalize the current
 coarse postcondition interface or infer impossibility for all fixed providers.
+
+## Moderate-tail follow-up
+
+MODERATE-TAIL now derives a reviewed rank-sensitive tail and a centered-ragged
+layout avoiding a large padding surcharge. Numerical interval checks at fixed
+dyadic witnesses give escape bounds530 and132 at the coarse trace's critical
+t4/t5 bags, excluding its1099 and678 choices. The global recurrence and
+tiny-rank guarantee remain open; no improved coefficient is claimed.
+
+The oracle's Boolean words now use run-length encoding. Prefix dominance is
+checked at all input/output run endpoints, which suffices between endpoints
+because the difference is linear. Existing saved traces still replay with
+the same decisions and final errors; no arrays proportional to N are needed
+for the prefix check.
+
+Source audit identified the next essential gate: the current implementation
+interleaves incoming wires in static global-label order. The concatenation
+oracle does not model that stronger reachability. See ORDERED-GATE before
+doing further recurrence tests. In the faithful ordered model an exact root
+must leave no later errors, a useful diagnostic missing from the old harness.
+The new bounded capacity probe remains explicitly a concatenation relaxation.
