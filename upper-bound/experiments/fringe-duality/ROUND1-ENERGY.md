@@ -208,3 +208,51 @@ Taking `a_T = min(R, (z_T − b)₊)` gives `Σ_U min(R,(z−b)₊)² ≤ λ' j 
 
 Next: a rigorous numeric screen of this lemma (Ville + level crossing with weighted jumps), replacing
 the Bernstein model in `route_d_model.py`; then interval certification.
+
+## Route (d): the Kingman MGF lemma (rigorous in form; `route_d_rigorous.py`)
+
+This replaces the Bernstein/collision model. There is no collision term and no `P(Y_c > 0)` loss.
+
+**Per-column MGF.** Let `X` be iid with `E X = −λ < 0`, and `M = sup_{h≥0} S_h ≥ Y_c` (infinite horizon).
+1. `M =_d max(0, X + M')`, and `e^{t max(0,y)} = e^{ty} + (1 − e^{−t y₋})`. Hence
+   `G(1 − φ(t)) = E[1 − e^{−t (X+M')₋}]`.
+2. This is `≤ 1 − e^{−t E(X+M')₋}` by concavity, and `E(X+M')₋ = −E X = λ` by stationarity.
+3. So `E e^{tY_c} ≤ (1 − e^{−tλ}) / (1 − φ(t))` whenever `φ(t) < 1`.
+
+To first order this is Kingman's bound, `E Y_c ≤ Var X / (2λ)`.
+
+**Our walk.** The increments are `X = a_{σ₁,r(c)} − ρ − λ`, with `ρ = Σ_U a/n` and `a ∈ {0..R}^U`.
+* By convexity of `g(s)/s²` (`g(s) = e^s − 1 − s`) and `e^{−y}(1 + y) ≤ 1`:
+  `φ(t) ≤ e^{−tλ}(1 + A g(tR)/(n R²))`, with `A = Σ a²`.
+* Hence `n ln G ≤ −n ln(1 − A g(tR) / (n R² (e^{tλ} − 1)))`. For small `tR` this is `≈ t A/(2λ)`, so
+  it is **independent of n** apart from the union.
+* NA (per-row permutations of a fixed vector, independent rows; `Y_c` nondecreasing on disjoint
+  coordinates) and Chernoff give `Σ_c Y_c ≤ x(A) = min_t [n ln G + Ent]/t` for all `a` at once, with
+  `Ent = u ln(R+1) + ln(#U choices / η)`.
+* The event does not depend on `j`.
+
+**Deterministic step.** With `b = j/n`, `Σ_U a(z − b) ≤ λ j + Σ_c Y_c`, since the `ρ j` term equals
+`b Σ a`. Take `a_T = min(R, ⌊(z_T − b)₊⌋)`. Then `A ≤ λ j + x(A)`, which excludes every `A` above a
+threshold `A*`. Per `A`, choose `λ` and `t` freely; the script verifies the exclusion on intervals.
+
+**Round 2** (per set `S` of `s2` round-2 columns; `σ₂` only). Split v's rows into free rows
+`< L0` (with `L0 ≥ ⌈b⌉`) and geometric levels `[lo, hi)` up to `top = b + Kmax + 1`. Here `Kmax` is
+the single-column (`u = 1`) bound, so no round-1 column exceeds it. Then:
+* `count_i ≤ A*_i / ⌊lo + 1 − b⌋² + Σ_u (M_u − 1)₊`, where `M_u = #{r ∈ [lo,hi) : σ₂,r(u) ∈ S}`.
+  The second term is a multiplicity excess with `M_u ~ Bin`, NA across `u`, Chernoff plus a union
+  over `S`.
+* `escapes(S) ≤ s2·L0 + Σ_i min(s2 (hi − lo), count_i) − f·s2`.
+
+Two refinements were needed for large `u = (hi − lo)·s2`:
+* **Per-level weights.** Use `a_T = min(R, ⌊z_T − b⌋)·1{z_T − b ≥ d}`, with `d = ⌊lo + 1 − b⌋`. Still
+  `a(z − b) ≥ a²`, and the support is at most `A/d²`. The union is then over
+  `≤ (k+1) binom(u, k) (R − d + 1)^k` vectors (`k = A/d²`), applied per `A`-interval, instead of
+  `(R+1)^u`. Without this, `Ent = u ln R > 2nλ` and nothing is excluded.
+* **Multiplicity, top-k.** Only the `k` active sources count, so
+  `count_i ≤ min_c [k c + max_S Σ_u (M_u − c)₊]`. The `c = 1` version summed the excess over all `n`
+  sources (≈ 1e11 at the top levels).
+* The `s2` grid runs over powers of 4 up to `j/f`; at most `j/f` columns can be overloaded.
+  Intermediate `s2` is not checked yet (a certification item).
+
+Lean gap: `NegAssoc` covers images of one set (`powersetCard`). The weighted walk needs NA for a
+random permutation of a fixed vector, via a chain of nested level sets or the general theorem.
