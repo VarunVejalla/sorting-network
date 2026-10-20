@@ -116,6 +116,20 @@ The window allows at most 4023, so the route fails by `40J`, and `jmax ≈ 760J`
 **What is needed:** a round-1 energy bound close to the true `O(j)` (see "Sharper round 1"). The
 dyadic joint version did not help as implemented (`q_joint.py`: `Q/j ≈ 196–521`).
 
+**True round-1 energy (`adversary_energy.py`, m = 400, n = 4000).** A structured attack (target set,
+columns `σ_r⁻¹(A)` at rows `r < k`) reaches `E/j ≈ 3` in the sparse regime and `≈ 3 + j/n` with
+background. The greedy attack is lower. So the true `E ≈ j(3 + j/n)`, and the duality-plus-union bound
+(`120–180 j`) is 40–60× loose.
+* This is **structural**. The union over output sets costs about `ln(n)/t` per scale for moderately
+  tall columns, so the method cannot get much below `(ln n)·j`.
+* A different technique is needed, e.g. a chained pairwise-discrepancy bound for
+  `E = j + 2 Σ_{r<r'} |σ_r(H_r) ∩ σ_{r'}(H_{r'})|` over nested families `H_r`.
+
+**The 731.25 point is marginal even ideally.** At its parameters (`J ≈ 1.66e6`, `j` up to `≈ 760J`),
+the heuristic adversary already reaches about `(6j)^{1/3} + j/n ≈ 3160` against the ceiling 4023, and
+the heuristic is not a proof upper bound. The fringe route can still help points with a wider
+fringe window. **It does not unlock 731.25 with the current geometry.**
+
 ## What it would buy (R1 model, `../sub500-screen/refined.out`)
 
 | package | cost |
