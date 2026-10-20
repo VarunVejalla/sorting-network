@@ -74,3 +74,30 @@ cells `r < h_c` that land in `A`. If a column has at most one such cell, `W_c �
 * The next step is to separate the background (charged through `j²/n`, the `C₂` term) from genuine
   stacking. For example, weight a column's useful cells by their rank in their own targets rather
   than by row.
+
+## Route (d): energy only on round-2 source sets (2026-10-20, promising)
+
+The fringe bound always binds at one round-2 column `v`, with `w_v = #{r : z_{u_r} > r}`, where
+`u_r = σ₂,r⁻¹(v)`. Only rows `r < K` matter, `K ≥ max z ≈ (6j)^{1/3}`. So round 2 needs the round-1
+energy **only on the source set** `U_v = {u_r : r < K}`. It has `K` columns, is fixed by `σ₂` and `v`,
+and needs a union over just `n` choices of `v` (or over round-2 sets `S`, with `U = ∪_{r<K} σ₂,r⁻¹(S)`).
+
+1. **Cost.** The `W` rows with `z_{u_r} > r` force `Σ_{T ∈ U_v} z_T² ≥ Σ_{i<W} (i+1)² ≈ W³/3`.
+2. **Round-1 energy on U.** Take weights `a_T = z_T ≤ K` on `U`, and weighted duality with one λ.
+   * The main term is deterministic: each target has one source per row, and
+     `Σ_r (a_T − λ(r+1))₊ ≈ a_T²/(2λ)`.
+   * Other hits in the same input column (the background of `U`) reduce the drift by
+     `ρ_U = Σ_{T∈U} a_T/n ≲ K²/(2n)`.
+   * So `Σ_{U} z² ≤ λ j + Σ_U z²/(2(λ − ρ_U)) + dev`, i.e. `Σ_U z² ≲ 2(1 + ρ_U) j + O(dev)`.
+3. **Deviation and union.** The union runs over `(v, a|_U)`: entropy `≈ ln n + K ln K`. Weights are
+   at most `K`, so a Bernstein/Chernoff deviation costs about `K · (entropy) ≈ K² ln(nK)`. With
+   `j ≈ K³/6` this is about `(6 ln(nK)/K)·j`, **small relative to `j`**. That is the point: heavy weights
+   only appear when the mass is already cubic in `K`.
+4. Hence `W ≲ (6(1 + ρ_U)(1 + o(1)) j)^{1/3}`, the heuristic optimum up to `(1 + ρ_U)^{1/3}`.
+   * Dense regime: centre at `b = j/n`; `w − b ≲ (3 E_{b,U})^{1/3}`.
+   * Multi-column escapes follow from the cost `≈ (f − b + e)³/3` per column with excess `e`, so
+     escapes are `≲ 0.9 j/f²`.
+   * Prediction: `f ≈ √(0.9 J)·(1 + small)`, i.e. about 1300 at `J = 1.66e6`, against the ceiling 4023.
+
+**To do.** Make step 3 rigorous: the collision term with weights, Bernstein over the union, and
+`ρ_U` as a random quantity. Then model the numbers at the 731.25 point.
