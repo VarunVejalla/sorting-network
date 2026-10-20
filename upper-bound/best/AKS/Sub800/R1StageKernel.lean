@@ -9,6 +9,8 @@ order-0 and fringe send bounds (`hBad`, `hFringe`) and `P` at stage `t` give a `
 
 namespace R1T
 
+variable {sc : R1Scal}
+
 open Finset
 open Chvatal (KBag Placement)
 
@@ -35,19 +37,19 @@ theorem cap_two_levels (d t : ℕ) (b : KBag 16 d) (hb : 1 ≤ b.l) :
 
 section Children
 
-variable (d t : ℕ) (pl : Placement 16 d) (hP : OutsiderBoundLe d t pl id) (b : KBag 16 d)
+variable (d t : ℕ) (pl : Placement 16 d) (hP : OutsiderBoundLe sc d t pl id) (b : KBag 16 d)
 
 include hP
 
 theorem strangers_children_le (hbd : b.l < d) (j : ℕ) (hj1 : 1 ≤ j) (hjd : j ≤ d)
     (S : Finset (Fin (16 ^ d)))
     (hS : S ⊆ Finset.univ.biUnion (fun i : Fin 16 => pl.regs (b.child i.val i.isLt hbd))) :
-    (b.strangers j id S : ℚ) ≤ 16 * (mu * delta ^ j * cap d (b.l + 1) t) := by
+    (b.strangers j id S : ℚ) ≤ 16 * (sc.mu * sc.delta ^ j * cap d (b.l + 1) t) := by
   calc (b.strangers j id S : ℚ)
       ≤ ∑ i : Fin 16, (b.strangers j id (pl.regs (b.child i.val i.isLt hbd)) : ℚ) := by
         exact_mod_cast (b.strangers_mono j id hS).trans
           (strangers_biUnion_le d b j id fun i => pl.regs (b.child i.val i.isLt hbd))
-    _ ≤ ∑ _i : Fin 16, mu * delta ^ j * cap d (b.l + 1) t :=
+    _ ≤ ∑ _i : Fin 16, sc.mu * sc.delta ^ j * cap d (b.l + 1) t :=
         sum_le_sum fun i _ => by
           rw [strangers_child_eq d b hbd j hj1 i id _]
           exact hP (b.child i.val i.isLt hbd) j hjd
@@ -57,14 +59,14 @@ theorem hFromChildren0_of_subset (hb : 1 ≤ b.l) (S : Finset (Fin (16 ^ d)))
     (hS : ∀ hbd : b.l < d,
       S ⊆ Finset.univ.biUnion (fun j : Fin 16 => pl.regs (b.child j.val j.isLt hbd)))
     (hleaf : b.l = d → S = ∅) :
-    (b.strangers 1 id S : ℚ) ≤ mu * delta * 16 * 32 ^ 2 * cap d (b.l - 1) t := by
+    (b.strangers 1 id S : ℚ) ≤ sc.mu * sc.delta * 16 * 32 ^ 2 * cap d (b.l - 1) t := by
   by_cases hbd : b.l < d
   · refine (strangers_children_le d t pl hP b hbd 1 le_rfl (by omega) S (hS hbd)).trans
       (le_of_eq ?_)
     rw [cap_two_levels d t b hb]; ring
   · rw [hleaf (Nat.le_antisymm b.hl (Nat.not_lt.mp hbd)), KBag.strangers_empty, Nat.cast_zero]
     have := (cap_pos d (b.l - 1) t).le
-    have := mu_pos.le; have := delta_pos.le
+    have := sc.mu_pos.le; have := sc.delta_pos.le
     positivity
 
 theorem hFromChildrenR_of_subset (hb : 1 ≤ b.l) (S : Finset (Fin (16 ^ d)))
@@ -72,11 +74,11 @@ theorem hFromChildrenR_of_subset (hb : 1 ≤ b.l) (S : Finset (Fin (16 ^ d)))
       S ⊆ Finset.univ.biUnion (fun j : Fin 16 => pl.regs (b.child j.val j.isLt hbd)))
     (hleaf : b.l = d → S = ∅) (r : ℕ) (hr1 : 1 ≤ r) (hrd : r ≤ d) :
     (b.strangers (r + 1) id S : ℚ) ≤
-      delta ^ 2 * 32 * 16 / (1 / 8) * (mu * delta ^ (r - 1) * (4 * cap d (b.l - 1) t)) := by
-  have hnn : (0 : ℚ) ≤ delta ^ 2 * 32 * 16 / (1 / 8) *
-      (mu * delta ^ (r - 1) * (4 * cap d (b.l - 1) t)) := by
+      sc.delta ^ 2 * 32 * 16 / (1 / 8) * (sc.mu * sc.delta ^ (r - 1) * (4 * cap d (b.l - 1) t)) := by
+  have hnn : (0 : ℚ) ≤ sc.delta ^ 2 * 32 * 16 / (1 / 8) *
+      (sc.mu * sc.delta ^ (r - 1) * (4 * cap d (b.l - 1) t)) := by
     have := (cap_pos d (b.l - 1) t).le
-    have := mu_pos.le; have := delta_pos.le
+    have := sc.mu_pos.le; have := sc.delta_pos.le
     positivity
   by_cases hbd : b.l < d
   · by_cases hrd' : r + 1 ≤ d
@@ -110,15 +112,15 @@ noncomputable def realPlacementStep (F : FlowTableB d tf)
 noncomputable def realStageKernel (F : FlowTableB d tf)
     (nets : ℕ → (b : KBag 16 d) → (n : ℕ) → ComparatorNetwork n)
     (v : Equiv.Perm (Fin (16 ^ d))) (t : ℕ) (ht : t + 1 ≤ tf)
-    (hP : OutsiderBoundLe d t (execPlacement F nets v t (by omega)) id)
+    (hP : OutsiderBoundLe sc d t (execPlacement F nets v t (by omega)) id)
     (hBad : ∀ (b : KBag 16 d) (hb : 1 ≤ b.l),
       ((b.strangers 1 id (fromParentK F nets v t b) : ℕ) : ℚ) ≤
         ((b.parent).strangers 1 id ((execPlacement F nets v t (by omega)).regs b.parent) : ℚ) +
-          B0 * cap d (b.l - 1) t)
+          sc.B0 * cap d (b.l - 1) t)
     (hFringe : ∀ (b : KBag 16 d) (r : ℕ) (_hr1 : 1 ≤ r) (_hrd : r ≤ d) (hb : 1 ≤ b.l),
       ((b.strangers (r + 1) id (fromParentK F nets v t b) : ℕ) : ℚ) ≤
-        epsF * ((b.parent).strangers r id ((execPlacement F nets v t (by omega)).regs b.parent) : ℚ)) :
-    StageKernel d t (execPlacement F nets v t (by omega)) id
+        sc.epsF * ((b.parent).strangers r id ((execPlacement F nets v t (by omega)).regs b.parent) : ℚ)) :
+    StageKernel sc d t (execPlacement F nets v t (by omega)) id
       (execPlacement F nets v (t + 1) ht) id where
   step := realPlacementStep F nets v t ht
   hBadSend0 b hb := hBad b hb
@@ -136,8 +138,8 @@ noncomputable def realStageKernel (F : FlowTableB d tf)
       KBag.strangers_eq_zero_of_lt_order b (r + 1) id _ (by norm_num) (by omega) (by omega)
     rw [h0]
     have := cap_pos d 0 (t + 1)
-    have hm := mu_pos
-    have hdl := delta_pos
+    have hm := sc.mu_pos
+    have hdl := sc.delta_pos
     push_cast
     positivity
 

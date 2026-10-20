@@ -8,6 +8,8 @@ import AKS.Sub800.R1Kernel
 
 namespace R1T
 
+variable {sc : R1Scal}
+
 open Finset
 open Chvatal (KBag Placement subtreeBags subtreeKeys descendants mem_descendants
   descendants_card descendants_disjoint subtreeBags_l_ge native_card odd_geom_le)
@@ -18,10 +20,10 @@ variable (d t : ℕ)
 theorem subtree_bad_le (pl : Placement 16 d) (a : KBag 16 d → ℕ)
     (hcard : ∀ b : KBag 16 d, (pl.regs b).card = a b)
     (hpar : ∀ b : KBag 16 d, b.l % 2 ≠ t % 2 → a b = 0)
-    (hP : OutsiderBoundLe d t pl id) (w : KBag 16 d) :
+    (hP : OutsiderBoundLe sc d t pl id) (w : KBag 16 d) :
     (((subtreeKeys 16 d pl (by norm_num) w).filter fun κ => ¬ w.Native κ id).card : ℚ) ≤
       ∑ h ∈ (range (d - w.l + 1)).filter (fun h => (w.l + h) % 2 = t % 2),
-        (16 : ℚ) ^ h * (mu * delta ^ h * cap d (w.l + h) t) := by
+        (16 : ℚ) ^ h * (sc.mu * sc.delta ^ h * cap d (w.l + h) t) := by
   have hbr : 1 ≤ 16 := by norm_num
   unfold subtreeKeys subtreeBags
   rw [Finset.filter_biUnion, Finset.card_biUnion (fun z _ z' _ hne =>
@@ -66,34 +68,34 @@ theorem cap_add (m i : ℕ) : cap d (i + m) t = (32 : ℚ) ^ m * cap d i t := by
 /-- The odd-depth series below a child: at most `μ · sib · c(i, t)`. -/
 theorem sibling_sum_le (i M : ℕ) :
     ∑ h ∈ (range M).filter (fun h => h % 2 = 1),
-        (16 : ℚ) ^ h * (mu * delta ^ h * cap d (i + 1 + h) t) ≤ mu * sib * cap d i t := by
-  set x : ℚ := delta * 16 * 32 with hx
+        (16 : ℚ) ^ h * (sc.mu * sc.delta ^ h * cap d (i + 1 + h) t) ≤ sc.mu * sc.sib * cap d i t := by
+  set x : ℚ := sc.delta * 16 * 32 with hx
   have hc := cap_pos d i t
-  have hx0 : 0 ≤ x := by have := delta_pos; positivity
-  have hx2 : x ^ 2 = delta ^ 2 * (16 : ℚ) ^ 2 * (32 : ℚ) ^ 2 := by rw [hx]; ring
-  have hterm : ∀ h : ℕ, (16 : ℚ) ^ h * (mu * delta ^ h * cap d (i + 1 + h) t) =
-      (mu * 32 * cap d i t) * x ^ h := by
+  have hx0 : 0 ≤ x := by have := sc.delta_pos; positivity
+  have hx2 : x ^ 2 = sc.delta ^ 2 * (16 : ℚ) ^ 2 * (32 : ℚ) ^ 2 := by rw [hx]; ring
+  have hterm : ∀ h : ℕ, (16 : ℚ) ^ h * (sc.mu * sc.delta ^ h * cap d (i + 1 + h) t) =
+      (sc.mu * 32 * cap d i t) * x ^ h := by
     intro h
     rw [show i + 1 + h = i + (1 + h) by ring, cap_add, hx, mul_pow, mul_pow]; ring
   rw [Finset.sum_congr rfl (fun h _ => hterm h), ← Finset.mul_sum]
-  calc (mu * 32 * cap d i t) * ∑ h ∈ (range M).filter (fun h => h % 2 = 1), x ^ h
-      ≤ (mu * 32 * cap d i t) * (x / (1 - x ^ 2)) :=
-        mul_le_mul_of_nonneg_left (odd_geom_le x hx0 (hx2 ▸ cond_sib) M)
-          (by have := mu_pos; positivity)
-    _ = mu * sib * cap d i t := by
-        unfold sib
+  calc (sc.mu * 32 * cap d i t) * ∑ h ∈ (range M).filter (fun h => h % 2 = 1), x ^ h
+      ≤ (sc.mu * 32 * cap d i t) * (x / (1 - x ^ 2)) :=
+        mul_le_mul_of_nonneg_left (odd_geom_le x hx0 (hx2 ▸ sc.cond_sib) M)
+          (by have := sc.mu_pos; positivity)
+    _ = sc.mu * sc.sib * cap d i t := by
+        unfold R1Scal.sib
         rw [hx2, hx]; ring
 
 /-- **Lemma 4.1′ (deficit form).** -/
 theorem keys_below_child_le (pl : Placement 16 d) (a : KBag 16 d → ℕ)
     (hcard : ∀ b : KBag 16 d, (pl.regs b).card = a b)
     (hpar : ∀ b : KBag 16 d, b.l % 2 ≠ t % 2 → a b = 0)
-    (hP : OutsiderBoundLe d t pl id)
+    (hP : OutsiderBoundLe sc d t pl id)
     (u : KBag 16 d) (hul : u.l < d) (j : ℕ) (hj : j < 16) (hu : u.l % 2 = t % 2) :
     (((pl.regs u).filter fun κ => (u.child j hj hul).Native κ id).card : ℚ) ≤
       (16 : ℚ) ^ (d - u.l - 1) -
         ∑ z ∈ subtreeBags 16 d (by norm_num) (u.child j hj hul), (a z : ℚ) +
-        mu * sib * cap d u.l t := by
+        sc.mu * sc.sib * cap d u.l t := by
   have hbr : 1 ≤ 16 := by norm_num
   set w : KBag 16 d := u.child j hj hul with hw
   have hwl : w.l = u.l + 1 := rfl
@@ -122,7 +124,7 @@ theorem keys_below_child_le (pl : Placement 16 d) (a : KBag 16 d → ℕ)
     rw [hS, subtreeKeys, Finset.card_biUnion (fun z _ z' _ hne => pl.disjoint z z' hne)]
     push_cast
     exact Finset.sum_congr rfl fun z _ => by rw [hcard]
-  have hbad : (((S.filter fun κ => ¬ w.Native κ id).card : ℕ) : ℚ) ≤ mu * sib * cap d u.l t := by
+  have hbad : (((S.filter fun κ => ¬ w.Native κ id).card : ℕ) : ℚ) ≤ sc.mu * sc.sib * cap d u.l t := by
     refine (subtree_bad_le d t pl a hcard hpar hP w).trans ?_
     rw [Finset.filter_congr (fun h _ => by rw [hwl]; omega : ∀ h ∈ Finset.range (d - w.l + 1),
       (w.l + h) % 2 = t % 2 ↔ h % 2 = 1), hwl]
