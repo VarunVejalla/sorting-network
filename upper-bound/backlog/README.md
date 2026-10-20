@@ -21,17 +21,23 @@ places:
 * the fringe floor `x+y+z + log₂(2(f+1))`;
 * the bulk floor (walk bound at `ε_B ≈ 2.55μ − r*`).
 
-| ID | Priority | Idea | Status | First deliverable |
-|---|---|---|---|---|
-| UB-37 | P1 | Re-price sweep of the R1 model under each hypothetical | ready | Script and table, every entry labelled model |
-| UB-33 | P1 | Raise μ (larger δ_F) or remove the residual r* | proposed | Fringe generator runs at δ_F ∈ {1/6, 1/4, 1/3} |
-| UB-32 | P1 | Two column sorts per stage (short repair instead of the third sort) | proposed | Uses of the third sort, and a weaker sufficient property for each |
-| UB-34 | P1 | Take the fringe off the row count | proposed | Contract sketch of a split bulk/fringe node |
-| UB-35 | P1 | Generic failure budgets and root separator in Lean | ready | Parameters in `SepExists` and `R1Point` |
-| UB-36 | P2 | Generic schedule `(x, y, z)` with per-point design-P checks | proposed | Schedule facts as finite residue checks |
-| UB-38 | P2 | Run-aware first sort and stage fusion at the R1 node | proposed | Price at R1 (≤ ~42 off) |
+Screen (UB-37, model): [`../experiments/sub500-screen/SCREEN.md`](../experiments/sub500-screen/SCREEN.md).
+The accepted point sits where the bulk and fringe floors coincide, so a route below 500 has to change at least
+two things.
 
-Gates: three sorts need `q ≤ 20` (472.5); two sorts need `q ≤ 25` (487.5).
+| ID | Priority | Idea | Status | Modelled effect |
+|---|---|---|---|---|
+| UB-32 | P1 | Two column sorts per stage (short repair instead of the third sort) | proposed | the key lever: 526.5 alone; in nearly every route below 500 |
+| UB-34 | P1 | Better fringe scaling: smaller certified `f` at the same `J` | proposed | with UB-32, 2.4x gives 487.5 (q = 25, schedule unchanged) |
+| UB-39 | P1 | Merge instead of the first column sort (node input is sorted segments) | proposed | 618.7 alone (idealized) |
+| UB-33 | P1 | Remove the residual `r*` (two-sided invariant); `δ_F` is not a lever at (4,5,3) | proposed | 630 alone, 400 with UB-32 and `f/10` |
+| UB-40 | P2 | Error-tolerant or periodically restored invariant | proposed | the only modelled route below 300 (tolerance >= 36x, no fringe floor) |
+| UB-35 | P1 | Generic failure budgets and root separator in Lean | ready | infrastructure |
+| UB-36 | P2 | Generic schedule `(x, y, z)` with per-point design-P checks | proposed | needed once the optimum leaves (4,5,3) |
+| UB-38 | P2 | Run-aware first sort and stage fusion at the R1 node | proposed | add-on (<= ~42) |
+| UB-37 | P1 | Re-price sweep and structural screen | done (model) | see SCREEN.md |
+
+Gates: three sorts need `q ≤ 20` (472.5); two sorts need `q ≤ 25` (487.5). Recommended first: the UB-32 audit and UB-34 (together the cheapest package below 500).
 
 ## Other open tickets
 

@@ -1,5 +1,14 @@
 # Routes below 500 from the 789.75 endpoint
 
+> **Update 2026-10-20 (UB-37 screen, `../experiments/sub500-screen/SCREEN.md`).** Two corrections to
+> the estimates below.
+> * At (4,5,3), (4.3) caps μ at about the (4.4) value, so a larger δ_F does **not** raise μ. The
+> "μ × 2" row needs a schedule where (4.3) is slack. UB-33 is now about removing `r*`.
+> * "Split fringe" is not free, so UB-34 is now about better fringe scaling.
+>
+> The cheapest modelled package below 500 is UB-32 (two sorts) plus a 2.4× smaller fringe, which
+> gives 487.5 at q = 25. Below 300 needs UB-40.
+
 Claude (Opus 5.5), 2026-10-20. Planning note for UB-32 to UB-38. The numbers below are model
 estimates, extrapolated from the 789.75 point (`../best/notes/sub800/R1-PROOF.md`,
 `../best/notes/sub800/r1_point.out`, `../best/notes/sub800/cert_walk.out`). None is a result.

@@ -39,3 +39,4 @@ A fork of the whole best package is ≈190 MB with its build cache and every com
 3. Record the branch and last good commit in the ticket (`branch` field) and in the folder's `STATUS.md`.
 4. A fork that is finished is promoted (copy tracked files into `../best`, move the old best to `../alternatives`,
    follow `../TRUSTED.md`) and then removed from `main`.
+| `sub500-screen/` | scripts + notes | reference | UB-37 | R1 re-price sweep and structural screen (model): single levers, combinations and gates below 500/300/200. Start at `SCREEN.md` |

@@ -298,7 +298,7 @@
         "upper-bound/experiments/fringe-single-round/NOTES.md",
         "upper-bound/backlog/archive/roadmap-700-200.md"
       ],
-      "notes": "2026-10-20: see UB-33/UB-34; at R1 the fringe floor is log2 m ~ x+y+z+log2(2(f+1)) = 26. Observed 2026-10-13: tapered-945 CyclicSmallF2Params/AdaptivePaddedWitness use f=16000 at width 16 and common rare-rank coefficient 1/9000000. Its R2n range is empty, so this is not a general-width small-fringe theorem. The standard large-width branch retains f=131040. Lowering the scale further must reprice both probability and flow conditions."
+      "notes": "2026-10-20: the concrete target is UB-34 (2.4x smaller f with two sorts). 2026-10-20: see UB-33/UB-34; at R1 the fringe floor is log2 m ~ x+y+z+log2(2(f+1)) = 26. Observed 2026-10-13: tapered-945 CyclicSmallF2Params/AdaptivePaddedWitness use f=16000 at width 16 and common rare-rank coefficient 1/9000000. Its R2n range is empty, so this is not a general-width small-fringe theorem. The standard large-width branch retains f=131040. Lowering the scale further must reprice both probability and flow conditions."
     },
     {
       "id": "UB-16",
@@ -635,13 +635,14 @@
       "depends_on": [],
       "first_deliverable": "List every use of the third column sort in PaddedSeparator/BaselineFringeD and the R1 node spec (two-sided cut bounds, fHigh/fLow); for each, a weaker sufficient property or a counterexample.",
       "evidence": [
+        "upper-bound/experiments/sub500-screen/SCREEN.md",
         "upper-bound/backlog/sub500-routes.md"
       ],
-      "notes": "(2 S(q) + R)·3/4: 526.5 at q = 26, R = 0; below 500 needs q <= 25 and R < 17 (or q <= 24, R < 66), so it must combine with UB-33/UB-34. L1 obstruction: archive/roadmap-700-200.md section 2."
+      "notes": "2026-10-20 screen (UB-37): the key lever; in nearly every sub-500 route, and three sorts never reach 500 with a better fringe alone. Gate: two sorts + fringe 2.4x better = 487.5 at (4,5,3), q = 25. (2 S(q) + R)·3/4: 526.5 at q = 26, R = 0; below 500 needs q <= 25 and R < 17 (or q <= 24, R < 66), so it must combine with UB-33/UB-34. L1 obstruction: archive/roadmap-700-200.md section 2."
     },
     {
       "id": "UB-33",
-      "title": "Raise mu (larger delta_F) or remove the design-P residual r*",
+      "title": "Remove the design-P residual r* (two-sided invariant); delta_F is not a lever at (4,5,3)",
       "priority": "P1",
       "status": "proposed",
       "claim_level": "model",
@@ -649,16 +650,19 @@
       "projected": null,
       "owner": null,
       "branch": null,
-      "depends_on": [],
-      "first_deliverable": "Run gen_fringe.py at delta_F in {1/6, 1/4, 1/3}; record the smallest certifiable f and J and price q = max(q_bulk, q_fringe).",
+      "depends_on": [
+        "UB-24"
+      ],
+      "first_deliverable": "Price route R2 (r* = 0) against the R1 Lean layer: which invariant facts change, and whether the two-sided invariant of UB-24 gives r* = 0 without new (4.2') terms.",
       "evidence": [
+        "upper-bound/experiments/sub500-screen/SCREEN.md",
         "upper-bound/backlog/sub500-routes.md"
       ],
-      "notes": "r* takes 1.91 mu of the 4 mu (4.2') budget, so eps_B ~ 2.55 mu - r*: mu x 2 makes the eps_B budget 5x (q_bulk 25.3 -> 22.2); r* = 0 needs the two-sided invariant (UB-24, route R2). Pays off only with UB-32 or UB-34 because the fringe floor stays at 26."
+      "notes": "2026-10-20 screen: (4.3) caps mu at nu/(A k^2) ~ the (4.4) value at delta_F = 1/8, so larger delta_F gives no gain (800-850). r* = 0 alone prices to 630, and to 400 with two sorts and f/10. Depends on the two-sided invariant (UB-24)."
     },
     {
       "id": "UB-34",
-      "title": "Take the fringe off the row count (split fringe network or own rectangle)",
+      "title": "Better fringe scaling: certify a smaller fringe height f at the same J (gate: 2.4x)",
       "priority": "P1",
       "status": "proposed",
       "claim_level": "model",
@@ -667,11 +671,12 @@
       "owner": null,
       "branch": null,
       "depends_on": [],
-      "first_deliverable": "Depth and contract sketch of a split node: bulk separator on 2^q rows plus a fringe network on the top/bottom (f+1)·n positions, and how they compose in (4.2')/(4.4).",
+      "first_deliverable": "Find where the certified f = 7934 at J = 190000 loses against the fit (CAL = 1.32) and the fringe route's own floor; a candidate certificate with f <= 3300 at delta_F = 1/8.",
       "evidence": [
+        "upper-bound/experiments/sub500-screen/SCREEN.md",
         "upper-bound/backlog/sub500-routes.md"
       ],
-      "notes": "Rows m ~ 2(f+1)/p only because the fringe is protected inside the bulk rectangle; with UB-33 (q_bulk ~ 22) this would price to ~569 with three sorts and ~380 with two."
+      "notes": "2026-10-20 screen: 'split fringe' is not free (finding extreme-rank wires is separation), so read this as better fringe scaling f(J). With two sorts, f/2.4 reaches 487.5 and f/10 482.6; with three sorts no fringe gain reaches 500 (the bulk floor binds)."
     },
     {
       "id": "UB-35",
@@ -713,8 +718,8 @@
       "id": "UB-37",
       "title": "Re-price sweep of the R1 model under each hypothetical (status quo, delta_F, r* = 0, split fringe, two sorts)",
       "priority": "P1",
-      "status": "ready",
-      "claim_level": "none",
+      "status": "done",
+      "claim_level": "model",
       "baseline": 789.75,
       "projected": null,
       "owner": null,
@@ -722,9 +727,11 @@
       "depends_on": [],
       "first_deliverable": "A notes/ script and table over (x, y, z, delta_F, f, q, sorts per stage) using the real generators for the fringe and walk bound; every entry labelled model.",
       "evidence": [
+        "upper-bound/experiments/sub500-screen/SCREEN.md",
+        "upper-bound/experiments/sub500-screen/screen.out",
         "upper-bound/backlog/sub500-routes.md"
       ],
-      "notes": "Decides which of UB-32..UB-34 to fund; the earlier scan covered only the status quo and delta_F in {128/4095, 1/8}."
+      "notes": "2026-10-20: done (model). Calibrated to 789.8 at (4,5,3). The bulk and fringe floors coincide, so single levers gain little: two sorts 526.5, merge-first 618.7, r* = 0 630, fringe away 690; delta_F and eps_B tolerance alone give nothing. Below 500 needs two sorts plus a 2.4x better fringe (487.5, q = 25); below 300 needs eps_B tolerance >= 36x with no fringe floor."
     },
     {
       "id": "UB-38",
@@ -744,6 +751,44 @@
         "upper-bound/backlog/sub500-routes.md"
       ],
       "notes": "Modest: at most ~42 off the coefficient (UB-13's -16% of one sort). Add-on to a route that already clears 500."
+    },
+    {
+      "id": "UB-39",
+      "title": "Merge instead of the first column sort at the R1 geometry (node input is sorted segments)",
+      "priority": "P1",
+      "status": "proposed",
+      "claim_level": "model",
+      "baseline": 789.75,
+      "projected": 618.7,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "Count the runs per child column under the R1 layout (parent column segments of ~2^22, child F blocks) and price a merge tree; check that the separator proof uses no property of the first sort beyond its output being column-sorted.",
+      "evidence": [
+        "upper-bound/experiments/sub500-screen/SCREEN.md",
+        "upper-bound/backlog/sub500-routes.md"
+      ],
+      "notes": "Only the first sort sees the raw node input (sort, scramble, sort, scramble, sort); at R1 each child column gets ~16 sorted parent segments, so about a 4-level merge (~4q) instead of S(q). Idealized 618.7 alone, 483 with delta_F 1/4 + fringe away. The earlier -16% cap (UB-13, runaware/) was for the 1770/1419 windows."
+    },
+    {
+      "id": "UB-40",
+      "title": "Error-tolerant or periodically restored invariant (eps_B tolerance >= 36x, no fringe floor)",
+      "priority": "P2",
+      "status": "proposed",
+      "claim_level": "model",
+      "baseline": 789.75,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [
+        "UB-34"
+      ],
+      "first_deliverable": "State an invariant that tolerates eps_B larger by T for P-1 stages and is restored by one precise stage, and find the step of Lemma 4.3' that breaks; price with screen.py's periodic model.",
+      "evidence": [
+        "upper-bound/experiments/sub500-screen/SCREEN.md",
+        "upper-bound/backlog/sub500-routes.md"
+      ],
+      "notes": "Screen gates (fringe idealized away): T >= 5.5 for < 500, >= 36 for < 300, >= 101 for < 200 (model grid floor). Periodic T = 1000: P = 4 gives 302, P = 8 gives 208. The only modelled sub-300 routes; relates to UB-27 and the tapered invariant (UB-07/UB-24)."
     }
   ]
 }

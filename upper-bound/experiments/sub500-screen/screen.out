@@ -1,0 +1,65 @@
+Calibration at (4,5,3), dF = 1/8, three sorts (accepted 789.75):
+  model                                          789.8 ( 777.0)  (4,5,3) q=26 [B  25.8, F  25.7]  epsB 7.5e-06 epsF 7.4e-06 f     6695 spb 0.750  delta 1.87e-06 mu 1.501e-05
+
+Best integer schedule per hypothetical: cost (continuous-q cost)  (x,y,z) q [bulk, fringe floors]
+  H0  status quo (dF 1/8)                        789.8 ( 777.0)  (4,5,3) q=26 [B  25.8, F  25.7]  epsB 7.5e-06 epsF 7.4e-06 f     6695 spb 0.750
+  H0' status quo at (4,5,3) only                 789.8 ( 777.0)  (4,5,3) q=26 [B  25.8, F  25.7]  epsB 7.5e-06 epsF 7.4e-06 f     6695 spb 0.750
+  H1a dF = 1/5 (fit)                             800.0 ( 792.1)  (3,5,3) q=24 [B  23.6, F  23.9]  epsB 2.3e-05 epsF 7.5e-05 f     3648 spb 0.889
+  H1b dF = 1/4 (extrapolated fit)                850.5 ( 820.4)  (4,5,3) q=27 [B  26.3, F  26.5]  epsB 5.9e-06 epsF 9.6e-06 f    11483 spb 0.750  [extrapolated fringe fit]
+  H1c dF = 1/3 (extrapolated fit)                850.5 ( 841.8)  (4,5,3) q=27 [B  26.6, F  26.9]  epsB 5.0e-06 epsF 1.0e-05 f    14622 spb 0.750  [extrapolated fringe fit]
+  H2  r* = 0 (two-sided invariant)               630.0 ( 626.9)  (3,3,2) q=20 [B  20.0, F  19.9]  epsB 1.5e-04 epsF 1.1e-04 f     1779 spb 1.000
+  H3  fringe idealized away (upper bound)        690.0 ( 651.3)  (4,6,3) q=23 [B  22.3, F   0.0]  epsB 4.5e-05 epsF 7.8e-09 f   198039 spb 0.833
+  F1  fringe f / 10 (same J scaling)             723.9 ( 717.0)  (4,7,4) q=26 [B  25.9, F  25.8]  epsB 7.2e-06 epsF 4.0e-06 f      907 spb 0.688
+  F2  fringe f ~ J^0.25 (anchored at 7934)       789.8 ( 781.0)  (4,5,3) q=26 [B  25.8, F  25.9]  epsB 7.5e-06 epsF 7.4e-06 f     7280 spb 0.750
+  F3  fringe f ~ J^0.25, / 10                    723.9 ( 712.2)  (4,7,4) q=26 [B  25.8, F  25.8]  epsB 7.5e-06 epsF 3.7e-06 f      867 spb 0.688
+  H4a two sorts, idealized repair R = 0          526.5 ( 518.0)  (4,5,3) q=26 [B  25.8, F  25.7]  epsB 7.5e-06 epsF 7.4e-06 f     6695 spb 0.750
+  H4b two sorts, repair R = 2(q+1) (two merges)   567.0 ( 558.5)  (4,5,3) q=26 [B  25.8, F  25.7]  epsB 7.5e-06 epsF 7.4e-06 f     6695 spb 0.750
+  H4c one-round separator (2 sorts, E1 precision)   880.0 ( 847.0)  (4,6,3) q=32 [B  31.4, F  31.4]  epsB 4.5e-05 epsF 1.1e-08 f   166796 spb 0.833
+  H5a first sort -> merge of k+1 runs            618.7 ( 613.8)  (3,5,3) q=24 [B  23.9, F  23.9]  epsB 2.0e-05 epsF 2.5e-05 f     3684 spb 0.889
+  H5b all sorts -> merges (optimistic)           225.0 ( 224.0)  (2,6,4) q=25 [B  24.9, F  24.9]  epsB 1.2e-05 epsF 2.7e-05 f     3556 spb 1.000
+  H6a tolerance x10 (larger-error invariant)     789.8 ( 748.7)  (4,5,3) q=26 [B  24.6, F  25.3]  epsB 1.4e-05 epsF 1.4e-05 f     4973 spb 0.750
+  H6b tolerance x100                             789.8 ( 745.2)  (4,5,3) q=26 [B  24.3, F  25.2]  epsB 1.6e-05 epsF 1.5e-05 f     4767 spb 0.750
+  H6c tolerance x1000                            789.8 ( 745.2)  (4,5,3) q=26 [B  19.8, F  25.2]  epsB 1.6e-04 epsF 1.5e-05 f     4767 spb 0.750
+  C1  dF 1/4 + split fringe                      598.5 ( 584.8)  (3,4,2) q=18 [B  17.8, F   0.0]  epsB 4.7e-04 epsF 3.1e-08 f   138785 spb 1.167
+  C2  r* = 0 + split fringe                      600.0 ( 568.6)  (4,4,3) q=24 [B  23.4, F   0.0]  epsB 2.7e-05 epsF 7.8e-09 f   198039 spb 0.667
+  C3  r* = 0 + dF 1/4 + split                    539.0 ( 525.7)  (3,4,3) q=21 [B  20.7, F   0.0]  epsB 1.0e-04 epsF 1.6e-08 f   187626 spb 0.778
+  C4  split + two sorts (R = 0)                  460.0 ( 434.2)  (4,6,3) q=23 [B  22.3, F   0.0]  epsB 4.5e-05 epsF 7.8e-09 f   198039 spb 0.833
+  C5  r* = 0 + split + two sorts                 400.0 ( 379.1)  (4,4,3) q=24 [B  23.4, F   0.0]  epsB 2.7e-05 epsF 7.8e-09 f   198039 spb 0.667
+  C6  dF 1/4 + r* = 0 + split + two sorts        359.3 ( 350.5)  (3,4,3) q=21 [B  20.7, F   0.0]  epsB 1.0e-04 epsF 1.6e-08 f   187626 spb 0.778
+  C7  dF 1/4 + split + merge first sort          483.0 ( 472.9)  (3,4,2) q=18 [B  17.8, F   0.0]  epsB 4.7e-04 epsF 3.1e-08 f   138785 spb 1.167
+  C8  tol x100 + split                           216.0 ( 216.0)  (2,6,2) q= 8 [B   8.0, F   0.0]  epsB 8.7e-02 epsF 6.2e-08 f    70896 spb 2.000
+  C10 f/10 + two sorts                           482.6 ( 478.0)  (4,7,4) q=26 [B  25.9, F  25.8]  epsB 7.2e-06 epsF 4.0e-06 f      907 spb 0.688
+  C11 f/10 + r* = 0 + two sorts                  400.0 ( 380.2)  (4,4,3) q=24 [B  23.4, F  23.3]  epsB 2.6e-05 epsF 5.1e-07 f     2524 spb 0.667
+  C12 f~J^0.25 + two sorts                       526.5 ( 520.7)  (4,5,3) q=26 [B  25.8, F  25.9]  epsB 7.5e-06 epsF 7.4e-06 f     7280 spb 0.750
+  C13 f/10 + merge first sort                    572.0 ( 566.9)  (4,7,4) q=26 [B  25.9, F  25.8]  epsB 7.2e-06 epsF 4.0e-06 f      907 spb 0.688
+  C9  tol x100 + split + two sorts               144.0 ( 144.0)  (2,6,2) q= 8 [B   8.0, F   0.0]  epsB 8.7e-02 epsF 6.2e-08 f    70896 spb 2.000
+
+Periodic restoration (idea 3): cheap stages at tolerance T, one precise 3-sort stage at q = 26 every P
+  T = 100, P = 2, split fringe                   471.1 ( 467.8)  (5,8,5) q=22 [B  21.8, F   0.0]  epsB 5.9e-05 epsF 9.8e-10 f   553201 spb 0.520
+  T = 100, P = 4, split fringe                   414.4 ( 408.9)  (4,8,5) q=19 [B  18.8, F   0.0]  epsB 2.8e-04 epsF 2.0e-09 f   392802 spb 0.600
+  T = 100, P = 8, split fringe                   339.4 ( 321.3)  (4,6,3) q=14 [B  13.4, F   0.0]  epsB 4.5e-03 epsF 7.8e-09 f   198039 spb 0.833
+  T = 1000, P = 2, split fringe                  403.1 ( 399.0)  (5,10,7) q=23 [B  22.7, F   0.0]  epsB 3.7e-05 epsF 2.4e-10 f  1097289 spb 0.429
+  T = 1000, P = 4, split fringe                  301.6 ( 294.8)  (4,7,4) q=12 [B  11.6, F   0.0]  epsB 1.1e-02 epsF 3.9e-09 f   278909 spb 0.688
+  T = 1000, P = 8, split fringe                  208.1 ( 207.1)  (4,6,3) q= 9 [B   9.0, F   0.0]  epsB 4.5e-02 epsF 7.8e-09 f   198039 spb 0.833
+
+
+Gates: least multiplier reaching each target (geometric bisection; model)
+  fringe f / c, three sorts                  < 500: not reached for fdiv <= 1e6
+  fringe f / c, three sorts                  < 300: not reached for fdiv <= 1e6
+  fringe f / c, three sorts                  < 200: not reached for fdiv <= 1e6
+  fringe f / c, two sorts                    < 500: fdiv >=       2.4  (487.5 at (4,5,3), q = 25 [B 25.0, F 25.0])
+  fringe f / c, two sorts                    < 300: not reached for fdiv <= 1e6
+  fringe f / c, two sorts                    < 200: not reached for fdiv <= 1e6
+  fringe f / c, r* = 0, three sorts          < 500: not reached for fdiv <= 1e6
+  fringe f / c, r* = 0, three sorts          < 300: not reached for fdiv <= 1e6
+  fringe f / c, r* = 0, three sorts          < 200: not reached for fdiv <= 1e6
+  eps_B tolerance T, fringe idealized away   < 500: tol >=       5.5  (480.0 at (3,5,2), q = 15 [B 15.0, F 0.0])
+  eps_B tolerance T, fringe idealized away   < 300: tol >=      35.8  (297.0 at (3,6,2), q = 11 [B 11.0, F 0.0])
+  eps_B tolerance T, fringe idealized away   < 200: tol >=     101.2  (189.0 at (2,5,2), q = 8 [B 8.0, F 0.0])
+  eps_B tolerance T, fringe f/100            < 500: tol >=       6.9  (480.0 at (3,5,2), q = 15 [B 15.0, F 15.0])
+  eps_B tolerance T, fringe f/100            < 300: not reached for tol <= 1e6
+  eps_B tolerance T, fringe f/100            < 200: not reached for tol <= 1e6
+  eps_B tolerance T, f/100, two sorts        < 500: tol >=       1.0  (460.0 at (4,6,3), q = 23 [B 22.3, F 22.3])
+  eps_B tolerance T, f/100, two sorts        < 300: tol >=      17.8  (280.0 at (3,4,2), q = 15 [B 15.0, F 15.0])
+  eps_B tolerance T, f/100, two sorts        < 200: not reached for tol <= 1e6
+exit=0

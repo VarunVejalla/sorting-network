@@ -29,3 +29,11 @@ Keep this list so nobody repeats them.
 * **Run-aware first sort beyond uniform s = 29.** Stage-dependent block size gives only ~1.5%
   more; an ideal merge tree of the actual (non-power-of-two) runs caps at about −16% in total
   (first sort ≈ 1209 instead of 1770).
+* **One-round separator with walk-bound precision (2 sorts per stage), UB-37 screen 2026-10-20.** E1(m)
+  of the walk bound is too weak: the best schedule needs rows of `2^32` and prices to 880, above 789.75.
+  Two sorts only help if the two-round precision is kept (UB-32).
+* **Larger δ_F at the R1 schedule (4,5,3).** (4.3) caps μ at `ν/(Ak²)`, about the (4.4) value at
+  `δ_F = 1/8`. With the certified fringe fits, `δ_F = 1/5` prices to 800 and the extrapolated 1/4 or 1/3
+  to 850 (`experiments/sub500-screen/SCREEN.md`).
+* **More ε_B tolerance alone.** At the R1 point the fringe floor binds: tolerance ×10 to ×1000 leaves
+  789.8. It must come with a fringe improvement (UB-34/UB-40).
