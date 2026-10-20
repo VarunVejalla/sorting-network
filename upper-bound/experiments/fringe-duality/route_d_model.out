@@ -23,3 +23,48 @@ Row split at R0 = c (6j)^{1/3} (low rows: capped source-set energy; high rows: t
    j =   100 J: R0 =   4993, Q/j =  5.23, W_low =   1375, W_high =    91.9, load <=   1466.9, need f >=   1366.9  (heuristic (6j)^(1/3) + b =   998.7)
    j =   300 J: R0 =   7201, Q/j =  4.68, W_low =   1911, W_high =   131.7, load <=   2042.7, need f >=   1742.7  (heuristic (6j)^(1/3) + b =  1440.3)
    j =   800 J: R0 =   9986, Q/j =  4.30, W_low =   2577, W_high =   181.8, load <=   2758.8, need f >=   1958.8  (heuristic (6j)^(1/3) + b =  1997.3)
+
+Multi-column escapes at the 731.25 fringe f = 3900 (need < j/J):
+ n = 2^20, jmax = 308 J
+   j =     1 J: worst escapes       0.0 at s2 =     1  vs allowed     1.0  OK
+   j =    10 J: worst escapes       0.0 at s2 =     1  vs allowed    10.0  OK
+   j =    40 J: worst escapes       0.0 at s2 =     1  vs allowed    40.0  OK
+   j =   100 J: worst escapes       0.0 at s2 =     1  vs allowed   100.0  OK
+   j =   300 J: worst escapes     111.5 at s2 =     1  vs allowed   300.0  OK
+ n = 2^26, jmax = 19708 J
+   j =     1 J: worst escapes       0.0 at s2 =     1  vs allowed     1.0  OK
+   j =    10 J: worst escapes       0.0 at s2 =     1  vs allowed    10.0  OK
+   j =    40 J: worst escapes       0.0 at s2 =     1  vs allowed    40.0  OK
+   j =   100 J: worst escapes       0.0 at s2 =     1  vs allowed   100.0  OK
+   j =   300 J: worst escapes       0.0 at s2 =     1  vs allowed   300.0  OK
+   j =  1000 J: worst escapes       0.0 at s2 =     1  vs allowed  1000.0  OK
+   j =  3000 J: worst escapes    1568.1 at s2 =     4  vs allowed  3000.0  OK
+   j = 10000 J: worst escapes  374076.5 at s2 =   256  vs allowed 10000.0  FAIL
+   j = 19000 J: worst escapes 2393697.7 at s2 =  4096  vs allowed 19000.0  FAIL
+
+Multi-level split, escapes at f = 3900 (need < j/J):
+ n = 2^20, jmax = 308 J
+   j =        1 J (b =    1.6): worst escapes        0.0 at s2 =     1  vs allowed       1.0  OK
+   j =       10 J (b =   15.8): worst escapes        0.0 at s2 =     1  vs allowed      10.0  OK
+   j =      100 J (b =  158.3): worst escapes        0.0 at s2 =     1  vs allowed     100.0  OK
+   j =      300 J (b =  474.9): worst escapes        0.0 at s2 =     1  vs allowed     300.0  OK
+ n = 2^26, jmax = 19708 J
+   j =        1 J (b =    0.0): worst escapes        0.0 at s2 =     1  vs allowed       1.0  OK
+   j =       10 J (b =    0.2): worst escapes        0.0 at s2 =     1  vs allowed      10.0  OK
+   j =      100 J (b =    2.5): worst escapes        0.0 at s2 =     1  vs allowed     100.0  OK
+   j =      300 J (b =    7.4): worst escapes        0.0 at s2 =     1  vs allowed     300.0  OK
+   j =     1000 J (b =   24.7): worst escapes        0.0 at s2 =     1  vs allowed    1000.0  OK
+   j =     3000 J (b =   74.2): worst escapes       89.3 at s2 =     1  vs allowed    3000.0  OK
+   j =    10000 J (b =  247.4): worst escapes     2052.7 at s2 =     1  vs allowed   10000.0  OK
+   j =    19000 J (b =  470.0): worst escapes     4450.0 at s2 =     4  vs allowed   19000.0  OK
+ n = 2^34, jmax = 5045293 J
+   j =        1 J (b =    0.0): worst escapes        0.0 at s2 =     1  vs allowed       1.0  OK
+   j =       10 J (b =    0.0): worst escapes        0.0 at s2 =     1  vs allowed      10.0  OK
+   j =      100 J (b =    0.0): worst escapes        0.0 at s2 =     1  vs allowed     100.0  OK
+   j =      300 J (b =    0.0): worst escapes        0.0 at s2 =     1  vs allowed     300.0  OK
+   j =     1000 J (b =    0.1): worst escapes        0.0 at s2 =     1  vs allowed    1000.0  OK
+   j =     3000 J (b =    0.3): worst escapes       15.3 at s2 =     1  vs allowed    3000.0  OK
+   j =    10000 J (b =    1.0): worst escapes     1806.3 at s2 =     1  vs allowed   10000.0  OK
+   j =    19000 J (b =    1.8): worst escapes     3089.9 at s2 =     1  vs allowed   19000.0  OK
+   j =   100000 J (b =    9.7): worst escapes    17339.0 at s2 =    16  vs allowed  100000.0  OK
+   j =    1e+06 J (b =   96.6): worst escapes   182229.4 at s2 =    64  vs allowed 1000000.0  OK

@@ -669,7 +669,7 @@
       "status": "active",
       "claim_level": "model",
       "baseline": 789.75,
-      "projected": 690,
+      "projected": 731.25,
       "owner": "Claude (Opus 5.5)",
       "branch": "ub-34-fringe-duality",
       "depends_on": [],
@@ -679,7 +679,7 @@
         "upper-bound/experiments/fringe-duality/FRINGE-DUALITY.md",
         "upper-bound/experiments/sub500-screen/SCREEN.md"
       ],
-      "notes": "2026-10-20 status: double-duality route formalised in part (Lean: FringeDualityDet/Tail/Prob on branch ub-34-fringe-duality); q=25 bulk kernel-checked (R1Cells25/R2Cells25). The 731.25 point needs f+1 <= 4024 at J ~ 1.66e6; the current round-1 bound fails by j = 40J (f 4111 at J = 6e5) and is 40-60x loose in the round-1 energy (true E ~ j(3 + j/n)); even the heuristic adversary (~3160) is close to the ceiling, so 731.25 is marginal. 2026-10-20 fringe-duality screen (experiments/fringe-duality, model): double weak duality (round-1 linear cost, round-2 convex cost) certifies zero escapes at j = J = 190000 for f ~ 950-1140 (7-8x below 7934); the dense regime is not closed yet (least f 1980 at 5J; round-1 profile union loses). With f/7.9 the status quo would price to 731.25. 2026-10-20 heuristic: the worst-case adversary gives max load (6j)^{1/3} for sparse tops and escapes ~0.9 j/f^2 in the dense regime, so f >~ sqrt(0.9 J) ~ 414 at J = 190000 against the certified 7934 (~18 sqrt J): the certified constant looks ~19x loose. f/19 alone prices to 690 (from 789.75); f/10 to 723.9. 2026-10-20 screen: 'split fringe' is not free (finding extreme-rank wires is separation), so read this as better fringe scaling f(J). With two sorts, f/2.4 reaches 487.5 and f/10 482.6; with three sorts no fringe gain reaches 500 (the bulk floor binds)."
+      "notes": "2026-10-20 route (d) (experiments/fringe-duality/ROUND1-ENERGY.md): round-1 energy only on round-2 source sets, centred, multi-level row split: in the model the 731.25 class-A fringe (f+1 <= 4024 at J ~ 1.66e6) passes for n = 2^20, 2^26, 2^34 up to jmax with margin. Next: paper proof of the fixed-set round-1 lemma, certificate, Lean. 2026-10-20 status: double-duality route formalised in part (Lean: FringeDualityDet/Tail/Prob on branch ub-34-fringe-duality); q=25 bulk kernel-checked (R1Cells25/R2Cells25). The 731.25 point needs f+1 <= 4024 at J ~ 1.66e6; the current round-1 bound fails by j = 40J (f 4111 at J = 6e5) and is 40-60x loose in the round-1 energy (true E ~ j(3 + j/n)); even the heuristic adversary (~3160) is close to the ceiling, so 731.25 is marginal. 2026-10-20 fringe-duality screen (experiments/fringe-duality, model): double weak duality (round-1 linear cost, round-2 convex cost) certifies zero escapes at j = J = 190000 for f ~ 950-1140 (7-8x below 7934); the dense regime is not closed yet (least f 1980 at 5J; round-1 profile union loses). With f/7.9 the status quo would price to 731.25. 2026-10-20 heuristic: the worst-case adversary gives max load (6j)^{1/3} for sparse tops and escapes ~0.9 j/f^2 in the dense regime, so f >~ sqrt(0.9 J) ~ 414 at J = 190000 against the certified 7934 (~18 sqrt J): the certified constant looks ~19x loose. f/19 alone prices to 690 (from 789.75); f/10 to 723.9. 2026-10-20 screen: 'split fringe' is not free (finding extreme-rank wires is separation), so read this as better fringe scaling f(J). With two sorts, f/2.4 reaches 487.5 and f/10 482.6; with three sorts no fringe gain reaches 500 (the bulk floor binds)."
     },
     {
       "id": "UB-35",

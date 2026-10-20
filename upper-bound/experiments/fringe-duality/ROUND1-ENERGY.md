@@ -135,3 +135,37 @@ Round-1 energy on the source sets is `Q/j ≈ 4–6` sparse (true value ≈ 3) a
 2. the high-row count, via a union over tall sets;
 3. multi-column escapes (sets `S`, `|U| = R0 s2`);
 4. certification and Lean.
+
+### Route (d), multi-level and centred: the 731.25 fringe passes in the model
+
+Two refinements (`route_d_model.py`, `route_d_model.out`):
+* **Centring.** With weights `a = (z − b)₊`, `b = j/n`, and drift `λ = ρ + λ'` (`ρ = Σ_U a / n`), the
+  duality's `ρ j` term equals `b Σ a` and cancels the background part of `Σ_U a z`. So
+  `Σ_U (z − b)₊² ≲ 2 j + dev`, the same as the sparse case.
+* **Geometric row levels** `[R_i, R_{i+1})`. Each level uses the source-set energy with weights
+  capped at `R_{i+1}` (entropy `(R_{i+1} − R_i) s2 ln R_{i+1}`). Every counted row costs
+  `≥ (R_i + 1)²`.
+
+Escapes at `f = 3900`, `J = 1.66e6`, `δ_F = 1/8`, against the allowance `j/J`, worst over round-2 set
+sizes `s2 ≤ 4096`:
+
+| n | jmax | result |
+|---|---|---|
+| 2^20 | 308 J | all OK (0 escapes up to jmax) |
+| 2^26 | 19708 J | all OK; worst 4450 vs 19000 at 19000 J |
+| 2^34 | 5.0e6 J | all OK up to 1e6 J; worst 182229 vs 1e6 |
+
+**So route (d) clears the 731.25 class-A fringe window (`f + 1 ≤ 4024`, `J ≈ 1.66e6`) in the model
+with margin.** It is the first fringe route to do so.
+
+**Program for a kernel-checked 731.25:**
+1. Paper proof of the round-1 lemma on a fixed source set: capped and centred weights,
+   deterministic main term, collision/background drift, Bernstein deviation over the union of
+   profiles. Then the multi-level composition and the escapes bound.
+2. Interval certificate (as `cert_walk.py`), plus a review.
+3. Lean, reusing `FringeDualityDet/Tail/Prob`:
+   * weighted per-column tails (jumps `≤ R`);
+   * the source-set structure from `σ₂`;
+   * the multi-level composition.
+4. A generic fringe interface in the padded separator (a `ColumnF2` contract), and `R1At73125`. The
+   bulk `R1Cells25`/`R2Cells25` is already done.

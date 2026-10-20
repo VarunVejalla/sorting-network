@@ -11,10 +11,11 @@ import math
 import sys
 
 
-def solve_Q(j, K, U, n, s2=1, eta=1e-4):
+def solve_Q(j, K, U, n, s2=1, eta=1e-4, centred=False):
     best = math.inf
     Ent = U * math.log(K + 1) + math.log(n / eta) + s2 * math.log(math.e * n / s2)
-    rho = min(j, K * U) / n
+    # centred weights a = (z - b)_+: the duality's rho j term equals b sum a and cancels the background
+    rho = 0.0 if centred else min(j, K * U) / n
     for lam in [rho + d for d in (0.55, 0.6, 0.75, 1.0, 1.5, 2.0, 3.0)]:
         c = 1 - 1 / (2 * (lam - rho))
         if c <= 0:
@@ -73,3 +74,75 @@ for n_ in (2 ** 20, 2 ** 40):
         load = b + Wl + Wh
         print(f"   j = {mult:5g} J: R0 = {R0:6d}, Q/j = {Q / j:5.2f}, W_low = {Wl:6d}, W_high = {Wh:7.1f}, "
               f"load <= {load:8.1f}, need f >= {max(0, load - j / J):8.1f}  (heuristic (6j)^(1/3) + b = {(6*j)**(1/3) + b:7.1f})")
+
+
+def multi_escapes(j, n, f, s2, c_R0):
+    """Escapes from s2 round-2 columns with shared round-1 mass (equal loads maximise the total).
+    Low rows (< R0): source-set energy on |U| = R0 s2 sources. High rows (>= R0): each needs a round-1
+    column taller than R0; a given round-2 column meets each such column at most about once, so its
+    extra load is <= s_R0 (the number of tall round-1 columns)."""
+    R0 = max(4, int(c_R0 * (6 * j) ** (1 / 3)))
+    Q = solve_Q(j, R0, R0 * s2, n, s2)
+    # s2 columns with W low rows each: s2 W(W+1)(2W+1)/6 <= Q
+    W = 0
+    while s2 * (W + 1) * (W + 2) * (2 * W + 3) / 6 <= Q:
+        W += 1
+    s_R0 = 9.0 * j / R0 ** 2
+    b = j / n
+    return s2 * max(0.0, b + W + 1.5 * s_R0 + 2 - f)
+
+
+print("\nMulti-column escapes at the 731.25 fringe f = 3900 (need < j/J):")
+for n_ in (2 ** 20, 2 ** 26):
+    f = 3900
+    jmax = 0.125 * f * n_
+    print(f" n = 2^{int(math.log2(n_))}, jmax = {jmax / J:.0f} J")
+    for mult in (1, 10, 40, 100, 300, 1000, 3000, 10000, 19000):
+        j = mult * J
+        if j > jmax:
+            continue
+        worst = max(((min(multi_escapes(j, n_, f, s2, c) for c in (1.0, 1.5, 2.0, 3.0)), s2)
+                     for s2 in (1, 2, 4, 8, 16, 64, 256, 1024, 4096)), key=lambda r: r[0])
+        print(f"   j = {mult:5g} J: worst escapes {worst[0]:9.1f} at s2 = {worst[1]:5d}  vs allowed {j / J:7.1f}"
+              f"  {'OK' if worst[0] < j / J else 'FAIL'}")
+
+
+def multi_level_load(j, n, s2, R0, ratio=2.0):
+    """Per-column load from geometric row levels [R_i, R_{i+1}): each level's rows need z > R_i, cost
+    >= sum (r+1)^2 over the counted rows; level i uses the source-set energy on |U| = (R_{i+1}-R_i) s2
+    sources with weights capped at R_{i+1}. Returns the low-rows count W plus the summed high levels."""
+    K = int(3 * math.sqrt(j)) + 10
+    Q0 = solve_Q(j, R0, R0 * s2, n, s2, centred=True)
+    W = 0
+    while s2 * (W + 1) * (W + 2) * (2 * W + 3) / 6 <= Q0:
+        W += 1
+    total = W
+    lo = R0
+    while lo < K:
+        hi = min(K, int(lo * ratio) + 1)
+        Q = solve_Q(j, hi, (hi - lo) * s2, n, s2, centred=True)
+        # rows counted at this level each cost >= (lo+1)^2 (weights capped at hi): count <= Q / (s2 (lo+1)^2)
+        total += min(hi - lo, Q / (s2 * (lo + 1) ** 2))
+        lo = hi
+    return total
+
+
+def multi_escapes_ml(j, n, f, s2, c_R0):
+    R0 = max(4, int(c_R0 * (6 * j / max(1, s2)) ** (1 / 3)))
+    b = j / n
+    return s2 * max(0.0, b + multi_level_load(j, n, s2, R0) - f)
+
+
+print("\nMulti-level split, escapes at f = 3900 (need < j/J):")
+for n_ in (2 ** 20, 2 ** 26, 2 ** 34):
+    f = 3900
+    jmax = 0.125 * f * n_
+    print(f" n = 2^{int(math.log2(n_))}, jmax = {jmax / J:.0f} J")
+    for mult in (1, 10, 100, 300, 1000, 3000, 10000, 19000, 1e5, 1e6):
+        j = mult * J
+        if j > jmax:
+            continue
+        worst = max(((min(multi_escapes_ml(j, n_, f, s2, c) for c in (1.0, 1.5, 2.0, 3.0)), s2)
+                     for s2 in (1, 4, 16, 64, 256, 1024, 4096)), key=lambda r: r[0])
+        print(f"   j = {mult:8g} J (b = {j / n_:6.1f}): worst escapes {worst[0]:10.1f} at s2 = {worst[1]:5d}"
+              f"  vs allowed {j / J:9.1f}  {'OK' if worst[0] < j / J else 'FAIL'}")
