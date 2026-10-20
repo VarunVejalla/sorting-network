@@ -71,3 +71,10 @@ Near-optimal fringe (heuristic f ~ sqrt(0.9 J), i.e. f/19 of the certified fit) 
   f/19, band, R2 k=1/2, T=2                      507.8 ( 507.8)  (4,5,3) q=22 [B  21.6, F  21.6]  epsB 6.4e-05 epsF 6.2e-06 f
   f/19, three sorts, R2 k=1/2, T=2               569.2 ( 551.3)  (4,5,3) q=22 [B  21.6, F  21.6]  epsB 6.4e-05 epsF 6.2e-06 f
   f/19, band+merge, R2 k=1/2, T=2                480.8 ( 480.8)  (4,5,3) q=22 [B  21.6, F  21.6]  epsB 6.4e-05 epsF 6.2e-06 f
+
+Fringe from the double-duality screen (f ~ 950-1000 at J = 190000, i.e. f/7.9 of the certified 7934):
+  f/7.9, three sorts                             731.2 ( 705.5)  (4,5,3) q=25 [B  24.5, F  24.5]  epsB 1.4e-05 epsF 6.0e-07 f
+  f/7.9, band                                    642.5 ( 642.5)  (4,6,3) q=24 [B  23.2, F  23.2]  epsB 2.9e-05 epsF 1.6e-05 f
+  f/7.9, band+merge                              595.5 ( 595.5)  (4,5,3) q=25 [B  24.5, F  24.5]  epsB 1.4e-05 epsF 6.0e-07 f
+  f/7.9, band, R2 k=1/2, T=2                     528.8 ( 528.8)  (4,5,3) q=23 [B  22.2, F  22.3]  epsB 4.8e-05 epsF 1.5e-05 f
+  f/7.9, band+merge, R2 k=1/2, T=2               495.0 ( 495.0)  (4,5,3) q=23 [B  22.2, F  22.3]  epsB 4.8e-05 epsF 1.5e-05 f

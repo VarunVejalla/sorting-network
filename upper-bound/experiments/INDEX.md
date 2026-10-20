@@ -40,3 +40,4 @@ A fork of the whole best package is ≈190 MB with its build cache and every com
 4. A fork that is finished is promoted (copy tracked files into `../best`, move the old best to `../alternatives`,
    follow `../TRUSTED.md`) and then removed from `main`.
 | `sub500-screen/` | scripts + notes | reference | UB-37 | R1 re-price sweep and structural screen (model): single levers, combinations and gates below 500/300/200. Start at `SCREEN.md` |
+| `fringe-duality/` | scripts + notes | active (Claude) | UB-34 | fringe by double weak duality (model): zero escapes at J = 190000 for f ~ 1000 (vs certified 7934); dense regime open. Start at `FRINGE-DUALITY.md` |

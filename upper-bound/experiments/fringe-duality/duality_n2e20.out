@@ -1,0 +1,6 @@
+n = 1048576: round-1 Q(j) bound and round-2 escapes bound (model)
+  j =     1000: Q <=        71060 (Q/j =   71.1);  zero escapes for f >= 198  (6j)^(1/3) =     18, sqrt(0.9 j) =     30
+  j =    10000: Q <=       823718 (Q/j =   82.4);  zero escapes for f >= 388  (6j)^(1/3) =     39, sqrt(0.9 j) =     95
+  j =   100000: Q <=      9205533 (Q/j =   92.1);  zero escapes for f >= 775  (6j)^(1/3) =     84, sqrt(0.9 j) =    300
+  j =   190000: Q <=     18055838 (Q/j =   95.0);  zero escapes for f >= 950  (6j)^(1/3) =    104, sqrt(0.9 j) =    414
+exit=0
