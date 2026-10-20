@@ -164,4 +164,33 @@ theorem fixed_fail_cost (S : Finset (Fin n)) (φ : ℕ → ℝ) (t x K : ℝ) (h
     le_div_iff₀ hpos]
   linarith
 
+/-- **Union over all output sets of one size.** If every `S` with `|S| = s` fails on at most `F`
+scrambles, then at most `C(n, s) · F` scrambles fail for some such `S`. -/
+theorem union_sets_le (s : ℕ) (P : Finset (Fin n) → Scramble m n → Prop)
+    [∀ S σ, Decidable (P S σ)] (F : ℝ)
+    (hF : ∀ S : Finset (Fin n), S.card = s →
+      ((Finset.univ.filter fun σ : Scramble m n => P S σ).card : ℝ) ≤ F) :
+    ((Finset.univ.filter fun σ : Scramble m n =>
+        ∃ S ∈ (Finset.univ : Finset (Fin n)).powersetCard s, P S σ).card : ℝ) ≤
+      (n.choose s : ℝ) * F := by
+  classical
+  have hsub : (Finset.univ.filter fun σ : Scramble m n =>
+      ∃ S ∈ (Finset.univ : Finset (Fin n)).powersetCard s, P S σ) ⊆
+      ((Finset.univ : Finset (Fin n)).powersetCard s).biUnion
+        (fun S => Finset.univ.filter fun σ : Scramble m n => P S σ) := by
+    intro σ hσ
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hσ
+    obtain ⟨S, hS, hP⟩ := hσ
+    exact Finset.mem_biUnion.2 ⟨S, hS, by simpa using hP⟩
+  calc ((Finset.univ.filter fun σ : Scramble m n =>
+        ∃ S ∈ (Finset.univ : Finset (Fin n)).powersetCard s, P S σ).card : ℝ)
+      ≤ ∑ S ∈ (Finset.univ : Finset (Fin n)).powersetCard s,
+          ((Finset.univ.filter fun σ : Scramble m n => P S σ).card : ℝ) := by
+        exact_mod_cast (Finset.card_le_card hsub).trans Finset.card_biUnion_le
+    _ ≤ ∑ _S ∈ (Finset.univ : Finset (Fin n)).powersetCard s, F :=
+        Finset.sum_le_sum fun S hS => hF S (Finset.mem_powersetCard.1 hS).2
+    _ = (n.choose s : ℝ) * F := by
+        rw [Finset.sum_const, Finset.card_powersetCard, Finset.card_univ, Fintype.card_fin,
+          nsmul_eq_mul]
+
 end FringeDuality
