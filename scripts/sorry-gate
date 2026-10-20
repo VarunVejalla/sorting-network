@@ -73,6 +73,9 @@ ALLOW_MARKER: dict[str, frozenset[str]] = {
                                # Existing promoted best construction and analytic
                                # lower experiments retain classical definitions.
                                "AKS/Bounds/Minimum.lean", "AKS/Chvatal/",
+                               # The promoted 789.75 route (UB-31): real-valued
+                               # formulas and choice-selected networks.
+                               "AKS/Sub800/",
                                "AKS/Kahale/FiniteEntropy.lean",
                                "AKS/Kahale/HistoryInnovation.lean",
                                "AKS/Kahale/RelativeOrderBank.lean",
