@@ -3,7 +3,14 @@
 2026-10-19, Lean 4.29.0-rc4: the 789.75 result (UB-31) is promoted and unconditional. From an empty
 `.lake/build`: `lake build AKS.Bounds.Chvatal1830Axioms`, then each `AKS.Sub800.*` module in import order
 (one at a time, to bound memory), then `lake build AKS.Bounds.Sub800Axioms` and a full `lake build`
-(8265 jobs, Mathlib included), all successful. No `sorry`, `native_decide`, `admit`, `axiom` or `unsafe`
+(8265 jobs, Mathlib included), all successful. Later the same day `AKS/Sub800/R1Sched.lean`'s bare
+`import Mathlib` was replaced by `import Mathlib.Tactic`: the full `lake build` is now 3584 jobs, the 20 affected
+modules rebuild in parallel in about 6 minutes (minimum free memory 5.1 GB of 16), and the guard and
+`scripts/check-contribution` still pass. Then the cell and fringe certificates moved to checked data
+(`ExpCert`, `CellCheck1`, `CellCheck2`; see `notes/sub800/LEAN-PLAN.md`): a full `lake build` (3587 jobs)
+rebuilt the downstream modules in 444 s, the guard and `scripts/check-contribution` pass, and rerunning the
+generators reproduces the four generated files. Peak: R2Cells about 3.4 GB; minimum free memory
+0.46 GB with two Lean processes (6.9 GB). No `sorry`, `native_decide`, `admit`, `axiom` or `unsafe`
 in `AKS/`. Headlines (`AKS/Bounds/Sub800Final.lean`): `SortingDepth.minimum_depth_le_78975_logb`
 (`n ≥ 16^12`: `D(n) ≤ 789.75 lg n + 3159`), `SortingDepth.limsup_minimum_div_logb_le_78975`,
 `SortingDepth.limsup_minimum_div_logb_le_800`; axioms propext, Classical.choice, Quot.sound (guard

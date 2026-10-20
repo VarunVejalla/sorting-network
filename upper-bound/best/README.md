@@ -23,7 +23,8 @@ Paper proof: [`notes/sub800/R1-PROOF.md`](notes/sub800/R1-PROOF.md); module map:
   (`R1Design`, `R1Table`, `R1Inv*`, occupancy `R1Occ`).
 * **Bulk: the walk bound.** Property B of the two-round separator without Lemma 6.1's union
   over inputs, proved by negative association and Ville's inequality (`NegAssoc`, `Ville`,
-  `Round2*`, `Round1*`, cells `R1Cells`/`R2Cells`); this admits rows `< 2^26`.
+  `Round2*`, `Round1*`, cells `R1Cells`/`R2Cells` as kernel-checked data via `ExpCert`,
+  `CellCheck1`, `CellCheck2`); this admits rows `< 2^26`.
 * **Fringe: padded separator at `δ_F = 1/8`.** The two-round separator on an `(m+1) × n`
   rectangle with one partial dummy row (`PaddedSeparator`, `PaddedFringe`, `BaselineFringeD`,
   copied from `../experiments/tapered`) and the per-E fringe route (`F2D*`) for the two
@@ -64,11 +65,10 @@ lake build AKS.Bounds.Sub800Axioms
 lake build AKS.Bounds.Chvatal1830Axioms
 ```
 
-The package shares the Mathlib checkout of the repository root. All targets succeed (8265 jobs including
-Mathlib, 2026-10-19). `Sub800Axioms` accepts only `propext`, `Classical.choice`, `Quot.sound` for the
+The package shares the Mathlib checkout of the repository root. All targets succeed (3584 jobs, 2026-10-19). `Sub800Axioms` accepts only `propext`, `Classical.choice`, `Quot.sound` for the
 789.75 headlines and `R1T.r1_sorter`; `Chvatal1830Axioms` does the same for the 1419 headlines and
-`Chvatal.twoRoundSeparatorExists`. The `AKS/Sub800/` modules are memory-heavy: on a small machine build them
-one at a time in import order (`lake build AKS.Sub800.<Module>`). See [BUILD_STATUS.md](BUILD_STATUS.md).
+`Chvatal.twoRoundSeparatorExists`. Import targeted Mathlib modules, never bare `import Mathlib`: loading all of
+Mathlib costs about 60 s per file (against about 15 s for `Mathlib.Tactic`) and multiplies memory in parallel builds. See [BUILD_STATUS.md](BUILD_STATUS.md).
 
 ## Layout
 
