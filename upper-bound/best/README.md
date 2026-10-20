@@ -2,22 +2,48 @@
 
 A self-contained Lean 4 / Mathlib formalization of
 
-* `SortingDepth.minimum_depth_le_1419_logb` — for every `n ≥ 64^7`,
-  `D(n) ≤ 1419 · log₂ n − 43861`;
-* `SortingDepth.limsup_minimum_div_logb_le_1419` — `limsup D(n)/log₂ n ≤ 1419`,
+* `SortingDepth.minimum_depth_le_78975_logb` — for every `n ≥ 16^12`,
+  `D(n) ≤ 789.75 · log₂ n + 3159`;
+* `SortingDepth.limsup_minimum_div_logb_le_78975` — `limsup D(n)/log₂ n ≤ 789.75`
+  (and `limsup_minimum_div_logb_le_800`),
 
 where `D(n)` (`SortingDepth.minimum n`) is the minimum depth of a comparator network sorting
-`n` wires. Both are in `AKS/Bounds/Chvatal1830Final.lean` and depend only on the standard axioms
-`propext`, `Classical.choice`, `Quot.sound`.
+`n` wires. They are in `AKS/Bounds/Sub800Final.lean` and depend only on the standard axioms
+`propext`, `Classical.choice`, `Quot.sound` (guard: `AKS/Bounds/Sub800Axioms.lean`).
 
-The proof follows V. Chvátal, *Lecture Notes on the New AKS Sorting Network*, DCS-TR-294 (1992)
-(`../../docs/dcs-tr-294.pdf`), §3–§7; `LEDGER.md` records how it was assembled. The central object is `Chvatal.chvatal_sorter_exists`
-(`AKS/Chvatal/RealSorter.lean`): for every `d ≥ 14` a sorting network on `64^d` wires of depth at
-most `totalDepth d` (window `2^42 < m ≤ 2^43`, node depth 2838; `D(n) ≤ 1419 lg n − 43861`). For `7 ≤ d ≤ 13`
-full-wire bitonic sorting is used instead; both are restricted to `n` wires with
-`d = ⌈log₆₄ n⌉`, which gives the padded form `1419 log₂ n − 43861`.
+## The 789.75 construction (UB-31, `AKS/Sub800/`)
 
-## Two-round separator (new in this package)
+Paper proof: [`notes/sub800/R1-PROOF.md`](notes/sub800/R1-PROOF.md); module map:
+[`notes/sub800/LEAN-PLAN.md`](notes/sub800/LEAN-PLAN.md); parameters and certificates:
+[`notes/sub800/README.md`](notes/sub800/README.md). It keeps Chvátal's invariant and tree
+(paper DCS-TR-294, `../../docs/dcs-tr-294.pdf`) at `(k, A, ν) = (16, 32, 1/8)` and changes three things:
+
+* **Flow table, design P.** Each node sends `π/2 + G − r*c` to its end children and spreads
+  `2r*c − G` over the interior children, where `G` is the node's deficit
+  (`R1Design`, `R1Table`, `R1Inv*`, occupancy `R1Occ`).
+* **Bulk: the walk bound.** Property B of the two-round separator without Lemma 6.1's union
+  over inputs, proved by negative association and Ville's inequality (`NegAssoc`, `Ville`,
+  `Round2*`, `Round1*`, cells `R1Cells`/`R2Cells`); this admits rows `< 2^26`.
+* **Fringe: padded separator at `δ_F = 1/8`.** The two-round separator on an `(m+1) × n`
+  rectangle with one partial dummy row (`PaddedSeparator`, `PaddedFringe`, `BaselineFringeD`,
+  copied from `../experiments/tapered`) and the per-E fringe route (`F2D*`) for the two
+  classes `f = 7934`, `f = 406109` (`Fringe7934`, `Fringe406109`).
+
+The tree induction (`R1Sched` … `R1Final`, `R1Subtree`) follows the package's Chvátal kernel
+(`AKS/Chvatal/`); node networks and their specifications are in `R1Sep`, `R1Geom`, `R1Nets`.
+`R1T.r1_sorter` gives, for `d ≥ 12`, a sorter on `16^d` wires of depth
+`2709 + 1053 (3d − 15) + 136 = 3159 d − 12950` (root separator 3·S(42), ordinary nodes 3·S(26),
+final layer 136); restricting to `n` wires with `d = ⌈log₁₆ n⌉` gives the headline
+(`R1Main.lean`).
+
+## The underlying Chvátal 1419 modules
+
+The previous best, `limsup ≤ 1419` (`SortingDepth.limsup_minimum_div_logb_le_1419` in
+`AKS/Bounds/Chvatal1830Final.lean`, guard `AKS.Bounds.Chvatal1830Axioms`), still builds here because
+the 789.75 proof reuses its modules; the standalone package is `../alternatives/chvatal-1419`. The
+rest of this README describes those modules.
+
+## Two-round separator
 
 The 1419 bound replaces the one-round separator by the two-round one
 (sort, scramble `σ1`, sort, scramble `σ2`, sort; `PhysicalPack2`, `PackSpec2`, `PackNodeSpec2`).
@@ -34,18 +60,21 @@ reduction `F2Det.F2_both_orientations` and the parameters `F2Params.ofF`); `f �
 ```
 cd upper-bound/best
 lake build
+lake build AKS.Bounds.Sub800Axioms
 lake build AKS.Bounds.Chvatal1830Axioms
 ```
 
-The package shares the Mathlib checkout of the repository root. Both targets succeed (3003 jobs);
-the guard accepts only `propext`, `Classical.choice`, `Quot.sound` for the two headlines and
-`Chvatal.twoRoundSeparatorExists`. See [BUILD_STATUS.md](BUILD_STATUS.md).
+The package shares the Mathlib checkout of the repository root. All targets succeed (8265 jobs including
+Mathlib, 2026-10-19). `Sub800Axioms` accepts only `propext`, `Classical.choice`, `Quot.sound` for the
+789.75 headlines and `R1T.r1_sorter`; `Chvatal1830Axioms` does the same for the 1419 headlines and
+`Chvatal.twoRoundSeparatorExists`. The `AKS/Sub800/` modules are memory-heavy: on a small machine build them
+one at a time in import order (`lake build AKS.Sub800.<Module>`). See [BUILD_STATUS.md](BUILD_STATUS.md).
 
 ## Layout
 
 `AKS/` holds the modules (names kept identical to the main repository). Besides `Chvatal/`, it contains
 only the shared basics the proof needs: `Sort/` (comparator networks, depth, 0-1 and permutation
-principles, untangling), `Bitonic/` (Batcher sorter and its depth), `Halver/` (two shared modules), `Bounds/` (the minimum-depth definition,
+principles, untangling), `Sub800/` (the 789.75 construction), `Bitonic/` (Batcher sorter and its depth), `Halver/` (two shared modules), `Bounds/` (the minimum-depth definition,
 headline results, and guards), and `Misc/Fin.lean`.
 
 ### Proof map (`AKS/Chvatal/`)

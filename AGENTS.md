@@ -34,8 +34,9 @@ sorting bound; trace correctness and depth through the global scheduler.
 
 ## Repository map
 
-- `upper-bound/best/`: current verified Chvátal upper package with the two-round separator, coefficient `1419`.
-- `upper-bound/alternatives/chvatal-1770/`: previous best (one-round separator, coefficient `1770`).
+- `upper-bound/best/`: current verified upper package, coefficient `789.75` (UB-31: design P with the walk-bound and padded fringe separators, built on the Chvátal two-round modules).
+- `upper-bound/alternatives/chvatal-1419/`: previous best (two-round separator, coefficient `1419`).
+- `upper-bound/alternatives/chvatal-1770/`: older best (one-round separator, coefficient `1770`).
 - `upper-bound/backlog/`: ticket registry (`tickets.json`), research tickets, parked ideas and ideas ruled out (read before proposing a new separator idea).
 - `upper-bound/contributions/`: submission package for a proved better constant (pinned statement, guards); `upper-bound/TRUSTED.md` explains what is trusted.
 - `upper-bound/experiments/INDEX.md`: lifecycle state of every experiment folder.

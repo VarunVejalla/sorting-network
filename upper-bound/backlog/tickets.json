@@ -1,6 +1,6 @@
 {
   "schema": "upper-bound/backlog/tickets.schema.md",
-  "updated": "2026-10-14",
+  "updated": "2026-10-19",
   "tickets": [
     {
       "id": "UB-00",
@@ -466,6 +466,21 @@
       "first_deliverable": "Re-priced large ordinary provider (row height, fringe, bulk, depth) at the unchanged tapered invariant constants; the next gate (rows < 2^31, 744) stated as a fringe-floor target.",
       "evidence": ["upper-bound/experiments/tapered-walk/README.md", "upper-bound/experiments/tapered-walk/tapered_walk_screen.py", "upper-bound/experiments/tapered-walk/fringe_cert_f28200.out", "upper-bound/experiments/tapered-walk/fringe_cert_min_J8405025.out", "upper-bound/experiments/tapered-walk/fringe_cert_min_J9649000.out"],
       "notes": "2026-10-19: with the walk bound, the large ordinary provider fits rows < 2^32 (M = 2^31+2^30+2^29, f = 28200 interval-certified at J = 8405025, bulk d = 3.34e-7 <= 2^-21), so the conditional tapered price drops from 945 to 792 (3 S(32) = 1584 per node). Conditional on exactly the same UB-22/UB-24 scheduler and rank-profile gates as 945; nothing is proved about the sorting network. Rows < 2^31 (744) need the fringe to certify at f <= 16314 with J = 9.65e6 (smallest f on the search grid ~27000 there, set by the R1a tops-union slope): target for a walk-style fringe argument."
+    },
+    {
+      "id": "UB-31",
+      "title": "R1 at (16, 32, 1/8): design P flow table, walk-bound bulk and padded fringe, no new invariant",
+      "priority": "P1",
+      "status": "done",
+      "claim_level": "kernel-checked",
+      "baseline": 1419,
+      "projected": 789.75,
+      "owner": "Claude (Opus 5.5)",
+      "branch": null,
+      "depends_on": ["UB-29"],
+      "first_deliverable": "Lean proof of limsup D(n)/log2 n <= 800 for the canonical SortingDepth.minimum, standard axioms only; promoted into upper-bound/best.",
+      "evidence": ["upper-bound/best/AKS/Bounds/Sub800Final.lean", "upper-bound/best/AKS/Bounds/Sub800Axioms.lean", "upper-bound/best/notes/sub800/README.md", "upper-bound/best/notes/sub800/R1-PROOF.md", "upper-bound/best/notes/sub800/LEAN-PLAN.md"],
+      "notes": "2026-10-19: kernel-checked and promoted. D(n) <= 789.75 log2 n + 3159 for n >= 16^12 and limsup D(n)/log2 n <= 789.75 (SortingDepth.minimum_depth_le_78975_logb, limsup_minimum_div_logb_le_78975), axioms propext, Classical.choice, Quot.sound. Depth 2709 + 1053(3d-15) + 136 on 16^d wires. Previous best 1419 moved to upper-bound/alternatives/chvatal-1419."
     }
   ]
 }
