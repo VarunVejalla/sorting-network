@@ -29,7 +29,7 @@ its numbers) · **retired** (superseded; kept in history only).
 | `sub800/` (removed) | notes + scripts + Lean | promoted (2026-10-19) | UB-31 | R1 at (16, 32, 1/8), design P: limsup ≤ 789.75 kernel-checked and promoted. Lean in `../best/AKS/Sub800/` (with copies of seven `tapered/` modules: `PrefixPadding`, `VariableSeparator`, `AnyCutBounds`, `RectanglePadding`, `PaddedSeparator`, `PaddedFringe`, `TruncatedScrambleMeasure`), notes in `../best/notes/sub800/` |
 | `packets/` (branch `ub-25-packets` only) | Lean + notes + screens | active (Codex, worktree `ub-25`) | UB-25 | persistent sorted packets / merge-and-deal; terminal gate recorded NO-GO for the fixed-round candidate (`TERMINAL-GATE.md`); not merged to `main` |
 
-| `persistent-columns/` | notes + exact count witness + model screen | active (Codex, worktree `sub300`) | UB-41 | incoming redistribution as mixing; column-dispersion and rare-fringe gates before Lean. Start at `PLAN.md`; no improved bound claimed. |
+| `persistent-columns/` | notes + exact count witnesses + model screen | parked | UB-41 | small-C all-profile recurrence and weak one-pass fringe promise refuted in fresh review; stronger reachable-state variants open. Start at `STATUS.md`; no improved bound. |
 
 ## Policy for Lean forks
 

@@ -2,6 +2,17 @@
 
 Keep this list so nobody repeats them.
 
+* **UB-41 receive mixing from sorted columns plus aggregate dispersion only.**
+  A fixed first-row routing can be targeted by height0/1 input profiles:
+  source dispersion1/2 produces receiving dispersion L/2, where L is the
+  number of participating source columns per destination column. The proposed
+  small-C uniform square-root recurrence is therefore false. A separate
+  t-row prefix witness forces escape fraction >=1/125 at the apparent
+  sub300 geometry, versus a required~3.125e-8, while meeting the weak
+  supported-cohort and dispersion promises. This excludes those local
+  hypotheses, not actual reachable states or every persistent representation.
+  See [fresh review](../experiments/persistent-columns/REVIEW.md).
+
 * **Sharper Lemma 6.1 via McDiarmid / bounded differences (claimed ~20× on ε_B).** Wrong. Moving one
   row's permutation changes up to ~n column sums (Lipschitz Θ(n)), so the exponent loses the
   factor `n`. The `ln m` in `ε_B ≥ √(2(1+ln m)/m)` is the entropy of the *input* union

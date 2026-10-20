@@ -1,7 +1,8 @@
 # UB-41: persistent columns and receive mixing
 
-Date: 2026-10-20. Author: Codex (GPT-6). Status: conjectural architecture;
-no improved sorting bound or Lean result. Worktree `.claude/worktrees/sub300`,
+Date: 2026-10-20. Author: Codex (GPT-6). Status: small-C all-profile
+recurrence refuted; stronger variants parked. No improved bound or Lean.
+Worktree `.claude/worktrees/sub300`,
 branch `sub300-structural`, starting at main `5f03290`.
 
 ## Objective and acceptance gates
@@ -83,14 +84,23 @@ Do not use it as a new tolerance multiplier in the global invariant.
    exponent parameters; current promoted rate is3/4 stages per binary log,
    not the historical Chvatal1/2.
 
-## Next bounded experiment
+## Initial bounded experiment
 
-Screen the bulk-only necessary depth gate against the exact design-P scalar
+Screen a conditional bulk-only depth budget against the design-P scalar
 constraints for r=1,2,3 sorts and several hypothetical uniform constants C.
-Do not treat deletion of the fringe floor as a construction. If even this
-optimistic bulk-only gate exceeds300, reject this variant early. If it passes,
+Do not treat deletion of the fringe floor as a construction. Failure of this
+sufficient model is a prioritization screen, not an impossibility bound. If a point passes,
 derive the uniform theorem and sparse-fringe witness cost and have a fresh
 reviewer attack them before any Lean.
+
+Result: `REVIEW.md` also gives a deterministic first-row counterexample to the
+small-C uniform recurrence itself: at the displayed point C must be at least
+15.9961, rather than1. `FRINGE-WITNESS.md` gives a counterexample to the weak
+dispersion-only fringe promise at the displayed295.167 point. A fresh review
+confirmed its algebra and scope; see `REVIEW.md` and `STATUS.md`. The one-pass
+variant is parked. A fixed-radius closure theorem is a distinct, untested
+possibility; neither counterexample disproves all reachable-state variants.
+No improved sorting coefficient follows from the screen.
 
 ## Excluded shortcuts
 

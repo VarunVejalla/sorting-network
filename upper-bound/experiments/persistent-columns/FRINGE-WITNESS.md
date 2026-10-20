@@ -1,6 +1,6 @@
 # Deterministic obstruction to a dispersion-only receive theorem
 
-2026-10-20, Codex (GPT-6). Derived argument pending fresh review; no Lean.
+2026-10-20, Codex (GPT-6). Derived argument independently reviewed; no Lean.
 This rejects a proposed local promise, not every persistent-column algorithm.
 
 Consider one source whose column count is d times the receiver's column
@@ -42,11 +42,20 @@ and a joint analysis of preceding redistributions.
 
 The bulk-only screen is also narrow. Under the conjectural recurrence with
 uniform coefficient C=1, one fresh sort barely passes the300 gate (295.167 at
-(x,y,z)=(3,4,2), q=22), while two fresh sorts bottom at316.667 before fringe,
+(x,y,z)=(3,4,2), q=22), while the two-sort minimum in the finite grid is316.667 before fringe,
 frontiers, terminal geometry, or bootstrap costs. At C=1.25 the corresponding
-minima are322 and344.25. This is a parameter-model screen, not a mathematical
+minima are322 and344.25. This is a sufficient-bound parameter-model screen, not a mathematical
 lower bound: C=1 has not been established as a necessary constant.
 
-Next decision: get independent review of the algebra and witness before
-developing any Lean. Do not infer that this paper test settles the full
-sub300 goal or rules out all persistent representations.
+At the displayed one-sort point, d=64 and the nominal interior fringe height
+is f=3968. Taking t=124 gives escapes/H>=1/125. With at least1024 receiving
+columns, the mass upper bound496000 fits the receiver support f*n_v/8. It
+also has source mean absolute height deviation <=2H/65536<16, far below
+the screened equilibrium512.25. Its escape ratio exceeds the required
+eps_F~3.125e-8 by roughly256000 times. This is not a near miss in the weak
+promised-provider contract.
+
+Independent review confirmed the algebra and witness, while stressing the
+finite-grid/sufficient-bound limitation: see `REVIEW.md`. Do not infer that
+this paper test settles the full sub300 goal or rules out all persistent
+representations or actual reachable-state invariants.

@@ -798,8 +798,8 @@
       "id": "UB-41",
       "title": "Persistent columns: receive redistribution as mixing, with a rank-correct terminal invariant",
       "priority": "P2",
-      "status": "active",
-      "claim_level": "conjecture",
+      "status": "parked",
+      "claim_level": "hand-proof",
       "baseline": 789.75,
       "projected": null,
       "owner": "Codex (GPT-6)",
@@ -807,9 +807,12 @@
       "depends_on": [],
       "first_deliverable": "Write the exact incoming-column count map and derive a uniform conditional column-profile recurrence and rare-fringe contract; price the unchanged global terminal-purity schedule before any Lean.",
       "evidence": [
-        "upper-bound/experiments/persistent-columns/PLAN.md"
+        "upper-bound/experiments/persistent-columns/PLAN.md",
+        "upper-bound/experiments/persistent-columns/STATUS.md",
+        "upper-bound/experiments/persistent-columns/REVIEW.md",
+        "upper-bound/experiments/persistent-columns/FRINGE-WITNESS.md"
       ],
-      "notes": "2026-10-20: isolated branch from main; target <=300. Explore a new persistent-column provider independently of UB-34/UB-37. No bound claimed; require fresh-context mathematical review before Lean."
+      "notes": "2026-10-20: fresh review and exact count witnesses refute the small-C all-sorted-profile recurrence and weak one-pass fringe promise. Broader fixed-radius or reachable-state invariants remain open. No new sorter or coefficient; the overall <=300 goal continues on sub300-structural."
     }
   ]
 }

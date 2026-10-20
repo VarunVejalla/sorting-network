@@ -71,10 +71,10 @@ Notes: [high-upside architecture](high-upside-architecture.md) (UB-08 to UB-11),
 
 ## Independent sub300 work
 
-- **UB-41**, active on `sub300-structural`: persistent sorted columns with
-  incoming redistribution as mixing. Prove a uniform promised-input column
-  recurrence and rare-fringe contract before Lean; see
-  [the plan](../experiments/persistent-columns/PLAN.md).
+- **UB-41**, parked on `sub300-structural`: the small-C all-profile receive
+  recurrence and weak one-pass fringe promise have deterministic
+  counterexamples, checked in a fresh review. Stronger reachable-state
+  variants remain open; see [status](../experiments/persistent-columns/STATUS.md).
 
 ## Parked or superseded
 

@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""UB-41 necessary bulk-only screen; floats, no bound or existence theorem.
+"""UB-41 counterfactual bulk budget screen; floats, no existence theorem.
 
 Hypothesis: a uniform promised-input column theorem has fixed point
 C^2 D^(1/(2^r-1)), where D=k A/nu+1/(A nu), and r fresh sorts per stage.
-Deliberately omit fringe construction and terminal/small-bag geometry: passing
-is only permission to examine the mathematical hypothesis, never a forecast.
+Deliberately omit fringe construction and terminal/small-bag geometry. Search
+only a finite grid using sufficient estimates; no mathematical lower bound.
 Uses the generic design-P scalar inequalities of sub800/r1_point.py.
+The small-C all-sorted-profile recurrence is REFUTED (REVIEW.md). These
+numbers could only apply to a stronger, unproved reachable-state theorem.
 """
 import math
 from itertools import product
@@ -45,7 +47,8 @@ def point(x, y, z, c, rounds):
 
 
 def main():
-    print('MODEL: bulk-only necessary gate, no fringe/terminal/provider certificate')
+    print('MODEL: finite-grid conditional bulk budget, no fringe/terminal/provider certificate')
+    print('Small-C ALL-PROFILE recurrence refuted: see REVIEW.md; reachable-state alternative unproved')
     print('C sorts cost (x,y,z) q delta epsB J=1/epsF D e_star')
     for c, rounds in product((1, 1.25, 1.5, 2, 2.35, 3), (1, 2, 3)):
         rows = (point(x,y,z,c,rounds)
