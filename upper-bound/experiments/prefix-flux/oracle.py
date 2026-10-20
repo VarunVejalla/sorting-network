@@ -6,6 +6,7 @@ with integer arithmetic. This is an adversarial local-output oracle, NOT a
 fixed comparator network or a proof that a passing configuration sorts.
 """
 import argparse
+from bisect import bisect_right
 import json
 import math
 from pathlib import Path
@@ -58,6 +59,29 @@ def dominates(output,incoming):
     positions=sorted(positions)
     return all(a>=b for a,b in zip(word_prefix(output,positions),
                                   word_prefix(incoming,positions)))
+
+
+def labeled_port(labels,start,end,zeros):
+    """Same fixed labels, recolored as a sorted Boolean port of given count."""
+    result=[]; pos=0; remaining=zeros
+    for lo,hi,_ in labels:
+        left=max(start,pos); right=min(end,pos+hi-lo)
+        if left<right:
+            a=lo+left-pos; b=lo+right-pos
+            marked=min(remaining,b-a)
+            if marked:
+                result.append((a,a+marked,1))
+            if a+marked<b:
+                result.append((a+marked,b,0))
+            remaining-=marked
+        pos+=hi-lo
+    assert remaining==0 and sum(hi-lo for lo,hi,_ in result)==end-start
+    return result
+
+
+def labeled_error(labels,threshold):
+    return sum((hi-lo-max(0,min(hi,threshold)-lo) if bit else
+                max(0,min(hi,threshold)-lo)) for lo,hi,bit in labels)
 
 
 def need_capture(j,epsilon):
@@ -117,7 +141,8 @@ def native_weight(node,threshold,p,d):
 
 
 def choose(a,pi,blocks,zeros,node,p,d,threshold,eps_b,eps_f,
-           delta_f,exact,rng,policy,incoming=None,supplied=None,contract=None):
+           delta_f,exact,rng,policy,incoming=None,supplied=None,contract=None,
+           target_cut=None):
     lev,idx=node
     h=pi//2
     lengths=[h,*blocks,h]
@@ -125,6 +150,10 @@ def choose(a,pi,blocks,zeros,node,p,d,threshold,eps_b,eps_f,
     for length in lengths:
         ends.append(ends[-1]+length)
     assert ends[-1]==a and pi%2==0,(node,a,pi,blocks,ends)
+    original_ends=ends[:]
+    if target_cut is not None and target_cut not in ends:
+        ends=sorted([*ends,target_cut])
+        lengths=[q-p for p,q in zip(ends,ends[1:])]
     limits,budget,support=bounds(a,h,zeros,ends,eps_b,eps_f,delta_f,exact,contract)
     if incoming is not None:
         limits=[(max(lo,value),hi) for value,(lo,hi) in
@@ -142,10 +171,16 @@ def choose(a,pi,blocks,zeros,node,p,d,threshold,eps_b,eps_f,
     destinations=[(lev-1,idx//p.k),
                   *((lev+1,idx*p.k+j) for j in range(p.k)),
                   (lev-1,idx//p.k)]
+    destinations=[destinations[min(len(destinations)-1,bisect_right(original_ends,pos)-1)]
+                  for pos in ends[:-1]]
     weights=[]
+    native_weights=[]
     for j,dest in enumerate(destinations):
         weight=native_weight(dest,threshold,p,d)
-        if policy=='random':
+        native_weights.append(weight)
+        if policy=='global' and target_cut is not None:
+            weight=-1 if ends[j+1]<=target_cut else 1
+        elif policy=='random':
             weight=rng.uniform(-1,1)
         elif policy=='delay':
             weight=j
@@ -166,12 +201,27 @@ def choose(a,pi,blocks,zeros,node,p,d,threshold,eps_b,eps_f,
     assert result.success,result.message
     ys=[int(round(v)) for v in result.x]
     verify(a,zeros,ends,ys,limits)  # never trust LP floating-point output alone
+    if policy=='global' and target_cut is not None:
+        # Integer equality preserves the primary objective after rounding;
+        # optimality still relies on HiGHS, not an independent certificate.
+        secondary=np.zeros(len(ends))
+        for j,w in enumerate(native_weights):
+            secondary[j]-=w; secondary[j+1]+=w
+        value=int(sum(int(v)*y for v,y in zip(objective,ys)))
+        tied=linprog(-secondary,A_ub=np.array(matrix),b_ub=np.array(rhs),
+                     A_eq=np.array([objective]),b_eq=np.array([value]),
+                     bounds=limits,method='highs')
+        assert tied.success,tied.message
+        ys=[int(round(v)) for v in tied.x]
+        verify(a,zeros,ends,ys,limits)
+        assert sum(int(v)*y for v,y in zip(objective,ys))==value
     return ends,ys,budget,support
 
 
 def run(table,p,d,threshold,exact_cap,eps_b,eps_f,delta_f,
         seed=0,policy='native',record=False,monotone=False,replay=None,
-        exact_root=True,local_contract=None,terminal=True):
+        exact_root=True,local_contract=None,terminal=True,ordered=False,root_eps=None):
+    monotone=monotone or ordered
     n=p.k**d
     counts={(0,0):threshold}
     rng=random.Random(seed)
@@ -181,9 +231,13 @@ def run(table,p,d,threshold,exact_cap,eps_b,eps_f,delta_f,
     replay_seen=set()
     # 1 denotes a zero key. Reverse initial word maximizes sorting freedom.
     words={(0,0):normalize_word([(n-threshold,0),(threshold,1)])} if monotone else {}
+    labels={(0,0):[(0,n-threshold,0),(n-threshold,n,1)]} if ordered else {}
+    errors=[]
+    previous_error=sum(labeled_error(v,threshold) for v in labels.values())
     for t,step in enumerate(table):
         next_counts={}; next_sizes={}
         next_words={}
+        next_labels={}
         handled=set()
         for lev,rows in step.items():
             for idx,(aa,pp,bb) in enumerate(rows):
@@ -202,14 +256,20 @@ def run(table,p,d,threshold,exact_cap,eps_b,eps_f,delta_f,
                     next_counts[dest]=next_counts.get(dest,0)+zeros
                     if monotone:
                         next_words.setdefault(dest,[]).extend(words[node])
+                    if ordered:
+                        next_labels.setdefault(dest,[]).extend(labels[node])
                     continue
                 exact=a<=exact_cap or (t==0 and exact_root)
+                contract=(local_contract(a,pi,zeros) if local_contract is not None
+                          and not exact and zeros not in (0,a) else None)
+                if t==0 and root_eps is not None and not exact:
+                    contract=(int(root_eps*a/2),0,0)
                 ends,ys,budget,support=choose(a,pi,blocks,zeros,node,p,d,
                     threshold,eps_b,eps_f,delta_f,exact,rng,policy,
                     words[node] if monotone else None,
                     replay.get((t,node),'ideal') if replay is not None else None,
-                    local_contract(a,pi,zeros) if local_contract is not None and not exact
-                    and zeros not in (0,a) else None)
+                    contract,sum(max(0,min(hi,threshold)-lo)
+                                 for lo,hi,_ in labels[node]) if ordered else None)
                 if replay is not None and (t,node) in replay:
                     replay_seen.add((t,node))
                 if monotone:
@@ -227,6 +287,11 @@ def run(table,p,d,threshold,exact_cap,eps_b,eps_f,delta_f,
                 destinations=[(lev-1,idx//p.k),
                     *((lev+1,idx*p.k+j) for j in range(p.k)),
                     (lev-1,idx//p.k)]
+                base=[0]
+                for length in [h,*blocks,h]:
+                    base.append(base[-1]+length)
+                destinations=[destinations[min(len(destinations)-1,bisect_right(base,pos)-1)]
+                              for pos in ends[:-1]]
                 for j,dest in enumerate(destinations):
                     length=ends[j+1]-ends[j]
                     value=ys[j+1]-ys[j]
@@ -238,11 +303,25 @@ def run(table,p,d,threshold,exact_cap,eps_b,eps_f,delta_f,
                     next_counts[dest]=next_counts.get(dest,0)+value
                     if monotone:
                         next_words.setdefault(dest,[]).extend([(value,1),(length-value,0)])
+                    if ordered:
+                        next_labels.setdefault(dest,[]).extend(
+                            labeled_port(labels[node],ends[j],ends[j+1],value))
         assert set(sizes)==handled,(t,set(sizes)-handled)
         assert sum(next_sizes.values())==n
         assert sum(next_counts.values())==threshold
         counts,sizes=next_counts,next_sizes
         if monotone:
+            if ordered:
+                labels={node:sorted(parts) for node,parts in next_labels.items()}
+                all_labels=sorted((lo,hi) for parts in labels.values() for lo,hi,_ in parts
+                                  if lo<hi)
+                assert all_labels[0][0]==0 and all_labels[-1][1]==n
+                assert all(x[1]==y[0] for x,y in zip(all_labels,all_labels[1:]))
+                next_words={node:[(hi-lo,bit) for lo,hi,bit in parts]
+                            for node,parts in labels.items()}
+                error=sum(labeled_error(v,threshold) for v in labels.values())
+                assert error<=previous_error,(t,error,previous_error)
+                previous_error=error; errors.append(error)
             words={node:normalize_word(parts) for node,parts in next_words.items()}
             assert all(sum(length for length,_ in word)==sizes[node]
                        and sum(length*bit for length,bit in word)==counts[node]
@@ -250,7 +329,8 @@ def run(table,p,d,threshold,exact_cap,eps_b,eps_f,delta_f,
     if replay is not None:
         assert replay_seen==set(replay),'unused replay decisions'
     if not terminal:
-        return dict(counts=counts,sizes=sizes,nonideal_choices=lp_steps,trace=trace)
+        return dict(counts=counts,sizes=sizes,nonideal_choices=lp_steps,trace=trace,
+                    global_errors=errors)
     failures=[]
     intervals=sorted((idx*p.k**(d-lev),(idx+1)*p.k**(d-lev))
                      for lev,idx in sizes)
@@ -260,6 +340,9 @@ def run(table,p,d,threshold,exact_cap,eps_b,eps_f,delta_f,
         lev,idx=node
         native=p.k**(d-lev)
         assert a==native,(node,a,native)
+        if ordered:
+            assert all(idx*native<=lo<=hi<=(idx+1)*native
+                       for lo,hi,_ in labels[node]),'non-native terminal wire set'
         target=max(0,min(native,threshold-idx*native))
         actual=counts[node]
         if actual!=target:

@@ -12,6 +12,7 @@ inside the log gives, with s = theta E / Phi and kappa1 = ((E2+1)/E2) b D / J,
 h concave (certified by bisection on h' as for psi*).  Slope Lam2 = -(c LY + H*).  The tail used is
 the smaller of the two valid tails; the check passes if either slope is positive.
 Usage:  python fringe_cert_v2.py F G1 G2 C_NUM C_DEN B J DELTA_NUM DELTA_DEN
+Optional --exact-small keeps ceil(2c) at E=2 and starts generic closed sums at3.
 Defaults: f=131040, g1=52416 (=2f/5), g2=104832 (=4f/5), c=1/3, b=7000.
 
 Every quantity is a rigorous upper bound on ln(failure probability) for ONE orientation, using the
@@ -20,6 +21,7 @@ ends and asserts all preconditions; it exits non-zero if any check fails.
 """
 import sys
 from fractions import Fraction as Fr
+from math import ceil
 from mpmath import iv, mpf
 iv.dps = 60
 
@@ -33,7 +35,7 @@ def up(x):   # upper end of an interval as mpf
 def lo(x):
     return x.a
 
-def certify(f, g1, g2, c, b, J, delta, verbose=False):
+def certify(f, g1, g2, c, b, J, delta, verbose=False, exact_small=False):
     """Run the F2ROUND certificate with J = 1/eps_F and fringe fraction delta as parameters."""
     st = {'ok': True, 'fail': [], 'exact_ok': True, 'closed_ok': True}
     phase = ['exact']
@@ -160,9 +162,13 @@ def certify(f, g1, g2, c, b, J, delta, verbose=False):
 
     def r2_exact(E):
         """regime I at the worst point n=(E-1)J/D (requires A<=1)."""
+        E_int=E
         E = I(E)
         nlo = (E - 1) * Jv / Dv
         kap = cv * E + 1
+        if exact_small and E_int==2:
+            # Keep the actual integer ceil(cE) instead of its loose cE+1 bound.
+            kap=I(ceil(2*Fr(c)))
         Bm1 = bv * E
         lnY = ln(kap + 1) + kap * ln(e ** 2 * nlo * Bm1 / kap ** 2)
         q = ln(nlo * Phi / (e * Bm1))
@@ -206,9 +212,10 @@ def certify(f, g1, g2, c, b, J, delta, verbose=False):
     check("regime I slope q0' - c LY > 0", lo(LamI) > 0)
     # sum_{E>=2} exp(ln(cE+2)+(cE+1)LY+2ln(EJ/D)+1-(Phi+E)q0') <= e^{LY+1-Phi q0'}(J/D)^2 sum (cE^3+2E^2) e^{-LamI E}
     r_I = iv.exp(-LamI)
-    S0, S1, S2 = geo_sums(r_I, 2)
-    S3 = r_I ** 2 * (r_I * (1 + 4 * r_I + r_I ** 2) / (1 - r_I) ** 4 + 6 * (r_I * (1 + r_I) / (1 - r_I) ** 3)
-                     + 12 * (r_I / (1 - r_I) ** 2) + 8 / (1 - r_I))   # sum_{k>=0} (k+2)^3 r^(k+2)
+    E0=3 if exact_small else 2
+    S0, S1, S2 = geo_sums(r_I, E0)
+    S3 = r_I ** E0 * (r_I * (1 + 4 * r_I + r_I ** 2) / (1 - r_I) ** 4 + 3*E0 * (r_I * (1 + r_I) / (1 - r_I) ** 3)
+                     + 3*E0**2 * (r_I / (1 - r_I) ** 2) + E0**3 / (1 - r_I))
     SumIc = iv.exp(LY + 1 - Phi * q0p) * (Jv / Dv) ** 2 * (cv * S3 + 2 * S2)
     qN = ln(Jv * Phi * N0 / ((N0 + 1) * Dv * e * bv))
     tauN = Jv / Dv * iv.exp(-Phi * qN)
@@ -217,22 +224,27 @@ def certify(f, g1, g2, c, b, J, delta, verbose=False):
     S0, S1, S2 = geo_sums(iv.exp(-LamN), N0 + 1)
     SumIIc = iv.exp(LY + 1) * (Jv / Dv) * (cv * S2 + 2 * S1)
     P1c = iv.exp(SR) + Sum_a + Sum_bc
-    P2c = SumIc + SumIIc
+    P2c = SumIc + SumIIc + (iv.exp(r2_exact(2)) if exact_small else 0)
     if verbose and st['closed_ok']:
         print("closed: lambda_b'=%.6g LamI=%.6g LamII=%.6g ; ln(2P1) <= %.6g ; ln(2P2) <= %.6g"
               % (lo(lam_bc), lo(LamI), lo(LamN), up(ln(2 * P1c)), up(ln(2 * P2c))))
     check("closed 2*P1 <= 1/1000", up(2 * P1c) <= mpf(1) / 1000)
     check("closed 2*P2 <= 1/1000", up(2 * P2c) <= mpf(1) / 1000)
+    # This script checks probability envelopes, not every current Lean API guard.
+    # Tiny delta requires a zero/nonzero-jmax extension of F2Pre.hf16.
+    st['current_hf16']=bool(Fr(delta)*f*16>=1)
     return st
 
 
 
 if __name__ == '__main__':
     a = sys.argv[1:]
+    exact_small='--exact-small' in a
+    a=[v for v in a if v!='--exact-small']
     f = int(a[0]); g1 = int(a[1]); g2 = int(a[2]); c = Fr(int(a[3]), int(a[4])); b = Fr(a[5])
     J = int(a[6]) if len(a) > 6 else 86_000_000
     delta = Fr(int(a[7]), int(a[8])) if len(a) > 8 else Fr(128, 4095)
-    st = certify(f, g1, g2, c, b, J, delta, verbose=True)
+    st = certify(f, g1, g2, c, b, J, delta, verbose=True,exact_small=exact_small)
     print('EXACT (per-E) ROUTE: ' + ('ALL CHECKS PASS' if st['exact_ok'] else 'SOME CHECK FAILED'))
     print('CLOSED (Lean-friendly) FORMS: ' + ('pass' if st['closed_ok'] else 'fail (not needed for the certificate)'))
     sys.exit(0 if st['exact_ok'] else 1)

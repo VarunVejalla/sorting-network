@@ -76,6 +76,12 @@ Fresh source review found that the old concatenation oracle omits this
 reachability restriction. An exact-root diagnostic must be error-free in
 the faithful ordered model; a real proof needs a precise constant-depth root
 and contraction from its nonzero initial error.
+That ordered model is implemented and fresh-reviewed, including an ideal-rank
+cut inside output ports. Its passing samples retain an unpriced fringe
+assumption and are not proofs. A separate reviewed tiny-fringe probability
+point and [inflated schedule](../upper-bound/experiments/prefix-flux/INFLATED-SCHEDULE.md)
+remove some local-price/padding gates conditionally. The uniform global
+profile recurrence is the central unresolved step; do not start Lean yet.
 
 No credible <=300 construction has yet passed the paper gates. Prioritize a
 new local/global contract rather than another scalar retune. Two precise

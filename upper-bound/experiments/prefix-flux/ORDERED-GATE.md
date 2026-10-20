@@ -49,13 +49,34 @@ leading budget. Track the resulting errors against shrinking future subtree
 escape capacity, and derive contraction/localization rather than relying
 only on a total initial epsilon*N error budget.
 
-`capacity_probe.py` is currently a necessary gate for the CONCATENATION
-oracle only. It adds the interval-checked moderate tail and reviewed4r bulk
+`capacity_probe.py --ordered` now implements the static-label test above.
+Default mode retains the historical concatenation model. It adds the interval-checked moderate tail and reviewed4r bulk
 surcharge, retains the OLD UNPRICED rare-fringe assumption, and uses an
 uncertified rectangular bulk scalar. At d16,horizon6,C2^21,epsB.0095 with
 exact initial root it still finds an excess of73688 across subtree(2,4).
 This rejects that stronger concatenation postcondition model, not the ordered
 candidate. Do not mistake it for a new obstruction to the actual layout.
+
+Ordered mode also splits output atoms at the ideal threshold cut, allowing
+errors inside a port that crosses q. Policy `global` maximizes current Hamming
+error and uses a second LP to prefer native outliers at the same primary
+integer objective. Solver optimality is numerical; feasibility and the
+integer primary equality are checked. Atomwise internal sorting still
+restricts future adversaries. Passing samples are not a universal bound.
+
+Fresh code review passed10495 small label-slicing/error checks and49 small
+LP-objective checks against exhaustive enumeration. Recorded controls:
+
+- d16,horizon6,exact root: zero errors and no nonideal choices.
+- d20,horizon12,root eps=10^-7:109950 initial global errors, no increase;
+  the sampled greedy policy eliminates them at step9, with no capacity gap.
+- d16,horizon6,ordinary epsB.0095 also at root: a large capacity violation.
+
+The last control confirms the need for separate root precision. The samples
+retain the old UNPRICED epsF1/16,deltaF1/8 assumption; do not combine their
+success with the much weaker supported range in TINY-FRINGE as if the same
+provider had been tested. The bulk scalar must be an all-wire-cut bound,
+including any interpolation surcharge at the added ideal threshold cut.
 
 No Lean until this ordered recurrence, a common priced tiny-rank provider,
 root initialization, terminal purity and complete depth accounting pass review.

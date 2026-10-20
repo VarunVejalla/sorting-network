@@ -3,7 +3,7 @@
 
 Retains the OLD UNPRICED rare-fringe contract as an optimistic assumption.
 Negative cut-capacity evidence is useful; a pass is not a sorting proof.
-This uses concatenation order, NOT the static-label order of R1Wire/R1Exec.
+Default order is concatenation; --ordered uses R1Wire/R1Exec static labels.
 The rectangular bulk scalar is assumed, not numerically certified here.
 """
 import argparse
@@ -47,6 +47,9 @@ if __name__=='__main__':
     ap.add_argument('--eps-b',default='19/2000')
     ap.add_argument('--coarse',action='store_true')
     ap.add_argument('--exact-root',action='store_true',help='unpriced diagnostic only')
+    ap.add_argument('--ordered',action='store_true',help='actual static global wire order')
+    ap.add_argument('--root-eps',help='separate initial root bulk precision')
+    ap.add_argument('--policy',choices=('native','global','random','delay'),default='global')
     args=ap.parse_args()
     p=Par(2,3,2); eps=F(args.eps_b)
     table,_,_=build_table(p,args.depth,'D2',horizon=args.horizon)
@@ -61,13 +64,17 @@ if __name__=='__main__':
         return budget,H-lo,a-H-hi
     q=int(F(args.threshold)*p.k**args.depth)
     result=run(table,p,args.depth,q,args.exact_cap,eps,F(1,16),F(1,8),
-               monotone=True,exact_root=args.exact_root,terminal=False,
+               monotone=True,exact_root=args.exact_root,terminal=False,policy=args.policy,
+               ordered=args.ordered,root_eps=F(args.root_eps) if args.root_eps else None,
                local_contract=None if args.coarse else contract)
     gaps=cut_gaps(result,p,args.depth,len(table),q)
     print('NECESSARY CAPACITY GATE ONLY; original rare contract retained, unpriced')
     print(f'd={args.depth} t={len(table)} q={q} C={args.exact_cap} '
           f'moderate={not args.coarse} exactroot={args.exact_root} '
+          f'ordered={args.ordered} '
           f'nonideal={result["nonideal_choices"]}')
+    if args.ordered:
+        print('global Hamming errors:',result['global_errors'])
     if gaps:
         gap,node,population,escape=gaps[0]
         print(f'worst cut {node}: wrong={population}, future escape<={escape}, '

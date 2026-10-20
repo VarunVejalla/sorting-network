@@ -78,4 +78,25 @@ interleaves incoming wires in static global-label order. The concatenation
 oracle does not model that stronger reachability. See ORDERED-GATE before
 doing further recurrence tests. In the faithful ordered model an exact root
 must leave no later errors, a useful diagnostic missing from the old harness.
-The new bounded capacity probe remains explicitly a concatenation relaxation.
+The historical default capacity probe is a concatenation relaxation;
+the ordered follow-up below models the actual interleaving.
+
+## Ordered gate and local price follow-up
+
+Ordered static-label mode is now implemented and independently reviewed;
+see ORDERED-GATE for controls and limitations. It checks the sorted-root
+fixed point and global Hamming nonincrease, and allows errors inside a
+threshold-straddling output port. Tests remain adversary samples.
+
+TINY-FRINGE records a reviewed interval-bound refinement retaining the exact
+first integer support cap. A thirteen-row point is possible in the paper
+bounds only at a very small supported rank fraction. It fails the current
+Lean hf16 API guard; the reviewed zero/nonzero-jmax extension and numerical
+proof are not formalized. It is not the stronger fringe assumption used in
+the current ordered samples.
+
+INFLATED-SCHEDULE records a reviewed constant inflation of the D2 table,
+giving exact4096-row rectangles and a large fixed final cleanup charged once.
+This removes the repeated small-sort/padding obstruction, not the global
+invariant. Next: ordered spill/profile recurrence and universal D2 fringe
+ratio/native partition; no Lean until the complete paper gate closes.
