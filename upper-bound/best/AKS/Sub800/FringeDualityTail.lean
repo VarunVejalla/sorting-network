@@ -1,4 +1,5 @@
 import AKS.Sub800.RowMgf
+import AKS.Sub800.Round2Union
 import Mathlib.Tactic
 
 /-! # Fringe by double weak duality: level crossing (UB-34)
@@ -145,6 +146,31 @@ theorem card_Yz_gt_le (Z : Finset (Fin m → Finset (Fin n))) (D : ℕ → ℝ) 
     _ ≤ ∑ k ∈ (Finset.range (m + 1)).filter (fun k : ℕ => y < (k : ℝ)),
           ((Z.filter fun ζ => k ≤ Nz ζ j (T k)).card : ℝ) := by
         exact_mod_cast Finset.card_biUnion_le
+
+/-- Bottom `h` rows. -/
+def bottomRows (m h : ℕ) : Finset (Fin m) := Finset.univ.filter fun r : Fin m => m - h ≤ r.val
+
+theorem Nz_eq (ζ : Fin m → Finset (Fin n)) (j : Fin n) (h : ℕ) :
+    Nz ζ j h = ((bottomRows m h).filter fun r => j ∈ ζ r).card := by
+  unfold Nz bottomRows
+  rw [Finset.filter_filter]
+
+theorem card_bottomRows (h : ℕ) (hh : h ≤ m) : (bottomRows m h).card = h :=
+  Round2Union.card_rows_top h hh
+
+/-- **Explicit tail** (subset model, uniform `s`-subsets per row): Chernoff at every level. -/
+theorem card_Yz_gt_le_exp (hn : 0 < n) (s : ℕ) (D : ℕ → ℝ) (hD0 : ∀ h, 0 ≤ D h) (j : Fin n)
+    (y : ℝ) (T : ℕ → ℕ) (hTm : ∀ k, T k ≤ m)
+    (hT : ∀ (k h : ℕ), h ≤ m → D h < (k : ℝ) - y → h ≤ T k) (θ : ℕ → ℝ) (hθ : ∀ k, 0 ≤ θ k) :
+    (((Fintype.piFinset fun _ : Fin m => (Finset.univ : Finset (Fin n)).powersetCard s).filter
+        fun ζ => y < Yz D ζ j).card : ℝ) ≤
+      ∑ k ∈ (Finset.range (m + 1)).filter (fun k : ℕ => y < (k : ℝ)),
+        Real.exp (-(θ k * k)) * (1 - (s : ℝ) / n + (s : ℝ) / n * Real.exp (θ k)) ^ T k *
+          ((n.choose s : ℝ) ^ m) := by
+  refine (card_Yz_gt_le _ D hD0 j y T hT).trans (Finset.sum_le_sum fun k _ => ?_)
+  have h := card_hits_ge_le (m := m) hn s j (bottomRows m (T k)) k (θ k) (hθ k)
+  rw [card_bottomRows (T k) (hTm k)] at h
+  simpa only [Nz_eq] using h
 
 end SubsetModel
 
