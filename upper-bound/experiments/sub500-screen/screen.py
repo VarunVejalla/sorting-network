@@ -65,7 +65,8 @@ def evaluate(x, y, z, H):
         return None
     dF = H.get("dF", 1 / 8)
     p = (A * nu * k - 1) / (A * A * k * k)
-    mu = (1 - 2 ** -10) * min(0.5 * dF * p, nu / (A * k * k))
+    mu44 = 0.5 * dF * p
+    mu = (1 - 2 ** -10) * (mu44 if H.get("no43") else min(mu44, nu / (A * k * k)))
     rstar = H.get("rstar", 1.0) * (k - 1) / (2 * A * A * k * k)
     tol = H.get("tol", 1.0)          # idealized error tolerance multiplier on eps_B
     rounds = H.get("rounds", 2)
@@ -95,13 +96,57 @@ def evaluate(x, y, z, H):
         return None
     q = math.ceil(best["lgm"] - 1e-9)
     spb = (x + y) / (x * z)
-    best.update(q=q, spb=spb, x=x, y=y, z=z, stage=stage_depth(q, H, k), ideal=stage_depth(best["lgm"], H, k) * spb)
+    if H.get("stage", "").startswith("band"):
+        q = min(range(q, q + 4), key=lambda qq: stage_depth(qq, H, k, best["f"], best["epsB"]))
+        st = stage_depth(q, H, k, best["f"], best["epsB"])
+        best.update(q=q, spb=spb, x=x, y=y, z=z, stage=st, ideal=st * spb)
+    else:
+        best.update(q=q, spb=spb, x=x, y=y, z=z, stage=stage_depth(q, H, k, best["f"]),
+                    ideal=stage_depth(best["lgm"], H, k, best["f"]) * spb)
     best["cost"] = best["stage"] * spb
     return best
 
 
-def stage_depth(q, H, k):
+def tail_frac(q, W):
+    """walk-bound round-1 tail beyond distance W of the level, as a fraction of m n (per cut):
+    max_p [sqrt(pi/2) sqrt(m p(1-p)) + sqrt(2 p' H(p) m) - W p] / m  (WALK-BOUND.md sec. 3 with the
+    W-shifted sum over S). It decays only like 1/W: the adversary can fill a few output columns."""
+    m = 2.0 ** q
+    ps = np.geomspace(1e-14, 0.5, 2000)
+    H = -(ps * np.log(ps) + (1 - ps) * np.log1p(-ps))
+    v = math.sqrt(math.pi / 2) * np.sqrt(m * ps * (1 - ps)) + np.sqrt(2 * ps * H * m) - W * ps
+    return max(float(v.max()), 0.0) / m
+
+
+def band(q, H, epsB=None):
+    """band repair at every cut instead of the third sort: one band sort of height 2W. W is the least
+    power of two with d(2^q) + 2 tail(W) <= eps_B (or W = cW sqrt(m) when H['cW'] is given)."""
+    if "cW" in H or epsB is None:
+        w = math.ceil(math.log2(2 * H.get("cW", 3.0)) + q / 2)
+        return S(min(w, q))
+    room = epsB - math.exp(float(np.interp(q, _LS, _LD)))
+    if room <= 0:
+        return math.inf
+    for lw in range(4, q + 1):
+        if 2 * tail_frac(q, 2.0 ** lw) <= room:
+            return S(min(lw + 1, q))
+    return S(q)
+
+
+def merge_first(q, f):
+    """first sort on columns made of sorted runs of length >= f + 1 (children's F blocks): skip the
+    first floor(lg(f+1)) merge levels of Batcher's sort."""
+    return S(q) - S(min(q, int(math.floor(math.log2(f + 1)))))
+
+
+def stage_depth(q, H, k, f=1.0, epsB=None):
     mode = H.get("stage", "sort3")
+    if mode == "band":                        # sort, scramble, sort, scramble, band repair
+        return 2 * S(q) + band(q, H, epsB)
+    if mode == "band+merge":                  # merge first sort, full second sort, band repair
+        return merge_first(q, f) + S(q) + band(q, H, epsB)
+    if mode == "merge1r":                     # merge first sort only (refined run length f + 1)
+        return merge_first(q, f) + 2 * S(q)
     if mode == "sort3":
         return 3 * S(q)
     if mode == "sort2":                       # one-round separator or idealized repair, plus R
@@ -160,6 +205,15 @@ HYP = [
     ("C11 f/10 + r* = 0 + two sorts", {"fdiv": 10.0, "rstar": 0.0, "stage": "sort2"}),
     ("C12 f~J^0.25 + two sorts", {"fexp": 0.25, "stage": "sort2"}),
     ("C13 f/10 + merge first sort", {"fdiv": 10.0, "stage": "merge1"}),
+    ("R1  band repair (walk-bound 1/W tail) for the third sort", {"stage": "band"}),
+    ("R2  band repair, optimistic W = 3 sqrt m", {"stage": "band", "cW": 3.0}),
+    ("R3  merge first sort (runs f+1) only", {"stage": "merge1r"}),
+    ("R4  merge first + band (1/W tail)", {"stage": "band+merge"}),
+    ("R5  R4 + fringe f / 2.4", {"stage": "band+merge", "fdiv": 2.4}),
+    ("R6  R4 + r* = 0", {"stage": "band+merge", "rstar": 0.0}),
+    ("R7  R4 + r* = 0 + f / 2.4", {"stage": "band+merge", "rstar": 0.0, "fdiv": 2.4}),
+    ("R8  band + r* = 0", {"stage": "band", "rstar": 0.0}),
+    ("R9  R4 + tolerance x4", {"stage": "band+merge", "tol": 4.0}),
     ("C9  tol x100 + split + two sorts", {"tol": 100.0, "split": True, "stage": "sort2"}),
 ]
 

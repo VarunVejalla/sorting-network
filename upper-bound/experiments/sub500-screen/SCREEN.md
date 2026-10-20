@@ -83,6 +83,44 @@ It is calibrated to the kernel-checked 789.75 point (R1-PROOF.md):
    idealized model gives 618.7 alone. The earlier −16% cap (`runaware/`, UB-13) was measured for the
    1770/1419 windows and is not obviously the R1 geometry.
 
+## Refined stage models (2026-10-20, `refined.out`)
+
+Two of the idealized stage models above are too optimistic. These versions replace them.
+
+* **Merge for the first sort.** About 98% of a bag's wires arrive as its children's up-flow F-blocks
+  ((I3) of R1-PROOF), and each F-block is about `f + 1 ≈ 2^13` rows tall in every column. So the
+  first sort sees sorted runs of length about `2^12–2^13`, not `2^22`. A Batcher sort that skips its
+  first `⌊lg(f+1)⌋` merge levels saves `S(12) = 78`: **731.2 alone** (H5a's 618.7 was too optimistic).
+* **Band repair for the third sort.** Property B needs each wire in the right block, not sorted within
+  its block, so the third sort can be one band sort of height `2W` around each cut, all in parallel.
+  * The wires left wrong are the round-1 mass beyond distance `W` of the level.
+  * The walk bound's argument with the `W`-shifted sum over `S` bounds that mass by
+    `max_p [√(π/2)·√(mp(1−p)) + √(2p′H(p)m) − Wp] · n`. **This decays only like `1/W`**: the
+    adversary can fill a few output columns.
+  * With room `ε_B − d(2^26)` for this tail, `W = 2^19` and the band costs `S(20) = 210` instead of
+    351: **699.8 alone**. The optimistic `W = 3√m` would give 628.5.
+
+| combination | cost | schedule, q |
+|---|---:|---|
+| band repair | 699.8 | (4,5,3), 26 |
+| merge first + band | 641.2 | (4,5,3), 26 |
+| merge + band + fringe f/2.4 | 619.5 | (4,5,3), 26 |
+| merge + band + `r* × 0.5` | 610.5 | (4,5,3), 26 |
+| merge + band + `r* × 0.1` | 534 | (4,4,3), 26 |
+| merge + band + `r* = 0` | 508 | (4,4,3), 25 |
+| **merge + band + `r* = 0` + fringe f/2.4** | **496** | (4,4,3), 24 |
+| merge + band + no (4.3) + δ_F 1/4 + f/2.4 | 592 | (5,5,3), 27 |
+
+**Reading.**
+* In this family, getting below 500 needs **all four components**:
+  * the band repair (UB-32);
+  * the merge for the first sort (UB-39);
+  * `r* ≈ 0` (UB-33, the two-sided invariant; a factor-10 reduction is not enough);
+  * a 2.4× smaller fringe (UB-34).
+* Without `r*` removal the family stops at about 610–640.
+* The band repair's tail is the limiting piece of UB-32. A per-column tail bound stronger than `1/W`
+  would need more than the walk bound's union over output sets `S`.
+
 ## Caveats
 
 * The fringe fits for δ_F = 1/4 and 1/3 are extrapolated.

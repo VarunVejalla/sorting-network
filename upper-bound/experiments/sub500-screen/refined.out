@@ -1,0 +1,20 @@
+Refined stage models (2026-10-20): band repair with the walk-bound 1/W tail; merge-first on runs of f+1 rows
+  R1  band repair (walk-bound 1/W tail) for the third sort   699.8 ( 699.8)  (4,5,3) q=26 [B  25.8, F  25.7]  epsB 7.5e-06 epsF 7.4e-06 f     6695 spb 0.750
+  R2  band repair, optimistic W = 3 sqrt m       628.5 ( 628.5)  (4,5,3) q=26 [B  25.8, F  25.7]  epsB 7.5e-06 epsF 7.4e-06 f     6695 spb 0.750
+  R3  merge first sort (runs f+1) only           731.2 ( 718.5)  (4,5,3) q=26 [B  25.8, F  25.7]  epsB 7.5e-06 epsF 7.4e-06 f     6695 spb 0.750
+  R4  merge first + band (1/W tail)              641.2 ( 641.2)  (4,5,3) q=26 [B  25.8, F  25.7]  epsB 7.5e-06 epsF 7.4e-06 f     6695 spb 0.750
+  R5  R4 + fringe f / 2.4                        619.5 ( 619.5)  (4,5,3) q=26 [B  25.0, F  25.0]  epsB 1.1e-05 epsF 3.7e-06 f     3925 spb 0.750
+  R6  R4 + r* = 0                                508.0 ( 508.0)  (4,4,3) q=25 [B  24.4, F  24.4]  epsB 1.5e-05 epsF 1.1e-05 f     5413 spb 0.667
+  R7  R4 + r* = 0 + f / 2.4                      496.0 ( 496.0)  (4,4,3) q=24 [B  23.8, F  23.7]  epsB 2.1e-05 epsF 5.3e-06 f     3308 spb 0.667
+  R8  band + r* = 0                              560.0 ( 560.0)  (4,4,3) q=25 [B  24.4, F  24.4]  epsB 1.5e-05 epsF 1.1e-05 f     5413 spb 0.667
+  R9  R4 + tolerance x4                          625.5 ( 625.5)  (4,5,3) q=26 [B  25.2, F  25.4]  epsB 1.0e-05 epsF 1.2e-05 f     5188 spb 0.750
+
+relaxing (4.3) (rising-top support) with larger delta_F:
+  no (4.3), dF 1/4*, band+merge                  625.5 ( 625.5)  (4,5,3) q=26 [B  25.5, F  25.9]  epsB 8.7e-06 epsF 2.5e-05 f     7631 spb 0.750
+  no (4.3), dF 1/4*, band+merge, f/2.4           592.0 ( 592.0)  (5,5,3) q=27 [B  26.2, F  26.6]  epsB 6.2e-06 epsF 5.7e-06 f     6003 spb 0.667
+
+r* multiplier needed with band+merge:
+  r* x 0.5, band+merge                           610.5 ( 610.5)  (4,5,3) q=26 [B  24.9, F  25.1]  epsB 1.2e-05 epsF 1.8e-05 f     4381 spb 0.750
+  r* x 0.25, band+merge                          595.5 ( 595.5)  (4,5,3) q=25 [B  24.6, F  24.9]  epsB 1.4e-05 epsF 2.3e-05 f     3863 spb 0.750
+  r* x 0.1, band+merge                           534.0 ( 534.0)  (4,4,3) q=26 [B  25.1, F  25.1]  epsB 1.1e-05 epsF 4.4e-06 f     8648 spb 0.667
+  r* x 0.0, band+merge                           508.0 ( 508.0)  (4,4,3) q=25 [B  24.4, F  24.4]  epsB 1.5e-05 epsF 1.1e-05 f     5413 spb 0.667
