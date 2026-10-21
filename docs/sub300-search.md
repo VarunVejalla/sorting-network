@@ -507,9 +507,9 @@ sorting theorem.
 The count-state failure points to a richer state rather than immediately
 discarding the first-moment route. For a fixed terminal edge, track the joint
 histogram of wire-column bit patterns across all blocks in its backward cone,
-with block labels and offset phase retained. The cone support script gives at
-most six width-4 blocks per edge; the same pairing-closure argument should be
-proved for full block-pattern states. Under a common slot permutation, fresh
+with block labels and offset phase retained. The exact-tail window and
+pairing-closure argument give at most six labeled block rows at every scale.
+Under a common slot permutation, fresh
 uniform matching laws are equivariant, and a physical split acts on the joint
 row types by a multivariate-hypergeometric allocation. The split must retain
 the two child histograms jointly.
@@ -518,15 +518,18 @@ An independent review found this state plausible for fixed phase-tagged
 geometry. The exact check in
 [`ub28-joint-histogram-check.py`](../upper-bound/experiments/ub28-joint-histogram-check.py)
 enumerates every pattern for `(width, support)=(2,6),(4,3),(4,4)` and verifies
-matching lumpability for both adjacent pair phases plus the joint split kernel. This
-does not prove arbitrary-width closure or establish the necessary rate. The
-next gates are a formal strong-lumpability proof through the complete schedule,
-uniform bounded cone support, and a certified worst-case exponent above `ln 2`
-for a schedule whose depth coefficient is below 300. Compute the complete
-backward cone first; forward transitions may project away whole block rows,
-but must not discard rows that could later re-enter. The exact width-4/2/1
-tail is count-based if each cyclic complete splitter is proved to compare every
-cross pair once (so no left `1`/right `0` survives), followed by the explicit
-width-2-count predicate for the final odd boundary pass. See
+matching lumpability for both adjacent pair phases plus the joint split kernel.
+The exact matching transition also has a triple-type count: for predecessor,
+current, and successor type table `T`, its exponential cost is
+`I(C;A,B)`, and the split alignment has a mutual-information type cost. Exact
+factorial formulas and small exhaustive checks are recorded in
+[`UB28-JOINT-PATTERN-STATE.md`](../upper-bound/experiments/UB28-JOINT-PATTERN-STATE.md)
+and [`ub28-matching-triple-types.py`](../upper-bound/experiments/ub28-matching-triple-types.py).
+These close the finite-type kernel derivation, not the rate gate. The remaining
+gate is to optimize the coupled rate over all phase and boundary trajectories,
+prove it exceeds `ln 2`, and then carry the uniform subexponential errors.
+Forward transitions may project away whole block rows only after the complete
+backward cone is fixed. The exact width-4/2/1 tail is count-based by the cyclic
+complete-splitter argument and explicit width-2-count predicate. See
 [`UB28-JOINT-PATTERN-STATE.md`](../upper-bound/experiments/UB28-JOINT-PATTERN-STATE.md).
 

@@ -1,6 +1,7 @@
 # UB-28 joint-pattern state: research sketch
 
-Status: independently reviewed state hypothesis; no probability bound is claimed.
+Status: independently reviewed state hypothesis with local transition rate
+formulas; no full-network probability bound is claimed.
 
 The width-2 example in `UB28-TOP-HEAVY-SCHEDULE.md` rules out a Markov state
 consisting only of block counts. The schedule may still admit a bounded-width
@@ -83,12 +84,64 @@ comes from `u_t`. Thus the exact transition is
 K(H,H') = (1/h!) * #{π : histogram(F(u_{π^-1(t)},u_t,u_{π(t)}) over t) = H'}.
 ```
 
-Conjugation makes this independent of the chosen representative. The triple
-dependence explains why a pairwise-overlap approximation is insufficient. A
-direct asymptotic route is to count empirical triple types along permutation
-cycles, then optimize their entropy subject to the input and output
-histograms. Short cycles and finite-width errors must be included in a
-certified envelope.
+Conjugation makes this independent of the chosen representative. There is a
+closed exact count for each triple histogram, so no separate cycle enumeration
+is needed. Write `H_b` for the input count of row type `b`,
+`T_{abc}` for the number of slots whose predecessor/current/successor types
+are `(a,b,c)`, and `M_{ab}=sum_c T_{abc}`. A triple table is feasible exactly
+when its central marginal is `H_b` and its pair flow balances:
+`sum_c T_{abc} = sum_p T_{pab}` for all `a,b`. The latter expresses that
+the number of permutation edges from type `a` to type `b` is the same whether
+counted at its source or target. The exact number of permutations producing
+this table is
+
+```text
+N(T) = (prod_b H_b! / prod_{a,b,c} T_{abc}!) * prod_{a,b} M_{ab}!.
+```
+
+To see this, first assign each central type-`b` slot its predecessor and
+successor type, in `H_b!/prod_{a,c}T_{abc}!` ways. For every edge type `(a,b)`,
+then biject the `M_ab` sources of type `a` whose successor has type `b` to
+the `M_ab` targets of type `b` whose predecessor has type `a`, in `M_ab!`
+ways. These independent bijections construct exactly one permutation and
+count every permutation once. Therefore the probability of the table is
+`N(T)/h!`.
+
+For fixed alphabet size `q=2^k`, Stirling's formula gives
+`h^-1 log(N(T)/h!) = -I_T + O(q^3 log(h+1)/h)`, uniformly in feasible
+tables, where
+
+```text
+I_T = H(p) + H(M) - H(T) = I(C ; A,B) >= 0.
+```
+
+Here `p_b=H_b/h`, `M_ab` is normalized by `h`, `T_abc` is normalized by
+`h`, and `H( )` is Shannon entropy using natural logarithms. Pair-flow balance
+makes the marginals of `A,B,C` all `p` and the `AB` and `BC` pair entropies
+both `H(M)`, so the
+displayed expression is the mutual information of successor type `C` with
+the predecessor/current pair `(A,B)`. The output histogram is the
+deterministic image `H'_d = sum_{a,b,c : F(a,b,c)=d} T_{abc}`. There are at
+most `(h+1)^(q^3)` integer tables, hence for any specified output histogram
+its probability is bounded by this subexponential factor times
+`exp(-h * inf I_T)` over feasible tables with that output. The checker
+`ub28-matching-triple-types.py` exhaustively verifies the exact factorial
+identity for all 416 words of widths 1 through 5 over up to three colors.
+It also verifies the induced two-bit comparator output kernel for all 256
+four-slot words over the four two-bit types.
+
+The physical half-split also has an exact type kernel. If parent type counts
+are `H_v`, first-half allocations are `X_v`, and second-half allocations are
+`Y_v=H_v-X_v`, then
+`P(X)=prod_v binom(H_v,X_v)/binom(h,h/2)`. If `R_{uv}` counts the aligned
+first-half type `u` and second-half type `v`, conditional on `X,Y` its
+probability is
+`prod_u X_u! prod_v Y_v! / ((h/2)! prod_{u,v}R_{uv}!)`.
+The resulting child histogram is exactly `R`. Thus both matching and split
+steps admit finite-type entropy rate functions on the joint state; this
+removes the combinatorial-formula obstacle, but does not yet optimize their
+composition or establish a rate above `ln 2`. The same checker verifies this
+split formula for 103 parent words at widths 2 and 4.
 
 These arguments prove the abstract orbit steps, conditional on the support
 geometry being fixed and all random pairings in the local cone being fresh and
