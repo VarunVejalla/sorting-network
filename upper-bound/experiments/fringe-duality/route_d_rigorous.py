@@ -21,6 +21,7 @@ Round 2 (sigma2, per set S of s2 columns): rows of v in S are split into levels 
 Escapes(S) = sum_{v in S} w_v - f s2 <= s2 L0 + sum_i min(s2 (hi - lo), count_i) - f s2.
 """
 import math
+import numpy as np
 import sys
 from functools import lru_cache
 
@@ -120,32 +121,47 @@ def excluded_step(A0, A1, j, R, n, Ent):
     return False
 
 
+@lru_cache(maxsize=4096)
+def _binom_logpmf(H, p):
+    """log P(Bin(H, p) = k) for k = 0..K, with K past the mode where the pmf has fallen by e^-60 and is
+    decreasing; beyond K the ratio of consecutive terms is <= r_K < 1 (log-concave), returned for a
+    geometric tail bound."""
+    mode = int((H + 1) * p)
+    K = min(H, mode + int(12 * math.sqrt(H * p + 1)) + 80)
+    k = np.arange(K + 1)
+    lgk = np.array([math.lgamma(x + 1) for x in range(K + 1)])
+    lp = math.lgamma(H + 1) - lgk - np.array([math.lgamma(H - x + 1) for x in range(K + 1)])         + k * math.log(p) + (H - k) * math.log1p(-p)
+    rK = (H - K) / (K + 1) * p / (1 - p) if K < H else 0.0
+    return lp, rK
+
+
 @lru_cache(maxsize=100000)
 def mult_excess(H, s2, n, ent, c=1):
     """max over S (|S| = s2) of sum_u (M_u - c)_+, M_u ~ Bin(H, s2/n), NA across u; Chernoff + union (ent).
-    E e^{t (M-c)_+} - 1 = sum_{k > c} P(M = k)(e^{t(k-c)} - 1) <= sum_{k > c} P(M = k) e^{t(k-c)}: summed in
-    log space; terms are log-concave in k, so past the peak the tail is bounded by a geometric series."""
+    E e^{t (M-c)_+} - 1 <= sum_{k > c} P(M = k) e^{t(k-c)}; terms beyond the table K are bounded by a
+    geometric series with ratio r_K e^t (needs r_K e^t < 1)."""
     p = s2 / n
-    if H <= c or p >= 1:
-        return 0.0 if H <= c else math.inf
-    lr = math.log(p) - math.log1p(-p)
+    if H <= c:
+        return 0.0
+    if p >= 1:
+        return math.inf
+    lp, rK = _binom_logpmf(H, p)
+    K = len(lp) - 1
+    if K <= c:
+        return 0.0 if K == H else math.inf
+    ks = np.arange(c + 1, K + 1)
+    base = lp[c + 1:]
     best = math.inf
     for t in [0.02 * 1.12 ** i for i in range(80)]:
-        k = c + 1
-        lpk = lbinom(H, k) + k * math.log(p) + (H - k) * math.log1p(-p)
-        terms, prev = [], None
-        while k <= H:
-            x = lpk + t * (k - c)
-            terms.append(x)
-            if prev is not None and x < prev and x < max(terms) - 40:
-                ratio = math.exp(x - prev)
-                terms.append(x + math.log(ratio / (1 - ratio)))
-                break
-            prev = x
-            lpk += math.log((H - k) / (k + 1)) + lr if k < H else 0.0
-            k += 1
-        mx = max(terms)
-        lse = mx + math.log(sum(math.exp(y - mx) for y in terms))
+        x = base + t * (ks - c)
+        mx = float(x.max())
+        lse = mx + math.log(float(np.exp(x - mx).sum()))
+        if K < H:
+            q = rK * math.exp(t)
+            if q >= 1:
+                continue
+            xl = lp[K] + t * (K - c) + math.log(q / (1 - q))
+            lse = max(lse, xl) + math.log1p(math.exp(min(lse, xl) - max(lse, xl)))
         if lse > 600:
             continue
         val = (n * math.log1p(math.exp(lse)) + ent) / t
@@ -185,14 +201,18 @@ def Kmax(j, n):
     return math.sqrt(A)
 
 
-def escapes(j, n, f, s2, L0_extra, ratio, s2_lo=None):
-    """Escape bound for every round-2 set S with s2_lo <= |S| <= s2 (s2_lo = s2 by default).
-    Every count term is nondecreasing in |S| (larger U, entropy lbinom(n, s) for s <= n/2, kmax_sources,
-    Bin(H, s/n)), and -(f - L0)|S| is decreasing, so evaluating counts at s2 and the linear term at s2_lo
-    bounds the whole interval."""
+def escapes(j, n, f, s2, L0_extra, ratio, s2_lo=None, j_lo=None):
+    """Escape bound for every round-2 set S with s2_lo <= |S| <= s2 and every mass j_lo <= j' <= j
+    (defaults: s2_lo = s2, j_lo = j). Every count term is nondecreasing in |S| (larger U, entropy
+    lbinom(n, s) for s <= n/2, kmax_sources, Bin(H, s/n)) and -(f - L0)|S| is decreasing; in j' the
+    lemma uses lam j (<= lam j), the cap R = ceil(hi - b_lo) (>= hi - b'), the level floor
+    d = floor(lo + 1 - b) (<= floor(lo + 1 - b')), free rows L0 >= ceil(b) (>= ceil(b')) and Kmax at j."""
     if s2_lo is None:
         s2_lo = s2
+    if j_lo is None:
+        j_lo = j
     b = j / n
+    b_lo = j_lo / n
     K = Kmax(j, n)
     top = b + K + 1
     L0 = math.ceil(b) + L0_extra
@@ -201,15 +221,43 @@ def escapes(j, n, f, s2, L0_extra, ratio, s2_lo=None):
     lo = L0
     while lo < top:
         hi = min(math.ceil(top), max(lo + 1, int(lo * ratio)))
-        R = math.ceil(hi - b)
+        R = math.ceil(hi - b_lo)
         u = min(n, (hi - lo) * s2)
         d = math.floor(lo + 1 - b)
-        A = A_star(round(j), R, d, u, n, ent_S)
+        A = A_star(math.ceil(j), R, d, u, n, ent_S)
         k = kmax_sources(A, d, s2)
         cnt = min(k * c + mult_excess(hi - lo, s2, n, ent_S + math.log(len(CS)), c) for c in CS if c <= hi - lo or c == 1)
         total += min(s2 * (hi - lo), cnt)
         lo = hi
     return total - (f - L0) * s2_lo
+
+
+def worst_interval(ja, jb, n, f):
+    """max over set-size intervals of the best (L0, ratio) escape bound for all j in [ja, jb]."""
+    worst = None
+    ivs = [(1, 1)] + [(2 ** i, 2 ** (i + 1)) for i in range(60) if 2 ** i <= max(1, jb / f)]
+    for sa, sb in ivs:
+        e = min(escapes(jb, n, f, sb, L0x, r, sa, ja) for L0x in (0, 50, 200) for r in (1.3, 1.6, 2.0))
+        if worst is None or e > worst[0]:
+            worst = (e, sb)
+    return worst
+
+
+def sweep(n, J, f, jfrom, jto, ratio=1.25):
+    """Cover [jfrom, jto] by geometric intervals (split at J). Contract: escapes = 0 (bound < 1) for j < J,
+    escapes < j/J for j >= J."""
+    jmax = f * n / 8
+    jto = min(jto, jmax)
+    ja = jfrom
+    while ja < jto:
+        jb = min(jto, ja * ratio)
+        if ja < J < jb:
+            jb = J
+        allowed = 1.0 if jb <= J else ja / J
+        e, s = worst_interval(ja, jb, n, f)
+        print(f"  j in [{ja / J:10.4g}, {jb / J:10.4g}] J: worst {e:12.1f} at s2 <= {s:7d}  allowed {allowed:10.1f}"
+              f"  {'OK' if e < allowed else 'FAIL'}", flush=True)
+        ja = jb
 
 
 def main():
@@ -236,4 +284,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) > 1 and sys.argv[1] == "sweep":
+        n_, J_, f_ = int(float(sys.argv[2])), float(sys.argv[3]), float(sys.argv[4])
+        print(f"sweep n = 2^{math.log2(n_):.0f}, J = {J_:.3g}, f = {f_:.0f}, j in [{sys.argv[5]}, {sys.argv[6]}]", flush=True)
+        sweep(n_, J_, f_, float(sys.argv[5]), float(sys.argv[6]))
+    else:
+        main()
