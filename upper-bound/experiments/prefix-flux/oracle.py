@@ -16,6 +16,7 @@ from fractions import Fraction as F
 
 import numpy as np
 from scipy.optimize import linprog
+from scipy.sparse import diags,vstack
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'slackfree'))
 from explicit import build_table
@@ -84,6 +85,22 @@ def labeled_error(labels,threshold):
                 max(0,min(hi,threshold)-lo)) for lo,hi,bit in labels)
 
 
+def labeled_outputs(labels,ends,ys):
+    """Recolor all sorted output atoms in one pass through the fixed labels."""
+    result=[]; j=0; base=0
+    for left,right,u,v in zip(ends,ends[1:],ys,ys[1:]):
+        split=left+v-u
+        for start,stop,bit in ((left,split,1),(split,right,0)):
+            pos=start
+            while pos<stop:
+                while base+labels[j][1]-labels[j][0]<=pos:
+                    base+=labels[j][1]-labels[j][0]; j+=1
+                lo,hi,_=labels[j]; end=min(stop,base+hi-lo)
+                result.append((lo+pos-base,lo+end-base,bit)); pos=end
+    assert sum(hi-lo for lo,hi,_ in result)==ends[-1]
+    return result
+
+
 def need_capture(j,epsilon):
     if not j:
         return 0
@@ -142,7 +159,7 @@ def native_weight(node,threshold,p,d):
 
 def choose(a,pi,blocks,zeros,node,p,d,threshold,eps_b,eps_f,
            delta_f,exact,rng,policy,incoming=None,supplied=None,contract=None,
-           target_cut=None):
+           target_cut=None,extra_cuts=()):
     lev,idx=node
     h=pi//2
     lengths=[h,*blocks,h]
@@ -151,8 +168,11 @@ def choose(a,pi,blocks,zeros,node,p,d,threshold,eps_b,eps_f,
         ends.append(ends[-1]+length)
     assert ends[-1]==a and pi%2==0,(node,a,pi,blocks,ends)
     original_ends=ends[:]
-    if target_cut is not None and target_cut not in ends:
-        ends=sorted([*ends,target_cut])
+    additions=set(extra_cuts)
+    if target_cut is not None:
+        additions.add(target_cut)
+    if additions-set(ends):
+        ends=sorted([*ends,*(additions-set(ends))])
         lengths=[q-p for p,q in zip(ends,ends[1:])]
     limits,budget,support=bounds(a,h,zeros,ends,eps_b,eps_f,delta_f,exact,contract)
     if incoming is not None:
@@ -168,6 +188,14 @@ def choose(a,pi,blocks,zeros,node,p,d,threshold,eps_b,eps_f,
     if exact or budget==0 or zeros in (0,a) or pi==a:
         verify(a,zeros,ends,ideal,limits)
         return ends,ideal,budget,support
+    if policy=='identity' and incoming is not None:
+        ys=word_prefix(incoming,ends)
+        try:
+            verify(a,zeros,ends,ys,limits)
+        except AssertionError:
+            policy='global'
+        else:
+            return ends,ys,budget,support
     destinations=[(lev-1,idx//p.k),
                   *((lev+1,idx*p.k+j) for j in range(p.k)),
                   (lev-1,idx//p.k)]
@@ -191,12 +219,14 @@ def choose(a,pi,blocks,zeros,node,p,d,threshold,eps_b,eps_f,
     for j,w in enumerate(weights):
         objective[j]-=w
         objective[j+1]+=w
-    matrix=[]
-    rhs=[]
-    for j,length in enumerate(lengths):
-        row=np.zeros(len(ends)); row[j+1]=1; row[j]=-1
-        matrix.extend((row,-row)); rhs.extend((length,0))
-    result=linprog(-objective,A_ub=np.array(matrix),b_ub=np.array(rhs),
+    # Prefix increments form a path: retain O(number of cuts) storage even
+    # when a column-aligned input has thousands of runs.
+    count=len(lengths)
+    diff=diags((-np.ones(count),np.ones(count)),(0,1),
+               shape=(count,count+1),format='csr')
+    matrix=vstack((diff,-diff),format='csr')
+    rhs=np.concatenate((lengths,np.zeros(count)))
+    result=linprog(-objective,A_ub=matrix,b_ub=rhs,
                    bounds=limits,method='highs')
     assert result.success,result.message
     ys=[int(round(v)) for v in result.x]
@@ -208,7 +238,7 @@ def choose(a,pi,blocks,zeros,node,p,d,threshold,eps_b,eps_f,
         for j,w in enumerate(native_weights):
             secondary[j]-=w; secondary[j+1]+=w
         value=int(sum(int(v)*y for v,y in zip(objective,ys)))
-        tied=linprog(-secondary,A_ub=np.array(matrix),b_ub=np.array(rhs),
+        tied=linprog(-secondary,A_ub=matrix,b_ub=rhs,
                      A_eq=np.array([objective]),b_eq=np.array([value]),
                      bounds=limits,method='highs')
         assert tied.success,tied.message
@@ -330,7 +360,7 @@ def run(table,p,d,threshold,exact_cap,eps_b,eps_f,delta_f,
         assert replay_seen==set(replay),'unused replay decisions'
     if not terminal:
         return dict(counts=counts,sizes=sizes,nonideal_choices=lp_steps,trace=trace,
-                    global_errors=errors)
+                    global_errors=errors,labels=labels if ordered else None)
     failures=[]
     intervals=sorted((idx*p.k**(d-lev),(idx+1)*p.k**(d-lev))
                      for lev,idx in sizes)

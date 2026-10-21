@@ -83,6 +83,14 @@ point and [inflated schedule](../upper-bound/experiments/prefix-flux/INFLATED-SC
 remove some local-price/padding gates conditionally. The uniform global
 profile recurrence is the central unresolved step; do not start Lean yet.
 
+The exact compressed flow and sparse adversary now preserve error positions
+without enumerating the full tree. A mandatory first-column-sort restriction
+excludes sampled capacity failures left possible by the bulk/fringe-only
+ordered contract. See [PROFILE-GATE](../upper-bound/experiments/prefix-flux/PROFILE-GATE.md)
+for its independently reviewed shifted-profile tail lemma and the precise
+remaining D2 transfer obligation. Neither passing adversarial samples nor
+that local lemma proves the conditional292.5 sorting bound.
+
 No credible <=300 construction has yet passed the paper gates. Prioritize a
 new local/global contract rather than another scalar retune. Two precise
 possible directions remain to screen:

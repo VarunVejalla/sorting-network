@@ -1,0 +1,121 @@
+# Actual first-sort profiles and shifted tails
+
+2026-10-20. Codex (GPT-6). Paper research, not a sorting theorem.
+Fresh read-only review of the first-sort/cut semantics: `first_column_review`
+(GPT-6-luna). Independent mathematical review of the shifted-tail lemma and
+counting: `shifted_profile_audit` (GPT-6-luna); its correction on reflected
+cut coordinates is incorporated below. Neither review proves global sorting.
+
+## Why the stronger local interface matters
+
+`PhysicalPack2.lean` starts with an ordinary column sort, followed by two
+row-conjugated column sorts. All physical comparators are ascending. Thus
+every output prefix contains at least as many zero keys as the **actual
+first-sort output**, not just as many as the original input. This costs no
+extra layers. The rectangular source proves the ordering of the relabeled
+comparators; a centered-ragged extension still needs its physical embedding.
+
+`first_column.py` computes that first-sort word exactly on the proposed
+centered-ragged layout using run lengths and column intervals. It passed
+8,490 comparisons with independent literal column sorting (all binary words
+of lengths1..12 at height ceiling4, plus300 larger random cases).
+No arrays proportional to the ambient wire count are needed.
+
+This restriction is materially stronger than bulk/fringe postconditions.
+At d20, root bulk precision10^-7, threshold1/3, the postcondition-only ordered
+oracle with epsB=.0095, epsF=1/16, delta=1/8 and the moderate tail admits:
+
+| Initial wrong-key locations | First capacity gap |
+|---|---|
+| both outer ends | step10, subtree(1,0):3435 wrong vs2184 future exit slots |
+| left end and just above threshold | same3435 vs2184 |
+| just below threshold and right end | step12, subtree(1,3):429 vs136 |
+
+These are failures of a weakened relational contract, NOT of the actual
+fixed core. Requiring prefix dominance over the first-sort output excludes
+all three sampled failures. The same full-schedule tests, plus a central
+inverted band and column-aligned stripes, reach pure terminal blocks in the
+sampled identity-then-Hamming adversary. All begin with109950 wrong keys.
+The stripe test uses up to4096 small intervals at two different root-column
+residues; it is more demanding than a contiguous inverted band.
+The stripe sample also passes with delta=0 (no rare-fringe constraint), still
+using the moderate tail and mandatory first sort. This removes that local
+assumption only for this one sampled execution, not for the construction.
+
+These are samples, not a uniform result. The oracle still assumes an
+unpriced rare-fringe promise and an uncertified all-cut bulk scalar; it
+chooses input-dependent outputs, and its root profiles satisfy only the
+stated bulk budget. A passing run does not construct one fixed provider.
+
+## A profile interface for the existing three-sort core
+
+Work first with exact m-by-n rectangles, m>=1,n>=2, as allowed by
+INFLATED-SCHEDULE. A one-column matrix is sorted exactly.
+One means a zero key. After the first sort let c_j be column heights and
+
+    T_c(b) = sum_j max(c_j-b,0),    0<=b<=m.
+
+Fix a baseline b. The column profile c is dominated cellwise by b+d, where
+d_j=max(c_j-b,0). The first b rows of this larger matrix are full. Row
+permutations preserve that baseline, and every subsequent column sort keeps
+it full. Removing it leaves exactly the sparse-profile process on the bottom
+m-b rows. Monotonicity therefore gives
+
+    output zero mass beyond row b+f <= sparse escape(d,f).
+
+This holds even when c has missing marks within the baseline: filling them
+only increases the comparison input. Reflection gives the corresponding
+bound for holes before a row cut. This is a deterministic reduction, not
+itself a probability or global sorting bound.
+
+Apply the reviewed MODERATE-TAIL envelope to d with
+i=ceil(T_c(b)/n), clipped to m-b. Use zero escape at zero mass. To choose one
+row scramble working for every baseline b, mass class i, subset size p*n
+and both orientations, at most2*m^2*(n-1) classes suffice. Replace that
+note's entropy overhead by
+
+    log(2*m^2*(n-1)/eta)/n.
+
+The suffix restriction of independent uniform row permutations has the
+correct distribution. Baseline restrictions need not be independent: the
+union bound does not require independence. Profile/subset unions are still
+covered by g(i) and binary entropy h(p). Endpoints p=0,1 are deterministic;
+use non-strict escape inequalities and clip by actual mass.
+
+Let Phi(E,f) denote this uniform escape envelope for all profiles of mass
+at most ceil(E/n)*n. One round yields the whole-tail inequality
+
+    T_next(k) <= min_{0<=b<=k} Phi(T_c(b),k-b).
+
+Each later row permutation preserves a full-row tail and each column sort
+only reduces it, so even the one-round inequality remains valid after the
+second round. Alternatively apply the operator twice, selecting a common
+witness for both scrambles with total failure budget eta (overhead then
+log(4*m^2*(n-1)/eta)/n). Feeding an upper bound for T_next into the second
+round is legitimate because its promise covers every profile below the
+chosen mass cap; numerical witness selection need not be monotone.
+
+For any output full-row cut k, these tails give concrete prefix lower bounds
+
+    Y(k*n) >= H - T_out(k),
+    Y(k*n) >= k*n - hole_mass_before_row_k.
+
+The physical/semantic correspondence preserves these counts. For a cut
+inside a row, use the preceding full-row prefix, or account for the partial
+row explicitly; do not assume arbitrary-cut precision for free.
+For the holes inequality at native cut k, reflect vertically and apply the
+tail operator at cut m-k, not k: choose b_h+f_h=m-k in that reflected frame.
+The endpoint k=m is exact. If a KL budget exceeds its maximal value, clipping
+the threshold to i remains valid by the deterministic mass cap X<=in.
+
+## Remaining decisive gate
+
+Derive a closed transfer of these tails through the **actual ordered D2
+ports**, including returning child bands and partial-row cuts, and compare
+it with future escape capacity. First-sort prefix dominance alone is a
+useful restriction, but cannot replace that all-input argument. Establish
+the common local witness, root initialization, all-depth flow geometry and
+terminal criterion before any Lean work on this candidate.
+
+The stage-cost target remains234*5/4=292.5, conditional on all those gaps.
+The additional profile promises must be obtained from the same three sorts.

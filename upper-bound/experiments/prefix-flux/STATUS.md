@@ -100,3 +100,38 @@ giving exact4096-row rectangles and a large fixed final cleanup charged once.
 This removes the repeated small-sort/padding obstruction, not the global
 invariant. Next: ordered spill/profile recurrence and universal D2 fringe
 ratio/native partition; no Lean until the complete paper gate closes.
+
+## Exact compressed flow and first-sort profile gate
+
+Current next-step specification: **PROFILE-GATE.md**. It records a freshly
+reviewed stronger local interface for the actual three-sort construction:
+prefix dominance over its mandatory first column sort, and shifted sparse
+tails above every baseline row. The shared-witness counting overhead is
+explicit, including reflected cut coordinates. Global preservation remains
+unproved. Reviews: `first_column_review`, `shifted_profile_audit` (GPT-6-luna).
+
+`flow_dag.py` shares identical deficit subtrees instead of enumerating4^d
+bags. Reproducible comparison against the existing explicit table matches
+17541 active rows at d3..10. At d40 it represents the complete88-stage flow
+in29483 states and checks terminal native intervals for every reachable type.
+Finite checks through d80 find minimum ordinary fringe ratio1/303, attained
+already at d20,t22,level6,a2121,pi14; this is NOT an all-depth geometry proof.
+
+`sparse_probe.py` retains actual wrong-label intervals and tries to preserve
+the incoming word whenever its contract allows, rather than sorting every
+large output port incidentally. Full d20 tests expose ordered capacity gaps
+for remote root errors if the mandatory first sort is omitted; including it
+excludes the three sampled gaps. Central and column-aligned initial profiles
+also pass the full schedule. See PROFILE-GATE for scope and parameters.
+These samples retain the unpriced fringe/bulk assumptions: no sorting bound.
+
+Useful focused commands:
+
+    python upper-bound/experiments/prefix-flux/flow_dag.py --depth 20 --compare-explicit 10
+    python upper-bound/experiments/prefix-flux/first_column.py
+    python upper-bound/experiments/prefix-flux/sparse_probe.py --horizon 60 --initial outer
+
+The LP now stores its path constraints sparsely; recoloring and interval
+queries avoid repeated scans. First-sort validation:8490 literal comparisons;
+recoloring/interval validation:3000 randomized exact comparisons. Historical
+monotone trace replay remains valid. No Lean build was needed or run.

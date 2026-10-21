@@ -1,0 +1,187 @@
+#!/usr/bin/env python3
+"""Sparse ordered adversary after an initial inverted rank band.
+
+Only bags meeting currently misplaced wire intervals are processed; other
+bags see ideal sorted input and every ascending provider fixes that input.
+This still permits input-dependent oracle outputs, NOT one fixed provider.
+"""
+import argparse
+from bisect import bisect_right
+from fractions import Fraction as F
+import random
+from flow_dag import FlowDAG
+from oracle import choose,normalize_word,labeled_outputs,dominates
+from moderate_tail import ragged
+from first_column import first_column
+
+
+def merge(intervals):
+    out=[]
+    for lo,hi in sorted(intervals):
+        if lo>=hi: continue
+        if out and lo<=out[-1][1]: out[-1]=(out[-1][0],max(hi,out[-1][1]))
+        else: out.append((lo,hi))
+    return out
+
+
+def overlap(intervals,lo,hi):
+    j=max(0,bisect_right(intervals,(lo,float('inf')))-1)
+    total=0
+    while j<len(intervals) and intervals[j][0]<hi:
+        a,b=intervals[j]; total+=max(0,min(b,hi)-max(a,lo)); j+=1
+    return total
+
+
+def subtract(intervals,remove):
+    out=[]
+    for lo,hi in intervals:
+        pos=lo
+        for a,b in remove:
+            if b<=pos or a>=hi: continue
+            if pos<a: out.append((pos,a))
+            pos=max(pos,b)
+        if pos<hi: out.append((pos,hi))
+    return out
+
+
+def colored(wires,errors,q):
+    out=[]
+    def emit(lo,hi,wrong):
+        if lo>=hi: return
+        if lo<q<hi:
+            out.extend(((lo,q,1^wrong),(q,hi,wrong)))
+        else: out.append((lo,hi,int(lo<q)^wrong))
+    for lo,hi in wires:
+        j=max(0,bisect_right(errors,(lo,float('inf')))-1); pos=lo
+        while j<len(errors) and errors[j][0]<hi:
+            a,b=errors[j]
+            if b>pos:
+                emit(pos,min(hi,max(pos,a)),0)
+                emit(max(pos,a),min(hi,b),1)
+                pos=min(hi,b)
+            j+=1
+        emit(pos,hi,0)
+    return out
+
+
+def affected(flow,t,errors,q):
+    """Find affected bags and the pure-native ancestor cuts they pass through."""
+    bags=[]; cuts=[]; todo=[(flow.roots[t],0)]
+    while todo:
+        node,idx=todo.pop(); lev=flow.nodes[node][0]
+        whole=flow.subtree_interval(node,idx)
+        if whole is None or not overlap(errors,*whole): continue
+        R=flow.native(lev)
+        if (idx+1)*R<=q or idx*R>=q: cuts.append((lev,idx,overlap(errors,*whole)))
+        wires=flow.bag_intervals(node,idx)
+        if any(overlap(errors,*v) for v in wires): bags.append((lev,idx,node,wires))
+        todo.extend((c,idx*flow.p.k+j) for j,c in enumerate(flow.nodes[node][4]))
+    return bags,cuts
+
+
+def probe(d,horizon,root_eps,eps_b,eps_f,delta,threshold,moderate=True,
+          initial='band',first_sort=True):
+    flow=FlowDAG(d).build(); p=flow.p; N=p.k**d; q=int(threshold*N)
+    e=min(int(root_eps*N/2),q,N-q)
+    assert initial in ('band','outer','left','right','stripes')
+    low=(0,e) if initial in ('outer','left') else (q-e,q)
+    high=(N-e,N) if initial in ('outer','right') else (q,q+e)
+    errors=merge([low,high])
+    if initial=='stripes':
+        n=(N+4095)//4096
+        def stripes(lo,hi,phase):
+            rows=range((lo+n-1)//n,hi//n)
+            width=(e+len(rows)-1)//len(rows)
+            assert phase+width<=n
+            left=e; out=[]
+            for row in rows:
+                take=min(width,left)
+                if take: out.append((row*n+phase,row*n+phase+take))
+                left-=take
+            assert left==0
+            return out
+        errors=merge(stripes(0,q,n//7)+stripes(q,N,5*n//7))
+    history=[2*e]; rng=random.Random(0)
+    assert e>0,'choose a larger diagnostic N for nonzero initial error'
+    # Each profile has maximum diagonal prefix deficit e, hence fits the root
+    # bulk bound. No root fringe guarantee is asserted by this initializer.
+    for t in range(1,min(horizon,len(flow.rows))):
+        bags,_=affected(flow,t,errors,q)
+        for lev,idx,node,wires in bags:
+            a,pi,blocks=flow.rows[t][node]
+            if pi==a: continue
+            labels=colored(wires,errors,q)
+            incoming=normalize_word([(hi-lo,bit) for lo,hi,bit in labels])
+            original=incoming
+            if first_sort:
+                incoming=first_column(incoming)
+            H=sum(length*bit for length,bit in incoming)
+            P=sum(max(0,min(hi,q)-lo) for lo,hi,_ in labels)
+            contract=None
+            # One column is sorted exactly by the first column sort. There is
+            # no random permutation union to estimate when n=1.
+            exact=moderate and a<=4096
+            if moderate and a>4096 and pi and H not in (0,a):
+                n=(a+4095)//4096; L,r=divmod(a,n)
+                low=ragged(a,pi//2,H)['integer_bound']
+                high=ragged(a,pi//2,a-H)['integer_bound']
+                contract=(int(eps_b*L*n/2)+4*r,H-low,a-H-high)
+            pos=0; extra=[]
+            for length,_ in incoming:
+                pos+=length; extra.append(pos)
+            ends,ys,_,_=choose(a,pi,blocks,H,(lev,idx),p,d,q,eps_b,eps_f,
+                delta,exact,rng,'identity',incoming=incoming,contract=contract,
+                target_cut=P,extra_cuts=extra)
+            output=labeled_outputs(labels,ends,ys)
+            outword=normalize_word([(hi-lo,bit) for lo,hi,bit in output])
+            assert dominates(outword,incoming)
+            assert dominates(outword,original)
+            new=[]
+            for lo,hi,bit in output:
+                if bit==0 and lo<q: new.append((lo,min(hi,q)))
+                if bit==1 and hi>q: new.append((max(lo,q),hi))
+            errors=merge(subtract(errors,wires)+new)
+        total=sum(b-a for a,b in errors)
+        assert total<=history[-1]
+        history.append(total)
+        _,cuts=affected(flow,t+1,errors,q)
+        for lev,idx,wrong in cuts:
+            future=sum(flow.row(u,lev,idx)[1] for u in range(t+1,len(flow.rows))
+                       if p.active(d,lev,u))
+            if wrong>future:
+                return dict(fail=True,t=t+1,node=(lev,idx),wrong=wrong,
+                            future=future,history=history,states=len(flow.nodes))
+    complete=len(history)==len(flow.rows)
+    terminal=None
+    if complete:
+        # A perfect native-block cleanup can repair the single block whose
+        # native interval contains q. Every other occupied final bag must be
+        # pure. This is stronger than merely observing small total error.
+        mixed=0; pure=0
+        for lev,idx,node,wires in affected(flow,len(flow.rows),errors,q)[0]:
+            R=flow.native(lev)
+            assert wires==[(idx*R,(idx+1)*R)]
+            wrong=sum(overlap(errors,*v) for v in wires)
+            if idx*R<q<(idx+1)*R: mixed+=wrong
+            else: pure+=wrong
+        terminal=dict(pure_wrong=pure,mixed_wrong=mixed,
+                      cleanup_sorts_this_execution=pure==0)
+    return dict(fail=False,history=history,states=len(flow.nodes),terminal=terminal)
+
+
+if __name__=='__main__':
+    ap=argparse.ArgumentParser(); ap.add_argument('--depth',type=int,default=20)
+    ap.add_argument('--horizon',type=int,default=32)
+    ap.add_argument('--root-eps',default='1/10000000')
+    ap.add_argument('--threshold',default='1/3')
+    ap.add_argument('--eps-f',default='1/16'); ap.add_argument('--delta',default='1/8')
+    ap.add_argument('--initial',choices=['band','outer','left','right','stripes'],default='band')
+    ap.add_argument('--skip-first-sort',action='store_true',
+                    help='weaker postcondition-only oracle; omits mandatory first sort')
+    ap.add_argument('--coarse',action='store_true')
+    args=ap.parse_args()
+    result=probe(args.depth,args.horizon,F(args.root_eps),F(19,2000),
+                 F(args.eps_f),F(args.delta),F(args.threshold),not args.coarse,
+                 args.initial,not args.skip_first_sort)
+    print('SPARSE RELATIONAL ORACLE; no fixed-network or all-input upper bound')
+    print(result)
