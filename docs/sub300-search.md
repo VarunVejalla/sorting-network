@@ -175,15 +175,16 @@ small screen with `python upper-bound/experiments/ub28-small-screen.py
 --n 16 --d 99 --seeds 5`; use `--witness` on a failing parameter to print a
 certificate pair.
 
-The clean paper target is now explicit. For a random schedule `N`, let `C(N)`
-be the number of pairs of forcing certificates over all adjacent output
-positions that force the lower output to 1 and the upper output to 0, with
-compatible (disjoint) initial leaves. A failure implies `C(N) >= 1`; hence
-the uniform estimate `E[C(N)] < 1` would prove that some schedule sorts every
-Boolean input. The fresh-context review confirmed the schedule/depth and
-finite witness code, and identified this expected-count bound as the central
-missing theorem. Counting must preserve shared DAG dependencies and deduplicate
-or otherwise control certificate branching. Also settle the all-`n` step in
+The clean paper target is now explicit. For a random schedule `N`, let `W(N)`
+count the distinct triples `(i,S1,S0)` where `i,i+1` are adjacent outputs and
+some forcing certificates require output `i=1`, output `i+1=0`, with disjoint
+initial leaf sets `S1,S0`. A failure implies `W(N) >= 1`; hence the uniform
+estimate `E[W(N)] < 1` would prove that some schedule sorts every Boolean
+input. Counting distinct support pairs avoids needless overcounting of
+different proof trees with the same leaves, while still requiring a sound
+treatment of shared dependencies. The fresh-context review confirmed the
+schedule/depth and finite witness code, and identified this expected-count
+bound as the central missing theorem. Also settle the all-`n` step in
 the repository's network model (a proved sentinel-padding restriction or a
 ragged schedule); the present screen covers powers of two only. This remains
 a model-level research candidate, not a proved sorting bound.
