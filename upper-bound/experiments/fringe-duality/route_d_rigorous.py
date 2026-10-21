@@ -126,6 +126,45 @@ def A_coll(j, R, u, n, ent):
     return best
 
 
+TT_B = tuple(10 ** (-4.5 + 0.25 * i) for i in range(22))   # t from 3e-5 to 5
+LAMS_B = tuple(10 ** (-7 + 0.25 * i) for i in range(45))   # Boolean drift: optimum ~ sqrt(k / 2j)
+
+
+@lru_cache(maxsize=100000)
+def k_bool(j, d, u, n, ent):
+    """Centred Boolean level count: k = #{T in U : z_T - b >= d}. Weights a = 1 on those k sources:
+    k d <= sum_K (z - b) <= lam j + sum_c Y_c (drift rho + lam, rho = k/n), Kingman MGF with unit jumps:
+    n ln G <= -n ln(1 - k g(t) / (n (e^{t lam} - 1))), g(t) = e^t - 1 - t; union over K (ln binom(u, k))
+    and the choices of U (ent). Returns the least k0 such that every k in [k0, u] is excluded (checked on a
+    1.05-geometric grid with the interval step: k_lo d > RHS(k_hi))."""
+    def rhs(kk):
+        best = math.inf
+        E = lbinom(u, min(u, kk)) + ent + math.log(400)
+        for lam in LAMS_B:
+            for tt in TT_B:
+                if tt * lam > 700:
+                    continue
+                q = kk * (math.expm1(tt) - tt) / (n * math.expm1(tt * lam))
+                if q >= 1:
+                    continue
+                val = lam * j + (-n * math.log1p(-q) + E) / tt
+                best = min(best, val)
+        return best
+    if u <= 0:
+        return 0
+    # scan from the top down: find the largest k (grid) not excluded
+    grid = sorted(set([u] + [int(math.ceil(1.05 ** i)) for i in range(int(math.log(max(u, 2)) / math.log(1.05)) + 2)] ))
+    grid = [g for g in grid if 1 <= g <= u]
+    k0 = 0
+    for i in range(len(grid) - 1, -1, -1):
+        klo = grid[i - 1] if i > 0 else 0
+        khi = grid[i]
+        if not (max(klo, 1) * d > rhs(khi)):
+            k0 = khi
+            break
+    return k0
+
+
 _LAST = [(1.0, 20)]
 
 
@@ -256,7 +295,11 @@ def escapes(j, n, f, s2, L0_extra, ratio, s2_lo=None, j_lo=None):
         # n-uniform alternative: uncentred collision lemma, cap hi, threshold lo + 1
         Ac = A_coll(math.ceil(j), hi, u, n, ent_S)
         k = min(k, kmax_sources(Ac, lo + 1, s2))
+        if d >= 1:
+            k = min(k, k_bool(math.ceil(j), d, u, n, ent_S))       # centred Boolean level count
         cnt = min(k * c + mult_excess(hi - lo, s2, n, ent_S + math.log(len(CS)), c) for c in CS if c <= hi - lo or c == 1)
+        if d >= 1:   # count <= sum_u (min(z_u, hi) - lo)_+ <= sum a (a - d + 1)_+ <= A / (4 (d - 1)) + ... (AM-GM)
+            cnt = min(cnt, A / (4 * max(d - 1, 0.5)) + k)
         total += min(s2 * (hi - lo), cnt)
         lo = hi
     return total - (f - L0) * s2_lo

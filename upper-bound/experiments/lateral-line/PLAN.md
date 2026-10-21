@@ -87,3 +87,23 @@ the 1500 target. The remaining loss is entropy: profiles and sets on about `H·s
 2. The holes tail, via the strip complement.
 3. The identity `escapes(S) ≤ holes(V∖S) − (f/2)|S|` for sets near n.
 4. Then the real UB-20 parameters at the R1 point and the re-priced tolerance.
+
+### Boolean level counts (later 2026-10-21)
+
+`k_bool` counts the sources with `z − b ≥ d` using centred indicator weights. With unit jumps, t is
+not capped by R, and the union is only over support sets.
+* The drift optimum is tiny, `λ′ ~ sqrt(k/2j)`. With `k ≈ n`, t needs to go down to about `sqrt(2/b)`.
+* Exclusion then starts at `d ≈ sqrt(2b·ln(eu/k))`, which is the genuine Gaussian scale of round-1
+  columns.
+* Added `count ≤ Σ_u (min(z_u, hi) − lo)₊ ≤ A/(4(d−1)) + k`, which handles large S where each source
+  serves many rows of S.
+
+Upper-tail average load bound minus λ (n = 2^16, λ = 5e4; target `< 1500`):
+
+| s | 1 | 16 | 256 | 4096 | 16384 |
+|---|---:|---:|---:|---:|---:|
+| before | 5411 | 3248 | 2373 | 2129 | — |
+| now | 5197 | 2840 | 1944 | **1640** | 1639 |
+
+The sparse route (d) check improved slightly (396 → 388). The large-set average is now about 10% above
+target. Remaining loss: levels saturate up to an offset of about 700, plus a tail of several hundred.
