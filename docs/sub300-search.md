@@ -189,3 +189,18 @@ the repository's network model (a proved sentinel-padding restriction or a
 ragged schedule); the present screen covers powers of two only. This remains
 a model-level research candidate, not a proved sorting bound.
 
+The useful local gate is now closed at hand-proof level: 99 cross-matchings
+can form a `1/11`-halver for every block width, with exact complete bipartite
+gadgets for widths below 100. The random-graph expansion and rectangle bounds
+were independently checked in fresh context; the elementary constants have
+exact-rational checks in
+[`UB28-LOCAL-HALVER.md`](../upper-bound/experiments/UB28-LOCAL-HALVER.md) and
+[`ub28-halver-bounds.py`](../upper-bound/experiments/ub28-halver-bounds.py).
+This makes a 198-per-log local-gadget budget credible, but does not close the
+whole-network gate. The next proof obligation is a multiscale transfer for
+paired one/zero forcing supports (or an equivalent rank-profile invariant):
+the 1/11 local threshold alone gives no control over where residual errors
+sit inside the next blocks. The legacy halver-to-separator bridge still
+accumulates error linearly in the number of levels and therefore does not
+yield a sub-300 coefficient from this primitive.
+
