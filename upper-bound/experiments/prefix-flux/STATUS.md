@@ -102,8 +102,10 @@ invariant. The `(3,3,2)` fringe-factor note gives an exact two-step allocation
 identity: under `g,rho <= 1/256`, ordinary sender ratios are at most `9/8`.
 The new `d2_fringe_audit.py` checks the narrowed schedule cases and all these
 rational inequalities through depth 100; it found no finite counterexample.
-The all-depth `g` induction and floor/parity schedule lemmas remain open. See
-[D2-FRINGE-FACTOR.md](D2-FRINGE-FACTOR.md). Next: ordered
+`D2-FRINGE-FACTOR.md` now gives a paper derivation of the all-depth schedule
+and `g` induction; a fresh mathematical review found no remaining arithmetic
+gap. It is not Lean-checked, and proves only a local allocation/fringe factor.
+See [D2-FRINGE-FACTOR.md](D2-FRINGE-FACTOR.md). Next: ordered
 spill/profile recurrence and universal D2 native partition; no Lean until the
 complete paper gate closes. Important transfer gap: the 8192-row fringe ratio
 does not meet existing `NodeGeom`/`TwoRoundSeparatorExists` requirements

@@ -138,21 +138,66 @@ active sender at `t-2`, the only positive-up startup case in the schedule is
 case. A previous `topDesc` update sets all child deficits to zero, giving
 `a/c = 32*sum_children rho_child - g_current <= 1`.
 
-The remaining deficit claim is narrower than a bound for every active node.
-For an ordinary sender `x=(i,t)`, first split off the startup case
-`(t,i)=(2,2)`, where the direct `native/c=1/16` bound applies. Otherwise the
-two-step identity needs `g_x(t-2)` only when `x` had an ordinary update at
-`t-2`; a `topDesc` update at `t-2` removes the end-child theta terms, and a
-`botRise` update at `t-2` is covered by the direct `a/c<=1/16` capacity
-bound. In the ordinary case, it is enough to prove that the state of `x` at
-`t-2` was created either by the root initialization, by an ordinary parent
-update at `(i-1,t-3)`, or by a `topDesc` parent update there. The
-ordinary-parent transition is
-`g_x(t-2) <= g_parent(t-3)/2 + rho_parent(t-3)/4`; the topDesc parent sets it
-to zero. A botRise parent cannot create an active child at the next stage
-because its `omega` drops. Since ordinary roles have `rho<=1/256`, induction
-from the exact root state proves `g<=1/256` on just the states needed by the
-identity.
+## Paper proof candidate for the all-depth schedule cases
+
+For `t>=2` and levels `0<=i<=d`, the explicit schedule can be rewritten
+(for `t<=tf(d)`) as
+
+```text
+i is active at (d,t) iff i ≡ t (mod 2),
+  3*i >= 2*t - 3*d + 11, and 3*i < t + 8.
+```
+
+At `t=1`, the explicit schedule has only level `i=1` active. The cutoff
+`t<=tf(d)` is essential; the inequalities alone also admit levels after the
+schedule has terminated.
+
+This form proves the one-step parent closure needed for the deficit induction.
+Let `x=(i,t)` be an ordinary positive-up sender with `2<=t<tf`. Its parent
+`p=(i-1,t-1)` has the required parity. The child's upper inequality implies
+the parent's upper inequality. The parent's lower inequality follows from
+the child's lower inequality except possibly when
+`3*i = 2*t - 3*d + 11`; equality can occur only for `t ≡ 2 (mod 3)`. In
+that case `i=alpha(t)` and the next lower endpoint is `alpha(t+1)=i+1`, so
+`x` is `topDesc`, contrary to positive up-port. Thus `p` is active. It cannot
+be `botRise`, since then `omega(t)<omega(t-1)=i-1`, making child level `i`
+inactive at time `t`. Hence `p` is either ordinary or `topDesc`.
+
+Induct on stage `t` for `g_x(t)<=1/256` at ordinary senders. The root's
+initial update sets its children to zero. A `topDesc` parent also sets the
+child deficit to zero. An ordinary parent gives
+`g_child <= g_parent/2 + rho_parent/4 <= 3/1024 < 1/256`, using the exact
+capacity ratio `cap(child,t)/cap(parent,t-1)=2` and the role formulas
+`rho_parent<=1/256`. This closes the only `g` hypothesis used by the
+two-step identity.
+
+For an ordinary sender `x=(i,t)` with `t>=3`, it is also active at `t-2`.
+At `t=3`, the only ordinary positive-up sender is level `i=1`; level `i=3`,
+when active, is botRise because `omega(3)=3` and `omega(4)=2`. The explicit
+`t=1` schedule has `i=1` active. For `t>=4`, the lower activity inequality
+at `t-2` follows from the one at `t`; if the upper inequality there failed,
+parity and `3*i<t+8` force `3*i=t+6`. This is exactly the case
+`i=omega(t)` with `omega(t+1)=i-1`, namely `botRise`, which ordinary senders
+exclude. If `x` was ordinary at `t-2`, use the
+two-step identity and the proved `g,rho` bounds. If it was `topDesc`, its
+update sets all child theta terms to zero, leaving
+`a/c=32*sum_children rho_child-g_x(t)<=1`. If it was `botRise`, then
+`t-2=3j`, `i=j+2`, and `native/c=1/16`, so `a/c<=1/16` directly. The
+remaining startup sender `(t,i)=(2,2)` has the same native/c bound; `t=1`
+has `a/c=1` from the root's exact first split. Thus the all-depth ordinary
+sender conclusion is `a/c<=9/8`, provided the stated schedule algebra and
+the exact two-step conservation identity match the full D2 definition.
+
+There are no active leaves in processed stages. If `i=d` were active for
+`t<tf`, the activity inequalities and parity force `t=3d-6`. For `d>=4`,
+at `t-2=3d-8` the formulas give `alpha=d` and `omega=d-2`, hence
+`tf<=3d-8<t`; for `d=3`, the explicit schedule gives `tf=2<3`. Therefore
+the eight-child identity covers every ordinary sender to which it is applied.
+This is a paper derivation, not yet checked against all Lean endpoint
+conventions. A fresh mathematical review checked the cutoff, parity,
+`topDesc`, `botRise`, and leaf cases and found no remaining error in this
+schedule argument. The D2 conservation identities and a compatible provider
+still need independent formal statements before Lean transfer.
 
 This schedule statement must be restricted to those ordinary-sender states;
 it is false for arbitrary active nodes. A finite counterexample to the broader
@@ -164,9 +209,11 @@ inequalities:
 python upper-bound/experiments/prefix-flux/d2_fringe_audit.py --depth 100
 ```
 
-Through depth 100 it checks 118,057 ordinary positive-up schedule states,
+Through depth 100 it checks 117,962 ordinary positive-up schedule states,
 including the explicit startup cases, and sees no violation after those
-exceptions. The exact scaled FlowDAG scan checks 217,470 active rows; all
+exceptions. It also checks the activity formula and no-leaf assertion at all
+processed stages in that finite range. The exact scaled FlowDAG scan checks
+217,470 active rows; all
 ordinary rows satisfy `g<=1/256`, `rho<=1/256`, and `a/c<=9/8`. The largest
 ordinary `a/c` is `8385/8192`, and the largest ordinary `g` is
 `276701161105643274233/151115727451828646838272 < 1/256`. These are finite

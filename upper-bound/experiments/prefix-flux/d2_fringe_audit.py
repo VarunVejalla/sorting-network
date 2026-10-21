@@ -18,8 +18,16 @@ ORDINARY = {"mid", "botDesc", "topRise"}
 def schedule_audit(last_depth, p):
     cases = Counter()
     for d in range(3, last_depth + 1):
-        for t in range(1, p.tf(d) + 1):
-            for i in range(1, d + 1):
+        tf = p.tf(d)
+        for t in range(1, tf):
+            for i in range(d + 1):
+                formula_active = (i == 1 if t == 1 else
+                                  t <= tf and i % 2 == t % 2
+                                  and 3 * i >= 2 * t - 3 * d + 11
+                                  and 3 * i < t + 8)
+                assert p.active(d, i, t) == formula_active, (d, t, i, "activity formula")
+                if i == d:
+                    assert not p.active(d, i, t), (d, t, "active leaf before tf")
                 if not p.active(d, i, t) or p.role(d, i, t) not in ORDINARY:
                     continue
                 if p.up(d, i, t) <= 0:
@@ -33,6 +41,10 @@ def schedule_audit(last_depth, p):
                     assert F(p.k ** (d - i), 1) / p.cap(d, i, t) == F(1, 16)
                     cases["startup (2,2)"] += 1
                     continue
+                if t >= 2:
+                    parent = (i - 1, t - 1)
+                    assert parent[0] >= 0 and p.active(d, *parent), (d, t, i, "inactive parent at t-1")
+                    assert p.role(d, *parent) != "botRise", (d, t, i, "botRise parent at t-1")
                 assert t >= 3
                 assert p.active(d, i, t - 2), (d, t, i, "inactive at t-2")
                 old_role = p.role(d, i, t - 2)
