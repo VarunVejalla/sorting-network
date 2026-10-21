@@ -1,0 +1,23 @@
+mu = 1.500570e-05, p = 2.403259e-04, g* = 5.1066e-05 (design P g* = 3.0518e-05), eta = 1.003024, eps_B = 1/70000
+  delta = 2.00e-06: (4.2'') lhs/rhs = 0.8837 OK, J = 1/eps_F = 126032
+  delta = 4.00e-06: (4.2'') lhs/rhs = 0.9534 OK, J = 1/eps_F = 63541
+  delta = 6.00e-06: (4.2'') lhs/rhs = 1.0230 FAIL, J = 1/eps_F = 42716
+  delta = 8.00e-06: (4.2'') lhs/rhs = 1.0926 FAIL, J = 1/eps_F = 32309
+  delta = 1.00e-05: (4.2'') lhs/rhs = 1.1623 FAIL, J = 1/eps_F = 26068
+  delta = 1.20e-05: (4.2'') lhs/rhs = 1.2319 FAIL, J = 1/eps_F = 21910
+  delta = 1.40e-05: (4.2'') lhs/rhs = 1.3016 FAIL, J = 1/eps_F = 18943
+  delta = 1.60e-05: (4.2'') lhs/rhs = 1.3712 FAIL, J = 1/eps_F = 16721
+  delta = 1.80e-05: (4.2'') lhs/rhs = 1.4409 FAIL, J = 1/eps_F = 14994
+  delta = 2.00e-05: (4.2'') lhs/rhs = 1.5105 FAIL, J = 1/eps_F = 13615
+  delta = 2.20e-05: (4.2'') lhs/rhs = 1.5802 FAIL, J = 1/eps_F = 12489
+  delta = 2.40e-05: (4.2'') lhs/rhs = 1.6498 FAIL, J = 1/eps_F = 11552
+  delta = 2.60e-05: (4.2'') lhs/rhs = 1.7195 FAIL, J = 1/eps_F = 10761
+  delta = 2.80e-05: (4.2'') lhs/rhs = 1.7891 FAIL, J = 1/eps_F = 10085
+  delta = 3.00e-05: (4.2'') lhs/rhs = 1.8588 FAIL, J = 1/eps_F = 9501
+  delta = 3.20e-05: (4.2'') lhs/rhs = 1.9285 FAIL, J = 1/eps_F = 8991
+  delta = 3.40e-05: (4.2'') lhs/rhs = 1.9982 FAIL, J = 1/eps_F = 8543
+  delta = 3.60e-05: (4.2'') lhs/rhs = 2.0679 FAIL, J = 1/eps_F = 8146
+  delta = 3.80e-05: (4.2'') lhs/rhs = 2.1376 FAIL, J = 1/eps_F = 7792
+
+smallest J with (4.2'') OK: delta = 5.000e-06, J = 51045, lhs/rhs = 0.9882; fringe needs f(J) <= 4023 (class A, f ~ 18 sqrt J ~ 4067)
+(4.3) mu/bound = 0.9834, (4.4) mu/bound = 0.9990

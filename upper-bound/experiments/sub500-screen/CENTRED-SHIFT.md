@@ -141,3 +141,23 @@ the centred terms is the first gate. If it is short, the margin can come from:
 3. An exact (4.2″) check.
 4. Fringe certificates at `J ≈ 3.2e4`, using the existing per-E route.
 5. Lean: the R1 layer with the new (4.2″) and the design.
+
+## Exact check at (4,5,3), q = 25 (`centred_point.py`, `centred_point.out`)
+
+One-sided centred design with ε_B = 1/70000 (the kernel-checked bulk), exact rationals:
+* `g* = (p + μ)/(2Aν − 3) = 5.1e-5 ≈ 3.4μ`. This is the end-child deficit with the centring offset. Design
+  P's is `2^-15 ≈ 2μ`.
+* `η = 1.003024`.
+* The centred (4.2″) holds for `δ ≤ 5e-6`, so the smallest admissible J is **J = 51045** (lhs/rhs 0.988).
+* The fringe at that J needs about `7934·sqrt(51045/190000) ≈ 4110` on the old certified route. That is
+  **about 2% over** the class-A ceiling of 4023.
+
+**Verdict: marginal.** The one-sided residual `g*/2 ≈ 1.7μ` is only slightly below design P's
+`r* ≈ 1.9μ`. Most of the gain comes from halving the outsider and sib terms. Closing the 2% needs one of:
+* a sharper end-child deficit bound;
+* a smaller rounding reserve (0.1μ is assumed);
+* the exact per-E fringe certificate at J ≈ 5e4 instead of the √J extrapolation;
+* or the route (d) fringe.
+
+R2's known split brings the residual down to about 0.17μ after centring, and that is what drives the
+sub-500 package.
