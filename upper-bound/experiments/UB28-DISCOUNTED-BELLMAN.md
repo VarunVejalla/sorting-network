@@ -72,8 +72,11 @@ Here each `q_top,j` is normalized by that stage's block width. If a positive
 uniform margin `epsilon` holds for every edge/alignment class, method-of-types
 and trajectory-count errors of `o(n)` leave
 `E[failing inputs] <= n * exp(-epsilon*n + o(n)) < 1`.
-The zero-one principle then gives a sorter of depth
-`280 log2(n) + O(1)`, hence the requested coefficient below 300.
+For the target route, use 280 matching rounds on high scales and 20 on
+intervening scales (both offsets), with the existing 150-round small-width
+anchor. This is depth `300 log2(n) + O(1)`. The less expensive 260/20
+schedule has coefficient 280 and remains a possible improvement if it passes
+the same rate gate; it has less screened margin.
 
 ## Obligations before treating this as a proof route
 
@@ -113,8 +116,10 @@ graph. The q-transition must optimize joint matching/split count paths,
 retaining correlations between overlapping support blocks.
 
 This remains an audited certificate architecture only. There is no computed
-Bellman potential or rate table yet, and no evidence that the 280-depth
-schedule clears the `ln(2)` rate gate. The smallest decisive numerical
+Bellman potential or rate table yet, and no certified evidence that the
+300-depth (280/20) schedule clears the `ln(2)` rate gate. Its restricted
+grid-16 central-edge screen is about `0.87217`, but that is a feasible path,
+not an all-path upper bound. The smallest decisive numerical
 milestone is a viability-constrained period-two Bellman value on a complete
 phase graph, with shared profile cells and outward-rounded entropy bounds,
 followed by the top-interface supremum. A certified lower bound above
@@ -159,3 +164,26 @@ multivalued: the audit records 181 source-to-target arcs, with 55 source
 phases having multiple observed targets. A Bellman check must include all
 such targets. The audit is a finite discovery tool; a proof still needs an
 inductive closure argument for the phase encoding at every size.
+
+## Pinsker cell-potential pilot (2026-10-21)
+
+For one matching round, the asymptotic log transition rate is minus the mutual
+information of the two matched-block membership bits. If `A,B` are source
+densities and `X` is their intersection density, Pinsker gives
+`q <= -8 (X - A*B)^2`. For a split into child densities `L,R`, it gives
+`q_split <= -(L-R)^2/2`. These yield safe interval-cell transition upper
+bounds (in real arithmetic), implemented in
+[`ub28-pinsker-cell-bellman.py`](ub28-pinsker-cell-bellman.py).
+
+The central-edge Bellman relaxation returns maximum log exponent `0` for
+2-, 4-, and 8-bin cells at `n=256`, and also for 4 and 8 bins at `n=1024`.
+At `n=256`, the exact width-16 viability mask compresses to 64/64 viable cells
+for 2 bins, 4,096/4,096 for 4 bins, and 249,344/262,144 for 8 bins. Thus even
+though only 83.2% of exact six-count profiles are viable, essentially every
+coarse cell contains at least one viable profile. This is vacuous, not a
+schedule obstruction: a cell can contain both a low-cost representative and
+a different representative that reaches the bad anchor. The result confirms
+that a scalar value per fixed cell resets the profile between scales. Any
+useful next certificate must retain within-cell profile dependence (for
+example, a continuous or Lipschitz potential); further refinement of this
+same cell-reset relaxation is not the next step.
