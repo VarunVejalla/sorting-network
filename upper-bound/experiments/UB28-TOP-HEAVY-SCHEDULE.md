@@ -64,6 +64,30 @@ for the sampled representatives by the final fixed odd-offset pass. At the
 left boundary, sampled even edges have higher rates (edge 2: 6.78; edge 14:
 1.54). This does not exhaust all dyadic phase histories.
 
+The schedule sweep gives a depth/rate tradeoff on the same central edge at
+`n=2^24`. Grid-16 rates are 0.64972 for `(200,20)`, 0.70531 for `(220,20)`,
+0.76091 for `(240,20)`, 0.81651 for `(260,20)`, and 0.87217 for `(280,20)`.
+The corresponding depth coefficients are 220, 240, 260, 280, and 300. Since
+each grid path is feasible, the first value is evidence that `(200,20)` misses
+the first-moment gate; values above `ln 2` do not prove the gate because
+omitted paths may be more likely. Full-count max-path screens at
+`n=128`, edge 62, give rates 0.78947, 0.79461, and 0.80454 for `(220,20)`,
+`(240,20)`, and `(280,20)` respectively. These finite-width numerical rates
+are not asymptotic bounds.
+
+A uniform 70-round schedule has a misleadingly strong finite screen: at
+`n=128`, the full-count max-path rate at edge 62 is 1.34223. The grid-16
+asymptotic screen nevertheless has a feasible central path of rate 0.35783
+for that schedule. This shows why the finite `n=128` rate cannot stand in for
+the all-size gate. These screens use binary64 and remain diagnostic.
+
+Implementation note: `ub28-count-process.expected_failures` accepts one
+scalar round count, so it computes exact finite distributions only for a
+constant-round schedule. The top-relative schedules above are implemented in
+the max-path transfer; extending the exact probability recurrence to
+scale-dependent rounds is straightforward but is not needed for these
+max-path screens.
+
 These values use binary64 log-binomial evaluations. They are not certified
 rate bounds, and the fixed density lattice does not maximize over all count
 trajectories. They support pursuing this schedule but cannot establish that
