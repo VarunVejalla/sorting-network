@@ -8,6 +8,31 @@ restriction of the proposed centered-ragged core, not a sorting proof.
 from oracle import normalize_word,dominates
 
 
+def minimum_rectangular_prefix_zeros(total,zeros,cut,rows=4096):
+    """Minimum zeros in a row-major prefix after sorting each column.
+
+    The minimum ranges over every input placement with the given total. The
+    exact rectangular layout is required; later ascending comparators can
+    only increase this prefix count.
+    """
+    assert total%rows==0 and 0<=zeros<=total
+    columns=total//rows; cut=max(0,min(total,cut))
+    full,partial=divmod(cut,columns)
+    if full==rows: return zeros
+    low_columns=columns-partial
+    best=zeros
+    # Select j columns to receive at least their whole prefix contribution;
+    # those columns then have capacity `rows` at fixed cost. The rest can
+    # hold only their prefix height at unit cost.
+    for j in range(columns+1):
+        low=min(j,low_columns); high=j-low
+        base=j*full+high
+        remaining_capacity=(low_columns-low)*full+(partial-high)*(full+1)
+        if base<=zeros<=rows*j+remaining_capacity:
+            best=min(best,base+max(0,zeros-rows*j))
+    return best
+
+
 def first_column(word,q=12):
     a=sum(length for length,_ in word)
     assert a>0
@@ -89,4 +114,27 @@ def self_check():
     print(f'{count} literal-column comparisons passed')
 
 
-if __name__=='__main__': self_check()
+def minimum_bound_self_check():
+    """Compare the formula with all column-count vectors on tiny rectangles."""
+    from itertools import product
+    checks=0
+    for rows in range(1,5):
+        for columns in range(1,5):
+            total=rows*columns
+            vectors=list(product(range(rows+1),repeat=columns))
+            for zeros in range(total+1):
+                feasible=[v for v in vectors if sum(v)==zeros]
+                for cut in range(total+1):
+                    k,s=divmod(cut,columns)
+                    brute=min(sum(min(v[j],k+int(j<s))
+                                  for j in range(columns)) for v in feasible)
+                    assert minimum_rectangular_prefix_zeros(
+                        total,zeros,cut,rows
+                    )==brute,(rows,columns,zeros,cut,brute)
+                    checks+=1
+    print(f'{checks} exact column-count lower bounds passed')
+
+
+if __name__=='__main__':
+    self_check()
+    minimum_bound_self_check()

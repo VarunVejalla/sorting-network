@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Global LP relaxation retaining port correlations across the D2 flow.
 
-The LP uses the corrected per-node prefix lower bounds, but it is still only
-an adversarial relaxation of the fixed three-sort core. It omits first-sort
-dominance and any correlations stronger than the shared cumulative output
-profile at each local node. A nonzero terminal objective is inconclusive; a
-zero objective would be useful conditional evidence, not a proof.
+Default mode uses the tail-only model. `--ordered-prefix` adds global
+static-wire profiles, a backward-closed finite set of local input-prefix
+constraints, and exact bag-mass identities. These remain selected cuts rather
+than every wire cut, so a nonzero terminal objective diagnoses an insufficient
+relaxation, not a counterexample to the fixed comparator network.
 """
 from fractions import Fraction as F
 import argparse
@@ -15,6 +15,8 @@ from scipy.optimize import linprog
 from scipy.sparse import coo_matrix
 
 from flow_dag import FlowDAG
+from first_column import minimum_rectangular_prefix_zeros
+from profile_cut_closure import cut_system, prefix_components, rank_before, wire_cut_at_rank
 from rank_recurrence import prefix_interval, run as interval_run
 
 
@@ -23,8 +25,12 @@ def add_row(rows, rhs, terms, value=0):
     rhs.append(value)
 
 
-def solve(depth=4, scale=65536, threshold=F(1, 3)):
-    flow = FlowDAG(depth, scale=scale).build()
+def solve(depth=4, scale=65536, threshold=F(1, 3), ordered_prefix=False,
+          root_error=0, root_tail=False):
+    cut_data = (cut_system(depth, scale, threshold, root_rows=root_tail)
+                if ordered_prefix else None)
+    flow = (cut_data[0] if ordered_prefix else
+            FlowDAG(depth, scale=scale).build())
     p = flow.p
     N = p.k ** depth * scale
     q = int(threshold * N)
@@ -60,9 +66,12 @@ def solve(depth=4, scale=65536, threshold=F(1, 3)):
             if pi == a:
                 continue
             h = pi // 2
-            cuts = [0, h]
-            cuts.extend([h + sum(blocks[:j]) for j in range(1, len(blocks) + 1)])
-            cuts.append(a)
+            if ordered_prefix:
+                cuts = sorted(cut_data[1][t][(lev, idx)])
+            else:
+                cuts = [0, h]
+                cuts.extend([h + sum(blocks[:j]) for j in range(1, len(blocks) + 1)])
+                cuts.append(a)
             cuts = sorted(set(cuts))
             yids = []
             Hlo, Hhi = history[t].get((lev, idx), (0, 0))
@@ -72,11 +81,31 @@ def solve(depth=4, scale=65536, threshold=F(1, 3)):
                 # ascending comparator fixes it exactly, so preserve that
                 # profile instead of allowing the rank-tail relaxation to
                 # invent a root error.
-                if t == 0 and (lev, idx) == (0, 0):
+                if (t == 0 and (lev, idx) == (0, 0) and
+                        (not ordered_prefix or (root_error == 0 and not root_tail))):
                     ylo = yhi = min(q, cut)
                 ykey = ('Y', t, lev, idx, cut)
                 yids.append(new(ykey, (ylo, yhi)))
             ykeys[(t, lev, idx)] = (cuts, yids)
+
+    zkeys = {}
+    if ordered_prefix:
+        global_cuts = cut_data[2]
+        for t, cuts in enumerate(global_cuts):
+            for cut in sorted(cuts):
+                ideal = min(q, cut)
+                if t == 0:
+                    lower = (prefix_interval(N, (q, q), cut)[0] if root_tail else
+                             max(0, ideal - root_error))
+                    columns = N // 4096
+                    if N % 4096 == 0 and cut % columns == 0:
+                        lower = max(lower, minimum_rectangular_prefix_zeros(
+                            N, q, cut, rows=4096
+                        ))
+                    upper = ideal
+                else:
+                    lower, upper = 0, cut
+                zkeys[(t, cut)] = new(('Z', t, cut), (lower, upper))
 
     eq_rows, eq_rhs, ub_rows, ub_rhs = [], [], [], []
 
@@ -89,12 +118,86 @@ def solve(depth=4, scale=65536, threshold=F(1, 3)):
     def hvar(t, key):
         return var[('H', t, *key)]
 
+    def zvar(t, cut):
+        return zkeys[(t, cut)]
+
+    def bag_prefix_expr(t, key, wire_cut):
+        lev, idx = key
+        terms = {}
+        wires = flow.bag_intervals(flow.lookup(t, lev, idx), idx)
+        for lo, hi in wires:
+            right = min(hi, wire_cut)
+            if lo < right:
+                terms[zvar(t, right)] = terms.get(zvar(t, right), 0) + 1
+                terms[zvar(t, lo)] = terms.get(zvar(t, lo), 0) - 1
+        return terms
+
+    def bag_total_expr(t, key):
+        lev, idx = key
+        terms = {}
+        wires = flow.bag_intervals(flow.lookup(t, lev, idx), idx)
+        for lo, hi in wires:
+            terms[zvar(t, hi)] = terms.get(zvar(t, hi), 0) + 1
+            terms[zvar(t, lo)] = terms.get(zvar(t, lo), 0) - 1
+        return terms
+
     def port_expr(t, lev, idx, left, right):
         if left == right:
             return {}
         cuts, yids = ykeys[(t, lev, idx)]
         li, ri = cuts.index(left), cuts.index(right)
         return {yids[ri]: 1, yids[li]: -1}
+
+    if ordered_prefix:
+        global_cuts = cut_data[2]
+        # Tie every bag mass to the exact static-wire profile at that time.
+        for t in range(T + 1):
+            for key in bag_keys:
+                terms = {hvar(t, key): 1}
+                for v, coeff in bag_total_expr(t, key).items():
+                    terms[v] = terms.get(v, 0) - coeff
+                eq(terms, 0)
+
+        # Each selected local output prefix must dominate its actual input
+        # prefix, reconstructed from the global static-wire profile.
+        for (t, lev, idx), (cuts, yids) in ykeys.items():
+            wires = flow.bag_intervals(flow.lookup(t, lev, idx), idx)
+            for cut, yid in zip(cuts, yids):
+                wire_cut = wire_cut_at_rank(wires, cut)
+                terms = bag_prefix_expr(t, (lev, idx), wire_cut)
+                terms[yid] = terms.get(yid, 0) - 1
+                ub(terms, 0)
+
+        # Global prefix counts remain a feasible Boolean profile.
+        for t, cuts in enumerate(global_cuts):
+            ordered = sorted(cuts)
+            eq({zvar(t, 0): 1}, 0)
+            eq({zvar(t, N): 1}, q)
+            for left, right in zip(ordered, ordered[1:]):
+                ub({zvar(t, left): 1, zvar(t, right): -1}, 0)
+                ub({zvar(t, right): 1, zvar(t, left): -1}, right - left)
+
+        # Apply each local profile change to global prefix counts. Wires
+        # outside active sorting bags retain their previous values.
+        for t in range(T):
+            row = flow.rows[t]
+            active = [(lev, idx) for lev, idx in bag_keys
+                      if flow.lookup(t, lev, idx) in row
+                      and (lev == 0 if t == 0 else p.active(depth, lev, t))]
+            for wire_cut in sorted(global_cuts[t + 1]):
+                terms = {zvar(t + 1, wire_cut): 1, zvar(t, wire_cut): -1}
+                for key in active:
+                    node = flow.lookup(t, *key)
+                    a, pi, _ = row[node]
+                    if pi == a or a == 0:
+                        continue
+                    wires = flow.bag_intervals(node, key[1])
+                    cut = rank_before(wires, wire_cut)
+                    yid = var[('Y', t, *key, cut)]
+                    terms[yid] = terms.get(yid, 0) - 1
+                    for v, coeff in bag_prefix_expr(t, key, wire_cut).items():
+                        terms[v] = terms.get(v, 0) + coeff
+                eq(terms, 0)
 
     # Every active node has one shared cumulative output profile, not
     # independent intervals for each port.
@@ -179,6 +282,9 @@ def solve(depth=4, scale=65536, threshold=F(1, 3)):
     # A sorted-output path is a cheap diagnostic witness. It must satisfy this
     # overapproximation; if not, the transfer encoding itself is wrong.
     witness = np.zeros(nvars)
+    if ordered_prefix:
+        for (t, cut), z_id in zkeys.items():
+            witness[z_id] = min(q, cut)
     W = {(0, 0): q}
     for t, row in enumerate(flow.rows):
         for key in bag_keys:
@@ -282,7 +388,16 @@ def solve(depth=4, scale=65536, threshold=F(1, 3)):
             terminal_wrong.append((lev, idx, a - int(rounded[hvar(T, (lev, idx))])))
         elif after == a:
             terminal_wrong.append((lev, idx, int(rounded[hvar(T, (lev, idx))])))
+    root_defects = []
+    if ordered_prefix:
+        for (t, cut), z_id in zkeys.items():
+            if t == 0:
+                defect = min(q, cut) - int(rounded[z_id])
+                if defect:
+                    root_defects.append((cut, defect))
     return dict(depth=depth, stages=T, success=True, variables=nvars,
+                ordered_prefix=ordered_prefix, root_error=root_error,
+                root_tail=root_tail,
                 equalities=len(eq_rows), inequalities=len(ub_rows),
                 sorted_witness_eq_error=witness_eq_error,
                 sorted_witness_ub_error=witness_ub_error,
@@ -296,6 +411,7 @@ def solve(depth=4, scale=65536, threshold=F(1, 3)):
                                         and rounded_bound_error == 0),
                 max_single_terminal_wrong=max((x[2] for x in terminal_wrong), default=0),
                 terminal_wrong_sample=terminal_wrong[:8],
+                root_prefix_defect_sample=root_defects[:12],
                 scalar_terminal_bad=scalar['terminal_bad'])
 
 
@@ -304,6 +420,13 @@ if __name__ == '__main__':
     ap.add_argument('--depth', type=int, default=4)
     ap.add_argument('--scale', type=int, default=65536)
     ap.add_argument('--threshold', default='1/3')
+    ap.add_argument('--ordered-prefix', action='store_true',
+                    help='add static-wire global profiles and local prefix dominance')
+    ap.add_argument('--root-error', type=int, default=0,
+                    help='allow this prefix-defect budget in the initial root profile')
+    ap.add_argument('--root-tail', action='store_true',
+                    help='initialize with the local all-cut rank-tail envelope')
     args = ap.parse_args()
     print('GLOBAL COUPLED LP RELAXATION; not a sorting proof')
-    print(solve(args.depth, args.scale, F(args.threshold)))
+    print(solve(args.depth, args.scale, F(args.threshold), args.ordered_prefix,
+                args.root_error, args.root_tail))

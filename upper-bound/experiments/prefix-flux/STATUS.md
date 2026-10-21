@@ -147,6 +147,15 @@ when local rank tails are available. `global_prefix_flux.py` checks the
 decomposition at every global cut and stage for random Boolean profiles,
 including depth 8 at scale 1. This validates the algebra and partition
 coordinates only; it does not establish the needed quantitative contraction.
+The follow-up finite-cut closure remains modest: depth8/scale4096 uses at
+most2,625 local cuts per stage. The ordered `coupled_rank_lp.py` now imposes
+global-profile consistency and local prefix dominance at those selected cuts.
+At depth6/scale4096, even with root rank-tail bounds and the exact first-column
+lower bound at all 4096 full-row cuts, an integral relaxation witness leaves
+456,448 wrong keys outside the crossing terminal block. This is not a network
+counterexample because unselected local prefixes remain unconstrained; it
+shows the finite interface still cannot certify the candidate. See
+`PROFILE-GATE.md` for the exact cut counts, witness scope, and next gap.
 `rank_recurrence.py` propagates zero-count intervals using the local
 one-sided rank-tail bounds, including the required common-witness factor
 `m^2` for baselines. At depth7, scale65536 and threshold1/3 it cannot certify

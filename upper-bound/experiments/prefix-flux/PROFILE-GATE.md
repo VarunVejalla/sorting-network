@@ -157,6 +157,40 @@ vanish. The missing proof is a rank-tail contraction bound for `F` over the
 actual active bags, strong enough to make every required terminal defect
 zero within the priced schedule.
 
+## Finite-cut ordered LP gate
+
+`profile_cut_closure.py` propagates port and terminal cuts backward through
+the static-wire geometry. With root row boundaries included, depth6 at scale
+4096 needs 4,098 global cuts at the first two times, then 394 or fewer; the
+largest local profile has 4,098 cuts. Without root row cuts, depth8 at scale
+4096 closes with 1,866 global cuts at the first five times and at most 2,625
+local output cuts in a stage. The closure is finite and small enough to put
+into a sparse LP; it does not encode every local prefix.
+
+`coupled_rank_lp.py --ordered-prefix` now couples those global profiles to
+each local output profile, ties bag masses to exact static-wire intervals, and
+requires local output prefix dominance at every selected closed cut. The
+root-tail mode also constrains the initial profile by the computed rank-tail
+envelope and by the exact worst-case first-column count at full row
+boundaries. For a cut `p=k*n+s`, the first-column prefix count for column
+heights `c_j` is `sum_j min(c_j,k+1_{j<s})`. Its exact minimum subject to
+`sum c_j=q` is found by selecting the columns with `c_j` at least their prefix
+height (these cost that height and can then hold up to `m` zeros); for each
+selected-column count, choose the smallest prefix heights and minimize the
+remaining unit-cost zeros. The implementation is independently checked
+against every column-count profile on rectangles up to 4-by-4.
+
+For depth6, scale4096, threshold `floor(N/3)`, root-tail mode produces an
+integral selected-cut LP witness with 456,448 wrong keys in terminal
+noncrossing blocks (141,903 in one block). Its first root-row prefix defect is
+2,730, exactly the worst-case first-column lower bound at that cut. This is
+not an actual-network counterexample: local prefix dominance is imposed only
+at the finite selected cuts, and the rank-tail bounds are still coarse. It
+shows that this finite interface does not close the 292.5 gate. The next
+specific gap is stronger all-cut reachability/tiny-rank control for the same
+fixed 3-sort, together with a root profile guarantee sharp enough to remove
+the surviving remote defects.
+
 ## Remaining decisive gate
 
 Derive a closed transfer of these tails through the **actual ordered D2
