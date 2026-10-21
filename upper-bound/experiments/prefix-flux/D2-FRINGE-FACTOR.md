@@ -13,7 +13,10 @@ Use D2 parameters `k=8`, `A=8`, `nu=1/4`, scale `m=8192` (row height
 c = scale * Par.cap(d, level, t).
 ```
 
-The equivalent full-row fringe width is `m*pi/(2a)`. The D2 formulas give:
+The equivalent full-row fringe width is `m*pi/(2a)` when the exact rectangle
+equations `a=m*n` and `pi=2*f*n` hold. This ratio is only a geometry screen;
+the finite flow scan does not establish those divisibility/shape equations.
+Under that caveat, the D2 formulas give:
 
 | Role | `pi/c` | Equivalent fringe rows |
 |---|---:|---:|
@@ -114,13 +117,62 @@ a_x(t)/c_x(t) <= 16/256 + 16/256 + 32*8/256 = 9/8.
 
 The depth30 typed scan sees `max rho = 1/256` and `max g =
 983033/536870912 < 1/256`, so these are plausible exact invariant bounds,
-not just a numerical fit. This does not close the all-depth result: the
-induction still has to establish the `g` bound, prove `rho<=1/256` for
-`botRise` (ordinary roles have it from their formulas), and handle a
-`botRise` predecessor, schedule startup, and leaf/boundary cases separately.
-For a `topDesc` predecessor, the parent sets both end deficits to zero, so
-the same identity has no `16*g+16*rho` term; that case is covered by the
-child-rho bound alone.
+not just a numerical fit. The all-depth fringe argument reduces to proving
+the `g` induction and the explicit schedule cases below. For a `topDesc`
+predecessor, the parent sets both end deficits to zero, so the same identity
+has no `16*g+16*rho` term; that case is covered by the child-rho bound alone.
+
+The special cases have a compact prospective treatment. For these parameters
+and `t>=3`, `botRise` occurs at `t=3j`, `i=omega(t)=j+2`. Therefore
+
+```text
+native(i) / (scale * cap(i,t)) = 2^(4 + 2t - 6i) = 1/256,
+```
+
+and the generic capacity bound `a<=native(i)` proves `rho<=1/256` for every
+`botRise` sender. If an ordinary sender's previous active time `t-2` was a
+`botRise`, then `t=3j+2`, `i=j+2`, so the same capacity argument gives
+`a/c<=native/c=1/16` at the current time. When an ordinary sender has no
+active sender at `t-2`, the only positive-up startup case in the schedule is
+`(t,i)=(2,2)`, also with `native/c=1/16`; `t=1` is the explicit `topRise`
+case. A previous `topDesc` update sets all child deficits to zero, giving
+`a/c = 32*sum_children rho_child - g_current <= 1`.
+
+The remaining deficit claim is narrower than a bound for every active node.
+For an ordinary sender `x=(i,t)`, first split off the startup case
+`(t,i)=(2,2)`, where the direct `native/c=1/16` bound applies. Otherwise the
+two-step identity needs `g_x(t-2)` only when `x` had an ordinary update at
+`t-2`; a `topDesc` update at `t-2` removes the end-child theta terms, and a
+`botRise` update at `t-2` is covered by the direct `a/c<=1/16` capacity
+bound. In the ordinary case, it is enough to prove that the state of `x` at
+`t-2` was created either by the root initialization, by an ordinary parent
+update at `(i-1,t-3)`, or by a `topDesc` parent update there. The
+ordinary-parent transition is
+`g_x(t-2) <= g_parent(t-3)/2 + rho_parent(t-3)/4`; the topDesc parent sets it
+to zero. A botRise parent cannot create an active child at the next stage
+because its `omega` drops. Since ordinary roles have `rho<=1/256`, induction
+from the exact root state proves `g<=1/256` on just the states needed by the
+identity.
+
+This schedule statement must be restricted to those ordinary-sender states;
+it is false for arbitrary active nodes. A finite counterexample to the broader
+claim is an active topDesc node at `(d,t,i)=(10,11,1)` whose parent `(0,10)`
+is inactive. The exact audit script checks these cases and the rational flow
+inequalities:
+
+```text
+python upper-bound/experiments/prefix-flux/d2_fringe_audit.py --depth 100
+```
+
+Through depth 100 it checks 118,057 ordinary positive-up schedule states,
+including the explicit startup cases, and sees no violation after those
+exceptions. The exact scaled FlowDAG scan checks 217,470 active rows; all
+ordinary rows satisfy `g<=1/256`, `rho<=1/256`, and `a/c<=9/8`. The largest
+ordinary `a/c` is `8385/8192`, and the largest ordinary `g` is
+`276701161105643274233/151115727451828646838272 < 1/256`. These are finite
+checks only. The all-depth proof still needs floor/parity schedule lemmas; the
+provider, global profile transfer, root, and terminal sorting gates remain
+open.
 
 ## Finite evidence and limits
 
@@ -141,7 +193,11 @@ in particular, they do not address `topDesc`, leaf senders, or prove the
 cut-boundary lemma.
 
 Even if proved, this closes only the geometric input to a 13-row local tail
-provider. The uniform rank-tail probability bound, centered-ragged physical
-embedding, root initialization, ordered global recurrence and terminal gate
-remain separate obligations. The nominal coefficient273 is still
-conditional. Fresh mathematical review of the invariant must precede Lean.
+provider. Moreover, it does not instantiate the existing Lean provider:
+`NodeGeom` requires `m=2*f+64*b`, `up=2*f*n`, `f=0` or even
+`f>=131040`, and `m>2^42`, whereas this screen uses row height8192. A new
+provider and compatible exact geometry are needed. The uniform rank-tail
+probability bound, centered-ragged physical embedding, root initialization,
+ordered global recurrence and terminal gate remain separate obligations. The
+nominal coefficient273 is still conditional. Fresh mathematical review of
+the invariant must precede Lean.
