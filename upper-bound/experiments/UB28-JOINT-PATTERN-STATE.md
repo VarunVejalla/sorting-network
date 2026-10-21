@@ -25,6 +25,24 @@ and the multivariate-hypergeometric split kernel below is exact for the
 annealed law. The block-count process is the simpler exact state for this
 purpose.
 
+Here is the matching step explicitly. For one paired pair of width-`h`
+blocks, let the incoming one-sets be `A,B`, and let a fresh uniform matching
+be a bijection `pi` from left slots to right slots. The output one-sets are
+`C={i in A : pi(i) in B}` on the left and `D=B union pi(A)` on the right.
+For any slot permutations `sigma,tau`, the map
+`(A,B,pi) -> (sigma(A),tau(B),tau o pi o sigma^{-1})` preserves the law
+conditional on `|A|,|B|` and sends `(C,D)` to `(sigma(C),tau(D))`. Conditional
+on output counts, `S_h x S_h` acts transitively on all pairs of output
+subsets of those sizes. Thus `(C,D)` is uniform on that Cartesian product,
+which is precisely conditional independence of the output patterns. This
+also remains true after mixing over possible incoming counts, conditional on
+the outgoing count vector. A split has the analogous property: given child
+counts `l,r`, each pair of child subsets corresponds to one parent subset of
+size `l+r`, so a uniform parent subset induces independent uniform child
+subsets. Applying these steps to disjoint pairs/blocks proves the product
+invariant by induction. Fresh independent matchings and the annealed uniform
+input are essential assumptions.
+
 The width-2 example in `UB28-TOP-HEAVY-SCHEDULE.md` rules out a block-count
 state for a fixed input conditioned on its exact patterns. It does not rule
 out the count state for the annealed first moment. A joint histogram may still

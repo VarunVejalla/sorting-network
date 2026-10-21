@@ -500,9 +500,9 @@ and the exact tail below 8. The two offsets then cost
 [`UB28-TOP-HEAVY-SCHEDULE.md`](../upper-bound/experiments/UB28-TOP-HEAVY-SCHEDULE.md)
 for max-path screens and the exact proof gate. At `n=2^24`, a central-edge
 coarse-lattice path screen gives rate about 0.8165, above `ln 2`; besides the
-full-state and all-phase gaps, the independent-split model is not valid for
-the actual ensemble. This is only a schedule diagnostic, not a candidate
-sorting theorem.
+full-state and all-phase gaps, this screen is not a certified outer bound over
+all count paths. The count model itself is exact for the annealed ensemble.
+This is only a schedule diagnostic, not a candidate sorting theorem.
 
 ### UB-28 local state and rate gate
 
