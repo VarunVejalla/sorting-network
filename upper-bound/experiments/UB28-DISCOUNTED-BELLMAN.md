@@ -104,6 +104,16 @@ so it does not supply `U`. A practical candidate is a piecewise-smooth or
 piecewise-linear `U` whose cells enclose one shared continuous profile across
 each Bellman transition; independent cellwise suprema are not sufficient.
 
+An 8-bin Pinsker cell run for the 235/35 schedule (`n=2^10`, edge 64,
+150-round anchor) is still vacuous: the certified-kernel *prototype* reports
+`max_log_rate_upper = 0`, and 249,344 of 262,144 six-coordinate anchor cells
+are viable. This is consistent with the exact anchor mask, where 20,090,629
+of 24,137,569 profiles are viable. The broad-cell OR compression is not the
+only obstacle: the simple Pinsker relaxation also loses all rate margin. The
+next certificate attempt should use the exact entropy kernel with correlated
+profile constraints, or a stronger global potential, rather than merely
+adding more Pinsker bins.
+
 ## Independent audit (2026-10-21)
 
 Two fresh reviews found no sign or discount-factor error: weighting the
