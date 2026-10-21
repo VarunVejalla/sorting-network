@@ -10,3 +10,5 @@ sweep n = 2^34, J = 1.66e+06, f = 4000, j in [1e12, 1e13]
   j in [ 1.843e+06,  2.119e+06] J: worst     661461.2 at s2 <=     358  allowed  1842784.9  OK
   j in [ 2.119e+06,  2.437e+06] J: worst     774936.1 at s2 <=     475  allowed  2119202.6  OK
   j in [ 2.437e+06,  2.803e+06] J: worst     942598.4 at s2 <=     603  allowed  2437083.0  OK
+  j in [ 2.803e+06,  3.223e+06] J: worst    1099251.2 at s2 <=     498  allowed  2802645.4  OK
+  j in [ 3.223e+06,  3.706e+06] J: worst    1254432.5 at s2 <=     633  allowed  3223042.2  OK

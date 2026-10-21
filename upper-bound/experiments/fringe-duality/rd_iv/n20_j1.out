@@ -1,0 +1,2 @@
+n = 2^20, J = 1.66e+06, f = 4000, jmax = 316 J
+  j =        1 J (b =     1.6, Kmax =    2318): worst escapes      -3560.0 at s2 =     2  vs allowed        1.0  OK

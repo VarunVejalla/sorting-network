@@ -178,3 +178,10 @@ sweep n = 2^35, J = 1.66e+06, f = 4000, j in [1, 1e20]
   j in [ 2.697e+04,  3.102e+04] J: worst       8280.2 at s2 <=       4  allowed    26973.8  OK
   j in [ 3.102e+04,  3.567e+04] J: worst       9511.5 at s2 <=       4  allowed    31019.9  OK
   j in [ 3.567e+04,  4.102e+04] J: worst      10947.9 at s2 <=       5  allowed    35672.9  OK
+  j in [ 4.102e+04,  4.718e+04] J: worst      12721.2 at s2 <=       5  allowed    41023.8  OK
+  j in [ 4.718e+04,  5.425e+04] J: worst      14470.8 at s2 <=       7  allowed    47177.4  OK
+  j in [ 5.425e+04,  6.239e+04] J: worst      16634.1 at s2 <=       8  allowed    54254.0  OK
+  j in [ 6.239e+04,  7.175e+04] J: worst      19365.5 at s2 <=       8  allowed    62392.1  OK
+  j in [ 7.175e+04,  8.251e+04] J: worst      22232.8 at s2 <=       9  allowed    71750.9  OK
+  j in [ 8.251e+04,  9.489e+04] J: worst      25637.2 at s2 <=      11  allowed    82513.5  OK
+  j in [ 9.489e+04,  1.091e+05] J: worst      29540.7 at s2 <=      13  allowed    94890.5  OK

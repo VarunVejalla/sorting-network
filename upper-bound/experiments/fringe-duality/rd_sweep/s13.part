@@ -1,0 +1,18 @@
+sweep n = 2^34, J = 1.66e+06, f = 4000, j in [1e10, 1e11]
+  j in [      6024,       6928] J: worst       1858.6 at s2 <=       1  allowed     6024.1  OK
+  j in [      6928,       7967] J: worst       2146.8 at s2 <=       1  allowed     6927.7  OK
+  j in [      7967,       9162] J: worst       2456.5 at s2 <=       1  allowed     7966.9  OK
+  j in [      9162,  1.054e+04] J: worst       2781.2 at s2 <=       1  allowed     9161.9  OK
+  j in [ 1.054e+04,  1.212e+04] J: worst       3188.2 at s2 <=       2  allowed    10536.2  OK
+  j in [ 1.212e+04,  1.393e+04] J: worst       3718.1 at s2 <=       2  allowed    12116.6  OK
+  j in [ 1.393e+04,  1.602e+04] J: worst       4304.5 at s2 <=       2  allowed    13934.1  OK
+  j in [ 1.602e+04,  1.843e+04] J: worst       4931.5 at s2 <=       2  allowed    16024.2  OK
+  j in [ 1.843e+04,  2.119e+04] J: worst       5677.5 at s2 <=       2  allowed    18427.8  OK
+  j in [ 2.119e+04,  2.437e+04] J: worst       6525.5 at s2 <=       3  allowed    21192.0  OK
+  j in [ 2.437e+04,  2.803e+04] J: worst       7591.2 at s2 <=       3  allowed    24370.8  OK
+  j in [ 2.803e+04,  3.223e+04] J: worst       8615.1 at s2 <=       4  allowed    28026.5  OK
+  j in [ 3.223e+04,  3.706e+04] J: worst       9998.6 at s2 <=       4  allowed    32230.4  OK
+  j in [ 3.706e+04,  4.262e+04] J: worst      11369.4 at s2 <=       5  allowed    37065.0  OK
+  j in [ 4.262e+04,  4.902e+04] J: worst      13102.1 at s2 <=       5  allowed    42624.7  OK
+  j in [ 4.902e+04,  5.637e+04] J: worst      15097.1 at s2 <=       6  allowed    49018.4  OK
+  j in [ 5.637e+04,  6.024e+04] J: worst      16279.6 at s2 <=       7  allowed    56371.2  OK
