@@ -45,5 +45,5 @@ Schema and rules: [`tickets.schema.md`](tickets.schema.md), [`docs/agent-protoco
 | UB-36 | P2 | proposed | none |  | Generic schedule (x, y, z) with per-point design-P checks |
 | UB-37 | P1 | done | model |  | Re-price sweep of the R1 model under each hypothetical (status quo, delta_F, r* = 0, split fringe, two sorts) |
 | UB-38 | P2 | proposed | model |  | Run-aware first sort and stage fusion at the R1 node |
-| UB-39 | P1 | proposed | model | 789.75 -> 731.2 | Merge instead of the first column sort at the R1 geometry (node input is sorted segments) |
+| UB-39 | P1 | active | model | 789.75 -> 731.2 | Merge instead of the first column sort at the R1 geometry (node input is sorted segments) |
 | UB-40 | P2 | proposed | model |  | Error-tolerant or periodically restored invariant (eps_B tolerance >= 36x, no fringe floor) |

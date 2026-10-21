@@ -759,20 +759,22 @@
       "id": "UB-39",
       "title": "Merge instead of the first column sort at the R1 geometry (node input is sorted segments)",
       "priority": "P1",
-      "status": "proposed",
+      "status": "active",
       "claim_level": "model",
       "baseline": 789.75,
       "projected": 731.2,
       "owner": null,
-      "branch": null,
+      "branch": "ub-34-fringe-duality",
       "depends_on": [],
       "first_deliverable": "Count the runs per child column under the R1 layout (parent column segments of ~2^22, child F blocks) and price a merge tree; check that the separator proof uses no property of the first sort beyond its output being column-sorted.",
       "evidence": [
-        "upper-bound/experiments/sub500-screen/SCREEN.md",
         "upper-bound/backlog/sub500-routes.md",
+        "upper-bound/best/AKS/Bitonic/RunMerge.lean",
+        "upper-bound/best/AKS/Sub800/ColumnNet.lean",
+        "upper-bound/experiments/sub500-screen/SCREEN.md",
         "upper-bound/experiments/sub500-screen/refined.out"
       ],
-      "notes": "2026-10-21 structural check passes: every bag wire is in a fixed sorted run (children's up-blocks = top/bottom row segments of child columns, ~2^12-2^13 rows; parent's down-blocks = row bands of the parent's column-sorted output, ~m/k rows), so no arbitrary chunk kills the merge saving (an unsorted 1/64 share would have: S(q-6) + merges = S(q)). Next: per-role minimum run length, Lean merge lemma, node-spec variant with run-sorted input (SCREEN.md). 2026-10-20 refined: ~98% of a bag's wires are children's F blocks, runs of f+1 ~ 2^13 rows, so skipping lg(f+1) merge levels saves S(12): 731.2 alone, 641.2 with the band repair. Only the first sort sees the raw node input (sort, scramble, sort, scramble, sort); at R1 each child column gets ~16 sorted parent segments, so about a 4-level merge (~4q) instead of S(q). Idealized 618.7 alone, 483 with delta_F 1/4 + fringe away. The earlier -16% cap (UB-13, runaware/) was for the 1770/1419 windows."
+      "notes": "2026-10-21 Lean (branch ub-34-fringe-duality): Bitonic/RunMerge.lean (runMerge l k / runMergeNetwork l m sort every input with sorted aligned 2^l runs; depth + budget(l) <= budget(l + k)) and Sub800/ColumnNet.lean (generic columnNet N; columnRunMergeNetwork_exec_eq: on column-run-sorted inputs it equals columnSortNetwork, so separator lemmas transfer). Remaining: prove the bag layout is column-run-sorted at every node (child end segments + parent row bands) and wire a merge-first separator into the node spec; per-role minimum run length. 2026-10-21 structural check passes: every bag wire is in a fixed sorted run (children's up-blocks = top/bottom row segments of child columns, ~2^12-2^13 rows; parent's down-blocks = row bands of the parent's column-sorted output, ~m/k rows), so no arbitrary chunk kills the merge saving (an unsorted 1/64 share would have: S(q-6) + merges = S(q)). Next: per-role minimum run length, Lean merge lemma, node-spec variant with run-sorted input (SCREEN.md). 2026-10-20 refined: ~98% of a bag's wires are children's F blocks, runs of f+1 ~ 2^13 rows, so skipping lg(f+1) merge levels saves S(12): 731.2 alone, 641.2 with the band repair. Only the first sort sees the raw node input (sort, scramble, sort, scramble, sort); at R1 each child column gets ~16 sorted parent segments, so about a 4-level merge (~4q) instead of S(q). Idealized 618.7 alone, 483 with delta_F 1/4 + fringe away. The earlier -16% cap (UB-13, runaware/) was for the 1770/1419 windows."
     },
     {
       "id": "UB-40",
