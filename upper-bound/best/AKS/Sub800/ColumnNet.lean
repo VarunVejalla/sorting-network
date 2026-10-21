@@ -10,6 +10,7 @@ module
 
 public import AKS.Chvatal.MatrixBridge
 public import AKS.Bitonic.RunMerge
+public import Mathlib.Data.Fin.Tuple.Sort
 
 @[expose] public section
 
@@ -117,6 +118,54 @@ theorem columnRunMergeNetwork_columnMonotone {m n : Nat} (hn : 0 < n) (l : Nat) 
     unfold columnRunMergeNetwork
     rw [columnNet_exec_matrixWire, columnNet_exec_matrixWire]
     exact Bitonic.runMergeNetwork_sorts l m _ (hv j) hrs
+
+theorem comparator_apply_comp_perm' {n : ℕ} {α : Type*} [LinearOrder α]
+    (c : Comparator n) (v : Fin n → α) : ∃ ρ : Equiv.Perm (Fin n), c.apply v = v ∘ ρ := by
+  have hij := c.h.ne
+  rcases le_total (v c.i) (v c.j) with h | h
+  · refine ⟨1, funext fun k => ?_⟩
+    unfold Comparator.apply
+    split_ifs with h1 h2 <;> simp_all
+  · refine ⟨Equiv.swap c.i c.j, funext fun k => ?_⟩
+    unfold Comparator.apply
+    split_ifs with h1 h2 <;> simp_all [Equiv.swap_apply_of_ne_of_ne]
+
+/-- A network's output is its input composed with a wire permutation (local copy of
+`Chvatal.ComparatorNetwork.exec_eq_comp_perm`, to avoid importing `ExecPlacement`). -/
+theorem exec_comp_perm' {n : ℕ} {α : Type*} [LinearOrder α]
+    (net : ComparatorNetwork n) (v : Fin n → α) :
+    ∃ ρ : Equiv.Perm (Fin n), net.exec v = v ∘ ρ := by
+  obtain ⟨cs⟩ := net
+  induction cs generalizing v with
+  | nil => exact ⟨1, rfl⟩
+  | cons c cs ih =>
+    obtain ⟨ρ₁, h₁⟩ := comparator_apply_comp_perm' c v
+    obtain ⟨ρ₂, h₂⟩ := ih (c.apply v)
+    exact ⟨ρ₁ * ρ₂, by
+      show ComparatorNetwork.exec ⟨cs⟩ (c.apply v) = _
+      rw [h₂, h₁]; rfl⟩
+
+/-- Two networks that both sort `v` give the same output (outputs are sorted rearrangements of `v`). -/
+theorem exec_eq_of_both_monotone {k : Nat} {α : Type*} [LinearOrder α] (A B : ComparatorNetwork k)
+    (v : Fin k → α) (hA : Monotone (A.exec v)) (hB : Monotone (B.exec v)) : A.exec v = B.exec v := by
+  obtain ⟨ρ, hρ⟩ := exec_comp_perm' A v
+  obtain ⟨τ, hτ⟩ := exec_comp_perm' B v
+  rw [hρ] at hA ⊢
+  rw [hτ] at hB ⊢
+  exact Tuple.unique_monotone hA hB
+
+/-- **On column-run-sorted inputs the run merge and the full column sort agree**, so every
+statement about `columnSortNetwork` as the first stage transfers to `columnRunMergeNetwork`. -/
+theorem columnRunMergeNetwork_exec_eq {m n : Nat} (hn : 0 < n) (l : Nat) {α : Type}
+    [LinearOrder α] (v : Fin (m * n) → α) (hv : ColumnRunSorted m n hn l v) :
+    (columnRunMergeNetwork m n hn l).exec v = (columnSortNetwork m n hn).exec v := by
+  funext w
+  rw [← matrixWire_matrixRow_col hn w]
+  unfold columnRunMergeNetwork
+  rw [columnNet_exec_matrixWire, columnSortNetwork_exec_matrixWire]
+  exact congrFun (exec_eq_of_both_monotone (Bitonic.runMergeNetwork l m) (bitonicNetwork m)
+    (v ∘ columnWireEmbed m n hn _) (Bitonic.runMergeNetwork_sorts l m _ (hv _))
+    ((bitonicNetwork_sorts m) (v := v ∘ columnWireEmbed m n hn _))) _
 
 end Chvatal
 
