@@ -82,7 +82,9 @@ The zero-one principle then gives a sorter of depth
    alignments.
 2. Compute the exact width-16 bad-reachable terminal set using the full
    width-16/8 random schedule and deterministic suffix, for every support
-   geometry and alignment phase. Compute its preimages and verify that the
+   geometry and alignment phase. The finite transfer is now reproducibly
+   sampled by [`ub28-anchor-viability.py`](ub28-anchor-viability.py), but the
+   phase coverage is incomplete. Compute its preimages and verify that the
    viable-state restriction is closed under every path counted by the first
    moment. Do not replace it with the smaller forbidden width-4 language.
 3. Find a potential with enough margin. A global potential over all density
@@ -119,3 +121,30 @@ followed by the top-interface supremum. A certified lower bound above
 `-ln(2)` rejects this certificate route for the schedule; a certified upper
 bound strictly below it supplies a candidate potential and margin for the
 remaining uniform-error proof.
+
+## Finite-anchor viability screen (2026-10-21)
+
+`ub28-anchor-viability.py` reads finite versus `-inf` from the existing
+max-plus transfer at `n=256`, after reversing the exact width-4/2/1 tail and
+the 150-round randomized schedules at widths 8 and 16. Thus each reported
+finite profile has a positive-probability continuation to the designated
+bad edge; the log-probability magnitudes are not used. Selected results:
+
+| output edge | supported width-16 blocks | viable profiles |
+|---:|:---|---:|
+| 0 | 0–3 | 288 / 83,521 |
+| 2 | 0–3 | 2,589 / 83,521 |
+| 6 | 0–3 | 14,068 / 83,521 |
+| 14 | 0–3 | 64,142 / 83,521 |
+| 30 | 0–3 | 66,565 / 83,521 |
+| 62 | 0–5 | 20,090,629 / 24,137,569 |
+| 126 | 4–9 | 20,090,629 / 24,137,569 |
+| 254 | 12–15 | 288 / 83,521 |
+
+The selected odd edge 1 has zero viable profiles, as expected: the final
+odd-offset comparator sorts that adjacent pair. Every even edge is still a
+candidate bad edge. In the sampled interior six-block phases, about 83.2% of
+the full count-profile box remains viable, so viability alone is weak
+pruning; a useful certificate must exploit accumulated trajectory cost, not
+just remove terminally impossible states. These are finite samples, not a
+proof that the listed edge representatives exhaust all phases.
