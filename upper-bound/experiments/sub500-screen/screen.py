@@ -81,6 +81,8 @@ def evaluate(x, y, z, H):
         kap = H.get("R2")            # SLACKFREE route R2: residual kappa (mu + eps_B/2)/(A nu - 1), no r*
         if kap is not None:
             budget -= kap * mu / (A * nu - 1)
+        if H.get("center_sib"):      # per-boundary centred offsets: (k-1) Delta_1 -> (k-1) Delta_1 / 2
+            budget += (k - 1) * mu * sib / 2
         if H.get("center1"):         # one-sided centred: interior theta = 0, split of G unknown in [0, G]:
             g_ss = p / (2 * (A * nu - 1))          # steady-state deficit fraction with end-only deficits
             budget += mu / 2 + rstar - g_ss / 2     # replaces mu + r* by (mu + g)/2

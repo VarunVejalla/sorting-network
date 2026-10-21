@@ -110,3 +110,34 @@ The one-sided variant is a near-term candidate for improving the **proved** boun
 * new bulk and fringe certificates at (4,6,4), q = 28.
 
 Everything else reuses Chvátal's invariant.
+
+## Sibling-term centring and a near-term 731.25 (same day)
+
+The `(k−1)Δ₁` term comes from one-sided miscounts `X_h − X̂_h ∈ [0, Δ₁]`. Boundary j's cumulative error
+lies in `[0, (j−1)Δ₁]`, so centring each boundary offset halves it (`center_sib=True`).
+
+| package | cost |
+|---|---:|
+| R2 centred (+ sib centred), band tail walk bound | 503.3 |
+| R2 centred, band tail 0.25/W | **490.0** |
+| R2 centred, band tail 0.13/W | 480.0 |
+| **one-sided centred + sib centred, 3 sorts, current fringe** | **731.25** ((4,5,3), q = 25) |
+
+**The 731.25 point without route (d).** Under one-sided centring the (4.2′) budget grows enough that:
+* allowed `ε_B = 1.385e-5`, `ε_F = 3.17e-5` (`J ≈ 3.2e4`), `δ = 8.2e-6`;
+* the fringe needs `f ≈ 3270`, inside the class-A window `f + 1 ≤ 4024`;
+* the old certified route scales as `f ≈ 18√J ≈ 3200` there.
+
+The bulk is the kernel-checked R1Cells25/R2Cells25. These certify `ε_B = 1/70000 = 1.43e-5`, which is
+**3% above** the model's allowed value. So an exact-rational (4.2′) check (as in `r1_point.py`) with
+the centred terms is the first gate. If it is short, the margin can come from:
+* centring the γ̂ reserve as well;
+* tighter rows;
+* or rerunning `gen_r1_cells.py` at a slightly smaller ε_B.
+
+**Path to a proved 731.25:**
+1. Lemma 4.2″: the uniform-shift identity plus centred offsets.
+2. A centred end-only-deficit design table, with (I1)–(I4) re-derived.
+3. An exact (4.2″) check.
+4. Fringe certificates at `J ≈ 3.2e4`, using the existing per-E route.
+5. Lean: the R1 layer with the new (4.2″) and the design.
