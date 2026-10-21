@@ -114,6 +114,18 @@ private lemma restrictWires_exec_foldl {n m : ℕ} (hm : m ≤ n)
         simp only [Comparator.apply, h1, h2]
         split_ifs <;> first | assumption | simp
 
+/-- Bool execution of a restricted network is the full network on the input padded with `true`. -/
+theorem restrictWires_exec_pad {n : ℕ} (net : ComparatorNetwork n) (m : ℕ) (hm : m ≤ n)
+    (v : Fin m → Bool) (i : Fin m) :
+    (net.restrictWires m hm).exec v i =
+      net.exec (fun k : Fin n => if h : k.val < m then v ⟨k.val, h⟩ else true)
+        ⟨i.val, by omega⟩ := by
+  have hrestr := (restrictWires_exec_foldl hm net.comparators
+    (fun k : Fin n => if h : k.val < m then v ⟨k.val, h⟩ else true) v
+    (fun i ↦ by simp [i.isLt]) (fun i him ↦ by simp [show ¬(i.val < m) by omega])).1
+  simp only [ComparatorNetwork.exec, ComparatorNetwork.restrictWires] at hrestr ⊢
+  exact (hrestr i).symm
+
 /-- Sorting is preserved by wire restriction (0-1 principle plus padding with `true`). -/
 theorem restrictWires_sorts {n : ℕ} (net : ComparatorNetwork n)
     (m : ℕ) (hm : m ≤ n)

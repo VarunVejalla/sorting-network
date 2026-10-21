@@ -12,6 +12,7 @@ module
 -/
 
 public import AKS.Bitonic.Sorts
+public import AKS.Bitonic.Shrink
 
 @[expose] public section
 
@@ -108,6 +109,50 @@ theorem runMerge_sorts (l k : ℕ) {α : Type*} [LinearOrder α] (v : Fin (2 ^ (
     fun a b hab hblk => hf (hv a b hab hblk)
   have h_sorted := runMerge_sorts_bool l k _ hb hij
   have hcomm := congr_fun ((runMerge l k).exec_comp_monotone hf v)
+  simp only [Function.comp] at hcomm
+  rw [← hcomm i, ← hcomm j] at h_sorted
+  simp [hlt] at h_sorted
+  exact absurd h_sorted (by decide)
+
+/-- Run merge on any number `m` of wires: `runMerge l k` on `2^(l+k) ≥ m` wires, restricted to `m`
+(extra wires padded with `true`, which keeps every aligned block sorted). -/
+def runMergeNetwork (l m : ℕ) : ComparatorNetwork m :=
+  (runMerge l (Nat.clog 2 m - l)).restrictWires m
+    ((Nat.le_pow_clog (by omega) m).trans (Nat.pow_le_pow_right (by omega) (by omega)))
+
+theorem runMergeNetwork_depth_le (l m : ℕ) :
+    (runMergeNetwork l m).depth + bitonicDepthBudget l ≤ bitonicDepthBudget (l + (Nat.clog 2 m - l)) :=
+  (Nat.add_le_add_right (restrictWires_depth_le _ _ _) _).trans (runMerge_depth_le l _)
+
+theorem runMergeNetwork_sorts_bool (l m : ℕ) (v : Fin m → Bool) (hv : RunSorted l v) :
+    Monotone ((runMergeNetwork l m).exec v) := by
+  intro i j hij
+  unfold runMergeNetwork
+  rw [restrictWires_exec_pad, restrictWires_exec_pad]
+  refine runMerge_sorts_bool l _ _ ?_ (show (⟨i.val, _⟩ : Fin _) ≤ ⟨j.val, _⟩ from hij)
+  intro a b hab hblk
+  have hab' : a.val ≤ b.val := hab
+  by_cases hb : b.val < m
+  · have ha : a.val < m := lt_of_le_of_lt hab' hb
+    simp only [ha, hb, dite_true]
+    exact hv ⟨a.val, ha⟩ ⟨b.val, hb⟩ hab hblk
+  · simp only [hb, dite_false]
+    exact Bool.le_true _
+
+/-- **Run merge sorts run-sorted inputs on any number of wires** (any linear order). -/
+theorem runMergeNetwork_sorts (l m : ℕ) {α : Type*} [LinearOrder α] (v : Fin m → α)
+    (hv : RunSorted l v) : Monotone ((runMergeNetwork l m).exec v) := by
+  by_contra h_not_mono
+  simp only [Monotone, not_forall, not_le] at h_not_mono
+  obtain ⟨i, j, hij, hlt⟩ := h_not_mono
+  have hf : Monotone fun x : α ↦ decide (((runMergeNetwork l m).exec v) j < x) := fun a b hab ↦ by
+    by_cases ha : ((runMergeNetwork l m).exec v) j < a
+    · simp [ha, lt_of_lt_of_le ha hab]
+    · simp [ha]
+  have hb : RunSorted l ((fun x : α ↦ decide (((runMergeNetwork l m).exec v) j < x)) ∘ v) :=
+    fun a b hab hblk => hf (hv a b hab hblk)
+  have h_sorted := runMergeNetwork_sorts_bool l m _ hb hij
+  have hcomm := congr_fun ((runMergeNetwork l m).exec_comp_monotone hf v)
   simp only [Function.comp] at hcomm
   rw [← hcomm i, ← hcomm j] at h_sorted
   simp [hlt] at h_sorted
