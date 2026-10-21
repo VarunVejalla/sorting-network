@@ -142,6 +142,17 @@ one-sided rank-tail bounds, including the required common-witness factor
 lost correlations, not a counterexample to a fixed core. See PROFILE-GATE for
 the exact conditional frame argument and next invariant requirement.
 
+`coupled_rank_lp.py` keeps each node's output prefix profile correlated with
+all of its ports and solves one global LP over the D2 horizon. Even with an
+exact sorted root, its corrected tail-only contract admits an integral
+terminal impurity at d6 (7,884,863 wrong keys total, maximum1,904,413 in one
+block). The missing constraint is prefix dominance over the actual local
+input profile. The ordered sparse oracle does impose that for selected
+input-dependent traces: d12, scale65536, threshold1/3, root-error fraction
+10^-6, outer/left/right band profiles all pass with1782 errors confined to
+the crossing block. No fixed provider or arbitrary-input root initialization
+has been established. See PROFILE-GATE for full scope and commands.
+
 The LP now stores its path constraints sparsely; recoloring and interval
 queries avoid repeated scans. First-sort validation:8490 literal comparisons;
 recoloring/interval validation:3000 randomized exact comparisons. Historical

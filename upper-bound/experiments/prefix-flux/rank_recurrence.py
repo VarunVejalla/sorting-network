@@ -61,12 +61,13 @@ def sum_iv(xs):
     return (sum(x[0] for x in xs), sum(x[1] for x in xs))
 
 
-def run(depth=4, scale=65536, threshold=F(1, 3)):
+def run(depth=4, scale=65536, threshold=F(1, 3), include_history=False):
     flow = FlowDAG(depth, scale=scale).build()
     p = flow.p
     N = p.k ** depth * scale
     q = int(threshold * N)
     H = {(0, 0): (q, q)}
+    history = [H.copy()]
     log = []
     for t in range(len(flow.rows)):
         ups, downs = {}, {}
@@ -116,6 +117,7 @@ def run(depth=4, scale=65536, threshold=F(1, 3)):
                 target = flow.allocation(flow.lookup(t + 1, lev, idx))
                 Hnext[key] = (min(target, lo), min(target, hi))
         H = Hnext
+        history.append(H.copy())
         log.append((t, max((b - a for a, b in H.values()), default=0)))
 
     bad = []
@@ -134,12 +136,13 @@ def run(depth=4, scale=65536, threshold=F(1, 3)):
                 bad.append((lev, idx, 'below', lo, hi, a))
             elif after == a and hi != 0:
                 bad.append((lev, idx, 'above', lo, hi, a))
-    return dict(depth=depth, scale=scale, N=N, q=q, stages=len(flow.rows),
+    result = dict(depth=depth, scale=scale, N=N, q=q, stages=len(flow.rows),
                 terminal_bad=len(bad), max_terminal_wrong=max(
                     [0] + [a - lo if side == 'below' else hi
                            for _, _, side, lo, hi, a in bad]),
                 examples=bad[:8],
                 widest_intervals=log)
+    return (result, history) if include_history else result
 
 
 if __name__ == '__main__':

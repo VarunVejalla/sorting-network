@@ -105,6 +105,14 @@ the `PhysicalPack2` provider. Details and reproducible script are in
 [`prefix-flux/PROFILE-GATE.md`](../upper-bound/experiments/prefix-flux/PROFILE-GATE.md)
 and `rank_recurrence.py`.
 
+A stronger global LP now retains common local output profiles and exact
+cross-stage port conservation. Tail bounds alone still admit integral
+terminal impurity even from an exact sorted root; the omitted first-sort
+dominance is decisive. The ordered per-trace oracle passes outer/left/right
+band samples after a small assumed root error, but does not construct a fixed
+provider or handle arbitrary root profiles. The paper route's next gate is a
+closed all-input recurrence that carries this comparator reachability.
+
 No credible <=300 construction has yet passed the paper gates. Prioritize a
 new local/global contract rather than another scalar retune. Two precise
 possible directions remain to screen:
@@ -121,3 +129,23 @@ Do not choose between them merely by an optimistic depth division. Derive a
 closed count/target transfer and test its adversarial extremizers first. Use
 new tickets for materially different constructions, and record a bounded
 negative probe rather than expanding unproved Lean plumbing.
+
+### Independent packet-mixing gate
+
+The current signed-flux route is not rescued by its tiny-fringe parameter:
+that parameter controls ranks near `10^-100` of the width, whereas the ordered
+oracle's stranded 133 errors occur at a macroscopic cut. Its current local
+contract therefore remains a negative result, not a credible 292.5 proof.
+
+I screened a more structural UB-25 variant in
+[`PACKET-MIXING-GATE.md`](../upper-bound/experiments/PACKET-MIXING-GATE.md).
+Under the current R1 stage rate, a hypothetical three-matching cycle on
+height-`2^14` sorted packets can fit eight cycles in 360 layers (coefficient
+270). Under an optimistic `36x` tolerance proxy borrowed from UB-37, the
+conditional UB-25 rounding estimate meets the target only if cycle contraction
+is at most about `0.375`. That tolerance was obtained at a different schedule
+with the fringe idealized away, so it is not yet an allowance for this packet
+route. Fresh review confirmed the local inequality and arithmetic, while
+flagging this transfer caveat. This remains a local screen, not evidence that
+such a family exists. Rare cohorts, packet-fragment repacking, and the full
+scheduler are unpriced.

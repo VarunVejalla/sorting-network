@@ -166,3 +166,30 @@ The physical-frame source chain is `R1Wire.blockOf`/`downSetB`,
 for exact rectangles and bounds an interior-row cut discrepancy by its
 remainder. This remains conditional on implementing the inflated schedule's
 exact rectangular arities with this provider; no ragged embedding is claimed.
+
+## Coupled-flow stress test and reachability gap
+
+`coupled_rank_lp.py` retains one cumulative output profile per active bag,
+links all port counts to those common profiles, and carries the exact routed
+counts through the whole D2 horizon. It uses the corrected baseline-uniform
+rank-tail lower bounds, exact root output (the root input is already sorted),
+and exact linear-flow equalities. Its rounded extremizer is checked against
+every LP constraint with integer counts. At d6, scale65536 and threshold1/3,
+the relaxation still allows 7,884,863 wrong keys across wholly one-colored
+terminal blocks, with up to1,904,413 in one block. This is not a counterexample
+to the fixed comparator core: local profiles remain adversarial choices and
+the LP omits the requirement that each output prefix dominate the actual
+input prefix. It does show that coupled port conservation plus the shifted
+rank-tail promise still does not imply terminal purity.
+
+The ordered `sparse_probe.py --rank-core` oracle includes that local
+input-prefix dominance for a chosen trace. With corrected uniform tails,
+d12, scale65536, threshold1/3 and root-error fraction10^-6, the outer-end,
+left-end, and right-end band profiles all finish with zero error outside the
+threshold-straddling terminal block; its remaining error is1782. These are
+input-dependent oracle traces from assumed initial bands, not a fixed core or
+an initialization theorem for arbitrary input. They identify the most
+promising next paper gate: express actual first-sort/input-profile dominance
+inside a shared global rank-profile recurrence, including the root state.
+If that cannot be made finite and closed, this local rank-tail route is not
+yet supportable at the nominal292.5 stage cost.
