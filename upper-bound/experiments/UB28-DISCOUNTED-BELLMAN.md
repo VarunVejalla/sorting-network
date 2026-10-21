@@ -148,3 +148,13 @@ the full count-profile box remains viable, so viability alone is weak
 pruning; a useful certificate must exploit accumulated trajectory cost, not
 just remove terminally impossible states. These are finite samples, not a
 proof that the listed edge representatives exhaust all phases.
+
+The companion [`ub28-support-phase-audit.py`](ub28-support-phase-audit.py)
+enumerates support geometry for every even edge at powers of two from `2^8`
+through `2^14`. It finds at most 15 normalized support/alignment/boundary
+phases at any single width and confirms support size at most six in this
+range. Capping boundary distances at six makes the phase transition
+multivalued: the audit records 181 source-to-target arcs, with 55 source
+phases having multiple observed targets. A Bellman check must include all
+such targets. The audit is a finite discovery tool; a proof still needs an
+inductive closure argument for the phase encoding at every size.
