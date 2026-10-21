@@ -215,3 +215,12 @@ small-f range, and may be too restrictive for global rank-tail transfer. The
 next decision gate is to derive the actual rank-fraction requirement from the
 global recurrence and compare it with this envelope before investing in a
 new provider proof.
+
+Follow-up exact count: `uniform_13bit_geometry.py` now counts positive-fringe
+`(time,level)` geometries for which `floor(delta*f*n)=0` at `delta=10^-12`.
+Across finite depths3..100 this occurs in25,430 cases, including22,535
+`mid` cases. Since the F2 small-rank clause is then restricted to zero
+residual mass, this sharply limits the value of the passing interval screen.
+It is not a formal impossibility result: large-rank clauses or a stronger
+global invariant might still handle these stages. The current actionable gate
+is to derive such a transfer or reject this local-provider instantiation.

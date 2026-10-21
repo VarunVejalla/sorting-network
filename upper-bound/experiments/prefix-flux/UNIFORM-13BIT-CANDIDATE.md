@@ -129,4 +129,12 @@ guard, and the rank fraction is extremely restrictive. The immediate question
 is whether the actual global rank-tail recurrence can use `delta<=10^-12` at
 all relevant stages; absent that, this is not a viable k=8 provider. Any
 common-witness union over base rows must also be included in the probability
-budget.
+budget. This is already a serious transfer warning: at `delta=10^-12`, the
+minimum columns from the geometry screen give `floor(delta*f*n)=0` in every
+positive-fringe role. The minima are `n=8192` for `f=16`, `n=16384` and
+`65536` for the two `f=15` cases, and `n=1024` for `f=240`. The geometry
+screen counts 25,430 `(time,level)` cases with zero support cap over depths
+3 through100, mostly the `mid` role. Thus the tested F2 small-rank clause
+would handle only zero residual mass in those cases. This does not rule out
+other large-rank clauses, but a global proof must close those stages without
+using the small-rank estimate.

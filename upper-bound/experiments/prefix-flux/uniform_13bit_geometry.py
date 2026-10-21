@@ -12,6 +12,7 @@ from oracle import Par
 
 
 SCALE = 16384
+SCREEN_DELTA = F(1, 10**12)
 GEOMETRY = {
     "topDesc": (8, 0, 1),
     "topRise": (8192, 16, 1020),
@@ -24,6 +25,7 @@ GEOMETRY = {
 def check(depth):
     p = Par(3, 3, 2)
     counts = Counter()
+    zero_support = Counter()
     min_columns = {}
     max_bits = 0
     botdesc_native_ratios = set()
@@ -67,19 +69,22 @@ def check(depth):
                 max_bits = max(max_bits, bits)
                 min_columns[geom_role] = min(min_columns.get(geom_role, n), n)
                 counts[geom_role] += 1
+                if f > 0 and SCREEN_DELTA * f * n < 1:
+                    zero_support[geom_role] += 1
     assert botdesc_native_ratios == {F(1), F(1, 16)}, botdesc_native_ratios
-    return counts, min_columns, max_bits
+    return counts, min_columns, max_bits, zero_support
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--depth", type=int, default=100)
     args = ap.parse_args()
-    counts, min_columns, bits = check(args.depth)
+    counts, min_columns, bits, zero_support = check(args.depth)
     depth = 3 * bits * (bits + 1) // 2
     stage_rate = F(3 + 3, 3 * 2)
     print(f"finite depths=3..{args.depth}: {dict(counts)}")
     print(f"minimum column counts by geometry role: {min_columns}")
+    print(f"(time,level) cases with floor(delta*f*n)=0 at delta={SCREEN_DELTA}: {dict(zero_support)}")
     print(f"uniform up-flow botDesc native/c values: 1 and 1/16")
     print(f"max padded row bits={bits}, three-sort depth={depth}, "
           f"stage/log rate={stage_rate}, conditional coefficient={depth*stage_rate}")
