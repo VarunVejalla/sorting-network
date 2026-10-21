@@ -100,8 +100,11 @@ def evaluate(x, y, z, H):
     q = math.ceil(best["lgm"] - 1e-9)
     spb = (x + y) / (x * z)
     if H.get("stage", "").startswith("band"):
-        q = min(range(q, q + 4), key=lambda qq: stage_depth(qq, H, k, best["f"], best["epsB"]))
-        st = stage_depth(q, H, k, best["f"], best["epsB"])
+        # runfix: merge runs are the children's F-block rows p m / 2 (not the fringe f), with the
+        # alignment cost of unaligned runs (one extra depth-l block merge): S(q) - S(l) + l
+        run = (lambda qq: -(p * 2.0 ** qq / 2)) if H.get("runfix") else (lambda qq: best["f"])
+        q = min(range(q, q + 4), key=lambda qq: stage_depth(qq, H, k, run(qq), best["epsB"]))
+        st = stage_depth(q, H, k, run(q), best["epsB"])
         best.update(q=q, spb=spb, x=x, y=y, z=z, stage=st, ideal=st * spb)
     else:
         best.update(q=q, spb=spb, x=x, y=y, z=z, stage=stage_depth(q, H, k, best["f"]),
@@ -138,7 +141,11 @@ def band(q, H, epsB=None):
 
 def merge_first(q, f):
     """first sort on columns made of sorted runs of length >= f + 1 (children's F blocks): skip the
-    first floor(lg(f+1)) merge levels of Batcher's sort."""
+    first floor(lg(f+1)) merge levels of Batcher's sort. A negative f means runfix: run length -f,
+    unaligned, so pay one extra depth-l block merge."""
+    if f < 0:
+        l = min(q, int(math.floor(math.log2(-f))))
+        return S(q) - S(l) + l
     return S(q) - S(min(q, int(math.floor(math.log2(f + 1)))))
 
 

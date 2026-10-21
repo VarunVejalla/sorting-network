@@ -233,3 +233,36 @@ q = 23. The two large levers are therefore:
    mechanism, so the rows are set by the bulk alone.
 
 Together they model at 442, well inside 500, so they have room to absorb the cost of the fringe mechanism.
+
+### Correction (same day): the merge run length
+
+`merge_first(q, f)` used the fringe height f as the run length. The children's runs are their F-block rows
+`p·m/2`, independent of the fringe. With the fringe idealized away (f = 198039) the model skipped 17
+merge levels, so **the 441.8 above is an artifact**. `screen.py` now takes `runfix` (run length `p·2^q/2`,
+plus the alignment cost `+l`).
+
+Re-priced, band + merge-first throughout:
+
+| package | cost |
+|---|---:|
+| `r*` kept, fringe /5.8 | 603.8 |
+| R2 κ = ½, fringe /5.8 | 544.5 |
+| R2 κ = ½, fringe /5.8, band tail 0.13/W | 518.2 |
+| R2 κ = ½, fringe away, tail 0.13/W | 501.8 |
+| **`r* = 0`, fringe /5.8** | **490.0** |
+| `r* = 0`, fringe away, tail 0.13/W | 465.3 |
+
+Best package per branching factor (band + merge + `r* = 0` + fringe /5.8):
+
+| k | 4 | 8 | 16 | 32 | 64 |
+|---|---:|---:|---:|---:|---:|
+| cost | 568.8 | 505.6 | **490.0** | 532.8 | 573.4 |
+
+A smaller k buys about 30× in ε_B but doubles the stages per bit. Stage depth grows like `q²`, while ε
+falls only like `2^{-q/2}`.
+
+**Conclusion.** The column-sort architecture with Chvátal-type invariants bottoms out at about 465–490,
+even with every component near ideal. Below 500 requires `r* = 0` **exactly**, because R2 at κ = ½ is
+not enough. A substantially larger improvement needs a different invariant (ε_B tolerance ≥ 36×, UB-40)
+or a separator whose precision beats `m^{-1/2}`. The adversarial concentration attack makes `m^{-1/2}`
+essentially tight for sort-scramble rounds.
