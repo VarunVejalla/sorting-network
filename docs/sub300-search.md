@@ -281,6 +281,25 @@ shifted pass couples neighboring spill profiles. A valid closure must track
 their positions or a weighted profile through both offsets; the scalar
 `1/9`-only counterexample rules out replacing that work by independent caps.
 
+I checked whether simply strengthening the scalar cap repairs the interface.
+For the packed input `1^(n/4) 0^(3n/4)`, let `q_min` be the least integer `q`
+for which the full scalar relaxation with a `1/q` halver cap sorts that input
+(all widths below 200 are still exact). The screen gives:
+
+| `log2(n)` | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| `q_min` | 23 | 32 | 45 | 64 | 91 | 128 | 181 |
+
+For the half-full packed input the corresponding minima are `23, 33, 46, 65,
+91, 129, 182`. The current script accepts `--epsilon-denominator` to reproduce
+individual screens; for example, `--max-log 11 --epsilon-denominator 24`
+checks every total through `n=2048` and first fails at 2048. This near-doubling
+of the required denominator per two levels shows that a fixed scalar error
+allowance does not close this relaxed model; it is finite evidence, not an
+asymptotic impossibility proof for the actual matching schedule. A useful
+global argument needs position-sensitive information (such as the local spill
+estimate above), rather than only a uniform error fraction.
+
 The useful local gate is now closed at hand-proof level: 70 cross-matchings
 can form a `1/9`-halver for every block width `h>=200`, and smaller widths use
 exact complete bipartite gadgets. The random-graph expansion and rectangle

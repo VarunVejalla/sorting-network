@@ -42,7 +42,7 @@ def worst_halver_output(bits, start, width, exact=False, eps_den=9):
     bits[start : start + 2 * width] = out
 
 
-def run(n: int, ones: int):
+def run(n: int, ones: int, eps_den: int = 9):
     # Ones packed left maximize every initial prefix error.
     bits = [1] * ones + [0] * (n - ones)
     for k in reversed(range(n.bit_length() - 1)):
@@ -52,27 +52,30 @@ def run(n: int, ones: int):
             for left_block in range(shift, blocks - 1, 2):
                 left = left_block * width
                 # Small-width complete bipartite gadgets give an exact split.
-                worst_halver_output(bits, left, width, exact=(width < 200))
+                worst_halver_output(bits, left, width, exact=(width < 200),
+                                    eps_den=eps_den)
     return bits
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--max-log", type=int, default=10)
+    parser.add_argument("--epsilon-denominator", type=int, default=9,
+                        help="use the scalar 1/q halver contract")
     args = parser.parse_args()
     for logn in range(1, args.max_log + 1):
         n = 1 << logn
         bad = []
         for ones in range(n + 1):
-            out = run(n, ones)
+            out = run(n, ones, args.epsilon_denominator)
             expected = [0] * (n - ones) + [1] * ones
             if out != expected:
                 inversion = next(i for i in range(n - 1) if out[i] > out[i + 1])
                 bad.append((ones, inversion))
         if bad:
-            print(f"n={n}: scalar-contract counterexample(s) (one-count, inversion) {bad[:8]}")
+            print(f"n={n}, q={args.epsilon_denominator}: scalar-contract counterexample(s) (one-count, inversion) {bad[:8]}")
         else:
-            print(f"n={n}: every total sorts in this scalar-contract relaxation")
+            print(f"n={n}, q={args.epsilon_denominator}: every total sorts in this scalar-contract relaxation")
 
 
 if __name__ == "__main__":
