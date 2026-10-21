@@ -281,3 +281,19 @@ Its depth is `S(q) − S(lg L)`, and the network is oblivious and correct on eve
 3. A node-spec variant whose first stage assumes run-sortedness, discharged from the previous stage's
    column sort. This replaces the `∀ v` input of the separator lemma by `∀ v` with sorted runs; the
    later stages are unchanged.
+
+### UB-39: run alignment (2026-10-21)
+
+`Bitonic.runMerge` (Lean) needs **aligned** sorted runs of length `2^l`. The child up-runs are
+`p·m/2 ≈ 63·2^6 = 4032` rows at the R1 geometry (`p ≈ 63/2^18`, `m ≈ 2^25`), which is not a power of two.
+* If every run has at least `2^l` rows, each aligned `2^l`-block contains at most one run boundary. That
+  boundary is at a position fixed by the layout.
+* One extra merge of depth `l` per block (bitonic merge with the second piece reversed, a fixed
+  relabeling) makes every aligned block sorted.
+* Cost: `S(q) − S(l) + l`, with `l = ⌊lg(min run)⌋ = 11`. That saves `S(11) − 11 = 55` per stage, against
+  `S(⌊lg(f+1)⌋) = 66` in `merge_first` (about 1% on the coefficient).
+* The parent's row-band runs are long (about `m/k` rows; partial rows only change lengths by 1), so they
+  do not lower the minimum.
+
+Lean still needs the two-piece block merge, i.e. a `RunSorted` precondition from runs of length `≥ 2^l`
+at arbitrary fixed boundaries.
