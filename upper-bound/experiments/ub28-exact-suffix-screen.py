@@ -9,6 +9,7 @@ sorts arbitrary inputs; a failure is a concrete local obstruction.
 
 import argparse
 import importlib.util
+from math import lgamma, log
 from itertools import product
 from pathlib import Path
 import random
@@ -65,7 +66,86 @@ def arranged_profile(n, first_width, blocks, counts, seed):
         base = block * first_width
         for local in rng.sample(range(first_width), count):
             bits[base + local] = 1
+    # The ordered local witness is embedded between a zero prefix and a one
+    # suffix.  In particular, the width-256 block after blocks[4:6] must
+    # really be all ones for check_local_prefix_path's ordered-count path.
+    suffix_start = (max(blocks) + 1) * first_width
+    bits[suffix_start:] = [1] * (n - suffix_start)
     return bits
+
+
+def preserving_permutation(left, right):
+    """Return pi such that each left 1 is paired with a right 1."""
+    left_ones = [i for i, bit in enumerate(left) if bit]
+    right_ones = [i for i, bit in enumerate(right) if bit]
+    if len(left_ones) > len(right_ones):
+        raise ValueError("left block has more ones than right block")
+    permutation = [-1] * len(left)
+    available_right_ones = iter(right_ones)
+    for left_slot in left_ones:
+        permutation[left_slot] = next(available_right_ones)
+    used = set(permutation) - {-1}
+    remaining_right = iter(i for i in range(len(right)) if i not in used)
+    for left_slot, bit in enumerate(left):
+        if not bit:
+            permutation[left_slot] = next(remaining_right)
+    return permutation
+
+
+def apply_preserving_pair(left, right, rounds):
+    if sum(left) > sum(right):
+        raise ValueError("pair counts are not ordered")
+    for _ in range(rounds):
+        permutation = preserving_permutation(left, right)
+        for left_slot, right_slot in enumerate(permutation):
+            if left[left_slot] > right[right_slot]:
+                left[left_slot], right[right_slot] = (
+                    right[right_slot], left[left_slot]
+                )
+
+
+def check_local_prefix_path(seed=0, rounds=70):
+    """Realize the ordered witness through the width-512/256 random prefix."""
+    n = 1024
+    width = 128
+    support = list(range(6))
+    counts = [35, 24, 64, 37, 79, 25]
+    child_bits = arranged_profile(n, width, support, counts, seed)
+    blocks = [child_bits[i * width:(i + 1) * width] for i in support]
+    parent256 = [blocks[0] + blocks[1], blocks[2] + blocks[3],
+                 blocks[4] + blocks[5], child_bits[6 * width:8 * width]]
+    assert parent256[3] == [1] * (2 * width)
+    parent_counts = [sum(row) for row in parent256]
+    assert parent_counts == [59, 101, 104, 256]
+
+    for _ in range(rounds):
+        apply_preserving_pair(parent256[0], parent256[1], 1)
+        apply_preserving_pair(parent256[2], parent256[3], 1)
+    for _ in range(rounds):
+        apply_preserving_pair(parent256[1], parent256[2], 1)
+
+    parent512 = [parent256[0] + parent256[1],
+                 parent256[2] + parent256[3]]
+    assert [sum(row) for row in parent512] == [160, 360]
+    for _ in range(rounds):
+        apply_preserving_pair(parent512[0], parent512[1], 1)
+
+    bits = parent512[0] + parent512[1]
+    output = exact_suffix(bits, 128)
+    if output[508] <= output[509]:
+        raise AssertionError("constructed local prefix path did not fail")
+
+    log_probability = rounds * (
+        lgamma(101 + 1) - lgamma(101 - 59 + 1)
+        - lgamma(256 + 1) + lgamma(256 - 59 + 1)
+        + lgamma(104 + 1) - lgamma(104 - 101 + 1)
+        - lgamma(256 + 1) + lgamma(256 - 101 + 1)
+        + lgamma(360 + 1) - lgamma(360 - 160 + 1)
+        - lgamma(512 + 1) + lgamma(512 - 160 + 1)
+    )
+    print(f"LOCAL_PREFIX_PATH_FAIL edge=508 parent256_counts={parent_counts} "
+          f"parent512_counts={[sum(row) for row in parent512]} "
+          f"log10_matching_probability={log_probability / log(10):.3f}")
 
 
 def main():
@@ -77,6 +157,8 @@ def main():
                         help="also sample profiles satisfying the necessary parent-count ordering")
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
+    if args.n == 1024 and args.edge == 508 and args.first_width == 128:
+        check_local_prefix_path(args.seed)
     blocks = sorted(support_before_width(args.n, args.edge,
                                          args.first_width))
     if len(blocks) > 8:

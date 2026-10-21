@@ -159,6 +159,27 @@ removes the combinatorial-formula obstacle, but does not yet optimize their
 composition or establish a rate above `ln 2`. The same checker verifies this
 split formula for 103 parent words at widths 2 and 4.
 
+## Reachable finite suffix obstruction (2026-10-21)
+
+The width-128 exact suffix has an inversion at edge 508 for a six-block
+profile with one-counts `(35,24,64,37,79,25)`. Its width-256 parent counts
+are `(59,101,104,256)`, so the two offset passes can preserve this profile:
+for each matching, pair all left-block ones with right-block ones. The
+width-512 parent counts are `(160,360)` and admit the same preservation.
+The fixed input is made genuine by putting zeros before the six profile
+blocks and ones after them; the script
+`ub28-exact-suffix-screen.py` now checks that the all-one suffix really is
+present before using it as the final width-256 block.
+
+For 70 random rounds at widths 256 and 512, the specified preserving event
+has probability `10^(-9014.528)` (product of the exact factors
+`binom(b,a)/binom(h,a)` for each paired block with counts `a<=b`). On that
+event the exact width-128-to-1 suffix leaves the `10` at edge 508. This is a
+valid lower bound on failure probability for this fixed input and schedule;
+it only rules out treating the fixed suffix as universally sorting arbitrary
+width-512 inputs. The probability is far too small by itself to challenge a
+first-moment proof for one whole network.
+
 The split's per-parent-column cost is explicit as well. Set `p_v=H_v/h`,
 `x_v=X_v/h`, `y_v=Y_v/h`, and `r_{uv}=R_{uv}/h`, where the parent width is
 `h` and each child half has width `h/2`. Feasibility requires
