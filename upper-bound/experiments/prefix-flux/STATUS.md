@@ -178,3 +178,11 @@ The LP now stores its path constraints sparsely; recoloring and interval
 queries avoid repeated scans. First-sort validation:8490 literal comparisons;
 recoloring/interval validation:3000 randomized exact comparisons. Historical
 monotone trace replay remains valid. No Lean build was needed or run.
+
+The joint profile-weighted MGF screen is recorded in `PROFILE-WEIGHTED-MGF.md`
+and implemented in `profile_mgf_dp.py`. The finite nested-subset DP agrees
+with direct profile enumeration on a small instance. Its asymptotic variational
+rate suggests a possible local-tail gain, but the current tangent calculation
+is only a floating diagnostic and is not a certified upper bound. Even a
+certified local gain would leave the coupled global transfer and terminal
+purity gap open; no coefficient improvement or Lean result follows.
