@@ -81,9 +81,11 @@ def evaluate(x, y, z, H):
         kap = H.get("R2")            # SLACKFREE route R2: residual kappa (mu + eps_B/2)/(A nu - 1), no r*
         if kap is not None:
             budget -= kap * mu / (A * nu - 1)
+        if H.get("center"):          # centred design offset: per-child shift |O_L + e - o| <= (mu + U)/2
+            budget += mu / 2 + (kap * mu / (A * nu - 1) / 2 if kap is not None else 0.0)
         if budget <= 0 or epsF <= 0:
             continue
-        epsB = tol * budget / (ETA + (kap / (2 * (A * nu - 1)) if kap is not None else 0.0))
+        epsB = tol * budget / (ETA + ((kap / (2 * (A * nu - 1))) * (0.5 if H.get('center') else 1.0) if kap is not None else 0.0))
         lb = lgm_bulk(epsB, rounds)
         if H.get("fexp") is not None:   # hypothetical fringe scaling f = 7934 (J/190000)^fexp / fdiv
             f = 7934 * (1 / (epsF * 190000)) ** H["fexp"] / H.get("fdiv", 1.0)

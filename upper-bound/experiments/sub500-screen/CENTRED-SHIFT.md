@@ -1,0 +1,85 @@
+# Centred block offsets: halving the outsider term of Lemma 4.2′ (derivation, 2026-10-21)
+
+Claude (Opus 5.5). **Claim level: hand derivation, unreviewed.** This is model input for
+`screen.py` (`center=True`). Notation follows `../../best/notes/sub800/R1-PROOF.md` §3.
+
+## Setting
+
+Sender u has capacity c and a wires. Its separator output is `F₁, B_1, …, B_k, F₂`, with
+`|F_i| = π/2` and `|B_h| = b_h`. In u's bag:
+* `O_L`, `O_R` are the order-0 outsiders below and above u's range, with `O_L + O_R < μc` (P).
+* `X_h` is the number of keys addressed below child h.
+
+Under an exact sort, positions are ranks.
+
+## The shift identity
+
+The F₁ positions hold the `π/2` smallest keys. These are all `O_L` low outsiders, provided
+`O_L ≤ π/2` (which (4.4) gives), and the `π/2 − O_L` smallest keys of child 1. Symmetrically for F₂.
+So:
+
+* **The top boundary is exact.** The keys above `B_k`'s top position are exactly F₂'s `π/2` keys:
+  `O_R` outsiders plus the top `π/2 − O_R` keys of child k. No key above child k's range is in `B_k`,
+  and no key of child k is above F₂ except those that go up.
+* **The boundary between `B_j` and `B_{j+1}`** sits at position `P_{j+1} = π/2 + Σ_{h≤j} b_h`. The keys
+  ranked below child `j+1`'s range number `Q_{j+1} = O_L + Σ_{h≤j} X_h`. So
+  `s_{j+1} := Q_{j+1} − P_{j+1} = O_L + Σ_{h≤j} (X_h − b_h) − π/2`.
+
+Let the design choose `b_1 = X̂_1 − π/2 + o` and `b_h = X̂_h` for interior h, where `X̂` are the design
+counts and o is a **design offset**. Then
+
+    s_{j+1} = (O_L − o) + Σ_{h≤j} (X_h − X̂_h),
+
+and the miscount terms satisfy `|X_h − X̂_h| ≤ Δ₁` plus the sided-deficit misattribution (R2). Block
+`B_j` receives `s_j⁺` keys from below (child `j−1`'s keys) and `(−s_{j+1})⁺` keys from above (child
+`j+1`'s keys). With the miscount terms removed, `s_j = s_{j+1} = O_L − o`, so
+
+    intruders(B_j) ≤ |O_L − o| + (Δ₁ terms) + (misattribution) + ε_B a + γ.
+
+Chvátal's Lemma 4.2′ bounds the lower and upper intruders separately, as `O_L + …` and `O_R + …`, and
+adds them, giving `μc`. The identity shows the outsider part is a **single uniform shift**, so only
+`|O_L − o|` counts.
+
+## Centring
+
+* `O_L ∈ [0, μc)` is unknown to an oblivious network.
+* The R2 misattribution `e` of u's designed ancestral keys lies in a one-sided interval `[−U, 0]`,
+  with `U = (μ + ε_B/2) c/(Aν − 1)` (SLACKFREE §4, κ = 1).
+* Both enter s with the same sign, through the low side, so `s ∈ [o' − U, o' + μc]` for the design's
+  `o' = −o`. Choosing o at the midpoint gives
+
+      |s| ≤ (μc + U)/2.
+
+The (4.2′) budget becomes
+
+    μ/2 + (k−1) μ sib + μ δ A² k + U/(2c) + γ̂ Aν + ε_B η ≤ μ Aν     (U/(2c) = (μ + ε_B/2)/(2(Aν − 1))),
+
+in place of `μ + … + r* + …`.
+
+## What must still be checked
+
+1. **The R2 invariant itself** (SLACKFREE Q): "the designed low/high ancestral keys of x lie in
+   range(x₁)/range(x_k), up to `κ(μ + ε_B/2)c/(Aν − 1)`". This is a derivation, not a proof. Its chain
+   errors are the parent's low outsiders occupying F₁ slots and B errors at the π/2 cut.
+2. **The Δ₁ terms are not uniform** across j: `(j−1)Δ₁` from below, `(k−j)Δ₁` from above. They remain
+   as in Chvátal, i.e. `(k−1)Δ₁ = (k−1) μ sib c`.
+3. **Separator errors.** Property B errors at each cut are not part of the uniform shift. They stay as
+   `ε_B a` per block.
+4. **Sign conventions** of `e` relative to `O_L`. If e enters with the opposite sign, centring still
+   gives `(μc + U)/2`, since the bound only needs both to lie in known intervals.
+5. **Compatibility of the offset with the flow table.** `θ_1 = G_1 − b_1` changes by o, which needs
+   `θ ≥ 0` and `b ≥ 0`. o is about `μc/2`, much smaller than `θ_end ≈ π/2`.
+6. **The child-side accounting** (Lemma 4.3′): intruders become order-0 outsiders at the child,
+   unchanged.
+
+## Pricing (`screen.py`, `runfix`, band + merge-first)
+
+| invariant | fringe | band tail | cost |
+|---|---|---|---:|
+| design P (`r*`) | /5.8 | walk bound | 603.8 |
+| R2 κ = 1, centred | /5.8 | walk bound | **503.3** |
+| R2 κ = 1, centred | /5.8 | 0.13/W | **480.0** |
+| R2 κ = 1, centred | current | walk bound | 529.3 |
+| `r* = 0`, centred | /5.8 | walk bound | 464.0 |
+
+The run's "R2 κ = ½, centred" row (477.3) double-counts centring and is not valid.
