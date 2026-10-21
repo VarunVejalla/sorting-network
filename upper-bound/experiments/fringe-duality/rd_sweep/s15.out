@@ -1,0 +1,12 @@
+sweep n = 2^34, J = 1.66e+06, f = 4000, j in [1e12, 1e13]
+  j in [ 6.024e+05,  6.928e+05] J: worst     215605.0 at s2 <=     161  allowed   602409.6  OK
+  j in [ 6.928e+05,  7.967e+05] J: worst     254467.8 at s2 <=     134  allowed   692771.1  OK
+  j in [ 7.967e+05,  9.162e+05] J: worst     281116.9 at s2 <=     112  allowed   796686.7  OK
+  j in [ 9.162e+05,  1.054e+06] J: worst     311630.9 at s2 <=     147  allowed   916189.8  OK
+  j in [ 1.054e+06,  1.212e+06] J: worst     378471.0 at s2 <=     203  allowed  1053618.2  OK
+  j in [ 1.212e+06,  1.393e+06] J: worst     430265.4 at s2 <=     194  allowed  1211661.0  OK
+  j in [ 1.393e+06,  1.602e+06] J: worst     486613.9 at s2 <=     257  allowed  1393410.1  OK
+  j in [ 1.602e+06,  1.843e+06] J: worst     576407.3 at s2 <=     296  allowed  1602421.6  OK
+  j in [ 1.843e+06,  2.119e+06] J: worst     661461.2 at s2 <=     358  allowed  1842784.9  OK
+  j in [ 2.119e+06,  2.437e+06] J: worst     774936.1 at s2 <=     475  allowed  2119202.6  OK
+  j in [ 2.437e+06,  2.803e+06] J: worst     942598.4 at s2 <=     603  allowed  2437083.0  OK

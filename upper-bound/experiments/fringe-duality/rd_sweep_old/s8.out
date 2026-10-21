@@ -1,0 +1,5 @@
+sweep n = 2^26, J = 1.66e+06, f = 4000, j in [1e9, 1e10]
+  j in [     602.4,        753] J: worst        614.6 at s2 <=       2  allowed      602.4  FAIL
+  j in [       753,      941.3] J: worst        919.1 at s2 <=       2  allowed      753.0  FAIL
+  j in [     941.3,       1177] J: worst       1242.1 at s2 <=       2  allowed      941.3  FAIL
+  j in [      1177,       1471] J: worst       1597.1 at s2 <=       2  allowed     1176.6  FAIL

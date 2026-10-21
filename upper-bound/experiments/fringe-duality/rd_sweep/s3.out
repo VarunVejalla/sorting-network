@@ -1,0 +1,18 @@
+sweep n = 2^20, J = 1.66e+06, f = 4000, j in [1e7, 1e8]
+  j in [     6.024,      6.928] J: worst      -3285.1 at s2 <=       1  allowed        6.0  OK
+  j in [     6.928,      7.967] J: worst      -3256.7 at s2 <=       1  allowed        6.9  OK
+  j in [     7.967,      9.162] J: worst      -3221.8 at s2 <=       1  allowed        8.0  OK
+  j in [     9.162,      10.54] J: worst      -3183.6 at s2 <=       1  allowed        9.2  OK
+  j in [     10.54,      12.12] J: worst      -3137.9 at s2 <=       1  allowed       10.5  OK
+  j in [     12.12,      13.93] J: worst      -3099.8 at s2 <=       1  allowed       12.1  OK
+  j in [     13.93,      16.02] J: worst      -3070.8 at s2 <=       1  allowed       13.9  OK
+  j in [     16.02,      18.43] J: worst      -3026.3 at s2 <=       1  allowed       16.0  OK
+  j in [     18.43,      21.19] J: worst      -2982.1 at s2 <=       1  allowed       18.4  OK
+  j in [     21.19,      24.37] J: worst      -2929.0 at s2 <=       1  allowed       21.2  OK
+  j in [     24.37,      28.03] J: worst      -2877.5 at s2 <=       1  allowed       24.4  OK
+  j in [     28.03,      32.23] J: worst      -2817.4 at s2 <=       1  allowed       28.0  OK
+  j in [     32.23,      37.06] J: worst      -2757.0 at s2 <=       1  allowed       32.2  OK
+  j in [     37.06,      42.62] J: worst      -2694.5 at s2 <=       1  allowed       37.1  OK
+  j in [     42.62,      49.02] J: worst      -2644.1 at s2 <=       1  allowed       42.6  OK
+  j in [     49.02,      56.37] J: worst      -2559.1 at s2 <=       1  allowed       49.0  OK
+  j in [     56.37,      60.24] J: worst      -2534.9 at s2 <=       1  allowed       56.4  OK

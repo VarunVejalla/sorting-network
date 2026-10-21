@@ -360,3 +360,30 @@ factor 2 in the linear credit, so it fails whenever the load exceeds about f/2. 
 
 The j-intervals use ratio 1.15. The sweeps in `rd_sweep/` take the better of Kingman and collision at each
 level.
+
+### Sweep status (2026-10-21; `rd_sweep/`, `rd_alln/`; better of Kingman and collision at each level)
+
+Each sweep covers every j in `[1, jmax]` by intervals of ratio 1.15, and every set size (exact points until
+the average load is below f, then monotone 1.05-intervals). Parameters: f = 4000, J = 1.66e6,
+`δ_F = 1/8`, η = 1e-4.
+
+**Range of n.** n runs over the powers of two from `2^18` up: bags below the 731.25 point's Batcher
+threshold `2^43` are sorted directly, and `m ≤ 2^25`.
+
+| n | status |
+|---|---|
+| `2^18, 2^19, 2^21 – 2^25`, `2^20`, `2^26` | **complete through jmax, 0 FAIL** |
+| `2^34` | 0 FAIL through `2.8e6 J` (jmax `5.2e6 J`); margins about 2.6× |
+| `2^27 – 2^33`, `2^35 – 2^40` | 0 FAIL so far, up to `4e4 – 1e5 J`; margins about 3× |
+
+Below `2^18` (`rd_alln/below_batcher/`) there are genuine FAILs at `n = 16, 64`. Those n are never used.
+
+**Remaining before a claim:**
+1. Finish the sweeps.
+2. An n → ∞ argument for both regimes:
+   * sparse: the collision branch is monotone in n;
+   * dense, `j ∝ n`: the allowance is about n, the trivial bound for small sets is `s·sqrt(2j)`, and for
+     large sets the centred Kingman entropy is about `s ln(n/s)`.
+3. Interval arithmetic in place of floats.
+4. Review.
+5. Lean.

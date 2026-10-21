@@ -1,0 +1,3 @@
+sweep n = 2^34, J = 1.66e+06, f = 4000, j in [1e11, 1e12]
+  j in [ 6.024e+04,   7.53e+04] J: worst      76979.1 at s2 <=      64  allowed    60241.0  FAIL
+  j in [  7.53e+04,  9.413e+04] J: worst      94546.0 at s2 <=      64  allowed    75301.2  FAIL
