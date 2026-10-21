@@ -33,9 +33,14 @@ def screen(x, y, z, depth):
 
     p = Par(x, y, z)
     flow = FlowDAG(depth, scale=row_count, p=p).build()
-    fringe_rows = [Fraction(row_count * pi, 2 * a)
-                   for row in flow.rows
-                   for a, pi, _ in row.values() if pi]
+    fringe_rows = []
+    for t, row in enumerate(flow.rows):
+        for node, (a, pi, _) in row.items():
+            if not pi or not a:
+                continue
+            lev, deficit, low_deficit, high_deficit, _ = flow.nodes[node]
+            fringe_rows.append((Fraction(row_count * pi, 2 * a), t, lev,
+                                a, pi, deficit, low_deficit, high_deficit))
     if not fringe_rows:
         raise ValueError("no positive sender in finite flow")
     if any(pi % 2 for row in flow.rows
@@ -55,11 +60,16 @@ def screen(x, y, z, depth):
         pending.extend(flow.nodes[node][4])
     terminal_sizes = [flow.native(flow.nodes[node][0]) for node in seen
                       if flow.allocation(node) > 0]
+    minimum = min(fringe_rows)
     return dict(x=x, y=y, z=z, row_bits=q, row_count=row_count,
                 local_depth=local_depth, stage_rate=stage_rate,
                 coefficient=coefficient, finite_depth=depth,
                 finite_stages=len(flow.rows), states=len(flow.nodes),
-                min_fringe_rows=min(fringe_rows),
+                min_fringe_rows=minimum[0],
+                min_sender=dict(time=minimum[1], level=minimum[2],
+                                allocation=minimum[3], up=minimum[4],
+                                deficit=minimum[5], low_deficit=minimum[6],
+                                high_deficit=minimum[7]),
                 max_terminal_bits=max(terminal_sizes).bit_length() - 1)
 
 
@@ -76,7 +86,8 @@ def main():
         print(f"{(x,y,z)} rows=2^{r['row_bits']} core={r['local_depth']} "
               f"stage/log={r['stage_rate']} coefficient={r['coefficient']} "
               f"finite_tf={r['finite_stages']} min_fringe_rows="
-              f"{r['min_fringe_rows']} terminal_bits={r['max_terminal_bits']} "
+              f"{r['min_fringe_rows']} min_sender={r['min_sender']} "
+              f"terminal_bits={r['max_terminal_bits']} "
               f"states={r['states']}")
 
 

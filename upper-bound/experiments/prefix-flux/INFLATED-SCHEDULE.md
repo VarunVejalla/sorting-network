@@ -85,6 +85,15 @@ and sender arities divisible by the proposed row height. These results make
 have a little more nominal coefficient slack than 292.5. The cost arithmetic
 and finite flow checks are not a sorting bound.
 
+For `(3,3,2)`, extending the exact flow scan from depth30 to depth100 leaves
+the minimum equivalent fringe at exactly `8192/559` rows. The attaining
+sender at depth30 is time47, level7; at depth100 it is time155, level9. Both
+have the same exact local values: allocation68,689,920 and up-port245,760
+at row height8192. `parameter_cost_screen.py` now reports this minimizing
+sender. The repeated local bottleneck is a useful target for a schedule
+induction, but the scans do not prove that no worse sender appears at a later
+depth.
+
 The nominal fringe ratios are measured from the D2 flow itself. For example,
 at depth 30 the minimum occurs at a `mid` sender, but its actual allocation is
 not the uniform formula `a=(1-1/(A^2*k^2))*c`; that formula must not be used
