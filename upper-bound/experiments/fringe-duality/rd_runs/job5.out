@@ -1,0 +1,4 @@
+n = 2^26, J = 1.66e+06, f = 4000, jmax = 20214 J
+  j =        1 J (b =     0.0, Kmax =    2332): worst escapes      -3624.4 at s2 =     1  vs allowed        1.0  OK
+  j =       10 J (b =     0.2, Kmax =    6828): worst escapes      -3238.8 at s2 =     1  vs allowed       10.0  OK
+  j =      100 J (b =     2.5, Kmax =   20670): worst escapes      -2462.7 at s2 =     1  vs allowed      100.0  OK

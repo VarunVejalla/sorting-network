@@ -192,3 +192,32 @@ same schedule.
 * Periodic restoration assumes an invariant that lets errors grow by T for P − 1 stages and then
   restores them in one precise stage. No such invariant is known.
 * Bulk precision below `2^8` rows is clamped to the table's first entry.
+
+## UB-32 band repair: the 1/W round-1 tail is achieved by an actual input (2026-10-21, `band_adversary.py`)
+
+Without the third column sort, column v's ones sit at the rows r with `z_{u_r} > r`. So a band repair of
+half-height W leaves an error of at least `E(W) = Σ_u (z_u − i − W)₊` at the threshold `t = i n`.
+
+**Attack.** This is the walk-duality LP played by the adversary:
+1. Pick a target set T of density `p ≈ i/(2W²)`.
+2. Give every input column its own walk-maximising height `argmax_h (N_c^T(h) − λh)`, with λ tuned so
+   that `Σ h = i n`.
+
+**Result.** At `m = 4096`, `n = 2048`, `i = m/2`, a random half/half input gives `E ≈ 0`:
+
+| W | 64 | 128 | 256 | 512 | 1024 |
+|---|---:|---:|---:|---:|---:|
+| `E(W)·W/j` | 0.255 | 0.263 | 0.266 | 0.261 | 0.210 |
+
+The value at `W = 1024` is limited by the finite grid.
+
+**Consequence.** `E ≈ 0.26 j/W` is **achieved**, so no proof can do better (the walk bound is tight up to a
+constant).
+* A band repair needs `0.26 j / W ≤ ε_B m n / 2`, i.e. `W ≳ 0.26/ε_B ≈ 18000` at `ε_B = 1/70000`.
+* That is a band of `2W ≈ 2^15.2` rows, so `R ≥ S(16) = 136`.
+* Coefficient `(2 S(q) + R)·3/4 ≥ 628` at q = 26 and `≥ 590` at q = 25.
+
+**The sub-500 gate `R < 17` is unreachable by any band or local repair at this `ε_B`.** UB-32 needs one of:
+* a repair that is not local in rows;
+* `ε_B` tolerance (UB-40): `W ∝ 1/ε_B`, so a 36× tolerance gives `W ≈ 500` and `R = S(10) = 55`;
+* a node input that is not adversarial (UB-39: sorted segments).
