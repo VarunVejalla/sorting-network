@@ -192,3 +192,35 @@ same structure, with the deficit split `[0, G]` in place of U; that is how `g*/2
 **Simulation caveat.** `centred_shift_check.py` checks the identity `max intruders = |s|` for given
 `(O_L, D, …)`. It does not check the interval `N_L ∈ [−U, μc]`, which is a statement about the
 multi-level dynamics. That is the R2 + centring induction, and it is the next thing to derive.
+
+## The centred chain (v3): which inherited terms are new
+
+Let `w` be the width of the interval of `N_L` (in units of the node's capacity), and let `s_p` be the
+parent's centred shift, `|s_p| ≤ w_p/2`. Then:
+* **A positive `s_p`** sends the left neighbour's keys into child y. They are y's low outsiders, already
+  inside `O_L ≤ μ c_y`, so there is no new term. (v2 double-counted this.)
+* **A negative `s_p`** makes y lose own low keys to `y−1` and receive `y+1`'s low keys, so y's `N_L` drops
+  by `|s_p| ≤ w_p/2`. Together with the parent's separator errors at y's cut this is
+  `≤ (w_p/2 + ε_B η/2)/(Aν)` in y's units.
+* **The parent's F₁ composition** (end children only). The parent's unknown `O_L^p ∈ [0, μ c_p]` sets how
+  many of y's own low keys went up. With the design centred this is `±μ c_p/2`, i.e. `±μ/(2Aν)` on both
+  sides.
+
+So `w = μ + μ/(2Aν) + (w/2 + ε_B η/2 + μ/2)/(Aν)`, i.e. `w = (2μ(Aν+1) + ε_B η)/(2Aν − 1)`, and
+
+    |s| ≤ w/2 = (μ(Aν + 1) + ε_B η/2)/(2Aν − 1)     (Aν = 4: 0.714 μ + ε_B η/14),
+
+in place of Chvátal's `μ + r*` (design P) or R2's `μ + (μ + ε_B/2)/(Aν − 1)`. `screen.py` has this as
+`center2=True`.
+
+| package (band + merge-first + fringe /5.8, sib centred) | cost |
+|---|---:|
+| centred chain v3, walk-bound band tail | **490.0** ((4,4,3), q = 24) |
+| centred chain v3, band tail 0.13/W | 477.3 |
+
+**Status:** derivation sketch. It needs:
+* the sided invariant (the designed ancestral keys sit in end-child ranges);
+* the far-spill bound (energy method);
+* an induction that the intervals hold at every node and stage, roles included;
+* an exact-rational check at the chosen point;
+* a review.
