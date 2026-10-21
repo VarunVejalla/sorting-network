@@ -250,7 +250,12 @@ gives `E[F]=0`. These are finite existence checks, not evidence for a uniform
 bound. A direct vector-state computation at `n=32` without low-width exact
 splitters exceeded 500 MB and was stopped. The new challenge is to prove a
 uniform-in-`n` bound on this first moment without enumerating all count
-profiles; no such bound is established yet.
+profiles; no such bound is established yet. A direct exact-rational run at
+`n=64`, 70 rounds, and exact splitters below width 8 was also stopped after
+about 100 seconds at roughly 8.6 GB resident memory, before producing a result.
+So the current recurrence is a small-size verifier, not a scalable numerical
+screen; a next computational step needs profile compression or rigorous tail
+truncation.
 
 ### UB-28 local rank-sensitive spill estimate
 
