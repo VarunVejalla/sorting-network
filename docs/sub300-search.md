@@ -263,6 +263,18 @@ not a stand-alone sorter for arbitrary residual arrangements. A valid profile
 bound has to retain enough information about the state entering that tail;
 assuming the tail cleans every residual state would be unsound.
 
+There is a sharper finite terminal gate. For the same 32-wire `h=4,2,1`
+tail, [`ub28-terminal-profile-screen.py`](../upper-bound/experiments/ub28-terminal-profile-screen.py)
+checks all 495 nondecreasing profiles of the eight width-4 input blocks by
+SMT. Every such profile whose partial blocks (counts 1, 2, or 3) occupy at
+most three consecutive blocks is sorted by the tail for **every** arrangement
+of bits within those blocks. At span 4, 8 of 75 profiles are already unsafe;
+overall 230 profiles are universally safe and 265 have a counterexample.
+This gives a concrete candidate terminal criterion, but only for this finite
+network and monotone count profiles. The needed global argument must show that
+the randomized larger-scale stages deliver such a profile, or bound the total
+weight of profiles outside the safe set by less than one failing input.
+
 ### UB-28 local rank-sensitive spill estimate
 
 The `1/9`-halver cap is too coarse to compose by itself: the scalar relaxation
