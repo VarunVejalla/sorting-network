@@ -104,7 +104,7 @@ so it does not supply `U`. A practical candidate is a piecewise-smooth or
 piecewise-linear `U` whose cells enclose one shared continuous profile across
 each Bellman transition; independent cellwise suprema are not sufficient.
 
-An 8-bin Pinsker cell run for the 235/35 schedule (`n=2^10`, edge 64,
+An 8-bin Pinsker cell run for the 235/35 schedule (`n=2^10`, central edge 448,
 150-round anchor) is still vacuous: the certified-kernel *prototype* reports
 `max_log_rate_upper = 0`, and 249,344 of 262,144 six-coordinate anchor cells
 are viable. This is consistent with the exact anchor mask, where 20,090,629
@@ -113,6 +113,13 @@ only obstacle: the simple Pinsker relaxation also loses all rate margin. The
 next certificate attempt should use the exact entropy kernel with correlated
 profile constraints, or a stronger global potential, rather than merely
 adding more Pinsker bins.
+
+Uniformly refining the *state* grid once does not remove this witness either.
+The sparse 16-bin zero-bound reachability run from top cell `(8,8)` reaches
+35,650 width-16 profile cells, of which 30,682 intersect the exact viable
+anchor. This is still an abstract path because each interval kernel can
+choose new within-cell densities at every transition. It shows that simple
+uniform bin refinement is not the relational invariant needed for a proof.
 
 The zero is an abstraction artifact, rather than a witness trajectory. The
 reproducible [`ub28-meanfield-terminal-screen.py`](ub28-meanfield-terminal-screen.py)
