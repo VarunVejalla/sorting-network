@@ -34,13 +34,20 @@ def screen(x, y, z, depth):
     p = Par(x, y, z)
     flow = FlowDAG(depth, scale=row_count, p=p).build()
     fringe_rows = []
+    max_allocation_factor = {}
     for t, row in enumerate(flow.rows):
         for node, (a, pi, _) in row.items():
             if not pi or not a:
                 continue
             lev, deficit, low_deficit, high_deficit, _ = flow.nodes[node]
+            role = "topDesc" if t == 0 else p.role(depth, lev, t)
+            cap = p.cap(depth, lev, t)
+            factor = Fraction(a, 1) / (flow.scale * cap)
+            if role not in max_allocation_factor or factor > max_allocation_factor[role][0]:
+                max_allocation_factor[role] = (factor, t, lev, a, cap,
+                                               deficit, low_deficit, high_deficit)
             fringe_rows.append((Fraction(row_count * pi, 2 * a), t, lev,
-                                a, pi, deficit, low_deficit, high_deficit))
+                                a, pi, deficit, low_deficit, high_deficit, role))
     if not fringe_rows:
         raise ValueError("no positive sender in finite flow")
     if any(pi % 2 for row in flow.rows
@@ -61,6 +68,13 @@ def screen(x, y, z, depth):
     terminal_sizes = [flow.native(flow.nodes[node][0]) for node in seen
                       if flow.allocation(node) > 0]
     minimum = min(fringe_rows)
+    factor_witnesses = {
+        role: dict(ratio=entry[0], time=entry[1], level=entry[2],
+                   allocation=entry[3], capacity=entry[4],
+                   deficit=entry[5], low_deficit=entry[6],
+                   high_deficit=entry[7])
+        for role, entry in max_allocation_factor.items()
+    }
     return dict(x=x, y=y, z=z, row_bits=q, row_count=row_count,
                 local_depth=local_depth, stage_rate=stage_rate,
                 coefficient=coefficient, finite_depth=depth,
@@ -69,7 +83,8 @@ def screen(x, y, z, depth):
                 min_sender=dict(time=minimum[1], level=minimum[2],
                                 allocation=minimum[3], up=minimum[4],
                                 deficit=minimum[5], low_deficit=minimum[6],
-                                high_deficit=minimum[7]),
+                                high_deficit=minimum[7], role=minimum[8]),
+                max_allocation_factor=factor_witnesses,
                 max_terminal_bits=max(terminal_sizes).bit_length() - 1)
 
 
@@ -87,6 +102,7 @@ def main():
               f"stage/log={r['stage_rate']} coefficient={r['coefficient']} "
               f"finite_tf={r['finite_stages']} min_fringe_rows="
               f"{r['min_fringe_rows']} min_sender={r['min_sender']} "
+              f"max_a_over_c={r['max_allocation_factor']} "
               f"terminal_bits={r['max_terminal_bits']} "
               f"states={r['states']}")
 

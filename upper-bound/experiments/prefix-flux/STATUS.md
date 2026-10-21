@@ -98,8 +98,12 @@ the current ordered samples.
 INFLATED-SCHEDULE records a reviewed constant inflation of the D2 table,
 giving exact4096-row rectangles and a large fixed final cleanup charged once.
 This removes the repeated small-sort/padding obstruction, not the global
-invariant. Next: ordered spill/profile recurrence and universal D2 fringe
-ratio/native partition; no Lean until the complete paper gate closes.
+invariant. The `(3,3,2)` fringe-factor note now gives an exact two-step
+allocation identity: under `g,rho <= 1/256`, ordinary sender ratios are at
+most `9/8`; the all-depth `g` induction and `botRise`/schedule boundary cases
+remain open. See [D2-FRINGE-FACTOR.md](D2-FRINGE-FACTOR.md). Next: ordered
+spill/profile recurrence and universal D2 native partition; no Lean until the
+complete paper gate closes.
 
 ## Exact compressed flow and first-sort profile gate
 
