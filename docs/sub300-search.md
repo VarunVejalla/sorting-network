@@ -533,3 +533,15 @@ backward cone is fixed. The exact width-4/2/1 tail is count-based by the cyclic
 complete-splitter argument and explicit width-2-count predicate. See
 [`UB28-JOINT-PATTERN-STATE.md`](../upper-bound/experiments/UB28-JOINT-PATTERN-STATE.md).
 
+A finite-cutoff boundary warning is recorded in
+[`ub28-exact-suffix-screen.py`](../upper-bound/experiments/ub28-exact-suffix-screen.py):
+at `n=1024`, edge508, the exact suffix from width128 down fails on six
+width-128 blocks that are constant with row values `(0,0,1,1,0,0)`. The
+zero-cost mean-field diagnostic in
+[`ub28-mean-field-screen.py`](../upper-bound/experiments/ub28-mean-field-screen.py)
+assigns positive mass to the corresponding column type at the cutoff. This is
+not yet a no-go proof, because the probability of reaching that finite profile
+under the actual upper prefix has not been bounded; it does mean the finite
+suffix must be included in the coupled rate calculation and cannot be assumed
+to sort all local inputs.
+

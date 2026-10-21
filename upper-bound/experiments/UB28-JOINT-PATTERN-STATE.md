@@ -248,3 +248,15 @@ the route. Even if it passes, the rate
 gate remains open: no numerical evidence yet shows that the worst joint-pattern
 rate clears `ln 2` for a schedule below coefficient 300. No Lean work should
 start before arbitrary-width closure, a rate screen, and independent review.
+
+## Status correction
+
+The proof-program paragraph above predates the results in this note. The
+uniform support bound and exact finite-type matching/split kernels are now
+derived. In particular, no separate permutation-cycle enumeration is needed:
+the triple-type factorial formula gives the matching kernel directly. The
+remaining gate is to optimize or lower-bound the coupled trajectory cost over
+all edge phases and boundary cases, prove it exceeds `ln 2` for a schedule
+below coefficient 300, and control the finite-width errors. The independent
+block-count entropy rate and mean-field-only terminal screens do not settle
+that joint-state optimization.
