@@ -256,3 +256,26 @@ Two refinements were needed for large `u = (hi − lo)·s2`:
 
 Lean gap: `NegAssoc` covers images of one set (`powersetCard`). The weighted walk needs NA for a
 random permutation of a fixed vector, via a chain of nested level sets or the general theorem.
+
+### Coverage of all set sizes and all j (2026-10-21)
+
+* **Set sizes.** Every count term is nondecreasing in `|S|`:
+  * larger `U`;
+  * entropy `lbinom(n, s)` for `s ≤ n/2` (here `s ≤ j/f ≤ n/8`);
+  * `kmax_sources`;
+  * `Bin(H, s/n)`.
+
+  The term `−(f − L0)|S|` is decreasing. So `escapes(sb, …, s2_lo = sa)` bounds every `|S| ∈ [sa, sb]`.
+  `route_d_rigorous.py` now checks `s2 = 1` and every interval `[2^i, 2^{i+1}]` up to `j/f`. At most `j/f`
+  columns can be overloaded. Runs: `rd_iv/`.
+* **All j (design; not run yet).** For `j ∈ [j_a, j_b]`, use:
+  * `λ j_b` in `A*`;
+  * the cap `R = ⌈hi − b_a⌉`;
+  * the level floor `d = ⌊lo + 1 − b_b⌋` (with the indicator `1{z − b ≥ d}`);
+  * free rows `L0 = ⌈b_b⌉ + x`;
+  * `Kmax` at `j_b`;
+  * the allowance `j_a/J`.
+
+  Each term then bounds every j in the interval. A geometric j-grid with ratio about 1.2 up to jmax
+  needs a faster evaluator first. The pure-Python `A*` and `mult_excess` loops take hours per large j.
+  Port them to vectorised or compiled code, or cache across j.

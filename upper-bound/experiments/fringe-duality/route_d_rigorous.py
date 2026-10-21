@@ -185,13 +185,19 @@ def Kmax(j, n):
     return math.sqrt(A)
 
 
-def escapes(j, n, f, s2, L0_extra, ratio):
+def escapes(j, n, f, s2, L0_extra, ratio, s2_lo=None):
+    """Escape bound for every round-2 set S with s2_lo <= |S| <= s2 (s2_lo = s2 by default).
+    Every count term is nondecreasing in |S| (larger U, entropy lbinom(n, s) for s <= n/2, kmax_sources,
+    Bin(H, s/n)), and -(f - L0)|S| is decreasing, so evaluating counts at s2 and the linear term at s2_lo
+    bounds the whole interval."""
+    if s2_lo is None:
+        s2_lo = s2
     b = j / n
     K = Kmax(j, n)
     top = b + K + 1
     L0 = math.ceil(b) + L0_extra
     ent_S = lbinom(n, s2) + math.log(n) + 2 * math.log(top + 2) + math.log(1 / ETA) + 4
-    total = s2 * L0
+    total = 0.0
     lo = L0
     while lo < top:
         hi = min(math.ceil(top), max(lo + 1, int(lo * ratio)))
@@ -203,7 +209,7 @@ def escapes(j, n, f, s2, L0_extra, ratio):
         cnt = min(k * c + mult_excess(hi - lo, s2, n, ent_S + math.log(len(CS)), c) for c in CS if c <= hi - lo or c == 1)
         total += min(s2 * (hi - lo), cnt)
         lo = hi
-    return total - f * s2
+    return total - (f - L0) * s2_lo
 
 
 def main():
@@ -219,11 +225,12 @@ def main():
             continue
         K = Kmax(j, n)
         worst = None
-        s2s = [4 ** i for i in range(40) if 4 ** i <= max(1, j / f)]  # overloaded columns <= j / f
-        for s2 in s2s:
-            e = min(escapes(j, n, f, s2, L0x, r) for L0x in (0, 50, 200) for r in (1.3, 1.6, 2.0))
+        # s2 = 1 exactly, then every interval [s, 2s] up to j / f (at most j / f columns can be overloaded)
+        ivs = [(1, 1)] + [(2 ** i, 2 ** (i + 1)) for i in range(60) if 2 ** i <= max(1, j / f)]
+        for sa, sb in ivs:
+            e = min(escapes(j, n, f, sb, L0x, r, sa) for L0x in (0, 50, 200) for r in (1.3, 1.6, 2.0))
             if worst is None or e > worst[0]:
-                worst = (e, s2)
+                worst = (e, sb)
         print(f"  j = {mult:8g} J (b = {j / n:7.1f}, Kmax = {K:7.0f}): worst escapes {worst[0]:12.1f} at s2 = {worst[1]:5d}"
               f"  vs allowed {j / J:10.1f}  {'OK' if worst[0] < j / J else 'FAIL'}", flush=True)
 
