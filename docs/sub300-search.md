@@ -218,6 +218,17 @@ feeding the unamplified local halver through that existing bag parameter
 interface. A sub-300 proof needs a direct schedule invariant or a genuinely
 different global composition theorem.
 
+I also simulated the correctly priced mixed schedule (70 matchings for
+`h>=200`, exact cyclic `h`-matching gadgets below 200) in
+[`ub28-actual-schedule-screen.py`](../upper-bound/experiments/ub28-actual-schedule-screen.py).
+Four independently seeded schedules each sorted 22 selected inputs at
+`n=256,512,1024,2048` (random words and several prefix weights). The measured
+layer counts were 510, 650, 790, and 930, matching
+`140 max(log2(n)-8,0)+510`. This is only a finite smoke test and does not
+address the all-input witness-counting gate. A 60-second Z3 check of a
+necessary-reachability relaxation at `n=256` returned `unknown`; it gave no
+positive or negative evidence, so its exploratory solver scripts were removed.
+
 I tested the scalar-only interface directly in
 [`ub28-scalar-halver-screen.py`](../upper-bound/experiments/ub28-scalar-halver-screen.py).
 It lets each paired-block transformation be any bit profile satisfying both
