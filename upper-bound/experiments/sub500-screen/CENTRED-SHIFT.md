@@ -83,3 +83,30 @@ in place of `μ + … + r* + …`.
 | `r* = 0`, centred | /5.8 | walk bound | 464.0 |
 
 The run's "R2 κ = ½, centred" row (477.3) double-counts centring and is not valid.
+
+## Check and a one-sided variant (same day)
+
+`centred_shift_check.py` builds explicit sorted bags (random and extreme `O_L`, `O_R`). The maximum
+per-block intruder count is **exactly** `|O_L − o|` when the design counts are exact. The worst case is
+μc uncentred and ½μc centred.
+
+**One-sided centred** (`center1=True`; no new invariant). Even without R2, the unknown split
+`Y_low ∈ [0, G]` of the sender's deficit is the same uniform shift. So centring gives `(G + μc)/2` per
+child.
+* With end-only deficits (interior θ = 0), the steady state is `g = p/(2(Aν − 1))`.
+* That is larger than design P's `2^-15`, but the halving more than pays for it.
+
+| package | cost |
+|---|---:|
+| 3 sorts, design P (calibration) | 789.8 |
+| 3 sorts, one-sided centred | **761.2** ((4,6,4), q = 28) |
+| 3 sorts, one-sided centred, fringe /5.8 | 674.7 |
+| band + merge, one-sided centred, fringe /5.8 | 558.8 |
+| band + merge, R2 centred, fringe /5.8 | 503.3 |
+
+The one-sided variant is a near-term candidate for improving the **proved** bound (789.75 → about
+761). It needs:
+* the centred block design and its (I1)–(I4) re-derivation with end-only deficits;
+* new bulk and fringe certificates at (4,6,4), q = 28.
+
+Everything else reuses Chvátal's invariant.

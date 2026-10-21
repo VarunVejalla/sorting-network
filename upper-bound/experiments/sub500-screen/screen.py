@@ -81,6 +81,9 @@ def evaluate(x, y, z, H):
         kap = H.get("R2")            # SLACKFREE route R2: residual kappa (mu + eps_B/2)/(A nu - 1), no r*
         if kap is not None:
             budget -= kap * mu / (A * nu - 1)
+        if H.get("center1"):         # one-sided centred: interior theta = 0, split of G unknown in [0, G]:
+            g_ss = p / (2 * (A * nu - 1))          # steady-state deficit fraction with end-only deficits
+            budget += mu / 2 + rstar - g_ss / 2     # replaces mu + r* by (mu + g)/2
         if H.get("center"):          # centred design offset: per-child shift |O_L + e - o| <= (mu + U)/2
             budget += mu / 2 + (kap * mu / (A * nu - 1) / 2 if kap is not None else 0.0)
         if budget <= 0 or epsF <= 0:
