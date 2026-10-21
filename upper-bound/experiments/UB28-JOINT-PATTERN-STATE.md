@@ -321,3 +321,35 @@ ensemble. No separate permutation-cycle enumeration is needed for that
 recurrence. The remaining gate is to certify the local trajectory cost over
 all edge phases and boundary cases, prove it exceeds `ln 2` for a schedule
 below coefficient 300, and control the finite-width errors.
+
+## Fixed-cell Bellman screen: rejected as a useful certificate
+
+An exploratory outer-cell max-plus prototype used fixed-width density bins,
+interval upper bounds on matching entropy, and a
+concavity bound on split entropy. For the central edge and the `(high,low) =
+(260,20)` top-alternating schedule, it returned rate zero at both 2 and 4
+bins for `n=2^14`. This is only ordinary binary64 numerical evidence, not a
+certified computation; the temporary prototype was removed, so the screen is
+not currently reproducible from the repository.
+
+The relaxation is formally in the safe direction, but it is too loose: each
+stage optimizes over every density in a cell independently. A maximizing path
+can therefore choose one representative at the end of a stage and another at
+the start of the next, even though no single density trajectory makes those
+choices. Over `Theta(log n)` split stages, these resets can accumulate and
+erase the rate. The zero output is consequently a vacuous bound, not evidence
+against the underlying schedule. Fixing the conserved pair total during each
+matching gadget does not fix this cross-scale issue.
+
+The next viable certificate should use a potential evaluated at the actual
+continuous local density profile. For each phase/stage, prove
+`q_s(z,z') + F_{s+1}(z') <= F_s(z)` for every feasible transition, then
+telescope. Interval cells can still certify each inequality, provided the
+same continuous profile is shared across both sides of every transition. For
+matching rounds, retaining the exact conserved total `gamma` gives the local
+Bellman form
+`W_r(gamma,alpha) >= sup_x (J(alpha,gamma,x) + W_{r-1}(gamma,x))`.
+The exact width-16 anchor can supply the terminal potential. Any useful result
+must still cover every edge phase and boundary class, certify entropy endpoints
+with outward bounds, and leave strict margin above `ln 2` after finite-type
+errors.
