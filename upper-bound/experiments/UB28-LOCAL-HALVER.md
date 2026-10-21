@@ -5,7 +5,61 @@ the elementary numerical bounds are also checked by
 [`ub28-halver-bounds.py`](ub28-halver-bounds.py). This closes a local primitive
 gate only. It does not prove the multiscale UB-28 schedule sorts.
 
-## Claim
+## Sharper local gate: 1/9 in 70 rounds for all `h >= 200`
+
+Choose 70 independent uniform perfect matchings. With positive probability
+their union has both properties below:
+
+1. Every subset `A` on either side with `1 <= |A| <= h/10` has
+   `|N(A)| >= 8 |A|`.
+2. There is no edge-free rectangle `A x B` with both sides of size at least
+   `h/10`.
+
+For property 1, a violation for `|A|=a` is covered by a set `B` of size `8a`
+containing `N(A)`. For fixed `A,B`, the probability that all 70 matchings map
+`A` into `B` is at most `(8a/h)^(70a)`. The binomial union bound is
+
+```text
+exp(a * (9 + 62 ln(8) - 61 ln(h/a)))
+  <= exp(-2.49 a),                 (a <= h/10).
+```
+
+Thus the two side-expansion failure probabilities sum to less than
+`2/(exp(2.49)-1) < 1/5`.
+
+For property 2, for fixed relative sizes `x=a/h`, `y=b/h`, the union-bound
+exponent is
+`F(x,y)=H(x)+H(y)+70 x ln(1-y)`. Both partial derivatives are negative for
+`x,y >= 1/10`: use `ln(9)<3`, `ln(1-y) <= -1/10`, and
+`70x/(1-y) >= 7`. Hence `F` is maximized at `(1/10,1/10)`. The exact-rational
+checks give `H(1/10)<0.3251` and `ln(9/10)<=-0.105`, so `F < -0.084`.
+For `h>=200`, `(h+1)^2 exp(-0.084h) < exp(-4.8) < 1/100`; this bounds the
+rectangle failure probability. The total failure probability is therefore
+less than `1/5+1/100 < 1`, proving existence.
+
+For a binary input with `H<=h` ones, let `A` be the final left-block ones and
+`B` the final right-block zeros. There is no edge from `A` to `B`, and
+`|B|=h-H+|A| >= |A|`. Property 2 implies `|A|<h/10`; property 1 then gives
+`H >= |A|+|N(A)| >= 9|A|`. The symmetric argument handles the upper tail, so
+this is a `1/9`-halver. For `h<200`, use the `h` cyclic matchings of the
+complete bipartite graph, which exactly split the two blocks. Consequently
+the UB-28 two-offset schedule can use 70 rounds per pass at every scale
+`h>=200`; all smaller scales contribute only a finite additive depth. Its
+asymptotic local-gadget cost is `140 log2(n)`, leaving up to 160 coefficient
+points for a global composition argument.
+
+The rational checks for the sharpened constants are in
+[`ub28-halver-bounds.py`](ub28-halver-bounds.py). This is a reviewed
+paper-level local lemma, not a proof that the global schedule sorts.
+
+To obtain the repository's permutation/rank definition, fix a permutation and
+threshold its values to `Bool` (top `k` values mapped to `true`, or bottom
+`k` mapped to `false`). A threshold map is monotone, so comparator-network
+execution commutes with it by `ComparatorNetwork.exec_comp_monotone` in
+`AKS.Sort.Monotone`. The binary bounds above therefore give the initial- and
+final-segment rank bounds in `AKS.Halver.Defs.IsEpsilonHalver`.
+
+## Earlier fallback claim: 1/11 in 99 rounds
 
 For every `h >= 100`, there is a bipartite multigraph `G` on two `h`-wire
 blocks which is the union of 99 perfect matchings and has both properties:
@@ -82,8 +136,9 @@ point sampling.
 
 ## What this does and does not buy
 
-Using one such halver in each matching pass gives the UB-28 two-offset
-schedule at at most `198 log2(n)` layers on powers of two. The local lemma
+Using the 70-round halver in each matching pass gives the UB-28 two-offset
+schedule an asymptotic local cost of `140 log2(n)` layers on powers of two.
+The exact small-width cases contribute only an additive constant. The local lemma
 does not show that this schedule sorts: later offset passes may disturb
 earlier block boundaries, and a global invariant or a paired-witness count is
 still required. Padding/arbitrary `n` also needs a proof in the project's

@@ -12,6 +12,12 @@ def ln_upper(q: Q, terms: int = 64) -> Q:
     return partial + tail
 
 
+def ln_lower(q: Q, terms: int = 64) -> Q:
+    """Lower bound ln(q), q >= 1, by truncating its positive atanh series."""
+    z = (q - 1) / (q + 1)
+    return 2 * sum((z ** (2 * j + 1) / (2 * j + 1) for j in range(terms)), Q(0))
+
+
 def exp_lower(x: Q, terms: int = 16) -> Q:
     """Lower bound exp(x), x >= 0, by a finite positive Taylor sum."""
     total = Q(0)
@@ -46,9 +52,28 @@ def main() -> None:
     assert 2 * Q(49, 10) - Q(101, 10) == -Q(3, 10)
     # Combined failure bound: 2/(exp(3.6)-1)+exp(-.3) < 2/19+3/4 < 1.
     assert Q(2, 19) + Q(3, 4) < 1
+
+    # Sharper 70-matching construction: an 8-fold expansion through size h/10
+    # and no edge-free h/10-by-h/10 rectangle give a 1/9-halver.
+    expansion_exponent = 9 + 62 * ln_upper(Q(8)) - 61 * ln_lower(Q(10))
+    assert expansion_exponent < -Q(249, 100)
+    assert exp_lower(Q(249, 100), 5) > 11
+    entropy_tenth = Q(1, 10) * ln_upper(Q(10)) + Q(9, 10) * ln_upper(Q(10, 9))
+    assert entropy_tenth < Q(3251, 10000)
+    # -ln(9/10) >= .1 + .1^2/2 = .105.
+    assert Q(1, 10) + Q(1, 2) * Q(1, 10) ** 2 == Q(105, 1000)
+    assert 2 * entropy_tenth - 70 * Q(1, 10) * Q(105, 1000) < -Q(84, 1000)
+    # The rectangle exponent is decreasing on x,y >= .1. For h >= 200,
+    # (h+1)^2 exp(-.084h) decreases and at h=200 is < exp(-4.8) < .01.
+    assert exp_lower(Q(6), 6) > 201  # ln(201) < 6.
+    assert exp_lower(Q(24, 5), 7) > 100  # exp(4.8) > 100.
+    assert 2 * Q(6) - Q(84, 1000) * 200 == -Q(24, 5)
+    assert Q(1, 5) + Q(1, 100) < 1
     print("UB-28 halver rational bounds: PASS")
     print(f"entropy upper = {float(entropy_upper):.8f}")
     print(f"rectangle exponent upper = {float(rectangle_upper):.8f}")
+    print(f"70-round expansion exponent upper = {float(expansion_exponent):.8f}")
+    print(f"70-round rectangle exponent upper = {float(2 * entropy_tenth - 70 * Q(1, 10) * Q(105, 1000)):.8f}")
 
 
 if __name__ == "__main__":
