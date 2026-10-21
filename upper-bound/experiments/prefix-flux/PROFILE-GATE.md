@@ -276,3 +276,27 @@ promising next paper gate: express actual first-sort/input-profile dominance
 inside a shared global rank-profile recurrence, including the root state.
 If that cannot be made finite and closed, this local rank-tail route is not
 yet supportable at the nominal292.5 stage cost.
+
+## Two finite checks of the profile coupling
+
+The LP now optionally adds sampled local full-row dominance cuts and a shared
+concave first-column row-count profile. At depth6, scale4096, threshold1/3,
+root-tail initialization and every-256th row cut, the LP has39,072 variables
+and still allows456,448 wrong terminal keys (fractional optimum). This matches
+the earlier selected-cut objective to the displayed precision; the sampled
+profile strengthening has not reduced the obstruction. It remains an LP
+relaxation, not a comparator-network counterexample. Increasing cut density
+quickly makes the closure large: the corresponding every-row closure has
+393,498 global cuts. Commands are exposed by `profile_cut_closure.py` and
+`coupled_rank_lp.py`.
+
+`profile_conditioned_tail.py` independently enumerates small column-height
+profiles and sums their exact hypergeometric event probabilities, giving an
+exact finite union bound over profiles and output subsets. It does not compute
+the exact probability of the union. For rows6 and10, columns8, mass cap16,
+and eta=1/1000, the required escape allowances for fringe widths1 through
+3 are respectively12,9,6 and13,10,8; the matched fixed-cap analytic envelope
+is14.65,13.31,12.09. The gains are small and finite-size only. This screen
+offers no uniform asymptotic improvement and does not change the global gap.
+Fresh-context review by GPT-6-Luna confirmed the hypergeometric normalization,
+profile multiplicities, and matched analytic comparison.

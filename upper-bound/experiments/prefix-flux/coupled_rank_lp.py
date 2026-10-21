@@ -26,8 +26,11 @@ def add_row(rows, rhs, terms, value=0):
 
 
 def solve(depth=4, scale=65536, threshold=F(1, 3), ordered_prefix=False,
-          root_error=0, root_tail=False):
-    cut_data = (cut_system(depth, scale, threshold, root_rows=root_tail)
+          root_error=0, root_tail=False, all_row_dominance=False,
+          row_stride=1, dominance_only_extra_cuts=False):
+    cut_data = (cut_system(depth, scale, threshold, root_rows=root_tail,
+                           all_row_cuts=all_row_dominance,
+                           row_stride=row_stride)
                 if ordered_prefix else None)
     flow = (cut_data[0] if ordered_prefix else
             FlowDAG(depth, scale=scale).build())
@@ -75,8 +78,28 @@ def solve(depth=4, scale=65536, threshold=F(1, 3), ordered_prefix=False,
             cuts = sorted(set(cuts))
             yids = []
             Hlo, Hhi = history[t].get((lev, idx), (0, 0))
+            base_cuts = {0, a}
+            if pi < a:
+                base_cuts.add(h)
+                pos = h
+                for width in blocks:
+                    pos += width
+                    base_cuts.add(pos)
             for cut in cuts:
-                ylo, yhi = prefix_interval(a, (Hlo, Hhi), cut)
+                if ordered_prefix and dominance_only_extra_cuts and cut not in base_cuts:
+                    ylo = max(0, Hlo - (a - cut))
+                    yhi = min(Hhi, cut)
+                else:
+                    ylo, yhi = prefix_interval(a, (Hlo, Hhi), cut)
+                # The later two ascending sorts cannot worsen a local prefix
+                # relative to the first column sort. At an arbitrary cut use
+                # the preceding full row, whose physical/semantic count is exact.
+                if a > 0 and a % 4096 == 0:
+                    columns = a // 4096
+                    full_row_cut = (cut // columns) * columns
+                    ylo = max(ylo, minimum_rectangular_prefix_zeros(
+                        a, Hlo, full_row_cut, rows=4096
+                    ))
                 # The root receives the already sorted native input. Every
                 # ascending comparator fixes it exactly, so preserve that
                 # profile instead of allowing the rank-tail relaxation to
@@ -150,6 +173,64 @@ def solve(depth=4, scale=65536, threshold=F(1, 3), ordered_prefix=False,
 
     if ordered_prefix:
         global_cuts = cut_data[2]
+
+        def concave_column_profile(name, ks, n, a, hlo, hhi, total_terms=None,
+                                   total_value=None):
+            """Shared row-prefix profile of one first-column sort."""
+            ks = sorted(set(ks) | {0, 4096})
+            wids = {}
+            for k in ks:
+                lower = max(0, hlo - (a - k * n))
+                upper = min(hhi, k * n)
+                wids[k] = new(('W', *name, k), (lower, upper))
+            eq({wids[0]: 1}, 0)
+            if total_terms is not None:
+                terms = {wids[4096]: 1}
+                for v, coeff in total_terms.items():
+                    terms[v] = terms.get(v, 0) - coeff
+                eq(terms, 0)
+            else:
+                eq({wids[4096]: 1}, total_value)
+            for left, right in zip(ks, ks[1:]):
+                ub({wids[left]: 1, wids[right]: -1}, 0)
+                ub({wids[right]: 1, wids[left]: -1}, n * (right - left))
+            for left, mid, right in zip(ks, ks[1:], ks[2:]):
+                d1, d2 = mid - left, right - mid
+                # Average row gains are nonincreasing: the profile is concave.
+                ub({wids[left]: d2, wids[mid]: -(d1 + d2),
+                    wids[right]: d1}, 0)
+            return wids
+
+        # Keep one common first-column witness across all selected root cuts.
+        if N % 4096 == 0:
+            root_columns = N // 4096
+            root_ks = {min(4096, cut // root_columns)
+                       for cut in global_cuts[0]}
+            root_w = concave_column_profile(
+                ('root',), root_ks, root_columns, N, q, q, total_value=q
+            )
+            for cut in global_cuts[0]:
+                k = min(4096, cut // root_columns)
+                ub({root_w[k]: 1, zvar(0, cut): -1}, 0)
+
+        # A single concave row-count profile witnesses the first-column output
+        # below every selected prefix of each active local 3-sort.
+        for (t, lev, idx), (cuts, yids) in ykeys.items():
+            node = flow.lookup(t, lev, idx)
+            a, pi, _ = flow.rows[t][node]
+            if pi == a or a == 0 or a % 4096:
+                continue
+            n = a // 4096
+            hlo, hhi = history[t].get((lev, idx), (0, 0))
+            ks = {min(4096, cut // n) for cut in cuts}
+            wids = concave_column_profile(
+                ('local', t, lev, idx), ks, n, a, hlo, hhi,
+                total_terms={hvar(t, (lev, idx)): 1}
+            )
+            for cut, yid in zip(cuts, yids):
+                k = min(4096, cut // n)
+                ub({wids[k]: 1, yid: -1}, 0)
+
         # Tie every bag mass to the exact static-wire profile at that time.
         for t in range(T + 1):
             for key in bag_keys:
@@ -328,6 +409,19 @@ def solve(depth=4, scale=65536, threshold=F(1, 3), ordered_prefix=False,
         W = Wnext
     for key in bag_keys:
         witness[hvar(T, key)] = W.get(key, 0)
+    for variable_key, variable_id in var.items():
+        if variable_key[0] != 'W':
+            continue
+        if variable_key[1] == 'root':
+            k = variable_key[-1]
+            columns = N // 4096
+            witness[variable_id] = min(q, k * columns)
+        else:
+            _, _, t, lev, idx, k = variable_key
+            node = flow.lookup(t, lev, idx)
+            a = flow.allocation(node)
+            n = a // 4096
+            witness[variable_id] = min(witness[hvar(t, (lev, idx))], k * n)
 
     # Maximize total wrong mass outside the one threshold-straddling terminal
     # native interval. All other wholly one-colored blocks must be pure.
@@ -397,7 +491,9 @@ def solve(depth=4, scale=65536, threshold=F(1, 3), ordered_prefix=False,
                     root_defects.append((cut, defect))
     return dict(depth=depth, stages=T, success=True, variables=nvars,
                 ordered_prefix=ordered_prefix, root_error=root_error,
-                root_tail=root_tail,
+                root_tail=root_tail, all_row_dominance=all_row_dominance,
+                row_stride=row_stride,
+                dominance_only_extra_cuts=dominance_only_extra_cuts,
                 equalities=len(eq_rows), inequalities=len(ub_rows),
                 sorted_witness_eq_error=witness_eq_error,
                 sorted_witness_ub_error=witness_ub_error,
@@ -425,8 +521,15 @@ if __name__ == '__main__':
     ap.add_argument('--root-error', type=int, default=0,
                     help='allow this prefix-defect budget in the initial root profile')
     ap.add_argument('--root-tail', action='store_true',
-                    help='initialize with the local all-cut rank-tail envelope')
+                    help='initialize with the rank-tail envelope at selected root cuts')
+    ap.add_argument('--all-row-dominance', action='store_true',
+                    help='add every active node full-row boundary to the cut closure')
+    ap.add_argument('--row-stride', type=int, default=1,
+                    help='sample every this many row boundaries (must divide 4096)')
+    ap.add_argument('--dominance-only-extra-cuts', action='store_true',
+                    help='use only combinatorial bounds at added row cuts; retain tail bounds at port cuts')
     args = ap.parse_args()
     print('GLOBAL COUPLED LP RELAXATION; not a sorting proof')
     print(solve(args.depth, args.scale, F(args.threshold), args.ordered_prefix,
-                args.root_error, args.root_tail))
+                args.root_error, args.root_tail, args.all_row_dominance,
+                args.row_stride, args.dominance_only_extra_cuts))
