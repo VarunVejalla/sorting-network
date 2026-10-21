@@ -320,3 +320,28 @@ to save and backtrack an attaining path for the critical residue, evaluate
 its entropy-rate action, and bound its continuation through the top-relative
 tail. This can reject a schedule if it finds a path at or below `ln(2)`; a
 path above `ln(2)` cannot certify the required all-path lower bound.
+
+## Sparse modal path screen (2026-10-21)
+
+`ub28-sparse-modal-obstruction.py` follows one exact integer count trajectory
+from balanced top blocks to the width-16 anchor. At each random matching and
+split it chooses an outcome mode. Every chosen transition has probability at
+least `1/(h+1)`, where `h` is the current block width; only a constant number
+of blocks lie in this fixed edge's dependency cone. The resulting local path
+therefore has probability at least `exp(-O((log n)^2))` for either fixed
+alternating schedule. The exact width-16 continuation table gives the
+profile `(0,0,2,2,14,14)` a positive probability of reaching a bad terminal
+edge (numerically `exp(-257.882356112...)`).
+
+The script reproduces this same anchor profile at `n=2^8,2^10,2^20,2^30`
+for schedules 260/20 and 280/20; the 235/35 schedule also gives it at
+`n=2^20`. For the 280/20 schedule at `n=2^30`, the displayed balanced-input
+type count plus this one path gives a floating-point lower screen of
+`log E[failing inputs] = 744251442.627`. These are computational checks, not
+an all-size proof: the stable modal-profile recurrence still needs a concise
+induction, and the finite anchor probability should be given as an exact
+positive rational path. If those two finite-state details are closed, the
+mode lower bound implies the expected number of failing inputs grows like
+`exp(n ln 2 - O((log n)^2))`. That would rule out the UB-28 first-moment gate
+for these schedules, not the existence of a good fixed network or other
+randomized constructions.
