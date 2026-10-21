@@ -502,3 +502,26 @@ full-state and all-phase gaps, the independent-split model is not valid for
 the actual ensemble. This is only a schedule diagnostic, not a candidate
 sorting theorem.
 
+### UB-28 salvage: joint wire-pattern histograms
+
+The count-state failure points to a richer state rather than immediately
+discarding the first-moment route. For a fixed terminal edge, track the joint
+histogram of wire-column bit patterns across all blocks in its backward cone,
+with block labels and offset phase retained. The cone support script gives at
+most six width-4 blocks per edge; the same pairing-closure argument should be
+proved for full block-pattern states. Under a common slot permutation, fresh
+uniform matching laws are equivariant, and a physical split acts on the joint
+row types by a multivariate-hypergeometric allocation. The split must retain
+the two child histograms jointly.
+
+An independent review found this state plausible for fixed phase-tagged
+geometry. The exact check in
+[`ub28-joint-histogram-check.py`](../upper-bound/experiments/ub28-joint-histogram-check.py)
+enumerates all `k=3` patterns at widths 2 and 4 and verifies matching
+lumpability for both adjacent pair phases plus the joint split kernel. This
+does not prove arbitrary-width closure or establish the necessary rate. The
+next gates are a formal strong-lumpability proof through the complete schedule,
+uniform bounded cone support, and a certified worst-case exponent above `ln 2`
+for a schedule whose depth coefficient is below 300. See
+[`UB28-JOINT-PATTERN-STATE.md`](../upper-bound/experiments/UB28-JOINT-PATTERN-STATE.md).
+

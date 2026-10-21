@@ -31,6 +31,14 @@ Independent coefficient-at-most300 work is on branch `sub300-structural` in
 The first proposed persistent-column local contract was rejected after exact
 count witnesses and fresh review (UB-41). No improved global bound is claimed.
 
+The active UB-28 first-moment experiment exposed a false independence step:
+conditional block counts do not make patterns in matched blocks independent at
+the next split. Its count-only probability screens are now marked diagnostic,
+not evidence for the actual network. A phase-tagged joint wire-pattern
+histogram is the current salvage hypothesis; small exact lumpability checks
+pass, while arbitrary-width closure and the rate needed for coefficient below
+300 remain open. See [the joint-pattern state sketch](../upper-bound/experiments/UB28-JOINT-PATTERN-STATE.md).
+
 The earlier Chvatal fringe-repair experiments below are historical context for
 the 1770-era design; the promoted endpoint is now 789.75 (UB-31, previously 1419). The current high-upside
 structural lead is multiway partitioning and its missing global composition
