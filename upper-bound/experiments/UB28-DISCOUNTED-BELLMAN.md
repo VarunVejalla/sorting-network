@@ -53,8 +53,12 @@ q_s^p(z,z') + U_(opposite s)^(p')(z')/2 <= U_s^p(z)
 
 for every feasible one-scale transition whose target remains capable of
 reaching the finite bad terminal set. Along any successful `K`-scale path,
-the inequalities telescope, bounding its discounted interior action by
-`U_s^p(z_0) + O(2^-K)`.
+write `r` for the first interior scale and weight its action relative to that
+scale by `1, 1/2, 1/4, ...`. The inequalities telescope exactly to
+`sum_{t=0}^{K-1} 2^-t q_{r+t} <= U_r(z_r) - 2^-K U_{r+K}(z_{r+K})`.
+For bounded `U`, the terminal term is `O(2^-K)`. In the original per-input-
+wire exponent, the interior starts at width `n/8`, so this contribution is
+`U_r(z_r)/8 + O(2^-K/8)`. This is the `U/8` term in the top-interface test.
 
 The two-coordinate/two-scale top interface then needs a separate certified
 inequality. If it maps the top counts `(a,b)` through local profiles `z_1,z_2`
