@@ -147,7 +147,7 @@ def reverse_pass(support, table, blocks, grid, width, offset, kernels):
 
 def asymptotic_rate(exponent, rounds, grid, anchor_edge, alternating=False,
                     high_parity=0, top_alternating=False,
-                    top_high=151, top_low=149, left_boundary=False,
+                    top_high=151, top_low=149, placement="center",
                     anchor_rounds=150):
     anchor_n = 256
     support, finite_table, blocks = maxpath.edge_state_at_width(
@@ -160,7 +160,15 @@ def asymptotic_rate(exponent, rounds, grid, anchor_edge, alternating=False,
                                       for _ in range(len(support)))]
     table = finite_table / 16.0
     n = 1 << exponent
-    delta = 0 if left_boundary else n // 32 - anchor_n // 32
+    anchor_blocks, target_blocks = anchor_n // 16, n // 16
+    if placement == "left":
+        delta = 0
+    elif placement == "right":
+        delta = target_blocks - anchor_blocks
+    elif placement == "center":
+        delta = target_blocks // 2 - anchor_blocks // 2
+    else:
+        raise ValueError("placement must be 'left', 'center', or 'right'")
     support = tuple(i + delta for i in support)
     blocks = n // 16
     width = 16
@@ -209,22 +217,23 @@ def main():
     parser.add_argument("--top-alternating-149-151", action="store_true")
     parser.add_argument("--top-high", type=int, default=151)
     parser.add_argument("--top-low", type=int, default=149)
-    parser.add_argument("--left-boundary", action="store_true")
+    parser.add_argument("--placement", choices=("left", "center", "right"),
+                        default="center",
+                        help="translate the finite anchor to the corresponding global position")
     args = parser.parse_args()
     if args.log_n < 8 or args.grid not in (1, 2, 4, 8, 16):
         raise ValueError("requires log-n >= 8 and a grid dividing 16")
     rate = asymptotic_rate(args.log_n, args.rounds, args.grid, args.anchor_edge,
                            args.alternate_149_151, args.high_parity,
                            args.top_alternating_149_151,
-                           args.top_high, args.top_low, args.left_boundary,
+                           args.top_high, args.top_low, args.placement,
                            args.anchor_rounds)
     print(f"log_n={args.log_n} rounds={args.rounds} anchor_rounds={args.anchor_rounds} grid={args.grid}")
     if args.alternate_149_151:
         print(f"alternating_rounds=149/151 high_scale_parity={args.high_parity}")
     if args.top_alternating_149_151:
         print(f"top-relative rounds={args.top_high},{args.top_low},...")
-    if args.left_boundary:
-        print("edge placement=left boundary")
+    print(f"edge placement={args.placement}")
     print(f"max_path_rate={rate:.12g}  ln2={math.log(2):.12g}")
 
 

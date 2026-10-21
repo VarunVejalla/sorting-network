@@ -119,7 +119,12 @@ This remains an audited certificate architecture only. There is no computed
 Bellman potential or rate table yet, and no certified evidence that the
 300-depth (280/20) schedule clears the `ln(2)` rate gate. Its restricted
 grid-16 central-edge screen is about `0.87217`, but that is a feasible path,
-not an all-path upper bound. The smallest decisive numerical
+not an all-path upper bound. A later tail-period sweep finds that even-edge
+residues 0 and 2 modulo 16 are more critical: their restricted grid-16 path
+cost at `n=2^12` is about `0.53478`, while the same residue-0 path costs
+`0.72246` at `n=2^20`. This apparent approach from below to a narrow margin
+above `ln(2)` makes the continuum refinement decisive; it does not certify
+the all-path rate. See the phase-residue screen below. The smallest decisive numerical
 milestone is a viability-constrained period-two Bellman value on a complete
 phase graph, with shared profile cells and outward-rounded entropy bounds,
 followed by the top-interface supremum. A certified lower bound above
@@ -165,6 +170,40 @@ phases having multiple observed targets. A Bellman check must include all
 such targets. The audit is a finite discovery tool; a proof still needs an
 inductive closure argument for the phase encoding at every size.
 
+## Exact geometric phase closure (2026-10-21)
+
+`ub28-phase-closure.py` reduces the interior support transition to a finite
+interval calculation. A geometry phase is an interval length (at most six),
+its left endpoint parity, and its left/right distances capped at six. One
+backward scale step floors support indices by two, then closes the interval
+under offsets one and zero. A single offset matching expands either endpoint
+by at most one, so the transition uses only local boundary data.
+
+The representative enumeration is exhaustive for this phase encoding. For
+child block counts through 128, the script tests every placement. Above 128,
+placements within 32 of either boundary are listed exactly; if both margins
+are at least 32, the next support has margins greater than six and depends
+only on the source length and left position modulo four. The center
+representatives include every such residue class. The width-8 seed phases
+come from the exact terminal support map at 64 width-4 blocks. That map is
+periodic under shifting an interior output edge by 16 wires (four width-4
+blocks), and its support spans at most six width-4 blocks, so the two boundary
+zones are disjoint for every larger power-of-two block count. The script
+checks seed stability at 64, 128, 256, 512, and 1024 blocks.
+
+The resulting candidate graph has nine width-8 seed geometries, fourteen
+reachable geometric phases, and 25 geometry transitions. Taking the product
+with the alternating high/low schedule phase gives 28 period-two Bellman
+states and 50 labeled transition arcs. It covers every geometry phase and
+transition observed by the previous all-edge audit for `n=2^8` through
+`2^14`; all observed interior source phases are in the closure. The local
+interval transition was checked against set-based matching closure for every
+interval on arrays of sizes 1 through 32. This closes the geometric phase
+encoding on paper, subject to checking the stated locality/periodicity
+argument in the full proof. It does not compute anchor viability masks, a
+Bellman potential, or any entropy-rate bound. Those remain the decisive
+obligations.
+
 ## Pinsker cell-potential pilot (2026-10-21)
 
 For one matching round, the asymptotic log transition rate is minus the mutual
@@ -187,3 +226,54 @@ that a scalar value per fixed cell resets the profile between scales. Any
 useful next certificate must retain within-cell profile dependence (for
 example, a continuous or Lipschitz potential); further refinement of this
 same cell-reset relaxation is not the next step.
+
+## Tail-period rate screen (2026-10-21)
+
+`ub28-rate-grid.py` now supports explicit `left`, `center`, and `right`
+translation of its finite anchor. The former default recenters the anchor by
+half the increase in width-16 block count; it is appropriate for interior
+edges, but not for a right-boundary anchor. Right-boundary tests must translate
+by the full block-count increase. The script has been corrected accordingly.
+
+For the 280/20 top-relative schedule, a grid-16 restricted-path screen at
+`n=2^12` over eight even output-edge residues modulo the 16-wire terminal
+period gives:
+
+| edge residue | anchor representative | restricted path cost (nats/input wire) |
+|---:|---:|---:|
+| 0, 2 | 64, 66 | 0.534776621056 |
+| 4, 6 | 68, 70 | 0.746992700547 |
+| 8, 10 | 72, 74 | 0.919495584497 |
+| 12, 14 | 76, 78 | 1.11303981349 |
+
+The residue-0 representative at larger even exponents gives `0.655352954001`
+at `n=2^14`, `0.699477141009` at `n=2^16`, `0.716252053967` at `n=2^18`,
+and `0.722464191513` at `n=2^20`, versus `ln(2) = 0.69314718056`. These
+numbers are minima over a restricted grid of feasible density trajectories,
+so each is an upper bound on the unrestricted *finite-size discrete* minimum
+for that edge and anchor. They are not yet bounds on the continuum infimum:
+the script uses finite binomial rates, does not save a maximizing path, and
+stops at a fixed-width anchor. Values below `ln(2)` at smaller finite heights
+therefore do not reject the asymptotic schedule. The slowly increasing
+residue-0 sequence suggests a narrow limiting margin and makes this the first
+phase to refine continuously. A corrected right-boundary screen for edge 240
+at `n=2^12` gives `1.46826694685`; the previous half-shifted value is invalid
+and is not used.
+
+An independent review confirmed that the split normalization in both rate
+scripts is consistent: the Pinsker cell kernel is parent-width normalized,
+while the exact count-grid split kernel is child-width normalized and is
+divided by two on return. The remaining issue is terminal/profile resolution,
+not this scale factor. Exact anchor-mask OR compression loses within-cell
+identity; the next useful bound needs a viability-resolved boundary relation
+and an all-path continuum enclosure, starting with residue 0/2.
+
+For comparison, the 270-coefficient top-relative schedule (235/35 rounds)
+at `n=2^20`, grid 16, gives restricted finite-size discrete minima between
+`0.76936` and `0.77249` over the eight centered even-edge residues modulo 16.
+These are again only finite-size candidate-path diagnostics; they do not
+establish the continuum rate gate. The smallest useful next computation is
+to save and backtrack an attaining path for the critical residue, evaluate
+its entropy-rate action, and bound its continuation through the top-relative
+tail. This can reject a schedule if it finds a path at or below `ln(2)`; a
+path above `ln(2)` cannot certify the required all-path lower bound.
