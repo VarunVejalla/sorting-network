@@ -191,6 +191,15 @@ restrict a power-of-two sorter to any smaller wire count without increasing
 depth. This remains a model-level research candidate, not a proved sorting
 bound.
 
+A separate fresh-context review of the counting gate found no viable
+independent-branch recurrence: a depth-`L` certificate may branch to `2^L`
+leaves, and reconvergent paths make independent collision probabilities
+invalid. Keeping exact leaf sets risks an input-sized state space. This blocks
+the naive witness count, not the network itself. Any next recurrence should
+track both certificates' live frontiers and shared-variable constraints, then
+be checked against exact small-network certificates before an asymptotic bound
+is attempted.
+
 The useful local gate is now closed at hand-proof level: 70 cross-matchings
 can form a `1/9`-halver for every block width `h>=200`, and smaller widths use
 exact complete bipartite gadgets. The random-graph expansion and rectangle
