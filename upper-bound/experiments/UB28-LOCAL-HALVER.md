@@ -44,9 +44,11 @@ For a binary input with `H<=h` ones, let `A` be the final left-block ones and
 this is a `1/9`-halver. For `h<200`, use the `h` cyclic matchings of the
 complete bipartite graph, which exactly split the two blocks. Consequently
 the UB-28 two-offset schedule can use 70 rounds per pass at every scale
-`h>=200`; all smaller scales contribute only a finite additive depth. Its
-asymptotic local-gadget cost is `140 log2(n)`, leaving up to 160 coefficient
-points for a global composition argument.
+`h>=200`; all smaller scales contribute only a finite additive depth. For
+`n=2^L`, the complete small scales `h=1,2,...,128` cost at most
+`2(1+2+...+128)=510` layers, so the total local-gadget depth is at most
+`140 max(L-8,0)+510 <= 140 L+510`. This leaves up to 160 coefficient points
+for a global composition argument.
 
 The rational checks for the sharpened constants are in
 [`ub28-halver-bounds.py`](ub28-halver-bounds.py). This is a reviewed
@@ -138,15 +140,16 @@ point sampling.
 
 Using the 70-round halver in each matching pass gives the UB-28 two-offset
 schedule an asymptotic local cost of `140 log2(n)` layers on powers of two.
-The exact small-width cases contribute only an additive constant. The local lemma
-does not show that this schedule sorts: later offset passes may disturb
+The exact small-width cases contribute only an additive constant. The local
+lemma does not show that this schedule sorts: later offset passes may disturb
 earlier block boundaries, and a global invariant or a paired-witness count is
-still required. Padding/arbitrary `n` also needs a proof in the project's
-network model.
+still required. Once a power-of-two sorter is proved, the existing
+`AKS.Sort.Shrink.restrictWires_sorts` and `restrictWires_depth_le` lemmas give
+the arbitrary-`n` version at no greater depth.
 
 There is a reusable legacy bridge at
 `upper-bound/alternatives/legacy/AKS/Separator/FromHalver.lean`, but its
 current `halverToSeparator_props` charges separator error additively as
-`t * epsilon`. With `epsilon=1/11`, that interface alone is not a sub-300
-route for `t` growing with `log n`; a sharper global assembly theorem would
-be necessary. No Lean work has started.
+`t * epsilon`. The direct Seiferas bag parameter interface is incompatible
+with `epsilon=t/9` (see `docs/sub300-search.md`); a different global assembly
+theorem is necessary. No Lean work has started.

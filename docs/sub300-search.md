@@ -184,10 +184,12 @@ input. Counting distinct support pairs avoids needless overcounting of
 different proof trees with the same leaves, while still requiring a sound
 treatment of shared dependencies. The fresh-context review confirmed the
 schedule/depth and finite witness code, and identified this expected-count
-bound as the central missing theorem. Also settle the all-`n` step in
-the repository's network model (a proved sentinel-padding restriction or a
-ragged schedule); the present screen covers powers of two only. This remains
-a model-level research candidate, not a proved sorting bound.
+bound as the central missing theorem. The screen covers powers of two only,
+but all-`n` extension is available once that gate closes: the legacy
+`AKS.Sort.Shrink.restrictWires_sorts` and `restrictWires_depth_le` lemmas
+restrict a power-of-two sorter to any smaller wire count without increasing
+depth. This remains a model-level research candidate, not a proved sorting
+bound.
 
 The useful local gate is now closed at hand-proof level: 70 cross-matchings
 can form a `1/9`-halver for every block width `h>=200`, and smaller widths use
@@ -203,4 +205,27 @@ the 1/9 local threshold alone gives no control over where residual errors
 sit inside the next blocks. The legacy halver-to-separator bridge still
 accumulates error linearly in the number of levels and therefore does not
 yield a sub-300 coefficient from this primitive.
+
+The generic legacy Seiferas-bag route is quantitatively incompatible with
+this direct `1/9` halver as well. Its parameter constraints include
+`1 <= gamma*A^2`, `(2*epsilon*A)^2 < 1`, and
+`nu >= 4*gamma*A + 5/(2*A)` with `nu<1`. These imply
+`epsilon < sqrt(gamma)/2` and, by minimizing the right side of the last
+inequality over `A`, `gamma < 1/40`. Thus the separator level count must have
+`gamma=2^-t < 1/40`, hence `t>=6`; but `halverToSeparator` charges
+`epsilon=t/9 >= 2/3`, contradicting `epsilon < 1/(2*sqrt(40))`. This rules out
+feeding the unamplified local halver through that existing bag parameter
+interface. A sub-300 proof needs a direct schedule invariant or a genuinely
+different global composition theorem.
+
+I tested the scalar-only interface directly in
+[`ub28-scalar-halver-screen.py`](../upper-bound/experiments/ub28-scalar-halver-screen.py).
+It lets each paired-block transformation be any bit profile satisfying both
+the 1/9 split-count bound and the necessary fact that no prefix gains ones;
+for widths below 200 it imposes exact block separation. This relaxation has a
+counterexample at `n=1024`, `H=45`: it permits a residual inversion at wires
+766/767. This is not a counterexample to actual comparator matching gadgets;
+it shows that their scalar halver and prefix-monotonicity contracts alone do
+not prove the global schedule. The missing invariant must retain more of the
+actual cross-matching reachability or the paired forcing supports.
 
