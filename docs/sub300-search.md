@@ -152,3 +152,26 @@ away. No explicit structured family or global packet-routing proof exists;
 rare cohorts and reassembly remain open. See the local gate for derivation
 and commands.
 
+### UB-28 whole-network candidate screen
+
+I implemented the ticket's descending dyadic schedule literally in
+[`ub28-small-screen.py`](../upper-bound/experiments/ub28-small-screen.py): at
+each scale it runs `d` independent random cross-matchings on even neighboring
+block pairs, then `d` on the one-block-shifted pairs. Every comparator sends
+the minimum to the lower block. For `d=99`, the depth is exactly
+`198 log2(n)` on powers of two. Five independently sampled networks at each
+of `n=2,4,8,16` sort all Boolean inputs (the script checks all `2^n` inputs
+exactly via bit-parallel execution). At `n=8,d=1` all four sampled networks
+fail; at `n=8,d=2` three of four fail; at `n=16,d=4` three of four fail.
+The script also extracts paired forcing certificates for each sampled failure;
+at `n=8,d=1`, the displayed examples have disjoint initial 1/0 leaf sets of
+sizes four and three.
+Thus the witness screen exercises real failures and confirms the proposed
+high-budget candidate is not trivially malformed, but it provides no
+all-size probability bound. It also has no separate terminal cleanup charge:
+the candidate must sort exactly through its dyadic passes. See the UB-28
+ticket for the required paired-certificate counting argument. Reproduce the
+small screen with `python upper-bound/experiments/ub28-small-screen.py
+--n 16 --d 99 --seeds 5`; use `--witness` on a failing parameter to print a
+certificate pair.
+
