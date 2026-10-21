@@ -50,18 +50,30 @@ Dividing by `c(i+1, t+1) = Aν c` gives the centred (4.2-c3). So **P of order 0 
 
 Steps 1–2 give `w_hi`, `w_lo` as stated. The fixed point is `w = (2μ(Aν+1) + ε_B η)/(2Aν − 1)`.
 
-## Roles still to do (Chvátal p. 7–9 and R1-PROOF §1)
+## Roles (sketch)
 
-| role | issue |
+| role | argument |
 |---|---|
-| topRise (π = νc/(Ak), G = 0) | children are fresh. Start Q with no inherited term, or with a smaller one. |
-| topDesc (π = 0; all children become top nodes) | there is no F, so `O_L` goes straight into `B_1`. Chvátal treats top nodes separately (Lemma 3.1′: G = 0, and outsiders at top nodes need their own count). |
-| botDesc (children have empty subtrees) | `G_w = R_w`. The design X̂ comes from R. Check that Q is not needed below. |
-| botRise (π = a) | nothing goes down, so there is nothing to do. |
-| integer rounding | o, `b_h`, `θ_h` integral. Reserve `ROUND = 0.1μ` (as R1). |
-| (I1)–(I4) for the centred end-deficit design | η, nonnegative blocks, `θ ≥ 0` with the offset o. |
-| separator geometry γ and padding | as R1-PROOF §4. |
-| far terms | the energy-method far-spill bound, certified, enters `D_h` for interior h. |
+| **topDesc** (π = 0, θ ≡ 0) | Large topDesc senders hold no outsiders and have G = 0 (R1-PROOF §4). So `X_h` is exact and the shift is 0; only `ε_B a` remains. The children become top nodes with `N_L = O_L ≥ 0`, so `w_lo = 0`. |
+| **topRise** (π = νc/(Ak), G = 0) | Top nodes have no ancestors, so `D_1` comes only from lateral moves between top siblings. Swaps cancel in `N_L`. A non-swap shift needs a parent's shifted blocks, and the last parent (topDesc) had shift 0 up to `ε_B`. So `w_lo ≤ ε_B η/(2Aν)`, and the children follow the mid step. |
+| **botDesc** (children have empty subtrees) | The shift identity is the mid one. The design `X̂` comes from `R_w`, with `G_w = R_w`. Q at the children follows the mid step. |
+| **botRise** (π = a) | No child blocks. All keys go up, and the parent's accounting is the F-composition cancellation. |
+
+### Design checks at the package point (`package_point.py`)
+
+Sided end-deficit design: the end child gets `θ = π/2 + G + o`, with `|o| ≤ w c/2`.
+* `g* = (p/2 + w/2)/(Aν − 1) = 2.84e-4`.
+* **(I3)** `η = p(1/ν² + kA/ν) + g*/ν² = 1.0172`.
+* **(I2)** `θ ≤ (p/2 + g*) c = 5.2e-4 c`, against a child deficit `≥ p(A/ν) c = 0.061 c`, so the blocks are
+  nonnegative.
+* With this η the centred (4.2) leaves a **9.0% bulk margin at δ = 2e-6** (J = 2.5e5), or 4.4% at δ = 3e-6.
+
+## Still open
+
+* Integer rounding of o, `b_h`, θ: the 0.1μ reserve, as in R1.
+* Separator geometry γ and padding, as in R1-PROOF §4.
+* The far-spill bound, certified.
+* A full write-up of the induction (P, Q jointly over all roles and stages), and **a review**.
 
 ## Honest status
 

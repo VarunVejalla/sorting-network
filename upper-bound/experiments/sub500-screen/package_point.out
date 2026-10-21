@@ -1,11 +1,12 @@
+eta = 1.017224, g* = 2.8438e-04; (I2) theta <= (p/2 + g*) c = 5.209e-04 c vs child G >= p A/nu c = 6.055e-02 c
 (4,4,3): mu = 2.9535e-05 (4.3: 3.0518e-05, 4.4: 2.9564e-05), p = 4.7302e-04, A nu = 2.0
 bulk at m = 2^24: walk-bound two-round precision d = 1.8966e-05; fringe ceiling f <= 3967
-  delta = 1.0e-06: max eps_B = 2.1818e-05 (bulk OK, margin 1.150), J = 501026, route-(d)-type fringe needs f(J) <= 3967
-  delta = 2.0e-06: max eps_B = 2.0940e-05 (bulk OK, margin 1.104), J = 251028, route-(d)-type fringe needs f(J) <= 3967
-  delta = 3.0e-06: max eps_B = 2.0062e-05 (bulk OK, margin 1.058), J = 167697, route-(d)-type fringe needs f(J) <= 3967
-  delta = 5.0e-06: max eps_B = 1.8306e-05 (bulk SHORT, margin 0.965), J = 101035, route-(d)-type fringe needs f(J) <= 3967
-  delta = 8.0e-06: max eps_B = 1.5672e-05 (bulk SHORT, margin 0.826), J = 63541, route-(d)-type fringe needs f(J) <= 3967
-  delta = 1.2e-05: max eps_B = 1.2160e-05 (bulk SHORT, margin 0.641), J = 42716, route-(d)-type fringe needs f(J) <= 3967
-  delta = 2.0e-05: max eps_B = 5.1358e-06 (bulk SHORT, margin 0.271), J = 26068, route-(d)-type fringe needs f(J) <= 3967
+  delta = 1.0e-06: max eps_B = 2.1532e-05 (bulk OK, margin 1.135), J = 501026, route-(d)-type fringe needs f(J) <= 3967
+  delta = 2.0e-06: max eps_B = 2.0665e-05 (bulk OK, margin 1.090), J = 251028, route-(d)-type fringe needs f(J) <= 3967
+  delta = 3.0e-06: max eps_B = 1.9799e-05 (bulk OK, margin 1.044), J = 167697, route-(d)-type fringe needs f(J) <= 3967
+  delta = 5.0e-06: max eps_B = 1.8066e-05 (bulk SHORT, margin 0.953), J = 101035, route-(d)-type fringe needs f(J) <= 3967
+  delta = 8.0e-06: max eps_B = 1.5467e-05 (bulk SHORT, margin 0.815), J = 63541, route-(d)-type fringe needs f(J) <= 3967
+  delta = 1.2e-05: max eps_B = 1.2001e-05 (bulk SHORT, margin 0.633), J = 42716, route-(d)-type fringe needs f(J) <= 3967
+  delta = 2.0e-05: max eps_B = 5.0686e-06 (bulk SHORT, margin 0.267), J = 26068, route-(d)-type fringe needs f(J) <= 3967
   delta = 3.0e-05: infeasible
   delta = 5.0e-05: infeasible

@@ -26,7 +26,12 @@ mu43 = nu / (A * k * k)
 mu44 = dF * (Anu * k - 1) / (2 * A * A * k * k)
 mu = (1 - Fr(1, 1024)) * min(mu43, mu44)
 ROUND = Fr(1, 10) * mu
-eta = 1 + Fr(1, 256)
+# occupancy (R1-PROOF (I3)): a/c <= p (1/nu^2 + k A/nu) + g* / nu^2. Sided design: the end child gets
+# theta = pi/2 + G + o with |o| <= w c / 2, w/2 = (mu (A nu + 1) + eps_B eta/2)/(2 A nu - 1) (eps_B <= 1e-4 here),
+# so g' = (p/2 + g + w/2)/(A nu) and g* = (p/2 + w/2)/(A nu - 1)
+whalf = (mu * (Anu + 1) + Fr(1, 10 ** 4) / 2 * Fr(11, 10)) / (2 * Anu - 1)
+gstar = (p / 2 + whalf) / (Anu - 1)
+eta = max(p * (1 / nu ** 2 + k * A / nu) + gstar / nu ** 2, Fr(1))
 
 
 def max_epsB(delta):
@@ -42,6 +47,7 @@ def main():
     L = float(q)
     d_bulk = NP.d_na(L, NP.e1_na(L, uniform=True), uniform=True)[0]
     f_ceiling = float(p) * 2 ** q / 2 - 1                    # f + 1 <= pi/(2n) = p m / 2 rows
+    print(f"eta = {float(eta):.6f}, g* = {float(gstar):.4e}; (I2) theta <= (p/2 + g*) c = {float(p / 2 + gstar):.3e} c vs child G >= p A/nu c = {float(p * A / nu):.3e} c")
     print(f"(4,4,3): mu = {float(mu):.4e} (4.3: {float(mu43):.4e}, 4.4: {float(mu44):.4e}), p = {float(p):.4e}, "
           f"A nu = {float(Anu)}")
     print(f"bulk at m = 2^{q}: walk-bound two-round precision d = {d_bulk:.4e}; fringe ceiling f <= {f_ceiling:.0f}")
