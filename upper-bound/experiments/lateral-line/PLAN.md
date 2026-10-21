@@ -107,3 +107,25 @@ Upper-tail average load bound minus λ (n = 2^16, λ = 5e4; target `< 1500`):
 
 The sparse route (d) check improved slightly (396 → 388). The large-set average is now about 10% above
 target. Remaining loss: levels saturate up to an offset of about 700, plus a tail of several hundred.
+
+### Spill locality (UB-20 open lemma 1) with the energy method
+
+`../lateral-repair/SPILL-LOCALITY.md` reduces spill locality to far spill. A full-column merge disturbs
+`v_j`'s internal block boundaries only through received keys ranked more than `W ≈ |I_j|/k` below the cut.
+Their count is the round-2 bulk excess beyond a **margin** `d0 = W/n_u ≈ m/k²`. The mass is `n(i − d0)` and
+the mean is `b = i − d0 ~ m/2`.
+* With the union over round-1 states, there is a floor `η/2 = ln(m+1)/m`, whatever the margin.
+* The energy heuristic is `3.5 j/d0²`.
+
+Evaluator at `n = 2^16`, `m = 2^21`, `b = 2^20`, `d0 = 8192`:
+
+| set size s | 1 | 16 | ≥ 256 |
+|---|---:|---:|---:|
+| escape bound | 8.2e3 | 3.0e4 | 0 |
+
+The exact worst case over all s is **3.05e4 at s = 17**, i.e. 2.2e-7 of mn: 31× below the floor.
+| fraction of mn | 6e-8 | 2e-7 | 0 |
+
+For `s ≥ 256` the average falls below the margin, so monotonicity gives 0. Against the floor `6.9e-6`
+this is about 30× better. Both of UB-20's blocking floors, overflow (O-L) and far spill, are "bulk
+excess beyond a margin", and the energy method removes the input-entropy floor in both.
