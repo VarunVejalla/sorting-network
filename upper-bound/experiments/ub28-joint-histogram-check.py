@@ -17,8 +17,8 @@ def histogram(rows):
     return tuple(sorted(Counter(rows).items()))
 
 
-def after_matching(rows, h, left_block, right_block, matching):
-    out = [[(row >> block) & 1 for block in range(3)] for row in rows]
+def after_matching(rows, k, left_block, right_block, matching):
+    out = [[(row >> block) & 1 for block in range(k)] for row in rows]
     for left_slot, right_slot in enumerate(matching):
         a = out[left_slot][left_block]
         b = out[right_slot][right_block]
@@ -28,13 +28,56 @@ def after_matching(rows, h, left_block, right_block, matching):
                  for row in out)
 
 
-def matching_law(rows, matchings, left_block=0, right_block=1):
+def matching_law(rows, matchings, k, left_block=0, right_block=1):
     law = Counter()
     for matching in matchings:
-        out = after_matching(rows, len(rows), left_block, right_block, matching)
+        out = after_matching(rows, k, left_block, right_block, matching)
         law[histogram(out)] += 1
     total = len(matchings)
     return {state: Fraction(mass, total) for state, mass in law.items()}
+
+
+def apply_disjoint_pairs(rows, k, pairs, pair_matchings):
+    out = [[(row >> block) & 1 for block in range(k)] for row in rows]
+    for (left, right), matching in zip(pairs, pair_matchings):
+        for left_slot, right_slot in enumerate(matching):
+            a, b = out[left_slot][left], out[right_slot][right]
+            out[left_slot][left] = min(a, b)
+            out[right_slot][right] = max(a, b)
+    return tuple(sum(bit << block for block, bit in enumerate(row))
+                 for row in out)
+
+
+def two_offset_law(rows, matchings):
+    k = 4
+    phases = (((0, 1), (2, 3)), ((1, 2),))
+    outcomes = Counter()
+    choices = tuple(product(matchings, repeat=2))
+    for first in choices:
+        after_first = apply_disjoint_pairs(rows, k, phases[0], first)
+        for second in matchings:
+            after_second = apply_disjoint_pairs(
+                after_first, k, phases[1], (second,)
+            )
+            outcomes[histogram(after_second)] += 1
+    total = len(choices) * len(matchings)
+    return {state: Fraction(mass, total) for state, mass in outcomes.items()}
+
+
+def check_two_offset_pass_width2():
+    h, k = 2, 4
+    matchings = tuple(permutations(range(h)))
+    by_hist = defaultdict(list)
+    for rows in product(range(1 << k), repeat=h):
+        by_hist[histogram(rows)].append(rows)
+    for state, representatives in by_hist.items():
+        expected = two_offset_law(representatives[0], matchings)
+        for rows in representatives[1:]:
+            if two_offset_law(rows, matchings) != expected:
+                raise AssertionError((state, rows, "two-offset law not lumpable"))
+    print(f"width=2 k=4 two_offset_input_patterns=256 "
+          f"histograms={len(by_hist)} exact_kernel_compositions=8 "
+          f"strong_lumpability=ok")
 
 
 def split_signature(rows):
@@ -68,8 +111,7 @@ def expected_split_law(state, h):
     return dict(law)
 
 
-def check_width(h):
-    k = 3
+def check_width(h, k):
     matchings = tuple(permutations(range(h)))
     by_hist = defaultdict(list)
     for rows in product(range(1 << k), repeat=h):
@@ -78,9 +120,9 @@ def check_width(h):
     checked = 0
     for state, representatives in by_hist.items():
         for pair in ((0, 1), (1, 2)):
-            expected = matching_law(representatives[0], matchings, *pair)
+            expected = matching_law(representatives[0], matchings, k, *pair)
             for rows in representatives[1:]:
-                if matching_law(rows, matchings, *pair) != expected:
+                if matching_law(rows, matchings, k, *pair) != expected:
                     raise AssertionError((h, state, rows, pair,
                                           "matching not lumpable"))
 
@@ -101,8 +143,9 @@ def check_width(h):
 
 
 def main():
-    for h in (2, 4):
-        check_width(h)
+    for h, k in ((2, 6), (4, 3), (4, 4)):
+        check_width(h, k)
+    check_two_offset_pass_width2()
 
 
 if __name__ == "__main__":

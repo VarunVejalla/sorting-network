@@ -517,11 +517,16 @@ the two child histograms jointly.
 An independent review found this state plausible for fixed phase-tagged
 geometry. The exact check in
 [`ub28-joint-histogram-check.py`](../upper-bound/experiments/ub28-joint-histogram-check.py)
-enumerates all `k=3` patterns at widths 2 and 4 and verifies matching
-lumpability for both adjacent pair phases plus the joint split kernel. This
+enumerates every pattern for `(width, support)=(2,6),(4,3),(4,4)` and verifies
+matching lumpability for both adjacent pair phases plus the joint split kernel. This
 does not prove arbitrary-width closure or establish the necessary rate. The
 next gates are a formal strong-lumpability proof through the complete schedule,
 uniform bounded cone support, and a certified worst-case exponent above `ln 2`
-for a schedule whose depth coefficient is below 300. See
+for a schedule whose depth coefficient is below 300. Compute the complete
+backward cone first; forward transitions may project away whole block rows,
+but must not discard rows that could later re-enter. The exact width-4/2/1
+tail is count-based if each cyclic complete splitter is proved to compare every
+cross pair once (so no left `1`/right `0` survives), followed by the explicit
+width-2-count predicate for the final odd boundary pass. See
 [`UB28-JOINT-PATTERN-STATE.md`](../upper-bound/experiments/UB28-JOINT-PATTERN-STATE.md).
 

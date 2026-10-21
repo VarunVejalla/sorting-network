@@ -15,6 +15,7 @@ not bound the recurrence uniformly in n.
 import argparse
 from fractions import Fraction
 import importlib.util
+from itertools import product
 from pathlib import Path
 
 
@@ -74,10 +75,34 @@ def is_sorted_from_width2_counts(counts):
     return True
 
 
+def check_tail_predicate(max_width4_blocks=6):
+    """Exhaustively compare the count predicate with literal tail execution."""
+    checked = 0
+    for blocks in range(1, max_width4_blocks + 1):
+        for profile in product(range(5), repeat=blocks):
+            width2 = terminal_width2_counts(profile)
+            bits = [bit for count in width2
+                    for bit in ((0, 0) if count == 0 else
+                                (0, 1) if count == 1 else (1, 1))]
+            literal = exact_pass(exact_pass(bits, 0, 1), 1, 1)
+            literal_sorted = all(literal[i] <= literal[i + 1]
+                                 for i in range(len(literal) - 1))
+            if literal_sorted != is_sorted_from_width2_counts(width2):
+                raise AssertionError((profile, width2, literal))
+            checked += 1
+    print(f"tail_count_predicate_profiles_checked={checked}")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--rounds", type=int, default=70)
+    parser.add_argument("--tail-check-blocks", type=int, default=6)
+    parser.add_argument("--tail-only", action="store_true")
     args = parser.parse_args()
+
+    check_tail_predicate(args.tail_check_blocks)
+    if args.tail_only:
+        return
 
     n = 32
     h = n // 2
