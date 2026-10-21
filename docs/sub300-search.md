@@ -255,7 +255,13 @@ profiles; no such bound is established yet. A direct exact-rational run at
 about 100 seconds at roughly 8.6 GB resident memory, before producing a result.
 So the current recurrence is a small-size verifier, not a scalable numerical
 screen; a next computational step needs profile compression or rigorous tail
-truncation.
+truncation. Separately, a SAT check of the deterministic cyclic `h=4,2,1`
+tail on 32 wires found an unsorted output for input
+`11000000111110111100100111111111` (wire 0 is the least-significant bit; the
+tail leaves an inversion at wires 0 and 1). Thus the exact small-width tail is
+not a stand-alone sorter for arbitrary residual arrangements. A valid profile
+bound has to retain enough information about the state entering that tail;
+assuming the tail cleans every residual state would be unsound.
 
 ### UB-28 local rank-sensitive spill estimate
 
