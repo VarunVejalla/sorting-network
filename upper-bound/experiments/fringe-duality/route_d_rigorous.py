@@ -103,6 +103,28 @@ def A_star(j, R, d, u, n, ent_extra):
             return math.inf
 
 
+@lru_cache(maxsize=100000)
+def A_coll(j, R, u, n, ent):
+    """Collision lemma (n-uniform; uncentred weights a in {0..R}^U, a_T = min(R, z_T) 1{z_T >= d}):
+    Y_c <= single-hit value + R M_c, M_c = max{N(h) : N(h) >= 2, N(h) >= lam h / R} (N = hits on U, which
+    depends on U only: no union over profiles). P(M_c >= k) <= q^k / (1 - q), q = e R u / (lam n).
+    Bijection rows: sum of single-hit values <= A / (2 lam). So A <= (lam j + x_D) / (1 - 1/(2 lam)),
+    x_D = min_s R [n ln(1 + (q e^s)^2 / ((1-q)(1 - q e^s))) + ent] / s."""
+    best = math.inf
+    for lam in (0.6, 0.75, 1.0, 1.5, 2.0, 3.0):
+        q = math.e * R * u / (lam * n)
+        if q >= 1:
+            continue
+        for s in [0.05 * 1.1 ** i for i in range(120)]:
+            qe = q * math.exp(min(s, 700))
+            if qe >= 1:
+                break
+            g = n * math.log1p(qe * qe / ((1 - q) * (1 - qe)))
+            xD = R * (g + ent) / s
+            best = min(best, (lam * j + xD) / (1 - 1 / (2 * lam)))
+    return best
+
+
 _LAST = [(1.0, 20)]
 
 
@@ -196,6 +218,8 @@ def Kmax(j, n):
     """Round-1 single-column bound: U = {T}, union over n targets; z - b < sqrt(A*)."""
     R = int(3 * math.sqrt(j)) + 10
     A = A_star(round(j), R, 1, 1, n, math.log(n / ETA) + 3 * math.log(R + 1))
+    Ac = A_coll(round(j), R, 1, n, math.log(n / ETA))
+    A = min(A, Ac)
     if A >= R * R:
         return float(j)          # trivial: a column holds at most the whole mass
     return min(float(j), math.sqrt(A))
@@ -226,6 +250,9 @@ def escapes(j, n, f, s2, L0_extra, ratio, s2_lo=None, j_lo=None):
         d = math.floor(lo + 1 - b)
         A = A_star(math.ceil(j), R, d, u, n, ent_S)
         k = kmax_sources(A, d, s2)
+        # n-uniform alternative: uncentred collision lemma, cap hi, threshold lo + 1
+        Ac = A_coll(math.ceil(j), hi, u, n, ent_S)
+        k = min(k, kmax_sources(Ac, lo + 1, s2))
         cnt = min(k * c + mult_excess(hi - lo, s2, n, ent_S + math.log(len(CS)), c) for c in CS if c <= hi - lo or c == 1)
         total += min(s2 * (hi - lo), cnt)
         lo = hi

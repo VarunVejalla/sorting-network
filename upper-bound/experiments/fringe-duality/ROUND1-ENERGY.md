@@ -314,3 +314,33 @@ v's sources become rarer as n grows.
 
 **Status:** open. It needs this collision lemma written out and evaluated. Until then, route (d)
 certifies the 731.25 fringe only for `n ≤ 2^640`, which is not enough for a limsup.
+
+### Collision lemma implemented (`A_coll` in `route_d_rigorous.py`)
+
+Uncentred weights `a_T = min(R, z_T)·1{z_T ≥ d}` on a fixed `U`.
+* **Deterministic.** Let `h*` be the argmax of column c's walk. If only one hit on U precedes `h*`, then
+  `Y_c ≤ (a − λ(r+1))₊`. Otherwise `Y_c ≤ R·M_c`, where `M_c = max{N(h) : N(h) ≥ 2, N(h) ≥ λh/R}` and
+  `N(h)` counts hits on U.
+* **Main term.** Each row is a bijection, so `Σ_c Σ_hits (a − λ(r+1))₊ = Σ_r Σ_T (a_T − λ(r+1))₊ ≤ A/(2λ)`.
+* **Collision term.** `M_c` depends on U only, so there is **no union over profiles**.
+  * `P(M_c ≥ k) ≤ q^k/(1−q)`, with `q = eRu/(λn)`.
+  * NA across columns. Chernoff with `s = tR` up to `ln(1/q)`.
+* **Result.** `A ≤ (λj + x_Δ)/(1 − 1/(2λ))`, with `x_Δ = R [n ln(1 + (qe^s)²/((1−q)(1−qe^s))) + Ent]/s`.
+* **As n → ∞:** `q → 0`, the `n ln`-term tends to 0, and `R·Ent/s → R(1 + s2)`. The bound is
+  **n-uniform**.
+
+Single-column load with the better of Kingman and collision at each level (f = 4000):
+
+| n | 2^20 | 2^40 | 2^80 | 2^160 | 2^320 | 2^640 |
+|---|---:|---:|---:|---:|---:|---:|
+| j = J | 392 | 307 | 294 | 291 | 292 | 297 |
+| j = 100J | 1743 | 1355 | 1320 | 1316 | 1316 | 1323 |
+
+The remaining drift (+6 up to 2^640) comes from the Kingman branch inside `Kmax`. The collision branch alone
+has a finite limit.
+
+**Remaining for an all-n statement:**
+1. Show each collision term is monotone in n beyond some `n₀` (e.g. `2^640`): `Ent/ln(nλ/(eRu))` is
+   eventually decreasing towards its limit.
+2. Rerun the j × s2 sweeps with this code. The `rd_sweep` runs use the Kingman-only version, which is
+   valid but looser.
