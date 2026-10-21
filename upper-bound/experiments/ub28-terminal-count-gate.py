@@ -39,16 +39,39 @@ def exact_pass(state, offset, h):
 def tail_output(profile):
     """Return the final Boolean word after exact h=4,2,1 tail stages."""
     width4 = exact_pass(exact_pass(profile, 0, 4), 1, 4)
-    width2 = [0] * (2 * len(width4))
-    for j, count in enumerate(width4):
-        width2[2 * j] = max(count - 2, 0)
-        width2[2 * j + 1] = min(count, 2)
-    width2 = exact_pass(exact_pass(width2, 0, 2), 1, 2)
+    width2 = terminal_width2_counts(width4)
     bits = [0] * (2 * len(width2))
     for j, count in enumerate(width2):
         bits[2 * j] = max(count - 1, 0)
         bits[2 * j + 1] = min(count, 1)
     return exact_pass(exact_pass(bits, 0, 1), 1, 1)
+
+
+def terminal_width2_counts(width4):
+    """Counts after h=4 and h=2 passes, from incoming width-4 counts."""
+    width2 = [0] * (2 * len(width4))
+    for j, count in enumerate(width4):
+        width2[2 * j] = max(count - 2, 0)
+        width2[2 * j + 1] = min(count, 2)
+    return exact_pass(width2, 1, 2)
+
+
+def is_sorted_from_width2_counts(counts):
+    """Exact final sortedness test after width-1 even/odd comparators."""
+    left = [count == 2 for count in counts]
+    right = [count >= 1 for count in counts]
+    for j in range(len(counts)):
+        if j == 0:
+            bad = left[j] and not left[j + 1]
+        elif j == len(counts) - 1:
+            bad = right[j - 1] and counts[j] == 0
+        else:
+            output_left = right[j - 1] or left[j]
+            output_right = right[j] and left[j + 1]
+            bad = output_left and not output_right
+        if bad:
+            return False
+    return True
 
 
 def main():
@@ -71,8 +94,12 @@ def main():
 
     bad_mass = Fraction(0)
     for profile, mass in dist.items():
+        width4 = exact_pass(exact_pass(profile, 0, 4), 1, 4)
+        width2 = terminal_width2_counts(width4)
         output = tail_output(profile)
-        if any(output[i] > output[i + 1] for i in range(n - 1)):
+        output_sorted = all(output[i] <= output[i + 1] for i in range(n - 1))
+        assert output_sorted == is_sorted_from_width2_counts(width2)
+        if not output_sorted:
             bad_mass += mass
     print(f"n={n} rounds={args.rounds} width4_profiles={len(dist)}")
     print(f"P[final unsorted]={float(bad_mass):.12g}")

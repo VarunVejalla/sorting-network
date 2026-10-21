@@ -282,39 +282,86 @@ it rejects only the plan of charging every input outside the universally safe
 set as a failure.
 
 The exact `h=4,2,1` tail has a stronger simplification: its final output is
-determined by the incoming width-4 block-count profile alone, even if the
-arrangement inside those blocks is arbitrary. An exact cross-block splitter
-maps a pair of width-`h` counts `(a,b)` to
-`(max(a+b-h,0), min(a+b,h))`. After the width-4 split, the width-2 even pass
-erases the random allocation of each parent count between its two children;
-the width-2 odd pass then has deterministic inputs. The width-1 even pass
-sorts each two-wire block, so the final odd pass and the sortedness test are
-determined by the width-2 counts. [`ub28-terminal-count-gate.py`](../upper-bound/experiments/ub28-terminal-count-gate.py)
-implements this profile-to-output map. Its classification agrees profile by
-profile with the independent SMT check on all 495 and 4,845 nondecreasing
-profiles at `n=32` and `n=64`, respectively. When composed with the exact
-randomized-prefix count recurrence at `n=32`, it reproduces the full
-`ub28-count-process.py` failure probability exactly (at both 16 and 70 rounds).
-The expected number of failing inputs is `0.000882841346664` at 16 rounds and
-`1.58277276181e-46` at 70 rounds at widths 16 and 8, with the exact tail below
-width 8. Thus the large mass outside the sufficient safe gate is mostly
-harmless; the actual bad-profile mass is much smaller. This closes the
-terminal-tail accounting for the model, but does not give a scalable bound on
-the profile distribution arriving from all larger scales.
+determined by the incoming width-4 block-count profile alone, for arbitrary
+arrangements inside those blocks. For the cyclic `K_{h,h}` gadget, every
+cross pair is compared, so a left 1 and right 0 cannot both remain; left
+zeros and right ones are absorbing, forcing output counts
+`(max(a+b-h,0), min(a+b,h))`. After the width-4 passes determine the width-4
+counts, the width-2 even pass compares the two sibling width-2 blocks inside
+each width-4 block and erases their unknown split. The width-2 odd pass then
+acts on known counts. The width-1 even pass sorts each width-2 block, so the
+final odd pass is determined as well. A fresh independent audit checked this
+induction for arbitrary lengths divisible by four, including the unmatched
+boundary blocks. [`ub28-terminal-count-gate.py`](../upper-bound/experiments/ub28-terminal-count-gate.py)
+implements the resulting profile-to-output map.
 
-A fresh review also gave a generic constant-width factor-graph contraction for
-the tail, with a coarse separator size `5^2 * 3^6 * 2^12 = 74,649,600`.
-The deterministic count map above is preferable: it removes the need to
-contract over the tail's internal arrangements at all.
+There is an even smaller terminal condition. Let `e_j` be the width-2 counts
+after the width-2 odd pass, with `m` the number of such blocks, and set
+`L_j = [e_j=2]`, `R_j = [e_j>=1]`. After the width-1 even pass, each block is
+`(0,0)`, `(0,1)`, or `(1,1)` according to `e_j`; the final odd pass compares
+`R_j` with `L_(j+1)`. Its output is sorted iff none of these local conditions
+holds:
 
-The same method does not immediately compress the entire schedule. At scale
-`h=2^k`, counts have `h+1` possible values, and a spatial cut through the
-multiscale factor graph crosses `O(log n)` scales. The naive transfer state
-count is about `prod_k (2^k+1) = 2^(Theta((log n)^2))`, quasipolynomial in `n`.
-This gives a finite-size exact composition interface, but no known polynomial
-compression or uniform asymptotic failure bound. The next useful investigation
-is whether hypergeometric kernels admit a low-rank or moment-based compression
-that survives composition across scales.
+```text
+j = 0:          e_0 = 2 and e_1 < 2
+0 < j < m-1:    (R_(j-1) or L_j) and not (R_j and L_(j+1))
+j = m-1:        e_(m-2) > 0 and e_(m-1) = 0
+```
+
+Thus terminal failure is a union of bounded-window events in the incoming
+width-4 counts. [`ub28-terminal-window-language.py`](../upper-bound/experiments/ub28-terminal-window-language.py)
+propagates exact input supports and enumerates the local truth tables; one
+adjacent output pair depends on at most six width-4 counts. The randomized
+prefix count recurrence agrees exactly with the full `ub28-count-process.py`
+failure probability at `n=32`, for both 16 and 70 matching rounds at widths
+16 and 8. The expected failing-input counts are `0.000882841346664` and
+`1.58277276181e-46`, respectively, with the exact tail below width 8. The
+terminal accounting is closed for every length divisible by four. The open
+proof gate is to bound the probability of these local bad windows under the
+randomized prefix uniformly in `n`; the sum over all windows must be below
+`2^-n` for the first-moment argument.
+
+There is a useful backward-locality reduction for that gate. For one fixed
+final adjacent inversion, the dependency support of its exact-tail predicate
+has at most six consecutive incoming width-4 counts. Reversing a count pass
+only closes this interval under that pass's disjoint adjacent pairs; reversing
+a uniform block split maps child indices `j` to parent indices `floor(j/2)`.
+After the split, the support has at most three indices, and the two reverse
+offset passes at the next scale expand it to at most six again. Thus the
+backward transfer for a single output edge has at most six count coordinates
+at every scale, rather than the full profile vector. The exact terminal support
+and this recurrence are checked for every edge through `n=4096` by
+[`ub28-backward-window-support.py`](../upper-bound/experiments/ub28-backward-window-support.py).
+[`ub28-local-edge-transfer.py`](../upper-bound/experiments/ub28-local-edge-transfer.py)
+then evaluates the exact backward transfer for one edge, applying the
+hypergeometric split kernels and randomized matching count kernels on only
+these supported coordinates. Summing the edge probabilities gives a valid
+union bound. With `--n 32 --check-full`, it matches the full-profile recurrence
+up to the expected union-bound slack: for 16 rounds, the upper bound on
+`E[F]` is `0.000882841346720` and the exact value is
+`0.000882841346664`; for 70 rounds, both print as `1.58277276181e-46`.
+This verifies the local transfer as an exact finite-size calculation, not an
+asymptotic estimate. Its table still has up to `(h+1)^6` entries at block
+width `h`; the next target is to compress or bound these local functions
+uniformly as `h` grows, then sum the resulting edge bounds. A separate audit
+checked the six-coordinate recurrence semantically for all powers of two,
+including boundary clipping. As a larger finite screen, at `n=64` and the
+central even edge 30 the exact local transfer gives `P[bad]=1.2267e-14` for
+16 rounds and `1.8522e-62` for 70 rounds. This points toward a large-deviation
+rate proof, but one edge and two finite sizes do not establish the required
+uniform bound.
+
+For the full profile, a spatial cut through the multiscale factor graph
+crosses `O(log n)` scales. Its naive transfer state count is about
+`prod_k (2^k+1) = 2^(Theta((log n)^2))`, quasipolynomial in `n`. The local
+edge transfer avoids that full-profile state, but still has a six-coordinate
+table with `h+1` values per coordinate at width `h`. The next useful
+investigation is whether hypergeometric kernels preserve a low-rank, moment,
+or exponential-tail certificate for those local functions as `h` grows. A
+promising quantitative version is to derive a finite-dimensional entropy
+variational bound for a bad terminal edge and prove its rate exceeds `ln 2`,
+uniformly over edge phase and input density. No uniform asymptotic failure
+bound is known yet.
 
 ### UB-28 local rank-sensitive spill estimate
 
