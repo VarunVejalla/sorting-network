@@ -143,3 +143,14 @@ only about `mn/W²` columns) is the candidate. It must be certified.
 only the parent's positive shift plus crossings plus deeper outsiders (`μδ`-small) plus F-escapes. Bounding
 it that way would make the width contract by `1/(Aν)` without the μ floor. That is a larger change to the
 invariant and needs care: P's cap is still required for (4.4) and support.
+
+## 10. The band tail is not easily improved (same day)
+
+`Σ_u (z_u − b − W)₊ ≤ A/(4W)` needs the **global** round-1 energy A with uncapped weights.
+* Capped levels give each level its own `≈ 2j` budget, so the sum is `≈ Σ_ℓ 2j/lo_ℓ ≈ 4j/W`, worse than the
+  walk bound.
+* A single uncapped level needs a union over the profiles of all n columns, with entropy far too large.
+
+So the band stays at the walk-bound tail, and **the v4 package prices at 503**: on the knife edge, just
+above 500. Getting below 500 needs a sharper round-1 tail (≤ 0.4/W) or about 1% from elsewhere, such
+as the rounding reserve, merge alignment, or stage fusion.

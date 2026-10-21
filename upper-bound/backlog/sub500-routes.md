@@ -266,3 +266,20 @@ even with every component near ideal. Below 500 requires `r* = 0` **exactly**, b
 not enough. A substantially larger improvement needs a different invariant (ε_B tolerance ≥ 36×, UB-40)
 or a separator whose precision beats `m^{-1/2}`. The adversarial concentration attack makes `m^{-1/2}`
 essentially tight for sort-scramble rounds.
+
+## 2026-10-21 (end of session): where sub-500 stands
+
+The best package is: centred offsets with a sided invariant (`../experiments/sub500-screen/INDUCTION.md`
+v4) + band repair (walk-bound tail) + merge-first + route (d) fringe, at **503** ((4,4,3), q = 24). A
+band tail ≤ 0.3/W gives **491**.
+
+The exact check is feasible, with a 1.6–5.9% bulk margin depending on δ.
+
+Every component is unproved:
+* the induction (written, unreviewed);
+* the far-spill bound;
+* band repair;
+* merge-first in the node spec (the Lean core is done);
+* route (d) (tabled).
+
+The column-sort architecture lands sub-500 only on a knife edge.
