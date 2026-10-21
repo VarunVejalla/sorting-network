@@ -278,13 +278,16 @@ def worst_interval(ja, jb, n, f, smax=4096):
         s += 1
         if s > 64:
             break
-    # fallback: intervals [s, 2s] up to j / f
-    while s <= max(1, jb / f):
-        e = min(escapes(jb, n, f, 2 * s, L0x, r, s, ja) for L0x in (0, 50, 200) for r in (1.3, 1.6, 2.0))
-        worst = max(worst, (e, 2 * s))
-        if load_bound(jb, n, f, 2 * s, ja) / (2 * s) < f:
+    # past 64: grid s_a < s_b (ratio 1.05). For s in [s_a, s_b]: L(s)/s <= L(s_a)/s_a and L(s) <= L(s_b), so
+    # escapes(s) <= min(s_b (L_b(s_a)/s_a - f), L_b(s_b) - f s_a).
+    sa, La = s - 1, load_bound(jb, n, f, s - 1, ja)
+    while sa <= max(1, jb / f):
+        sb = max(sa + 1, int(sa * 1.05))
+        Lb = load_bound(jb, n, f, sb, ja)
+        worst = max(worst, (min(sb * (La / sa - f), Lb - f * sa), sb))
+        if Lb / sb < f:
             return worst
-        s *= 2
+        sa, La = sb, Lb
     return worst
 
 

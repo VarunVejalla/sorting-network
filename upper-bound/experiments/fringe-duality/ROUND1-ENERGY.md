@@ -344,3 +344,19 @@ has a finite limit.
    eventually decreasing towards its limit.
 2. Rerun the j × s2 sweeps with this code. The `rd_sweep` runs use the Kingman-only version, which is
    valid but looser.
+
+### All set sizes at once: the average load is monotone
+
+`L(s) = max_{|S|=s} Σ_{v∈S} w_v` is the sum of the s largest loads, so `L(s)/s` is nonincreasing. If the
+bound `L_b(s₀) ≥ L(s₀)` has `L_b(s₀)/s₀ < f`, then for every `s ≥ s₀`:
+
+    escapes(s) = L(s) − f s ≤ s (L(s₀)/s₀ − f) < 0.
+
+`worst_interval` therefore evaluates exact `s = 1, 2, …` until the average drops below f (usually at
+`s = 1`). Intervals `[s, 2s]` are only a fallback past 64.
+
+The earlier `[2^i, 2^{i+1}]` interval sweep (`rd_sweep_old/`) produced false FAILs: an interval loses a
+factor 2 in the linear credit, so it fails whenever the load exceeds about f/2. Those FAILs are superseded.
+
+The j-intervals use ratio 1.15. The sweeps in `rd_sweep/` take the better of Kingman and collision at each
+level.
