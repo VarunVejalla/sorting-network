@@ -259,18 +259,36 @@ def escapes(j, n, f, s2, L0_extra, ratio, s2_lo=None, j_lo=None):
     return total - (f - L0) * s2_lo
 
 
-def worst_interval(ja, jb, n, f):
-    """max over set-size intervals of the best (L0, ratio) escape bound for all j in [ja, jb]."""
-    worst = None
-    ivs = [(1, 1)] + [(2 ** i, 2 ** (i + 1)) for i in range(60) if 2 ** i <= max(1, jb / f)]
-    for sa, sb in ivs:
-        e = min(escapes(jb, n, f, sb, L0x, r, sa, ja) for L0x in (0, 50, 200) for r in (1.3, 1.6, 2.0))
-        if worst is None or e > worst[0]:
-            worst = (e, sb)
+def load_bound(jb, n, f, s, ja):
+    """L_b(s) >= max_{|S| = s} sum_{v in S} w_v for every j in [ja, jb] (best over L0, level ratio)."""
+    return min(escapes(jb, n, f, s, L0x, r, s, ja) + f * s for L0x in (0, 50, 200) for r in (1.3, 1.6, 2.0))
+
+
+def worst_interval(ja, jb, n, f, smax=4096):
+    """Escapes bound for all j in [ja, jb] and all set sizes. L(s) = sum of the s largest loads, so L(s)/s is
+    nonincreasing: once L_b(s0)/s0 < f, every s >= s0 has escapes <= 0. Exact points s = 1, 2, ... up to
+    that s0 (geometric steps with the interval bound past 64, as a fallback)."""
+    worst = (-math.inf, 0)
+    s = 1
+    while s <= smax and s <= max(1, jb / f):
+        L = load_bound(jb, n, f, s, ja)
+        worst = max(worst, (L - f * s, s))
+        if L / s < f:
+            return worst
+        s += 1
+        if s > 64:
+            break
+    # fallback: intervals [s, 2s] up to j / f
+    while s <= max(1, jb / f):
+        e = min(escapes(jb, n, f, 2 * s, L0x, r, s, ja) for L0x in (0, 50, 200) for r in (1.3, 1.6, 2.0))
+        worst = max(worst, (e, 2 * s))
+        if load_bound(jb, n, f, 2 * s, ja) / (2 * s) < f:
+            return worst
+        s *= 2
     return worst
 
 
-def sweep(n, J, f, jfrom, jto, ratio=1.25):
+def sweep(n, J, f, jfrom, jto, ratio=1.15):
     """Cover [jfrom, jto] by geometric intervals (split at J). Contract: escapes = 0 (bound < 1) for j < J,
     escapes < j/J for j >= J."""
     jmax = f * n / 8
