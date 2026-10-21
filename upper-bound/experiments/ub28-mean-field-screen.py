@@ -183,9 +183,12 @@ def run(n, edge, rounds, min_random_width=200, unsafe_meanfield_tail=False,
         if abs(float(p.sum()) - 1.0) > 1e-9:
             raise ArithmeticError(f"type mass sums to {p.sum()}")
         parent_ids = child_ids
+        positive = p[p > 0.0]
         print(f"width={width:>5} input/mid/output="
               f"{len(input_ids)}/{len(mid_ids)}/{len(output_ids)} "
               f"next_support={len(child_ids)} "
+              f"positive_types={len(positive)} "
+              f"min_positive_mass={positive.min():.3g} "
               f"max_type_mass={p.max():.6g}")
 
     if show_types:

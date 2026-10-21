@@ -537,11 +537,17 @@ A finite-cutoff boundary warning is recorded in
 [`ub28-exact-suffix-screen.py`](../upper-bound/experiments/ub28-exact-suffix-screen.py):
 at `n=1024`, edge508, the exact suffix from width128 down fails on six
 width-128 blocks that are constant with row values `(0,0,1,1,0,0)`. The
+screen also finds a less extreme width-128 count profile
+`[35,24,64,37,79,25]` whose pair totals are ordered `59 <= 101 <= 104`, yet
+the suffix still leaves `10` at edge508. These ordered counts are compatible
+with the necessary count inequalities after the width-256 offset passes: take
+the fourth width-256 row full of ones, so its pair totals are also ordered. A
+matching can preserve any chosen block patterns with those ordered totals.
 zero-cost mean-field diagnostic in
 [`ub28-mean-field-screen.py`](../upper-bound/experiments/ub28-mean-field-screen.py)
 assigns positive mass to the corresponding column type at the cutoff. This is
 not yet a no-go proof, because the probability of reaching that finite profile
-under the actual upper prefix has not been bounded; it does mean the finite
-suffix must be included in the coupled rate calculation and cannot be assumed
-to sort all local inputs.
+under the actual upper prefix has not been bounded. The finite suffix must be
+included in the coupled rate calculation and cannot be assumed to sort all
+locally count-ordered inputs.
 
