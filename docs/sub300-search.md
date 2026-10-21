@@ -227,6 +227,13 @@ zero-one principle and wire restriction give the claimed all-`n` result. At
 70 rounds for `h>=200` and exact splitters below that, the depth is
 `140 max(log2(n)-8,0)+510`, so this route would yield limsup coefficient 140.
 
+The zero-one principle does not reduce this probabilistic gate to the `n+1`
+monotone bit strings. Those are thresholdings of a fixed ordered input;
+sorting-network correctness requires every binary assignment, since an
+arbitrary inversion can threshold to an arbitrary subset of wires. Thus the
+first-moment gate really must count all `2^n` inputs (or use a different
+certificate count that still covers every assignment).
+
 [`ub28-count-process.py`](../upper-bound/experiments/ub28-count-process.py)
 implements the exact rational recurrence at small sizes. For `n=8`, one
 random matching per pass gives `E[F]=58/3`, matching exhaustive enumeration of
@@ -235,10 +242,44 @@ matches the recurrence's full block-count distribution after every pass and
 split (up to 73 states) for this case. At `n=16`, eight rounds give
 `E[F]=259465172802051769457880750622855061 /
 1379746024126718839235385753600000000 < 1`; this only certifies existence in
-that finite screen. A direct vector-state computation at `n=32` with eight
-rounds exceeded 500 MB and was stopped. The new challenge is to prove a
+that finite screen. With sixteen rounds at widths 8 and 16 and exact splitters
+below width 8, the same recurrence gives
+`E[F]=0.0008828413466643175` at `n=32`, again below one. At `n=16`, using
+seventy rounds at width 8 and exact splitters below it, the exact recurrence
+gives `E[F]=0`. These are finite existence checks, not evidence for a uniform
+bound. A direct vector-state computation at `n=32` without low-width exact
+splitters exceeded 500 MB and was stopped. The new challenge is to prove a
 uniform-in-`n` bound on this first moment without enumerating all count
 profiles; no such bound is established yet.
+
+### UB-28 local rank-sensitive spill estimate
+
+The `1/9`-halver cap is too coarse to compose by itself: the scalar relaxation
+in `ub28-scalar-halver-screen.py` has a counterexample at `n=1024` on a sparse
+input. The random matching process has a stronger local estimate. Fix a pair
+of `h`-wire blocks with total `c<=h` ones, and let `A_t` be the left-block one
+count after `t` independent uniform matchings. Conditional on `A_t=a`, the
+next count is hypergeometric with mean `a(c-a)/h`. Hence
+
+```text
+E[A_(t+1)] <= E[A_t] * (c-E[A_t])/h,
+E[A_d] <= min(c*(c/h)^d, c/(1+d*c/h)).
+```
+
+The first estimate follows from `E[A_t^2]>=E[A_t]^2`; the second follows by
+iterating `E[A_(t+1)]<=(c/h)E[A_t]` and by applying the reciprocal logistic
+recurrence, respectively. By complement symmetry, if `c>=h`, the same bounds
+hold for the right-block zero count with `c` replaced by `2h-c`. In particular,
+balanced inputs leave at most `h/(d+1)` expected spill, while a sparse pair
+has exponentially small probability of any spill. This is exact for each
+fixed input arrangement under the random schedule; it does not require the
+blockwise-uniform invariant.
+
+This is a useful local potential, not yet a global proof. It indicates how
+large balanced spill can become sparse after the next dyadic split, but the
+shifted pass couples neighboring spill profiles. A valid closure must track
+their positions or a weighted profile through both offsets; the scalar
+`1/9`-only counterexample rules out replacing that work by independent caps.
 
 The useful local gate is now closed at hand-proof level: 70 cross-matchings
 can form a `1/9`-halver for every block width `h>=200`, and smaller widths use
