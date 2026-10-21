@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Exhaustive SMT screen of a sufficient terminal-profile condition for UB-28.
 
-For the deterministic cyclic h=4,2,1 tail on 32 wires, check each
-nondecreasing width-4 block-count profile. A profile is universally safe when
-the SMT solver finds no input arrangement with those counts that leaves an
-adjacent output inversion. This is a finite diagnostic, not an all-size proof.
+For the deterministic cyclic h=4,2,1 tail, check each nondecreasing width-4
+block-count profile. A profile is universally safe when the SMT solver finds
+no input arrangement with those counts that leaves an adjacent output
+inversion. This is a finite diagnostic, not an all-size proof. For n=128 the
+profile enumeration has 58,905 cases.
 """
 
 from collections import Counter
@@ -12,6 +13,7 @@ from itertools import combinations_with_replacement
 
 import importlib.util
 from pathlib import Path
+import argparse
 
 import z3
 
@@ -22,10 +24,19 @@ spec = importlib.util.spec_from_file_location(
 )
 schedule_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(schedule_module)
+tail_spec = importlib.util.spec_from_file_location(
+    "ub28_terminal_count_gate", HERE / "ub28-terminal-count-gate.py"
+)
+tail_module = importlib.util.module_from_spec(tail_spec)
+tail_spec.loader.exec_module(tail_module)
 
 
 def main():
-    n = 32
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--n", type=int, default=32)
+    n = parser.parse_args().n
+    if n < 32 or n & (n - 1):
+        raise ValueError("n must be a power of two at least 32")
     tail = schedule_module.build(n, seed=0)[-14:]
     inputs = [z3.Bool(f"x{i}") for i in range(n)]
     wires = inputs[:]
@@ -54,6 +65,9 @@ def main():
             solver.add(z3.PbEq([(wire, 1) for wire in block], count))
         unsafe = solver.check() == z3.sat
         solver.pop()
+        mapped = tail_module.tail_output(profile)
+        map_unsafe = any(mapped[i] > mapped[i + 1] for i in range(n - 1))
+        assert unsafe == map_unsafe, (profile, unsafe, map_unsafe)
         by_span[(span, "unsafe" if unsafe else "safe")] += 1
         if unsafe:
             unsafe_total += 1
@@ -61,10 +75,9 @@ def main():
             safe_total += 1
 
     assert all(by_span[(s, "unsafe")] == 0 for s in range(4))
-    assert by_span[(4, "unsafe")] > 0
     print(f"profiles={safe_total + unsafe_total}")
     print(f"universally_safe={safe_total} unsafe={unsafe_total}")
-    for span in range(9):
+    for span in range(n // 4 + 1):
         print(
             f"partial_span={span} safe={by_span[(span, 'safe')]} "
             f"unsafe={by_span[(span, 'unsafe')]}"

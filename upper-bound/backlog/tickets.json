@@ -1,6 +1,6 @@
 {
   "schema": "upper-bound/backlog/tickets.schema.md",
-  "updated": "2026-10-20",
+  "updated": "2026-10-21",
   "tickets": [
     {
       "id": "UB-00",
@@ -537,20 +537,22 @@
     },
     {
       "id": "UB-28",
-      "title": "Certify a whole randomized multiscale network using paired Boolean forcing witnesses",
+      "title": "Certify the randomized multiscale network by a global first moment",
       "priority": "P3",
-      "status": "proposed",
-      "claim_level": "conjecture",
+      "status": "active",
+      "claim_level": "model",
       "baseline": 1419,
       "projected": null,
-      "owner": null,
-      "branch": null,
+      "owner": "Codex",
+      "branch": "sub300-structural",
       "depends_on": [],
-      "first_deliverable": "Define a dyadic even/odd block-pair matching family; extract compatible output-1/output-0 forcing certificates and compare with exhaustive or SAT failures; derive or refute a uniform witness-counting recurrence before seeking a whole-run failure bound below one.",
+      "first_deliverable": "Derive and certify an all-size bound on expected failing inputs for the randomized two-offset schedule, using exact prefix-tail composition and a scalable profile invariant.",
       "evidence": [
-        "upper-bound/backlog/sub200-structural-strategies.md"
+        "upper-bound/backlog/sub200-structural-strategies.md",
+        "docs/sub300-search.md",
+        "upper-bound/experiments/ub28-terminal-count-gate.py"
       ],
-      "notes": "Author/signature: GPT-6 (Codex), 2026-10-14. Explore one global existence proof instead of universally good local gadgets. At AND/OR comparator gates, a surviving adjacent inversion has disjoint initial 1- and 0-forcing leaf sets; counting must preserve shared DAG dependencies. The candidate two-pass d-matching schedule has depth gate 2d<200 before extra sweeps. Per-input high probability from Randomized Shellsort does not imply one network works for all inputs; no successful counting estimate or sorter is claimed."
+      "notes": "Author/signature: GPT-6 (Codex), 2026-10-14. Explore one global existence proof instead of universally good local gadgets. At AND/OR comparator gates, a surviving adjacent inversion has disjoint initial 1- and 0-forcing leaf sets; counting must preserve shared DAG dependencies. The candidate two-pass d-matching schedule has depth gate 2d<200 before extra sweeps. Per-input high probability from Randomized Shellsort does not imply one network works for all inputs; no successful counting estimate or sorter is claimed. Active exploration 2026-10-21 in .claude/worktrees/sub300 on branch sub300-structural. Exact width-4/2/1 tail output is a deterministic function of the incoming width-4 count profile; this is checked against the exact count recurrence at n=32. No all-size bound or improved coefficient is proved."
     },
     {
       "id": "UB-29",

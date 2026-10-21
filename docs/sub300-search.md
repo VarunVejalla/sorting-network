@@ -263,17 +263,58 @@ not a stand-alone sorter for arbitrary residual arrangements. A valid profile
 bound has to retain enough information about the state entering that tail;
 assuming the tail cleans every residual state would be unsound.
 
-There is a sharper finite terminal gate. For the same 32-wire `h=4,2,1`
+There is a sharper finite terminal gate. For the deterministic cyclic `h=4,2,1`
 tail, [`ub28-terminal-profile-screen.py`](../upper-bound/experiments/ub28-terminal-profile-screen.py)
-checks all 495 nondecreasing profiles of the eight width-4 input blocks by
-SMT. Every such profile whose partial blocks (counts 1, 2, or 3) occupy at
-most three consecutive blocks is sorted by the tail for **every** arrangement
-of bits within those blocks. At span 4, 8 of 75 profiles are already unsafe;
-overall 230 profiles are universally safe and 265 have a counterexample.
-This gives a concrete candidate terminal criterion, but only for this finite
-network and monotone count profiles. The needed global argument must show that
-the randomized larger-scale stages deliver such a profile, or bound the total
-weight of profiles outside the safe set by less than one failing input.
+checks every nondecreasing profile of width-4 input-block counts by SMT.
+At `n=32`, all 495 profiles with partial blocks (counts 1, 2, or 3) spanning
+at most three consecutive blocks sort for **every** arrangement within the
+blocks. At `n=64`, the same criterion holds across all 4,845 profiles; the
+first counterexamples appear at span 4. This supports a finite-state terminal
+lemma, but does not prove its extension to all lengths or cover nonmonotone
+profiles.
+
+The gate is too strong for a direct first-moment proof. The exact count
+recurrence in [`ub28-terminal-gate-mass.py`](../upper-bound/experiments/ub28-terminal-gate-mass.py)
+gives `P[outside gate]=0.33676676654` with 16 matching rounds at widths 16 and
+8, and `0.329109175927` with 70 rounds. Multiplying by `2^32` gives over a
+billion inputs outside the gate. This does not estimate actual tail failures;
+it rejects only the plan of charging every input outside the universally safe
+set as a failure.
+
+The exact `h=4,2,1` tail has a stronger simplification: its final output is
+determined by the incoming width-4 block-count profile alone, even if the
+arrangement inside those blocks is arbitrary. An exact cross-block splitter
+maps a pair of width-`h` counts `(a,b)` to
+`(max(a+b-h,0), min(a+b,h))`. After the width-4 split, the width-2 even pass
+erases the random allocation of each parent count between its two children;
+the width-2 odd pass then has deterministic inputs. The width-1 even pass
+sorts each two-wire block, so the final odd pass and the sortedness test are
+determined by the width-2 counts. [`ub28-terminal-count-gate.py`](../upper-bound/experiments/ub28-terminal-count-gate.py)
+implements this profile-to-output map. Its classification agrees profile by
+profile with the independent SMT check on all 495 and 4,845 nondecreasing
+profiles at `n=32` and `n=64`, respectively. When composed with the exact
+randomized-prefix count recurrence at `n=32`, it reproduces the full
+`ub28-count-process.py` failure probability exactly (at both 16 and 70 rounds).
+The expected number of failing inputs is `0.000882841346664` at 16 rounds and
+`1.58277276181e-46` at 70 rounds at widths 16 and 8, with the exact tail below
+width 8. Thus the large mass outside the sufficient safe gate is mostly
+harmless; the actual bad-profile mass is much smaller. This closes the
+terminal-tail accounting for the model, but does not give a scalable bound on
+the profile distribution arriving from all larger scales.
+
+A fresh review also gave a generic constant-width factor-graph contraction for
+the tail, with a coarse separator size `5^2 * 3^6 * 2^12 = 74,649,600`.
+The deterministic count map above is preferable: it removes the need to
+contract over the tail's internal arrangements at all.
+
+The same method does not immediately compress the entire schedule. At scale
+`h=2^k`, counts have `h+1` possible values, and a spatial cut through the
+multiscale factor graph crosses `O(log n)` scales. The naive transfer state
+count is about `prod_k (2^k+1) = 2^(Theta((log n)^2))`, quasipolynomial in `n`.
+This gives a finite-size exact composition interface, but no known polynomial
+compression or uniform asymptotic failure bound. The next useful investigation
+is whether hypergeometric kernels admit a low-rank or moment-based compression
+that survives composition across scales.
 
 ### UB-28 local rank-sensitive spill estimate
 
