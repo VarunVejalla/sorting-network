@@ -353,3 +353,25 @@ The exact width-16 anchor can supply the terminal potential. Any useful result
 must still cover every edge phase and boundary class, certify entropy endpoints
 with outward bounds, and leave strict margin above `ln 2` after finite-type
 errors.
+
+## Product-affine Chernoff pilot
+
+I tested whether replacing the continuous profile by affine exponential
+potentials is a useful simplification. The reproducible toy in
+[`ub28-affine-mgf-toy.py`](ub28-affine-mgf-toy.py) has two independent uniform
+width-`h` input blocks, one random matching layer, then splits both blocks in
+half. Its event is that the lower block's left child is nonempty while the
+upper block's left child is empty. The exact event probability is computed
+from the annealed count transitions (the two block counts are coupled by
+conservation). A sequential affine-MGF screen found feasible upper rates
+`0.2057`, `0.2104`, and `0.2129` per input wire at `h=16,32,64`, against exact
+rates `0.3591`, `0.3484`, and `0.3467`. These are ordinary floating-point
+screens, not certified optima; they show substantial loss in this toy, not
+failure of the full multiscale schedule. The affine potential is therefore a
+risky simplification and should pass a full-cone rate test before any proof
+work.
+
+For the first-moment gate, one fixed output edge has `n-1` adjacent edges in
+total, so its bad-event exponent must exceed `ln(2)` per input wire (with strict
+slack for the edge and type-count factors). A count over arbitrary pairs would
+use a different terminal event and is not the bound needed here.
