@@ -22,10 +22,11 @@ Supporting notes: `CENTRED-SHIFT.md` and `SIDED-CENTRED-INVARIANT.md`. Check scr
 
 * **P** (Chvátal): u holds fewer than `μ δ^r c` outsiders of order r. In particular `O_L + O_R < μc`.
 * **Q**:
-  * (a) `N_L, N_H ∈ [−λ_u c, μ c + β_u c]`, with
-    * `β_u = μ/(2Aν)` if u is an end child of its parent on that side, else 0;
-    * `λ_u = (w̄/2 + ε_B η/2 + μ/2·[end])/(Aν) + φ̄`;
-    * `w̄ = (2μ(Aν+1) + ε_B η)/(2Aν − 1)`, the fixed point of `w = μ + β + λ`.
+  * (a) `N_L, N_H ∈ [−λ_u c, μ c + β_u c]`, with (**v4**, see §9)
+    * `β_u = (w̄/2)/(Aν)` if u is an end child of its parent on that side, else 0;
+    * `λ_u = (w̄/2 + ε_B η/2)/(Aν) + φ̄`;
+    * `w̄ = (μAν + ε_B η/2)/(Aν − 1)`, the fixed point of `w = μ + β + λ`, so
+      `w̄/2 = (μAν + ε_B η/2)/(2(Aν − 1))`.
   * (b) For interior h, `|D_h| ≤ Δ₁ + φ̄ c`.
 
 ## 2. Design (replaces design P)
@@ -113,3 +114,32 @@ At (4,4,3), q = 24, `δ = 2e-6`, `ROUND = 0.1μ`, `φ̄ = 0` (the far term is ab
    which go into `φ` or into higher-order outsiders.
 4. **The far terms** need the energy-method bound certified at the actual margin (one child range).
 5. **Rounding** of `o_L`, the Δ₁ offsets and the design counts.
+
+## 9. Correction v4 (end children)
+
+For `w = w_1`, u's F₁ composition and u's own ancestral uncertainty combine to exactly
+`−(N_L(u) − o_L)`. So w holds `N_L(u) − o_L ∈ [−w̄c/2, w̄c/2]` **own** low keys more than designed. These
+are not outsiders, so they lie outside w's `O_L ≤ μ c_w` cap, and the upper side gains `(w̄/2)/(Aν)`, not
+`μ/(2Aν)`.
+
+The new fixed point is `w̄/2 = (μAν + ε_B η/2)/(2(Aν − 1))`: at Aν = 2 this is `μ + ε_B/4`, against v3's
+`μ + ε_B/6`.
+
+| package | cost |
+|---|---:|
+| v4, walk-bound band tail (about 0.5/W) | 503.3 |
+| v4, band tail 0.30/W | **491.3** |
+| v4, band tail 0.25/W | **490.0** |
+| v4, band tail 0.13/W | 480.0 |
+
+Exact check (`package_point.out`): `η = 1.0178`; the bulk margin is 1.6% at `δ = 2e-6` and 5.9% at
+`δ = 1e-6` (`J = 5e5`).
+
+**So the package now also needs a band tail of at most about 0.4/W.** The energy method's
+`Σ (z − b − W)₊ ≤ A_global/(4W) ≈ 0.25/W` (global round-1 energy at levels near W, where the support is
+only about `mn/W²` columns) is the candidate. It must be certified.
+
+**A possible refinement (not priced).** The upper side uses P's cap `O_L ≤ μc`. Dynamically, `O_L(u)` is
+only the parent's positive shift plus crossings plus deeper outsiders (`μδ`-small) plus F-escapes. Bounding
+it that way would make the width contract by `1/(Aν)` without the μ floor. That is a larger change to the
+invariant and needs care: P's cap is still required for (4.4) and support.

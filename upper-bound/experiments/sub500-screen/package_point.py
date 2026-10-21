@@ -29,15 +29,15 @@ ROUND = Fr(1, 10) * mu
 # occupancy (R1-PROOF (I3)): a/c <= p (1/nu^2 + k A/nu) + g* / nu^2. Sided design: the end child gets
 # theta = pi/2 + G + o with |o| <= w c / 2, w/2 = (mu (A nu + 1) + eps_B eta/2)/(2 A nu - 1) (eps_B <= 1e-4 here),
 # so g' = (p/2 + g + w/2)/(A nu) and g* = (p/2 + w/2)/(A nu - 1)
-whalf = (mu * (Anu + 1) + Fr(1, 10 ** 4) / 2 * Fr(11, 10)) / (2 * Anu - 1)
+whalf = (mu * Anu + Fr(1, 10 ** 4) / 2 * Fr(11, 10)) / (2 * (Anu - 1))
 gstar = (p / 2 + whalf) / (Anu - 1)
 eta = max(p * (1 / nu ** 2 + k * A / nu) + gstar / nu ** 2, Fr(1))
 
 
 def max_epsB(delta):
     sib = delta * k * A * A / (1 - delta ** 2 * k ** 2 * A ** 2)
-    fixed = mu * (Anu + 1) / (2 * Anu - 1) + (k - 1) * mu * sib / 2 + mu * delta * A * A * k + ROUND
-    coef = eta / (2 * (2 * Anu - 1)) + eta
+    fixed = mu * Anu / (2 * (Anu - 1)) + (k - 1) * mu * sib / 2 + mu * delta * A * A * k + ROUND
+    coef = eta / (4 * (Anu - 1)) + eta
     return (mu * Anu - fixed) / coef
 
 
