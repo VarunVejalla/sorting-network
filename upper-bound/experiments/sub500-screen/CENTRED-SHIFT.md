@@ -224,3 +224,20 @@ in place of Chvátal's `μ + r*` (design P) or R2's `μ + (μ + ε_B/2)/(Aν −
 * an induction that the intervals hold at every node and stage, roles included;
 * an exact-rational check at the chosen point;
 * a review.
+
+## Exact check at the package point (`package_point.py`, `.out`)
+
+Schedule (4,4,3) = `(k, A, ν) = (16, 16, 1/8)`, q = 24, `δ_F = 1/8`, centred chain v3, sib centred, no r*.
+* `μ = 2.954e-5` ((4.4) binds), `Aν = 2`.
+* Walk-bound bulk precision at `m = 2^24`: `d = 1.897e-5`.
+* At `δ = 3e-6`, the allowed `ε_B = 2.006e-5`: the bulk fits with a **5.8% margin**. The remaining
+  `1.1e-6` is the band repair's room, which forces a band of about `2^17` rows. That is already in the
+  490 price.
+* `J = 1/ε_F = 1.68e5`, so the fringe needs `f ≤ 3967` (`f + 1 ≤ p m/2` rows).
+  * The old certified route gives about `18√J ≈ 7400`, which fails.
+  * Route (d) extrapolates to about `4000·sqrt(1.68e5/1.66e6) ≈ 1270`, which passes comfortably. **This
+    package needs the tabled route (d) fringe.**
+* `δ ≥ 5e-6` leaves the bulk short. `δ ≥ 3e-5` makes (4.2-c3) infeasible.
+
+**Margins are thin**: 5.8% on the bulk before the band. A real proof must carry the exact η of the
+centred end-deficit design and the rounding reserve. Either can eat the margin.
