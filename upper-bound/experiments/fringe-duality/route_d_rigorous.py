@@ -197,8 +197,8 @@ def Kmax(j, n):
     R = int(3 * math.sqrt(j)) + 10
     A = A_star(round(j), R, 1, 1, n, math.log(n / ETA) + 3 * math.log(R + 1))
     if A >= R * R:
-        return math.inf
-    return math.sqrt(A)
+        return float(j)          # trivial: a column holds at most the whole mass
+    return min(float(j), math.sqrt(A))
 
 
 def escapes(j, n, f, s2, L0_extra, ratio, s2_lo=None, j_lo=None):

@@ -279,3 +279,38 @@ random permutation of a fixed vector, via a chain of nested level sets or the ge
   Each term then bounds every j in the interval. A geometric j-grid with ratio about 1.2 up to jmax
   needs a faster evaluator first. The pure-Python `A*` and `mult_excess` loops take hours per large j.
   Port them to vectorised or compiled code, or cache across j.
+
+## Route (d) gap: uniformity in n (2026-10-21)
+
+The construction needs every n: the separator's column count is `n ≈ a/m`, which is unbounded as
+`N → ∞`. But route (d) as written is **not n-uniform**.
+* The union over target columns and sets costs `ln n` (and `s2 ln(n/s2)`).
+* In the Kingman lemma, t is capped near `κ/R`, because the main term grows like `e^κ`.
+* So the loss is about `R·Ent/κ`, which grows with `ln n`.
+
+Single-column load from `route_d_rigorous.escapes` (`s2 = 1`, f = 4000):
+
+| n | 2^20 | 2^40 | 2^80 | 2^160 | 2^320 | 2^640 |
+|---|---:|---:|---:|---:|---:|---:|
+| load at j = J | 392 | 366 | 350 | 349 | 359 | 371 |
+| load at j = 100J | 1743 | 1525 | 1504 | 1500 | 1503 | 1514 |
+
+This is harmless for any n that could ever be realised, but it is unbounded, so it does not give the
+limsup.
+
+**The truth is n-uniform.** The adversary's power is mass-limited, `Σ_all z² ≈ 3j`, and coincidences of
+v's sources become rarer as n grows.
+
+**Fix (n large): deterministic main term plus a collision term**, as in "Sharper round 1" above. Since each
+`σ₁,r` is a bijection, `Σ_c Σ_{hits} (a − λ(r+1))₊ = Σ_r Σ_T (a_T − λ(r+1))₊` exactly.
+* With at most one relevant hit, `Y_c` equals its single-hit value.
+* Otherwise `Δ_c ≤ R·N_c(h*)`, with `N_c(h*) ≥ max(2, λh*/R)`. This needs at least two hits on `U` early, or
+  a hit rate above `λ/R`.
+* Its tails are about `(C R u/(λn))^k`. So `t ≈ ln(nλ/(CRu))/(2R)` is allowed, giving
+  `x_Δ ≈ 2R (c u R + u ln R + ln n)/ln(nλ/(CRu))`. **This is bounded as n → ∞.**
+* It is useful only when `ln(n/(uR)) ≳ 20`, i.e. for `n ≳ e^{20} u R`.
+* Kingman covers moderate n (the table above, at least up to `2^640`). Use the smaller of the two bounds
+  per level.
+
+**Status:** open. It needs this collision lemma written out and evaluated. Until then, route (d)
+certifies the 731.25 fringe only for `n ≤ 2^640`, which is not enough for a limsup.
