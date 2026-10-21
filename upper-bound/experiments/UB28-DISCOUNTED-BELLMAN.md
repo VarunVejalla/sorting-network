@@ -117,15 +117,18 @@ adding more Pinsker bins.
 The zero is an abstraction artifact, rather than a witness trajectory. The
 reproducible [`ub28-meanfield-terminal-screen.py`](ub28-meanfield-terminal-screen.py)
 follows the exact zero-rate update `(a,b) -> (a*b, a+b-a*b)` from top
-densities `(1/2,1/2)`, with equal-density children at each split. For `n=2^20`
-and 235/35 rounds it reaches width-16 densities
-`(0,0,2.06e-72,2.06e-72,0.00296,0.00296)` on the tested edge support; rounding
-to width-16 counts gives `(0,0,0,0,0,0)`, which the exact finite anchor rejects.
-Thus the coarse Bellman value zero cannot be read as an actual zero-cost
-trajectory. Its transition kernels maximize independently over density
-intervals, so consecutive transitions can select inconsistent representatives
-inside their shared cells. A useful certificate must constrain the profile
-across consecutive transitions (for example, a relational potential or
+densities `(1/2,1/2)`, with equal-density children at each split. At `n=2^10`,
+the residue-0 central edge 448 reaches width-16 densities
+`(0,0,2.01e-75,2.01e-75,0.00301,0.00301)` on the tested support; rounding to
+width-16 counts gives `(0,0,0,0,0,0)`, which the exact finite anchor rejects.
+Meanwhile [`ub28-zero-cell-reachability.py`](ub28-zero-cell-reachability.py)
+finds 6,358 viable anchor cells reachable from the balanced top cell `(4,4)`
+through zero-bound arcs in the eight-bin abstraction. This path is not a
+concrete zero-rate trajectory: the initial entropy bound is maximized at the
+exact density `(1/2,1/2)`, whose deterministic mean-field path is rejected.
+The coarse transition kernels can select different representatives inside a
+shared cell at successive scales. A useful certificate must constrain the
+profile across transitions (for example, with a relational potential or a
 correlated interval enclosure).
 
 I also subdivided each source density cell by factors 2, 4, and 8 when
