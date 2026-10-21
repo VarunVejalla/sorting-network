@@ -772,7 +772,7 @@
         "upper-bound/backlog/sub500-routes.md",
         "upper-bound/experiments/sub500-screen/refined.out"
       ],
-      "notes": "2026-10-20 refined: ~98% of a bag's wires are children's F blocks, runs of f+1 ~ 2^13 rows, so skipping lg(f+1) merge levels saves S(12): 731.2 alone, 641.2 with the band repair. Only the first sort sees the raw node input (sort, scramble, sort, scramble, sort); at R1 each child column gets ~16 sorted parent segments, so about a 4-level merge (~4q) instead of S(q). Idealized 618.7 alone, 483 with delta_F 1/4 + fringe away. The earlier -16% cap (UB-13, runaware/) was for the 1770/1419 windows."
+      "notes": "2026-10-21 structural check passes: every bag wire is in a fixed sorted run (children's up-blocks = top/bottom row segments of child columns, ~2^12-2^13 rows; parent's down-blocks = row bands of the parent's column-sorted output, ~m/k rows), so no arbitrary chunk kills the merge saving (an unsorted 1/64 share would have: S(q-6) + merges = S(q)). Next: per-role minimum run length, Lean merge lemma, node-spec variant with run-sorted input (SCREEN.md). 2026-10-20 refined: ~98% of a bag's wires are children's F blocks, runs of f+1 ~ 2^13 rows, so skipping lg(f+1) merge levels saves S(12): 731.2 alone, 641.2 with the band repair. Only the first sort sees the raw node input (sort, scramble, sort, scramble, sort); at R1 each child column gets ~16 sorted parent segments, so about a 4-level merge (~4q) instead of S(q). Idealized 618.7 alone, 483 with delta_F 1/4 + fringe away. The earlier -16% cap (UB-13, runaware/) was for the 1770/1419 windows."
     },
     {
       "id": "UB-40",

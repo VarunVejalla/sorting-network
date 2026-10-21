@@ -249,3 +249,35 @@ The walk-bound tail prices like `c ≈ 0.5` at the relevant W.
 * Without `r* = 0`, the best is 566.
 * With `ε_B` tolerance instead: `T ≥ 5` (492.3 at q = 19).
 * `r* = 0` (the two-sided invariant, UB-24) is the gating component.
+
+## UB-39 merge-first: structural soundness check (2026-10-21)
+
+Danger case: the ~1/64 of a bag's wires that come down from the parent (`π_x(t−2) = 64pc` against
+`Σ π_w = 4096pc`) might arrive in arbitrary order.
+* Each column would then hold `≈ 2^{q−6}` arbitrary wires.
+* Sorting them costs `S(q−6)`. With the remaining merge levels the critical path is back to `S(q)`,
+  so there would be **no saving**.
+* Concentrating them in their own columns does not help either: those columns need the full `S(q)`.
+
+**It does not happen.** Every bag wire belongs to a sorted run fixed by the layout:
+* **Up-blocks from children** are the extreme `π/2` rank positions of the child's semantic output.
+  These are the top and bottom row segments of each child column, sorted by the child's last column
+  sort. Runs are `≈ p/(2Aν)·m ≈ 2^12–2^13` rows long.
+* **Down-blocks from the parent**, `b_l`, are consecutive rank ranges of the parent's output, i.e. row
+  bands of its column-sorted matrix. Each parent column contributes one contiguous sorted run of
+  `≈ m/k` rows, which is long. Partial rows at the band ends add at most one short run per column.
+* **Obliviousness.** The physical output is the semantic output composed with a row-preserving column
+  relabeling (`physicalPack2Net_exec`). So each run is a fixed set of physical wires, sorted in row
+  order, for every input.
+
+The first column sort can therefore be replaced by a merge tree starting at run length `L ≈ 2^12`.
+Its depth is `S(q) − S(lg L)`, and the network is oblivious and correct on every reachable bag.
+
+**Remaining for UB-39:**
+1. Check the minimum run length for every node role (botRise, topDesc, bottom nodes, the
+   Batcher-threshold bags) at the target geometry.
+2. Lean: a merge lemma (a merge tree sorts any input whose fixed runs are sorted, via 0-1 and
+   Batcher's merge).
+3. A node-spec variant whose first stage assumes run-sortedness, discharged from the previous stage's
+   column sort. This replaces the `∀ v` input of the separator lemma by `∀ v` with sorted runs; the
+   later stages are unchanged.
