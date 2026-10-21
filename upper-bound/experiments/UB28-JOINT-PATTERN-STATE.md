@@ -1,7 +1,31 @@
 # UB-28 joint-pattern state: research sketch
 
-Status: independently reviewed state hypothesis with local transition rate
-formulas; no full-network probability bound is claimed.
+Status: the matching-layer histogram transition has exact local formulas, but
+the proposed state is **not closed across a deterministic physical split**.
+No full-network probability bound is claimed.
+
+## Critical correction: histograms do not determine split laws
+
+The earlier claim that conditioning on a joint histogram makes its column
+types uniform over their orbit was unjustified. Equivariance of a random
+matching kernel does not make its output distribution exchangeable for a
+fixed input. For example, with two positions and three block rows, the
+columns `(000,001)` and `(001,000)` have the same joint histogram, but a
+physical split into the first and second position gives opposite ordered
+child profiles. If the two matched rows are both zero, a uniform matching
+leaves the entire matrix unchanged, so this nonexchangeable arrangement
+persists with probability one. Thus the multivariate-hypergeometric split
+kernel below is valid only under an additional exchangeability hypothesis;
+it is not established for the actual fixed-input randomized network.
+
+The exact triple-type formula below still describes the histogram transition
+of a single uniform permutation matching when its input histogram is known.
+That one-step lumpability does not supply the conditional arrangement law
+needed at the subsequent deterministic split. A valid continuation needs a
+state retaining positional information relative to future dyadic split
+boundaries, or a different argument that bounds the split without assuming
+exchangeability. The finite-width calculations and rate diagnostics that
+use the hypergeometric split must therefore be treated as model-only.
 
 The width-2 example in `UB28-TOP-HEAVY-SCHEDULE.md` rules out a Markov state
 consisting only of block counts. The schedule may still admit a bounded-width
@@ -15,19 +39,21 @@ state is the histogram `H=(H_v)`, together with the exact ordered block labels
 and finite pairing/edge phase. A fresh uniform cross-matching is equivariant
 under a common permutation of all coordinate slots: conjugating each matching
 permutation by the common relabeling preserves its uniform law. Thus equal
-histograms in the same labeled geometry have the same next-histogram law.
-Conditional on `H`, common exchangeability makes the type sequence uniform over
-its orbit.
+histograms in the same labeled geometry have the same next-histogram law for
+that randomized matching step. This lumpability statement does not imply that
+the output sequence is uniform over its histogram orbit.
 
-At a physical half split, retain the **joint allocation** of every row type to
-the first and second halves. Conditional on parent histogram `H`, these
-allocations have the multivariate-hypergeometric law; the pair of child
-histograms remains coupled through the shared allocation. This distinguishes
+At a physical half split, if the incoming sequence is exchangeable conditional
+on `H`, retain the **joint allocation** of every row type to the first and
+second halves. Under that extra hypothesis, the allocations have the
+multivariate-hypergeometric law; the pair of child histograms remains coupled
+through the shared allocation. This distinguishes
 the width-2 counterexample: aligned singleton blocks have histogram `{00,11}`,
 while independent singleton blocks have `{01,10}`. Replacing either by two
 separate block counts loses the relevant information.
 
-This state is plausible for a fixed, phase-tagged support geometry. Erasing
+The histogram state is exact for a fixed, phase-tagged support geometry across
+the randomized matching step, but is not yet a full-network state. Erasing
 block labels/offset phase is unsafe. Support updates must project only whole
 block rows and must never discard a row that can later re-enter the cone. The
 safe construction is to compute the complete backward cone first, use nested
@@ -146,7 +172,8 @@ The second distribution is the zero-cost mean-field output histogram. This
 weaker bound depends only on input and output histograms and may be easier to
 optimize across the schedule.
 
-The physical half-split also has an exact type kernel. If parent type counts
+Under conditional exchangeability, the physical half-split has an exact type
+kernel. If parent type counts
 are `H_v`, first-half allocations are `X_v`, and second-half allocations are
 `Y_v=H_v-X_v`, then
 `P(X)=prod_v binom(H_v,X_v)/binom(h,h/2)`. If `R_{uv}` counts the aligned
@@ -238,10 +265,13 @@ all width-4 count profiles through length 6 against literal bit-level
 execution. The proof above, rather than that finite check, establishes the
 arbitrary-length claim.
 
-If closure holds, the proof program would be:
+Before the rate proof can proceed, a replacement state or a valid reachable-
+state split invariant is required. If that gate is resolved, the proof
+program would be:
 
-1. Prove a conditional exchangeability invariant for each cone phase, including
-   the exact tail and the deterministic half split.
+1. Prove conditional exchangeability for every reachable cone phase, including
+   the exact tail and deterministic half split, or retain the positional data
+   needed by those splits. Equivariance alone is insufficient.
 2. Prove strong lumpability for the exact histogram transition under every
    phase-tagged random matching pass; count the needed random-permutation
    contingency/cycle types and carry the joint split allocation. A simple

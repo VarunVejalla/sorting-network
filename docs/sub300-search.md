@@ -514,22 +514,29 @@ uniform matching laws are equivariant, and a physical split acts on the joint
 row types by a multivariate-hypergeometric allocation. The split must retain
 the two child histograms jointly.
 
-An independent review found this state plausible for fixed phase-tagged
-geometry. The exact check in
+The exact check in
 [`ub28-joint-histogram-check.py`](../upper-bound/experiments/ub28-joint-histogram-check.py)
 enumerates every pattern for `(width, support)=(2,6),(4,3),(4,4)` and verifies
-matching lumpability for both adjacent pair phases plus the joint split kernel.
+matching lumpability for both adjacent pair phases plus the split kernel when
+the incoming columns are uniformly exchangeable conditional on their joint
+histogram.
 The exact matching transition also has a triple-type count: for predecessor,
 current, and successor type table `T`, its exponential cost is
 `I(C;A,B)`, and the split alignment has a mutual-information type cost. Exact
 factorial formulas and small exhaustive checks are recorded in
 [`UB28-JOINT-PATTERN-STATE.md`](../upper-bound/experiments/UB28-JOINT-PATTERN-STATE.md)
 and [`ub28-matching-triple-types.py`](../upper-bound/experiments/ub28-matching-triple-types.py).
-These close the finite-type kernel derivation, not the rate gate. The remaining
-gate is to optimize the coupled rate over all phase and boundary trajectories,
-prove it exceeds `ln 2`, and then carry the uniform subexponential errors.
-Forward transitions may project away whole block rows only after the complete
-backward cone is fixed. The exact width-4/2/1 tail is count-based by the cyclic
+But a critical state-closure gap remains: the output of a randomized matching
+need not be exchangeable conditional on its joint histogram, and the next
+physical half-split is deterministic. For example, a matching of two all-zero
+rows leaves a third row's fixed positional pattern unchanged. Thus the
+hypergeometric split and all coupled-rate computations using it are model-only
+unless a stronger reachable-state invariant or positional state is supplied.
+The matching transition formulas do not close the finite-type kernel
+derivation across a split. Only after this closure issue is resolved can the
+rate be optimized over phases and its exponent compared with `ln 2`. Forward
+transitions may project away whole block rows only after the complete backward
+cone is fixed. The exact width-4/2/1 tail is count-based by the cyclic
 complete-splitter argument and explicit width-2-count predicate. See
 [`UB28-JOINT-PATTERN-STATE.md`](../upper-bound/experiments/UB28-JOINT-PATTERN-STATE.md).
 
@@ -540,9 +547,13 @@ width-128 blocks that are constant with row values `(0,0,1,1,0,0)`. The
 screen also finds a less extreme width-128 count profile
 `[35,24,64,37,79,25]` whose pair totals are ordered `59 <= 101 <= 104`, yet
 the suffix still leaves `10` at edge508. These ordered counts are compatible
-with the necessary count inequalities after the width-256 offset passes: take
-the fourth width-256 row full of ones, so its pair totals are also ordered. A
-matching can preserve any chosen block patterns with those ordered totals.
+with the necessary count inequalities after the width-256 offset passes: the
+input has a zero prefix and a one suffix, so the fourth width-256 row really
+is full of ones. A specified positive-probability sequence of width-256 and
+width-512 matchings preserves the profile and leaves the exact suffix
+inversion. Its probability is about `10^-9014.528` for 70 random rounds; this
+is a valid finite local failure event but far too small by itself to refute a
+whole-network first-moment bound.
 zero-cost mean-field diagnostic in
 [`ub28-mean-field-screen.py`](../upper-bound/experiments/ub28-mean-field-screen.py)
 assigns positive mass to the corresponding column type at the cutoff. This is
