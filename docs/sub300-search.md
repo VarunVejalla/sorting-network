@@ -91,6 +91,19 @@ for its independently reviewed shifted-profile tail lemma and the precise
 remaining D2 transfer obligation. Neither passing adversarial samples nor
 that local lemma proves the conditional292.5 sorting bound.
 
+### Inversion-localization terminal alternative
+
+The tracked global prefix defect has aggregate
+`sum_r F(r) = inv(w)`, the binary inversion count. If a priced prefix schedule
+could prove `inv(w) <= n^theta`, every error would lie within `n^theta` wires
+of the threshold. A fixed recursive chunk/seam cleanup then gives coefficient
+`(p+theta)/(1-theta)` from a prefix-stage coefficient `p`; at `p=292.5`, it
+requires `theta < 15/602` for a strict result below300. The exact identities,
+cleanup argument, and conditional gate are in
+[`INVERSION-LOCALIZATION-GATE.md`](../upper-bound/experiments/prefix-flux/INVERSION-LOCALIZATION-GATE.md).
+This replaces exact terminal native-block purity with a precise alternate
+gate, but no current UB-42 recurrence proves the required inversion exponent.
+
 The latest gate check closes the local physical-frame objection: under the
 inflated schedule, static D2 ports are rank intervals in each node's ordered
 local input, and the semantic/physical permutation preserves row counts.
