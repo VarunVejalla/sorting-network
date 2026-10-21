@@ -135,6 +135,12 @@ The rectangle-to-port frame is checked against `R1Wire`/`R1Exec` and
 `PhysicalPack2`: ports are static-order rank intervals, local networks are
 presented in that rank order, and physical/semantic whole-row counts agree.
 The remaining issue is global transfer, not the rectangular port frame.
+`wire_partition_check.py` now checks the stronger discrete routing identity:
+each active node's up/down rank slices, plus unchanged inactive bags, partition
+every next-stage bag's exact static-wire intervals with neither omissions nor
+duplicates. It passed all stages at depths 2--8 for scale 1 and 2 (699,048
+bag checks per scale at depth 8). This validates the flow-coordinate mapping
+for a later profile model; it adds no comparator constraint or global invariant.
 `rank_recurrence.py` propagates zero-count intervals using the local
 one-sided rank-tail bounds, including the required common-witness factor
 `m^2` for baselines. At depth7, scale65536 and threshold1/3 it cannot certify

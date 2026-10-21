@@ -108,6 +108,34 @@ tail operator at cut m-k, not k: choose b_h+f_h=m-k in that reflected frame.
 The endpoint k=m is exact. If a KL budget exceeds its maximal value, clipping
 the threshold to i remains valid by the deterministic mass cap X<=in.
 
+## Global prefix-flux invariant and terminal test
+
+For a stage state, let `Z_t(r)` be the number of zeros on static wires
+`[0,r)`, and let `q` be the conserved total number of zeros. Define the
+prefix defect
+
+    F_t(r) = min(q,r) - Z_t(r).
+
+It is always nonnegative. If every active bag is listed in increasing static
+wire order and its local output dominates its local input at every prefix,
+then `Z_{t+1}(r) >= Z_t(r)` for every global cut `r`: intersect `[0,r)` with
+each active bag; each intersection is exactly a local prefix, sum the local
+inequalities, and add unchanged inactive wires. Therefore `F_t(r)` is
+pointwise nonincreasing through the D2 stages. The exact interval-routing
+identity checked by `wire_partition_check.py` supplies the required static
+wire partition for this flow; the local prefix inequality follows from
+ascending comparators.
+
+At the terminal time, `F(r)=0` at every native interval boundary wholly below
+or above the unique threshold-straddling interval is an exact sorting test:
+below the threshold it says every wire in the prefix is zero; above it says
+all `q` zeros have already appeared. The straddling native interval can be
+sorted by the final exact cleanup. This identifies a compact global state
+and terminal criterion, but monotonicity alone does not force defects to
+vanish. The missing proof is a rank-tail contraction bound for `F` over the
+actual active bags, strong enough to make every required terminal defect
+zero within the priced schedule.
+
 ## Remaining decisive gate
 
 Derive a closed transfer of these tails through the **actual ordered D2
