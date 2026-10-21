@@ -72,7 +72,7 @@ F(n) <= p*log2(n) + F(4*n^theta+O(1)) + theta*log2(n) + O(1),
 limsup F(n)/log2(n) <= (p+theta)/(1-theta).
 ```
 
-For the UB-42 nominal prefix budget `p=292.5`, reaching at most300 requires
+For the baseline UB-42 prefix budget `p=292.5`, reaching at most300 requires
 
 ```text
 theta <= (300-292.5)/301 = 15/602 ~= 0.0249169.
@@ -85,3 +85,44 @@ schedule drives the global inversion count below `n^theta` for some
 tests do not establish such a bound; the exact root, provider, and all-depth
 contraction remain open. If the prefix stage only gives a looser inversion
 exponent, the displayed budget rejects this cleanup route at `p=292.5`.
+
+The parameter screen has a more favorable but still conditional `(3,3,2)`
+candidate: row height `2^13`, three-sort depth273, stage rate1, hence
+`p=273`. Its cleanup gate is
+
+```text
+theta <= (300-273)/301 = 27/301 ~= 0.089701.
+```
+
+This gives substantially more room and is the better UB-42 parameter target
+if the new row-height-13 provider and all-depth flow bounds can be proved.
+The depth-30 fringe ratio and the sparse adversary runs below are finite
+screens only; they do not establish either prerequisite.
+
+## Finite ordered inversion screen
+
+`sparse_probe.py` now accepts D2 parameters and row height and reports the
+exact inversion count of its interval-encoded trace without expanding the
+ambient word. The interval formula was exhaustively checked against all
+Boolean words through length11. It asserts inversion nonincrease at every
+oracle stage and prints a compact summary by default (`--verbose` retains the
+full histories).
+
+For `(3,3,2)`, row height8192, scale8192, threshold1/3, root error fraction
+`10^-7`, and the assumed rank-tail oracle, the initial-band trace gives:
+
+| flow depth | ambient `N` | final inversions | `log_N(inv)` | remaining wrong bits |
+|---:|---:|---:|---:|---:|
+| 12 | `2^49` | 46,225 | 0.3163 | 430 |
+| 20 | `2^73` | 1,669,264 | 0.2832 | 2,584 |
+| 24 | `2^85` | 3,845,521 | 0.2573 | 3,922 |
+
+Each trace has zero wrong bits in every noncrossing terminal native block;
+the displayed errors lie in the threshold-crossing block. At depth12, outer
+and left-end initial bands also reached that terminal condition, with final
+inversion counts834,415 and293,690 respectively. The three depth-specific
+exponents trend downward but are far above `27/301`; the final counts are
+small relative to `N`, not yet a certified power law. The oracle selects
+input-dependent port outputs under assumed local tails, so these traces are
+discovery evidence only and do not prove a fixed provider or a uniform
+inversion bound.

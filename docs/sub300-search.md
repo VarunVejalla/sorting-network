@@ -103,6 +103,10 @@ cleanup argument, and conditional gate are in
 [`INVERSION-LOCALIZATION-GATE.md`](../upper-bound/experiments/prefix-flux/INVERSION-LOCALIZATION-GATE.md).
 This replaces exact terminal native-block purity with a precise alternate
 gate, but no current UB-42 recurrence proves the required inversion exponent.
+The parameterized `(3,3,2)` core has conditional `p=273` and relaxes the gate
+to `theta<27/301`; its row-height-13 provider is still missing. Finite ordered
+oracle traces reach only the threshold-crossing terminal block through depth
+24, but their measured inversion exponents are still well above the gate.
 
 The latest gate check closes the local physical-frame objection: under the
 inflated schedule, static D2 ports are rank intervals in each node's ordered

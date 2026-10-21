@@ -10,7 +10,7 @@ from bisect import bisect_right
 from fractions import Fraction as F
 import random
 from flow_dag import FlowDAG
-from oracle import choose,normalize_word,labeled_outputs,dominates
+from oracle import Par,choose,normalize_word,labeled_outputs,dominates
 from moderate_tail import ragged
 from first_column import first_column
 from moderate_tail import bound,interval_envelope
@@ -33,6 +33,22 @@ def overlap(intervals,lo,hi):
     while j<len(intervals) and intervals[j][0]<hi:
         a,b=intervals[j]; total+=max(0,min(b,hi)-max(a,lo)); j+=1
     return total
+
+
+def inversion_count(errors,q,N):
+    """Exact binary inversion count for ideal-threshold word XOR errors."""
+    left=[]; right=[]
+    for lo,hi in errors:
+        if lo<q: left.append((lo,min(hi,q)))
+        if hi>q: right.append((max(lo,q),hi))
+    l=sum(b-a for a,b in left); r=sum(b-a for a,b in right)
+    # Wrong ones on the left contribute their later positions, excluding
+    # pairs of wrong ones; wrong zeros on the right contribute preceding
+    # positions, excluding pairs of wrong zeros. Every left/right pair is
+    # also an inversion.
+    left_weight=sum((b-a)*(2*q-a-b-1)//2 for a,b in left)
+    right_weight=sum((b-a)*(a+b-1-2*q)//2 for a,b in right)
+    return left_weight-l*(l-1)//2 + right_weight-r*(r-1)//2 + l*r
 
 
 def subtract(intervals,remove):
@@ -111,15 +127,16 @@ def rank_prefix_lower(a,H,ends,qrows=12):
 
 
 def probe(d,horizon,root_eps,eps_b,eps_f,delta,threshold,moderate=True,
-          initial='band',first_sort=True,scale=1,rank_core=False):
-    flow=FlowDAG(d,scale=scale).build(); p=flow.p; N=p.k**d*scale; q=int(threshold*N)
+          initial='band',first_sort=True,scale=1,rank_core=False,
+          params=(2,3,2),row_bits=12):
+    flow=FlowDAG(d,scale=scale,p=Par(*params)).build(); p=flow.p; N=p.k**d*scale; q=int(threshold*N)
     e=min(int(root_eps*N/2),q,N-q)
     assert initial in ('band','outer','left','right','stripes')
     low=(0,e) if initial in ('outer','left') else (q-e,q)
     high=(N-e,N) if initial in ('outer','right') else (q,q+e)
     errors=merge([low,high])
     if initial=='stripes':
-        n=N//4096
+        row_count=1<<row_bits; n=N//row_count
         def stripes(lo,hi,phase):
             rows=range((lo+n-1)//n,hi//n)
             width=(e+len(rows)-1)//len(rows)
@@ -132,7 +149,7 @@ def probe(d,horizon,root_eps,eps_b,eps_f,delta,threshold,moderate=True,
             assert left==0
             return out
         errors=merge(stripes(0,q,n//7)+stripes(q,N,5*n//7))
-    history=[2*e]; rng=random.Random(0)
+    history=[2*e]; inv_history=[inversion_count(errors,q,N)]; rng=random.Random(0)
     assert e>0,'choose a larger diagnostic N for nonzero initial error'
     # Each profile has maximum diagonal prefix deficit e, hence fits the root
     # bulk bound. No root fringe guarantee is asserted by this initializer.
@@ -145,15 +162,16 @@ def probe(d,horizon,root_eps,eps_b,eps_f,delta,threshold,moderate=True,
             incoming=normalize_word([(hi-lo,bit) for lo,hi,bit in labels])
             original=incoming
             if first_sort:
-                incoming=first_column(incoming)
+                incoming=first_column(incoming,q=row_bits)
             H=sum(length*bit for length,bit in incoming)
             P=sum(max(0,min(hi,q)-lo) for lo,hi,_ in labels)
             contract=None
             # One column is sorted exactly by the first column sort. There is
             # no random permutation union to estimate when n=1.
-            exact=moderate and not rank_core and a<=4096
-            if moderate and not rank_core and a>4096 and pi and H not in (0,a):
-                n=(a+4095)//4096; L,r=divmod(a,n)
+            row_count=1<<row_bits
+            exact=moderate and not rank_core and a<=row_count
+            if moderate and not rank_core and a>row_count and pi and H not in (0,a):
+                n=(a+row_count-1)//row_count; L,r=divmod(a,n)
                 low=ragged(a,pi//2,H)['integer_bound']
                 high=ragged(a,pi//2,a-H)['integer_bound']
                 contract=(int(eps_b*L*n/2)+4*r,H-low,a-H-high)
@@ -163,7 +181,7 @@ def probe(d,horizon,root_eps,eps_b,eps_f,delta,threshold,moderate=True,
             local_ends=[0];pos=0
             for length in [pi//2,*blocks,pi//2]:
                 pos+=length;local_ends.append(pos)
-            prefix_lower=(rank_prefix_lower(a,H,sorted(set(local_ends+extra+[P])))
+            prefix_lower=(rank_prefix_lower(a,H,sorted(set(local_ends+extra+[P])),row_bits)
                           if rank_core else None)
             local_parameters=(F(2),F(1),F(0)) if rank_core else (eps_b,eps_f,delta)
             ends,ys,_,_=choose(a,pi,blocks,H,(lev,idx),p,d,q,*local_parameters,
@@ -181,6 +199,9 @@ def probe(d,horizon,root_eps,eps_b,eps_f,delta,threshold,moderate=True,
         total=sum(b-a for a,b in errors)
         assert total<=history[-1]
         history.append(total)
+        inv_next=inversion_count(errors,q,N)
+        assert inv_next<=inv_history[-1]
+        inv_history.append(inv_next)
         _,cuts=affected(flow,t+1,errors,q)
         for lev,idx,wrong in cuts:
             future=sum(flow.row(u,lev,idx)[1] for u in range(t+1,len(flow.rows))
@@ -203,7 +224,12 @@ def probe(d,horizon,root_eps,eps_b,eps_f,delta,threshold,moderate=True,
             else: pure+=wrong
         terminal=dict(pure_wrong=pure,mixed_wrong=mixed,
                       cleanup_sorts_this_execution=pure==0)
-    return dict(fail=False,history=history,states=len(flow.nodes),terminal=terminal)
+    from math import log2
+    final_inv=inv_history[-1]
+    return dict(fail=False,history=history,inversion_history=inv_history,
+                initial_inversions=inv_history[0],final_inversions=final_inv,
+                final_inversion_exponent=(log2(final_inv)/log2(N) if final_inv else 0.0),
+                states=len(flow.nodes),terminal=terminal)
 
 
 if __name__=='__main__':
@@ -217,12 +243,24 @@ if __name__=='__main__':
                     help='weaker postcondition-only oracle; omits mandatory first sort')
     ap.add_argument('--scale',type=int,default=1,
                     help='uniform wire-count inflation for the D2 flow')
+    ap.add_argument('--params',nargs=3,type=int,default=(2,3,2),metavar=('X','Y','Z'))
+    ap.add_argument('--row-bits',type=int,default=12,
+                    help='log2 of the exact rectangular core row count')
+    ap.add_argument('--verbose',action='store_true',
+                    help='print full error and inversion histories')
     ap.add_argument('--rank-core',action='store_true',
                     help='impose reviewed whole-row spill-tail rank limits')
     ap.add_argument('--coarse',action='store_true')
     args=ap.parse_args()
     result=probe(args.depth,args.horizon,F(args.root_eps),F(19,2000),
                  F(args.eps_f),F(args.delta),F(args.threshold),not args.coarse,
-                 args.initial,not args.skip_first_sort,args.scale,args.rank_core)
+                 args.initial,not args.skip_first_sort,args.scale,args.rank_core,
+                 tuple(args.params),args.row_bits)
     print('SPARSE RELATIONAL ORACLE; no fixed-network or all-input upper bound')
-    print(result)
+    if args.verbose:
+        print(result)
+    else:
+        print({key:result[key] for key in (
+            'fail','initial_inversions','final_inversions',
+            'final_inversion_exponent','states','terminal')
+            if key in result})
