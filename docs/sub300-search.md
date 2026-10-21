@@ -148,4 +148,8 @@ with the fringe idealized away, so it is not yet an allowance for this packet
 route. Fresh review confirmed the local inequality and arithmetic, while
 flagging this transfer caveat. This remains a local screen, not evidence that
 such a family exists. Rare cohorts, packet-fragment repacking, and the full
-scheduler are unpriced.
+scheduler are unpriced. For three matching layers, every product row has
+support at most eight, forcing asymptotic contraction `rho >= 1/sqrt(8)`;
+the `q=14` proxy gate allows only about `0.0216` above that necessary floor.
+Fresh review verified this support bound, but it gives no matching family or
+upper bound on the other singular directions.

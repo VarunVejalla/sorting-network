@@ -45,6 +45,21 @@ Fresh review (`/root/packet_budget_review`, GPT-6-luna) confirmed the UB-25
 rounding inequality and script arithmetic; it identified the schedule-transfer
 and tolerance-proxy caveats now stated above.
 
+The same review supplied a necessary contraction floor. A product of `s`
+pair-averaging matchings is doubly stochastic, and each row has support at
+most `2^s`. For `c` packets, Cauchy gives
+
+```text
+rho = ||P - J||_2 >= sqrt(2^-s - 1/c),
+```
+
+so for unbounded packet counts `rho >= 2^(-s/2)`. With `s=3`, this floor is
+`1/sqrt(8) ~= 0.35355`, only about `0.02164` below the `q=14` proxy gate
+`rho_max ~= 0.37519`. This does not rule out the gate, but shows that the
+required contraction is close to the best possible from support size alone;
+attaining it in every singular direction with a shared unbounded family is a
+substantial construction obligation.
+
 Run with:
 
 ```sh
