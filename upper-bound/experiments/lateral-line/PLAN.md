@@ -129,3 +129,31 @@ The exact worst case over all s is **3.05e4 at s = 17**, i.e. 2.2e-7 of mn: 31×
 For `s ≥ 256` the average falls below the margin, so monotonicity gives 0. Against the floor `6.9e-6`
 this is about 30× better. Both of UB-20's blocking floors, overflow (O-L) and far spill, are "bulk
 excess beyond a margin", and the energy method removes the input-entropy floor in both.
+
+## Pricing with the composition corrections (`../sub500-screen/lateral_screen.py`, `.out`)
+
+COMPOSITION.md §5 conditions in the R1-era screen:
+* (4.2-L) budget ≥ `ε_2 η`;
+* (O-L) residual fits the fringe rows, with t = 8;
+* `δ_F/L` and `ε_F/L`, with L = 2;
+* band sized against the order-0 budget;
+* `+2(q+1)` per stage.
+
+| package | lateral | without lateral |
+|---|---:|---:|
+| 3 sorts, fringe /5.8 | 791.7 | 731.2 |
+| band + merge, fringe /5.8 | 721.2 | 603.8 |
+| band + merge, fringe /5.8, `r* = 0` | 674.3 | 490.0 |
+| band + merge, fringe away (at (4,6,3)) | 560.0 | 477.3 (`r* = 0`) |
+
+**Lateral repair does not pay at the R1 point in this model.**
+* The far-load factor L = 2 halves μ, so `δ_F/L` per node. Then `r* ≈ 3.8μ` exceeds the order-0 budget,
+  and (4,5,3) becomes infeasible.
+* (O-L) caps the tolerance at about 15–100×. The residual's Gaussian scale `t·sqrt(2λ)` must fit fringe
+  rows `g·m` with `g ~ 1e-4`.
+* The merges add `2(q+1)` per stage.
+
+The energy method removes UB-20's worst-case floors (overflow and far spill, see above), but the
+**structural** costs (L = 2, r*, fringe fraction g) remain. Revival would need L = 1 (an independent
+scramble per sibling index, plus a combined-staircase fringe lemma) **and** `r* = 0`, and even then
+it is not better than the non-lateral package.

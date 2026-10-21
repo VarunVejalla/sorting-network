@@ -1,0 +1,7 @@
+lateral, 3 sorts                                     990.0  (5,7,4) q 32  eps_B 1.75e-02  f 22405  stage 1650
+lateral, 3 sorts, fringe /5.8                        791.7  (4,6,3) q 24  eps_B 4.98e-03  f 787  stage 950
+lateral, band + merge                                770.4  (5,7,4) q 32  eps_B 1.75e-02  f 22405  stage 1284
+lateral, band + merge, fringe /5.8                   721.2  (5,7,4) q 30  eps_B 3.01e-03  f 3863  stage 1202
+lateral, band + merge, fringe /5.8, eps2 1e-7        765.3  (5,9,6) q 36  eps_B 9.75e-04  f 20265  stage 1640
+lateral, band + merge, fringe /5.8, r* = 0           674.3  (4,7,5) q 30  eps_B 1.92e-03  f 5149  stage 1226
+lateral, band + merge, fringe away                  1155.2  (5,11,2) q 22  eps_B 6.82e-05  f 278907  stage 722
