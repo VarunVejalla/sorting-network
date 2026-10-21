@@ -43,8 +43,8 @@ def nlnG(A, t, R, lam, n):
     return -n * math.log1p(-q)
 
 
-KAPPAS = [10 ** (-3 + 4.5 * i / 40) for i in range(41)]
-LAMS = (0.55, 0.6, 0.7, 0.8, 1.0, 1.25, 1.5, 2.0, 3.0)
+KAPPAS = [10 ** (-5 + 6.5 * i / 52) for i in range(53)]
+LAMS = (0.55, 0.6, 0.7, 0.8, 1.0, 1.25, 1.5, 2.0, 3.0, 5.0, 10.0, 30.0, 100.0, 1e3, 1e4)
 
 
 def ln_count(A, u, d, R):
@@ -76,11 +76,12 @@ def A_star(j, R, d, u, n, ent_extra):
     from A* up to 1e3 A* (1.1-geometric) with lam j + x_t(A_{k+1}) < A_k; beyond, t -> 0 gives x ~ A/(2 lam)
     plus Ent(A)/t with Ent(A) <= (A/d^2) ln(e u R) sublinear... (checked numerically to 1e3 A*)."""
     E = lambda A: ln_count(A, u, d, R) + ent_extra + math.log(200)
-    hi = max(1.0, 4 * j + 10)
+    Amax = float(u) * R * R          # weights are capped at R on u sources: A <= u R^2 always
+    hi = min(max(1.0, 4 * j + 10), Amax)
     while not excluded(hi, j, R, n, E(hi)):
         hi *= 2
-        if hi > 1e30:
-            return math.inf
+        if hi >= Amax:
+            return Amax
     lo = 0.0
     for _ in range(30):
         mid = (lo + hi) / 2
@@ -91,7 +92,7 @@ def A_star(j, R, d, u, n, ent_extra):
     A = hi * 1.001
     while True:
         A0, ok = A, True
-        while A < 1e3 * A0:
+        while A < min(1e3 * A0, Amax):
             if not excluded_step(A, A * 1.1, j, R, n, E(A * 1.1)):
                 ok = False
                 break
@@ -99,8 +100,8 @@ def A_star(j, R, d, u, n, ent_extra):
         if ok:
             return A0
         A = A * 1.1
-        if A > 1e30:
-            return math.inf
+        if A >= Amax:
+            return Amax
 
 
 @lru_cache(maxsize=100000)
@@ -244,7 +245,9 @@ def escapes(j, n, f, s2, L0_extra, ratio, s2_lo=None, j_lo=None):
     total = 0.0
     lo = L0
     while lo < top:
-        hi = min(math.ceil(top), max(lo + 1, int(lo * ratio)))
+        # levels geometric in the offset above b (also right when b is small)
+        off = lo - b
+        hi = min(math.ceil(top), max(lo + 1, math.ceil(b + max(off + 8, off * ratio))))
         R = math.ceil(hi - b_lo)
         u = min(n, (hi - lo) * s2)
         d = math.floor(lo + 1 - b)

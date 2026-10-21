@@ -60,3 +60,30 @@ Write `overflow ≤ Σ_c (|p_c − λ| − f/2)₊ + (same for q)`. For each sib
 
 An evaluator for items 1–3 at UB-20's parameters and at the R1 parameters. Then price the
 re-derived tolerance T and fringe relaxation with the real merge cost.
+
+## Progress (2026-10-21): dense-regime upper tail
+
+Three fixes to `../fringe-duality/route_d_rigorous.py` make the dense regime (`b = λ ≫` the level
+scale) work. The sparse route (d) results are unchanged (n = 2^20, j = J: load 394 → 396).
+* **Levels geometric in the offset above b.** Absolute geometric levels put 15000 rows in the first level.
+* **Cap `A ≤ u R²`.** Weights are capped at R on u sources, so the exclusion check stops there instead of
+  escalating to ∞.
+* **λ′ up to 1e4 and κ down to 1e-5.** Large A are excluded with a large drift, since `λ′j ≪ A`.
+
+Upper-tail bound at UB-20's regime (n = 2^16, λ = 5e4 spill per column; target average `< λ + f/2 =
+λ + 1500`):
+
+| set size s | 1 | 16 | 256 | 4096 |
+|---|---:|---:|---:|---:|
+| average load bound − λ | 5411 | 3248 | 2373 | 2129 |
+| adversarial heuristic `(6j/s)^{1/3}` | 2700 | 1080 | 430 | 170 |
+
+The single column is within about 2× of the adversary. Large sets plateau near 2100, which is still above
+the 1500 target. The remaining loss is entropy: profiles and sets on about `H·s` sources.
+
+**Next:**
+1. Tighten the large-set regime. Options: entropy shared across levels; a Boolean per-level count with
+   `t ~ ln n` for the lowest levels; the CLT-scale bound for `d ≲ √(λ ln n)`.
+2. The holes tail, via the strip complement.
+3. The identity `escapes(S) ≤ holes(V∖S) − (f/2)|S|` for sets near n.
+4. Then the real UB-20 parameters at the R1 point and the re-priced tolerance.
