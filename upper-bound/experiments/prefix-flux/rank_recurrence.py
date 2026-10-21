@@ -11,6 +11,7 @@ from math import ceil
 import argparse
 
 from flow_dag import FlowDAG
+from oracle import Par
 from sparse_probe import profile_tail
 
 
@@ -21,14 +22,17 @@ def cap_tail(total, f, n, m):
     return profile_tail(i * n, f, n, m)
 
 
-def prefix_interval(a, H, pcut):
+def prefix_interval(a, H, pcut, row_count=1 << 12):
     """Bounds Y(pcut) uniformly for H in interval H=(lo,hi]."""
     lo, hi = H
     if a == 0:
         return (0, 0)
-    m = 1 << 12
+    m = row_count
     assert a % m == 0, (a, m)
     n = a // m
+    if n == 1:
+        # One column is sorted exactly by the first column sort.
+        return (min(lo, pcut), min(hi, pcut))
     k, r = divmod(pcut, n)
     if k >= m:
         return H
@@ -45,11 +49,11 @@ def prefix_interval(a, H, pcut):
     return (ylo, min(hi, pcut))
 
 
-def port_interval(a, H, lo, hi):
+def port_interval(a, H, lo, hi, row_count=1 << 12):
     if lo == hi:
         return (0, 0)
-    yl0, yh0 = prefix_interval(a, H, lo)
-    yl1, yh1 = prefix_interval(a, H, hi)
+    yl0, yh0 = prefix_interval(a, H, lo, row_count)
+    yl1, yh1 = prefix_interval(a, H, hi, row_count)
     low = max(0, yl1 - yh0)
     high = min(hi - lo, yh1 - yl0)
     if high < low:
@@ -61,9 +65,10 @@ def sum_iv(xs):
     return (sum(x[0] for x in xs), sum(x[1] for x in xs))
 
 
-def run(depth=4, scale=65536, threshold=F(1, 3), include_history=False):
-    flow = FlowDAG(depth, scale=scale).build()
-    p = flow.p
+def run(depth=4, scale=65536, threshold=F(1, 3), include_history=False,
+        params=(2, 3, 2), row_count=1 << 12):
+    p = Par(*params)
+    flow = FlowDAG(depth, scale=scale, p=p).build()
     N = p.k ** depth * scale
     q = int(threshold * N)
     H = {(0, 0): (q, q)}
@@ -86,12 +91,14 @@ def run(depth=4, scale=65536, threshold=F(1, 3), include_history=False):
                 ups[(lev, idx)] = mass
                 continue
             h = pi // 2
-            left = port_interval(a, mass, 0, h)
-            right = port_interval(a, mass, a - h, a)
+            left = port_interval(a, mass, 0, h, row_count)
+            right = port_interval(a, mass, a - h, a, row_count)
             ups[(lev, idx)] = (left[0] + right[0], left[1] + right[1])
             pos = h
             for j, width in enumerate(blocks):
-                downs[(lev, idx, j)] = port_interval(a, mass, pos, pos + width)
+                downs[(lev, idx, j)] = port_interval(
+                    a, mass, pos, pos + width, row_count
+                )
                 pos += width
 
         active_set = set(active)
@@ -150,6 +157,10 @@ if __name__ == '__main__':
     ap.add_argument('--depth', type=int, default=4)
     ap.add_argument('--scale', type=int, default=65536)
     ap.add_argument('--threshold', default='1/3')
+    ap.add_argument('--params', nargs=3, type=int, default=(2, 3, 2),
+                    metavar=('X', 'Y', 'Z'))
+    ap.add_argument('--row-bits', type=int, default=12)
     args = ap.parse_args()
     print('COUNT-INTERVAL CONTRACT RELAXATION; not a sorting proof')
-    print(run(args.depth, args.scale, F(args.threshold)))
+    print(run(args.depth, args.scale, F(args.threshold),
+              params=tuple(args.params), row_count=1 << args.row_bits))

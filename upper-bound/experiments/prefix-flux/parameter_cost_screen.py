@@ -1,0 +1,86 @@
+﻿#!/usr/bin/env python3
+"""Conditional UB-42 D2 parameter/cost screen; not a sorting proof.
+
+The row height q=x+y+z+5 leaves 16 rows per nominal scale
+2^(-(x+y+z+1)); for x>=2 and y>z, the mid-sender correction factor is at
+least 7/8, giving at least 14 rows before finite-size effects. The script
+reports the asymptotic stage/core coefficient and audits exact finite D2 flow
+integrality and fringe-row counts for one depth.
+"""
+from fractions import Fraction
+import argparse
+
+from flow_dag import FlowDAG
+from oracle import Par
+
+
+def bitonic_depth(bits):
+    return bits * (bits + 1) // 2
+
+
+def row_bits_for_fringe(x, y, z):
+    if x < 2 or y <= z:
+        raise ValueError("require k>=4 and A*nu>1")
+    # The asymptotic mid-sender ratio is at least
+    # (7/8)*2^(-(x+y+z+1)); adding four bits leaves 14 rows.
+    return x + y + z + 5
+
+
+def screen(x, y, z, depth):
+    q = row_bits_for_fringe(x, y, z)
+    row_count = 1 << q
+    local_depth = 3 * bitonic_depth(q)
+    stage_rate = Fraction(x + y, x * z)
+    coefficient = local_depth * stage_rate
+
+    p = Par(x, y, z)
+    flow = FlowDAG(depth, scale=row_count, p=p).build()
+    fringe_rows = [Fraction(row_count * pi, 2 * a)
+                   for row in flow.rows
+                   for a, pi, _ in row.values() if pi]
+    if not fringe_rows:
+        raise ValueError("no positive sender in finite flow")
+    if any(pi % 2 for row in flow.rows
+           for _, pi, _ in row.values()):
+        raise AssertionError("odd up-port count")
+    if any(a % row_count for row in flow.rows
+           for a, _, _ in row.values()):
+        raise AssertionError("sender arity not divisible by row count")
+
+    seen = set()
+    pending = [flow.roots[-1]]
+    while pending:
+        node = pending.pop()
+        if node in seen:
+            continue
+        seen.add(node)
+        pending.extend(flow.nodes[node][4])
+    terminal_sizes = [flow.native(flow.nodes[node][0]) for node in seen
+                      if flow.allocation(node) > 0]
+    return dict(x=x, y=y, z=z, row_bits=q, row_count=row_count,
+                local_depth=local_depth, stage_rate=stage_rate,
+                coefficient=coefficient, finite_depth=depth,
+                finite_stages=len(flow.rows), states=len(flow.nodes),
+                min_fringe_rows=min(fringe_rows),
+                max_terminal_bits=max(terminal_sizes).bit_length() - 1)
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--depth", type=int, default=30)
+    ap.add_argument("--params", nargs=3, type=int, action="append",
+                    metavar=("X", "Y", "Z"))
+    args = ap.parse_args()
+    params = args.params or [(2, 3, 2), (3, 3, 2), (4, 4, 3)]
+    print("Conditional cost model; local tail/global recurrence unproved")
+    for x, y, z in params:
+        r = screen(x, y, z, args.depth)
+        print(f"{(x,y,z)} rows=2^{r['row_bits']} core={r['local_depth']} "
+              f"stage/log={r['stage_rate']} coefficient={r['coefficient']} "
+              f"finite_tf={r['finite_stages']} min_fringe_rows="
+              f"{r['min_fringe_rows']} terminal_bits={r['max_terminal_bits']} "
+              f"states={r['states']}")
+
+
+if __name__ == "__main__":
+    main()

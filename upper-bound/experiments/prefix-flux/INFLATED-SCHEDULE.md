@@ -58,3 +58,42 @@ Next mathematical task: derive the ordered spill/profile recurrence on this
 scaled flow, including the width of returning child bands. Use a compressed
 flow representation if deeper tests are needed; do not enumerate4^d' bags
 or interpret an optimistic local-price division as a proof.
+
+## Parameterized D2 cost screen (2026-10-21)
+
+The `(2,3,2)` choice is not forced by the leading stage-count formula. From
+`flowsim.Par`, `tf/d -> (x+y)/z` and `log2(N)=x*d+O(1)`, so the stage rate is
+`(x+y)/(x*z)`. If a fixed three-column-sort core has row height `m=2^q`, its
+depth is at most `3*q*(q+1)/2`. For a middle sender the exact ratio is
+`pi/(2a)=(1-1/(A*nu*k))/(1-1/(A^2*k^2))*2^(-(x+y+z+1))`.
+When `x>=2` and `y>z`, the first correction is at least `7/8`; choosing
+`q=x+y+z+5` leaves at least fourteen nominal fringe rows. This is a
+conservative row-bit screen; top/bottom roles and finite-size effects are
+separately checked in the script.
+
+[`parameter_cost_screen.py`](parameter_cost_screen.py) evaluates the product
+and runs the exact integer D2 flow at a finite depth with scale `m`. At depth
+30 it reports:
+
+| D2 parameters | Rows | Core depth | Stages / `log2 N` | Conditional coefficient | Minimum sampled fringe rows | Terminal sorter bits |
+|---|---:|---:|---:|---:|---:|---:|
+| `(2,3,2)` | 4096 | 234 | 5/4 | 292.5 | 13.52 | 22 |
+| `(3,3,2)` | 8192 | 273 | 1 | 273 | 14.65 | 25 |
+| `(4,4,3)` | 65536 | 408 | 2/3 | 272 | 15.29 | 28 |
+
+The exact finite flows also had integral allocations, even up-port counts,
+and sender arities divisible by the proposed row height. These results make
+`(3,3,2)` a lower-complexity parameterized candidate than `(4,4,3)`; both
+have a little more nominal coefficient slack than 292.5. The cost arithmetic
+and finite flow checks are not a sorting bound.
+
+Fresh-context review identified the main compatibility limit: the existing
+`TwoRoundHyp`/`NodeGeom` provider requires ordinary arities above `2^42` and,
+when the fringe is nonzero, an even `f>=131040` in an exact shape
+`m=2f+64b`, `up=2fn`. Neither proposed row height can satisfy that provider.
+The thirteen-row test is only a necessary geometric screen; it does not
+prove the B2/F2 local rank-tail promises, exact row-aligned sender shapes, or
+the global ordered-port recurrence. Thus the new coefficients are conditional
+on a new small-row local provider and a parameterized global proof. No Lean
+work should start until those interfaces are stated and their recurrence
+closes.
