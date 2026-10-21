@@ -204,3 +204,32 @@ With the band:
 4. **UB-33/UB-24**: remove `r*`. This is the gate; no route below 500 avoids it.
 
 Every other route modelled lands at or above about 508.
+
+## 2026-10-21 (later): r* removal and what binds afterwards
+
+**r\*.** Design P's residual is a hedge against the unknown low/high split of a sender's deficit G
+(G itself is exact). SLACKFREE route R2 (`../experiments/slackfree/SLACKFREE.md` §3–4) is the sided
+version, i.e. the invariant Q on where ancestral keys sit. Its residual is
+`κ(μ + ε_B/2)/(Aν − 1)`, from the parent's low outsiders occupying F₁ slots and from B errors at the π/2 cut.
+* κ = 1 for the plain version; κ = ½ with centring.
+* The per-link error comes from an outsider count that an oblivious network cannot know, so **κ ≈ ½ is
+  the realistic floor** of this invariant.
+
+Packages with band + merge-first (`../experiments/sub500-screen/screen.py`):
+
+| invariant | fringe | band tail | cost |
+|---|---|---|---:|
+| R2, κ = ½ | route (d), /5.8 | walk bound | 537 |
+| R2, κ = ½ | /5.8 | adversarial 0.13/W | 510.8 |
+| R2, κ = ½ | /10 | 0.13/W | 508.5 |
+| R2, κ = ½ | **idealized away** | walk bound | **441.8** |
+| `r* = 0` | /5.8 | walk bound | 482.7 |
+| R2, κ = 0.1 | /5.8 | walk bound | 496 |
+
+**With the invariant fixed, the fringe row floor binds:** `m ≥ 2(f+1)/p` sets q = 24, against the bulk's
+q = 23. The two large levers are therefore:
+1. the sided-deficit invariant (R2c, κ = ½). SLACKFREE estimated 1–2k Lean lines, at high risk.
+2. taking the fringe off the row count (UB-34's second idea): the π/2 extreme positions get their own
+   mechanism, so the rows are set by the bulk alone.
+
+Together they model at 442, well inside 500, so they have room to absorb the cost of the fringe mechanism.
