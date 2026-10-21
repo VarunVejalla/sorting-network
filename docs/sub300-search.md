@@ -206,26 +206,30 @@ There is a first-moment route that avoids paired certificate leaves: sample a
 Boolean input uniformly together with a random matching schedule and try to
 bound `E[F(N)] = 2^n P[N(X) is unsorted]`. A single cross-matching count
 transition is exact: for input block counts `a,b`, the left output count is
-`X ~ Hypergeom(h,b,a)` and the right count is `a+b-X`. However, the proposed
-count-vector recurrence incorrectly assumes that output block patterns are
-independent uniform subsets given their counts. A width-2 counterexample:
-put one 1 in each input block and condition on output counts `(1,1)`. The
-matching must align the two ones, so the output singleton positions are
-identical; splitting the blocks gives perfectly correlated child counts,
-not independent hypergeometric splits. The product-permutation symmetry is
-diagonal across matched blocks, not independent in each block. Therefore the
-small-size count-process and local-edge rate scripts below compute a
-factorized model and do not establish first-moment bounds for the actual
-network. A valid route must retain joint pattern information or derive a
-rigorous correlation envelope.
+`X ~ Hypergeom(h,b,a)` and the right count is `a+b-X`. The count-vector
+recurrence is also exact for this annealed expectation. The uniform input law
+is invariant under independent permutations of wire slots within each block.
+A randomized cross-matching layer preserves that invariance: relabeling the
+slots in its two blocks simply conjugates its uniform matching permutation.
+Splitting a block into halves restricts the symmetry to independent
+permutations within each child block. Inductively, conditional on the complete
+block-count vector, all block patterns are independent uniform subsets.
+Hence the hypergeometric matching and split kernels in
+[`ub28-count-process.py`](../upper-bound/experiments/ub28-count-process.py)
+are exact for `P_{N,X}[N(X) is unsorted]` when `X` is uniform and the schedule
+matchings are independently uniform. The width-2 singleton example only
+refutes this claim for a fixed input; it does not refute the annealed
+first-moment recurrence. The local edge transfer is exact for the same
+ensemble, provided its terminal bad-edge predicate is the exact count-based
+tail predicate.
 
 If `F(N)` is the number of Boolean inputs not sorted by sampled network `N`,
 then `E[F(N)] = 2^n P[N(X) is unsorted]`. An all-size bound `E[F(N)] < 1`
 would give a sorting network by the first-moment method, then the usual
 zero-one principle and wire restriction give the claimed all-`n` result. At
 The previously proposed 70-round schedule would have depth
-`140 max(log2(n)-8,0)+510`; this is only a depth calculation, not an upper
-bound, because the corresponding first-moment recurrence is invalid.
+`140 max(log2(n)-8,0)+510`; this is a candidate bound conditional on proving
+the all-size first-moment estimate below.
 
 The zero-one principle does not reduce this probabilistic gate to the `n+1`
 monotone bit strings. Those are thresholdings of a fixed ordered input;
@@ -235,26 +239,24 @@ first-moment gate really must count all `2^n` inputs (or use a different
 certificate count that still covers every assignment).
 
 [`ub28-count-process.py`](../upper-bound/experiments/ub28-count-process.py)
-implements the factorized rational model at small sizes. For `n=8`, one
+implements the exact annealed rational model at small sizes. For `n=8`, one
 random matching per pass gives `E[F]=58/3`, matching exhaustive enumeration of
-all 192 schedules and all 256 inputs; that finite match does not validate the
-independence assumption at later scales. At `n=16`, the factorized model with
-eight rounds gives
+all 192 schedules and all 256 inputs. At `n=16`, eight rounds gives
 `E[F]=259465172802051769457880750622855061 /
 1379746024126718839235385753600000000 < 1`. With sixteen rounds at widths 8
-and 16 and the same factorized split model below width 8, it gives
+and 16 and exact deterministic splitters below width 8, it gives
 `E[F]=0.0008828413466643175` at `n=32`. At `n=16`, seventy rounds at width 8
-and factorized splits below it give `E[F]=0`. These are model outputs, not
-existence checks for the actual network or evidence for a uniform bound. A
-direct vector-state computation at `n=32` without low-width exact
+and exact splits below it give `E[F]=0`. These are actual annealed expectations
+for the specified schedule; values below one certify existence only at those
+finite sizes. A direct vector-state computation at `n=32` without low-width exact
 splitters exceeded 500 MB and was stopped. The new challenge is to prove a
 uniform-in-`n` bound on this first moment without enumerating all count
 profiles; no such bound is established yet. A direct exact-rational run at
 `n=64`, 70 rounds, and exact splitters below width 8 was also stopped after
 about 100 seconds at roughly 8.6 GB resident memory, before producing a result.
-So the current recurrence is a small-size verifier, not a scalable numerical
-screen for that model; a next computational step needs joint-pattern state,
-not merely profile compression or tail truncation. Separately, a SAT check of the deterministic cyclic `h=4,2,1`
+So the count recurrence is a small-size exact verifier, not a scalable
+uniform-in-`n` proof; a next computational step needs profile compression or
+a rigorous local large-deviation bound. Separately, a SAT check of the deterministic cyclic `h=4,2,1`
 tail on 32 wires found an unsorted output for input
 `11000000111110111100100111111111` (wire 0 is the least-significant bit; the
 tail leaves an inversion at wires 0 and 1). Thus the exact small-width tail is
@@ -489,7 +491,7 @@ actual cross-matching reachability or the paired forcing supports.
 
 ### UB-28 top-heavy schedule candidate
 
-A top-relative schedule screen in the factorized model suggests a possible
+A top-relative schedule screen in the exact annealed count model suggests a possible
 structural improvement: use
 `r=260` matching rounds per offset at every other scale counted down from the
 top, and `r=20` on the intervening scales. Keep 150 rounds at widths 8 and 16
@@ -502,17 +504,16 @@ full-state and all-phase gaps, the independent-split model is not valid for
 the actual ensemble. This is only a schedule diagnostic, not a candidate
 sorting theorem.
 
-### UB-28 salvage: joint wire-pattern histograms
+### UB-28 local state and rate gate
 
-The count-state failure points to a richer state rather than immediately
-discarding the first-moment route. For a fixed terminal edge, track the joint
-histogram of wire-column bit patterns across all blocks in its backward cone,
-with block labels and offset phase retained. The exact-tail window and
-pairing-closure argument give at most six labeled block rows at every scale.
-Under a common slot permutation, fresh
-uniform matching laws are equivariant, and a physical split acts on the joint
-row types by a multivariate-hypergeometric allocation. The split must retain
-the two child histograms jointly.
+The annealed product-permutation invariant makes the block-count vector an
+exact Markov state for the uniform-input/random-network first moment. For a
+fixed terminal edge, its backward dependency cone contains at most six block
+counts at every scale, by the exact-tail support and pairing-closure argument.
+The local edge transfer therefore avoids the exponentially large full count
+vector while remaining exact for the annealed law. Joint wire-pattern
+histograms are an optional richer state, not a repair for a failed count
+recurrence.
 
 The exact check in
 [`ub28-joint-histogram-check.py`](../upper-bound/experiments/ub28-joint-histogram-check.py)
@@ -520,21 +521,18 @@ enumerates every pattern for `(width, support)=(2,6),(4,3),(4,4)` and verifies
 matching lumpability for both adjacent pair phases plus the split kernel when
 the incoming columns are uniformly exchangeable conditional on their joint
 histogram.
-The exact matching transition also has a triple-type count: for predecessor,
-current, and successor type table `T`, its exponential cost is
-`I(C;A,B)`, and the split alignment has a mutual-information type cost. Exact
-factorial formulas and small exhaustive checks are recorded in
+The matching transition also has a triple-type count: for predecessor,
+current, and successor type table `T`, its exponential cost is `I(C;A,B)`.
+Exact factorial formulas and small exhaustive checks are recorded in
 [`UB28-JOINT-PATTERN-STATE.md`](../upper-bound/experiments/UB28-JOINT-PATTERN-STATE.md)
 and [`ub28-matching-triple-types.py`](../upper-bound/experiments/ub28-matching-triple-types.py).
-But a critical state-closure gap remains: the output of a randomized matching
-need not be exchangeable conditional on its joint histogram, and the next
-physical half-split is deterministic. For example, a matching of two all-zero
-rows leaves a third row's fixed positional pattern unchanged. Thus the
-hypergeometric split and all coupled-rate computations using it are model-only
-unless a stronger reachable-state invariant or positional state is supplied.
-The matching transition formulas do not close the finite-type kernel
-derivation across a split. Only after this closure issue is resolved can the
-rate be optimized over phases and its exponent compared with `ln 2`. Forward
+For the first-moment ensemble, the uniform input and independent matching
+schedule give a product-permutation invariant: conditional on block counts,
+block patterns are independent uniform subsets. Thus the split kernel is
+valid; the fixed-input example of two zero rows and an untouched patterned row
+does not apply to this annealed law. The joint histogram state is optional,
+since the block-count process already closes. The remaining work is to certify
+the rate over all phases and compare its exponent with `ln 2`. Forward
 transitions may project away whole block rows only after the complete backward
 cone is fixed. The exact width-4/2/1 tail is count-based by the cyclic
 complete-splitter argument and explicit width-2-count predicate. See

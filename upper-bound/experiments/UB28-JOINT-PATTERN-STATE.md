@@ -1,37 +1,36 @@
 # UB-28 joint-pattern state: research sketch
 
-Status: the matching-layer histogram transition has exact local formulas, but
-the proposed state is **not closed across a deterministic physical split**.
-No full-network probability bound is claimed.
+Status: the joint histogram matching formulas and the conditional split
+kernel are exact for the exchangeable annealed law used by the first-moment
+argument. A simpler block-count state is sufficient for this law. For a
+fixed-input analysis, histogram data alone does not justify the split kernel.
 
-## Critical correction: histograms do not determine split laws
+## Scope of the split law
 
-The earlier claim that conditioning on a joint histogram makes its column
-types uniform over their orbit was unjustified. Equivariance of a random
-matching kernel does not make its output distribution exchangeable for a
-fixed input. For example, with two positions and three block rows, the
-columns `(000,001)` and `(001,000)` have the same joint histogram, but a
-physical split into the first and second position gives opposite ordered
-child profiles. If the two matched rows are both zero, a uniform matching
-leaves the entire matrix unchanged, so this nonexchangeable arrangement
-persists with probability one. Thus the multivariate-hypergeometric split
-kernel below is valid only under an additional exchangeability hypothesis;
-it is not established for the actual fixed-input randomized network.
+For a fixed input, equivariance of a random matching kernel does not by itself
+make the output distribution exchangeable. For example, with two positions
+and three block rows, columns `(000,001)` and `(001,000)` have the same joint
+histogram but split into opposite ordered child profiles. If the two matched
+rows are all zero, a random matching leaves the third row's positional
+pattern unchanged. This is a real caveat for fixed-input probabilities.
 
-The exact triple-type formula below still describes the histogram transition
-of a single uniform permutation matching when its input histogram is known.
-That one-step lumpability does not supply the conditional arrangement law
-needed at the subsequent deterministic split. A valid continuation needs a
-state retaining positional information relative to future dyadic split
-boundaries, or a different argument that bounds the split without assuming
-exchangeability. The finite-width calculations and rate diagnostics that
-use the hypergeometric split must therefore be treated as model-only.
+It does not invalidate the first-moment recurrence. That recurrence averages
+over a uniform input and the random schedule. The joint law is invariant
+under independent permutations of wire slots within each block: uniform
+matchings are equivariant under those relabelings, and a physical split
+preserves the subgroup acting independently within child blocks. Therefore
+conditional on the block-count vector, block patterns are independent
+uniform subsets. In particular, the joint column sequence is exchangeable,
+and the multivariate-hypergeometric split kernel below is exact for the
+annealed law. The block-count process is the simpler exact state for this
+purpose.
 
-The width-2 example in `UB28-TOP-HEAVY-SCHEDULE.md` rules out a Markov state
-consisting only of block counts. The schedule may still admit a bounded-width
-joint state for a fixed terminal inversion: its backward dependency cone has
-only finitely many blocks at each dyadic scale, even though each block's width
-grows.
+The width-2 example in `UB28-TOP-HEAVY-SCHEDULE.md` rules out a block-count
+state for a fixed input conditioned on its exact patterns. It does not rule
+out the count state for the annealed first moment. A joint histogram may still
+be useful as a refined entropy state for one terminal inversion: its backward
+dependency cone has only finitely many blocks at each dyadic scale, even
+though each block's width grows.
 
 For a tuple of `k` supported blocks, write the wire-column type at position `t`
 as `v_t in {0,1}^k`, and let `H_v` count positions of each type. The candidate
@@ -265,23 +264,18 @@ all width-4 count profiles through length 6 against literal bit-level
 execution. The proof above, rather than that finite check, establishes the
 arbitrary-length claim.
 
-Before the rate proof can proceed, a replacement state or a valid reachable-
-state split invariant is required. If that gate is resolved, the proof
-program would be:
+The annealed block-count state already supplies the required split invariant.
+The larger joint-histogram state is optional and may help derive a sharper
+large-deviation operator. The remaining proof program is:
 
-1. Prove conditional exchangeability for every reachable cone phase, including
-   the exact tail and deterministic half split, or retain the positional data
-   needed by those splits. Equivariance alone is insufficient.
-2. Prove strong lumpability for the exact histogram transition under every
-   phase-tagged random matching pass; count the needed random-permutation
-   contingency/cycle types and carry the joint split allocation. A simple
-   pairwise contingency table may not encode the permutation-cycle effects.
-3. Bound the large-`h` transition by a certified method-of-types/entropy
-   operator, preserving positivity and uniform finite-width errors.
-4. Optimize the rate over every edge phase and boundary class for a schedule
+1. Formalize the annealed product-permutation invariant and exact count
+   transitions for the specified schedule.
+2. Bound the large-`h` local count transition by a certified method-of-types/
+   entropy operator, preserving positivity and uniform finite-width errors.
+3. Optimize the rate over every edge phase and boundary class for a schedule
    whose depth coefficient is below 300; require the bad-edge exponent to
    exceed `ln 2` with explicit slack.
-5. Sum the subexponential trajectory and edge factors, then use the first
+4. Sum the subexponential trajectory and edge factors, then use the first
    moment and wire restriction to obtain the all-`n` limsup bound.
 
 The exact small-width check passes for `(h,k)=(2,6),(4,3),(4,4)`: it enumerates
@@ -298,16 +292,14 @@ not just pairwise overlap counts. If closure fails, enrich the state or park
 the route. Even if it passes, the rate
 gate remains open: no numerical evidence yet shows that the worst joint-pattern
 rate clears `ln 2` for a schedule below coefficient 300. No Lean work should
-start before arbitrary-width closure, a rate screen, and independent review.
+start before the certified rate and uniform error gates pass.
 
 ## Status correction
 
-The proof-program paragraph above predates the results in this note. The
+The proof-program paragraph above predates the annealed symmetry audit. The
 uniform support bound and exact finite-type matching/split kernels are now
-derived. In particular, no separate permutation-cycle enumeration is needed:
-the triple-type factorial formula gives the matching kernel directly. The
-remaining gate is to optimize or lower-bound the coupled trajectory cost over
+derived, and the simpler block-count recurrence is exact for the first-moment
+ensemble. No separate permutation-cycle enumeration is needed for that
+recurrence. The remaining gate is to certify the local trajectory cost over
 all edge phases and boundary cases, prove it exceeds `ln 2` for a schedule
-below coefficient 300, and control the finite-width errors. The independent
-block-count entropy rate and mean-field-only terminal screens do not settle
-that joint-state optimization.
+below coefficient 300, and control the finite-width errors.

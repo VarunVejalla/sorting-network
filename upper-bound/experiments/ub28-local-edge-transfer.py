@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Factorized backward local transfer for one UB-28 terminal inversion.
+"""Exact backward local transfer for one annealed UB-28 terminal inversion.
 
 This evaluates the probability that one fixed adjacent output pair is 1,0
 under the uniform-input/random-matching ensemble. It propagates the event
@@ -7,10 +7,12 @@ backward through the exact tail, hypergeometric block splits, and matching
 count kernels. Unlike the full-profile recurrence, its state is only the
 count coordinates in that event's backward dependency window.
 
-The split step treats parent block patterns as independent conditional on
-counts. A width-2 matched pair disproves that invariant, so results are exact
-for the factorized model only, not the actual network ensemble. This is not an
-asymptotic probability bound.
+The transfer averages over a uniform input and the independent random
+matching schedule. The resulting law is invariant under independent wire-slot
+permutations within each block, so conditional on the count vector the block
+patterns are independent uniform subsets. Thus the hypergeometric split and
+matching count kernels are exact for the annealed network ensemble. The
+remaining asymptotic rate bound is a separate unproved gate.
 """
 
 from fractions import Fraction

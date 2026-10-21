@@ -1,13 +1,12 @@
 # UB-28 top-heavy schedule screen
 
-Status: **factorized-model diagnostic only; currently invalid as a bound for
-the actual network ensemble.** The block-count recurrence assumes independent
-uniform block patterns at each split, which fails after a matching layer.
-For width 2, take one 1 in each input block. Conditional on output counts
-`(1,1)`, the output singletons are identical, so their half-block splits are
-perfectly correlated; the recurrence instead treats them independently.
-Any valid continuation must retain enough joint pattern information or prove
-a replacement inequality that safely handles these correlations.
+Status: **exact annealed count-process diagnostic; not an all-size bound.**
+For a uniform random input and independent uniform matching schedule, the law
+is invariant under independent slot permutations within each block. Matching
+layers preserve this symmetry, and block splits preserve the child-block
+subgroup. Thus the block-count matching and split kernels are exact for the
+first-moment ensemble. The fixed-input width-2 singleton example does not
+invalidate this annealed recurrence.
 
 This replaces the constant
 round count with a schedule that spends more random-matching rounds at the
@@ -42,11 +41,11 @@ and 0.7996 at edge 62. The central edge is the hardest of these samples.
 
 [`ub28-rate-grid.py`](ub28-rate-grid.py) continues from the exact width-16
 table using only counts that are multiples of `h/16` at each larger width.
-The coarse-lattice transfer is built on the factorized split model, so its
-paths are not established as realizable trajectories of the actual network.
-Even within that model, a rate below `ln 2` would only witness a bad path in
-the model; a rate above `ln 2` is only a screen, since other count paths are
-omitted. On the
+The coarse-lattice transfer retains only counts that are multiples of `h/16`
+at each larger width, so every included feasible trajectory is realizable in
+the exact count process. A rate below `ln 2` would therefore witness a
+first-moment obstruction; a rate above `ln 2` is only a screen, since other
+count paths are omitted. On the
 central edge at `n=2^22`, the `260,20` schedule gives rate 0.81658, and at
 `n=2^24` it gives 0.81651. These runs use 150 rounds for both anchor scales
 `h=8,16`; for example, the `n=2^22` value is reproduced by:
@@ -72,9 +71,8 @@ the full bad-edge rate exceeds `ln 2`.
 
 ## Proof gate
 
-First replace the factorized split model with a valid joint-pattern transfer
-or a rigorously safe correlation envelope. Then, for every edge phase and
-boundary, construct a certified upper bound on the maximum local trajectory
+For every edge phase and boundary, construct a certified upper bound on the
+maximum local trajectory
 log-probability per input wire, strictly below `-ln 2` (equivalently, a
 minimum cost strictly above `ln 2`).
 Then bound the trajectory multiplicity by `exp(O(log^2 n))`, multiply by the

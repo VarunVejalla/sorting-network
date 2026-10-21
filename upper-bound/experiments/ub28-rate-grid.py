@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Factorized-model screen on a coarse count lattice for UB-28.
+"""Coarse count-lattice screen for the annealed UB-28 process.
 
 This extends the exact finite max-path transfer from width 16 through larger
 scales, restricting every later block count to multiples of width/16. Those
-are count values, but the reverse split assumes independent parent block
-patterns. That assumption is false for the actual network ensemble (see
-ub28-count-process.py), so these rates are diagnostics for the factorized
-model only. Log binomial coefficients use binary64, so this is not a
-certified interval result either.
+are count values and are feasible transitions of the exact annealed
+block-count process (see ub28-count-process.py). The lattice omits other
+count trajectories, so it cannot upper-bound the full maximum rate. Log
+binomial coefficients use binary64, so this is not a certified interval
+result either.
 """
 
 import argparse

@@ -1,18 +1,18 @@
 ﻿#!/usr/bin/env python3
-"""Factorized block-count model for randomized UB-28 schedule screens.
+"""Exact annealed block-count process for the randomized UB-28 schedule.
 
-The attempted recurrence uses an exact hypergeometric count transition for
-each cross-matching pair, but assumes independent uniform patterns across
-blocks at the later split. The width-2 example below disproves that assumption.
-Consequently, this script computes a factorized model, not the network
-ensemble's expected failure count.
+The law averages over both a uniform Boolean input and independent uniform
+cross-matchings. It is invariant under independent permutations of wire slots
+within each current block: a relabeling conjugates each uniform matching to
+another uniform matching, and block splitting restricts this symmetry to
+independent permutations within child blocks. Conditional on the block-count
+vector, therefore, block patterns are independent uniform subsets. The
+matching and split count kernels below are exact for this annealed law.
+
+For a fixed input, the same conditional-pattern claim can fail (for example,
+when two singleton 1s are forced to match). That does not invalidate the
+first-moment computation, which averages over uniform inputs.
 """
-# The independence claim is not valid across a physical block
-# split. Matched output blocks can have correlated patterns. For width 2, if
-# each input block has one 1, conditioning on output counts (1,1) makes both
-# output singletons identical. Thus ``split_blocks`` below is an approximation,
-# and this script's full-profile results are not results for the actual network
-# ensemble until a joint-pattern invariant is proved.
 import argparse
 from collections import defaultdict
 from fractions import Fraction
