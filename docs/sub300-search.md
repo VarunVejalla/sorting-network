@@ -202,30 +202,30 @@ is attempted.
 
 ### UB-28 alternative: first moment over uniform inputs
 
-There is a different exact recurrence that avoids paired certificate leaves.
-Sample both a Boolean input uniformly and the random matching schedule. In a
-single uniform cross-matching round on two `h`-wire blocks with `a,b` ones,
-the left output count is `X ~ Hypergeom(h,b,a)` and the right count is
-`a+b-X`; independent rounds iterate this count kernel. Conditional on the
-block counts, the joint random-input/network law is invariant under independent
-wire permutations inside each block, so each block's arrangement is uniform.
-At the next finer scale, a block with `c` ones splits into counts
-`(U,c-U)`, where `U ~ Hypergeom(2h,c,h)`. Thus a distribution on block-count
-vectors evolves exactly through the even/odd passes and the finer-scale
-splits. For small exact splitters, randomize a cyclic complete factorization
-by independent uniform relabelings of its two sides; it still exactly splits
-counts and preserves the required symmetry. The count profile is sufficient by
-group invariance: the random gadget law commutes with every independent
-permutation of the two blocks, and that product group is transitive on pairs
-of subsets with prescribed sizes. Therefore, conditional on the two output
-counts, the output arrangements are independent uniform subsets.
+There is a first-moment route that avoids paired certificate leaves: sample a
+Boolean input uniformly together with a random matching schedule and try to
+bound `E[F(N)] = 2^n P[N(X) is unsorted]`. A single cross-matching count
+transition is exact: for input block counts `a,b`, the left output count is
+`X ~ Hypergeom(h,b,a)` and the right count is `a+b-X`. However, the proposed
+count-vector recurrence incorrectly assumes that output block patterns are
+independent uniform subsets given their counts. A width-2 counterexample:
+put one 1 in each input block and condition on output counts `(1,1)`. The
+matching must align the two ones, so the output singleton positions are
+identical; splitting the blocks gives perfectly correlated child counts,
+not independent hypergeometric splits. The product-permutation symmetry is
+diagonal across matched blocks, not independent in each block. Therefore the
+small-size count-process and local-edge rate scripts below compute a
+factorized model and do not establish first-moment bounds for the actual
+network. A valid route must retain joint pattern information or derive a
+rigorous correlation envelope.
 
 If `F(N)` is the number of Boolean inputs not sorted by sampled network `N`,
 then `E[F(N)] = 2^n P[N(X) is unsorted]`. An all-size bound `E[F(N)] < 1`
 would give a sorting network by the first-moment method, then the usual
 zero-one principle and wire restriction give the claimed all-`n` result. At
-70 rounds for `h>=200` and exact splitters below that, the depth is
-`140 max(log2(n)-8,0)+510`, so this route would yield limsup coefficient 140.
+The previously proposed 70-round schedule would have depth
+`140 max(log2(n)-8,0)+510`; this is only a depth calculation, not an upper
+bound, because the corresponding first-moment recurrence is invalid.
 
 The zero-one principle does not reduce this probabilistic gate to the `n+1`
 monotone bit strings. Those are thresholdings of a fixed ordered input;
@@ -235,27 +235,26 @@ first-moment gate really must count all `2^n` inputs (or use a different
 certificate count that still covers every assignment).
 
 [`ub28-count-process.py`](../upper-bound/experiments/ub28-count-process.py)
-implements the exact rational recurrence at small sizes. For `n=8`, one
+implements the factorized rational model at small sizes. For `n=8`, one
 random matching per pass gives `E[F]=58/3`, matching exhaustive enumeration of
-all 192 schedules and all 256 inputs. An independent exhaustive checker also
-matches the recurrence's full block-count distribution after every pass and
-split (up to 73 states) for this case. At `n=16`, eight rounds give
+all 192 schedules and all 256 inputs; that finite match does not validate the
+independence assumption at later scales. At `n=16`, the factorized model with
+eight rounds gives
 `E[F]=259465172802051769457880750622855061 /
-1379746024126718839235385753600000000 < 1`; this only certifies existence in
-that finite screen. With sixteen rounds at widths 8 and 16 and exact splitters
-below width 8, the same recurrence gives
-`E[F]=0.0008828413466643175` at `n=32`, again below one. At `n=16`, using
-seventy rounds at width 8 and exact splitters below it, the exact recurrence
-gives `E[F]=0`. These are finite existence checks, not evidence for a uniform
-bound. A direct vector-state computation at `n=32` without low-width exact
+1379746024126718839235385753600000000 < 1`. With sixteen rounds at widths 8
+and 16 and the same factorized split model below width 8, it gives
+`E[F]=0.0008828413466643175` at `n=32`. At `n=16`, seventy rounds at width 8
+and factorized splits below it give `E[F]=0`. These are model outputs, not
+existence checks for the actual network or evidence for a uniform bound. A
+direct vector-state computation at `n=32` without low-width exact
 splitters exceeded 500 MB and was stopped. The new challenge is to prove a
 uniform-in-`n` bound on this first moment without enumerating all count
 profiles; no such bound is established yet. A direct exact-rational run at
 `n=64`, 70 rounds, and exact splitters below width 8 was also stopped after
 about 100 seconds at roughly 8.6 GB resident memory, before producing a result.
 So the current recurrence is a small-size verifier, not a scalable numerical
-screen; a next computational step needs profile compression or rigorous tail
-truncation. Separately, a SAT check of the deterministic cyclic `h=4,2,1`
+screen for that model; a next computational step needs joint-pattern state,
+not merely profile compression or tail truncation. Separately, a SAT check of the deterministic cyclic `h=4,2,1`
 tail on 32 wires found an unsorted output for input
 `11000000111110111100100111111111` (wire 0 is the least-significant bit; the
 tail leaves an inversion at wires 0 and 1). Thus the exact small-width tail is
@@ -487,4 +486,19 @@ counterexample at `n=1024`, `H=45`: it permits a residual inversion at wires
 it shows that their scalar halver and prefix-monotonicity contracts alone do
 not prove the global schedule. The missing invariant must retain more of the
 actual cross-matching reachability or the paired forcing supports.
+
+### UB-28 top-heavy schedule candidate
+
+A top-relative schedule screen in the factorized model suggests a possible
+structural improvement: use
+`r=260` matching rounds per offset at every other scale counted down from the
+top, and `r=20` on the intervening scales. Keep 150 rounds at widths 8 and 16
+and the exact tail below 8. The two offsets then cost
+`280 log2(n)+O(1)` layers. See
+[`UB28-TOP-HEAVY-SCHEDULE.md`](../upper-bound/experiments/UB28-TOP-HEAVY-SCHEDULE.md)
+for max-path screens and the exact proof gate. At `n=2^24`, a central-edge
+coarse-lattice path screen gives rate about 0.8165, above `ln 2`; besides the
+full-state and all-phase gaps, the independent-split model is not valid for
+the actual ensemble. This is only a schedule diagnostic, not a candidate
+sorting theorem.
 

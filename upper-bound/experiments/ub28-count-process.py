@@ -1,17 +1,18 @@
 ﻿#!/usr/bin/env python3
-"""Exact block-count recurrence for randomized UB-28 schedule screens.
+"""Factorized block-count model for randomized UB-28 schedule screens.
 
-The recurrence is exact when the initial input is uniform and each random
-local gadget ensemble is invariant under independent permutations of its two
-blocks. Random matching layers have this invariance. An exact small-width
-splitter can be randomized by conjugating a fixed cyclic 1-factorization by
-independent uniform permutations of its left and right wires; its output block
-counts are deterministic and it has the same invariance.
-
-This computes E[# failing Boolean inputs] over the network ensemble for small
-n. State growth is exponential, so this is a research screen, not a proof of
-an all-size bound.
+The attempted recurrence uses an exact hypergeometric count transition for
+each cross-matching pair, but assumes independent uniform patterns across
+blocks at the later split. The width-2 example below disproves that assumption.
+Consequently, this script computes a factorized model, not the network
+ensemble's expected failure count.
 """
+# The independence claim is not valid across a physical block
+# split. Matched output blocks can have correlated patterns. For width 2, if
+# each input block has one 1, conditioning on output counts (1,1) makes both
+# output singletons identical. Thus ``split_blocks`` below is an approximation,
+# and this script's full-profile results are not results for the actual network
+# ensemble until a joint-pattern invariant is proved.
 import argparse
 from collections import defaultdict
 from fractions import Fraction
@@ -77,7 +78,7 @@ def apply_pass(dist, h, offset, rounds, exact_below):
 
 
 def split_blocks(dist, old_width):
-    """Split uniform block strings into two half-block counts."""
+    """Apply the independent-uniform-pattern split approximation."""
     half = old_width // 2
     result = defaultdict(Fraction)
     for state, p_state in dist.items():
