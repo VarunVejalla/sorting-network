@@ -1,11 +1,10 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Conditional UB-42 D2 parameter/cost screen; not a sorting proof.
 
-The row height q=x+y+z+5 leaves 16 rows per nominal scale
-2^(-(x+y+z+1)); for x>=2 and y>z, the mid-sender correction factor is at
-least 7/8, giving at least 14 rows before finite-size effects. The script
-reports the asymptotic stage/core coefficient and audits exact finite D2 flow
-integrality and fringe-row counts for one depth.
+The candidate row height uses q=x+y+z+5 as a scaling heuristic. D2's
+non-uniform flow is audited directly at a finite depth; no closed all-depth
+fringe lower bound is claimed. The script reports the asymptotic stage/core
+coefficient and exact finite flow integrality and fringe-row counts.
 """
 from fractions import Fraction
 import argparse
@@ -21,8 +20,7 @@ def bitonic_depth(bits):
 def row_bits_for_fringe(x, y, z):
     if x < 2 or y <= z:
         raise ValueError("require k>=4 and A*nu>1")
-    # The asymptotic mid-sender ratio is at least
-    # (7/8)*2^(-(x+y+z+1)); adding four bits leaves 14 rows.
+    # Candidate scaling, validated only by the exact finite-flow audit below.
     return x + y + z + 5
 
 
