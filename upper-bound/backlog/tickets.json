@@ -644,7 +644,7 @@
     {
       "id": "UB-33",
       "title": "Remove the design-P residual r* (two-sided invariant); delta_F is not a lever at (4,5,3)",
-      "priority": "P0",
+      "priority": "P1",
       "status": "proposed",
       "claim_level": "model",
       "baseline": 789.75,
