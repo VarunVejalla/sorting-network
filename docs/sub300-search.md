@@ -281,6 +281,31 @@ shifted pass couples neighboring spill profiles. A valid closure must track
 their positions or a weighted profile through both offsets; the scalar
 `1/9`-only counterexample rules out replacing that work by independent caps.
 
+There is also an exact local higher-moment tail bound. Write
+`(x)_r=x(x-1)...(x-r+1)`. Given `A_t=a`, a random matching chooses a uniform
+`a`-subset of right wires, so
+
+```text
+E[(A_(t+1))_r | A_t=a] = (a)_r (c-a)_r/(h)_r.
+```
+
+For `1<=r<=h`, this is at most `(a)_r q_r`, where
+`q_r=(c-r)_r/(h)_r` (take the numerator as zero if `c<2r`). Iterating over
+fresh matchings and applying Markov gives
+
+```text
+P[A_d >= r] <= binom(a_0,r) q_r^d.
+```
+
+This holds for every fixed initial arrangement; if `c>=h`, apply it to right
+zeros with total `2h-c`. For `a_0/h -> alpha`, `c/h -> gamma`, and `r/h -> rho`,
+the log of this bound divided by `h` tends to
+`alpha*H(rho/alpha) + d*((gamma-rho)*H(rho/(gamma-rho))-H(rho))`, with
+`H(x)=-x log(x)-(1-x)log(1-x)`, for `rho<=alpha` and `2rho<=gamma<=1`.
+The identity is independently audited in the local-process review. It sharpens
+the mean spill estimate for a fixed pair, but does not count compatible error
+paths through the changing dyadic pairs.
+
 I checked whether simply strengthening the scalar cap repairs the interface.
 For the packed input `1^(n/4) 0^(3n/4)`, let `q_min` be the least integer `q`
 for which the full scalar relaxation with a `1/q` halver cap sorts that input
@@ -298,7 +323,10 @@ of the required denominator per two levels shows that a fixed scalar error
 allowance does not close this relaxed model; it is finite evidence, not an
 asymptotic impossibility proof for the actual matching schedule. A useful
 global argument needs position-sensitive information (such as the local spill
-estimate above), rather than only a uniform error fraction.
+estimate or tail bound above), rather than only a uniform error fraction. The
+growth may reflect loss of the actual local comparator reachability in this
+relaxation; it is not a lower bound on spill in the real random-matching
+process.
 
 The useful local gate is now closed at hand-proof level: 70 cross-matchings
 can form a `1/9`-halver for every block width `h>=200`, and smaller widths use
