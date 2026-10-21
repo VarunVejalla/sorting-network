@@ -128,6 +128,15 @@ inside their shared cells. A useful certificate must constrain the profile
 across consecutive transitions (for example, a relational potential or
 correlated interval enclosure).
 
+I also subdivided each source density cell by factors 2, 4, and 8 when
+computing the matching Pinsker kernel, including the exact Fréchet overlap
+constraints, while leaving the Bellman state at eight bins. All three runs
+still return `max_log_rate_upper = 0` and `half_density_action = 0`. This
+isolates the loss to the coarse cross-scale state representation (and/or the
+remaining split relaxation), rather than merely to a loose one-round
+matching kernel. Increasing local-kernel precision without carrying those
+subcell choices forward is not a useful next step.
+
 ## Independent audit (2026-10-21)
 
 Two fresh reviews found no sign or discount-factor error: weighting the

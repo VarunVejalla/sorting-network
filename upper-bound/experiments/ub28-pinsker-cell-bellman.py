@@ -40,31 +40,45 @@ def interval_gap(a0, a1, b0, b1):
     return max(0.0, a0 - b1, b0 - a1)
 
 
-def matching_cell_kernel(bins):
-    """Upper bound one-round log rates, indexed source-pair -> target-pair."""
+def matching_cell_kernel(bins, refine=1):
+    """Upper bound one-round log rates, indexed source-pair -> target-pair.
+
+    ``refine`` subdivides each source density cell while bounding the
+    covariance gap. The Bellman state remains at ``bins`` resolution, so this
+    tightens local kernels without eliminating cross-transition cell resets.
+    """
     pairs = bins * bins
     kernel = np.full((pairs, pairs), NEG_INF)
     for a_cell in range(bins):
-        a0, a1 = cell_interval(a_cell, bins)
         for b_cell in range(bins):
-            b0, b1 = cell_interval(b_cell, bins)
-            total_lo, total_hi = a0 + b0, a1 + b1
-            product_lo, product_hi = a0 * b0, a1 * b1
             source = a_cell * bins + b_cell
             for x_cell in range(bins):
-                x0, x1 = cell_interval(x_cell, bins)
                 for y_cell in range(bins):
+                    x0, x1 = cell_interval(x_cell, bins)
                     y0, y1 = cell_interval(y_cell, bins)
-                    # X + Y = A + B. Relaxing to interval sums is safe.
-                    allowed_x0 = max(x0, total_lo - y1)
-                    allowed_x1 = min(x1, total_hi - y0)
-                    if allowed_x0 > allowed_x1:
-                        continue
-                    delta = interval_gap(
-                        allowed_x0, allowed_x1, product_lo, product_hi
-                    )
-                    # I(A;B) >= 8 * (P[A=B=1] - P[A=1]P[B=1])^2.
-                    kernel[source, x_cell * bins + y_cell] = -8.0 * delta**2
+                    best = NEG_INF
+                    for ai in range(refine):
+                        a0 = (a_cell + ai / refine) / bins
+                        a1 = (a_cell + (ai + 1) / refine) / bins
+                        for bi in range(refine):
+                            b0 = (b_cell + bi / refine) / bins
+                            b1 = (b_cell + (bi + 1) / refine) / bins
+                            total_lo, total_hi = a0 + b0, a1 + b1
+                            product_lo, product_hi = a0 * b0, a1 * b1
+                            # Enclose feasible overlaps x=P[A=B=1], imposing
+                            # both output cells and the Fréchet constraints.
+                            allowed_x0 = max(x0, total_lo - y1, 0.0,
+                                             total_lo - 1.0)
+                            allowed_x1 = min(x1, total_hi - y0, a1, b1)
+                            if allowed_x0 > allowed_x1:
+                                continue
+                            delta = interval_gap(
+                                allowed_x0, allowed_x1,
+                                product_lo, product_hi
+                            )
+                            # I(A;B) >= 8 * covariance^2.
+                            best = max(best, -8.0 * delta**2)
+                    kernel[source, x_cell * bins + y_cell] = best
     return kernel
 
 
@@ -189,7 +203,7 @@ def entropy_upper(index, bins):
     return math.log(2.0) if lo <= 0.5 <= hi else max(entropy(lo), entropy(hi))
 
 
-def run(log_n, bins, high, low, anchor_rounds, edge=None):
+def run(log_n, bins, high, low, anchor_rounds, edge=None, kernel_refine=1):
     n = 1 << log_n
     edge = n // 2 - 2 if edge is None else edge
     support, anchor, _ = maxpath.edge_state_at_width(n, edge, anchor_rounds, 16)
@@ -198,7 +212,7 @@ def run(log_n, bins, high, low, anchor_rounds, edge=None):
     table = compress_anchor(anchor, bins)
     viable_cells = int(np.isfinite(table).sum())
     split_kernel = split_cell_kernel(bins)
-    one_round = matching_cell_kernel(bins)
+    one_round = matching_cell_kernel(bins, kernel_refine)
 
     blocks, width = n // 16, 16
     while blocks > 2:
@@ -234,17 +248,22 @@ def main():
     parser.add_argument("--low", type=int, default=20)
     parser.add_argument("--anchor-rounds", type=int, default=150)
     parser.add_argument("--edge", type=int)
+    parser.add_argument("--kernel-refine", type=int, choices=(1, 2, 4, 8),
+                        default=1,
+                        help="source-cell subdivision for tighter matching kernels")
     args = parser.parse_args()
     if args.log_n < 8:
         raise ValueError("require log-n >= 8")
     edge, exponent, viable_cells, half_action = run(
-        args.log_n, args.bins, args.high, args.low, args.anchor_rounds, args.edge
+        args.log_n, args.bins, args.high, args.low, args.anchor_rounds,
+        args.edge, args.kernel_refine
     )
     print(
         f"log_n={args.log_n} bins={args.bins} edge={edge} "
         f"viable_anchor_cells={viable_cells}/{args.bins**6} "
         f"half_density_action={half_action:.12g} "
-        f"high_low={args.high},{args.low} max_log_rate_upper={exponent:.12g} "
+        f"high_low={args.high},{args.low} kernel_refine={args.kernel_refine} "
+        f"max_log_rate_upper={exponent:.12g} "
         f"target={-math.log(2):.12g} passes={exponent < -math.log(2)}"
     )
 
