@@ -126,6 +126,27 @@ identity checked by `wire_partition_check.py` supplies the required static
 wire partition for this flow; the local prefix inequality follows from
 ascending comparators.
 
+This gives a more precise one-stage transfer. For the current bag partition
+`B_t`, let `c_B(r)` be the number of wires of bag `B` below global cut `r`,
+let `H_B` be its zero count, and let `d_B(c)=min(H_B,c)-Z_B(c)` be its local
+prefix defect. Define the nonnegative alignment term
+
+    A_t(r) = min(q,r) - sum_{B in B_t} min(H_B,c_B(r)).
+
+Then exactly `F_t(r)=A_t(r)+sum_B d_B(c_B(r))`. If an active bag's local
+provider guarantees local defect at most `T_B(H_B,c)` after the stage, local
+prefix dominance gives the sharper bound
+
+    F_{t+1}(r) <= A_t(r)
+      + sum_{B active} min(d_B(c_B(r)), T_B(H_B,c_B(r)))
+      + sum_{B inactive} d_B(c_B(r)).
+
+The alignment term is what a local sorter cannot remove within this stage; it
+changes when the next D2 stage changes the bag partition. This separates
+local contraction from cross-bag alignment and supplies a concrete transfer
+target for the tail envelope. The exact decomposition and monotonicity
+consequence are checked on the finite flow by `global_prefix_flux.py`.
+
 At the terminal time, `F(r)=0` at every native interval boundary wholly below
 or above the unique threshold-straddling interval is an exact sorting test:
 below the threshold it says every wire in the prefix is zero; above it says
