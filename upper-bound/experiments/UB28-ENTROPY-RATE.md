@@ -107,5 +107,11 @@ to displayed precision at `n=32` and `n=64`. At `n=128,d=70`, central edge 62
 has `-log(P[bad])/n = 1.16394`, still above `log 2`; this is numerical
 finite-size evidence only. The `n=256` central-edge table reaches six count
 coordinates at width 32 (`33^6` entries), so dense arrays exceed practical
-memory. A tensor/low-rank or certified rate recurrence is needed to get past
-that bottleneck.
+memory. A naive tensor-train SVD is not an adequate fix: relative truncation
+at rank 32 gives a badly biased `n=64,d=70` edge probability, and removing
+truncation loses the `~1e-56` signal at `n=32` to floating-point cancellation.
+The event depends on rare tails far below the norm of the full table. Any
+useful compression must preserve positivity and control absolute error below
+the target tail, or move to a log/max-plus rate calculation with a certified
+approximation. This is now the concrete compression gate; ordinary
+floating-point low-rank fitting does not pass it.
