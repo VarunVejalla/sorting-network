@@ -200,6 +200,46 @@ track both certificates' live frontiers and shared-variable constraints, then
 be checked against exact small-network certificates before an asymptotic bound
 is attempted.
 
+### UB-28 alternative: first moment over uniform inputs
+
+There is a different exact recurrence that avoids paired certificate leaves.
+Sample both a Boolean input uniformly and the random matching schedule. In a
+single uniform cross-matching round on two `h`-wire blocks with `a,b` ones,
+the left output count is `X ~ Hypergeom(h,b,a)` and the right count is
+`a+b-X`; independent rounds iterate this count kernel. Conditional on the
+block counts, the joint random-input/network law is invariant under independent
+wire permutations inside each block, so each block's arrangement is uniform.
+At the next finer scale, a block with `c` ones splits into counts
+`(U,c-U)`, where `U ~ Hypergeom(2h,c,h)`. Thus a distribution on block-count
+vectors evolves exactly through the even/odd passes and the finer-scale
+splits. For small exact splitters, randomize a cyclic complete factorization
+by independent uniform relabelings of its two sides; it still exactly splits
+counts and preserves the required symmetry. The count profile is sufficient by
+group invariance: the random gadget law commutes with every independent
+permutation of the two blocks, and that product group is transitive on pairs
+of subsets with prescribed sizes. Therefore, conditional on the two output
+counts, the output arrangements are independent uniform subsets.
+
+If `F(N)` is the number of Boolean inputs not sorted by sampled network `N`,
+then `E[F(N)] = 2^n P[N(X) is unsorted]`. An all-size bound `E[F(N)] < 1`
+would give a sorting network by the first-moment method, then the usual
+zero-one principle and wire restriction give the claimed all-`n` result. At
+70 rounds for `h>=200` and exact splitters below that, the depth is
+`140 max(log2(n)-8,0)+510`, so this route would yield limsup coefficient 140.
+
+[`ub28-count-process.py`](../upper-bound/experiments/ub28-count-process.py)
+implements the exact rational recurrence at small sizes. For `n=8`, one
+random matching per pass gives `E[F]=58/3`, matching exhaustive enumeration of
+all 192 schedules and all 256 inputs. An independent exhaustive checker also
+matches the recurrence's full block-count distribution after every pass and
+split (up to 73 states) for this case. At `n=16`, eight rounds give
+`E[F]=259465172802051769457880750622855061 /
+1379746024126718839235385753600000000 < 1`; this only certifies existence in
+that finite screen. A direct vector-state computation at `n=32` with eight
+rounds exceeded 500 MB and was stopped. The new challenge is to prove a
+uniform-in-`n` bound on this first moment without enumerating all count
+profiles; no such bound is established yet.
+
 The useful local gate is now closed at hand-proof level: 70 cross-matchings
 can form a `1/9`-halver for every block width `h>=200`, and smaller widths use
 exact complete bipartite gadgets. The random-graph expansion and rectangle
