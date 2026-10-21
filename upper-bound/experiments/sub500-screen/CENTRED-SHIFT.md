@@ -161,3 +161,34 @@ One-sided centred design with ε_B = 1/70000 (the kernel-checked bulk), exact ra
 
 R2's known split brings the residual down to about 0.17μ after centring, and that is what drives the
 sub-500 package.
+
+## Derivation v2: the net low imbalance (fixes a gap in the first version)
+
+The first version treated the child counts `X_h` as known up to Δ₁. In fact x can be **missing** keys of
+its own range, sitting laterally in a sibling, while holding other keys in their place (wire counts are
+fixed). The shift at every interior boundary is
+
+    s = N_L − o + (Δ₁ terms) + (far terms),    N_L := O_L − D_1,
+
+where `D_1` is the number of child-1 keys missing beyond the design (`X̂_1 − X_1`). Then:
+* **Swaps cancel.** If x lost low keys to `x−1` and holds `x−1`'s high keys instead, `O_L` and `D_1` rise
+  together and `N_L` is unchanged.
+* **Missing child-k keys** change only `b_k`, which is absorbed at the exact top boundary.
+* **Missing interior keys** (`D_h`, `1 < h < k`) require spill that is far in rank. The energy method
+  (`../lateral-line/PLAN.md`) bounds that at about `1e-7` of the parent's wires, which goes into the far
+  terms.
+* **`N_L < 0` without a swap** means x's block at the parent was shifted up: it lost low keys to `x−1` and
+  gained high outsiders from `x+1`. That happens only through the parent's boundary shift `s_p` (centred,
+  `≤ (μ c_p + U_p)/2`), the parent's separator errors at x's cut (`≤ ε_B a_p/2`), and the R2 misattribution.
+  In x's units these carry a factor `1/(Aν)` per level, which is the R2 chain:
+  `N_L ≥ −U`, with `U = (μ + ε_B/2) c/(Aν − 1)` up to the centring of the parent's share.
+* **`N_L ≤ O_L ≤ μc`** by P.
+
+So `N_L ∈ [−U, μc]`, and the midpoint offset gives `|s| ≤ (μc + U)/2`, as priced. The **negative side is
+small only because it is inherited**. Without R2's lower bound on ancestral and lateral composition, the
+negative side could reach `−O_R`, and centring would gain nothing. The one-sided centred variant has the
+same structure, with the deficit split `[0, G]` in place of U; that is how `g*/2` enters.
+
+**Simulation caveat.** `centred_shift_check.py` checks the identity `max intruders = |s|` for given
+`(O_L, D, …)`. It does not check the interval `N_L ∈ [−U, μc]`, which is a statement about the
+multi-level dynamics. That is the R2 + centring induction, and it is the next thing to derive.
