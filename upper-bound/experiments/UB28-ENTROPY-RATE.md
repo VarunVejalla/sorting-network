@@ -97,3 +97,15 @@ edge phase and boundary trajectory, together with a uniform `o(n)` bound for
 finite-width entropy errors and trajectory counts. The next research step is
 a certified discretized optimization of that recurrence. No coefficient
 improvement is claimed until this gate proves `I_70 > log 2`.
+
+To probe scaling beyond the exact Fraction table, the experimental
+[`ub28-local-edge-float.py`](ub28-local-edge-float.py) implements the same
+local transfer as dense NumPy arrays, forms each multi-round matching kernel
+by a power of its one-round hypergeometric kernel, and rescales after every
+operator while accumulating the log scale. It agrees with the exact transfer
+to displayed precision at `n=32` and `n=64`. At `n=128,d=70`, central edge 62
+has `-log(P[bad])/n = 1.16394`, still above `log 2`; this is numerical
+finite-size evidence only. The `n=256` central-edge table reaches six count
+coordinates at width 32 (`33^6` entries), so dense arrays exceed practical
+memory. A tensor/low-rank or certified rate recurrence is needed to get past
+that bottleneck.
