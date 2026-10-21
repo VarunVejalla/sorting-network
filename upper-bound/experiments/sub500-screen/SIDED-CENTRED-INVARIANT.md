@@ -86,3 +86,14 @@ The sub-500 package (490 in the model) rests on:
 
 The exact check at (4,4,3), q = 24 (`package_point.out`) is feasible with a 5.8% bulk margin before the
 band. None of these is proved.
+
+## Band repair at the package point (clarification)
+
+The band repair's escapes are **round-1** excess beyond a margin. A one sits at row `r ≥ w_v + W` only if
+its source has `z > b + W`, so the escapes are `Σ_u (z_u − b − W)₊`. That is the quantity the band
+adversary achieves at `0.26 j/W` (`band_adversary.py`). It is not the round-2 column deviation.
+* The energy method gives `Σ (z − b − W)₊ ≤ Σ (z − b)₊²/(4W) ≈ 0.25/W` of mn at `j = mn/2`. That prices
+  the same as the walk-bound tail (490).
+* The adversarial `0.13/W` (477) would need a sharper round-1 tail lemma.
+
+So the band stays at the walk-bound tail in the 490 package.
