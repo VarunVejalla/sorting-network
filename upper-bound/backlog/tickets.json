@@ -644,7 +644,7 @@
     {
       "id": "UB-33",
       "title": "Remove the design-P residual r* (two-sided invariant); delta_F is not a lever at (4,5,3)",
-      "priority": "P1",
+      "priority": "P0",
       "status": "proposed",
       "claim_level": "model",
       "baseline": 789.75,
@@ -660,7 +660,7 @@
         "upper-bound/backlog/sub500-routes.md",
         "upper-bound/experiments/sub500-screen/refined.out"
       ],
-      "notes": "2026-10-20 refined: with band + merge, r* x 0.5 -> 610.5, x 0.1 -> 534, r* = 0 -> 508, and with f/2.4 -> 496 (the only modelled sub-500 package). 2026-10-20 screen: (4.3) caps mu at nu/(A k^2) ~ the (4.4) value at delta_F = 1/8, so larger delta_F gives no gain (800-850). r* = 0 alone prices to 630, and to 400 with two sorts and f/10. Depends on the two-sided invariant (UB-24)."
+      "notes": "2026-10-21: the gate for < 500. With a real band repair (UB-32) + merge-first (UB-39) + route (d) fringe (UB-34): r* kept 566, r* = 0 482.7; R2 residual kappa 0.25 + tol 2 gives 470, kappa 0.5 + tol 2 gives 508 (sub500-routes.md 2026-10-21). 2026-10-20 refined: with band + merge, r* x 0.5 -> 610.5, x 0.1 -> 534, r* = 0 -> 508, and with f/2.4 -> 496 (the only modelled sub-500 package). 2026-10-20 screen: (4.3) caps mu at nu/(A k^2) ~ the (4.4) value at delta_F = 1/8, so larger delta_F gives no gain (800-850). r* = 0 alone prices to 630, and to 400 with two sorts and f/10. Depends on the two-sided invariant (UB-24)."
     },
     {
       "id": "UB-34",

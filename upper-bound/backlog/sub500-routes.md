@@ -178,3 +178,29 @@ Both are modest. Keep them as add-ons to a route that already clears 500.
 
 Below 200 needs a different architecture. Those ideas stay in UB-08/09 (high-arity sorters,
 finite-M) and UB-25 to UB-28 (`sub200-structural-strategies.md`).
+
+## 2026-10-21 update: the realistic sub-500 package
+
+Sources: `../experiments/sub500-screen/SCREEN.md` (band-repair adversary and re-pricing) and
+`../experiments/fringe-duality/ROUND1-ENERGY.md` (route d).
+
+**"Two sorts, R = 0" is not available.** Without a repair, two sorts are the one-round separator (880).
+An actual input reaches a band tail of `0.26 j/W`. So every two-sort route needs a band of height
+`2W`, and the walk-bound tail already prices close to the true one (`c ≈ 0.5` against `0.13`).
+
+With the band:
+
+| package | cost |
+|---|---:|
+| band + merge-first + route (d) fringe (/5.8) | 566 |
+| … + `r* = 0` | **482.7** ((4,4,3), q = 24) |
+| … + SLACKFREE R2 residual, κ = 0.25 + tolerance ×2 (instead of `r* = 0`) | 470 |
+| … + R2, κ = 0.5, tolerance ×2 | 508 |
+
+**Critical path to < 500:**
+1. **UB-34**: route (d) fringe. Model passes; next is certification and Lean.
+2. **UB-39**: merge-first on sorted child segments.
+3. **UB-32**: band repair with the W-shifted walk-bound tail.
+4. **UB-33/UB-24**: remove `r*`. This is the gate; no route below 500 avoids it.
+
+Every other route modelled lands at or above about 508.
