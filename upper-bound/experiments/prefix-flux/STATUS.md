@@ -131,6 +131,17 @@ Useful focused commands:
     python upper-bound/experiments/prefix-flux/first_column.py
     python upper-bound/experiments/prefix-flux/sparse_probe.py --horizon 60 --initial outer
 
+The rectangle-to-port frame is checked against `R1Wire`/`R1Exec` and
+`PhysicalPack2`: ports are static-order rank intervals, local networks are
+presented in that rank order, and physical/semantic whole-row counts agree.
+The remaining issue is global transfer, not the rectangular port frame.
+`rank_recurrence.py` propagates zero-count intervals using the local
+one-sided rank-tail bounds, including the required common-witness factor
+`m^2` for baselines. At depth7, scale65536 and threshold1/3 it cannot certify
+63 terminal blocks as pure. This is a conservative-relaxation failure from
+lost correlations, not a counterexample to a fixed core. See PROFILE-GATE for
+the exact conditional frame argument and next invariant requirement.
+
 The LP now stores its path constraints sparsely; recoloring and interval
 queries avoid repeated scans. First-sort validation:8490 literal comparisons;
 recoloring/interval validation:3000 randomized exact comparisons. Historical

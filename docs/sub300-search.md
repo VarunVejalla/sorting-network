@@ -91,6 +91,20 @@ for its independently reviewed shifted-profile tail lemma and the precise
 remaining D2 transfer obligation. Neither passing adversarial samples nor
 that local lemma proves the conditional292.5 sorting bound.
 
+The latest gate check closes the local physical-frame objection: under the
+inflated schedule, static D2 ports are rank intervals in each node's ordered
+local input, and the semantic/physical permutation preserves row counts.
+However, a conservative recurrence that propagates only independent
+zero-count intervals through port endpoints, with the corrected common
+baseline-witness union factor, fails terminal purity at depth7 (63 unresolved
+blocks). This does not refute fixed cores; the relaxation forgets
+correlations between ports and successive profiles. The next paper candidate
+must retain a coupled tail/profile state or specify a priced terminal repair.
+The physical-frame statement is conditional on exact rectangular arities and
+the `PhysicalPack2` provider. Details and reproducible script are in
+[`prefix-flux/PROFILE-GATE.md`](../upper-bound/experiments/prefix-flux/PROFILE-GATE.md)
+and `rank_recurrence.py`.
+
 No credible <=300 construction has yet passed the paper gates. Prioritize a
 new local/global contract rather than another scalar retune. Two precise
 possible directions remain to screen:

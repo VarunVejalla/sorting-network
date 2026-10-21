@@ -159,7 +159,7 @@ def native_weight(node,threshold,p,d):
 
 def choose(a,pi,blocks,zeros,node,p,d,threshold,eps_b,eps_f,
            delta_f,exact,rng,policy,incoming=None,supplied=None,contract=None,
-           target_cut=None,extra_cuts=()):
+           target_cut=None,extra_cuts=(),prefix_lower=None):
     lev,idx=node
     h=pi//2
     lengths=[h,*blocks,h]
@@ -175,6 +175,9 @@ def choose(a,pi,blocks,zeros,node,p,d,threshold,eps_b,eps_f,
         ends=sorted([*ends,*(additions-set(ends))])
         lengths=[q-p for p,q in zip(ends,ends[1:])]
     limits,budget,support=bounds(a,h,zeros,ends,eps_b,eps_f,delta_f,exact,contract)
+    if prefix_lower is not None:
+        limits=[(max(lo,prefix_lower.get(pos,0)),hi)
+                for pos,(lo,hi) in zip(ends,limits)]
     if incoming is not None:
         limits=[(max(lo,value),hi) for value,(lo,hi) in
                 zip(word_prefix(incoming,ends),limits)]

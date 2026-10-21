@@ -119,3 +119,50 @@ terminal criterion before any Lean work on this candidate.
 
 The stage-cost target remains234*5/4=292.5, conditional on all those gaps.
 The additional profile promises must be obtained from the same three sorts.
+
+## Exact port frame and mass-only recurrence diagnostic
+
+The local rank-tail cut frame is resolved for the inflated schedule, assuming
+it is implemented by the provider under study. `R1Wire.blockOf` and
+`downSetB` select intervals by rank in the static wire order. `R1Exec.stageNet`
+feeds each node's local net through `orderEmbOfFin`, and `rankIn_orderEmb`
+identifies local position c with rank c. With scale divisible by4096, every
+nonempty arity is exactly a 4096-by-n rectangle. `PhysicalPack2Net_exec`
+relates the physical and semantic core by a row-preserving permutation:
+whole-row counts agree, and a cut inside a row incurs at most its remainder
+r. Thus the local rectangle prefix contract applies to actual D2 port cuts,
+with the partial-row surcharge already represented in the bound.
+
+`rank_recurrence.py` tests the weakest count transfer that follows from this
+interface. For each bag it turns the prefix lower bounds at a port's two
+endpoints into an interval for that port's zero count, then adds parent
+downports, child return ports and retained inactive mass. It makes no claim
+that output ports are internally sorted. Root mass starts as the exact native
+prefix. At the terminal stage it checks purity of every native block wholly
+below or above the threshold.
+
+The implemented envelope includes the common-witness union factor
+`log(2*m^2*(n-1)/eta)/n`: `m` mass classes, `n-1` nontrivial output subsets,
+both orientations, and `m` baselines. The latter factor was initially omitted;
+the corrected run below supersedes earlier numbers. (The one-round tail event
+persists through the later row permutation and column sort, so no second
+scramble union is charged.)
+
+At depth7, scale65536, threshold1/3, the corrected relaxation has five D2
+rows and leaves63 terminal blocks uncertified as pure. One displayed lower
+bound is 30990 below block capacity, while the reported worst unresolved
+allowance reaches an entire block. This is loss of information from
+independent count intervals and omitted cross-port correlations, not a bad
+output witnessed for any fixed network. It shows the corrected mass-only
+recurrence does not close the terminal gate. The next useful model must retain
+a coupled rank-tail/profile state across ports and stages, or prove a
+separate cheap repair. Root/fixed-core selection, tiny-rank and all-depth
+terminal/depth gates remain open; no Lean theorem or coefficient improvement
+follows from this diagnostic.
+
+The physical-frame source chain is `R1Wire.blockOf`/`downSetB`,
+`R1Exec.stageNet`/`rankIn_orderEmb`, and `Chvatal.PhysicalPack2`'s
+`physicalPack2Net_rowRegion_card`. It settles whole-row count preservation
+for exact rectangles and bounds an interior-row cut discrepancy by its
+remainder. This remains conditional on implementing the inflated schedule's
+exact rectangular arities with this provider; no ragged embedding is claimed.

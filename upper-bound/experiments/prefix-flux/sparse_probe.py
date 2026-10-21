@@ -13,6 +13,9 @@ from flow_dag import FlowDAG
 from oracle import choose,normalize_word,labeled_outputs,dominates
 from moderate_tail import ragged
 from first_column import first_column
+from moderate_tail import bound,interval_envelope
+from functools import lru_cache
+from math import ceil,floor
 
 
 def merge(intervals):
@@ -79,16 +82,44 @@ def affected(flow,t,errors,q):
     return bags,cuts
 
 
+@lru_cache(None)
+def profile_tail(total,f,n,m):
+    """Uniform baseline/orientation tail, outward-rounded, eta=1/1000."""
+    if total==0 or f>=m: return 0
+    i=min(m,(total+n-1)//n)
+    # PROFILE-GATE chooses one core simultaneously over m baselines,
+    # mass classes, output subsets and both orientations.
+    _,theta,p0=bound(i,f,n,m,baseline_factor=m)
+    upper=interval_envelope(i,f,n,m,theta,p0,baseline_factor=m)
+    return min(total,floor(n*upper))
+
+
+def rank_prefix_lower(a,H,ends,qrows=12):
+    assert a%(1<<qrows)==0
+    m=1<<qrows; n=a//m; N=a
+    lower={}
+    for p in ends:
+        k,r=divmod(p,n)
+        marks=profile_tail(H,k,n,m)
+        holes=profile_tail(N-H,m-k,n,m)+r
+        semantic=min(marks,holes)
+        # Physical output differs from the semantic output by a row-preserving
+        # cumulative column permutation, changing a partial prefix by <=r.
+        error=semantic+r
+        lower[p]=max(0,min(H,p)-error)
+    return lower
+
+
 def probe(d,horizon,root_eps,eps_b,eps_f,delta,threshold,moderate=True,
-          initial='band',first_sort=True):
-    flow=FlowDAG(d).build(); p=flow.p; N=p.k**d; q=int(threshold*N)
+          initial='band',first_sort=True,scale=1,rank_core=False):
+    flow=FlowDAG(d,scale=scale).build(); p=flow.p; N=p.k**d*scale; q=int(threshold*N)
     e=min(int(root_eps*N/2),q,N-q)
     assert initial in ('band','outer','left','right','stripes')
     low=(0,e) if initial in ('outer','left') else (q-e,q)
     high=(N-e,N) if initial in ('outer','right') else (q,q+e)
     errors=merge([low,high])
     if initial=='stripes':
-        n=(N+4095)//4096
+        n=N//4096
         def stripes(lo,hi,phase):
             rows=range((lo+n-1)//n,hi//n)
             width=(e+len(rows)-1)//len(rows)
@@ -120,8 +151,8 @@ def probe(d,horizon,root_eps,eps_b,eps_f,delta,threshold,moderate=True,
             contract=None
             # One column is sorted exactly by the first column sort. There is
             # no random permutation union to estimate when n=1.
-            exact=moderate and a<=4096
-            if moderate and a>4096 and pi and H not in (0,a):
+            exact=moderate and not rank_core and a<=4096
+            if moderate and not rank_core and a>4096 and pi and H not in (0,a):
                 n=(a+4095)//4096; L,r=divmod(a,n)
                 low=ragged(a,pi//2,H)['integer_bound']
                 high=ragged(a,pi//2,a-H)['integer_bound']
@@ -129,9 +160,15 @@ def probe(d,horizon,root_eps,eps_b,eps_f,delta,threshold,moderate=True,
             pos=0; extra=[]
             for length,_ in incoming:
                 pos+=length; extra.append(pos)
-            ends,ys,_,_=choose(a,pi,blocks,H,(lev,idx),p,d,q,eps_b,eps_f,
-                delta,exact,rng,'identity',incoming=incoming,contract=contract,
-                target_cut=P,extra_cuts=extra)
+            local_ends=[0];pos=0
+            for length in [pi//2,*blocks,pi//2]:
+                pos+=length;local_ends.append(pos)
+            prefix_lower=(rank_prefix_lower(a,H,sorted(set(local_ends+extra+[P])))
+                          if rank_core else None)
+            local_parameters=(F(2),F(1),F(0)) if rank_core else (eps_b,eps_f,delta)
+            ends,ys,_,_=choose(a,pi,blocks,H,(lev,idx),p,d,q,*local_parameters,
+                exact,rng,'identity',incoming=incoming,contract=contract,
+                target_cut=P,extra_cuts=extra,prefix_lower=prefix_lower)
             output=labeled_outputs(labels,ends,ys)
             outword=normalize_word([(hi-lo,bit) for lo,hi,bit in output])
             assert dominates(outword,incoming)
@@ -178,10 +215,14 @@ if __name__=='__main__':
     ap.add_argument('--initial',choices=['band','outer','left','right','stripes'],default='band')
     ap.add_argument('--skip-first-sort',action='store_true',
                     help='weaker postcondition-only oracle; omits mandatory first sort')
+    ap.add_argument('--scale',type=int,default=1,
+                    help='uniform wire-count inflation for the D2 flow')
+    ap.add_argument('--rank-core',action='store_true',
+                    help='impose reviewed whole-row spill-tail rank limits')
     ap.add_argument('--coarse',action='store_true')
     args=ap.parse_args()
     result=probe(args.depth,args.horizon,F(args.root_eps),F(19,2000),
                  F(args.eps_f),F(args.delta),F(args.threshold),not args.coarse,
-                 args.initial,not args.skip_first_sort)
+                 args.initial,not args.skip_first_sort,args.scale,args.rank_core)
     print('SPARSE RELATIONAL ORACLE; no fixed-network or all-input upper bound')
     print(result)

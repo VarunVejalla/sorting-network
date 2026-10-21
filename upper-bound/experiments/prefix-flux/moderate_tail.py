@@ -13,9 +13,9 @@ from fractions import Fraction as F
 from mpmath import iv
 
 
-def envelope(i,f,n,m,theta,p0,eta=1/1000):
+def envelope(i,f,n,m,theta,p0,eta=1/1000,baseline_factor=1):
     g=(i+1)*math.log1p(i)-i*math.log(i)
-    overhead=math.log(2*m*(n-1)/eta)/n
+    overhead=math.log(2*m*baseline_factor*(n-1)/eta)/n
     u=math.expm1(theta)
     slope=i*u/(1+u*p0)
     intercept=i*math.log1p(u*p0)-slope*p0
@@ -24,10 +24,10 @@ def envelope(i,f,n,m,theta,p0,eta=1/1000):
     return (g+overhead+intercept+logsum)/theta
 
 
-def bound(i,f,n,m):
+def bound(i,f,n,m,baseline_factor=1):
     """Return float upper envelope at a fixed rounded rational witness."""
     def fun(v):
-        return envelope(i,f,n,m,math.exp(v[0]),v[1])
+        return envelope(i,f,n,m,math.exp(v[0]),v[1],baseline_factor=baseline_factor)
     candidates=[minimize(fun,[math.log(t),p],method='L-BFGS-B',
                         bounds=[(-9,3),(0,1)])
                 for t,p in [(0.2,0.1),(0.7,0.3),(2,0.01)]]
@@ -35,10 +35,10 @@ def bound(i,f,n,m):
     denom=2**20
     th=max(1,round(math.exp(result.x[0])*denom))/denom
     p0=min(1,max(0,round(result.x[1]*denom)/denom))
-    return envelope(i,f,n,m,th,p0),th,p0
+    return envelope(i,f,n,m,th,p0,baseline_factor=baseline_factor),th,p0
 
 
-def interval_envelope(i,f,n,m,theta,p0):
+def interval_envelope(i,f,n,m,theta,p0,baseline_factor=1):
     """Outward interval evaluation at fixed dyadic parameters, eta=1/1000."""
     iv.dps=50
     def exact_float(x):
@@ -46,7 +46,7 @@ def interval_envelope(i,f,n,m,theta,p0):
         return iv.mpf(num)/den
     th,pt=exact_float(theta),exact_float(p0)
     g=(i+1)*iv.log(i+1)-i*iv.log(i)
-    overhead=iv.log(2000*m*(n-1))/n
+    overhead=iv.log(2000*m*baseline_factor*(n-1))/n
     u=iv.exp(th)-1
     slope=i*u/(1+u*pt)
     intercept=i*iv.log(1+u*pt)-slope*pt
