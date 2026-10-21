@@ -1,0 +1,12 @@
+band (true tail)                                 684.0  q = 26  (4,5,3)
+band + merge first (true tail)                   625.5  q = 26  (4,5,3)
+band + merge + fringe /5.8 (route d)             566.2  q = 25  (4,5,3)
+band + merge + fringe /5.8 + r* = 0              458.0  q = 24  (4,4,3)
+band + merge + fringe away                       435.4  q = 20  (4,5,2)
+band + merge + fringe away + r* = 0              375.4  q = 21  (4,3,2)
+
+Tolerance gates (least T with cost < 500):
+  band + merge + fringe /5.8                    T >= 5.01  (492.3, q = 19)
+  band + merge + fringe /5.8 + r* = 0           T >= 1.00  (458.0, q = 24)
+  three sorts + fringe /5.8                     never (T <= 1e6)
+  band + merge + fringe away                    T >= 1.00  (435.4, q = 20)

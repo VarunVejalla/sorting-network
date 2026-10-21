@@ -221,3 +221,31 @@ constant).
 * a repair that is not local in rows;
 * `ε_B` tolerance (UB-40): `W ∝ 1/ε_B`, so a 36× tolerance gives `W ≈ 500` and `R = S(10) = 55`;
 * a node input that is not adversarial (UB-39: sorted segments).
+
+### Re-pricing the two-sort routes with a real repair (`reprice_band.py`, `reprice_band.out`)
+
+Two sorts with `R = 0` is the one-round separator (880). So every "two sorts" row above is
+**optimistic** and must be read with a band repair. Re-priced:
+
+| package | true tail `0.13/W` | walk-bound tail (`tail_frac`) |
+|---|---:|---:|
+| band | 684.0 | 699.8 |
+| band + merge first | 625.5 | 641.2 |
+| band + merge + fringe /5.8 (route d) | 566.2 | — |
+| band + merge + `r* = 0`, current fringe | — | **508.0** |
+| **band + merge + fringe /5.8 + `r* = 0`** | **458.0** | **482.7** |
+| band + merge + fringe away + `r* = 0` | 375.4 | — |
+
+**Tail constant `c` in `c/W`** (fringe /5.8, `r* = 0`):
+
+| c | 0.13 | 0.5 | 1 | 3 | 10 |
+|---|---:|---:|---:|---:|---:|
+| cost | 458 | 482.7 | 496 | 510 | 540 |
+
+The walk-bound tail prices like `c ≈ 0.5` at the relevant W.
+
+**The only modelled sub-500 package with a realistic repair** is band repair (UB-32) + merge-first
+(UB-39) + route (d) fringe (UB-34) + `r* = 0` (UB-33): **482.7** at (4,4,3), q = 24.
+* Without `r* = 0`, the best is 566.
+* With `ε_B` tolerance instead: `T ≥ 5` (492.3 at q = 19).
+* `r* = 0` (the two-sided invariant, UB-24) is the gating component.
