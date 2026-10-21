@@ -114,6 +114,20 @@ next certificate attempt should use the exact entropy kernel with correlated
 profile constraints, or a stronger global potential, rather than merely
 adding more Pinsker bins.
 
+The zero is an abstraction artifact, rather than a witness trajectory. The
+reproducible [`ub28-meanfield-terminal-screen.py`](ub28-meanfield-terminal-screen.py)
+follows the exact zero-rate update `(a,b) -> (a*b, a+b-a*b)` from top
+densities `(1/2,1/2)`, with equal-density children at each split. For `n=2^20`
+and 235/35 rounds it reaches width-16 densities
+`(0,0,2.06e-72,2.06e-72,0.00296,0.00296)` on the tested edge support; rounding
+to width-16 counts gives `(0,0,0,0,0,0)`, which the exact finite anchor rejects.
+Thus the coarse Bellman value zero cannot be read as an actual zero-cost
+trajectory. Its transition kernels maximize independently over density
+intervals, so consecutive transitions can select inconsistent representatives
+inside their shared cells. A useful certificate must constrain the profile
+across consecutive transitions (for example, a relational potential or
+correlated interval enclosure).
+
 ## Independent audit (2026-10-21)
 
 Two fresh reviews found no sign or discount-factor error: weighting the
