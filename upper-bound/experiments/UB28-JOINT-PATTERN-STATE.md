@@ -130,6 +130,22 @@ identity for all 416 words of widths 1 through 5 over up to three colors.
 It also verifies the induced two-bit comparator output kernel for all 256
 four-slot words over the four two-bit types.
 
+There is a convenient relative-entropy relaxation of the matching rate.
+Under a feasible triple law `T`, pair-flow balance makes the `AB` and `BC`
+marginals equal to `M`. Thus
+`D(T || p tensor p tensor p) = I_T + I(A;B)`, while
+`I(A;B)=I(C;B) <= I(C;A,B)=I_T`. Consequently
+`I_T >= (1/2) D(T || p tensor p tensor p)`. If `F` is the local comparator
+map, data processing gives
+
+```text
+I_T >= (1/2) D(F_*T || F_*(p tensor p tensor p)).
+```
+
+The second distribution is the zero-cost mean-field output histogram. This
+weaker bound depends only on input and output histograms and may be easier to
+optimize across the schedule.
+
 The physical half-split also has an exact type kernel. If parent type counts
 are `H_v`, first-half allocations are `X_v`, and second-half allocations are
 `Y_v=H_v-X_v`, then
@@ -142,6 +158,34 @@ steps admit finite-type entropy rate functions on the joint state; this
 removes the combinatorial-formula obstacle, but does not yet optimize their
 composition or establish a rate above `ln 2`. The same checker verifies this
 split formula for 103 parent words at widths 2 and 4.
+
+The split's per-parent-column cost is explicit as well. Set `p_v=H_v/h`,
+`x_v=X_v/h`, `y_v=Y_v/h`, and `r_{uv}=R_{uv}/h`, where the parent width is
+`h` and each child half has width `h/2`. Feasibility requires
+`x+y=p`, `sum x=sum y=1/2`, and `r` has marginals `x,y`. Put
+`u=2x`, `v=2y`, and `w=2r`; then the log probability divided by parent width
+is
+
+```text
+sum_a p_a H(x_a/p_a) - ln 2 - (1/2) I_w(U;V),
+```
+
+so its nonnegative cost is
+`J_split = ln 2 - sum_a p_a H(x_a/p_a) + (1/2) I_w(U;V)`.
+At the typical split `x=y=p/2` and `w=p tensor p`, this cost is zero.
+More generally, the same expression simplifies exactly to
+`J_split = (1/2) D(w || p tensor p)`: decompose this KL divergence into the
+mutual information `I_w(U;V)` plus the two marginal divergences, and use
+`(1/2)(D(u||p)+D(v||p)) = ln 2 - sum_a p_a H(x_a/p_a)`.
+For a fixed terminal edge, a complete trajectory's normalized cost per
+original wire is the initial `1/2 * D(p_top || uniform_4)` plus the sum of
+each matching cost `I_T` and split cost `J_split`, weighted by that stage's
+number of columns divided by `n`. Since the cone has at most six rows, each
+stage has a fixed finite alphabet; the number of integer type paths over
+`O(log n)` scales is `exp(O(log^2 n))`. Therefore a uniform infimum above
+`ln 2` would suffice for the first-moment gate after absorbing these path and
+Stirling errors. Computing or lower-bounding that coupled infimum is the
+remaining quantitative problem.
 
 These arguments prove the abstract orbit steps, conditional on the support
 geometry being fixed and all random pairings in the local cone being fresh and
