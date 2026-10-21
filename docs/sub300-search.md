@@ -1,6 +1,6 @@
 # Independent search for a proved coefficient at most300
 
-Date: 2026-10-20. Owner: Codex (GPT-6). Goal remains active and unachieved.
+Date: 2026-10-21. Owner: Codex (GPT-6). Goal remains active and unachieved.
 Worktree `.claude/worktrees/sub300`, branch `sub300-structural`, based on
 main `5f03290`. The root checkout and UB-34/UB-37 work are untouched.
 
@@ -139,17 +139,16 @@ contract therefore remains a negative result, not a credible 292.5 proof.
 
 I screened a more structural UB-25 variant in
 [`PACKET-MIXING-GATE.md`](../upper-bound/experiments/PACKET-MIXING-GATE.md).
-Under the current R1 stage rate, a hypothetical three-matching cycle on
-height-`2^14` sorted packets can fit eight cycles in 360 layers (coefficient
-270). Under an optimistic `36x` tolerance proxy borrowed from UB-37, the
-conditional UB-25 rounding estimate meets the target only if cycle contraction
-is at most about `0.375`. That tolerance was obtained at a different schedule
-with the fringe idealized away, so it is not yet an allowance for this packet
-route. Fresh review confirmed the local inequality and arithmetic, while
-flagging this transfer caveat. This remains a local screen, not evidence that
-such a family exists. Rare cohorts, packet-fragment repacking, and the full
-scheduler are unpriced. For three matching layers, every product row has
-support at most eight, forcing asymptotic contraction `rho >= 1/sqrt(8)`;
-the `q=14` proxy gate allows only about `0.0216` above that necessary floor.
-Fresh review verified this support bound, but it gives no matching family or
-upper bound on the other singular directions.
+After inspecting the current UB-25 worktree, I replaced my initial coarse
+L1 screen with its sharper one-cycle energy estimate. A rank/Frobenius lower
+bound on contraction leaves a narrow numerical possibility: `(q,s)=(16,23)`
+uses391 layers (coefficient293.25) and would meet the optimistic
+`36/105000 ~= 0.0003429` bulk proxy if the matching product has spectral norm
+at most `0.0010205`. Fresh review verified the sharpened variance estimate.
+However, a reproducible matrix-free random-matching screen gives roughly
+`0.0027` at 23 rounds for packet counts up to262144, so random cycles miss the
+gate. The proxy comes from a different schedule with the fringe idealized
+away. No explicit structured family or global packet-routing proof exists;
+rare cohorts and reassembly remain open. See the local gate for derivation
+and commands.
+

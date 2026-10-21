@@ -1,6 +1,6 @@
 # Packet-mixing depth and rounding gate
 
-2026-10-20. Codex (GPT-6). Paper-level screen of UB-25, not a construction,
+2026-10-21. Codex (GPT-6). Paper-level screen of UB-25, not a construction,
 network certificate, global recurrence, or sorting bound.
 
 ## What the screen tests
@@ -11,57 +11,58 @@ threshold, the two outgoing zero-counts are the floor and ceiling of the
 input sum divided by two. Thus a fixed matching schedule of packet pairs
 implements rounded averaging.
 
-The UB-25 conditional estimate for a cycle of `s` matchings whose real
-averaging product contracts the zero-sum subspace by `rho<1` is
+The stage budget in the current R1 scheduler is 400 layers for coefficient
+300 (it charges `3/4` per stage layer). The `36/105000` tolerance used below
+is only an optimistic proxy borrowed from a different UB-37 schedule with
+the fringe idealized away; it is not established for a packet schedule.
+
+## Rank/Frobenius lower bound and refined bulk screen
+
+There is a stronger bound for perfect matchings on even `c`. Every one-step
+pair-average has rank `c/2`, so a product `P` of `s` matchings has rank at
+most `c/2`. The constants split off as an invariant rank-one subspace, hence
+`rank(P-J)<=c/2-1`, where `J` is the all-mean projection. The row support
+bound gives `||P||_F^2 >= c/2^s`, and double stochasticity gives
+`||P-J||_F^2=||P||_F^2-1`. Comparing Frobenius and operator norms yields
 
 ```text
-relative L1 deviation after t cycles
-    <= rho^t/2 + s/(2*m*(1-rho)).
+rho = ||P-J||_2 >= sqrt((c/2^s - 1)/(c/2 - 1))
+                  -> 2^((1-s)/2) as c -> infinity.
 ```
 
-I priced this at the current 789.75 scheduler's stage rate `3/4`. To reach a
-coefficient below 300, a stage may spend at most 400 layers. Taking a
-hypothetical 3-matching cycle and the optimistic `36x` accepted
-`epsilon_B` tolerance as a proxy, `packet-mixing-budget.py` gives the required
-maximum `rho` for each packet height. The underlying `1/105000` normalization
-is the accepted parameter, but the `36x` allowance was screened at a different
-schedule with the fringe idealized away; it is not established for the
-789.75 construction or any packet schedule. In particular, `q=14` permits 24
-matching rounds in 360 layers (coefficient 270); under that proxy the rounding
-bound fits only if the unproved cycle contraction is at most the script's
-printed `rho_max`.
-
-This is a useful local numerical screen, but too incomplete to count as a
-sub-300 global gate. It does not certify that any 3-matching family has the
-required operator contraction for every packet count, establish that the
-remainder of the proof tolerates the proxy error, or control rare cohorts.
-Even a successful expander screen would leave the global obstruction: row-slab
-routing cuts packets into fragments, and repacking those fragments can consume
-the saved depth. Do not start Lean before an explicit unbounded packet family,
-the actual error budget, rare-cohort control, and a complete priced routing
-cycle are established and independently reviewed.
-
-Fresh review (`/root/packet_budget_review`, GPT-6-luna) confirmed the UB-25
-rounding inequality and script arithmetic; it identified the schedule-transfer
-and tolerance-proxy caveats now stated above.
-
-The same review supplied a necessary contraction floor. A product of `s`
-pair-averaging matchings is doubly stochastic, and each row has support at
-most `2^s`. For `c` packets, Cauchy gives
+The existing UB-25 worktree (`MIXING-TAIL.md`) has a sharper one-cycle
+estimate than the normalized-L1 recurrence above. If `alpha=H/(cm)`, its
+bulk excess divided by `cm` is at most
 
 ```text
-rho = ||P - J||_2 >= sqrt(2^-s - 1/c),
+(rho/2)*sqrt(alpha*(1-alpha)) + s/(4m)
+    <= rho/4 + s/(4m).
 ```
 
-so for unbounded packet counts `rho >= 2^(-s/2)`. With `s=3`, this floor is
-`1/sqrt(8) ~= 0.35355`, only about `0.02164` below the `q=14` proxy gate
-`rho_max ~= 0.37519`. This does not rule out the gate, but shows that the
-required contraction is close to the best possible from support size alone;
-attaining it in every singular direction with a shared unbounded family is a
-substantial construction obligation.
+The improved variance term follows from
+`sum_i (x_i-H/c)^2 <= mH-H^2/c`; the one-sided excess is at most half the
+L1 norm. The rank/Frobenius floor above therefore does **not** rule out this
+certificate. `packet-mixing-energy-screen.py` shows that at `(q,s)=(16,23)`
+the structural lower bound allows a bulk estimate of about `0.0002098`, below
+the proxy `36/105000 ~= 0.0003429`. The actual spectral norm must be at most
+about `0.0010205` to pass; no unbounded matching family with that norm has
+been proved.
+
+Fresh review (`/root/packet_budget_review`, GPT-6-luna) verified the refined
+variance estimate and this correction. The bound applies to aligned bulk
+excess; nonaligned cuts and partial rows need their extra charges. The
+finite random screen observed `rho` around `0.0027` for 23 rounds at packet
+counts up to 262144, above the required `0.00102`; this is discovery evidence
+only, not a lower bound on optimized families. Reproduce it with
+`packet-random-cycle-screen.py`. Rare cohorts, the actual tolerance, packet
+repacking, and the full scheduler remain open. The arithmetic gate is viable
+but extremely tight; the next local test should seek an explicit structured
+schedule or a stronger analytic norm bound before any Lean work.
 
 Run with:
 
 ```sh
-python upper-bound/experiments/packet-mixing-budget.py
+python upper-bound/experiments/packet-mixing-energy-screen.py
+python upper-bound/experiments/packet-random-cycle-screen.py
 ```
+
