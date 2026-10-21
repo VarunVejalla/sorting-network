@@ -1,0 +1,115 @@
+# Joint induction for P and the sided, centred invariant Q (2026-10-21)
+
+Claude (Opus 5.5). **Claim level: complete hand argument, unreviewed.** It extends
+`../../best/notes/sub800/R1-PROOF.md` (cited as R1) and replaces its design P, Lemma 4.2′ and (4.2′).
+Supporting notes: `CENTRED-SHIFT.md` and `SIDED-CENTRED-INVARIANT.md`. Check script:
+`package_point.py`.
+
+## 0. Objects
+
+* **Schedule, capacities, roles, up-flows π:** Chvátal's, unchanged (R1 §0).
+* **Node u**, active at time t with capacity c, wires a, children `w_1 … w_k` (inactive at t), parent p.
+* `G_y = R_y − W_y`: the deficit (R1 §1). It is a deterministic function of the flow table.
+* **Order-0 outsiders** of u: keys in u not addressed below u. `O_L` and `O_R` are those below and above
+  range(u).
+* `X_h`: keys of range(`w_h`) in u's bag; `X̂_h` is its design value; `D_h := X̂_h − X_h`.
+* `N_L := O_L − D_1` and `N_H := O_R − D_k`: the net imbalances.
+* **Far terms.** `φ_u`: keys of u's interior children's ranges that are outside subtree(u) or misdelivered
+  more than one child-range away, in units of c. These arise only from separator crossings far in rank
+  (`../lateral-line/PLAN.md`, energy method: `φ ≤ φ̄`).
+
+## 1. Statements, at every active time t of every node u
+
+* **P** (Chvátal): u holds fewer than `μ δ^r c` outsiders of order r. In particular `O_L + O_R < μc`.
+* **Q**:
+  * (a) `N_L, N_H ∈ [−λ_u c, μ c + β_u c]`, with
+    * `β_u = μ/(2Aν)` if u is an end child of its parent on that side, else 0;
+    * `λ_u = (w̄/2 + ε_B η/2 + μ/2·[end])/(Aν) + φ̄`;
+    * `w̄ = (2μ(Aν+1) + ε_B η)/(2Aν − 1)`, the fixed point of `w = μ + β + λ`.
+  * (b) For interior h, `|D_h| ≤ Δ₁ + φ̄ c`.
+
+## 2. Design (replaces design P)
+
+For a mid or botDesc sender u:
+* `b_1 = X̂_1 − π/2 + o_L`, `b_h = X̂_h` for `1 < h < k`, and `b_k = a − π − Σ_{h<k} b_h`;
+* `θ_h = G_h − b_h`;
+* `o_L` = the midpoint of Q(a)'s interval for `N_L`, an input-independent design constant, rounded to an
+  integer;
+* per-boundary centring of the Δ₁ terms: boundary j gets an extra offset `(j−1)Δ₁/2`, so the sib term is
+  halved.
+
+topRise and topDesc are as in Chvátal. botRise has no blocks.
+
+## 3. Step lemma (P and Q at t imply P at t+1 for u's children)
+
+* **Exact sort.** Positions are ranks. F₁ holds the `O_L` low outsiders and the `π/2 − O_L` lowest keys of
+  `w_1` (`O_L ≤ π/2` by (4.4)). F₂ is symmetric.
+* **Shift identity** (`CENTRED-SHIFT.md`, checked numerically). The top boundary is exact. The boundary
+  between `B_j` and `B_{j+1}` has shift `s_{j+1} = N_L − o_L − Σ_{1<h≤j} D_h + (Δ₁ offsets)`.
+* **Intruders.** `intruders(B_j) ≤ |s_j|⁺-part + |s_{j+1}|⁻-part ≤ w̄ c/2 + (k−1)Δ₁/2 + μ δ A² k c + 2φ̄ c`.
+* **Separator.** Property B adds at most `ε_B a/2` crossings per cut and direction, so `≤ ε_B a` per block,
+  plus the geometry charge γ (R1 §4).
+* **Order-0 at child w.** Dividing by `c(i+1, t+1) = Aν c` gives
+
+      (4.2-c)  w̄/2 + (k−1) μ sib/2 + μ δ A² k + 2φ̄ + ROUND + γ̂Aν + ε_B η  ≤  μ Aν.
+
+* **Higher orders.** R1's Lemma 4.3′ chain, Lemma 4.4 and Lemma 4.5 are unchanged. They use only
+  order-0 bounds and Property F.
+
+## 4. Step lemma (P and Q at t imply Q at the children's next active time)
+
+The child w is next active at t+1. Its bag is u's block `B_w` plus the F blocks its own children sent up
+at t.
+* **Upper side of `N_L(w)`.** `N_L(w) ≤ O_L(w) + (excess own low keys)`.
+  * `O_L(w) ≤ μ c_w` by P at t+1. This includes the intruders from u's positive shift.
+  * Excess own low keys occur only for `w = w_1`. u's F₁ took `O_L(u)` outsiders instead of own keys, and
+    the design assumed the midpoint, so this is `≤ μc/2 = β_w c_w`.
+* **Lower side.** w's own low keys go missing without a matching low outsider only through:
+  * u's negative shift, `≤ w̄ c/2`;
+  * u's separator crossings at w's lower cut, `≤ ε_B a/2`;
+  * u's F₁ composition (the other half, `μc/2`, end child only);
+  * far terms.
+
+  In w's units this gives `λ_w`.
+* **Cancellation.** The children's F blocks bring own keys and low outsiders together: a grandchild's
+  outsider takes the slot of one of w's own keys and arrives at w as w's outsider. So they leave `N_L(w)`
+  unchanged.
+* **Q(b)** for w: interior keys of w go missing only far in rank, as `φ̄`.
+
+## 5. Roles and base case
+
+| role | step |
+|---|---|
+| t = 1, and every node that becomes a top node | `G = 0`, no outsiders, `N = 0`. Q holds with `λ = 0`. |
+| **topDesc** | no outsiders (R1 §4) and exact X, so the shift is 0. Children become top nodes. |
+| **topRise** | `G = 0`. Lateral moves between top siblings are swaps, which cancel in N. Non-swap shifts come only from the last topDesc, which had shift 0 up to `ε_B`. So `λ ≤ ε_B η/(2Aν)`, and §4 applies. |
+| **botDesc** | as mid, with `X̂_h` from `R_{w_h} = G_{w_h}`. |
+| **botRise** | no blocks. The parent's accounting is the §4 cancellation. |
+
+## 6. Design invariants (as R1 (I1)–(I4))
+
+* **(I1) Deficits.** End child: `g' ≤ (p/2 + g + w̄/2)/(Aν)`, so `g* = (p/2 + w̄/2)/(Aν − 1)`. Interior
+  children have `θ = 0` (plus the integer rounding of the Δ₁ offsets).
+* **(I2) Nonnegative blocks.** `θ ≤ (p/2 + g*) c`, against a child deficit `≥ p(A/ν) c`
+  (`package_point.out`: `5.2e-4 c` against `0.061 c`).
+* **(I3) Occupancy.** `η = p(1/ν² + kA/ν) + g*/ν² = 1.0172` at (4,4,3).
+* **(I4)** is replaced by §3: there is no residual beyond the centred shift.
+
+## 7. Numbers at the package point (`package_point.py`)
+
+At (4,4,3), q = 24, `δ = 2e-6`, `ROUND = 0.1μ`, `φ̄ = 0` (the far term is about `1e-7`, below 0.01μ):
+* (4.2-c) allows `ε_B ≤ 2.067e-5`;
+* the walk-bound bulk gives `1.897e-5`, a 9.0% margin;
+* `J = 2.51e5`, and the fringe must reach `f ≤ 3967` (route (d)).
+
+## 8. Known weak points (for the reviewer)
+
+1. **The §4 lower side** is the crux: every way w loses own low keys without receiving a low outsider
+   must be listed. Have we missed any, e.g. keys sent by grandparents in a topRise/topDesc oscillation?
+2. **The F₁-composition term.** Is the midpoint design legitimate when `O_L(u)` is unknown but the number
+   of own keys that went up enters w's design count `X̂_1(w)`?
+3. **The cancellation in §4** assumes a child's F block is exactly "outsiders first, then own extreme
+   keys". That holds under an exact sort. Under a separator it holds up to F-escapes (Property F),
+   which go into `φ` or into higher-order outsiders.
+4. **The far terms** need the energy-method bound certified at the actual margin (one child range).
+5. **Rounding** of `o_L`, the Δ₁ offsets and the design counts.
