@@ -141,13 +141,14 @@ bad edge; the log-probability magnitudes are not used. Selected results:
 | 126 | 4–9 | 20,090,629 / 24,137,569 |
 | 254 | 12–15 | 288 / 83,521 |
 
-The selected odd edge 1 has zero viable profiles, as expected: the final
-odd-offset comparator sorts that adjacent pair. Every even edge is still a
-candidate bad edge. In the sampled interior six-block phases, about 83.2% of
-the full count-profile box remains viable, so viability alone is weak
-pruning; a useful certificate must exploit accumulated trajectory cost, not
-just remove terminally impossible states. These are finite samples, not a
-proof that the listed edge representatives exhaust all phases.
+Every odd-indexed adjacent output pair is directly sorted by the final
+odd-offset comparator layer, so only even-indexed edges need a first-moment
+union bound. The edge-1 zero count is a consistency check. In the sampled
+interior six-block phases, about 83.2% of the full count-profile box remains
+viable, so viability alone is weak pruning; a useful certificate must exploit
+accumulated trajectory cost, not just remove terminally impossible states.
+These are finite samples, not a proof that the listed edge representatives
+exhaust all phases.
 
 The companion [`ub28-support-phase-audit.py`](ub28-support-phase-audit.py)
 enumerates support geometry for every even edge at powers of two from `2^8`
