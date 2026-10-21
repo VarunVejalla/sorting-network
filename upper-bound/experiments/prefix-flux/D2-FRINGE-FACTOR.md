@@ -243,8 +243,16 @@ Even if proved, this closes only the geometric input to a 13-row local tail
 provider. Moreover, it does not instantiate the existing Lean provider:
 `NodeGeom` requires `m=2*f+64*b`, `up=2*f*n`, `f=0` or even
 `f>=131040`, and `m>2^42`, whereas this screen uses row height8192. A new
-provider and compatible exact geometry are needed. The uniform rank-tail
-probability bound, centered-ragged physical embedding, root initialization,
-ordered global recurrence and terminal gate remain separate obligations. The
-nominal coefficient273 is still conditional. Fresh mathematical review of
-the invariant must precede Lean.
+provider and compatible exact geometry are needed. There is a concrete
+small-row obstruction even before those large-size guards: at depth30, the
+sender `(t,i)=(41,3)` has `a=67,764,224` and `pi=245,760`, hence
+`pi/(2a)=15/8272`. Exact shape `a=m*n`, `pi=2*f*n` forces `8272 | m`, so
+no exact local rectangle with `m<=8192` handles this sender. The audit script
+reproduces this witness. A 14-bit padded three-sort core would cost315 layers,
+above the 300 target. This rules out the direct exact-shape 13-bit core for
+this flow; it does not rule out partial-row geometry, a more efficient local
+network, or a changed flow.
+
+The uniform rank-tail probability bound, centered-ragged physical embedding,
+root initialization, ordered global recurrence and terminal gate remain
+separate obligations. The nominal coefficient273 is still conditional.

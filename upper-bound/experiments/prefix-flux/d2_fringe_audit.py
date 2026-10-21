@@ -90,10 +90,28 @@ def flow_audit(depth, p, scale):
     return flow, counts, maxima, startup_ratio
 
 
+def exact_shape_witness(depth, p, scale, max_rows):
+    """Find a sender whose exact up-port shape needs more than max_rows rows."""
+    flow = FlowDAG(depth, scale=scale, p=p).build()
+    failures = []
+    for t, rows in enumerate(flow.rows):
+        for node, (a, pi, _) in rows.items():
+            lev = flow.nodes[node][0]
+            if p.role(depth, lev, t) not in ORDINARY or not a or not pi:
+                continue
+            ratio = F(pi, 2 * a)
+            if ratio.denominator > max_rows:
+                failures.append((ratio.denominator, t, lev, ratio, a, pi))
+    if not failures:
+        return None
+    return min(failures)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--depth", type=int, default=30)
     ap.add_argument("--scale", type=int, default=8192)
+    ap.add_argument("--shape-depth", type=int, default=30)
     args = ap.parse_args()
     p = Par(3, 3, 2)
     cases = schedule_audit(args.depth, p)
@@ -105,6 +123,12 @@ def main():
         a, rho, g = maxima[role]
         print(f"{role}: max a/c={a}, max rho={rho}, max g={g}")
     print(f"startup a/c={startup}")
+    witness = exact_shape_witness(args.shape_depth, p, args.scale, 8192)
+    if witness:
+        den, t, lev, ratio, a, pi = witness
+        print(f"exact-shape obstruction at depth {args.shape_depth}: "
+              f"t={t}, level={lev}, pi/(2a)={ratio}, a={a}, pi={pi}; "
+              f"every exact m requires {den}|m, so no m<=8192 works")
     print("All finite checks passed; this is not an all-depth proof.")
 
 

@@ -197,3 +197,21 @@ rate suggests a possible local-tail gain, but the current tangent calculation
 is only a floating diagnostic and is not a certified upper bound. Even a
 certified local gain would leave the coupled global transfer and terminal
 purity gap open; no coefficient improvement or Lean result follows.
+
+## Uniform-flow 13-bit pivot (2026-10-21)
+
+`UNIFORM-13BIT-CANDIDATE.md` screens the uniform Chvatal flow at `(3,3,2)`.
+Fresh-context algebra review verified its role-dependent exact rectangles and
+conditional coefficient273, subject to the current-node interpretation of
+`native` in the bottom-role numerator. The finite geometry script passes
+through depth100. This removes the D2 exact-rectangle obstruction on paper,
+but does not establish an all-depth sorter.
+
+The first local probability screen is `uniform_13bit_probability_screen.py`.
+For the critical `f=15` role, the current generalized F2 interval envelope
+passes only at tested `delta<=10^-12` (with exact E=2 support); it fails at
+`10^-11` and above. This remains nonformal, exceeds the current Lean API's
+small-f range, and may be too restrictive for global rank-tail transfer. The
+next decision gate is to derive the actual rank-fraction requirement from the
+global recurrence and compare it with this envelope before investing in a
+new provider proof.
