@@ -159,6 +159,8 @@ class Sim:
                     if high == 0:
                         break
                 assert low == 0 and high == 0, (t, i, role)
+                lowcnt = sum(1 for j in range(len(seq)) if th[j] > 0 and (j == 0 or th[j - 1] > 0))
+                assert not all(x > 0 for x in th) or len(seq) <= 2, ("prefixes meet", t, i, role)   # L4 meeting prefixes
                 spilled = sum(1 for j in range(1, len(seq) - 1) if th[j] > 0)
                 if spilled:
                     s.note(role, "spill_children_max", spilled, lambda v, w: v > w)
