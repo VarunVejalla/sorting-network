@@ -442,3 +442,41 @@ So the n → ∞ argument is the energy bound `Σ_h h N(h) ≤ C₁ j` (n-unifor
 behaviour.
 
 **Status:** plan with measurements. The proof is open.
+
+### Scaled evaluator (`rd_scaled.py`, work in progress): low and mid levels fine, high levels need a new lemma
+
+At fixed `(b, σ) = (j/n, s₂/n)`, every term of `escapes` is n times an n-free quantity plus `O(ln n)` pieces:
+* `lbinom(n, σn) ≤ n σ ln(e/σ)`;
+* `n lnG(αn) = −n ln(1 − q)`, with q n-free;
+* `Bin(H, σ)` multiplicities;
+* `kmax_sources(αn, d, σn) = n·(σw + …)`.
+
+`rd_scaled.py` evaluates these per unit n, with a slack ε for the `ln n/n` parts. Its per-level counts
+are small: at `b = 10`, `σ = 1e-6`, levels near offset 1e4 give about `3e-6` per n each.
+
+**Obstacle: the high levels.**
+* The finite evaluator caps the levels at `top = b + Kmax + 1`, and in this regime Kmax is the trivial
+  `sqrt(2j) ∝ √n`.
+* Each level's multiplicity term pays its own union over S, about `σ ln(e/σ)/t` per n.
+* With geometric levels up to √n, the sum grows like `ln n`. **So the per-level structure is not n-uniform
+  as it stands.**
+
+The ad hoc tail term in `rd_scaled.py` (A* at a single top level, divided by d) is **not valid**: it
+ignores multiplicity. It is left in only as a placeholder and gives FAILs.
+
+**Needed: a high-level lemma.** For a set S (`|S| = σn`), rows at offsets `≥ D` above b total
+
+    Σ_{v∈S} #{r ≥ D : z_{src_r(v)} > r} = Σ_T M_T,   M_T = #{r ∈ [D, z_T) : σ₂,r(T) ∈ S}.
+
+* Conditionally on round 1, `M_T ~ Bin(z_T − D, σ)`, negatively associated across T. Rows are independent,
+  and within a row the events form a hypergeometric family.
+* The mean is `σ Σ_T (z_T − D)₊ ≤ σ·E_{≥D}/(D − b)`, where `E_{≥D} = Σ_{z−b ≥ D}(z − b)²` is the round-1
+  energy above level D. That is route (d)'s `A*` with `U = [n]`, `u = n`, an n-uniform per-n quantity.
+* A **single** union over S, with no per-level unions, and one over the tall-column profile (at most
+  `E_{≥D}/D²` columns per n) then bounds all levels above D at once.
+
+The open question is whether the profile union, about `(E_{≥D}/D²)·ln(D²/E_{≥D})` per n, is paid for by
+the Chernoff margin. A large D makes it small, since `E_{≥D}/D²` falls.
+
+**Status:** the plan is sharpened. The evaluator is incomplete above a level D, which needs the lemma
+above.
