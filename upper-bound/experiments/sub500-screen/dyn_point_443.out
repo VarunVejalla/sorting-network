@@ -1,0 +1,11 @@
+(4,4,3): mu = 2.9535e-05 (4.3 3.0518e-05, 4.4 2.9564e-05), p = 4.7302e-04, A nu = 2.0, cross = 1.884e-06, g* = 2.384e-04, eta = 1.01428
+bulk at m = 2^24: d = 1.8966e-05; fringe ceiling f <= 3967
+  delta = 1.0e-06: max eps_B = 5.0598e-05 (bulk margin 2.668), J = 501026, fringe f ~ 18 sqrt(J) = 12741 vs ceiling 3967
+  delta = 2.0e-06: max eps_B = 4.9584e-05 (bulk margin 2.614), J = 251028, fringe f ~ 18 sqrt(J) = 9018 vs ceiling 3967
+  delta = 5.0e-06: max eps_B = 4.6542e-05 (bulk margin 2.454), J = 101035, fringe f ~ 18 sqrt(J) = 5721 vs ceiling 3967
+  delta = 1.0e-05: max eps_B = 4.1473e-05 (bulk margin 2.187), J = 51045, fringe f ~ 18 sqrt(J) = 4067 vs ceiling 3967
+  delta = 2.0e-05: max eps_B = 3.1335e-05 (bulk margin 1.652), J = 26068, fringe f ~ 18 sqrt(J) = 2906 vs ceiling 3967
+  delta = 5.0e-05: max eps_B = 9.1333e-07 (bulk margin 0.048), J = 11141, fringe f ~ 18 sqrt(J) = 1900 vs ceiling 3967
+  delta = 1.0e-04: infeasible
+  delta = 2.0e-04: infeasible
+  delta = 5.0e-04: infeasible

@@ -1,0 +1,11 @@
+(3,3,2): mu = 2.2866e-04 (4.3 4.8828e-04, 4.4 2.2888e-04), p = 3.6621e-03, A nu = 2.0, cross = 7.225e-05, g* = 1.903e-03, eta = 1.02655
+bulk at m = 2^19: d = 2.5156e-04; fringe ceiling f <= 959
+  delta = 1.0e-06: max eps_B = 2.8194e-04 (bulk margin 1.121), J = 500128, fringe f ~ 18 sqrt(J) = 12730 vs ceiling 959
+  delta = 2.0e-06: max eps_B = 2.8142e-04 (bulk margin 1.119), J = 250128, fringe f ~ 18 sqrt(J) = 9002 vs ceiling 959
+  delta = 5.0e-06: max eps_B = 2.7988e-04 (bulk margin 1.113), J = 100128, fringe f ~ 18 sqrt(J) = 5696 vs ceiling 959
+  delta = 1.0e-05: max eps_B = 2.7732e-04 (bulk margin 1.102), J = 50128, fringe f ~ 18 sqrt(J) = 4030 vs ceiling 959
+  delta = 2.0e-05: max eps_B = 2.7219e-04 (bulk margin 1.082), J = 25129, fringe f ~ 18 sqrt(J) = 2853 vs ceiling 959
+  delta = 5.0e-05: max eps_B = 2.5679e-04 (bulk margin 1.021), J = 10130, fringe f ~ 18 sqrt(J) = 1812 vs ceiling 959
+  delta = 1.0e-04: max eps_B = 2.3113e-04 (bulk margin 0.919), J = 5131, fringe f ~ 18 sqrt(J) = 1289 vs ceiling 959
+  delta = 2.0e-04: max eps_B = 1.7980e-04 (bulk margin 0.715), J = 2635, fringe f ~ 18 sqrt(J) = 924 vs ceiling 959
+  delta = 5.0e-04: max eps_B = 2.5644e-05 (bulk margin 0.102), J = 1147, fringe f ~ 18 sqrt(J) = 610 vs ceiling 959

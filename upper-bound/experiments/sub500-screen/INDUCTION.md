@@ -207,3 +207,46 @@ does not cover.
 deeper outsiders and F-escapes), instead of by P's cap, appears to remove the μ floor: `ε_B ≈ 3.6e-5` at
 this point. That would be a much larger gain than the current margins, and needs its own careful
 derivation.
+
+## 13. Dynamic order-0 bound (the reviewer's remark), priced and checked (2026-10-22)
+
+**Idea.** Bound `O_L(u)` by what can actually arrive, not by P's cap μc. That is:
+* (a) the parent's intruders into u's block, meaning its positive centred shift plus its crossings at u's
+  cuts;
+* (b) the children's order-≥1 outsiders arriving in their F blocks (P at order 1: `μδ` times the child's
+  capacity, which is small);
+* (c) F-escapes from u's previous send (Property F, `< j/J`);
+* (d) F overflow, which (4.4) excludes.
+
+The `N_L` interval then contracts by `1/(Aν)` with no μ floor: `w = 2·cross/(Aν − 1)` plus small terms. The
+order-0 condition (4.2) becomes
+
+    2 cross/(Aν − 1) + (k−1) μ sib/2 + μ δ A² k + ROUND + ε_B η ≤ μ Aν.
+
+P's cap μ is still needed, for (4.4) support and Property F, but it is no longer the shift.
+
+**Model (`screen.py` `dyn`, self-consistent rows only, i.e. `q_hint` = the resulting q):**
+
+| package | cost |
+|---|---:|
+| band + merge-first, **current certified fringe** | **477.3** ((4,4,3), q = 24) |
+| band + merge-first, current fringe | 495.0 ((3,3,2), q = 20) |
+| band + merge-first, fringe /5.8 | 480.0 ((3,3,2), q = 19) |
+
+(Rows with a mismatched `q_hint`, such as 449, are not valid: the crossing term depends on q.)
+
+**Exact check at (4,4,3), q = 24, δ = 2e-5 (`dyn_point_443.py`, `.out`):**
+* `η = 1.0143`, `g* = 2.38e-4`, `cross = 1.88e-6`.
+* Allowed `ε_B = 3.13e-5` against the walk bound's `1.90e-5`: a **1.65× bulk margin**. The surplus `1.2e-5` is
+  the band repair's room, roughly `W ≈ 2^16.3`.
+* `J = 26068`: the existing certified fringe route needs about `f ≈ 2906` against a ceiling of 3967, a
+  **27% margin**. No route (d).
+* At (3,3,2), q = 19 (`dyn_point.py`), the current fringe is infeasible, since J and f conflict there.
+
+**What this rests on, all unproved:**
+1. the dynamic order-0 lemma (a)–(d) as an induction jointly with P and Q. This is new and needs a review.
+2. centring, as reviewed in §12;
+3. the far-crossing lemma;
+4. band repair (UB-32);
+5. merge-first in the node spec (the Lean core is done);
+6. a fringe certificate at `J ≈ 2.6e4` with the existing per-E route (`gen_fringe.py`).
