@@ -17,7 +17,8 @@ from fractions import Fraction as Fr
 D = json.load(open(sys.argv[1]))
 up = lambda x: Fr(math.ceil(Fr(x) * 10 ** 12), 10 ** 12)
 mu = Fr(D["mu"]); R = Fr(D["round"])
-AC_DENSE = up("1.0149")
+AC_DATA = up("1.0149")                         # observed a/c max (the data's e, kappa are relative to it)
+AC_DENSE = Fr(os.environ.get("AC_BOUND", "1.0149"))   # proved bound (S1): 0.999023 + 64 g*, g* <= 2.645e-4
 AC = {"E": AC_DENSE, "I": AC_DENSE, "T": AC_DENSE, "En": up(2 ** -2.5)}
 
 def grp(tag):
@@ -31,13 +32,16 @@ for tg, td in D["tags"].items():
     g = G.setdefault(grp(tg), dict(rf=Fr(0), e=Fr(0), D=Fr(0)))
     for k_ in ("rf", "e", "D"):
         g[k_] = max(g[k_], up(td[k_]))
+for g_ in G:
+    if g_ != "En":
+        G[g_]["e"] = G[g_]["e"] * AC_DENSE / AC_DATA
 # kappa per receiving type from the data: max over dense senders of loc / (a/c)_max(dense)
 kap, cof = {}, {}
 for pt, tg, cf, lc in D["trans"]:
     q = grp(tg); p = grp(pt)
     if p == "En":
         continue                                        # derive kappas from dense senders only
-    kap[q] = max(kap.get(q, Fr(0)), up(lc) / AC_DENSE)
+    kap[q] = max(kap.get(q, Fr(0)), up(lc) / AC_DATA)
     cof[q] = max(cof.get(q, Fr(0)), up(cf))
 # spilled children (group S): conservative -- may be dense senders (data of the dense end group E), inherit
 # with coef c/c' (as end children) and loc eps_B a/(2c') from a sender with a/c <= 2^-7 (spill only at

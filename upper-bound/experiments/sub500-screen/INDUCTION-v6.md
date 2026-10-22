@@ -539,3 +539,31 @@ So the worst is **0.98666 < 1**, exact and with every transition allowed.
   2. senders whose w₁ was botRise or inactive at t−1.
 * **S4:** the schedule facts, plus the centre bound `o ≤ (μ/2 + ε_B/4)c`, which follows from the centre
   formulas of §12 and `cB, cL ≤ ε_B a/2`.
+
+### S1: the bag-size bound (`S1PROBE`)
+
+The design bag exceeds Chvátal's allocation, `a − alloc ≤ 0.01488c` (mid and topRise; botDesc is
+`≤ alloc + 2e-5·c`). **Source** (telescoping the deficit recursion for a mid sender u at t):
+
+    Σ_kids G(kid) = Σ θ_kid(t−2) + Σ π_kid(t−1) = π_u(t−2) + G_u(t−2) + Σ π_kid(t−1)   (conservation)
+    a(u,t) = Σ_kids G − G(u) = π_u(t−2) + θ_u(t−3) − θ_u(t−1) + Σ_kids π_kid(t−1)
+           ≤ (31·64 + 16·31·128)/65536 · c + θ_u(t−3) = 0.999023c + 64·g·c,
+
+where `g = θ_u(t−3)/c(u, t−2)` is u's deficit ratio at its previous send, since `c(u, t−2) = c/ν²`.
+
+**Deficit fixed point.** `θ_child ≤ π_p/2 + G(p) + o_p` (spill caps only lower it), and
+`c(child, next send) = Aν·c(p) = 2c(p)`. So `g_child ≤ (π_p/(2c_p) + g_p + o_p/c_p)/2`, which gives
+
+    g* ≤ π/(2c)_max + o/c ≤ 16/65536 + (μ/2 + ε_B/4) = 2.645e-4      (observed max 2.53e-4)
+
+using `π/c ≤ ν/(Ak) = 32/65536` (the topRise formula, the largest). Hence
+
+**S1: `a/c ≤ 0.999023 + 64·2.645e-4 = 1.01595`** (observed 1.01487).
+
+The complete box with `AC_BOUND = 1.01595` (e terms scaled up accordingly) gives a worst ratio of
+**0.987128 < 1**.
+
+**Gaps in this S1 sketch:**
+1. Senders whose children were not all mid at t−1 (topRise, botDesc, chains near the boundary) use other
+   π formulas. Each is `≤` the mid case or observed `≤ 1`, but each needs the same telescoping.
+2. The base of the g recursion: top nodes have `G = 0`, and the root has `θ = 0` at topDesc.

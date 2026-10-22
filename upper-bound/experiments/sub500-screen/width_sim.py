@@ -50,6 +50,7 @@ class Sim:
         s.tagdata, s.trans, s.tagdist, s.nearB = {}, {}, {}, {}
         s.s3 = {}
         s.s3f = {}
+        s.s1 = {}
         s.R = [s.k ** (d - i) for i in range(d + 1)]
         s.intern = {}
         s.stats = {}
@@ -215,6 +216,10 @@ class Sim:
                 print("RAW t=%d i=%d a=%.6g c=%.6g pi=%.6g G(u)=%.6g GL(u)=%.6g o=%.6g | G(w1)=%.6g GL(w1)=%.6g G(w1')=%.6g mult(w1')=%s | pi(w1,t-1)=%.6g cap(w1,t-1)=%.6g | kids=%s" % (
                     t, i, fa, fc_, float(pi), float(c.G), float(GL), float(o), float(first.G), float(first.GL), float(g11),
                     first.kids[0][1] if first.kids else None, pw, cw, [(float(kc.G), n) for kc, n in c.kids][:4]))
+            if os.environ.get("S1PROBE"):
+                al = float(P.alloc(d, i, t))
+                r1 = s.s1.setdefault((role, t % 6), [0.0, -9.0, 0.0])
+                r1[0] = max(r1[0], fa / fc_); r1[1] = max(r1[1], (fa - al) / fc_); r1[2] = max(r1[2], al / fc_)
             if os.environ.get("S3FORM") and t >= 2:
                 pw = float(P.up(d, i + 1, t - 1)) if P.active(d, i + 1, t - 1) else None
                 key3 = (role, P.role(d, i + 1, t - 1) if P.active(d, i + 1, t - 1) else "inactive", fa / fc_ >= 0.125)
@@ -343,6 +348,9 @@ def main():
         for t in range(P.tf(d)):
             root = S.step(root, t)
         print(f"({x},{y},{z}) d={d} tf={P.tf(d)} o/c={float(ofrac):.3e} classes={len(S.intern)} local_configs={len(S.configs)}")
+        if os.environ.get("S1PROBE"):
+            for kk, (r_, dv, al) in sorted(S.s1.items()):
+                print("   S1 %-8s t%%6=%d  a/c max %.5f  (a - alloc)/c max %+.5f  alloc/c max %.5f" % (kk[0], kk[1], r_, dv, al))
         if os.environ.get("S3FORM"):
             for kk, (n_, dev, dmin, owmax) in sorted(S.s3f.items(), key=str):
                 print("   S3F u=%-8s w1(t-1)=%-9s dense=%-5s n=%6d  dL_min %.5f  max(formula - dL) %.2e  o(w1)/c(u) max %.5f" % (kk[0], kk[1], kk[2], n_, dmin, dev, owmax))
