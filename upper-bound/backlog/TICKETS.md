@@ -38,8 +38,8 @@ Schema and rules: [`tickets.schema.md`](tickets.schema.md), [`docs/agent-protoco
 | UB-29 | P1 | done | kernel-checked |  | Prove Property B by per-column walk maxima instead of a union over input states |
 | UB-30 | P1 | parked | model | 1419 -> 792 | Re-price the tapered candidate with the walk-bound separator |
 | UB-31 | P1 | done | kernel-checked | 1419 -> 789.75 | R1 at (16, 32, 1/8): design P flow table, walk-bound bulk and padded fringe, no new invariant |
-| UB-32 | P1 | proposed | model | 789.75 -> 699.8 | Two column sorts per R1 stage: replace the third sort by a short repair |
-| UB-33 | P1 | proposed | model |  | Remove the design-P residual r* (two-sided invariant); delta_F is not a lever at (4,5,3) |
+| UB-32 | P1 | active | model | 789.75 -> 699.8 | Two column sorts per R1 stage: replace the third sort by a short repair |
+| UB-33 | P1 | active | model | 789.75 -> 490.0 | Remove the design-P residual r* (two-sided invariant); delta_F is not a lever at (4,5,3) |
 | UB-34 | P1 | active | model | 789.75 -> 731.25 | Better fringe scaling: certify a smaller fringe height f at the same J (gate: 2.4x) |
 | UB-35 | P1 | ready | none |  | Generic failure budgets and root separator in the R1 Lean layer |
 | UB-36 | P2 | proposed | none |  | Generic schedule (x, y, z) with per-point design-P checks |
