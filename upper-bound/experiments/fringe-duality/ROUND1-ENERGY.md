@@ -387,3 +387,58 @@ Below `2^18` (`rd_alln/below_batcher/`) there are genuine FAILs at `n = 16, 64`.
 3. Interval arithmetic in place of floats.
 4. Review.
 5. Lean.
+
+## Route (d) for n → ∞: the dense regime and a cube-root structure (2026-10-22)
+
+The sweep range grows with n (`jmax = f n/8`, so the density `b = j/n ≤ f/8`). Measurements at fixed b
+(`rd_dense/`, and `load_bound` at `s = 1`):
+
+| b | n | `L_b(1) − f` | allowance j/J | ratio |
+|---|---|---:|---:|---:|
+| 10 | 2^30 | 1777 | 2.15e4 | 0.083 (worst over all s: 0.095, at `s = 1`) |
+| 10 | 2^40 | 52880 | 2.2e7 | 2.4e-3 |
+| 10 | 2^50 | 5.56e5 | 2.25e10 | 2.5e-5 |
+| 10 | 2^60 | 5.50e6 | 2.31e13 | 2.4e-7 |
+| 100 | 2^30 … 2^60 | 8.4e3 … 1.2e7 | 2.2e5 … 2.3e14 | 0.039 … 5e-8 |
+
+The single-column bound grows like `j^{1/3}` (×97 per ×2^20 in n, against ×101 for `j^{1/3}`). The allowance
+grows like j. In this regime `Kmax` is the trivial `sqrt(2j)` (`A*` excludes nothing), so the per-level
+bounds do the work.
+
+**Why `j^{1/3}` is the truth.**
+* A round-1 output column of height k costs the adversary about `k²/2` input mass (fact 3).
+* A round-2 column v gains load at row r only if its row-r source column has height `> r`.
+* So load L costs about `Σ_{r<L} r²/2 = L³/6`: `L(1) ≲ (6j)^{1/3}`.
+* For s columns with disjoint sources, `L(s) ≈ s^{2/3}(6j)^{1/3}`. Then `escapes(s) = L(s) − f s` peaks at
+  `s ≈ (8/27)(6j)/f³`, with value about `(4/27)(6j)/f² ≈ 5.6e-8·j`, against the allowance `j/J = 2e-6·j`.
+  That is a ratio of about 0.03, **independent of n**.
+
+**n-uniform lemma to prove (replaces the per-n sweeps for `n ≥ n₀`).** With probability `≥ 1 − η` over
+`(σ₁, σ₂)`, for every input of mass j and every set S of s round-2 columns:
+
+    L(S) ≤ s·L₀ + C·s^{2/3} (j + n)^{1/3} · polylog-free constant,
+
+with C explicit.
+
+**Route.**
+1. **Round 1:** the level count `N(h) = #{round-1 columns with z > h}` satisfies `Σ_h h·N(h) ≲ C₁ j`. This is
+   the energy `E = Σ z² ≤ C₁ j + C₂ j²/n` that route (d) already bounds by levels. In the dense regime the
+   `j²/n` term is `b·j`.
+2. **Round 2, deterministic plus a σ₂-only union:** v's load at levels `≥ L₀` is
+   `Σ_r 1[z_{src_r(v)} > r]`. It is at most `Σ_r 1[src_r(v) ∈ T_r]`, where `T_r` is the set of the `N(r)`
+   tallest round-1 columns. A union over the level profile `(N(r))_r` would be too large, because profiles
+   number `e^{Θ(√j)}`.
+3. **Bucketing:** `N(r) ≤ C₁ j/r²` from step 1 (Markov on the energy) bounds the profile pointwise. Hence
+   `P_r := N(r)/n ≤ C₁ b/r²`. The load at rows `≥ L₀` is then dominated by a Poisson-binomial with mean
+   `Σ_{r≥L₀} C₁ b/r² ≈ C₁ b/L₀`.
+   * For a **fixed** family of sets `T_r`: union over v (n) and over the `T_r` choices. Only the nested
+     sets of the top `C₁ j/r²` columns matter, determined by round 1's outcome, and σ₂ is independent of
+     σ₁. Conditionally on round 1, `T_r` is fixed, so **no union over profiles** is needed beyond a union
+     over inputs' induced `T_r`.
+   * That last union is the remaining difficulty. It is the same entropy as route (d)'s union over U.
+
+So the n → ∞ argument is the energy bound `Σ_h h N(h) ≤ C₁ j` (n-uniform: the collision lemma) plus a
+σ₂-side union over nested tall-column sets. The sweeps show the evaluator already exhibits the cube-root
+behaviour.
+
+**Status:** plan with measurements. The proof is open.
