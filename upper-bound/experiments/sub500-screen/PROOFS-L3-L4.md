@@ -87,3 +87,81 @@ holds at B₁|B₂ for w's own keys leaving downward-to-upward over `dL·a = b�
   rows). SPILL-LOCALITY.md §3 extends BULK2 to a margin, but with a union floor. The energy method would
   replace that floor; its dense-regime evaluator is in `../fringe-duality/route_d_rigorous.py`;
 * the band-repair displacement bound at the actual band geometry.
+
+---
+
+## L3, full proof under band repair (2026-10-22, replaces steps 2 – 4 of the sketch)
+
+**Separator.** u's bag of `a = mn` keys sits in an `m × n` matrix, with rows counted from the bottom and
+output position `r·n + j`. The stage is:
+* `S1` (sort every column);
+* `σ1` (row scramble: each row's entries permuted among the columns);
+* `S2` (sort columns);
+* `σ2` (row scramble);
+* `Band`: for each output cut at row i, sort each column's segment `Seg(i) = [i − W, i + W) ∩ [0, m)`.
+
+Cuts are at least 2W rows apart (interior blocks are about `m/k = 2^20` rows; `2W = 2^18`), so the
+segments are disjoint. Cuts at fractional rows round to whole rows. That costs at most n keys per cut,
+inside ROUND (`n/a = 1/m`).
+
+**Notation.** For a threshold set X (the `|X|` lowest keys of the bag), `c′_k` is X's count in column k
+after `S2`. The round-1 margin excess and deficit are
+
+    E⁺(h) = Σ_k (c′_k − h)₊,   E⁻(h) = Σ_k (h − c′_k)₊.
+
+**Row identity.** σ2 permutes entries within rows. After `S2`, column k holds X exactly in rows `< c′_k`.
+So after σ2, row r holds `#{k : c′_k > r}` X-keys, and **rows ≥ h hold exactly `E⁺(h)` X-keys and rows
+< h exactly `E⁻(h)` non-X keys**. Band moves keys only within their own segment.
+
+**Lemma L3a (far crossings).** Let `|X| = n(i − d₀)` with `d₀ ≥ 0`, and let i be a cut. Then the number of
+X-keys at rows ≥ i after Band is **at most `E⁺(i − W)`**.
+
+*Proof.* An X-key at row ≥ i after Band either
+* lies at row `≥ i + W`, outside every segment that reaches below `i + W`, so it was there after σ2; or
+* lies in `Seg(i)`, whose rows are all `≥ i − W`, so it was in that segment after σ2.
+
+Segments of other cuts lie entirely above `i + W` or below `i − W`, and keys never leave their segment.
+So every such key was at row `≥ i − W` after σ2. There are `E⁺(i − W)` of them by the row identity. ∎
+
+**Mirror.** For `|X| = n(i + d₀)`, the number of non-X keys at rows `< i` is at most `E⁻(i + W)`.
+
+**Lemma L3b (band escapes at the cut itself).** Let `|X| = n·i`. Then the X-keys above row i after Band
+number at most
+
+    Σ_j (c″_j − i)₊ + E⁺(i + W) + E⁻(i − W),
+
+where `c″_j` is X's count in column j after σ2 (BULK2's round-2 quantity).
+
+*Proof.* In column j, let `L_j, B_j, U_j` be X's counts below, inside and above `Seg(i)` after σ2.
+* Band sorts the segment, so X fills `[i − W, i − W + B_j)`. The keys above i number
+  `U_j + (B_j − W)₊`.
+* Since `c″_j = L_j + B_j + U_j`:
+  `B_j − W = (c″_j − i) + (i − W − L_j) − U_j ≤ (c″_j − i)₊ + (i − W − L_j)`, with `i − W − L_j ≥ 0`.
+* Summing over j:
+  * `Σ U_j = E⁺(i + W)` (row identity, rows `≥ i + W`; U counts only those);
+  * `Σ_j (i − W − L_j)` is the number of non-X keys in rows `< i − W`, which is `E⁻(i − W)`.
+
+∎
+
+**Bounds** (round 1 two-tailed, per cut, as fractions of `a = mn`):
+* `E⁺(h)` and `E⁻(h)` at margin r rows from X's mean are at most the certified round-1 margin tail
+  `T(r)` (`cert_walk_n.py tail`: `sup_p (φ₁(p) − r p)/m`; the p-cells cover both ends);
+* `Σ_j (c″_j − i)₊ < (d/2)·mn` by BULK2's round-2 predicate (bulk precision `d`, `cert_walk_n8192.out`).
+
+Hence:
+* **Band escapes per cut ≤ `d/2 + 2·T(W)`**, two-sided: `d + 2T(W)` in the budget, as `screen.band` uses.
+* **Far crossings at margin `d₀` ≤ `T(d₀ − W)`** for `d₀ ≥ W`. `width_sim` uses `T(d₀ − 2W)`, which is
+  conservative (T is decreasing), and Property B when `d₀ − 2W < 0.005 m`.
+
+**What changed against the sketch.**
+1. No round-2 non-amplification step is needed. The far-crossing count is a round-1 quantity
+   **deterministically**, because σ2 preserves row counts and Band is segment-local.
+2. The band segments are **centred on the cuts**. `best/AKS/Bitonic/BlockSort.lean`'s aligned
+   `blockSortNetwork` is the special case of segments at multiples of `2^b`. The Lean wiring needs the
+   offset form (sort `[i − W, i + W)` in every column), which is the same proof with a shifted block
+   index.
+3. The cut layout requires consecutive cuts `≥ 2W` rows apart. That holds for the B blocks
+   (`≈ m/k ≫ 2W`). The F₁|B₁ cut sits about `(π/2)/n ≈ 2.4e-4·m ≈ 4000` rows from the bottom, so its
+   segment is clipped at row 0, which the proofs allow.
+
+∎ (L3, full)
