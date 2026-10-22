@@ -294,3 +294,36 @@ together with the contraction of the width recursion (a factor `1/(Aν)` per lev
 **Reserve audit** (review item 6). `ROUND = 0.01 μc′` must cover integer rounding (about k keys per block,
 negligible), `γ ≈ 0.003 μc′` and `2φ̄ ≈ 0.0034 μc′`, i.e. about `0.0064 μc′`. That fits, with about 0.0036
 left.
+
+## 11. Why the certificate holds for all d (sketch)
+
+**Contraction.** For every child type, the half-width recursion is affine in the parent's half-width:
+
+    hw_child ≤ (μ c′ + κ_T·h_parent + loc_T)/(2c′),   κ_end = κ_spill = 2, κ_int = 1,
+
+where `loc_T` collects crossings, `ε_B a`, `kΔ₁/2`, and the like. In units of the child's capacity
+`c′ = Aν c`, `h_parent = hw_parent·c`, so the coefficient on `hw_parent` is `κ_T/(2Aν) ≤ 1/Aν = 1/2` at
+(4,4,3). The recursion is therefore a contraction with factor at most 1/2 per level. An ancestor k levels
+up affects the current width by at most `2^{−k}` times its own width.
+
+**Local terms.**
+* The local terms are functions of the node's role and of the relative quantities `a/c`, `π/c`, `G/c`,
+  `G_L/c`, and the crossing distances.
+* By Chvátal's schedule these depend only on `(t mod 6, i − α(t), ω(t) − i)` (R1 §2: the bottom ratios depend
+  only on t mod 6), plus a bounded number of "boundary" effects near the top and bottom levels.
+* So for each d the set of local configurations is a fixed finite set, plus boundary configurations that
+  stabilise once d exceeds a few periods.
+
+**Consequence.**
+* The supremum over all nodes and all d of the order-0 ratio equals the supremum over the finitely many
+  periodic configurations of the recursion's fixed point, plus a term `≤ 2^{−K}` for depth-K truncations.
+* The run's agreement 0.977044 = 0.977044 at d = 26 and 30 is this fixed point. The d = 22 value differs by
+  `1e-6`, consistent with the `2^{−k}` decay.
+
+**A proof needs:**
+1. the periodicity lemma for the relative local quantities, extending R1's bottom-ratio computation to all
+   roles and to `G_L`;
+2. an evaluation of the fixed point on the periodic configurations in exact arithmetic;
+3. a boundary-layer bound.
+
+This replaces "run every d" with a finite computation.
