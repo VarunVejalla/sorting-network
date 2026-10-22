@@ -22,8 +22,8 @@ EPSB = Fr(225, 10 ** 7)
 DELTA = Fr(1, 10 ** 6)
 TAIL = Fr(360899, 10 ** 11)           # certified band tail at W = 2^17 (cert_tail_W2e17.out)
 ROUND = Fr(1, 100)
-S_DENSE = Fr(os.environ.get("AC_BOUND", "1.01595"))
-S_SPARSE = Fr(os.environ.get("AC_EB", "0.1735"))
+S_DENSE = Fr(os.environ.get("AC_BOUND", "1.01693"))     # S1, all roles (sec. 14)
+S_SPARSE = Fr(os.environ.get("AC_EB", "0.17362"))      # S2 with the all-roles S1
 S_SPILL = Fr(847, 100000)
 # mu: the order-0 budget fraction of the package (width_sim/package_point), exact value from the d=22 dump
 import json

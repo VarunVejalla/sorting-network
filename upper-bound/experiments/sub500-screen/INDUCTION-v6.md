@@ -705,3 +705,27 @@ So **the order-0 width certificate holds at every node, for every depth d**, giv
 * the certified tails.
 
 The previous per-depth float runs are now only cross-checks.
+
+### S1 for every role
+
+* **Senders active at t−2.** Since `G(u) ≥ 0`, telescoping gives
+  `a(u,t) ≤ π_u(t−2) + G_u(t−2) + Σ_kids π_kid(t−1)`.
+  * The kids' G at t−1 is `θ_kid(t−2) + π_kid(t−1)`: they are inactive at t−2 by parity, and are touched
+    only by u's send and their own.
+  * The largest π formula is topRise's: `π/c = ν/(Ak) = 32/65536`, so
+    `π_u(t−2)/c(u,t) ≤ 64·32/65536 = 0.03125`.
+  * botRise does not send blocks, so it never enters as the sender of θ. A botRise u at t−2 is handled by
+    `a ≤ R(u)` below.
+  * The kids of a mid or topRise sender are mid or botDesc at t−1. A botRise kid would force u to be the
+    bottom level, by the parity of ω. Their π is `31/65536·c(kid)` with `c(kid, t−1) = 128c`, so
+    `Σ ≤ 0.96875c`.
+  * The deficit term is `G_u(t−2) ≤ g*·c(u, t−2) = 64 g* c`.
+* **Bottom senders** (botDesc at ω, including botRise at t−2): the bag holds only keys of the range, so
+  `a ≤ R(u) = alloc + c/Q ≤ c`.
+* **Senders new at the top** (inactive at t−2): the levels above them are empty (mirror invariant), so
+  `a ≤ Σ π_kid(t−1) ≤ 0.96875c`.
+
+Hence **S1: `a/c ≤ 0.03125 + 0.96875 + 64·2.6453e-4 = 1.016930`**, and S2 becomes
+`8·(0.02084·1.01693 + g* + 16/65536) = 0.173612`.
+
+Formula box with these: **worst ratio 0.987414 < 1**.
