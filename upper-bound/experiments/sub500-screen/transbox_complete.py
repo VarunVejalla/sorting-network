@@ -42,12 +42,19 @@ for pt, tg, cf, lc in D["trans"]:
 # spilled children (group S): conservative -- may be dense senders (data of the dense end group E), inherit
 # with coef c/c' (as end children) and loc eps_B a/(2c') from a sender with a/c <= 2^-7 (spill only at
 # botDesc senders with a/c <= 0.0076, width_sim spill_a_over_c_max)
-EPSB = Fr(os.environ.get("EPSB", "2.25e-5")) if "os" in globals() else None
+EPSB_ = Fr(os.environ.get("EPSB", "2.25e-5"))
 G["S"] = dict(G["E"])
 AC["S"] = AC_DENSE
 cof["S"] = cof["E"]
 kap["S"] = None
 AC_SPILL_SENDER = Fr(1, 2 ** 7)
+# group Eb (S3 non-generic cases: w1 botRise or inactive at t-1): both crossing sides charged at Property B,
+# loc = eps_B a/(2c'), receiver sparse (a/c <= 2^-2.5 conservatively, lemma S2'), coef as end children
+CERT_TAIL = Fr(os.environ.get("CERT_TAIL", "3.60899e-6"))
+G["Eb"] = dict(G["En"])
+AC["Eb"] = AC["En"]
+cof["Eb"] = cof["E"]
+kap["Eb"] = kap["En"] * EPSB_ / (EPSB_ / 2 + CERT_TAIL)
 recv = [q for q in G if q != "T"]
 send = list(G)
 # eps_B a/(2c') per unit a/c with c' >= c / cof_E (cof_E = max c/c'): eps_B * cof_E / 2

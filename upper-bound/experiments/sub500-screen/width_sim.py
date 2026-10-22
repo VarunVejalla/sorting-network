@@ -49,6 +49,7 @@ class Sim:
         s.box = {}
         s.tagdata, s.trans, s.tagdist, s.nearB = {}, {}, {}, {}
         s.s3 = {}
+        s.s3f = {}
         s.R = [s.k ** (d - i) for i in range(d + 1)]
         s.intern = {}
         s.stats = {}
@@ -208,6 +209,23 @@ class Sim:
                     return min(s.tail(dist - bandw) * fa, s.epsB * fa / 2)
                 return s.epsB * fa / 2
             cB, cL = cross(dB), cross(dL)
+            if os.environ.get("S3RAW") and role == "mid" and fa / fc_ > 1.01 and not getattr(s, "_s3raw", 0) and t > 20:
+                s._s3raw = 1
+                pw = float(P.up(d, i + 1, t - 1)); cw = float(P.cap(d, i + 1, t - 1))
+                print("RAW t=%d i=%d a=%.6g c=%.6g pi=%.6g G(u)=%.6g GL(u)=%.6g o=%.6g | G(w1)=%.6g GL(w1)=%.6g G(w1')=%.6g mult(w1')=%s | pi(w1,t-1)=%.6g cap(w1,t-1)=%.6g | kids=%s" % (
+                    t, i, fa, fc_, float(pi), float(c.G), float(GL), float(o), float(first.G), float(first.GL), float(g11),
+                    first.kids[0][1] if first.kids else None, pw, cw, [(float(kc.G), n) for kc, n in c.kids][:4]))
+            if os.environ.get("S3FORM") and t >= 2:
+                pw = float(P.up(d, i + 1, t - 1)) if P.active(d, i + 1, t - 1) else None
+                key3 = (role, P.role(d, i + 1, t - 1) if P.active(d, i + 1, t - 1) else "inactive", fa / fc_ >= 0.125)
+                r3 = s.s3f.setdefault(key3, [0, 0.0, 9.0, 0.0])
+                r3[0] += 1
+                r3[2] = min(r3[2], dL)
+                if pw is not None:
+                    ow = (s.mu / 2 + s.epsB / 4) * float(P.cap(d, i + 1, t - 1))     # bound on o(w1) at t-1
+                    pred = (pw / 2 - ow - float(o)) / fa
+                    r3[1] = max(r3[1], pred - dL)            # > 0 would violate dL >= formula
+                    r3[3] = max(r3[3], ow / fc_)
             if os.environ.get("S3PROBE"):   # decompose dL a = b1 + pi/2 - Y by (role, t mod 6, offset from bottom)
                 off = i - (d - (P.tf(d) - t) // 6) if False else None
                 kk = (role, t % 6)
@@ -243,7 +261,15 @@ class Sim:
                     else:
                         endloc = (cB + cL) / (2 * cc)
                     if j == 0 or j == len(thetas) - 1:
-                        s.kidpinfo[j] = (ptag, fc_ / cc, endloc, ("En" if (AN and nearc) else "E"))
+                        kind = "En" if (AN and nearc) else "E"
+                        if os.environ.get("S3CASE") and t >= 2:
+                            wj = thetas[j][0]
+                            jl = i + 1
+                            if not P.active(d, jl, t - 1):
+                                kind += "~inact"
+                            elif P.role(d, jl, t - 1) == "botRise":
+                                kind += "~bR"
+                        s.kidpinfo[j] = (ptag, fc_ / cc, endloc, kind)
                     elif th > 0:
                         s.kidpinfo[j] = (ptag, fc_ / cc, s.epsB * fa / (2 * cc), "S")
                     else:
@@ -317,6 +343,9 @@ def main():
         for t in range(P.tf(d)):
             root = S.step(root, t)
         print(f"({x},{y},{z}) d={d} tf={P.tf(d)} o/c={float(ofrac):.3e} classes={len(S.intern)} local_configs={len(S.configs)}")
+        if os.environ.get("S3FORM"):
+            for kk, (n_, dev, dmin, owmax) in sorted(S.s3f.items(), key=str):
+                print("   S3F u=%-8s w1(t-1)=%-9s dense=%-5s n=%6d  dL_min %.5f  max(formula - dL) %.2e  o(w1)/c(u) max %.5f" % (kk[0], kk[1], kk[2], n_, dmin, dev, owmax))
         if os.environ.get("S3PROBE"):
             for kk, (v, info) in sorted(S.s3.items()):
                 if info and info[5] > 0.2:

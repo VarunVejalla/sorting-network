@@ -498,3 +498,44 @@ The ratio `G(w₁′)/G(w₁) ≈ 0.69` is stable across phases.
 So S3 is an inequality between two linear combinations of schedule quantities (`π/c` per phase), plus the
 inherited `G_L`. That is a finite computation over the six phases, provided `G_L/c` is bounded, which is
 itself a box (`G_L/c ≤ 2.5e-4` observed).
+
+### S3 proved in the generic case; non-generic cases moved into the box (`S3FORM`, `S3CASE`)
+
+**Exact form.** Let w₁ be u's end child. In the design recursion:
+* a child's G is reset to its θ at each parent send, and increases by π at its own send;
+* the first child's G_L is reset to θ.
+
+If w₁ was an **active mid or botDesc sender at t−1**, then:
+
+    G(w₁) = θ₁(t−2) + π(w₁, t−1),   G_L(w₁) = θ₁(t−2) + π(w₁)/2,
+    G(w₁′) ≤ π(w₁)/2 + θ₁(t−2) + o(w₁)        (a spill cap only lowers it)
+    ⇒ dL·a = G(w₁) − G(w₁′) − o(u) ≥ π(w₁, t−1)/2 − o(w₁) − o(u).
+
+The numbers in this bound:
+* `π(w₁, t−1)/c(u,t) = (Aνk − 1)A/(νA²k²) = 0.060547` (`c(w₁, t−1) = (A/ν)·c(u, t)`);
+* centres satisfy `o ≤ (μ/2 + ε_B/4)·c`;
+* `a ≤ 1.0149c` (S1).
+
+Together:
+
+    dL ≥ (0.030273 − 0.002610 − 0.00002)/1.0149 = 0.027237 > 2W/m + 0.005 = 0.020840.  ∎ (generic case)
+
+Numerically, `formula ≤ dL` holds for every generic sender (`max(formula − dL) ≤ 0`).
+
+**Non-generic cases** (w₁ botRise or inactive at t−1). These feed only sparse receivers (bins
+`a/c ≤ 2^-4.5`). In the complete box they form the group **Eb**: both sides charged at Property B,
+`loc = ε_B a/(2c′)`, the receiver sparse, and Eb free to feed every group.
+
+| group | E | Eb | En | I | S | T |
+|---|---:|---:|---:|---:|---:|---:|
+| ratio bound | **0.986661** | 0.708 | 0.676 | 0.855 | 0.982 | 0.665 |
+
+So the worst is **0.98666 < 1**, exact and with every transition allowed.
+
+**Remaining structural lemmas** (S3 is now done in the generic case):
+* **S1:** `a/c ≤ 1.0149`.
+* **S2:** sparseness at the next send (`a/c ≤ 2^-2.5`) for the end children of
+  1. near-charged senders, and
+  2. senders whose w₁ was botRise or inactive at t−1.
+* **S4:** the schedule facts, plus the centre bound `o ≤ (μ/2 + ε_B/4)c`, which follows from the centre
+  formulas of §12 and `cB, cL ≤ ε_B a/2`.
