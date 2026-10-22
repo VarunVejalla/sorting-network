@@ -604,3 +604,65 @@ not through roles.
 | S2 | reduced to S2e (observed always) |
 | S3 | proved in the generic case; non-generic cases charged at Property B |
 | S4 | schedule facts plus the centre bound |
+
+### S2e and S4: arguments
+
+**Invariant E (bottom emptiness).** At the start of step s, every node at a level `> ω(s)` is empty.
+
+*Proof by induction on s.*
+* Keys move down only from an active level to the level below it. The only active level with an empty
+  level below it is ω(s).
+* If ω(s) is **botDesc**, then `ω(s+1) = ω(s) + 1` (roles: `ω(s) < ω(s+1)`, parity ±1). Its blocks land at
+  level ω(s+1), so levels `> ω(s+1)` stay empty.
+* If ω(s) is **botRise**, it sends its whole bag up (`π = a`) and receives nothing. Then `ω(s+1) = ω(s) − 1`
+  and levels `≥ ω(s)` are empty after s.
+
+∎
+
+**Capping lemma.** If the spill rule caps a child's θ at its deficit (`θ = G(child)`), that child's block is
+`b = G − θ = 0`.
+
+**S2e** (a near-charged sender's grandchild w₁′ is empty).
+* *u botDesc* (`i = ω(t)`): `i + 2 > ω(t)`, so w₁′ is empty by E.
+* *u mid or topRise.* If w₁ was a generic sender at t−1 with θ₁ uncapped, then
+  `G(w₁′) = π(w₁)/2 + G_L(w₁) + o(w₁) ≥ π(w₁)/2`. Here `o ≥ 0`, since the end-type centre is
+  `≥ μ/2 − ε_B/4 > 0`. So `dB ≥ (0.030273 − g* − π/(2c))/1.01595 = 0.0293 > thr`, not near-charged.
+  Hence a near-charged u had **w₁ botDesc at t−1 with θ₁ capped**:
+  * w₁′ (level `i + 2 > ω(t−1)`) was empty by E;
+  * it received a zero block by the capping lemma;
+  * and it received nothing at t, since u sends only to level `i + 1`.
+
+  ∎
+
+With §S2, the receiver satisfies `a/c < 0.1735`.
+
+**S4** (schedule facts and centres).
+* `c(child, next send) = Aν·c(sender)` and `c(u, t−2) = c(u, t)/ν²`: these are the cap formula.
+* **Centres.**
+  * end: `(μc′ + cB − cL)/(2c′) ∈ [μ/2 − ε_B/4, μ/2 + ε_B/4]`, using `cB, cL ≤ ε_B a/2` and `a ≤ c′`;
+  * interior: `≤ μ/2`;
+  * spilled: `μ/2`;
+  * top: 0.
+
+  So `o ≤ (μ/2 + ε_B/4)c`.
+* **Spills only at sparse senders** (corrects the 2^-7 used before). A spill caps the first child, so that
+  child is empty (E plus capping) and `G = R(w₁′) < π/2 + G_L + o ≤ 5.29e-4·c`. Hence
+  `a/c ≤ k·R(w₁′)/c < 0.00846`.
+* **topRise receivers.** By the mirror invariant (levels `< α(s)` are empty: topDesc sends its whole bag
+  down), their last width-setting parent send is a topDesc send. That gives `hw = ε a/(2c′)` with no
+  inherited term. The box now includes this (`hw_T ≤ 0.6935μ`; it was 0.5μ before).
+
+**Complete box with all proved or conservative inputs:**
+* `AC_BOUND = 1.01595` (S1);
+* `AC_EB = 0.1735` (S2);
+* spill senders `≤ 0.00847`;
+* T as above.
+
+Result: **worst ratio 0.986994 < 1** (exact, post-fixed point verified).
+
+**Still open in the all-d argument:**
+1. S1 for the boundary roles.
+2. The inputs `rf`, `D`, `e` per group are measured maxima. They are analytic (`rf = c/(μc′)`,
+   `e = ε_B a/(μc′)`, D a formula), but should be recomputed from the formulas rather than read from the
+   dump.
+3. The root's oversized topDesc phase, which uses R1 (4.1).

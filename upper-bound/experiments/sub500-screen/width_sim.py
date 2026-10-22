@@ -53,6 +53,7 @@ class Sim:
         s.s1 = {}
         s.s2 = {}
         s.s2w = {}
+        s.s2k = {}
         s.R = [s.k ** (d - i) for i in range(d + 1)]
         s.intern = {}
         s.stats = {}
@@ -223,6 +224,11 @@ class Sim:
                 fill = 1 - float(g11) / Rw1p
                 w2 = s.s2w.setdefault(role, [0, 0.0, 9.0])
                 w2[0] += 1; w2[1] = max(w2[1], fill); w2[2] = min(w2[2], float(g11) / Rw1p)
+                wmax = max(P.omega(d, s_) for s_ in range(1, t + 1))
+                lastbR = max([s_ for s_ in range(1, t) if P.active(d, i + 2, s_) and P.role(d, i + 2, s_) == "botRise"] or [-1])
+                lastin = max([s_ for s_ in range(1, t) if P.active(d, i + 2, s_) or (P.active(d, i + 1, s_) and P.role(d, i + 1, s_) == "botDesc")] or [-1])
+                kind = "never-reached" if i + 2 > wmax else ("emptied-by-botRise" if lastbR >= lastin else "OTHER")
+                s.s2k[kind] = s.s2k.get(kind, 0) + 1
             if os.environ.get("S2PROBE") and t >= 2:
                 thr_ = bandw + 0.005
                 jl = i + 1
@@ -367,6 +373,7 @@ def main():
             root = S.step(root, t)
         print(f"({x},{y},{z}) d={d} tf={P.tf(d)} o/c={float(ofrac):.3e} classes={len(S.intern)} local_configs={len(S.configs)}")
         if os.environ.get("S2W"):
+            print("   S2K", S.s2k)
             for kk, (n_, f_, g_) in sorted(S.s2w.items()):
                 print("   S2W near-charged u=%-8s n=%6d  W(w1')/R(w1') max %.5f   G(w1')/R(w1') min %.5f" % (kk, n_, f_, g_))
         if os.environ.get("S2PROBE"):

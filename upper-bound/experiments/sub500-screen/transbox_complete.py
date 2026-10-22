@@ -51,7 +51,7 @@ G["S"] = dict(G["E"])
 AC["S"] = AC_DENSE
 cof["S"] = cof["E"]
 kap["S"] = None
-AC_SPILL_SENDER = Fr(1, 2 ** 7)
+AC_SPILL_SENDER = Fr(847, 100000)   # S4c: spill => capped first child => empty, R(w1') < pi/2 + G_L + o <= 5.29e-4 c, a/c <= k R(w1')/c < 0.00846
 # group Eb (S3 non-generic cases: w1 botRise or inactive at t-1): both crossing sides charged at Property B,
 # loc = eps_B a/(2c'), receiver sparse (a/c <= 2^-2.5 conservatively, lemma S2'), coef as end children
 CERT_TAIL = Fr(os.environ.get("CERT_TAIL", "3.60899e-6"))
@@ -66,7 +66,11 @@ send = list(G)
 # eps_B a/(2c') per unit a/c with c' >= c / cof_E (cof_E = max c/c'): eps_B * cof_E / 2
 SPILL_K = Fr(225, 10 ** 7) * cof["E"] / 2
 hw = {g: 10 * mu for g in G}
-hw["T"] = mu / 2
+# topRise receivers: children of a topDesc send carry hw = eps a/(2c') with no inherited term (topDesc senders
+# hold no outsiders, exact X; R1 sec. 4); eps = eps_B (Lemma 3.2: non-root topDesc nodes are small; the
+# oversized root uses eps_* = mu/k, R1 (4.1), whose a/(k c') is below this cap -- same rule as width_sim)
+HW_T = mu / 2 + EPSB_ * AC_DENSE * cof["E"] / 2
+hw["T"] = HW_T
 def step(hw):
     new = dict(hw)
     for q in recv:
@@ -78,6 +82,7 @@ def step(hw):
 for _ in range(400):
     n_ = step(hw)
     hw = {g: Fr(math.ceil(min(n_[g], hw[g]) * 10 ** 15), 10 ** 15) for g in G}
+    hw["T"] = HW_T
 ok = all(step(hw)[q] <= hw[q] for q in recv)
 worst = Fr(0)
 for g in sorted(G):
