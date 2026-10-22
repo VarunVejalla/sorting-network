@@ -144,3 +144,40 @@ Corrections for v6:
   * The rule for prefixes meeting is unstated.
   * `RES_γ` is priced at 0; each `1e-6` of it costs about 0.053 of margin.
   * `RES_φ` over-reserves.
+
+## 8. Node-by-node width certificate (`width_sim.py`, `width_sim_443.out`)
+
+Each node class carries the half-width of its `N_L` interval, set by its parent. Each sender checks
+`intruders/(μ c_child) ≤ 1`, with `intruders = h + kΔ₁/2 + μδA²k c + ε_B a + 0.1 μ c_child`.
+* **Crossings:** at its own distances `dB`, `dL`, the far tail where `≥ 0.02` (L3), Property B otherwise.
+* **Child widths:**
+  * end: `(μc′ + 2h + cB + cL)/2`;
+  * interior: `(μc′ + h + ε_B a/2 + kΔ₁/2)/2`;
+  * spilled: `(μc′ + 2h + ε_B a)/2`;
+  * children of topDesc: `ε a/(2c′)`, with `ε = μ/k` for the oversized early root (R1's precise root
+    separator, (4.1)) and ε_B otherwise.
+
+At (4,4,3), d = 14 and 18, δ = 1e-6, the binding senders are mid and botDesc:
+
+| ε_B | 2.1e-5 | 2.2e-5 | 2.3e-5 |
+|---|---:|---:|---:|
+| max order-0 ratio | 0.991 | 1.008 | 1.025 |
+
+The largest admissible value is about **2.16e-5**, a bulk margin of 1.14 against the walk bound's
+`1.897e-5`.
+
+**Price from the certificate's ε_B** (the band room is `ε_B − 1.897e-5`):
+
+| ε_B | band depth | stage | cost |
+|---|---:|---:|---:|
+| 2.05e-5 (δ = 2e-6) | 231 | 776 | 517.3 |
+| **2.16e-5 (δ = 1e-6)** | 210 | 755 | **503.3** |
+| 2.30e-5 (needed for 490) | 190 | 735 | 490.0 |
+
+**So the per-node certificate puts the package at about 503**, again just above 500. The reviewer's
+propagation (margins 1.18–1.29, slightly different rules) lands at 490–503.
+
+The last few percent of ε_B, from 2.16e-5 to 2.3e-5, could come from:
+* a smaller rounding reserve (0.1μ is assumed; each 0.05μ is about 2.5% of ε_B);
+* exact Δ₁ (it currently uses the sib bound);
+* or a sharper band tail.
