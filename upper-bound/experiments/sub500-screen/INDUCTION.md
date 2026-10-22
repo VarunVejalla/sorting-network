@@ -307,3 +307,31 @@ At the feasible ones, with mid/topRise/botDesc crossing margins ≥ 0.05 at (4,5
 * a botDesc rule that keeps sidedness on schedules like (4,4,3), e.g. a smaller up-flow at sparse bottom
   nodes;
 * or another lever of about 2%.
+
+## 16. Spill rule: (4,4,3) feasible again (`centred_sim.py`, `SPILL=1`; `centred_sim_443_spill.out`)
+
+**Rule.** The low deficit `θ_low = π/2 + G_L + o` fills children from the low end, each child capped at
+its own deficit G. The high deficit fills from the high end in the same way. On non-sparse nodes this is
+exactly the end-only design. **Sidedness generalizes**: ancestral keys lie in a low or high **prefix** of
+children, because F₁ takes the lowest keys of the bag and fully consumes small end children before
+reaching the next.
+
+**Result at (4,4,3), d = 10, 14, 18, 22:**
+* **no negative blocks**;
+* spills reach up to 11 interior children, only at botDesc senders with `a/c ≤ 0.0076`;
+* mid and topRise crossing margins `≥ 0.062` (the far-crossing lemma's distance);
+* `η ≤ 1.0158`, `G/c ≤ 2.66e-4`.
+
+**Cost of the spilling nodes.**
+* The uniform shift holds above the spilled prefix.
+* The crossing distance fails only at the spilling nodes (margin −0.62). There, case (a) of the review
+  applies, with Property B crossings `≤ ε_B a/2`. In units of c that is `≤ 0.0076·ε_B η/2`, negligible
+  against the (4.2) budget.
+
+**The (4,4,3) package (490, route (d) fringe; 503 with the current fringe) is valid again**, with these
+additions:
+* the spill rule in the design;
+* the prefix form of the sidedness lemma;
+* a case (a) term at sparse botDesc senders, scaled by `a/c`.
+
+All of it is unproved, as before.

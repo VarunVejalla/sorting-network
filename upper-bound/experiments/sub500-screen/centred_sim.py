@@ -22,6 +22,7 @@ sys.path.insert(0, os.path.join(HERE, "..", "slackfree"))
 from flowsim import Par  # noqa: E402
 
 sys.setrecursionlimit(10000)
+SPILL = os.environ.get('SPILL', '0') == '1'
 
 
 class Cls:
@@ -103,6 +104,27 @@ class Sim:
                 cnt = n - (1 if idx == 0 else 0) - (1 if idx == len(flat) - 1 else 0)
                 mid += [(kc, 1, Fr(0), Fr(0))] * cnt
             thetas = [(first, 1, tf, tf)] + mid + [(last, 1, tl, Fr(0))]
+            if SPILL:
+                # spill rule: low deficit fills children from the low end, high deficit from the high end,
+                # each child's theta capped at its own deficit G (its keys held outside its subtree + here)
+                seq = [first] + [m_[0] for m_ in mid] + [last]
+                caps = [kc.G for kc in seq]
+                th = [Fr(0)] * len(seq)
+                low, high = tf, tl
+                for j in range(len(seq)):
+                    take = min(low, caps[j]); th[j] += take; low -= take
+                    if low == 0:
+                        break
+                for j in range(len(seq) - 1, -1, -1):
+                    take = min(high, caps[j] - th[j]); th[j] += take; high -= take
+                    if high == 0:
+                        break
+                assert low == 0 and high == 0, (t, i, role)
+                spilled = sum(1 for j in range(1, len(seq) - 1) if th[j] > 0)
+                if spilled:
+                    s.note(role, "spill_children_max", spilled, lambda v, w: v > w)
+                    s.note(role, "spill_a_over_c_max", a / cap, lambda v, w: v > w)
+                thetas = [(seq[j], 1, th[j], th[j] if j < len(seq) // 2 else Fr(0)) for j in range(len(seq))]
             if t >= 1:
                 X1 = first.G - GL
                 s.note(role, "cross_margin_min", (X1 - pi / 2) / a, lambda v, w: v < w)
