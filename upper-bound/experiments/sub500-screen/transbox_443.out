@@ -1,0 +1,56 @@
+(4,4,3) d=26 tf=59 o/c=2.954e-05 classes=55159 local_configs=0
+   transbox bD-10|L0 hw <= 1.098 mu  ratio bound 0.5779
+   transbox bD-10|L1 hw <= 0.808 mu  ratio bound 0.4329
+   transbox bD-1|L3 hw <= 1.125 mu  ratio bound 0.7811
+   transbox bD-1|L5 hw <= 0.886 mu  ratio bound 0.6619
+   transbox bD-2|L3 hw <= 1.125 mu  ratio bound 0.6859
+   transbox bD-2|L5 hw <= 0.886 mu  ratio bound 0.5667
+   transbox bD-3|L5 hw <= 0.886 mu  ratio bound 0.5191
+   transbox bD-3|L6 hw <= 1.190 mu  ratio bound 0.6710
+   transbox bD-4|L5 hw <= 0.886 mu  ratio bound 0.4953
+   transbox bD-4|L6 hw <= 1.190 mu  ratio bound 0.6472
+   transbox bD-5|L5 hw <= 0.885 mu  ratio bound 0.4827
+   transbox bD-5|L6 hw <= 1.188 mu  ratio bound 0.6344
+   transbox bD-6|L3 hw <= 1.125 mu  ratio bound 0.5970
+   transbox bD-7|L2 hw <= 1.094 mu  ratio bound 0.5786
+   transbox bD-8|L1 hw <= 1.115 mu  ratio bound 0.5876
+   transbox bD-9|L0 hw <= 1.103 mu  ratio bound 0.5807
+   transbox bD-9|L1 hw <= 0.812 mu  ratio bound 0.4350
+   transbox bD0|L3 hw <= 1.125 mu  ratio bound 0.9716
+   transbox bD0|L5 hw <= 0.886 mu  ratio bound 0.8524
+   transbox mid|L3 hw <= 1.125 mu  ratio bound 0.9773
+   transbox mid|L5 hw <= 0.886 mu  ratio bound 0.8520
+   transbox topRise hw <= 0.500 mu  ratio bound 0.6650
+   transbox worst ratio bound 0.9773 (transitions 46)
+   botDesc  {'cross_margin_min': (-0.591066, (35,)), 'order0_ratio_max': (0.971338, (33,)), 'dist_min': (-0.326643, (35,)), 'a_over_c_max': (1.0, (17,)), 'G_over_c_max': (0.000253, (41,)), 'spill_children_max': (11.0, (19,)), 'spill_a_over_c_max': (0.007569, (44,))}
+   mid      {'cross_margin_min': (0.075428, (38,)), 'order0_ratio_max': (0.977044, (46,)), 'dist_min': (0.007217, (36,)), 'a_over_c_max': (1.014869, (38,)), 'G_over_c_max': (0.000252, (45,))}
+   topDesc  {'order0_ratio_max': (0.396466, (36,)), 'a_over_c_max': (1.014602, (36,)), 'G_over_c_max': (0.0, (2,))}
+   topRise  {'cross_margin_min': (0.062256, (1,)), 'order0_ratio_max': (0.659886, (1,)), 'dist_min': (0.003662, (1,)), 'a_over_c_max': (1.014861, (37,)), 'G_over_c_max': (0.0, (1,))}
+(4,4,3) d=30 tf=69 o/c=2.954e-05 classes=90154 local_configs=0
+   transbox bD-10|L0 hw <= 1.098 mu  ratio bound 0.5779
+   transbox bD-10|L1 hw <= 0.808 mu  ratio bound 0.4329
+   transbox bD-1|L3 hw <= 1.125 mu  ratio bound 0.7811
+   transbox bD-1|L5 hw <= 0.886 mu  ratio bound 0.6619
+   transbox bD-2|L3 hw <= 1.125 mu  ratio bound 0.6859
+   transbox bD-2|L5 hw <= 0.886 mu  ratio bound 0.5667
+   transbox bD-3|L5 hw <= 0.886 mu  ratio bound 0.5191
+   transbox bD-3|L6 hw <= 1.190 mu  ratio bound 0.6710
+   transbox bD-4|L5 hw <= 0.886 mu  ratio bound 0.4953
+   transbox bD-4|L6 hw <= 1.190 mu  ratio bound 0.6472
+   transbox bD-5|L5 hw <= 0.885 mu  ratio bound 0.4827
+   transbox bD-5|L6 hw <= 1.188 mu  ratio bound 0.6344
+   transbox bD-6|L3 hw <= 1.125 mu  ratio bound 0.5970
+   transbox bD-7|L2 hw <= 1.094 mu  ratio bound 0.5786
+   transbox bD-8|L1 hw <= 1.115 mu  ratio bound 0.5876
+   transbox bD-9|L0 hw <= 1.103 mu  ratio bound 0.5807
+   transbox bD-9|L1 hw <= 0.812 mu  ratio bound 0.4350
+   transbox bD0|L3 hw <= 1.125 mu  ratio bound 0.9716
+   transbox bD0|L5 hw <= 0.886 mu  ratio bound 0.8524
+   transbox mid|L3 hw <= 1.125 mu  ratio bound 0.9773
+   transbox mid|L5 hw <= 0.886 mu  ratio bound 0.8520
+   transbox topRise hw <= 0.500 mu  ratio bound 0.6650
+   transbox worst ratio bound 0.9773 (transitions 46)
+   botDesc  {'cross_margin_min': (-0.5911, (51,)), 'order0_ratio_max': (0.971338, (33,)), 'dist_min': (-0.32665, (51,)), 'a_over_c_max': (1.0, (17,)), 'G_over_c_max': (0.000253, (54,)), 'spill_children_max': (11.0, (19,)), 'spill_a_over_c_max': (0.007569, (44,))}
+   mid      {'cross_margin_min': (0.075428, (46,)), 'order0_ratio_max': (0.977044, (54,)), 'dist_min': (0.007217, (52,)), 'a_over_c_max': (1.014869, (46,)), 'G_over_c_max': (0.000252, (52,))}
+   topDesc  {'order0_ratio_max': (0.396466, (44,)), 'a_over_c_max': (1.014602, (44,)), 'G_over_c_max': (0.0, (2,))}
+   topRise  {'cross_margin_min': (0.062256, (1,)), 'order0_ratio_max': (0.659886, (1,)), 'dist_min': (0.003662, (1,)), 'a_over_c_max': (1.014861, (45,)), 'G_over_c_max': (0.0, (1,))}

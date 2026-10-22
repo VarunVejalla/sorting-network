@@ -375,3 +375,36 @@ mid is at 0.977 and topRise at 0.666. **So an all-d box argument is viable.** It
 3. the deep term D (fixed, about 0.018) and ROUND.
 
 Then the order-0 ratio is at most `max(0.977, 0.971, …) < 1` for every d, with about 2.3% slack.
+
+## 12. Transition box: a finite, depth-independent system (`TRANS=1 TRANS_LOCBIN=1`; `transbox_443.out`)
+
+**Tags.** A sender's tag is its role, its `a/c` bin (for botDesc) and the bin of its **incoming** local
+term (`round(loc/μ·50)`).
+
+**Transitions.** Each recorded transition `p → q` carries:
+* the largest coefficient on the parent's relative half-width (`c/c′` for end and spilled children,
+  `c/(2c′)` for interior children);
+* the largest local term (crossings, `ε_B a`, `kΔ₁/2`, relative to `c′`).
+
+**Box recursion**
+
+    hw[q] = max_{p→q} ( μ/2 + coef·hw[p] + loc )
+
+is solved to its fixed point. Each tag's ratio bound is then `hw[q]·(c/(μc′))_max + D_max + e_max + ROUND`.
+
+| d | 18 | 22 | 26 | 30 |
+|---|---:|---:|---:|---:|
+| transitions | 46 | 48 | 46 | 46 |
+| worst ratio bound | 0.9773 | 0.9773 | 0.9773 | 0.9773 |
+
+The tight case is mid nodes in local bin L3 (`hw ≤ 1.125μ`). Bin L5 has a larger local term but a smaller
+inherited width (0.886μ).
+* Without the local-term bins the box is 1.020: too coarse.
+* With them it equals the observed maximum (0.977).
+
+**All-d argument.** The fixed point of a finite transition system bounds every depth, **provided the
+transition set, with its coefficient and local-term ranges, is complete for all d**. Here it is stable at
+46 transitions from d = 26 to 30 (d = 22's two extra are a boundary effect).
+
+**To prove:** the transition set is complete. The tags are determined by the schedule's periodic roles and
+by bounded relative quantities. The box then gives **ratio ≤ 0.9773 < 1 for every d**, about 2.3% slack.

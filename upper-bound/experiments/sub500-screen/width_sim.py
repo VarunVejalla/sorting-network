@@ -31,10 +31,10 @@ TYPEMID = os.environ.get('TYPEMID', '0') == '1'
 
 
 class Cls:
-    __slots__ = ("lev", "G", "GL", "kids", "hw", "cent")
+    __slots__ = ("lev", "G", "GL", "kids", "hw", "cent", "pinfo")
 
-    def __init__(s, lev, G, GL, kids, hw=0.0, cent=None):
-        s.lev, s.G, s.GL, s.kids, s.hw, s.cent = lev, Fr(G), Fr(GL), kids, hw, cent
+    def __init__(s, lev, G, GL, kids, hw=0.0, cent=None, pinfo=None):
+        s.lev, s.G, s.GL, s.kids, s.hw, s.cent, s.pinfo = lev, Fr(G), Fr(GL), kids, hw, cent, pinfo
 
 
 class Sim:
@@ -47,6 +47,7 @@ class Sim:
         s._tail = {}
         s.configs = set()
         s.box = {}
+        s.tagdata, s.trans = {}, {}
         s.R = [s.k ** (d - i) for i in range(d + 1)]
         s.intern = {}
         s.stats = {}
@@ -68,14 +69,16 @@ class Sim:
         if key not in r or better(val, r[key][0]):
             r[key] = (val, (s.t,))
 
-    def mk(s, lev, G, GL, kids, hw=0.0, cent=None):
+    def mk(s, lev, G, GL, kids, hw=0.0, cent=None, pinfo=None):
         hw = math.ceil(hw * 1e7) / 1e7          # quantise upward (relative half-width)
         if cent is not None:
             cent = round(cent * 1e6) / 1e6      # centre: design constant per class (rounding moves it inside hw slack)
-        key = (lev, G, GL, hw, cent, tuple((id(c), n) for c, n in kids))
+        if pinfo is not None:
+            pinfo = (pinfo[0], math.ceil(pinfo[1] * 1e4) / 1e4, math.ceil(pinfo[2] * 1e8) / 1e8)
+        key = (lev, G, GL, hw, cent, pinfo, tuple((id(c), n) for c, n in kids))
         c = s.intern.get(key)
         if c is None:
-            c = Cls(lev, G, GL, tuple(kids), hw, cent)
+            c = Cls(lev, G, GL, tuple(kids), hw, cent, pinfo)
             s.intern[key] = c
         return c
 
@@ -94,19 +97,20 @@ class Sim:
         s.t, s.memo_a, s.memo_i = t, {}, {}
         return s.visit(root, None, None)
 
-    def visit(s, c, newG, newGL, newhw=None, newcent=None):
+    def visit(s, c, newG, newGL, newhw=None, newcent=None, newpinfo=None):
         if s.active(c.lev):
             if id(c) not in s.memo_a:
                 s.memo_a[id(c)] = s.send(c)
             return s.memo_a[id(c)]
-        key = (id(c), newG, newGL, newhw, newcent)
+        key = (id(c), newG, newGL, newhw, newcent, newpinfo)
         if key not in s.memo_i:
             G = c.G if newG is None else newG
             GL = c.GL if newGL is None else newGL
             hw = c.hw if newhw is None else newhw
             cent = c.cent if newcent is None else newcent
+            pinfo = c.pinfo if newpinfo is None else newpinfo
             kids = tuple((s.visit(kc, None, None), n) for kc, n in c.kids)
-            s.memo_i[key] = s.mk(c.lev, G, GL, kids, hw, cent)
+            s.memo_i[key] = s.mk(c.lev, G, GL, kids, hw, cent, pinfo)
         return s.memo_i[key]
 
     def send(s, c):
@@ -166,6 +170,19 @@ class Sim:
             D1 = s.mu * s.delta * k * s.A2 * fc_ / (1 - (s.delta * k) ** 2 * s.A2)
             intr = h + k * D1 / 2 + s.mu * s.delta * s.A2 * k * fc_ + s.epsB * fa + float(os.environ.get("ROUNDF", "0.1")) * s.mu * cc
             s.note(role, "order0_ratio_max", intr / (s.mu * cc), lambda v, w: v > w)
+            if os.environ.get("TRANS"):
+                tag = role if role != "botDesc" else "bD%d" % round(math.log2(max(fa / fc_, 1e-12)))
+                if os.environ.get("TRANS_LOCBIN") and c.pinfo is not None:   # split by incoming local term
+                    tag += "|L%d" % round(c.pinfo[2] / s.mu * 50)
+                td = s.tagdata.setdefault(tag, dict(rf=0.0, e=0.0, D=0.0))
+                td["rf"] = max(td["rf"], fc_ / (s.mu * cc))          # ratio = hw_rel * c / (mu c') + ...
+                td["e"] = max(td["e"], s.epsB * fa / (s.mu * cc))
+                td["D"] = max(td["D"], (k * D1 / 2 + s.mu * s.delta * s.A2 * k * fc_) / (s.mu * cc))
+                if c.pinfo is not None:
+                    key2 = (c.pinfo[0], tag)
+                    cf, lc = s.trans.get(key2, (0.0, 0.0))
+                    s.trans[key2] = (max(cf, c.pinfo[1]), max(lc, c.pinfo[2]))
+                s.curtag = tag
             if os.environ.get("BOXTERMS"):
                 terms = dict(h=h / (s.mu * cc), D=(k * D1 / 2 + s.mu * s.delta * s.A2 * k * fc_) / (s.mu * cc),
                              e=s.epsB * fa / (s.mu * cc))
@@ -193,7 +210,16 @@ class Sim:
             hw_int = (s.mu * cc + h + s.epsB * fa / 2 + k * D1 / 2) / 2 / cc
             hw_spill = (s.mu * cc + 2 * h + s.epsB * fa) / 2 / cc
             kidcent = {}
+            s.kidpinfo = {}
+            ptag = getattr(s, "curtag", None)
             for j, (kc, n, th, thL) in enumerate(thetas):
+                if ptag is not None:
+                    if j == 0 or j == len(thetas) - 1:
+                        s.kidpinfo[j] = (ptag, fc_ / cc, (cB + cL) / (2 * cc))
+                    elif th > 0:
+                        s.kidpinfo[j] = (ptag, fc_ / cc, s.epsB * fa / (2 * cc))
+                    else:
+                        s.kidpinfo[j] = (ptag, fc_ / (2 * cc), (s.epsB * fa / 2 + k * D1 / 2) / (2 * cc))
                 if j == 0 or j == len(thetas) - 1:
                     kidhw[j] = hw_end
                     kidcent[j] = (s.mu * cc + cB - cL) / 2 / cc
@@ -219,7 +245,10 @@ class Sim:
                 kidhw[j] = eps_td * float(a) / 2 / cc
             s.kidcent = {j: 0.0 for j in range(len(thetas))}
         kc_cent = getattr(s, "kidcent", {}) if kidhw else {}
+        kc_pinfo = getattr(s, "kidpinfo", {}) if kidhw else {}
         s.kidcent = {}
+        s.kidpinfo = {}
+        s.curtag = None
         T = Fr(0)
         newkids = []
         for j, (kc, n, th, thL) in enumerate(thetas):
@@ -227,7 +256,7 @@ class Sim:
             if b < 0:
                 s.note(role, "neg_block_min", b / cap, lambda v, w: v < w)
             T += n * th
-            newkids.append((s.visit(kc, th, thL, kidhw.get(j), kc_cent.get(j)), n))
+            newkids.append((s.visit(kc, th, thL, kidhw.get(j), kc_cent.get(j), kc_pinfo.get(j)), n))
         assert T == pi + c.G or role == "topDesc"
         if t >= 1:
             s.note(role, "a_over_c_max", a / cap, lambda v, w: v > w)
@@ -260,6 +289,24 @@ def main():
         for t in range(P.tf(d)):
             root = S.step(root, t)
         print(f"({x},{y},{z}) d={d} tf={P.tf(d)} o/c={float(ofrac):.3e} classes={len(S.intern)} local_configs={len(S.configs)}")
+        if os.environ.get("TRANS"):
+            rnd = float(os.environ.get("ROUNDF", "0.1"))
+            mu_ = float(mu)
+            hwb = {tg: 0.0 for tg in S.tagdata}
+            for _ in range(200):          # box recursion: hw[tag] = max over p->tag of mu/2 + coef hw[p] + loc
+                new = {}
+                for (pt, tg), (cf, lc) in S.trans.items():
+                    if tg in hwb:
+                        v = mu_ / 2 + cf * hwb.get(pt, mu_) + lc
+                        new[tg] = max(new.get(tg, 0.0), v)
+                for tg in hwb:
+                    hwb[tg] = max(hwb[tg], new.get(tg, mu_ / 2))
+            worst = 0.0
+            for tg, td in sorted(S.tagdata.items()):
+                rb = hwb[tg] * td["rf"] + td["D"] + td["e"] + rnd
+                worst = max(worst, rb)
+                print("   transbox %-6s hw <= %.3f mu  ratio bound %.4f" % (tg, hwb[tg] / mu_, rb))
+            print("   transbox worst ratio bound %.4f (transitions %d)" % (worst, len(S.trans)))
         if os.environ.get("BOXTERMS"):
             rnd = float(os.environ.get("ROUNDF", "0.1"))
             for role, bx in sorted(S.box.items()):
