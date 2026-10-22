@@ -782,6 +782,6 @@ With `ε_* = μ/k` the t = 0 root send has `ε_* a/(μc′) = a/(kc′) = 1`, le
 | γ (review: `≤ 3n = 0.0030 μc′`) | 0.0030 μc′ |
 | topDesc children's deep term (review: `≈ 0.004 μc_u`) | 0.0020 μc′ |
 | integer rounding (`≤ k` keys per block plus n per cut) | ≤ 1e-5 μc′ |
-| `outs_sub ≤ Δ₁` on the end-child upper side (review) | inside D = 0.0184 (`μδA²k` term) |
+| `outs_sub ≤ Δ₁` on the end-child upper side (review) | **not yet verified**: plausibly inside D's `μδA²k` term; if it is separate, it is `≤ Δ₁/c′ = 0.004 μ`, which still fits |
 
 The total is about 0.0050 μc′, below `ROUND = 0.01 μc′`.
