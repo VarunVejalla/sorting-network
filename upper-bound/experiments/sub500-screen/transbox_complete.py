@@ -55,8 +55,10 @@ AC_SPILL_SENDER = Fr(1, 2 ** 7)
 # group Eb (S3 non-generic cases: w1 botRise or inactive at t-1): both crossing sides charged at Property B,
 # loc = eps_B a/(2c'), receiver sparse (a/c <= 2^-2.5 conservatively, lemma S2'), coef as end children
 CERT_TAIL = Fr(os.environ.get("CERT_TAIL", "3.60899e-6"))
-G["Eb"] = dict(G["En"])
-AC["Eb"] = AC["En"]
+AC_EB = Fr(os.environ.get("AC_EB", "0.17678"))   # receiver a/c bound for Eb (capped-theta / non-generic cases)
+G["Eb"] = dict(G["E"])
+G["Eb"]["e"] = G["E"]["e"] * AC_EB / AC_DENSE      # e linear in the receiver's a/c
+AC["Eb"] = AC_EB
 cof["Eb"] = cof["E"]
 kap["Eb"] = kap["En"] * EPSB_ / (EPSB_ / 2 + CERT_TAIL)
 recv = [q for q in G if q != "T"]

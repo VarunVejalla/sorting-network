@@ -567,3 +567,40 @@ The complete box with `AC_BOUND = 1.01595` (e terms scaled up accordingly) gives
 1. Senders whose children were not all mid at t−1 (topRise, botDesc, chains near the boundary) use other
    π formulas. Each is `≤` the mid case or observed `≤ 1`, but each needs the same telescoping.
 2. The base of the g recursion: top nodes have `G = 0`, and the root has `θ = 0` at topDesc.
+
+### S2: sparse receivers after near-charging (`S2PROBE`, `S2W`, `s2_schedule.py`)
+
+**Argument.**
+1. Near-charging means `dB·a = G(w₁′) − G_L(u) − π_u/2 < thr·a`, with `thr = 2W/m + 0.005 = 0.02084`.
+2. In the design the bag holds exactly the keys of the node's range at the node, so `a(w₁) ≤ R(w₁) = k·R(w₁′)`.
+3. If `G(w₁′) = R(w₁′)`, i.e. **w₁′ is empty**:
+
+       a/c(w₁, t+1) ≤ k·R(w₁′)/c(w₁, t+1) = k·G(w₁′)/(2c(u))
+                   < (k/2)·(thr·1.01595 + g* + π/(2c)) = 8·(0.021172 + 0.000265 + 0.000244) = 0.1735 < 2^-2.5,
+
+   using S1, `G_L ≤ g*·c` and `c(w₁, t+1) = Aν·c(u,t)`.
+
+**Observed:** `W(w₁′) = 0` at **every** near-charged sender (4070 botDesc, 772 mid, 1 topRise at d = 22). So
+S2 reduces to:
+
+* **(S2e)** a near-charged sender's grandchild `w₁′` is empty.
+
+Plausibly: near-charging needs `G(w₁′) < 0.021a`, i.e. range(w₁′) is tiny against u's bag. That happens
+only where w₁′ lies below every level the bottom has reached with it in range.
+
+**Schedule check** (`s2_schedule.py`). Taking "non-generic" to mean w₁ was inactive, botRise, or a
+spilling botDesc at t−1, dense receivers do occur (`mid → botDesc` with `alloc/cap ≈ 1`). They are not
+near-charged, because there `G(w₁′) ≈ R(w₁)/k` is large. So S2 has to be stated through `G(w₁′)`, as above,
+not through roles.
+
+**Box sensitivity.** Eb/En receivers can be as dense as `a/c ≤ 0.499` before the complete box reaches 1
+(`AC_EB` scan: 0.45 → 0.99831; 0.5 → 1.00036). With S2 (`≤ 0.1735`), the worst is 0.987128.
+
+**Status of the all-d lemmas:**
+
+| lemma | status |
+|---|---|
+| S1 | sketched; boundary roles to finish |
+| S2 | reduced to S2e (observed always) |
+| S3 | proved in the generic case; non-generic cases charged at Property B |
+| S4 | schedule facts plus the centre bound |

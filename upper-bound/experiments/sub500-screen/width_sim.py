@@ -51,6 +51,8 @@ class Sim:
         s.s3 = {}
         s.s3f = {}
         s.s1 = {}
+        s.s2 = {}
+        s.s2w = {}
         s.R = [s.k ** (d - i) for i in range(d + 1)]
         s.intern = {}
         s.stats = {}
@@ -216,6 +218,22 @@ class Sim:
                 print("RAW t=%d i=%d a=%.6g c=%.6g pi=%.6g G(u)=%.6g GL(u)=%.6g o=%.6g | G(w1)=%.6g GL(w1)=%.6g G(w1')=%.6g mult(w1')=%s | pi(w1,t-1)=%.6g cap(w1,t-1)=%.6g | kids=%s" % (
                     t, i, fa, fc_, float(pi), float(c.G), float(GL), float(o), float(first.G), float(first.GL), float(g11),
                     first.kids[0][1] if first.kids else None, pw, cw, [(float(kc.G), n) for kc, n in c.kids][:4]))
+            if os.environ.get("S2W") and dB < bandw + 0.005 and i + 2 <= d:
+                Rw1p = float(s.R[i + 2])
+                fill = 1 - float(g11) / Rw1p
+                w2 = s.s2w.setdefault(role, [0, 0.0, 9.0])
+                w2[0] += 1; w2[1] = max(w2[1], fill); w2[2] = min(w2[2], float(g11) / Rw1p)
+            if os.environ.get("S2PROBE") and t >= 2:
+                thr_ = bandw + 0.005
+                jl = i + 1
+                r_m1 = P.role(d, jl, t - 1) if P.active(d, jl, t - 1) else "inact"
+                ng = r_m1 in ("inact", "botRise")
+                if dB < thr_ or ng:
+                    r_p1 = P.role(d, jl, t + 1) if P.active(d, jl, t + 1) else "inact"
+                    al = float(P.alloc(d, jl, t + 1)) / float(P.cap(d, jl, t + 1)) if r_p1 != "inact" else 0.0
+                    kk = (role, "near" if dB < thr_ else "far", r_m1, r_p1, t % 6)
+                    r2 = s.s2.setdefault(kk, [0, 0.0])
+                    r2[0] += 1; r2[1] = max(r2[1], al)
             if os.environ.get("S1PROBE"):
                 al = float(P.alloc(d, i, t))
                 r1 = s.s1.setdefault((role, t % 6), [0.0, -9.0, 0.0])
@@ -348,6 +366,12 @@ def main():
         for t in range(P.tf(d)):
             root = S.step(root, t)
         print(f"({x},{y},{z}) d={d} tf={P.tf(d)} o/c={float(ofrac):.3e} classes={len(S.intern)} local_configs={len(S.configs)}")
+        if os.environ.get("S2W"):
+            for kk, (n_, f_, g_) in sorted(S.s2w.items()):
+                print("   S2W near-charged u=%-8s n=%6d  W(w1')/R(w1') max %.5f   G(w1')/R(w1') min %.5f" % (kk, n_, f_, g_))
+        if os.environ.get("S2PROBE"):
+            for kk, (n_, al) in sorted(S.s2.items()):
+                print("   S2 u=%-8s %-4s w1(t-1)=%-8s w1(t+1)=%-8s t%%6=%d n=%5d  alloc/cap(w1,t+1) max %.5f" % (kk + (n_, al)))
         if os.environ.get("S1PROBE"):
             for kk, (r_, dv, al) in sorted(S.s1.items()):
                 print("   S1 %-8s t%%6=%d  a/c max %.5f  (a - alloc)/c max %+.5f  alloc/c max %.5f" % (kk[0], kk[1], r_, dv, al))
