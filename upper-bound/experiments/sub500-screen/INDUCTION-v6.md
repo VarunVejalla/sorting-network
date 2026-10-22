@@ -285,3 +285,12 @@ type-rule items of §8 open.
 At the package point (certified tails, ε_B = 2.25e-5), the max ratio is 0.9736 / 0.9770 / 0.9770 at
 d = 14 / 18 / 22, about **2.3% slack**. Still open: exact arithmetic for the recursion, a bound for all d,
 and a γ / far-term reserve audit (review item 6).
+
+**Convergence in d** (`width_sim_443_pkg477_v7_d26_30.out`). Max ratio 0.977031 / 0.977043 / 0.977044 /
+0.977044 at d = 18 / 22 / 26 / 30, with 52k and 85k classes at d = 26 and 30. The per-node widths reach a
+fixed point. A proof for all d needs the schedule's periodicity (R1: bottom ratios depend only on t mod 6)
+together with the contraction of the width recursion (a factor `1/(Aν)` per level).
+
+**Reserve audit** (review item 6). `ROUND = 0.01 μc′` must cover integer rounding (about k keys per block,
+negligible), `γ ≈ 0.003 μc′` and `2φ̄ ≈ 0.0034 μc′`, i.e. about `0.0064 μc′`. That fits, with about 0.0036
+left.
