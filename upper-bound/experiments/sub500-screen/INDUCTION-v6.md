@@ -666,3 +666,42 @@ Result: **worst ratio 0.986994 < 1** (exact, post-fixed point verified).
    `e = ε_B a/(μc′)`, D a formula), but should be recomputed from the formulas rather than read from the
    dump.
 3. The root's oversized topDesc phase, which uses R1 (4.1).
+
+## 14. The all-d width bound from formulas only (`transbox_analytic.py`)
+
+This uses no simulation input. Inputs:
+* the package constants `(A, k, ν) = (16, 16, 1/8)`, `ε_B = 2.25e-5`, `δ = 1e-6`, `ROUND = 0.01`, and
+  `μ = 2.953503e-5` (the order-0 budget fraction of the package point);
+* the certified band tail `3.60899e-6`;
+* the lemma bounds S1 (`s ≤ 1.01595`), S2 (`s ≤ 0.1735`) and S4 (spill senders `s ≤ 0.00847`; `c′ = Aν c`).
+
+**Ratio** at a sender of fill `s = a/c` with inherited half-width hw (relative to c):
+
+    ratio = hw/(2μ) + D + ε_B s/(2μ) + ROUND,   D = δA²k(k/(2(1−(δkA)²)) + 1)/2 = 0.018432.
+
+**Inheritance**, with `loc = (cB + cL)/(2c′) = (cB + cL)/(4c)` for end children:
+
+| child type | inherited half-width |
+|---|---|
+| E | `μ/2 + hw_p/2 + tail·s/2` |
+| En | `μ/2 + hw_p/2 + (ε_B/2 + tail)·s/4` |
+| Eb | `μ/2 + hw_p/2 + ε_B s/4` |
+| S | `μ/2 + hw_p/2 + ε_B min(s, 0.00847)/4` |
+| I | `μ/2 + hw_p/4 + ε_B s/8 + kΔ₁/(8c)` |
+| T | `μ/2 + ε_B s_max/4` (conservative) |
+
+Every group may feed every receiver group.
+
+| group | E | S | I | Eb | En | T |
+|---|---:|---:|---:|---:|---:|---:|
+| ratio bound | **0.986974** | 0.982481 | 0.860770 | 0.727045 | 0.694191 | 0.762156 |
+
+**Worst: 0.986974 < 1**, exact, with the post-fixed point verified. This matches the data-based complete box
+(0.986994).
+
+So **the order-0 width certificate holds at every node, for every depth d**, given:
+* S1 (the boundary roles still to be written out);
+* the per-node intruder decomposition of §2 and §3, with lemmas L2 – L4;
+* the certified tails.
+
+The previous per-depth float runs are now only cross-checks.
