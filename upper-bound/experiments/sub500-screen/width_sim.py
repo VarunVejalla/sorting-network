@@ -307,6 +307,12 @@ def main():
                 worst = max(worst, rb)
                 print("   transbox %-6s hw <= %.3f mu  ratio bound %.4f" % (tg, hwb[tg] / mu_, rb))
             print("   transbox worst ratio bound %.4f (transitions %d)" % (worst, len(S.trans)))
+            if os.environ.get("TRANS_DUMP"):
+                import json
+                json.dump(dict(mu=str(mu), round=os.environ.get("ROUNDF", "0.1"),
+                               tags={tg: td for tg, td in S.tagdata.items()},
+                               trans=[[pt, tg, cf, lc] for (pt, tg), (cf, lc) in S.trans.items()]),
+                          open(os.environ["TRANS_DUMP"], "w"), indent=1)
         if os.environ.get("BOXTERMS"):
             rnd = float(os.environ.get("ROUNDF", "0.1"))
             for role, bx in sorted(S.box.items()):

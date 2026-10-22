@@ -408,3 +408,14 @@ transition set, with its coefficient and local-term ranges, is complete for all 
 
 **To prove:** the transition set is complete. The tags are determined by the schedule's periodic roles and
 by bounded relative quantities. The box then gives **ratio ≤ 0.9773 < 1 for every d**, about 2.3% slack.
+
+**Exact evaluation** (`transbox_exact.py transbox_443_d30.json`). The d = 30 dump is evaluated in
+Fractions:
+* every coefficient, local term and ratio factor is rounded **up** to a `1e-12` grid;
+* the recursion is iterated down from `hw = 10μ` to a post-fixed point `T(hw) ≤ hw`, verified exactly, which
+  bounds the least fixed point.
+
+Exact worst ratio bound: **0.977298 < 1**.
+
+Caveat: the inputs are the float simulation's recorded maxima, so this is exact arithmetic on
+float-derived data. The transition set's completeness and its ranges for all d are still unproved.
