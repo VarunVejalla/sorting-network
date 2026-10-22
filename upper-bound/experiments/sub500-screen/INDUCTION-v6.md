@@ -472,3 +472,29 @@ follow from S1 and S4.
 The all-d obligation is now four lemmas about the design recursion. S1 and S4 should follow from R1's
 schedule computation. S2 and S3 are statements about the deficits `G`, `G_L` and `G(w₁′)` (§2), which are
 the next to prove.
+
+### S3 in deficit form (`S3PROBE=1`)
+
+From `b₁ = G(w₁) − θ₁` and `θ₁ = π/2 + G_L(u) + o`:
+
+    dL·a = b₁ + π/2 − Y = G(w₁) − G(w₁′) − o.
+
+**S3 ⟺ `G(w₁) − G(w₁′) ≥ (2W/m + 0.005)·a + o`**: the end child's deficit exceeds its own first child's
+deficit by a fixed fraction of the sender's bag.
+
+The tightest dense senders at d = 22 (per phase t mod 6; `G(w₁′)/a` is Y/a less `G_L(u)/a`):
+
+| role | `G(w₁)/a` | `G(w₁′)/a` | `dL` |
+|---|---|---|---|
+| mid | 0.084 – 0.091 | 0.056 – 0.063 | 0.0277 – 0.0279 |
+| topRise | | | 0.0279 – 0.0280 |
+
+The ratio `G(w₁′)/G(w₁) ≈ 0.69` is stable across phases.
+
+**Proof route.** Both deficits are design quantities set at the last sends of u and of w₁. They are:
+* `θ₁(w₁) = π/2(w₁) + G_L(w₁) + o(w₁)` for `w₁′`;
+* the accumulated `θ` plus `π/2` increments for `w₁`.
+
+So S3 is an inequality between two linear combinations of schedule quantities (`π/c` per phase), plus the
+inherited `G_L`. That is a finite computation over the six phases, provided `G_L/c` is bounded, which is
+itself a box (`G_L/c ≤ 2.5e-4` observed).

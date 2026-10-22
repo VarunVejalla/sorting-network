@@ -48,6 +48,7 @@ class Sim:
         s.configs = set()
         s.box = {}
         s.tagdata, s.trans, s.tagdist, s.nearB = {}, {}, {}, {}
+        s.s3 = {}
         s.R = [s.k ** (d - i) for i in range(d + 1)]
         s.intern = {}
         s.stats = {}
@@ -207,6 +208,13 @@ class Sim:
                     return min(s.tail(dist - bandw) * fa, s.epsB * fa / 2)
                 return s.epsB * fa / 2
             cB, cL = cross(dB), cross(dL)
+            if os.environ.get("S3PROBE"):   # decompose dL a = b1 + pi/2 - Y by (role, t mod 6, offset from bottom)
+                off = i - (d - (P.tf(d) - t) // 6) if False else None
+                kk = (role, t % 6)
+                r_ = s.s3.setdefault(kk, [9.0, None])
+                if dL < r_[0]:
+                    r_[0], r_[1] = dL, (round(b1 / fa, 5), round(float(pi) / 2 / fa, 5), round(Y / fa, 5),
+                                        round(float(first.G) / fa, 5), round(float(GL) / fa, 5), round(fa / fc_, 4))
             if os.environ.get("TRANS") and getattr(s, "curtag", None):
                 dd = s.tagdist.setdefault(s.curtag, [9.0, 9.0, 0.0])
                 dd[0] = min(dd[0], dB); dd[1] = min(dd[1], dL); dd[2] = max(dd[2], fa / fc_)
@@ -309,6 +317,10 @@ def main():
         for t in range(P.tf(d)):
             root = S.step(root, t)
         print(f"({x},{y},{z}) d={d} tf={P.tf(d)} o/c={float(ofrac):.3e} classes={len(S.intern)} local_configs={len(S.configs)}")
+        if os.environ.get("S3PROBE"):
+            for kk, (v, info) in sorted(S.s3.items()):
+                if info and info[5] > 0.2:
+                    print("   S3 %-8s t%%6=%d dL_min %.5f  (b1, pi/2, Y, G(w1), G_L(u))/a = %s  a/c %.4f" % (kk[0], kk[1], v, info[:5], info[5]))
         if os.environ.get("TRANS"):
             rnd = float(os.environ.get("ROUNDF", "0.1"))
             mu_ = float(mu)
