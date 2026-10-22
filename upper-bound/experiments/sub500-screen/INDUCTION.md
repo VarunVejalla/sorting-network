@@ -154,3 +154,14 @@ invariant and needs care: P's cap is still required for (4.4) and support.
 So the band stays at the walk-bound tail, and **the v4 package prices at 503**: on the knife edge, just
 above 500. Getting below 500 needs a sharper round-1 tail (≤ 0.4/W) or about 1% from elsewhere, such
 as the rounding reserve, merge alignment, or stage fusion.
+
+## 11. Merge alignment is not a free lever
+
+Without the alignment cost `+l`, the v4 package prices at 495.3 (q = 25). But the child runs are
+`p m/2 ≈ 2^12.95` rows (q = 25), just under a power of two.
+* A merge tree over the actual, unaligned runs (odd-even merges of arbitrary sizes) costs
+  `Σ_i ⌈lg(2^i L)⌉ ≈ 260`.
+* Aligned blocks plus one depth-l merge cost `247 + 12 = 259`. The same.
+* The saving needs runs `≥ 2^13`, i.e. about 3% more rows than the q = 25 window allows.
+
+So 503 stands.
