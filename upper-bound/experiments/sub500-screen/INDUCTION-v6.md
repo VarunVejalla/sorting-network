@@ -108,3 +108,16 @@ Ratios at that value are recorded for d = 22, 26 and 30.
 
 A proof needs the periodic structure of the schedule in d (R1's bottom ratios depend only on t mod 6) to
 turn this observed convergence into a bound for all d.
+
+## 7. Band repair shrinks the crossing margin (L3 step 4)
+
+The disjoint bands of `2W = 2^18` rows (depth 171) shrink the far-crossing margin from `d·m` to
+`(d − 2W/m)·m`, with `2W/m = 0.0156`. With this in the certificate (`BAND2W_FRAC=0.015625`, d = 22 and 26):
+
+| ε_B | max ratio | band depth | cost |
+|---|---:|---:|---:|
+| 2.6e-5 | 0.9986 (slack 0.14%) | 171 | **477** |
+| 2.5e-5 | 0.9814 (slack 1.9%) | 190 | **490** |
+
+The band depth is a step function of the band room `ε_B − 1.897e-5`. So **the package is 477 with thin
+slack, or 490 with about 2% slack.** Both are below 500.

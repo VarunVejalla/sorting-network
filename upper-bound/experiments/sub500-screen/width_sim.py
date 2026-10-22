@@ -159,9 +159,10 @@ class Sim:
             b1 = float(first.G - thetas[0][2])
             dB = (Y - float(pi) / 2) / fa
             dL = (b1 + float(pi) / 2 - Y) / fa
+            bandw = float(os.environ.get("BAND2W_FRAC", "0"))      # band repair: margin shrinks by 2W/m (L3 step 4)
             def cross(dist):
-                if dist >= 0.02:
-                    return s.tail(dist) * fa
+                if dist - bandw >= 0.005:
+                    return s.tail(dist - bandw) * fa
                 return s.epsB * fa / 2
             cB, cL = cross(dB), cross(dL)
             s.note(role, "dist_min", min(dB, dL), lambda v, w: v < w)
