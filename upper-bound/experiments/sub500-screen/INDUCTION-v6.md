@@ -210,3 +210,22 @@ bound).
 * the band-tail values (`tail_frac`);
 * route (d);
 * the separator / node-spec wiring.
+
+### Band tail from the certified round-1 machinery (floats)
+
+Band escapes beyond W rows equal the round-1 excess beyond a margin W:
+`tail(W) = max_p (x(p) − W p n)₊/(mn)`, where `x(p)` is `na_precision`'s NA-Chernoff bound on a set of `pn`
+output columns (`n ≥ 2^13`, union `nH(p)`). On a geometric p-grid from `1/n` to 1/2:
+
+| W | 2^16 | 2^17 | 2^17.5 | 2^18 |
+|---|---:|---:|---:|---:|
+| NA route | 7.18e-6 | **3.36e-6** | 2.34e-6 | 1.63e-6 |
+| model `tail_frac` | 7.80e-6 | 3.44e-6 | 2.34e-6 | 1.61e-6 |
+
+So the band-tail values the package uses agree with the certified machinery.
+
+**Caution.** `na_precision`'s **uniform** float routines sample only `P_GRID = k/64` (p ≥ 1/64). That misses
+sets below n/64 columns, and on the margin tail it gave a spurious 0. `cert_walk`'s interval certificate
+covers all p, including the cell `[0, P0]`, so the certified bulk d is unaffected.
+
+**Next:** an interval version of this margin tail, i.e. `cert_walk`'s round-1 cells with `−W p n` added.
