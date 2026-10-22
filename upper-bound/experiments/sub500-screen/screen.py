@@ -91,6 +91,14 @@ def evaluate(x, y, z, H):
             qq = max(8, int(math.ceil(H.get("q_hint", 24))))
             cross = 2 * tail_frac(qq, 0.026 * 2.0 ** qq)
             budget += mu - 2 * cross / (A * nu - 1)
+        if H.get("dyn2"):            # dynamic O_L with full parent crossings: w (1 - 3/(2 A nu)) = eps_B eta/(A nu) + 2 far
+            qq = max(8, int(math.ceil(H.get("q_hint", 24))))
+            far = 2 * tail_frac(qq, 0.026 * 2.0 ** qq)
+            amp = 1 - 3 / (2 * A * nu)
+            if amp <= 0:
+                budget = -1.0
+            else:
+                budget += mu - (2 * far / amp) / 2          # the eps_B part of w/2 goes into the coefficient below
         if H.get("center_sib"):      # per-boundary centred offsets: (k-1) Delta_1 -> (k-1) Delta_1 / 2
             budget += (k - 1) * mu * sib / 2
         if H.get("center1"):         # one-sided centred: interior theta = 0, split of G unknown in [0, G]:
@@ -100,7 +108,7 @@ def evaluate(x, y, z, H):
             budget += mu / 2 + (kap * mu / (A * nu - 1) / 2 if kap is not None else 0.0)
         if budget <= 0 or epsF <= 0:
             continue
-        epsB = tol * budget / (ETA * (1 + (1 / (4 * (A * nu - 1)) if H.get('center2') else 0.0)) + ((kap / (2 * (A * nu - 1))) * (0.5 if H.get('center') else 1.0) if kap is not None else 0.0))
+        epsB = tol * budget / (ETA * (1 + (1 / (4 * (A * nu - 1)) if H.get('center2') else 0.0) + ((1 / (2 * A * nu * (1 - 3 / (2 * A * nu)))) if H.get('dyn2') and A * nu > 1.5 else 0.0)) + ((kap / (2 * (A * nu - 1))) * (0.5 if H.get('center') else 1.0) if kap is not None else 0.0))
         lb = lgm_bulk(epsB, rounds)
         if H.get("fexp") is not None:   # hypothetical fringe scaling f = 7934 (J/190000)^fexp / fdiv
             f = 7934 * (1 / (epsF * 190000)) ** H["fexp"] / H.get("fdiv", 1.0)

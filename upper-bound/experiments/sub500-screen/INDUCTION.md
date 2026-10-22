@@ -250,3 +250,29 @@ P's cap μ is still needed, for (4.4) support and Property F, but it is no longe
 4. band repair (UB-32);
 5. merge-first in the node spec (the Lean core is done);
 6. a fringe certificate at `J ≈ 2.6e4` with the existing per-E route (`gen_fringe.py`).
+
+## 14. Correction to §13: the parent's crossings are not far terms
+
+In Chvátal's schedule an active node sends **all** its wires out. So u's bag at t is exactly the parent's
+block for u (sent at t−1) plus the children's F blocks. Hence
+
+    O_L(u) = (parent's low intruders into B_u) + (children's order-≥1 outsiders, μδ-tiny).
+
+F-escapes cycle back through the second term, which makes the dynamic lemma clean. But the parent's low
+intruders include **all** separator crossings at u's lower cut, up to `ε_B a_p/2`, not only far ones. With
+them:
+* end child: `w̄ (1 − 3/(2Aν)) = ε_B η/(Aν) + 2·far`;
+* at Aν = 2: `w̄/2 = ε_B η + 4·far`.
+
+The ε_B coefficient in (4.2) roughly doubles. §13's 477 used only far crossings and **is withdrawn**.
+
+Re-priced (`screen.py` `dyn2`, self-consistent q):
+
+| package | cost |
+|---|---:|
+| band + merge-first, current fringe | 503.3 ((4,4,3), q = 25) |
+| band + merge-first, fringe /5.8 | **490.0** ((4,4,3), q = 24) |
+| band + merge-first, current fringe | 527.0 ((3,3,2), q = 21) |
+
+The dynamic bound and the reviewed centred bound with the far-crossing lemma (§12, 490) now land in the
+same place. **The architecture's sub-500 edge is about 490, and it needs the route (d) fringe.**
