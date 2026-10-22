@@ -121,3 +121,40 @@ The disjoint bands of `2W = 2^18` rows (depth 171) shrink the far-crossing margi
 
 The band depth is a step function of the band room `ε_B − 1.897e-5`. So **the package is 477 with thin
 slack, or 490 with about 2% slack.** Both are below 500.
+
+## 8. Third review (`REVIEW-v6.md`, 2026-10-22) and fixes
+
+**The per-node certificate is the right replacement for (4.2), but both headline numbers needed fixes.**
+1. **Crossing count bug, fixed.** `Y = G(w_1′) − G_L(u)`, not `G_L(w) − G_L(u)`. With the fix the binding
+   distance is 0.026 again, and **477 fails** (ratio 1.002–1.004).
+2. **Band and depth consistency.** Depth 190 allows `2W` anywhere up to `2^19`, but the band's **own** tail
+   needs `2·tail(W) ≤ ε_B − d_bulk`. The margin cut is `2W/m`. The two pull against each other:
+
+   | `2W` | margin cut | `2·tail(W)` |
+   |---|---:|---:|
+   | `2^18.2` | 0.0179 | 5.89e-6 (exceeds the room at ε_B 2.5e-5) |
+   | `2^18.35` | 0.0199 | 5.25e-6 |
+   | `2^19` | 0.0312 | 3.2e-6, but the cut exceeds the 0.026 distance |
+
+   Certificate with `2W/m = 0.0199`:
+
+   | ε_B | max ratio |
+   |---|---:|
+   | 2.4e-5 | 0.988 (the band room `4.8e-6` then needs `W ≈ 2^17.45`) |
+   | 2.5e-5 | **1.005 (fails)** |
+
+   The self-consistent point is about `ε_B ≈ 2.43e-5` with about 0.5% slack, still at band depth 190, so
+   **cost 490 on a knife edge**.
+3. **Row window.** The bulk check must hold at the smallest admitted m. With rows in
+   `[2^23.98, 2^24)`, a fringe-class ladder of ratio 1.01 up to about 1e7 fits **every** large sender at
+   d = 16 and 20 (`designP_sim.py`, `GEOM_CUT=37`). Bulk at `2^23.98` is `1.916e-5`, and the band depth stays 190.
+4. **Still open, per the review:**
+   * type-specific midpoints, not one `o = μc`;
+   * L4 per child, plus a schedule lemma (spilled children are botRise next, checked for d ≤ 18);
+   * a ROUND reserve that covers `γ ≈ 0.003 μc′` and `2φ̄`;
+   * topDesc sends at t ≥ 1, checked separately;
+   * ratios still rising with d, so a bound for all d is needed;
+   * the written L3 corollary of WALK-BOUND §3, with a rigorous tail at each node's m.
+
+**Status: about 490 with about 0.5% slack at the model level.** Effectively at the boundary; the open
+items could push it either way.
