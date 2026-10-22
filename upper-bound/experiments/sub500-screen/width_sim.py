@@ -169,7 +169,8 @@ class Sim:
             if os.environ.get("BOXTERMS"):
                 terms = dict(h=h / (s.mu * cc), D=(k * D1 / 2 + s.mu * s.delta * s.A2 * k * fc_) / (s.mu * cc),
                              e=s.epsB * fa / (s.mu * cc))
-                bx = s.box.setdefault(role, {})
+                rk = role if role != "botDesc" else "botDesc a/c~2^%d" % round(math.log2(max(fa / fc_, 1e-12)))
+                bx = s.box.setdefault(rk, {})
                 for kk, vv in terms.items():
                     bx[kk] = max(bx.get(kk, 0.0), vv)
             if os.environ.get("CONFIGS"):

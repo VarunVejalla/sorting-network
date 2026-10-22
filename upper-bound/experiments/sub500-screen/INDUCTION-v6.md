@@ -361,3 +361,17 @@ A fully decoupled box fails by 0.5% at botDesc. Its largest inherited width and 
 different nodes (they are anticorrelated). The all-d proof must therefore bound botDesc **jointly**, for
 example by splitting botDesc into its schedule subclasses (the bottom ratios `R/c` by t mod 6) and bounding
 each subclass's box separately. mid already closes by the box.
+
+**Subclass box** (botDesc split by `a/c` in `log₂` bins, d = 26). Every bin closes:
+
+| botDesc bin `a/c ~` | 2^0 | 2^-1 | 2^-2 | 2^-3 … 2^-10 |
+|---|---:|---:|---:|---:|
+| sum of maxima + ROUND | **0.971** | 0.781 | 0.686 | 0.58 – 0.67 |
+
+mid is at 0.977 and topRise at 0.666. **So an all-d box argument is viable.** It needs:
+1. a d-independent bound on the inherited half-width h per subclass (observed `≤ 0.596 μc′`), from the
+   contraction `≤ 1/(Aν)` and the bounded local terms;
+2. the `a/c` range of each subclass (schedule periodicity);
+3. the deep term D (fixed, about 0.018) and ROUND.
+
+Then the order-0 ratio is at most `max(0.977, 0.971, …) < 1` for every d, with about 2.3% slack.
