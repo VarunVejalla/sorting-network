@@ -72,6 +72,39 @@ theorem blockSort_runSorted (b : ℕ) {α : Type*} [LinearOrder α] :
     exact runSorted_of_halves (k := k) hn _ (by rw [p1]; exact blockSort_runSorted b k _)
       (by rw [p2]; exact blockSort_runSorted b k _)
 
+/-- Disjoint block sorts on any number `m` of wires (padding with `true` keeps blocks sorted). -/
+def blockSortNetwork (b m : ℕ) : ComparatorNetwork m :=
+  (blockSort b (Nat.clog 2 m - b)).restrictWires m
+    ((Nat.le_pow_clog (by omega) m).trans (Nat.pow_le_pow_right (by omega) (by omega)))
+
+theorem blockSortNetwork_depth_le (b m : ℕ) : (blockSortNetwork b m).depth ≤ bitonicDepthBudget b :=
+  (restrictWires_depth_le _ _ _).trans (blockSort_depth_le b _)
+
+theorem blockSortNetwork_runSorted_bool (b m : ℕ) (v : Fin m → Bool) :
+    RunSorted b ((blockSortNetwork b m).exec v) := by
+  intro i j hij hblk
+  unfold blockSortNetwork
+  rw [restrictWires_exec_pad, restrictWires_exec_pad]
+  exact blockSort_runSorted b _ _ _ _ (show (⟨i.val, _⟩ : Fin _) ≤ ⟨j.val, _⟩ from hij) hblk
+
+/-- **Every aligned `2^b` block of the output is sorted**, any linear order. -/
+theorem blockSortNetwork_runSorted (b m : ℕ) {α : Type*} [LinearOrder α] (v : Fin m → α) :
+    RunSorted b ((blockSortNetwork b m).exec v) := by
+  intro i j hij hblk
+  by_contra hlt
+  push_neg at hlt
+  have hf : Monotone fun x : α ↦ decide (((blockSortNetwork b m).exec v) j < x) := fun a c hac ↦ by
+    by_cases ha : ((blockSortNetwork b m).exec v) j < a
+    · simp [ha, lt_of_lt_of_le ha hac]
+    · simp [ha]
+  have h_sorted := blockSortNetwork_runSorted_bool b m
+    ((fun x : α ↦ decide (((blockSortNetwork b m).exec v) j < x)) ∘ v) i j hij hblk
+  have hcomm := congr_fun ((blockSortNetwork b m).exec_comp_monotone hf v)
+  simp only [Function.comp] at hcomm
+  rw [← hcomm i, ← hcomm j] at h_sorted
+  simp [hlt] at h_sorted
+  exact absurd h_sorted (by decide)
+
 end Bitonic
 
 end

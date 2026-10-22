@@ -10,6 +10,7 @@ module
 
 public import AKS.Chvatal.MatrixBridge
 public import AKS.Bitonic.RunMerge
+public import AKS.Bitonic.BlockSort
 public import Mathlib.Data.Fin.Tuple.Sort
 
 @[expose] public section
@@ -166,6 +167,57 @@ theorem columnRunMergeNetwork_exec_eq {m n : Nat} (hn : 0 < n) (l : Nat) {α : T
   exact congrFun (exec_eq_of_both_monotone (Bitonic.runMergeNetwork l m) (bitonicNetwork m)
     (v ∘ columnWireEmbed m n hn _) (Bitonic.runMergeNetwork_sorts l m _ (hv _))
     ((bitonicNetwork_sorts m) (v := v ∘ columnWireEmbed m n hn _))) _
+
+/-- Band repair on every column: disjoint sorts of the aligned `2^b`-row blocks of each column. -/
+def columnBandRepairNetwork (m n : Nat) (hn : 0 < n) (b : Nat) : ComparatorNetwork (m * n) :=
+  columnNet hn (Bitonic.blockSortNetwork b m)
+
+/-- **The band repair's output is column-run-sorted** (every aligned `2^b` block of every column is
+sorted), for every input, so it feeds `columnRunMergeNetwork` directly. -/
+theorem columnBandRepairNetwork_runSorted {m n : Nat} (hn : 0 < n) (b : Nat) {α : Type}
+    [LinearOrder α] (v : Fin (m * n) → α) :
+    ColumnRunSorted m n hn b ((columnBandRepairNetwork m n hn b).exec v) := by
+  intro j i i' hii hblk
+  have e1 := columnNet_exec_matrixWire hn (Bitonic.blockSortNetwork b m) j v i
+  have e2 := columnNet_exec_matrixWire hn (Bitonic.blockSortNetwork b m) j v i'
+  simp only [Function.comp, columnWireEmbed_apply] at e1 e2 ⊢
+  unfold columnBandRepairNetwork
+  rw [e1, e2]
+  exact Bitonic.blockSortNetwork_runSorted b m _ i i' hii hblk
+
+theorem columnNetCol_depth_le {m n : Nat} (hn : 0 < n) (N : ComparatorNetwork m) (j : Fin n) :
+    (columnNetCol hn N j).depth ≤ N.depth := by
+  simpa [columnNetCol] using depth_scatterEmbed_le N (m * n) (columnWireEmbed m n hn j)
+
+/-- Column networks are wire-disjoint, so `columnNet N` has the depth of `N`. -/
+theorem columnNet_depth_le {m n : Nat} (hn : 0 < n) (N : ComparatorNetwork m) :
+    (columnNet hn N).depth ≤ N.depth := by
+  dsimp [columnNet]
+  refine depth_flatMap_disjoint (List.finRange n) (fun j => (columnNetCol hn N j).comparators) N.depth ?_ ?_
+  · intro j _
+    simpa using columnNetCol_depth_le hn N j
+  · refine List.Pairwise.imp ?_ ((List.nodup_iff_pairwise_ne).mp (List.nodup_finRange n))
+    intro a b hne c₁ hc₁ c₂ hc₂
+    obtain ⟨r₁, k₁, hi₁, hk₁⟩ := columnNetCol_scatter_wire hn N a c₁ hc₁
+    obtain ⟨r₂, k₂, hi₂, hk₂⟩ := columnNetCol_scatter_wire hn N b c₂ hc₂
+    have ha_i : matrixCol m n hn c₁.i = a := by rw [hi₁, (matrixWire_row_col hn r₁ a).2]
+    have ha_j : matrixCol m n hn c₁.j = a := by rw [hk₁, (matrixWire_row_col hn k₁ a).2]
+    have hb_i : matrixCol m n hn c₂.i = b := by rw [hi₂, (matrixWire_row_col hn r₂ b).2]
+    have hb_j : matrixCol m n hn c₂.j = b := by rw [hk₂, (matrixWire_row_col hn k₂ b).2]
+    refine ⟨⟨?_, ?_⟩, ⟨?_, ?_⟩⟩
+    · intro h; exact hne (by rw [← ha_i, h, hb_i])
+    · intro h; exact hne (by rw [← ha_i, h, hb_j])
+    · intro h; exact hne (by rw [← ha_j, h, hb_i])
+    · intro h; exact hne (by rw [← ha_j, h, hb_j])
+
+theorem columnBandRepairNetwork_depth_le {m n : Nat} (hn : 0 < n) (b : Nat) :
+    (columnBandRepairNetwork m n hn b).depth ≤ bitonicDepthBudget b :=
+  (columnNet_depth_le hn _).trans (Bitonic.blockSortNetwork_depth_le b m)
+
+theorem columnRunMergeNetwork_depth_le {m n : Nat} (hn : 0 < n) (l : Nat) :
+    (columnRunMergeNetwork m n hn l).depth + bitonicDepthBudget l ≤
+      bitonicDepthBudget (l + (Nat.clog 2 m - l)) :=
+  (Nat.add_le_add_right (columnNet_depth_le hn _) _).trans (Bitonic.runMergeNetwork_depth_le l m)
 
 end Chvatal
 
