@@ -276,3 +276,34 @@ Re-priced (`screen.py` `dyn2`, self-consistent q):
 
 The dynamic bound and the reviewed centred bound with the far-crossing lemma (§12, 490) now land in the
 same place. **The architecture's sub-500 edge is about 490, and it needs the route (d) fringe.**
+
+## 15. Feasibility of the schedule: (4,4,3) fails at botDesc (2026-10-22)
+
+`centred_sim.py` is an exact flow simulation of the sided, centred design, using Chvátal's schedule as in
+`designP_sim.py`. At (4,4,3) it finds **negative blocks at botDesc senders** (`b/c` down to −4.7e-4) and a
+negative crossing margin there. The original design P **also** has negative blocks at (4,4,3): 1560
+instances, min `b/c = −1.8e-4`. This is a property of the schedule's bottom ratios, not of centring.
+
+The end child's range is too small to supply the π/2 keys F₁ needs, so F₁ spills into child 2's range.
+That breaks both (I2) and sidedness. **`screen.py` never checks (I2), so every (4,4,3) price is invalid,
+the 490 package included.**
+
+Schedules checked with `centred_sim.py` (d = 14):
+* feasible: (4,5,3), (3,3,2), (2,4,2), (5,4,3);
+* negative blocks: (4,4,3), (3,4,2), (3,4,3), (4,6,3), (5,5,3), (2,3,2), (3,3,1), (3,5,2), (4,4,2),
+  (4,5,2), (5,6,4), (4,7,4).
+
+At the feasible ones, with mid/topRise/botDesc crossing margins ≥ 0.05 at (4,5,3):
+
+| schedule | best package (centred + far-crossing lemma, band + merge-first) | cost |
+|---|---|---:|
+| (3,3,2), q = 20 | route (d) fringe | **511.0** |
+| (4,5,3), q = 23 | route (d) fringe | 515.2 |
+| (3,3,2), q = 21 | current fringe | 527.0 |
+| (5,4,3), q = 27 | route (d) fringe | 532.8 |
+| (4,5,3), q = 25 | design P (r*), for reference | 603.8 |
+
+**Conclusion: the best valid package is about 511, about 2% above 500.** Getting below would need one of:
+* a botDesc rule that keeps sidedness on schedules like (4,4,3), e.g. a smaller up-flow at sparse bottom
+  nodes;
+* or another lever of about 2%.
