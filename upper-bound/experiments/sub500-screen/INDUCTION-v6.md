@@ -158,3 +158,27 @@ slack, or 490 with about 2% slack.** Both are below 500.
 
 **Status: about 490 with about 0.5% slack at the model level.** Effectively at the boundary; the open
 items could push it either way.
+
+## 9. Bulk precision uniform over n ≥ 2^13: about 6% slack at 477 (2026-10-22)
+
+`na_precision.py` certifies the walk-bound bulk **uniformly over n ≥ N_CERT = 16**. At this point every
+separator sender has `a > 2^37` (Batcher sorts exactly up to `2^37`) and `m ≤ 2^24`, so `n ≥ 2^13`. Uniform
+over `n ≥ 2^13`, at `m = 2^23.98` (the bottom of the row window):
+
+| N_CERT | E1 | d |
+|---:|---:|---:|
+| 16 | 5.851e-4 | 1.916e-5 |
+| 1024 | 5.201e-4 | 1.446e-5 |
+| **8192** | 5.185e-4 | **1.436e-5** |
+
+So the band room `ε_B − d` roughly doubles. Re-solving band against certificate (crossing count fixed):
+
+| band `2W` | depth | needs ε_B ≥ | margin cut | certificate at ε_B | cost |
+|---|---:|---:|---:|---|---:|
+| `2^17` | 153 | 3.0e-5 | 0.0079 | 1.06 at 3.0e-5 (fails) | — |
+| `2^18` | 171 | 2.124e-5 | 0.0158 | **0.927 at 2.15e-5**, 0.952 at 2.3e-5 | **477.3** |
+
+**Choice: ε_B = 2.2e-5**, giving about 6% certificate slack and about 10% band-tail slack
+(`7.6e-6 ≥ 6.88e-6`). **Package about 477 at the model level, with real slack.** The bulk certificate
+(`cert_walk.py`, interval arithmetic) must be rerun with `N_CERT = 2^13` and the row window
+`[2^23.98, 2^24)`.
