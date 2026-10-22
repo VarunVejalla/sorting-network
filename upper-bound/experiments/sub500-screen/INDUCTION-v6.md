@@ -347,3 +347,17 @@ The relative deficits depend on history. Growth slows, but there is no finite se
 
 The observed ratio converges (0.977044 at d = 26 and 30). A box bound is cruder than the run, and whether
 it stays below 1 still has to be checked.
+
+**Box test** (`BOXTERMS=1`, d = 26). Per role, take the separate maxima of the inherited width term
+`h/(μc′)`, the deep term D and the crossing term `ε_B a/(μc′)`:
+
+| role | h | D | e | sum + ROUND |
+|---|---:|---:|---:|---:|
+| mid | 0.562 | 0.018 | 0.387 | **0.977** (= the coupled maximum) |
+| botDesc | 0.596 | 0.018 | 0.381 | **1.005** (over) |
+| topRise | 0.251 | 0.018 | 0.387 | 0.666 |
+
+A fully decoupled box fails by 0.5% at botDesc. Its largest inherited width and its largest `a/c` come from
+different nodes (they are anticorrelated). The all-d proof must therefore bound botDesc **jointly**, for
+example by splitting botDesc into its schedule subclasses (the bottom ratios `R/c` by t mod 6) and bounding
+each subclass's box separately. mid already closes by the box.
