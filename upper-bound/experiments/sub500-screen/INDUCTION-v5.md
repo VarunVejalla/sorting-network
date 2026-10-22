@@ -114,3 +114,33 @@ classes 3027 … 3.8e6. Package price: about 490 (route (d) fringe), 503 (curren
 4. Band repair (UB-32) and merge-first in the node spec.
 5. Fringe certificates for every class at J; route (d) for the 490 variant.
 6. Lean.
+
+## 7. Second review (`REVIEW-v5.md`, 2026-10-22): confirmed with corrections
+
+**The bulk margin holds.** A node-by-node width propagation through the exact flow, using each node's own η,
+gives **1.29 at δ = 1e-6 and 1.18 at δ = 3e-6**. The §5 numbers reproduce exactly.
+
+Corrections for v6:
+* **A (major, repairable).** The binding L3 crossing distance is `dL = (b₁ + π/2 − Y)/a = 0.026`, not
+  `χ = 0.062`. So `tail(0.026 m)` is just adequate. Restate L3 at the correct cuts: the λ side is at
+  `B₁|B₂`, not `F₁|B₁`.
+* **B (major as a statement).** Dense non-spilling senders also have short distances: mid 0.0072 and
+  botDesc ≤ 0.003, recurring with period 16. This is absorbed numerically because the affected children are
+  sparse. **Needs a bottom-boundary lemma**, or the per-node width inequality in place of one global
+  inequality.
+* **C (medium).** At spill nodes the top boundary is **not** exact (F₂ can overshoot into an interior
+  child), and L4 must be restated in count form. Example: d = 14, t = 3, i = 3. The effect appears bounded
+  by `λ_int`, but this needs proof.
+* **D (medium).**
+  * L3 needs one tail per side: `φ′ = tail(dL·m)`, i.e. `0.94e-6`. "1.9e-6" was a typo.
+  * **Band repair:** the naive margin `χm − W` is infeasible for every W. It becomes feasible
+    (`W ≥ 2^17.75`) only if the repair **fully sorts each band and the bands are disjoint**. State this in
+    UB-32's design.
+* **E (medium).** Widths are missing for top nodes, fully consumed prefix children, partially consumed
+  prefix children, and children of topDesc senders.
+* **Minor.**
+  * The no-negative-blocks result is guaranteed by the cap itself, so it is not evidence.
+  * `centred_sim.py`'s low/high split for a child's deficit uses `j < n//2` (no numerical effect).
+  * The rule for prefixes meeting is unstated.
+  * `RES_γ` is priced at 0; each `1e-6` of it costs about 0.053 of margin.
+  * `RES_φ` over-reserves.
