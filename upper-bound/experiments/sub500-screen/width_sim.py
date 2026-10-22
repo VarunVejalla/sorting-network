@@ -27,13 +27,14 @@ from flowsim import Par  # noqa: E402
 
 sys.setrecursionlimit(10000)
 SPILL = os.environ.get('SPILL', '1') == '1'
+TYPEMID = os.environ.get('TYPEMID', '0') == '1'
 
 
 class Cls:
-    __slots__ = ("lev", "G", "GL", "kids", "hw")
+    __slots__ = ("lev", "G", "GL", "kids", "hw", "cent")
 
-    def __init__(s, lev, G, GL, kids, hw=0.0):
-        s.lev, s.G, s.GL, s.kids, s.hw = lev, Fr(G), Fr(GL), kids, hw
+    def __init__(s, lev, G, GL, kids, hw=0.0, cent=None):
+        s.lev, s.G, s.GL, s.kids, s.hw, s.cent = lev, Fr(G), Fr(GL), kids, hw, cent
 
 
 class Sim:
@@ -65,12 +66,14 @@ class Sim:
         if key not in r or better(val, r[key][0]):
             r[key] = (val, (s.t,))
 
-    def mk(s, lev, G, GL, kids, hw=0.0):
+    def mk(s, lev, G, GL, kids, hw=0.0, cent=None):
         hw = math.ceil(hw * 1e7) / 1e7          # quantise upward (relative half-width)
-        key = (lev, G, GL, hw, tuple((id(c), n) for c, n in kids))
+        if cent is not None:
+            cent = round(cent * 1e6) / 1e6      # centre: design constant per class (rounding moves it inside hw slack)
+        key = (lev, G, GL, hw, cent, tuple((id(c), n) for c, n in kids))
         c = s.intern.get(key)
         if c is None:
-            c = Cls(lev, G, GL, tuple(kids), hw)
+            c = Cls(lev, G, GL, tuple(kids), hw, cent)
             s.intern[key] = c
         return c
 
@@ -89,18 +92,19 @@ class Sim:
         s.t, s.memo_a, s.memo_i = t, {}, {}
         return s.visit(root, None, None)
 
-    def visit(s, c, newG, newGL, newhw=None):
+    def visit(s, c, newG, newGL, newhw=None, newcent=None):
         if s.active(c.lev):
             if id(c) not in s.memo_a:
                 s.memo_a[id(c)] = s.send(c)
             return s.memo_a[id(c)]
-        key = (id(c), newG, newGL, newhw)
+        key = (id(c), newG, newGL, newhw, newcent)
         if key not in s.memo_i:
             G = c.G if newG is None else newG
             GL = c.GL if newGL is None else newGL
             hw = c.hw if newhw is None else newhw
+            cent = c.cent if newcent is None else newcent
             kids = tuple((s.visit(kc, None, None), n) for kc, n in c.kids)
-            s.memo_i[key] = s.mk(c.lev, G, GL, kids, hw)
+            s.memo_i[key] = s.mk(c.lev, G, GL, kids, hw, cent)
         return s.memo_i[key]
 
     def send(s, c):
@@ -119,7 +123,7 @@ class Sim:
         if role == "topDesc":
             thetas = [(kc, n, Fr(0), Fr(0)) for kc, n in flat]
         else:
-            o = s.ofrac * cap
+            o = (Fr(c.cent).limit_denominator(10 ** 9) * cap) if (TYPEMID and c.cent is not None) else s.ofrac * cap
             tf = pi / 2 + GL + o
             tl = pi / 2 + GH - o
             mid = []
@@ -176,14 +180,23 @@ class Sim:
             hw_end = (s.mu * cc + 2 * h + cB + cL) / 2 / cc
             hw_int = (s.mu * cc + h + s.epsB * fa / 2 + k * D1 / 2) / 2 / cc
             hw_spill = (s.mu * cc + 2 * h + s.epsB * fa) / 2 / cc
+            kidcent = {}
             for j, (kc, n, th, thL) in enumerate(thetas):
                 if j == 0 or j == len(thetas) - 1:
                     kidhw[j] = hw_end
+                    kidcent[j] = (s.mu * cc + cB - cL) / 2 / cc
                 elif th > 0:
                     kidhw[j] = hw_spill
+                    kidcent[j] = s.mu / 2
                 else:
                     kidhw[j] = hw_int
+                    kidcent[j] = (s.mu * cc - (h + s.epsB * fa / 2 + k * D1 / 2)) / 2 / cc
+            s.kidcent = kidcent
         elif role == "topDesc":
+            if t >= 1:   # REVIEW-v6: topDesc sends at t >= 1 (no outsiders, exact X): intruders = crossings
+                ccx = float(P.cap(d, i + 1, t + 1)) if i + 1 <= d else float(cap) * float(s.Anu)
+                rnd = float(os.environ.get("ROUNDF", "0.1"))
+                s.note(role, "order0_ratio_max", (s.epsB * float(a) + rnd * s.mu * ccx) / (s.mu * ccx), lambda v, w: v > w)
             # topDesc senders hold no outsiders and have exact X (R1 sec. 4): children's N_L comes only from the
             # sender's separator crossings at their cuts, |N_L| <= eps_B a/2, centred (type-specific midpoint)
             cc = float(P.cap(d, i + 1, t + 1)) if i + 1 <= d else float(cap) * float(s.Anu)
@@ -192,6 +205,9 @@ class Sim:
             eps_td = float(s.mu) / k if float(a) > cc else s.epsB
             for j in range(len(thetas)):
                 kidhw[j] = eps_td * float(a) / 2 / cc
+            s.kidcent = {j: 0.0 for j in range(len(thetas))}
+        kc_cent = getattr(s, "kidcent", {}) if kidhw else {}
+        s.kidcent = {}
         T = Fr(0)
         newkids = []
         for j, (kc, n, th, thL) in enumerate(thetas):
@@ -199,7 +215,7 @@ class Sim:
             if b < 0:
                 s.note(role, "neg_block_min", b / cap, lambda v, w: v < w)
             T += n * th
-            newkids.append((s.visit(kc, th, thL, kidhw.get(j)), n))
+            newkids.append((s.visit(kc, th, thL, kidhw.get(j), kc_cent.get(j)), n))
         assert T == pi + c.G or role == "topDesc"
         if t >= 1:
             s.note(role, "a_over_c_max", a / cap, lambda v, w: v > w)

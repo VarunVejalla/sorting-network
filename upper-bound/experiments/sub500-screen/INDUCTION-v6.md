@@ -268,3 +268,20 @@ cut 0.01584):
 That is **about 2% slack**, and the package stays at **about 477**. The width recursion's inputs (bulk d,
 band and crossing tails) are now interval-certified. The recursion itself is still a float run with the
 type-rule items of §8 open.
+
+### Review items: type-specific midpoints and topDesc at t ≥ 1 (`width_sim_443_pkg477_v7.out`)
+
+* **Type-specific midpoints** (`TYPEMID=1`). Each class carries the centre of its `N_L` interval, and the
+  sender's offset o is its own centre:
+  * end: `(μc′ + c_B − c_L)/(2c′)`;
+  * interior: `(μc′ − λ_int)/(2c′)`;
+  * spilled: `μ/2`;
+  * top: 0.
+
+  The max ratio improves slightly, 0.979 to 0.977.
+* **topDesc senders at t ≥ 1.** These have no outsiders and exact X, so intruders are `ε_B a + ROUND`. Their
+  ratio is 0.396, far inside budget.
+
+At the package point (certified tails, ε_B = 2.25e-5), the max ratio is 0.9736 / 0.9770 / 0.9770 at
+d = 14 / 18 / 22, about **2.3% slack**. Still open: exact arithmetic for the recursion, a bound for all d,
+and a γ / far-term reserve audit (review item 6).
