@@ -764,3 +764,24 @@ Property B.
 
 Without the crossing-margin certificate, i.e. charging cH at the band tail `3.6e-6`, the box would be
 1.009 and fail. That certificate is what closes the gap.
+
+### REVIEW-v6 item 7 (t = 0 root ratio exactly 1): resolved
+
+With `ε_* = μ/k` the t = 0 root send has `ε_* a/(μc′) = a/(kc′) = 1`, leaving no room for γ or rounding.
+
+* By R1 §6, the root separator at t = 0 is one separator round on a **fixed** number of rows. Its depth is
+  O(1), independent of N: an additive constant, invisible to the limsup.
+* Taking `ε_* = μ/(2k)` (`sqrt(2(1 + ln m)/m) ≤ μ/(2k)` needs a constant m) makes the t = 0 ratio 1/2.
+  It also halves the topDesc children's oversized widths.
+* Other topDesc senders use `ε_B` (Lemma 3.2) and have ratio ≤ 0.40 (`width_sim`, topDesc t ≥ 1).
+
+**Reserve audit, updated.** φ̄ is replaced by the explicit cH term (§15). The ROUND reserve now covers:
+
+| term | size |
+|---|---|
+| γ (review: `≤ 3n = 0.0030 μc′`) | 0.0030 μc′ |
+| topDesc children's deep term (review: `≈ 0.004 μc_u`) | 0.0020 μc′ |
+| integer rounding (`≤ k` keys per block plus n per cut) | ≤ 1e-5 μc′ |
+| `outs_sub ≤ Δ₁` on the end-child upper side (review) | inside D = 0.0184 (`μδA²k` term) |
+
+The total is about 0.0050 μc′, below `ROUND = 0.01 μc′`.
