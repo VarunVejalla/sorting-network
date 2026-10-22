@@ -45,6 +45,7 @@ class Sim:
         s.Anu = None
         s.mu = mu
         s._tail = {}
+        s.configs = set()
         s.R = [s.k ** (d - i) for i in range(d + 1)]
         s.intern = {}
         s.stats = {}
@@ -164,6 +165,9 @@ class Sim:
             D1 = s.mu * s.delta * k * s.A2 * fc_ / (1 - (s.delta * k) ** 2 * s.A2)
             intr = h + k * D1 / 2 + s.mu * s.delta * s.A2 * k * fc_ + s.epsB * fa + float(os.environ.get("ROUNDF", "0.1")) * s.mu * cc
             s.note(role, "order0_ratio_max", intr / (s.mu * cc), lambda v, w: v > w)
+            if os.environ.get("CONFIGS"):
+                s.configs.add((role, round(fa / fc_, 9), round(float(pi) / fc_, 9), round(float(c.G) / fc_, 9),
+                               round(float(GL) / fc_, 9), round(cc / fc_, 6)))
             # REVIEW-v6 issue 1: keys of range(w_1') in u's bag = G(w_1') - G_L(u) (not G_L(w) - G_L(u))
             g11 = first.kids[0][0].G if first.kids else first.GL
             Y = max(0.0, float(g11 - GL))
@@ -247,7 +251,10 @@ def main():
         root = S.initial()
         for t in range(P.tf(d)):
             root = S.step(root, t)
-        print(f"({x},{y},{z}) d={d} tf={P.tf(d)} o/c={float(ofrac):.3e} classes={len(S.intern)}")
+        print(f"({x},{y},{z}) d={d} tf={P.tf(d)} o/c={float(ofrac):.3e} classes={len(S.intern)} local_configs={len(S.configs)}")
+        if os.environ.get("CONFIGS"):
+            import pickle
+            pickle.dump(S.configs, open(f"configs_d{d}.pkl", "wb"))
         for role, r in sorted(S.stats.items()):
             print("   %-8s %s" % (role, {kk: (round(float(v[0]), 6), v[1]) for kk, v in r.items()}))
 

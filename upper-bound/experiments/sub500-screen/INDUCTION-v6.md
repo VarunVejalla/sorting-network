@@ -327,3 +327,23 @@ up affects the current width by at most `2^{−k}` times its own width.
 3. a boundary-layer bound.
 
 This replaces "run every d" with a finite computation.
+
+**Correction to §11 (same day).** The set of local configurations is **not** finite. Counting distinct
+`(role, a/c, π/c, G/c, G_L/c, c′/c)` at 9-digit resolution:
+
+| d | 14 | 18 | 22 | 26 |
+|---|---:|---:|---:|---:|
+| configurations | 572 | 1150 | 1864 | 2304 |
+| new versus the previous d | — | 578 | 795 | 534 |
+
+The relative deficits depend on history. Growth slows, but there is no finite set to enumerate.
+
+**Replacement argument: a box bound.**
+1. Prove a d-independent interval for each relative quantity, per role: `a/c`, `π/c`, `G/c`, `G_L/c`, the
+   crossing distances, `c′/c`. For example `η` bounds `a/c`, `g*` bounds `G/c`, the schedule fixes `π/c`, and
+   the spill rule bounds the prefix.
+2. Bound the order-0 ratio over that box in interval arithmetic. The inherited half-width uses the
+   contraction (factor `≤ 1/Aν` per level, so the fixed point of the box recursion is finite).
+
+The observed ratio converges (0.977044 at d = 26 and 30). A box bound is cruder than the run, and whether
+it stays below 1 still has to be checked.
