@@ -729,3 +729,38 @@ Hence **S1: `a/c ≤ 0.03125 + 0.96875 + 64·2.6453e-4 = 1.016930`**, and S2 bec
 `8·(0.02084·1.01693 + g* + 16/65536) = 0.173612`.
 
 Formula box with these: **worst ratio 0.987414 < 1**.
+
+## 15. Gap found and closed: interior-grandchild crossings in the end-child rule (REVIEW-v6 item 6)
+
+**Gap.** At u's cut B₁|B₂, keys of the end child w's **interior-grandchild** ranges can cross upward into
+B₂. At w's next send they raise the interior `D_h(w)` and shift w's boundaries
+(`s_j = N_L − o − Σ_{h<j} D_h`). The end rule `(μc′ + 2h + cB + cL)/2` did not count them:
+* cL counts only range(w₁′)'s keys, at distance ≥ dL;
+* the interior keys lie closer to the cut.
+
+This is the review's "φ̄ in the width recursion". The interior rule is unaffected. Its `ε_B a/2` bounds all
+leaving keys at once, since the shift stays in `[−out_total, in]`.
+
+**Bound (cH).** The interior-grandchild keys sit at rank distance at least w's top-grandchild keys in u's
+bag. That is θ_last at w's send, `≥ π(w₁)/2 − o`, the same margin as S3: `≥ 0.027237·a`. By L3a
+(margin `d₀ − W`), `cH ≤ T(321400 rows)·a`.
+
+**Certified:** `T(321400) ≤ 1.42704e-6` for `m ∈ [16547000, 2^24]`, `n ≥ 2^13` (`cert_tail_W321400.out`).
+The same certified value now also serves cB and cL, whose generic margins are at least as large.
+
+**Joint Property B.** cL and cH are disjoint sets of upward crossings at the same cut, pushing w's shifts
+the same way. So `cL + cH ≤ min(2T, ε_B/2)·a`. In the non-generic case Eb this adds nothing beyond
+Property B.
+
+**Near threshold.** "Near-charged" now means `dB < 0.02734` (margin below 321400 rows), so S2 becomes
+`a/c ≤ 8·(0.02734·1.01693 + g* + 16/65536) = 0.2265`.
+
+**Formula box** (`transbox_analytic.py`, `TAIL_X = 1.42704e-6`, `AC_EB = 0.2265`): **worst ratio
+0.985815 < 1**.
+
+| group | E | S | I | T | Eb | En |
+|---|---:|---:|---:|---:|---:|---:|
+| ratio | 0.9858 | 0.9825 | 0.8608 | 0.7626 | 0.7466 | 0.7104 |
+
+Without the crossing-margin certificate, i.e. charging cH at the band tail `3.6e-6`, the box would be
+1.009 and fail. That certificate is what closes the gap.

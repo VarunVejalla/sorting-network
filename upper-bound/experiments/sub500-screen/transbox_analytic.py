@@ -23,7 +23,7 @@ DELTA = Fr(1, 10 ** 6)
 TAIL = Fr(360899, 10 ** 11)           # certified band tail at W = 2^17 (cert_tail_W2e17.out)
 ROUND = Fr(1, 100)
 S_DENSE = Fr(os.environ.get("AC_BOUND", "1.01693"))     # S1, all roles (sec. 14)
-S_SPARSE = Fr(os.environ.get("AC_EB", "0.17362"))      # S2 with the all-roles S1
+S_SPARSE = Fr(os.environ.get("AC_EB", "0.2265"))       # S2 with near threshold dB < 0.02734
 S_SPILL = Fr(847, 100000)
 # mu: the order-0 budget fraction of the package (width_sim/package_point), exact value from the d=22 dump
 import json
@@ -35,12 +35,25 @@ fill = {"E": S_DENSE, "I": S_DENSE, "S": S_DENSE, "T": S_DENSE, "En": S_SPARSE, 
 HW_T = mu / 2 + EPSB * S_DENSE / 4
 
 
+# CH: crossings of w's interior-grandchild keys at B1|B2 (REVIEW-v6 item 6, "phi-bar in the widths"); they
+# shift w's boundaries via sum D_h. Margin = w's top-grandchild keys in u's bag >= pi(w1)/2 - o (as S3), so
+# one more certified tail in the generic cases (E, En) and Property B eps_B a/2 in the non-generic case Eb.
+CH = os.environ.get("CH", "1") == "1"
+
+
+# crossing tail: L3a at margin d0 - W >= (0.027237 - W/m) m >= 321400 rows (S3 generic bound, dB generic
+# >= 0.0293 too); near-charged now means dB < 0.02734 (S2 bound 0.2265 with this threshold)
+TAILX = Fr(os.environ.get("TAIL_X", "1.42704e-6"))   # certified at 321400 rows (cert_tail_W321400.out)
+
+
 def inherit(q, hwp, s):
     if q == "E":
-        return mu / 2 + hwp / 2 + TAIL * s / 2
+        return mu / 2 + hwp / 2 + (TAILX + min(2 * TAILX if CH else TAILX, EPSB / 2)) * s / 4
     if q == "En":
-        return mu / 2 + hwp / 2 + (EPSB / 2 + TAIL) * s / 4
+        return mu / 2 + hwp / 2 + (EPSB / 2 + min(2 * TAILX if CH else TAILX, EPSB / 2)) * s / 4
     if q == "Eb":
+        # cL and cH are disjoint upward crossings at the same cut B1|B2 and push the shifts the same way:
+        # Property B bounds cL + cH by eps_B a/2 together, so CH adds nothing here
         return mu / 2 + hwp / 2 + EPSB * s / 4
     if q == "S":
         return mu / 2 + hwp / 2 + EPSB * min(s, S_SPILL) / 4
