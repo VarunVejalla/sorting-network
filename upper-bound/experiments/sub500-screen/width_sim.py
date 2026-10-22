@@ -47,7 +47,7 @@ class Sim:
         s._tail = {}
         s.configs = set()
         s.box = {}
-        s.tagdata, s.trans = {}, {}
+        s.tagdata, s.trans, s.tagdist, s.nearB = {}, {}, {}, {}
         s.R = [s.k ** (d - i) for i in range(d + 1)]
         s.intern = {}
         s.stats = {}
@@ -74,7 +74,7 @@ class Sim:
         if cent is not None:
             cent = round(cent * 1e6) / 1e6      # centre: design constant per class (rounding moves it inside hw slack)
         if pinfo is not None:
-            pinfo = (pinfo[0], math.ceil(pinfo[1] * 1e4) / 1e4, math.ceil(pinfo[2] * 1e8) / 1e8)
+            pinfo = (pinfo[0], math.ceil(pinfo[1] * 1e4) / 1e4, math.ceil(pinfo[2] * 1e8) / 1e8) + tuple(pinfo[3:])
         key = (lev, G, GL, hw, cent, pinfo, tuple((id(c), n) for c, n in kids))
         c = s.intern.get(key)
         if c is None:
@@ -174,6 +174,8 @@ class Sim:
                 tag = role if role != "botDesc" else "bD%d" % round(math.log2(max(fa / fc_, 1e-12)))
                 if os.environ.get("TRANS_LOCBIN") and c.pinfo is not None:   # split by incoming local term
                     tag += "|L%d" % round(c.pinfo[2] / s.mu * 50)
+                if os.environ.get("TRANS_TYPEBIN") and c.pinfo is not None:  # split by incoming child type
+                    tag += "|" + c.pinfo[3]
                 td = s.tagdata.setdefault(tag, dict(rf=0.0, e=0.0, D=0.0))
                 td["rf"] = max(td["rf"], fc_ / (s.mu * cc))          # ratio = hw_rel * c / (mu c') + ...
                 td["e"] = max(td["e"], s.epsB * fa / (s.mu * cc))
@@ -205,6 +207,13 @@ class Sim:
                     return min(s.tail(dist - bandw) * fa, s.epsB * fa / 2)
                 return s.epsB * fa / 2
             cB, cL = cross(dB), cross(dL)
+            if os.environ.get("TRANS") and getattr(s, "curtag", None):
+                dd = s.tagdist.setdefault(s.curtag, [9.0, 9.0, 0.0])
+                dd[0] = min(dd[0], dB); dd[1] = min(dd[1], dL); dd[2] = max(dd[2], fa / fc_)
+                if dB < bandw + 0.005:   # near-side charged at Property B: record (role, t mod 6, i - alpha) and size
+                    kk = (role, t % 6, P.role(d, i, t) if False else None)
+                    nb = s.nearB.setdefault((s.curtag.split("|")[0], t % 6), [0, 0.0, 9.0])
+                    nb[0] += 1; nb[1] = max(nb[1], s.epsB * fa / (s.mu * cc)); nb[2] = min(nb[2], dB)
             s.note(role, "dist_min", min(dB, dL), lambda v, w: v < w)
             hw_end = (s.mu * cc + 2 * h + cB + cL) / 2 / cc
             hw_int = (s.mu * cc + h + s.epsB * fa / 2 + k * D1 / 2) / 2 / cc
@@ -214,12 +223,23 @@ class Sim:
             ptag = getattr(s, "curtag", None)
             for j, (kc, n, th, thL) in enumerate(thetas):
                 if ptag is not None:
-                    if j == 0 or j == len(thetas) - 1:
-                        s.kidpinfo[j] = (ptag, fc_ / cc, (cB + cL) / (2 * cc))
-                    elif th > 0:
-                        s.kidpinfo[j] = (ptag, fc_ / cc, s.epsB * fa / (2 * cc))
+                    AN = os.environ.get("TRANS_ANALYTIC")
+                    if AN:   # analytic caps: cB = Property B always; cL = certified tail iff dL >= threshold
+                        thr = bandw + 0.005
+                        cLa = float(os.environ.get("CERT_TAIL")) * fa if dL >= thr else s.epsB * fa / 2
+                        if dL < thr:
+                            s.note(role, "analytic_dL_below_thr", fa / fc_, lambda v, w: v > w)
+                        nearc = dB < thr
+                        cBa = s.epsB * fa / 2 if nearc else float(os.environ.get("CERT_TAIL")) * fa
+                        endloc = (cBa + cLa) / (2 * cc)
                     else:
-                        s.kidpinfo[j] = (ptag, fc_ / (2 * cc), (s.epsB * fa / 2 + k * D1 / 2) / (2 * cc))
+                        endloc = (cB + cL) / (2 * cc)
+                    if j == 0 or j == len(thetas) - 1:
+                        s.kidpinfo[j] = (ptag, fc_ / cc, endloc, ("En" if (AN and nearc) else "E"))
+                    elif th > 0:
+                        s.kidpinfo[j] = (ptag, fc_ / cc, s.epsB * fa / (2 * cc), "S")
+                    else:
+                        s.kidpinfo[j] = (ptag, fc_ / (2 * cc), (s.epsB * fa / 2 + k * D1 / 2) / (2 * cc), "I")
                 if j == 0 or j == len(thetas) - 1:
                     kidhw[j] = hw_end
                     kidcent[j] = (s.mu * cc + cB - cL) / 2 / cc
@@ -307,6 +327,10 @@ def main():
                 worst = max(worst, rb)
                 print("   transbox %-6s hw <= %.3f mu  ratio bound %.4f" % (tg, hwb[tg] / mu_, rb))
             print("   transbox worst ratio bound %.4f (transitions %d)" % (worst, len(S.trans)))
+            for kk, (n_, e_, d_) in sorted(S.nearB.items()):
+                print("   nearB %-8s t%%6=%d  classes %6d  eps_B a/(mu c') max %.4f  dB_min %.5f" % (kk[0], kk[1], n_, e_, d_))
+            for tg, (a1, a2, a3) in sorted(S.tagdist.items()):
+                print("   tagdist %-10s dB_min %.5f  dL_min %.5f  a/c_max %.4f" % (tg, a1, a2, a3))
             if os.environ.get("TRANS_DUMP"):
                 import json
                 json.dump(dict(mu=str(mu), round=os.environ.get("ROUNDF", "0.1"),

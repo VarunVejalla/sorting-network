@@ -419,3 +419,56 @@ Exact worst ratio bound: **0.977298 < 1**.
 
 Caveat: the inputs are the float simulation's recorded maxima, so this is exact arithmetic on
 float-derived data. The transition set's completeness and its ranges for all d are still unproved.
+
+## 13. The all-d box with every transition allowed: reduction to four structural lemmas
+
+`transbox_coarse.py`, `transbox_complete.py`, and the dump `transbox_443_analytic_d22.json`
+(`TRANS_TYPEBIN=1 TRANS_ANALYTIC=1`).
+
+**Analytic local caps.** Every local term is replaced by its formula:
+* near side: Property B `ε_B a/2` if `dB < 2W/m + 0.005`, else the certified tail;
+* far side: the certified tail;
+* interior: `ε_B a/2 + kΔ₁/2`;
+* spilled: `ε_B a/2`.
+
+**Groups**, by the receiver's incoming child type:
+
+| group | meaning |
+|---|---|
+| E | end child, both sides beyond the band |
+| En | end child, near side at Property B |
+| I | interior child |
+| S | spilled child |
+| T | topRise |
+
+**Diagnostics** (d = 22):
+* Binning by child type instead of local-term value reproduces 0.9773.
+* Charging Property B on every near side gives **1.043**, which fails. So the near/far flag is needed.
+* With the flag, the box is 0.9773 again (`TRANS_ANALYTIC` dump).
+
+**Complete box.** Allow **every** transition `p → q` with `q ≠ T`. Each local cap is linear in the sender's
+`a/c`, at `κ_q · (a/c)_max(p)`. Inheritance coefficients are 1/2 for E, En and S, and 1/4 for I. S may be a
+dense sender. Spills come only from senders with `a/c ≤ 2^-7`. Solving exactly (Fractions, inputs rounded
+up, post-fixed point verified):
+
+| group | E | En | I | S | T |
+|---|---:|---:|---:|---:|---:|
+| hw / μ | 1.1246 | 1.1899 | 0.8861 | 1.0965 | 0.5 |
+| ratio bound | **0.977298** | 0.6710 | 0.8524 | 0.9632 | 0.6650 |
+
+So **the order-0 ratio is at most 0.977298 at every node, for every d**, assuming the following lemmas
+(each a statement about the deterministic design recursion, not about randomness):
+
+* **(S1) Capacity:** `a/c ≤ 1.0149` for every sender (observed max 1.01490).
+* **(S2) Near ⇒ sparse:** if a sender's near-side margin is `dB < 2W/m + 0.005`, its end child has
+  `a/c ≤ 2^-2.5` at its next send (all `En` receivers are in bins `≤ 2^-3`).
+* **(S3) Far side:** `dL ≥ 2W/m + 0.005` for every sender (no violations; minimum 0.0277 against 0.0208).
+* **(S4) Schedule:** `c/c′ ≤ 1/2` (1/4 for interior inheritance); topRise nodes inherit nothing (`Anc = ∅`);
+  spills only at senders with `a/c ≤ 2^-7` (observed 0.0076).
+
+Also used: the per-receiver data `c/(μc′)`, `ε_B a/(μc′)` and D are analytic in `a/c` and `c/c′`, so they
+follow from S1 and S4.
+
+The all-d obligation is now four lemmas about the design recursion. S1 and S4 should follow from R1's
+schedule computation. S2 and S3 are statements about the deficits `G`, `G_L` and `G(w₁′)` (§2), which are
+the next to prove.
