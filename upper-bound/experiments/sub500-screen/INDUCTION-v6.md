@@ -229,3 +229,27 @@ sets below n/64 columns, and on the margin tail it gave a spurious 0. `cert_walk
 covers all p, including the cell `[0, P0]`, so the certified bulk d is unaffected.
 
 **Next:** an interval version of this margin tail, i.e. `cert_walk`'s round-1 cells with `−W p n` added.
+
+### Band tail, interval-certified (`cert_walk_n.py tail`, `cert_tail_W2e17.out`)
+
+`certify_tail` bounds the round-1 excess beyond a margin of W rows by `sup_p (phi1(p) − W p)/m`, using
+`cert_walk`'s certified round-1 cells (`phi1_up − W·p_lo` per p-cell, plus the `[0, P0]` cell). The
+geometric p-cells need ratio 1.02 near small p (ratio 1.25 lost 25% of the margin term:
+`cert_tail_W2e17_coarse.out`).
+
+    m ∈ [16547000, 2^24], n ≥ 2^13, W = 2^17:   band tail ≤ 3.60899e-6   CERTIFIED
+
+So `2·tail = 7.22e-6 ≤ ε_B − d = 2.25e-5 − 1.491e-5 = 7.59e-6`, about 5% slack.
+
+**Rigorous now** (interval arithmetic, on the existing walk-bound framework):
+* the bulk precision `d ≤ 1.491e-5`;
+* the band tail at `W = 2^17`;
+* both on `[2^23.98, 2^24]` for `n ≥ 2^13`.
+
+**Still to do:**
+* the width certificate in exact arithmetic, with the review's type-rule items and all-d;
+* the L3 / L4 proofs;
+* route (d) certification;
+* node-spec wiring;
+* a review;
+* Lean.

@@ -1,0 +1,5 @@
+m in [16547000, 16604554]: band tail beyond W = 131072 rows <= 3.60787e-06 OK vs 3.80228e-06
+m in [16604554, 16662108]: band tail beyond W = 131072 rows <= 3.60826e-06 OK vs 3.80228e-06
+m in [16662108, 16719662]: band tail beyond W = 131072 rows <= 3.60864e-06 OK vs 3.80228e-06
+m in [16719662, 16777216]: band tail beyond W = 131072 rows <= 3.60899e-06 OK vs 3.80228e-06
+worst certified tail = 3.60899e-06; CERTIFIED

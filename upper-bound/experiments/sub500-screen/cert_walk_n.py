@@ -166,12 +166,12 @@ def phi2_up(pc, mc, lam, t, Rn, g, G):
 
 
 # ------------------------------------------------------------------ cells and driver
-def pcells(n_mid=160):
-    """cover [P0, 1 - P0]: geometric near the ends, uniform in the middle."""
+def pcells(n_mid=160, ratio=1.25):
+    """cover [P0, 1 - P0]: geometric near the ends (ratio), uniform in the middle."""
     edges = [P0]
     x = P0
     while x < Fr(1, 20):
-        x = min(Fr(1, 20), rat(float(x) * 1.25))
+        x = min(Fr(1, 20), rat(float(x) * ratio))
         edges.append(x)
     for j in range(1, n_mid + 1):
         edges.append(Fr(1, 20) + Fr(9, 10) * j / n_mid)
@@ -243,8 +243,33 @@ def certify(m_lo, m_hi, epsB, ncell_m=4):
     return ok, worst_d
 
 
+def certify_tail(m_lo, m_hi, W, target, ncell_m=4):
+    """Interval bound on the round-1 excess beyond a margin of W rows (band-repair escapes,
+    PROOFS-L3-L4.md L3 step 4): tail * m <= sup_p (phi1(p) - W p), phi1 = per-column round-1 bound
+    (x/n). Per p-cell: phi1_up(cell) - W * p_lo; cell [0, P0]: phi1_small. Certifies tail <= target."""
+    worst = 0.0
+    edges = [m_lo + (m_hi - m_lo) * j // ncell_m for j in range(ncell_m + 1)]
+    for ma, mb in zip(edges[:-1], edges[1:]):
+        mc = iv.mpf([ma, mb])
+        sup = phi1_small(mc)
+        for pa, pb in pcells(ratio=float(os.environ.get('PCELL_RATIO', '1.02'))):
+            pc = iv.mpf([I(pa).a, I(pb).b])
+            t1 = opt_t1(float((pa + pb) / 2), float(ma))
+            v = phi1_up(pc, mc, t1) - (I(W) * I(pa)).a
+            sup = max(sup, v)
+        tail = (iv.mpf(max(sup, 0)) / iv.mpf(ma)).b
+        worst = max(worst, float(tail))
+        print(f"m in [{ma}, {mb}]: band tail beyond W = {W} rows <= {float(tail):.5e} "
+              f"{'OK' if tail <= float(target) else 'FAIL'} vs {float(target):.5e}", flush=True)
+    print(f"worst certified tail = {worst:.5e}; {'CERTIFIED' if worst <= float(target) else 'NOT CERTIFIED'}")
+    return worst <= float(target)
+
+
 def main():
     a = sys.argv[1:]
+    if a and a[0] == 'tail':
+        certify_tail(int(a[1]), int(a[2]), int(a[3]), Fr(int(a[4]), int(a[5])), int(os.environ.get('NCELL_M', '4')))
+        return
     m_lo, m_hi = (int(a[0]), int(a[1])) if a else (52703924, 66137831)
     epsB = Fr(int(a[2]), int(a[3])) if len(a) >= 4 else Fr(1, 105000)
     print(f"walk-bound bulk certificate, m in [{m_lo}, {m_hi}], n-uniform (n >= {NC}), eta1 = 1/100, eta2 = 1/1000")
