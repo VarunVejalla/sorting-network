@@ -182,3 +182,31 @@ So the band room `ε_B − d` roughly doubles. Re-solving band against certifica
 (`7.6e-6 ≥ 6.88e-6`). **Package about 477 at the model level, with real slack.** The bulk certificate
 (`cert_walk.py`, interval arithmetic) must be rerun with `N_CERT = 2^13` and the row window
 `[2^23.98, 2^24)`.
+
+## 10. Interval-certified bulk for n ≥ 2^13, and the package at ε_B = 2.25e-5
+
+**Bulk certificate.** `cert_walk_n.py` is `../../best/notes/sub800/cert_walk.py` with the 1/n terms at
+`N_CERT = 8192` instead of 16. The 1/n terms decrease in n, so the bound covers every `n ≥ 2^13`. Run with
+mpmath interval arithmetic, outward rounding, 8 m-cells:
+
+    m ∈ [16547000, 2^24] (≥ 2^23.98), n ≥ 2^13:   d ≤ 1.49084e-5   CERTIFIED vs 1/66000   (cert_walk_n8192.out)
+
+(Target 1/68000 failed by a hair: `cert_walk_n8192_target68000.out`.)
+
+**Package point.** (4,4,3), q = 24, δ = 1e-6, `ε_B = 2.25e-5`, `ROUND = 0.01μ`:
+* band `2W = 2^18`, depth 171; its own tail `2·tail(2^17) = 6.88e-6` is at most the room
+  `ε_B − d = 7.59e-6`;
+* width certificate with margin cut `2W/m = 0.01584` (`width_sim_443_pkg477.out`): max ratio
+  0.942 / 0.944 / 0.945 at d = 14 / 18 / 22, i.e. **about 5.5% slack**;
+* stage `245 + 300 + 171 = 716`, so the **coefficient is about 477.3** (8/12 stages per bit);
+* fringe: route (d) at `f ≤ 3967`, `J = 5e5`, `n ≥ 2^13` (0 FAIL in the sweeps).
+
+**Rigorous now:** the bulk precision on this window (interval arithmetic, built on the existing walk
+bound).
+
+**Still model-level or sketch:**
+* the width certificate (floats; the type-rule open items of §8);
+* L3 / L4;
+* the band-tail values (`tail_frac`);
+* route (d);
+* the separator / node-spec wiring.
