@@ -165,3 +165,45 @@ Without the alignment cost `+l`, the v4 package prices at 495.3 (q = 25). But th
 * The saving needs runs `≥ 2^13`, i.e. about 3% more rows than the q = 25 window allows.
 
 So 503 stands.
+
+## 12. After review (`REVIEW-centring.md`, 2026-10-22): confirmed with corrections
+
+**Confirmed:**
+* the shift identity, with outsiders on both sides;
+* the exact top boundary;
+* the conservation law `N_L + N_H = const + Σ_int D_h`, so centring the low side alone is sound;
+* centring with a design constant;
+* the v4 end-child inheritance;
+* no missed grandparent, oscillation, cousin or deficit-split terms;
+* η and g*.
+
+**Major correction.** At the F₁|B₁ cut, separator crossings can push a key from outside range(w_1′) up
+while a range(w_1′) key stays down. This raises the end child's upper side by own keys, which P's cap
+does not cover.
+* With Property B alone the term is `w̄/2 = (μAν + ε_B η)/(2(Aν − 1))`, and the (4,4,3) package is
+  **infeasible**: `ε_B ≤ 1.74e-5 < 1.897e-5` for every δ.
+* **Repair: a far-crossing lemma.** The relevant crossings span about half a child range, i.e. a margin of
+  `d0 ≈ 0.026 m` rows. Their count is round-1 excess beyond `d0`, bounded by the walk-bound tail at `d0`
+  (`2·tail(d0) ≈ 1.9e-6` at q = 24) or adversarially by `0.26/d0`.
+* With the lemma, the term is `(μAν + cross)/(2(Aν − 1))`, with no `ε_B` coefficient. The bulk margin at
+  the package point then rises to **1.22–1.28** (`δ = 2e-6` / `1e-6`), against 1.02–1.06 for v4.
+* `screen.py` has this as `center3`, and the package prices at **490** ((4,4,3), q = 24, walk-bound band
+  tail).
+
+**Medium items to fix in the write-up:**
+* the Δ terms are two-sided: centre `[−Δ₁(j−1), …]` correctly, which gives `kΔ₁/2` (negligible);
+* define `X̂` and `Ĝ_L` via `Ĝ_L(w) = Ĝ_L(u) + π/2 − o`, with per-node-type midpoints;
+* prove the sidedness lemma;
+* check the bottom ratios, the separator geometry and (I2) for botDesc at (4,4,3).
+
+**Minor items:**
+* replace the §4 "cancellation" argument by the conservation identity;
+* interior `θ = −Δ₁/2` is negative: drop sib centring, or round up;
+* fix the topDesc λ entry;
+* include o in the (I2) printout;
+* keep separate reserves for φ̄, γ and ROUND.
+
+**Reviewer's remark (open lever).** Bounding `O_L` dynamically (the parent's positive shift, crossings,
+deeper outsiders and F-escapes), instead of by P's cap, appears to remove the μ floor: `ε_B ≈ 3.6e-5` at
+this point. That would be a much larger gain than the current margins, and needs its own careful
+derivation.

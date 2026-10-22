@@ -83,6 +83,10 @@ def evaluate(x, y, z, H):
             budget -= kap * mu / (A * nu - 1)
         if H.get("center2"):         # refined centred chain (v3): |s| <= (mu (A nu + 1) + eps_B eta / 2)/(2 A nu - 1)
             budget += mu - mu * A * nu / (2 * (A * nu - 1))           # v4: w/2 = (mu A nu + eps_B eta/2)/(2(A nu - 1))
+        if H.get("center3"):         # review-corrected: w/2 = (mu A nu + cross)/(2(A nu - 1)), cross = far crossings
+            qq = max(8, int(math.ceil(H.get("q_hint", 24))))  # over half a child range (rows ~ 0.026 m: walk tail)
+            cross = 2 * tail_frac(qq, 0.5 * (p / 2 + 0.0) * 0 + 0.026 * 2.0 ** qq) if H.get("cross") is None else H["cross"]
+            budget += mu - mu * A * nu / (2 * (A * nu - 1)) - cross / (2 * (A * nu - 1))
         if H.get("center_sib"):      # per-boundary centred offsets: (k-1) Delta_1 -> (k-1) Delta_1 / 2
             budget += (k - 1) * mu * sib / 2
         if H.get("center1"):         # one-sided centred: interior theta = 0, split of G unknown in [0, G]:
