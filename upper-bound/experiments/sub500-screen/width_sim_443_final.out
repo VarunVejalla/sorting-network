@@ -1,0 +1,15 @@
+(4,4,3) d=22 tf=49 o/c=2.954e-05 classes=20668
+   botDesc  {'cross_margin_min': (-0.621375, (35,)), 'order0_ratio_max': (0.981492, (33,)), 'dist_min': (-0.332865, (35,)), 'a_over_c_max': (1.0, (17,)), 'G_over_c_max': (0.000266, (38,)), 'spill_children_max': (11.0, (19,)), 'spill_a_over_c_max': (0.00758, (12,))}
+   mid      {'cross_margin_min': (0.076416, (38,)), 'order0_ratio_max': (0.98837, (36,)), 'dist_min': (0.029774, (38,)), 'a_over_c_max': (1.015784, (38,)), 'G_over_c_max': (0.000266, (36,))}
+   topDesc  {'a_over_c_max': (1.015534, (36,)), 'G_over_c_max': (0.0, (2,))}
+   topRise  {'cross_margin_min': (0.062256, (1,)), 'order0_ratio_max': (0.719137, (1,)), 'dist_min': (0.029774, (37,)), 'a_over_c_max': (1.015792, (37,)), 'G_over_c_max': (0.0, (1,))}
+(4,4,3) d=26 tf=59 o/c=2.954e-05 classes=35197
+   botDesc  {'cross_margin_min': (-0.621375, (35,)), 'order0_ratio_max': (0.981492, (33,)), 'dist_min': (-0.332865, (35,)), 'a_over_c_max': (1.0, (17,)), 'G_over_c_max': (0.000266, (47,)), 'spill_children_max': (11.0, (19,)), 'spill_a_over_c_max': (0.00758, (12,))}
+   mid      {'cross_margin_min': (0.076416, (38,)), 'order0_ratio_max': (0.988471, (45,)), 'dist_min': (0.029774, (38,)), 'a_over_c_max': (1.015784, (38,)), 'G_over_c_max': (0.000266, (45,))}
+   topDesc  {'a_over_c_max': (1.015534, (36,)), 'G_over_c_max': (0.0, (2,))}
+   topRise  {'cross_margin_min': (0.062256, (1,)), 'order0_ratio_max': (0.719137, (1,)), 'dist_min': (0.029774, (37,)), 'a_over_c_max': (1.015792, (37,)), 'G_over_c_max': (0.0, (1,))}
+(4,4,3) d=30 tf=69 o/c=2.954e-05 classes=54679
+   botDesc  {'cross_margin_min': (-0.62141, (51,)), 'order0_ratio_max': (0.981492, (33,)), 'dist_min': (-0.332872, (51,)), 'a_over_c_max': (1.0, (17,)), 'G_over_c_max': (0.000266, (54,)), 'spill_children_max': (11.0, (19,)), 'spill_a_over_c_max': (0.00758, (12,))}
+   mid      {'cross_margin_min': (0.076416, (46,)), 'order0_ratio_max': (0.988483, (52,)), 'dist_min': (0.029774, (46,)), 'a_over_c_max': (1.015784, (46,)), 'G_over_c_max': (0.000266, (52,))}
+   topDesc  {'a_over_c_max': (1.015534, (44,)), 'G_over_c_max': (0.0, (2,))}
+   topRise  {'cross_margin_min': (0.062256, (1,)), 'order0_ratio_max': (0.719137, (1,)), 'dist_min': (0.029774, (45,)), 'a_over_c_max': (1.015792, (45,)), 'G_over_c_max': (0.0, (1,))}

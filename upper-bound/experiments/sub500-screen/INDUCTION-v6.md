@@ -99,3 +99,12 @@ Consequences:
 4. **Merge-first** in the node spec, and the fringe certificates for every class (route (d) certified;
    the n → ∞ argument).
 5. **A review** of this document, then **Lean**.
+
+## 6. Stabilisation in d (`width_sim_443_final.out`)
+
+At `ε_B = 2.68e-5` the mid ratio is 0.9988 / 1.0005 / 1.0021 / 1.0022 for d = 14 / 18 / 22 / 26, converging
+just above 1. The package uses **`ε_B = 2.6e-5`**, which still gives band depth 171 and cost about 477.
+Ratios at that value are recorded for d = 22, 26 and 30.
+
+A proof needs the periodic structure of the schedule in d (R1's bottom ratios depend only on t mod 6) to
+turn this observed convergence into a bound for all d.
