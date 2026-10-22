@@ -49,6 +49,11 @@ class Sim:
         s.stats = {}
 
     def tail(s, dist):
+        ct = os.environ.get("CERT_TAIL")             # certified tail at margin >= CERT_TAIL_W rows (monotone in W)
+        if ct is not None:
+            if dist * 2.0 ** s.q >= float(os.environ.get("CERT_TAIL_W", "131072")):
+                return float(ct)
+            return 1e9                               # forces Property B in cross() via the caller below
         key = round(dist, 3)
         if key not in s._tail:
             import screen as Sc
@@ -164,7 +169,7 @@ class Sim:
             bandw = float(os.environ.get("BAND2W_FRAC", "0"))      # band repair: margin shrinks by 2W/m (L3 step 4)
             def cross(dist):
                 if dist - bandw >= 0.005:
-                    return s.tail(dist - bandw) * fa
+                    return min(s.tail(dist - bandw) * fa, s.epsB * fa / 2)
                 return s.epsB * fa / 2
             cB, cL = cross(dB), cross(dL)
             s.note(role, "dist_min", min(dB, dL), lambda v, w: v < w)

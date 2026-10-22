@@ -253,3 +253,18 @@ So `2·tail = 7.22e-6 ≤ ε_B − d = 2.25e-5 − 1.491e-5 = 7.59e-6`, about 5%
 * node-spec wiring;
 * a review;
 * Lean.
+
+### Width certificate with certified tails (`width_sim_443_pkg477_certtail.out`)
+
+The far-crossing tails come from the same round-1 machinery, and the tail decreases in the margin. So the
+certified `3.609e-6` at `W = 2^17` bounds every margin of at least `2^17` rows; shorter margins use
+Property B. The tail is also capped at Property B's `ε_B a/2`. At the package point (ε_B = 2.25e-5, margin
+cut 0.01584):
+
+| d | 14 | 18 | 22 |
+|---|---:|---:|---:|
+| max ratio | 0.976 | 0.979 | 0.979 |
+
+That is **about 2% slack**, and the package stays at **about 477**. The width recursion's inputs (bulk d,
+band and crossing tails) are now interval-certified. The recursion itself is still a float run with the
+type-rule items of §8 open.
