@@ -335,3 +335,16 @@ additions:
 * a case (a) term at sparse botDesc senders, scaled by `a/c`.
 
 All of it is unproved, as before.
+
+## 17. Separator geometry at (4,4,3), q = 24 (review item 4)
+
+`designP_sim.py`, run with `ROWS_Q=24 ROWS_LO=23.5 GEOM_CUT=40 MU44=31/1048576`. Geometry depends on a
+and π only, so design P's run applies to the centred design.
+* With fringe classes near the route (d) heights (1550–3967), mid, topRise and topDesc senders fit, but
+  **58 sparse botDesc senders** (`a/c` from 8.8e-4 to 0.25) do not. They need `f ≈ (pc/a)·m/2`.
+* With geometric classes (`1550·1.25^j`), **every large sender fits** (no failures; `m ∈ [11910932, 2^24)`).
+  The classes used are 3027, 11548, 22555, 55067, 107553, 801331, 1565100, 3056836 and 3821045, the tall
+  ones only at sparse botDesc senders, as R1's class B (406109) at (4,5,3).
+
+**Each class needs a fringe certificate** at the package's `J = 1/ε_F`. Tall classes are generous: the
+row ceiling is far above the fringe need. Support `μc ≤ δ_F·f·n` holds by construction.
