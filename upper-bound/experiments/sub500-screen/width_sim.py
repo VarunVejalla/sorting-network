@@ -153,7 +153,7 @@ class Sim:
             cc = float(P.cap(d, i + 1, t + 1)) if i + 1 <= d else fc_ * float(s.Anu)
             h = c.hw * fc_
             D1 = s.mu * s.delta * k * s.A2 * fc_ / (1 - (s.delta * k) ** 2 * s.A2)
-            intr = h + k * D1 / 2 + s.mu * s.delta * s.A2 * k * fc_ + s.epsB * fa + 0.1 * s.mu * cc
+            intr = h + k * D1 / 2 + s.mu * s.delta * s.A2 * k * fc_ + s.epsB * fa + float(os.environ.get("ROUNDF", "0.1")) * s.mu * cc
             s.note(role, "order0_ratio_max", intr / (s.mu * cc), lambda v, w: v > w)
             Y = max(0.0, float(first.GL - GL))
             b1 = float(first.G - thetas[0][2])

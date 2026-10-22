@@ -181,3 +181,32 @@ The last few percent of ε_B, from 2.16e-5 to 2.3e-5, could come from:
 * a smaller rounding reserve (0.1μ is assumed; each 0.05μ is about 2.5% of ε_B);
 * exact Δ₁ (it currently uses the sib bound);
 * or a sharper band tail.
+
+### Rounding reserve and δ (same day; `width_sim_443_r001.out`)
+
+**The 0.1μ rounding reserve over-reserves.**
+* Integer rounding of θ, o and b costs at most about k keys per block, against `0.01 μc ≈ 3e5` keys at
+  `c ≥ 2^40`.
+* γ is about 0.0004μ (R1 §4).
+
+With `ROUND = 0.01μ` at δ = 1e-6 (d = 14 and 18), the certificate allows **ε_B ≈ 2.68e-5**:
+
+| ε_B | max order-0 ratio |
+|---|---:|
+| 2.6e-5 | 0.987 |
+| 2.7e-5 | 1.004 |
+
+That gives band depth 171, stage `245 + 300 + 171 = 716`, and **cost 477.3**.
+
+**The current fringe does not work.** It needs `J ≲ 4.9e4` (δ ≳ 1.2e-5 for `f ≤ 3967`), but at δ = 1e-5 the
+certificate allows `ε_B < 2.0e-5`, which leaves no band room. So the package needs the **route (d)
+fringe** at `J ≈ 5e5`, where it extrapolates to about 2200 rows, under the 3967 ceiling.
+
+**Package status:** (4,4,3), q = 24, δ = 1e-6, about **477** by the node-by-node certificate. It rests on:
+* the centred sided invariant (v5 plus the review items);
+* the far-crossing lemma;
+* band repair with disjoint, fully sorted bands;
+* merge-first in the node spec;
+* the route (d) fringe, n-uniform and certified at `J ≈ 5e5`, plus fringe certificates for the tall
+  classes;
+* the rounding argument for a 0.01μ reserve.
