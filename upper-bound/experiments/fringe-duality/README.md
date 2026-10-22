@@ -43,3 +43,20 @@ NA, unions).
    * the level composition;
    * then a `ColumnF2` fringe interface and an `R1At73125` instance. The bulk `R1Cells25`/`R2Cells25` is
      already kernel-checked.
+
+## Resumed for the sub-500 package (2026-10-22)
+
+The centred package at (4,4,3), q = 24, δ = 1e-6 (`../sub500-screen/INDUCTION-v5.md` §8) needs this fringe
+at **f ≤ 3967, J ≈ 5e5**. Separator senders have `a > 2^37`, since the stage depth 716 lets Batcher sort
+exactly up to q = 37, so `n ≥ 2^13`.
+
+Sweeps over every j and every set size, with the collision lemma included (`rd_pkg/`):
+
+| n | result |
+|---|---|
+| `2^13 … 2^17`, `2^20`, `2^26` | **complete through jmax, 0 FAIL** |
+
+Worst cases are −2840 to −1128 at small n, and 7645 against an allowance of 62392 at `2^26`. Runs at
+`2^30, 2^34, 2^40` were launched. The earlier harder-point sweeps (J = 1.66e6) cover `2^27 … 2^40` partially.
+
+Still float-level: interval certification, the n → ∞ argument and review remain.
