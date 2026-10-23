@@ -824,3 +824,22 @@ j ∈ [1, 1e6 J], every `n ≥ max(2^40, e^{j_a/(100J)})`, and every set size.
   j ≥ 1.6e5 J and s29 j ≥ 3.2e5 J** (b ≥ 150); both are running.
 * (B) with floor 2^24 covers b ≥ 150 (`coverB24_*`, 35 cells, running).
 * `n ≥ 2^30`: the floor-2^30 (B) cover (complete) for every b.
+
+**(B) at floor 2^24, b ≥ 150: complete, 35 cells, all OK.** The tightest cell is `[150, 195]`, at margin
+−5.9e-6 against the allowance 3e-4.
+
+**Route (d) float coverage for every n ≥ 2^13 and every fringe class: complete except s29.**
+
+| range | status |
+|---|---|
+| sweeps s13 – s23 | complete |
+| s24 – s27 | past b ≥ 176 |
+| s28 | at j = 2.2e5 J, past its 1.6e5 J |
+| s29 | at 2.2e5 J; needs 3.2e5 J (b ≥ 150 for `n ∈ [2^29, 2^30)`); running |
+| s30 – s39 | complete |
+| (B) floors 2^30 and 2^24 | complete |
+| (A) | complete |
+| j ≥ 1e6 J | analytic |
+| b → 0 | numerics to 1e-290 plus the limit sketch |
+
+All float-level. Still to do: interval arithmetic and a review.
