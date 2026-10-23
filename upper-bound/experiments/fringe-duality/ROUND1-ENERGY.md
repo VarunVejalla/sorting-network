@@ -636,3 +636,18 @@ needed four fixes, each of which only tightens a valid bound:
 | 1e4 | negative | 1.3e4 – 5e4 | 8e4 |
 | 1e5 | negative | 1.0e5 – 1.3e5 | 8e5 |
 | 1.25e6 | negative | 1.26e6 – 1.37e6 | 1e7 |
+
+**n-intervals for the per-n sweeps** (`route_d_rigorous_nr.py`, `NR = n_hi/n_lo`). The sweep at n bounds
+every `n′ ∈ [n, NR·n]`:
+* decreasing terms use n: `n lnG`, the collision q and `n ln(1 + …)`, the Boolean `−n ln(1 − q)`;
+* increasing terms use `NR·n`: `lbinom(·, s₂)`, `ln n`, `u = min(n, …)`;
+* the multiplicity pmf is bounded by the pmf at `p_hi = s₂/n` times `((1 − p_lo)/(1 − p_hi))^H`, with
+  the n factor `NR·n`;
+* `b ∈ [j_lo/(NR n), j/n]` with the j-interval conventions;
+* `jmax = f_max·NR·n/8`, `f_eff = max(3967, 8 j_a/(NR n))`.
+
+The margin cost at n = 2^20, NR = 2 is small: −3694 → −3690 at J, −2823 → −2810 at 100J, −94 → −51 at 2059J.
+
+**Runs (`rd_nr2/s13 … s29.out`).** One sweep per `k = 13 … 29`, with `NR = 2` and the f-ladder to 1e7.
+These cover **every n in `[2^13, 2^30)` and every class f** at once. The older `NR = 1` runs (`rd_pkg/e*`,
+`fl*`) were stopped. They are superseded, since n ≥ 2^30 is regimes (A) and (B).

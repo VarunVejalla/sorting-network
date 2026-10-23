@@ -1,0 +1,13 @@
+sweep n = 2^16, J = 5e+05, f = 3967, j in [32497664.0, 1e20], f-ladder to 1e+07 (f_eff = max(f, 8 j_a/n))
+  j in [        65,      74.74] J: worst      -2285.8 at s2 <=       1  allowed       65.0  OK
+  j in [     74.74,      85.96] J: worst      -2747.1 at s2 <=       1  allowed       74.7  OK
+  j in [     85.96,      98.85] J: worst      -3277.4 at s2 <=       1  allowed       86.0  OK
+  j in [     98.85,      113.7] J: worst      -3913.4 at s2 <=       1  allowed       98.8  OK
+  j in [     113.7,      130.7] J: worst      -4625.4 at s2 <=       1  allowed      113.7  OK
+  j in [     130.7,      150.3] J: worst      -5449.5 at s2 <=       1  allowed      130.7  OK
+  j in [     150.3,      172.9] J: worst      -6397.8 at s2 <=       1  allowed      150.3  OK
+  j in [     172.9,      198.8] J: worst      -7494.9 at s2 <=       1  allowed      172.9  OK
+  j in [     198.8,      228.6] J: worst      -8769.5 at s2 <=       1  allowed      198.8  OK
+  j in [     228.6,      262.9] J: worst     -10249.4 at s2 <=       1  allowed      228.6  OK
+  j in [     262.9,      302.4] J: worst     -11957.1 at s2 <=       1  allowed      262.9  OK
+  j in [     302.4,      347.7] J: worst     -13931.9 at s2 <=       1  allowed      302.4  OK

@@ -1,0 +1,1 @@
+sweep n = 2^25, J = 5e+05, f = 3967, j in [16638803968.0, 1e20], f-ladder to 1e+07 (f_eff = max(f, 8 j_a/n))

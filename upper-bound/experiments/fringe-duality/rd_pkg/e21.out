@@ -136,3 +136,15 @@ sweep n = 2^21, J = 5e+05, f = 3967, j in [1, 1e20]
   j in [     267.9,        308] J: worst      -2343.3 at s2 <=       1  allowed      267.9  OK
   j in [       308,      354.2] J: worst      -2286.4 at s2 <=       1  allowed      308.0  OK
   j in [     354.2,      407.4] J: worst      -2198.4 at s2 <=       1  allowed      354.2  OK
+  j in [     407.4,      468.5] J: worst      -2098.1 at s2 <=       1  allowed      407.4  OK
+  j in [     468.5,      538.8] J: worst      -1991.5 at s2 <=       1  allowed      468.5  OK
+  j in [     538.8,      619.6] J: worst      -1870.3 at s2 <=       1  allowed      538.8  OK
+  j in [     619.6,      712.5] J: worst      -1765.1 at s2 <=       1  allowed      619.6  OK
+  j in [     712.5,      819.4] J: worst      -1646.2 at s2 <=       1  allowed      712.5  OK
+  j in [     819.4,      942.3] J: worst      -1528.7 at s2 <=       1  allowed      819.4  OK
+  j in [     942.3,       1084] J: worst      -1431.4 at s2 <=       1  allowed      942.3  OK
+  j in [      1084,       1246] J: worst      -1261.9 at s2 <=       1  allowed     1083.7  OK
+  j in [      1246,       1433] J: worst      -1099.8 at s2 <=       1  allowed     1246.2  OK
+  j in [      1433,       1648] J: worst       -918.6 at s2 <=       1  allowed     1433.1  OK
+  j in [      1648,       1895] J: worst       -732.7 at s2 <=       1  allowed     1648.1  OK
+  j in [      1895,       2080] J: worst       -611.4 at s2 <=       1  allowed     1895.3  OK

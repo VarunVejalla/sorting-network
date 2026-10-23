@@ -1,0 +1,20 @@
+sweep n = 2^14, J = 5e+05, f = 3967, j in [8124416.0, 1e20], f-ladder to 1e+07 (f_eff = max(f, 8 j_a/n))
+  j in [     16.25,      18.69] J: worst      -2631.7 at s2 <=       1  allowed       16.2  OK
+  j in [     18.69,      21.49] J: worst      -3094.2 at s2 <=       1  allowed       18.7  OK
+  j in [     21.49,      24.71] J: worst      -3631.3 at s2 <=       1  allowed       21.5  OK
+  j in [     24.71,      28.42] J: worst      -4256.8 at s2 <=       1  allowed       24.7  OK
+  j in [     28.42,      32.68] J: worst      -4991.2 at s2 <=       1  allowed       28.4  OK
+  j in [     32.68,      37.58] J: worst      -5851.5 at s2 <=       1  allowed       32.7  OK
+  j in [     37.58,      43.22] J: worst      -6825.7 at s2 <=       1  allowed       37.6  OK
+  j in [     43.22,      49.71] J: worst      -7953.5 at s2 <=       1  allowed       43.2  OK
+  j in [     49.71,      57.16] J: worst      -9251.4 at s2 <=       1  allowed       49.7  OK
+  j in [     57.16,      65.74] J: worst     -10741.6 at s2 <=       1  allowed       57.2  OK
+  j in [     65.74,       75.6] J: worst     -12475.4 at s2 <=       1  allowed       65.7  OK
+  j in [      75.6,      86.94] J: worst     -14487.3 at s2 <=       1  allowed       75.6  OK
+  j in [     86.94,      99.98] J: worst     -16811.0 at s2 <=       1  allowed       86.9  OK
+  j in [     99.98,        115] J: worst     -19478.3 at s2 <=       1  allowed      100.0  OK
+  j in [       115,      132.2] J: worst     -22527.5 at s2 <=       1  allowed      115.0  OK
+  j in [     132.2,      152.1] J: worst     -26055.7 at s2 <=       1  allowed      132.2  OK
+  j in [     152.1,      174.9] J: worst     -30113.7 at s2 <=       1  allowed      152.1  OK
+  j in [     174.9,      201.1] J: worst     -34779.6 at s2 <=       1  allowed      174.9  OK
+  j in [     201.1,      231.2] J: worst     -40158.9 at s2 <=       1  allowed      201.1  OK

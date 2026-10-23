@@ -1,2 +1,3 @@
 A n0=2^30 j=1J: worst -3447 at s2<=1 allowed 1 OK [2s]
 A n0=2^30 j=100J: worst -2549 at s2<=1 allowed 87 OK [12s]
+A n0=2^30 j=1000J: worst 3.521e+09 at s2<=127314 allowed 870 FAIL [2936s]
