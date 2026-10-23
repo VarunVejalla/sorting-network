@@ -98,14 +98,15 @@ theorem mergeBandPack2Net_exec_eq {m n : ℕ} (hn : 0 < n) (l b : ℕ) (offs : L
 /-! ### L3a at matrix level: the band stage moves `true`s up by at most the segment reach -/
 
 open Finset in
-/-- `true` wires at rows `≥ i`. -/
-def rowCount {m n : ℕ} (hn : 0 < n) (v : Fin (m * n) → Bool) (i : ℕ) : ℕ :=
-  (univ.filter fun w : Fin (m * n) => i ≤ (matrixRow m n hn w).val ∧ v w = true).card
+/-- Wires at rows `≥ i` carrying the value `bv` (default: `true`). -/
+def rowCount {m n : ℕ} (hn : 0 < n) (v : Fin (m * n) → Bool) (i : ℕ) (bv : Bool := true) : ℕ :=
+  (univ.filter fun w : Fin (m * n) => i ≤ (matrixRow m n hn w).val ∧ v w = bv).card
 
 open Finset in
 theorem rowCount_comp_perm {m n : ℕ} (hn : 0 < n) (π : Equiv.Perm (Fin (m * n)))
-    (hπ : ∀ w, matrixRow m n hn (π w) = matrixRow m n hn w) (x : Fin (m * n) → Bool) (i : ℕ) :
-    rowCount hn (x ∘ π) i = rowCount hn x i := by
+    (hπ : ∀ w, matrixRow m n hn (π w) = matrixRow m n hn w) (x : Fin (m * n) → Bool) (i : ℕ)
+    (bv : Bool := true) :
+    rowCount hn (x ∘ π) i bv = rowCount hn x i bv := by
   unfold rowCount
   refine Finset.card_bij (fun w _ => π w) ?_ (fun a _ b _ h => π.injective h) ?_
   · intro w hw
@@ -119,9 +120,10 @@ theorem rowCount_comp_perm {m n : ℕ} (hn : 0 < n) (π : Equiv.Perm (Fin (m * n
     rw [← this]; exact hw
 
 open Finset in
-theorem rowCount_eq_sum_columns {m n : ℕ} (hn : 0 < n) (v : Fin (m * n) → Bool) (i : ℕ) :
-    rowCount hn v i = ∑ j : Fin n,
-      Bitonic.cntT (univ.filter fun r : Fin m => i ≤ r.val) (v ∘ columnWireEmbed m n hn j) := by
+theorem rowCount_eq_sum_columns {m n : ℕ} (hn : 0 < n) (v : Fin (m * n) → Bool) (i : ℕ)
+    (bv : Bool := true) :
+    rowCount hn v i bv = ∑ j : Fin n,
+      Bitonic.cntT (univ.filter fun r : Fin m => i ≤ r.val) (v ∘ columnWireEmbed m n hn j) bv := by
   unfold rowCount
   rw [Finset.card_eq_sum_card_fiberwise (f := matrixCol m n hn) (t := univ) (fun _ _ => mem_univ _)]
   refine Finset.sum_congr rfl fun j _ => ?_
@@ -147,8 +149,9 @@ input's column counts `c'` after the second sort, the right side is `Σ_k (c'_k 
 (PROOFS-L3-L4.md, row identity). -/
 theorem bandStage_rowCount_le {m n : ℕ} (hn : 0 < n) (b : ℕ) {offs : List ℕ}
     (hd : Bitonic.SegDisjoint b offs) (hfit : ∀ o ∈ offs, o + 2 ^ b ≤ m) (σ1 σ2 : Scramble m n)
-    {h i : ℕ} (hhi : h ≤ i) (hseg : ∀ o ∈ offs, i < o + 2 ^ b → h ≤ o) (x : Fin (m * n) → Bool) :
-    rowCount hn ((bandStage m n hn b offs σ1 σ2).exec x) i ≤ rowCount hn x h := by
+    {h i : ℕ} (hhi : h ≤ i) (hseg : ∀ o ∈ offs, i < o + 2 ^ b → h ≤ o) (x : Fin (m * n) → Bool)
+    (bv : Bool := true) :
+    rowCount hn ((bandStage m n hn b offs σ1 σ2).exec x) i bv ≤ rowCount hn x h bv := by
   set P := rowScrambleWirePerm2 m n hn σ1 σ2
   have hP : ∀ w, matrixRow m n hn (P w) = matrixRow m n hn w := matrixRow_rowScrambleWirePerm2 hn σ1 σ2
   have hPs : ∀ w, matrixRow m n hn (P.symm w) = matrixRow m n hn w :=
@@ -158,8 +161,8 @@ theorem bandStage_rowCount_le {m n : ℕ} (hn : 0 < n) (b : ℕ) {offs : List �
   have e1 : (fun w => (columnSegmentRepairNetwork m n hn b offs).exec (x ∘ P.symm) (P.symm.symm w)) =
       ((columnSegmentRepairNetwork m n hn b offs).exec (x ∘ P.symm)) ∘ P := by
     funext w; simp
-  rw [e1, rowCount_comp_perm hn P hP, ← rowCount_comp_perm hn P.symm hPs x h,
-    rowCount_eq_sum_columns, rowCount_eq_sum_columns]
+  rw [e1, rowCount_comp_perm hn P hP _ _ bv, ← rowCount_comp_perm hn P.symm hPs x h bv,
+    rowCount_eq_sum_columns _ _ _ bv, rowCount_eq_sum_columns _ _ _ bv]
   refine Finset.sum_le_sum fun j _ => ?_
   have ecol : (columnSegmentRepairNetwork m n hn b offs).exec (x ∘ P.symm) ∘ columnWireEmbed m n hn j =
       (Bitonic.segmentSort m b offs).exec ((x ∘ P.symm) ∘ columnWireEmbed m n hn j) := by
@@ -168,7 +171,7 @@ theorem bandStage_rowCount_le {m n : ℕ} (hn : 0 < n) (b : ℕ) {offs : List �
     unfold columnSegmentRepairNetwork
     rw [columnNet_exec_matrixWire]
   rw [ecol]
-  exact Bitonic.segmentSort_cnt_rows_le hd hfit hhi hseg _
+  exact Bitonic.segmentSort_cnt_rows_le hd hfit hhi hseg _ bv
 
 end Chvatal
 
