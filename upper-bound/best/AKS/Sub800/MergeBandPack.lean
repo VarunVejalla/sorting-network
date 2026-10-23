@@ -95,6 +95,81 @@ theorem mergeBandPack2Net_exec_eq {m n : ℕ} (hn : 0 < n) (l b : ℕ) (offs : L
   rw [mergeBandPack2Net_eq, e2, exec_append', exec_append', exec_append',
     columnRunMergeNetwork_exec_eq hn l v hv]
 
+/-! ### L3a at matrix level: the band stage moves `true`s up by at most the segment reach -/
+
+open Finset in
+/-- `true` wires at rows `≥ i`. -/
+def rowCount {m n : ℕ} (hn : 0 < n) (v : Fin (m * n) → Bool) (i : ℕ) : ℕ :=
+  (univ.filter fun w : Fin (m * n) => i ≤ (matrixRow m n hn w).val ∧ v w = true).card
+
+open Finset in
+theorem rowCount_comp_perm {m n : ℕ} (hn : 0 < n) (π : Equiv.Perm (Fin (m * n)))
+    (hπ : ∀ w, matrixRow m n hn (π w) = matrixRow m n hn w) (x : Fin (m * n) → Bool) (i : ℕ) :
+    rowCount hn (x ∘ π) i = rowCount hn x i := by
+  unfold rowCount
+  refine Finset.card_bij (fun w _ => π w) ?_ (fun a _ b _ h => π.injective h) ?_
+  · intro w hw
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Function.comp] at hw ⊢
+    rw [hπ]; exact hw
+  · intro w hw
+    refine ⟨π.symm w, ?_, by simp⟩
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Function.comp, Equiv.apply_symm_apply] at hw ⊢
+    have := hπ (π.symm w)
+    rw [Equiv.apply_symm_apply] at this
+    rw [← this]; exact hw
+
+open Finset in
+theorem rowCount_eq_sum_columns {m n : ℕ} (hn : 0 < n) (v : Fin (m * n) → Bool) (i : ℕ) :
+    rowCount hn v i = ∑ j : Fin n,
+      Bitonic.cntT (univ.filter fun r : Fin m => i ≤ r.val) (v ∘ columnWireEmbed m n hn j) := by
+  unfold rowCount
+  rw [Finset.card_eq_sum_card_fiberwise (f := matrixCol m n hn) (t := univ) (fun _ _ => mem_univ _)]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  unfold Bitonic.cntT
+  refine (Finset.card_bij (fun r _ => matrixWire m n r j) ?_ ?_ ?_).symm
+  · intro r hr
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Function.comp, columnWireEmbed_apply] at hr ⊢
+    rw [(matrixWire_row_col hn r j).1, (matrixWire_row_col hn r j).2]
+    exact ⟨hr, rfl⟩
+  · intro a _ c _ h
+    exact (matrixWire_injective hn h).1
+  · intro w hw
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hw
+    obtain ⟨⟨hr, hv⟩, rfl⟩ := hw
+    refine ⟨matrixRow m n hn w, ?_, matrixWire_matrixRow_col hn w⟩
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Function.comp, columnWireEmbed_apply]
+    refine ⟨hr, ?_⟩
+    rw [matrixWire_matrixRow_col]; exact hv
+
+/-- **L3a (matrix level).** If every band segment reaching rows `≥ i` starts at row `≥ h` (`h ≤ i`), the
+band stage's output has at most as many `true`s at rows `≥ i` as its input has at rows `≥ h`. With the
+input's column counts `c'` after the second sort, the right side is `Σ_k (c'_k − h)₊`
+(PROOFS-L3-L4.md, row identity). -/
+theorem bandStage_rowCount_le {m n : ℕ} (hn : 0 < n) (b : ℕ) {offs : List ℕ}
+    (hd : Bitonic.SegDisjoint b offs) (hfit : ∀ o ∈ offs, o + 2 ^ b ≤ m) (σ1 σ2 : Scramble m n)
+    {h i : ℕ} (hhi : h ≤ i) (hseg : ∀ o ∈ offs, i < o + 2 ^ b → h ≤ o) (x : Fin (m * n) → Bool) :
+    rowCount hn ((bandStage m n hn b offs σ1 σ2).exec x) i ≤ rowCount hn x h := by
+  set P := rowScrambleWirePerm2 m n hn σ1 σ2
+  have hP : ∀ w, matrixRow m n hn (P w) = matrixRow m n hn w := matrixRow_rowScrambleWirePerm2 hn σ1 σ2
+  have hPs : ∀ w, matrixRow m n hn (P.symm w) = matrixRow m n hn w :=
+    matrixRow_rowScrambleWirePerm2_symm hn σ1 σ2
+  unfold bandStage
+  rw [relabelNet_exec]
+  have e1 : (fun w => (columnSegmentRepairNetwork m n hn b offs).exec (x ∘ P.symm) (P.symm.symm w)) =
+      ((columnSegmentRepairNetwork m n hn b offs).exec (x ∘ P.symm)) ∘ P := by
+    funext w; simp
+  rw [e1, rowCount_comp_perm hn P hP, ← rowCount_comp_perm hn P.symm hPs x h,
+    rowCount_eq_sum_columns, rowCount_eq_sum_columns]
+  refine Finset.sum_le_sum fun j _ => ?_
+  have ecol : (columnSegmentRepairNetwork m n hn b offs).exec (x ∘ P.symm) ∘ columnWireEmbed m n hn j =
+      (Bitonic.segmentSort m b offs).exec ((x ∘ P.symm) ∘ columnWireEmbed m n hn j) := by
+    funext r
+    simp only [Function.comp, columnWireEmbed_apply]
+    unfold columnSegmentRepairNetwork
+    rw [columnNet_exec_matrixWire]
+  rw [ecol]
+  exact Bitonic.segmentSort_cnt_rows_le hd hfit hhi hseg _
+
 end Chvatal
 
 end
