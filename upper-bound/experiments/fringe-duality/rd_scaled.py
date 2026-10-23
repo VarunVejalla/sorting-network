@@ -292,10 +292,22 @@ def high_rows_s(b, sigma, D, n0=2.0 ** 40, ratio=1.6, dclose=1e6, verbose=False)
     return best
 
 
-def escapes_s(b, sigma, f, L0x=0, ratio=1.6, eps=EPS_DEFAULT, dtop=None, verbose=False):
+CJ = 800 * 5e5      # regime (B): j >= CJ ln n (C = 800, J = 5e5)
+
+
+def n0_of_b(b, nmin=2.0 ** 40):
+    """least n in regime (B) at density b: j = b n >= CJ ln n  =>  n >= (CJ/b) ln(CJ/b) (for CJ/b >= e)."""
+    x = CJ / b
+    return max(nmin, x * math.log(x)) if x > math.e else nmin
+
+
+def escapes_s(b, sigma, f, L0x=0, ratio=1.6, eps=None, dtop=None, verbose=False):
     """per n: escapes for sets of size sigma n at density b, all n >= n0 (ln-terms <= eps n). Levels from
     L0 = ceil(b) + L0x upward; above level offset dtop the remaining rows are bounded by the Boolean count
     at that level times the per-source row bound (tail, conservative): see the final tail term."""
+    n0 = n0_of_b(b)
+    if eps is None:
+        eps = eps_level(1.0, b, n0)                     # c_ln ln(n0)/n0 covers the absolute ln-terms
     L0 = math.ceil(b) + L0x
     e_S = sigma * (1 - math.log(sigma)) + eps if sigma > 0 else eps     # lbinom(n, s)/n <= sigma ln(e/sigma)
     total = sigma * L0
@@ -321,7 +333,7 @@ def escapes_s(b, sigma, f, L0x=0, ratio=1.6, eps=EPS_DEFAULT, dtop=None, verbose
         total += lev
         lo = hi
     # rows above offset lo - b (the last level end): the single-union high-rows lemma
-    total += high_rows_s(b, sigma, int(lo - b), verbose=verbose)
+    total += high_rows_s(b, sigma, int(lo - b), n0=n0, verbose=verbose)
     return total - f * sigma
 
 

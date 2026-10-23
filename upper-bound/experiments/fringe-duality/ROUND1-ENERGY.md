@@ -521,3 +521,27 @@ with one union over S, and:
   3. a j-scaling argument at n = ∞ for `j → ∞`, the b = 0 analogue of this scaled evaluator.
 
 **Status:** (B) is numerically in hand at grid points with large slack. (A) is structured but not built.
+
+**Regime (B) as b → 0** (`n0_of_b`). In (B), `j = bn ≥ C·J·ln n` (C = 800) forces
+`n ≥ n₀(b) = (CJ/b)·ln(CJ/b)`. So the absolute ln-terms satisfy `ε(n) ≤ c_ln ln n₀/n₀ ≈ 0.1·b/J`.
+
+| b | σ/b = 1e-9 | 1e-6 | 1e-3 | allowance b/J |
+|---|---:|---:|---:|---:|
+| 1e-2 | −7.4e-9 | −3.6e-5 | −3.9e-2 | 2e-8 |
+| 1e-4 | −8.1e-11 | −3.6e-7 | −3.9e-4 | 2e-10 |
+| 1e-6 | −8.3e-13 | −3.6e-9 | −3.9e-6 | 2e-12 |
+
+The escapes are negative throughout and scale linearly in b, so (B) is uniform as b → 0.
+
+**Regime (A), `j ≤ C·J·ln n`.** For each j, (A) needs every `n ≥ n_A(j) = max(2^40, e^{j/(CJ)})`.
+* For `j ≤ CJ·ln 2^40 ≈ 1.1e10`, that is `n ≥ 2^40`.
+* Above that, n is super-exponential in j.
+
+Plan:
+1. **Collision-type terms**, `min_s R[n·F(s, c/n) + E₀ + s₂ ln n]/s`: take `s(n) = s₀ + ½ ln(n/n₀)`. Then
+   `n(q e^s)²` is constant and `n ln(1 + a/n) ≤ a`, so the term is at most a Möbius function of `ln(n/n₀)`.
+   Its sup over `n ≥ n₀` is the max of its value at n₀ and its limit `2R s₂`.
+2. **Kingman-type terms** (`ln n` entropy over `t ≈ κ/R`) are not n-uniform. In (A), replace them by
+   collision-type terms, or use them only below n₁.
+3. A j-grid sweep up to `j ≈ 1.1e10` with the sup-over-`n ≥ 2^40` evaluator.
+4. For larger j (`n ≥ e^{j/CJ}`), the n = ∞ collision evaluator, with a scaling argument in j.
