@@ -480,3 +480,44 @@ the Chernoff margin. A large D makes it small, since `E_{≥D}/D²` falls.
 
 **Status:** the plan is sharpened. The evaluator is incomplete above a level D, which needs the lemma
 above.
+
+### Scaled evaluator with the single-union high-rows lemma (`rd_scaled.py`, `rd_scaled_out/`)
+
+**High-rows lemma** (`high_rows_s`). Rows at offsets `≥ D` above b, for any S with `|S| = σn`, total
+`Σ_T M_T`. Conditionally on round 1, `M_T ~ Bin((z_T − b − D)₊, σ)`, NA. So
+
+    Rows_{≥D}(S)/n ≤ min_t [σ(e^t − 1)·w_D + σ ln(e/σ) + pe_D + ε]/t,
+
+with one union over S, and:
+* `w_D = Σ_i α_i/d_i`, the round-1 level energies with `U = [n]` (A*, `u = n`);
+* `pe_D = N(ln(e/N) + ln(e(w/N + 1)))` the profile union, `N = Σ α_i/d_i²`.
+
+**Level tail** (`round1_level_tail`). For `d ≥ 10⁶`, every α in `[ahat, R b]` is excluded (mass bound
+`Σ(z−b)² ≤ R j`), with `t = s/R`, `s = 1/(2b)`, `q ≤ 1/2`. The relative inequality is monotone in d. Measured
+`ahat/b` is 2.03 – 2.44 for `d₀ = 10⁶ … 10²⁰`.
+
+**Grid** (old tail constant; to rerun with the verified tail). Escapes per n against the allowance `b/J`:
+
+| b | σ = 1e-12 … 1e-9 | σ = 1e-8 … 1e-3 |
+|---|---|---|
+| 1 | 1.2e-7 … 4.8e-7, all `< 2e-6` | negative |
+| 10 | 1.3e-7 … 3.9e-6, all `< 2e-5` | negative |
+| 100 | ≤ 1.1e-5 at 1e-9 and 2.8e-5 at 1e-8, all `< 2e-4` | negative from 1e-7 |
+| 496 | ≤ 1.6e-4 up to 1e-7, all `< 9.9e-4` | negative from 1e-6 |
+
+`σ ≥ 1e-3` follows from the monotone average: at `σ = 1e-3`, `L/σ = f + escapes/σ ≈ 887 < f`. The raw
+`σ = 1e-2` FAIL rows are moot.
+
+**Regimes for the full n → ∞ argument.**
+* **(B) dense, `j ≥ C·J·ln n`.** The absolute `O(ln n)` union pieces (ε) are small against `j/J`. The scaled
+  evaluator applies, pending:
+  * the cell-monotone `(b, σ)` cover;
+  * the rerun with the verified tail;
+  * the σ → 0 limit, where the per-n terms are bounded by `(pe + ε)/t`, which is ∝ b.
+* **(A) sparse, `j ≤ C·J·ln n`, so `b → 0`.** The `ln n` union terms rival the allowance. Only the collision
+  branch survives, since it divides `ln n` by `s ≈ ln(1/q) ≈ ln n`. Needed:
+  1. the collision-only evaluator is nonincreasing in n for `n ≥ n₀`, term by term;
+  2. its n = ∞ limit, a single-column load of about `290 (j/J)^{1/3}` (extrapolating the 2^160 table);
+  3. a j-scaling argument at n = ∞ for `j → ∞`, the b = 0 analogue of this scaled evaluator.
+
+**Status:** (B) is numerically in hand at grid points with large slack. (A) is structured but not built.

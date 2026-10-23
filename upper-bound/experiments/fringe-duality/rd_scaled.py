@@ -207,6 +207,91 @@ def kmax_sources_s(alpha, d, sigma):
 CS = (1, 2, 3, 5, 8, 13, 20, 30, 50, 80, 130, 200)
 
 
+def eps_level(R, b, n0, c_ln=80.0):
+    """ln-terms per n at a level of cap R: the level is nonempty only when n >= R^2/(2b) (a column holds at
+    most sqrt(2 j) = sqrt(2 b n)), and c_ln ln(n)/n... is decreasing in n: use n_eff = max(n0, R^2/(2b))."""
+    n_eff = max(n0, R * R / (2.0 * b))
+    return c_ln * max(1.0, math.log(n_eff)) / n_eff
+
+
+def round1_level_tail(b, d0, ratio=1.6, n0=2.0 ** 40):
+    """Bound on sum_{levels d_i >= d0} alpha_i / d_i and sum alpha_i / d_i^2 (per n), alpha_i the level energy
+    of {z - b in [d_i, R_i)}, R_i = ratio d_i. Every alpha in [ahat, R b] (mass: sum (z-b)^2 <= R sum z = R j)
+    is excluded at d = d0 with t = s/R, s = 1/(2b) (q <= alpha g(s)/(R s lam) <= 1/2 on that range):
+        alpha (1 - g(s) / (s^2 lam (1 - q))) > lam b + R ent / s,
+        ent = (alpha/d^2)(ln(e d^2/alpha) + ln(R - d + 1)) + eps_level(R)   (lbinom(n,k) <= k ln(en/k)).
+    In relative form the right side over alpha, R ent/(s alpha) ~ ratio L(d)/(d s) with L ~ ln d, and
+    eps_level(R) R/(s alpha) are decreasing in d (d >= 3), so exclusion at d0 holds at every d >= d0 (for the
+    same (lam, s) and alpha/d^2 ... checked on the relative grid). Returns (w_tail, N_tail, ahat)."""
+    s = min(0.5, 1.0 / (2 * b))
+    g = math.expm1(s) - s
+    d = float(d0)
+    R = ratio * d
+    amax = R * b
+    def ok(a0, a1, lam):
+        q = a1 * g / (R * s * lam)
+        if q > 0.5:
+            return False
+        ent = (a1 / (d * d)) * (math.log(math.e * d * d / a1) + math.log(R - d + 1)) + eps_level(R, b, n0)
+        return a0 * 1 > lam * b + a1 * g / (s * s * lam * (1 - q)) + R * ent / s
+    best = None
+    for lam in (0.8, 1.0, 1.25, 1.5, 2.0, 3.0):
+        # smallest ahat with every [a, 1.01 a] in [ahat, amax] excluded
+        a = amax
+        lo_ok = None
+        while a > 1e-9:
+            a0 = a / 1.01
+            if ok(a0, a, lam):
+                lo_ok = a0
+                a = a0
+            else:
+                break
+        if lo_ok is not None and (a <= 1e-9 or lo_ok < amax):
+            if best is None or lo_ok < best:
+                best = lo_ok
+    if best is None:
+        return math.inf, math.inf, math.inf
+    w_tail = best * ratio / (d * (ratio - 1)) * 1.0      # sum_i ahat / d_i, d_i = d0 ratio^i
+    N_tail = best / (d * d * (1 - 1 / ratio ** 2))
+    return w_tail, N_tail, best
+
+
+def high_rows_s(b, sigma, D, n0=2.0 ** 40, ratio=1.6, dclose=1e6, verbose=False):
+    """per n: rows at offsets >= D above b, summed over any S with |S| = sigma n (single union over S).
+    Conditionally on round 1, M_T ~ Bin((z_T - b - D)_+, sigma), NA across T: P(sum >= x) <= e^{-tx +
+    sigma (e^t - 1) W_D}. W_D <= sum_levels alpha_i / d_i (round-1 level energies with U = [n], u = n);
+    profile union: N_D <= sum alpha_i / d_i^2 columns, ln #profiles <= N (ln(e/N) + ln(e (W/N + 1))).
+    Union over S: sigma ln(e/sigma). Returns min_t [sigma (e^t - 1) w + sigma ln(e/sigma) + pe + eps] / t."""
+    w = N = 0.0
+    d = D
+    while d < dclose:
+        R = int(d * ratio) + 1
+        e = eps_level(R, b, n0)
+        a = A_star_s(b, R, d, 1.0, e)
+        w += a / d
+        N += a / (d * d)
+        if verbose:
+            print(f"     r1 level d={d}: alpha={a:.3e}")
+        d = R
+    wt, Nt, ahat = round1_level_tail(b, d, ratio, n0)
+    w += wt
+    N += Nt
+    if verbose:
+        print(f"     r1 tail above d={d}: ahat={ahat:.3e} (b={b}) w_tail={wt:.3e} N_tail={Nt:.3e}")
+    pe = N * (math.log(math.e / N) + math.log(math.e * (w / N + 1))) if N > 0 else 0.0
+    eS = sigma * (1 - math.log(sigma)) if sigma > 0 else 0.0
+    eps = eps_level(D, b, n0)
+    best = math.inf
+    for i in range(200):
+        tt = 0.05 * 1.06 ** i
+        if tt > 700:
+            break
+        best = min(best, (sigma * math.expm1(tt) * w + eS + pe + eps) / tt)
+    if verbose:
+        print(f"   high rows above offset {D}: W/n={w:.3e} N/n={N:.3e} profile ent={pe:.3e} -> {best:.3e}")
+    return best
+
+
 def escapes_s(b, sigma, f, L0x=0, ratio=1.6, eps=EPS_DEFAULT, dtop=None, verbose=False):
     """per n: escapes for sets of size sigma n at density b, all n >= n0 (ln-terms <= eps n). Levels from
     L0 = ceil(b) + L0x upward; above level offset dtop the remaining rows are bounded by the Boolean count
@@ -216,7 +301,7 @@ def escapes_s(b, sigma, f, L0x=0, ratio=1.6, eps=EPS_DEFAULT, dtop=None, verbose
     total = sigma * L0
     lo = L0
     if dtop is None:
-        dtop = 4 * f
+        dtop = 1e5
     while lo - b < dtop:
         off = lo - b
         hi = max(lo + 1, math.ceil(b + max(off + 8, off * ratio)))
@@ -235,17 +320,8 @@ def escapes_s(b, sigma, f, L0x=0, ratio=1.6, eps=EPS_DEFAULT, dtop=None, verbose
             print(f"   level [{lo}, {hi}) d={d}: A*={A:.3e} k={k:.3e} cnt={cnt:.3e} -> {lev:.3e}")
         total += lev
         lo = hi
-    # tail above dtop: every remaining source has z - b >= dtop; Boolean count kap at d = dtop bounds the
-    # number of such (source, row-block) incidences; each such source contributes at most its multiplicity:
-    # bound by the full alpha_inf / dtop (sum of (z - b) over sources above, from the A* at the top level)
-    d = int(dtop)
-    R = 64 * d
-    nu = sigma * R
-    A = A_star_s(b, R, d, nu, e_S)
-    tail = A / d
-    total += tail
-    if verbose:
-        print(f"   tail above offset {dtop}: A*={A:.3e} -> {tail:.3e}")
+    # rows above offset lo - b (the last level end): the single-union high-rows lemma
+    total += high_rows_s(b, sigma, int(lo - b), verbose=verbose)
     return total - f * sigma
 
 
