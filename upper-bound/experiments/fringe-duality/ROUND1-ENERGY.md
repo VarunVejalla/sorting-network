@@ -749,3 +749,27 @@ union cost into O(1) per source.
 **This is the last open structural item for route (d)'s n → ∞ argument.** Everything else is either
 covered by cells (A: j ≤ 1e6 J; B: `b ∈ [1e-6, 1.25e6]`), analytic (A: j ≥ 1e6 J), or in sweeps
 (n < 2^40).
+
+**Hybrid collision branch added to (B)** (`A_coll_s`, used as `min` with A* at every level, so it only
+tightens). Per n it is n-free: `q = eRν/λ` and `x_D/n = R[ln(1 + (qe^s)²/((1−q)(1−qe^s))) + e_S]/s`. Since
+`q ∝ b`, s reaches `≈ ln(1/b)` and the `σ ln(1/b)` union is divided by it.
+
+esc/(b/J) with the branch:
+
+| τ = σ/b | b = 1e-6 | 1e-24 | 1e-96 | 1e-192 |
+|---|---:|---:|---:|---:|
+| 1e-9 | 0.48 | 0.36 | 0.33 | 0.33 |
+| 1e-6 | −1744 | −1750 | −1750 | −1749 |
+| 1e-4 | −1.913e5 | −1.932e5 | −1.932e5 | −1.930e5 |
+
+b = 1e-300 is a double-precision underflow. The values are flat in b.
+
+The small residual drift comes from the high-rows profile union `N ln(1/N)/t` with `N ∝ b`. An adaptive
+`D(b) ≥ c·sqrt(J ln(1/b))` removes it (N ∝ b/D²).
+
+**To finish b → 0:**
+1. Evaluate in per-b units (no underflow).
+2. Make D(b) adaptive.
+3. Write the limit argument. Every explicit `ln(1/b)` is divided by `s ≈ ln(1/b)` (collision) or by D²
+   (high rows), so the per-b bound converges as b → 0; monotone beyond some b₁ by the same Möbius-in-`ln(1/b)`
+   argument as (A).

@@ -246,14 +246,14 @@ def round1_level_tail(b, d0, ratio=1.6, n0=2.0 ** 40):
         # smallest ahat with every [a, 1.01 a] in [ahat, amax] excluded
         a = amax
         lo_ok = None
-        while a > 1e-9:
+        while a > amax * 1e-15:
             a0 = a / 1.01
             if ok(a0, a, lam):
                 lo_ok = a0
                 a = a0
             else:
                 break
-        if lo_ok is not None and (a <= 1e-9 or lo_ok < amax):
+        if lo_ok is not None and (a <= amax * 1e-15 or lo_ok < amax):
             if best is None or lo_ok < best:
                 best = lo_ok
     if best is None:
@@ -261,6 +261,27 @@ def round1_level_tail(b, d0, ratio=1.6, n0=2.0 ** 40):
     w_tail = best * ratio / (d * (ratio - 1)) * 1.0      # sum_i ahat / d_i, d_i = d0 ratio^i
     N_tail = best / (d * d * (1 - 1 / ratio ** 2))
     return w_tail, N_tail, best
+
+
+def A_coll_s(b, R, nu, e_s):
+    """per n: collision lemma at a level (uncentred weights a = min(R, z) 1{z >= d} on U, |U| = nu n):
+    q = e R nu / lam (n-free), x_D/n = R [ln(1 + (q e^s)^2/((1-q)(1-q e^s))) + e_s]/s,
+    A <= (lam b + x_D)/(1 - 1/(2 lam)). For small b, q ~ b and s ~ ln(1/b): the union e_s ~ sigma ln(1/b) is
+    divided by ~ln(1/b)."""
+    best = math.inf
+    for lam in (0.6, 0.75, 1.0, 1.5, 2.0, 3.0):
+        q = math.e * R * nu / lam
+        if q >= 1:
+            continue
+        for i in range(200):
+            s = 0.05 * 1.1 ** i
+            ls = math.log(q) + s
+            if ls >= -1e-12:
+                break
+            qe = math.exp(ls)
+            g = math.log1p(qe * qe / ((1 - q) * (1 - qe)))
+            best = min(best, (lam * b + R * (g + e_s) / s) / (1 - 1 / (2 * lam)))
+    return best
 
 
 def high_rows_s(b, sigma, D, n0=2.0 ** 40, ratio=1.6, dclose=1e6, verbose=False):
@@ -372,6 +393,8 @@ def escapes_cell(b_lo, b_hi, s_lo, s_hi, f, L0x=0, ratio=1.6, dtop=1e5):
         d = math.floor(lo + 1 - b_hi)
         A = A_star_s(b_hi, R, d, nu, e_S)
         k = kmax_sources_s(A, d, sig) if d >= 1 else math.inf
+        Ac = A_coll_s(b_hi, hi, nu, e_S)                       # collision branch: uncentred, cap hi, threshold lo + 1
+        k = min(k, kmax_sources_s(Ac, lo + 1, sig))
         if d >= 1:
             k = min(k, k_bool_s(b_hi, d, nu, e_S))
         cnt = min(k * c + mult_excess_s(hi - lo, sig, e_S + eps, c) for c in CS if c <= hi - lo or c == 1)
