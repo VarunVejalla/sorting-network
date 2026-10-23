@@ -32,6 +32,33 @@ sorting bound; trace correctness and depth through the global scheduler.
 - Parallel agents: follow [`docs/agent-protocol.md`](docs/agent-protocol.md) (own worktree per ticket, never leave uncommitted edits in the `main` checkout, claim levels, handoff report, verification checklist). Tickets are in `upper-bound/backlog/tickets.json` (`python3 scripts/tickets`).
 - Verifying a claimed upper bound: read [`upper-bound/TRUSTED.md`](upper-bound/TRUSTED.md); run `python3 scripts/check-contribution`. The accepted constant is recorded in `upper-bound/STATUS.json`.
 
+## Working efficiently (indexes, long runs, sub-agents)
+
+Long sessions are dominated by re-reading context, so look things up instead of rediscovering them:
+
+- **Indexes first.** `LLM-helpers/README.md` lists the helpers. Use them in this order:
+  - `LLM-helpers/SUB500-MAP.md`: current sub-500 / route (d) state, which outputs are current or
+    superseded, script CLIs.
+  - `LLM-helpers/LEAN-NOTES.md`: Lean conventions and gotchas, including the Bool and row orientation.
+  - `LLM-helpers/AKS-MODULE-MAP.md`: which module.
+  - `LLM-helpers/AKS-API-INDEX.md`: exact signatures; grep it, don't read it. Regenerate with
+    `python LLM-helpers/lean_api_index.py` after adding or renaming declarations.
+
+  `LLM-helpers/` is gitignored, so from another worktree use the main checkout's copy by path.
+- **Keep the indexes current.** When you finish a milestone, update `SUB500-MAP.md` (or the relevant
+  map) and `upper-bound/experiments/INDEX.md`. Mark superseded outputs as superseded rather than leaving
+  them for the next agent to guess.
+- **Long runs.** Run sweeps in the background with output files. Watch them with a monitor that reports
+  only completion or failure, at 10–30 minute polls; per-progress events each cost a full-context turn.
+  Check status in batches.
+- **Sub-agents.** Delegate self-contained work that has a written spec to sub-agents, and keep decisions
+  and integration in the main thread. Good fits: independent reviews (a fresh context is the point),
+  mechanical ports (for example float evaluators to interval arithmetic), Lean lemmas with a fixed
+  statement, and running and tallying covers. Tell the sub-agent which files it may write, and not to
+  touch running processes or other branches.
+- **Lean edits.** Build one module, grep only the errors, `#print axioms` in a scratch file, and run
+  `python scripts/sorry-gate` before pushing (details in `LEAN-NOTES.md`).
+
 ## Repository map
 
 - `upper-bound/best/`: current verified upper package, coefficient `789.75` (UB-31: design P with the walk-bound and padded fringe separators, built on the Chvátal two-round modules).
