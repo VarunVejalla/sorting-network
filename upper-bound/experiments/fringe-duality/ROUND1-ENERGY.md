@@ -582,3 +582,28 @@ allowance `j/J = 2e-6·j`.
 * the finite range `n < 2^40`: the existing sweeps, or (A) with a smaller n₀;
 * interval certification;
 * review.
+
+### Coverage map for route (d) at every n ≥ 2^13 (2026-10-22, floats, unreviewed)
+
+| range | method | status |
+|---|---|---|
+| `2^13 ≤ n ≤ 2^30`, all `j ≤ f n/8` | per-n sweeps (`rd_pkg/`, Kingman plus collision) | 2^13 – 2^17, 2^20, 2^26 complete, 0 FAIL; 2^30 nearly complete; **2^18, 2^19, 2^21 – 2^25, 2^27 – 2^29 not run**; non-power-of-two n not addressed |
+| `n ≥ 2^30`, `j ≥ 100·J·ln n` (B) | scaled evaluator, floor `n_min = 2^30` (`rd_scaled_out/floor30_B.out`) | passes at the grid points b ∈ {1, 10, 100, 496}, σ/b = 1e-12 … 1e-3; σ beyond that covered by the monotone average |
+| `n ≥ 2^30`, `j ≤ 100·J·ln n` (A) | merged collision evaluator, `n₀ = max(2^30, e^{j/(100J)})` | passes at j = J, 100J (floor 2^30); 300J – 1e6 J (floor 2^40) |
+| (A), `j ≥ 1e6·J` | analytic (below) | done in sketch |
+
+**(A) for `j ≥ 1e6·J`.** Then `ln n₀ = j/(CJ) ≥ 1e4`.
+1. Choosing `s = ½ ln n₀ − ln(eRu/λ)` gives `g₀ ≤ 1` and
+   `v₀ ≤ 2RL_c(1 + δ)`, `δ ≤ (5 ln j + E₀/L_c)/(j/CJ) ≈ 0.014`.
+2. The multiplicity sup is at most `L_c(1 + o(1))`.
+3. With `λ = 1`, `r = 2`, `D = 3000`:
+
+       escapes ≤ s₂(1 + D) + 2.67 j/D² + 16(s₂+1)(1+δ)/D + (s₂+1) − f s₂ ≤ −965 s₂ + 3.0e-7·j + 1.01
+               < j/J = 2e-6·j        for every s₂ ≥ 1.
+
+**Remaining for route (d):**
+1. The per-n sweeps at the missing powers of two up to 2^30, plus an argument for n between powers of two.
+2. Cell covers: j-intervals for (A), `(b, σ)` boxes for (B). Pointwise grids are not proofs.
+3. (A) between 2^30 and 2^40 at j up to `100·J·ln n` (the 1000J and 2080J points were still running).
+4. Interval arithmetic throughout.
+5. Review.

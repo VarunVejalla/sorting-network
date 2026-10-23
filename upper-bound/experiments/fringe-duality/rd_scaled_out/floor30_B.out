@@ -1,0 +1,16 @@
+B nmin=2^30 b=1 sigma=1.00e-12: esc/n 1.355e-07 allowed 2.000e-06 OK
+B nmin=2^30 b=1 sigma=1.00e-09: esc/n 1.253e-06 allowed 2.000e-06 OK
+B nmin=2^30 b=1 sigma=1.00e-06: esc/n -3.616e-03 allowed 2.000e-06 OK
+B nmin=2^30 b=1 sigma=2.52e-04: esc/n -9.752e-01 allowed 2.000e-06 OK
+B nmin=2^30 b=10 sigma=1.00e-11: esc/n 9.389e-07 allowed 2.000e-05 OK
+B nmin=2^30 b=10 sigma=1.00e-08: esc/n -6.439e-06 allowed 2.000e-05 OK
+B nmin=2^30 b=10 sigma=1.00e-05: esc/n -3.600e-02 allowed 2.000e-05 OK
+B nmin=2^30 b=10 sigma=2.52e-03: esc/n -9.655e+00 allowed 2.000e-05 OK
+B nmin=2^30 b=100 sigma=1.00e-10: esc/n 3.763e-06 allowed 2.000e-04 OK
+B nmin=2^30 b=100 sigma=1.00e-07: esc/n -8.268e-05 allowed 2.000e-04 OK
+B nmin=2^30 b=100 sigma=1.00e-04: esc/n -3.475e-01 allowed 2.000e-04 OK
+B nmin=2^30 b=100 sigma=2.52e-02: esc/n 1.858e+03 allowed 2.000e-04 FAIL
+B nmin=2^30 b=496 sigma=4.96e-10: esc/n 1.446e-05 allowed 9.920e-04 OK
+B nmin=2^30 b=496 sigma=4.96e-07: esc/n -2.130e-04 allowed 9.920e-04 OK
+B nmin=2^30 b=496 sigma=4.96e-04: esc/n -1.494e+00 allowed 9.920e-04 OK
+B nmin=2^30 b=496 sigma=1.25e-01: esc/n 1.369e+04 allowed 9.920e-04 FAIL
