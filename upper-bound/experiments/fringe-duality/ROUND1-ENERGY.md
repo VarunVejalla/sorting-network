@@ -689,3 +689,13 @@ The cover:
 * `b < 1e-6` in (B). This is the b → 0 limit, where the observed escapes scale linearly in b. It needs an
   argument.
 * j > 1e6·J in (A): done analytically.
+
+**Asymptotic corner not covered (2026-10-22).**
+* (B)'s per-level unions cost `σ ln(e/σ)/t` against the credit `f σ`. That is fine while `ln(1/σ) ≲ f t/#levels`,
+  about 200, i.e. `σ ≳ e^{-200}`.
+* (A)'s collision bound needs `q ≈ 2e·b·s₂/λ < 1`, i.e. `s₂ ≲ 0.1/b`, i.e. `σ ≲ 0.1/j`.
+* For `j > 0.1 e^{200}`, sets with `σ ∈ (0.1/j, e^{-200})` are covered by neither.
+
+These sizes are absurd, but the limsup needs them. **Fix to do:** give (B) the same merged single
+multiplicity union as (A), so that the union over S is paid once and not per level. Then the
+`ln(1/σ)/t` cost appears once, and with `t ≈ ln(f)` it is below `f` for every σ ≥ 1/n.
