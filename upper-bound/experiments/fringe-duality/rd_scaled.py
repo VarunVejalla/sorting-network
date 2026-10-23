@@ -350,6 +350,38 @@ def escapes_s(b, sigma, f, L0x=0, ratio=1.6, eps=None, dtop=None, verbose=False)
     return total - f * sigma
 
 
+def escapes_cell(b_lo, b_hi, s_lo, s_hi, f, L0x=0, ratio=1.6, dtop=1e5):
+    """per n: escapes for every density b in [b_lo, b_hi] and set fraction sigma in [s_lo, s_hi] at once.
+    Conventions (each term is monotone; ROUND1-ENERGY.md, regime-B cells): lam b, the mass cap, n0(b) and
+    eps use b_hi; the caps R = ceil(hi - b_lo); level floors d = floor(lo + 1 - b_hi); free rows
+    L0 = ceil(b_hi); high rows from offset floor(lo - b_hi); count terms at s_hi (nondecreasing in sigma);
+    the linear credit at s_lo, with the fringe class f (pass f = max(3967, 8 b_lo))."""
+    n0 = n0_of_b(b_hi)
+    eps = eps_level(1.0, b_hi, n0)
+    L0 = math.ceil(b_hi) + L0x
+    sig = s_hi
+    e_S = sig * (1 - math.log(sig)) + eps
+    total = sig * L0
+    lo = L0
+    while lo - b_hi < dtop:
+        off = lo - b_hi
+        hi = max(lo + 1, math.ceil(b_hi + max(off + 8, off * ratio)))
+        R = math.ceil(hi - b_lo)
+        nu = (hi - lo) * sig
+        d = math.floor(lo + 1 - b_hi)
+        A = A_star_s(b_hi, R, d, nu, e_S)
+        k = kmax_sources_s(A, d, sig) if d >= 1 else math.inf
+        if d >= 1:
+            k = min(k, k_bool_s(b_hi, d, nu, e_S))
+        cnt = min(k * c + mult_excess_s(hi - lo, sig, e_S + eps, c) for c in CS if c <= hi - lo or c == 1)
+        if d >= 1:
+            cnt = min(cnt, A / (4 * max(d - 1, 0.5)) + k)
+        total += min(sig * (hi - lo), cnt)
+        lo = hi
+    total += high_rows_s(b_hi, sig, int(math.floor(lo - b_hi)), n0=n0)
+    return total, total - f * s_lo
+
+
 if __name__ == "__main__":
     f, J = 3967.0, 5e5
     b, sigma = float(sys.argv[1]), float(sys.argv[2])

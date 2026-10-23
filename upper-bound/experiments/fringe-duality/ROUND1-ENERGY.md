@@ -668,3 +668,24 @@ Grid points still have to be turned into cell covers, and everything into interv
 **Sweeps `rd_nr2/s30 … s39` complete** (every n in `[2^30, 2^40)`, j up to the A/B boundary
 `100·J·ln(2n)`, every fringe class): **0 FAIL**, 149 – 151 intervals each. The sweeps for `2^13 … 2^29`
 (all j, f-ladder to 1e7) are still running, with 0 FAIL so far.
+
+### Cell covers (floats; `rd_scaled_out/coverB_*.out`, `coverA_*.out`)
+
+**(B):** `escapes_cell(b_lo, b_hi, σ_lo, σ_hi, f)` bounds every `(b, σ)` in the box. Each term is monotone:
+* `b_hi` for λb, the mass cap, `n₀(b)`, ε, the level floors, the free rows and the high-rows offset;
+* `b_lo` for the caps R;
+* the count terms at `σ_hi`, the linear credit at `σ_lo`;
+* `f = max(3967, 8 b_lo)`.
+
+The cover:
+* b-cells of ratio 1.3 over `[1e-6, 1.25e6]`;
+* a bottom cell `[0, σ₀]`, `σ₀ = 1e-14·b`, requiring `count(σ₀) ≤ b_lo/J`;
+* σ-cells of ratio 2, closed by the monotone average once `count(σ_hi)/σ_hi < f`.
+
+**(A):** j-intervals of ratio 1.15 over `[1, 1e6·J]`, at `j_b` against the allowance `j_a/J`, with
+`n ≥ max(2^40, e^{j_a/(100J)})`, and set sizes by `worst_merged`.
+
+**Not yet covered by cells:**
+* `b < 1e-6` in (B). This is the b → 0 limit, where the observed escapes scale linearly in b. It needs an
+  argument.
+* j > 1e6·J in (A): done analytically.
