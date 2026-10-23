@@ -283,3 +283,34 @@ Every component is unproved:
 * route (d) (tabled).
 
 The column-sort architecture lands sub-500 only on a knife edge.
+
+## 2026-10-23: band repair is blocked at the F cuts (REVIEW-v7 HIGH 2, quantified)
+
+The centred sided invariant plus band repair plus merge-first plus route (d) was priced at 477. **It does not
+reach sub-500 provably.** Two reasons:
+
+1. **Band budget** (REVIEW-v7 HIGH 1). L3b needs `d + 4T(W) ≤ ε_B`, not `d + 2T(W)`. This forces a band of
+   2^19 rows (depth 190) or more: about 490.
+2. **The fringe leaks through the band at the F₁|B₁ cut.** Fringe keys at rows ≥ 2W after the second scramble
+   are never moved down. The extra escapes are exactly `Σ_T (z_T − 2W)₊` over the round-1 column heights of
+   the fringe set.
+   * **The attack.** A round-1 column of height z costs the adversary about z²/2 fringe keys, so about
+     `j/(4W)` escapes are achievable (needs `j ≳ 1.4e11`, i.e. n ≳ 2^28). Against the allowance `j/J`
+     (J = 5e5): about 1.0 at 2W = 2^18, about 0.48 at 2^19, about 0.24 at 2^20 (stage 755, about 503).
+     Route (d)'s own escapes already use up to 60 – 80 % of the allowance in some cells.
+   * **The provable bound is worse.** Per-level round-1 energies (route d's A* with U = [n]) give
+     `Σ(z − 2W)₊ ≤ 6.7 j/(2W)`, at least the allowance until 2W ≈ 22 J ≈ 1e7 rows: a full third sort.
+     A sharp single-level energy theorem `Σ_{z≥2W} z² ≤ 2.5 j` would give about `0.31 j/W`: 60 % of the
+     allowance at 2^19 and 30 % at 2^20 (about 503).
+
+**Ways out (all research):**
+* (a) a different F-cut repair that moves the few fringe keys down from anywhere in a column more cheaply
+  than a full sort;
+* (b) a fringe design in which the round-1 tall-column mass is controlled, for example a first-round
+  structure that caps column heights;
+* (c) retuning J against the outsider budget δ. The width box has about 1.4 % margin and its D term scales
+  with δ, so this is unlikely.
+
+The sub-500 pieces that stay valuable regardless: the certified tails, the Lean segment-sort/L3 theorems,
+the all-depth width box, and route (d)'s n → ∞ machinery. They are recorded in
+`experiments/sub500-screen/INDUCTION-v6.md` §16 and `LLM-helpers/SUB500-MAP.md`.
