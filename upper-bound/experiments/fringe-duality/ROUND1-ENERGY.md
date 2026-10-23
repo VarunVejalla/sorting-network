@@ -545,3 +545,40 @@ Plan:
    collision-type terms, or use them only below n₁.
 3. A j-grid sweep up to `j ≈ 1.1e10` with the sup-over-`n ≥ 2^40` evaluator.
 4. For larger j (`n ≥ e^{j/CJ}`), the n = ∞ collision evaluator, with a scaling argument in j.
+
+### Regime (A) via the merged collision evaluator (`rd_sparse.py`: `escapes_merged`, `worst_merged`)
+
+**Structure** (for every n ≥ n₀ at once, with `ln n₀` a parameter):
+* rows below offset D are counted in full (`s₂·(⌈b₀⌉ + D)`);
+* above D, levels `[d_i, R_i)` with source counts `k_i ≤ A_i/d_i²`. Here `A_i` is the collision bound's sup
+  over n (`s(n) = s* + ½ ln(n/n₀)`); the Möbius map's sup is `max(value at n₀, 2R L_c)`, and the per-level
+  union is summable;
+* **one** multiplicity union over all rows `[D, top)`, using `Σ_i(x_i − c)₊ ≤ (Σ_i x_i − c)₊`. With
+  `t(n) = t* + ln(n/n₀)` its sup is `max(value at n₀, L_c)`;
+* `top = b₀ + sqrt(2j) + 2`, since a round-1 column has `z(z+1)/2 ≤ j`.
+
+So the count is `≤ c Σ_i A_i/d_i² + mult_tot`, with `Σ_i A_i/d_i² ≈ 2j/(0.61 D²)`. This is below `j/J` once
+`D ≳ 1800`, and is uniform in j.
+
+**Regime boundary moved to C = 100.** (B) still passes there, including tiny σ. So (A) is `j ≤ 100·J·ln n`,
+i.e. n₀(j) = `max(2^40, e^{j/(100J)})`.
+
+| j | worst escapes (all n ≥ n₀) | allowance | worst at |
+|---|---:|---:|---|
+| 300J | −2522 | 300 | s₂ = 1 |
+| 1000J | −1655 | 1000 | s₂ = 1 |
+| 2770J | −844 | 2770 | s₂ = 1 |
+| 3000J | −750 | 2609 | s₂ = 1 |
+| 1e4 J | 222 | 8696 | s₂ = 1 |
+| 1e5 J | 6843 | 8.7e4 | s₂ ≤ 5 |
+
+Pointwise checks at s₂ ∈ {1, 10, 1000} out to `j = 1e20·J` give escapes about `1e-7·j`, against the
+allowance `j/J = 2e-6·j`.
+
+**Still to do for route (d)'s n → ∞:**
+* j-interval cells (monotone conventions) for (A), and `(b, σ)` cells for (B);
+* a j → ∞ statement for (A): the bound is `≈ 2cj/(0.61D²) + O(√j·s₂)`, linear in j with coefficient
+  `< 1/J`;
+* the finite range `n < 2^40`: the existing sweeps, or (A) with a smaller n₀;
+* interval certification;
+* review.
