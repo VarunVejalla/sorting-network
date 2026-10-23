@@ -728,3 +728,24 @@ So every fixed b works with the current code. All b → 0 needs either:
   monotone average.
 * The worst margin is about −15 % to −20 % of the allowance at small b, wider at larger b.
 * The (A) cover is at 180 of about 190 intervals, all OK.
+
+**b → 0 in (B): measured and diagnosed.** At fixed `τ = σ/b`, normalized by the allowance `b/J`:
+
+| τ | b = 1e-6 | b = 1e-12 | b ≤ 1e-24 |
+|---|---|---|---|
+| 1e-9 | count 2.79, esc 0.81 | count 2.72, esc 0.73 | inf (float underflow) |
+| 1e-6 | esc −1707 | esc −1710 | inf |
+
+**Diagnosis.** The only non-linear b-dependence is the union over S, `σn ln(e/σ)` with
+`ln(1/σ) = ln(1/τ) + ln(1/b)`. In A*'s Kingman exclusion it is divided by `t = κ/R`. So its per-b cost grows
+like `ln(1/b)`, and (B) as built must fail at some astronomically small b.
+
+**The fix needed:** a hybrid lemma for small b. Use collision-style unions inside the dense evaluator, i.e.
+the fixed-U collision bound with `t ≈ ln(1/σ)`, as (A) does with `t ≈ ½ ln n`. That turns the `ln(1/b)`
+union cost into O(1) per source.
+* (A) itself cannot simply absorb `b < 1e-6`. At `n ≈ 1e6 j` its collision `q₀ ≈ 2e s₂/(λ 1e6)` is
+  fine only for `s₂ ≲ 1e5`, while for huge j the monotone average needs larger s₂.
+
+**This is the last open structural item for route (d)'s n → ∞ argument.** Everything else is either
+covered by cells (A: j ≤ 1e6 J; B: `b ∈ [1e-6, 1.25e6]`), analytic (A: j ≥ 1e6 J), or in sweeps
+(n < 2^40).
