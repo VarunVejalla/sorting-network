@@ -709,3 +709,16 @@ multiplicity union as (A), so that the union over S is paid once and not per lev
 
 **Still open in (B):** b → 0 below the cover's 1e-6. Counts scale about linearly in b down to 1e-6; an
 argument for all smaller b is needed.
+
+**The b → 0 limit in (B): what it needs.**
+* **Below the high-rows offset D**, the per-level unions are over S's sources only (fixed-U conditioning), so
+  they cost ∝ σ, not ∝ b.
+* **Above D**, the high-rows lemma pays the profile union `N ln(e/N)/t` with `N ≈ 2b/D²` tall columns per n.
+  Against the allowance `b/J` this needs `D ≳ sqrt(2J ln(1/b)/t)`. That grows only like `sqrt(ln(1/b))`: about
+  1.5e4 for `b = 1e-100`, below the cutoff `dtop = 1e5` used now.
+
+So every fixed b works with the current code. All b → 0 needs either:
+1. an asymptotic version of `escapes_cell` with `D(b) ∝ sqrt(J ln(1/b))`, each term tracked analytically
+   (as the closed round-1 tail was); or
+2. moving `b < 1e-6` to (A). There `n ≥ 1e6 j`, so the collision `q ≤ 2e s₂/(λ·1e6)` is small for
+   `s₂ ≲ 1e5`, and larger s₂ would need the monotone average closed below that.
