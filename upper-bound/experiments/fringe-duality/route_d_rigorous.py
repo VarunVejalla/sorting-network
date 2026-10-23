@@ -337,10 +337,14 @@ def worst_interval(ja, jb, n, f, smax=4096):
     return worst
 
 
+FMAX = None   # fringe-class ladder: if set, j runs to FMAX n/8 with f_eff = max(f, 8 j_a/n) (escapes decrease in f)
+
+
 def sweep(n, J, f, jfrom, jto, ratio=1.15):
     """Cover [jfrom, jto] by geometric intervals (split at J). Contract: escapes = 0 (bound < 1) for j < J,
     escapes < j/J for j >= J."""
-    jmax = f * n / 8
+    f0 = f
+    jmax = (FMAX if FMAX else f) * n / 8
     jto = min(jto, jmax)
     ja = jfrom
     while ja < jto:
@@ -348,6 +352,8 @@ def sweep(n, J, f, jfrom, jto, ratio=1.15):
         if ja < J < jb:
             jb = J
         allowed = 1.0 if jb <= J else ja / J
+        if FMAX:
+            f = max(f0, 8 * ja / n)
         e, s = worst_interval(ja, jb, n, f)
         print(f"  j in [{ja / J:10.4g}, {jb / J:10.4g}] J: worst {e:12.1f} at s2 <= {s:7d}  allowed {allowed:10.1f}"
               f"  {'OK' if e < allowed else 'FAIL'}", flush=True)
@@ -380,7 +386,10 @@ def main():
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "sweep":
         n_, J_, f_ = int(float(sys.argv[2])), float(sys.argv[3]), float(sys.argv[4])
-        print(f"sweep n = 2^{math.log2(n_):.0f}, J = {J_:.3g}, f = {f_:.0f}, j in [{sys.argv[5]}, {sys.argv[6]}]", flush=True)
+        if len(sys.argv) > 7:
+            FMAX = float(sys.argv[7])
+        print(f"sweep n = 2^{math.log2(n_):.0f}, J = {J_:.3g}, f = {f_:.0f}, j in [{sys.argv[5]}, {sys.argv[6]}]"
+              f"{', f-ladder to %.3g (f_eff = max(f, 8 j_a/n))' % FMAX if FMAX else ''}", flush=True)
         sweep(n_, J_, f_, float(sys.argv[5]), float(sys.argv[6]))
     else:
         main()

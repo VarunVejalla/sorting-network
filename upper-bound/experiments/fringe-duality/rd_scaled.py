@@ -74,7 +74,7 @@ def excluded_step_s(a0, a1, b, R, ent):
 def A_star_s(b, R, d, nu, e_s):
     """per n: alpha* with every alpha in [alpha*, nu R^2] excluded (1.1-geometric verification)."""
     E = lambda a: ln_count_s(a, nu, d, R) + e_s
-    amax = nu * R * R
+    amax = min(nu * R * R, R * b)              # mass: sum (z-b)^2 over a level <= R sum (z-b)_+ <= R j
     if amax <= 0:
         return 0.0
     hi = min(max(1e-12, 4 * b), amax)
@@ -101,7 +101,7 @@ def A_star_s(b, R, d, nu, e_s):
 
 def A_star_s_restart(b, R, d, nu, e_s, start):
     E = lambda a: ln_count_s(a, nu, d, R) + e_s
-    amax = nu * R * R
+    amax = min(nu * R * R, R * b)              # mass: sum (z-b)^2 over a level <= R sum (z-b)_+ <= R j
     a = start
     while a < amax:
         a0 = a
@@ -228,12 +228,19 @@ def round1_level_tail(b, d0, ratio=1.6, n0=2.0 ** 40):
     d = float(d0)
     R = ratio * d
     amax = R * b
+    SS = [0.5 * 0.7 ** i for i in range(80)]
+
     def ok(a0, a1, lam):
-        q = a1 * g / (R * s * lam)
-        if q > 0.5:
-            return False
+        """some s in the grid with q(a1) <= 1/2 excludes [a0, a1] (x increasing in alpha)."""
         ent = (a1 / (d * d)) * (math.log(math.e * d * d / a1) + math.log(R - d + 1)) + eps_level(R, b, n0)
-        return a0 * 1 > lam * b + a1 * g / (s * s * lam * (1 - q)) + R * ent / s
+        for s_ in SS:
+            g_ = math.expm1(s_) - s_
+            q = a1 * g_ / (R * s_ * lam)
+            if q > 0.5:
+                continue
+            if a0 > lam * b + a1 * g_ / (s_ * s_ * lam * (1 - q)) + R * ent / s_:
+                return True
+        return False
     best = None
     for lam in (0.8, 1.0, 1.25, 1.5, 2.0, 3.0):
         # smallest ahat with every [a, 1.01 a] in [ahat, amax] excluded
@@ -264,10 +271,15 @@ def high_rows_s(b, sigma, D, n0=2.0 ** 40, ratio=1.6, dclose=1e6, verbose=False)
     Union over S: sigma ln(e/sigma). Returns min_t [sigma (e^t - 1) w + sigma ln(e/sigma) + pe + eps] / t."""
     w = N = 0.0
     d = D
+    dclose = max(dclose, 1000.0 * b)            # the closed tail needs d >> (ln d) b
     while d < dclose:
         R = int(d * ratio) + 1
         e = eps_level(R, b, n0)
         a = A_star_s(b, R, d, 1.0, e)
+        if a >= 0.99 * R * R:                   # Kingman grid exhausted: switch to the verified closed tail here
+            wt0, Nt0, ah0 = round1_level_tail(b, d, ratio, n0)
+            if wt0 < math.inf:
+                break
         w += a / d
         N += a / (d * d)
         if verbose:
@@ -278,6 +290,7 @@ def high_rows_s(b, sigma, D, n0=2.0 ** 40, ratio=1.6, dclose=1e6, verbose=False)
     N += Nt
     if verbose:
         print(f"     r1 tail above d={d}: ahat={ahat:.3e} (b={b}) w_tail={wt:.3e} N_tail={Nt:.3e}")
+    N = min(N, 1.0)                              # at most n tall columns
     pe = N * (math.log(math.e / N) + math.log(math.e * (w / N + 1))) if N > 0 else 0.0
     eS = sigma * (1 - math.log(sigma)) if sigma > 0 else 0.0
     eps = eps_level(D, b, n0)

@@ -188,3 +188,9 @@ sweep n = 2^40, J = 5e+05, f = 3967, j in [1, 1e20]
   j in [ 3.839e+05,  4.415e+05] J: worst      33321.5 at s2 <=      20  allowed   383885.2  OK
   j in [ 4.415e+05,  5.077e+05] J: worst      38807.6 at s2 <=      22  allowed   441467.9  OK
   j in [ 5.077e+05,  5.838e+05] J: worst      45072.6 at s2 <=      24  allowed   507688.1  OK
+  j in [ 5.838e+05,  6.714e+05] J: worst      52074.3 at s2 <=      28  allowed   583841.3  OK
+  j in [ 6.714e+05,  7.721e+05] J: worst      60397.0 at s2 <=      37  allowed   671417.5  OK
+  j in [ 7.721e+05,  8.879e+05] J: worst      70231.5 at s2 <=      40  allowed   772130.2  OK
+  j in [ 8.879e+05,  1.021e+06] J: worst      81286.1 at s2 <=      43  allowed   887949.7  OK
+  j in [ 1.021e+06,  1.174e+06] J: worst      95337.6 at s2 <=      67  allowed  1021142.1  OK
+  j in [ 1.174e+06,   1.35e+06] J: worst     110971.7 at s2 <=      67  allowed  1174313.5  OK

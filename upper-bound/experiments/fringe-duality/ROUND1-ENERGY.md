@@ -607,3 +607,32 @@ allowance `j/J = 2e-6·j`.
 3. (A) between 2^30 and 2^40 at j up to `100·J·ln n` (the 1000J and 2080J points were still running).
 4. Interval arithmetic throughout.
 5. Review.
+
+**Two coverage gaps found (2026-10-22), from R1's geometry (`R1-PROOF.md` §4).**
+1. **n is arbitrary.** `n = ⌊π/(2(f+1))⌋`, and `m = ⌈a/n⌉ − 1` must stay in the row window, so n cannot be
+   rounded to a power of two.
+   * (A) and (B) are sups over all real `n ≥ n₀`, so they are fine.
+   * The per-n sweeps (n < 2^30) need an n-interval version. Every term is monotone in n: use `n_lo` for
+     `n lnG`, the collision q and the multiplicity tails; `n_hi` for the entropies;
+     `b ∈ [j_lo/n_hi, j_hi/n_lo]` with the existing j-interval conventions.
+2. **The fringe class f varies**, from 3967 (mid) up to about 1e7 (sparse botDesc), and each class needs
+   `j ≤ f n/8`.
+   * Escapes decrease in f (the `−f s₂` term), so for `j ∈ [j_a, j_b]` the worst class is
+     `f = max(3967, 8 j_a/n)`.
+   * The sweeps must run to `j = f_max n/8` with that f (`--fladder`).
+   * (B) needs b up to `f_max/8 ≈ 1.25e6`, at `f = 8b`.
+   * (A) is independent of f (worst at f = 3967).
+
+**(B) across the fringe-class ladder** (`rd_scaled_out/fladder_B*.out`, f = 8b, floor 2^30). The evaluator
+needed four fixes, each of which only tightens a valid bound:
+* tall-column count `N ≤ 1` per n;
+* the level-tail cutoff scales with b;
+* adaptive s in the tail check (each α-interval uses the largest s with `q ≤ 1/2`);
+* **mass cap `α ≤ R·b` per n** (`Σ_level (z−b)² ≤ R Σ (z−b)₊ ≤ R j`). This is what makes large b work.
+
+| b (f = 8b) | worst esc/n over σ/b ∈ {1e-12 … 1e-4} | average load L/σ | f |
+|---|---|---:|---:|
+| 1e3 | 2.4e-5 (allowance 2e-3) | ≤ 3.2e4 at σ = 1e-9, 1510 at 1e-3 | 8000 |
+| 1e4 | negative | 1.3e4 – 5e4 | 8e4 |
+| 1e5 | negative | 1.0e5 – 1.3e5 | 8e5 |
+| 1.25e6 | negative | 1.26e6 – 1.37e6 | 1e7 |

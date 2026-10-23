@@ -1,0 +1,19 @@
+B f=8b b=1000 sigma=1.00e-09: esc/n 2.431e-05 allowed 2.000e-03  L/sigma=3.231e+04 vs f=8000  OK [2s]
+B f=8b b=1000 sigma=1.00e-06: esc/n -3.922e-03 allowed 2.000e-03  L/sigma=4078 vs f=8000  OK [5s]
+B f=8b b=1000 sigma=1.00e-03: esc/n -6.490e+00 allowed 2.000e-03  L/sigma=1510 vs f=8000  OK [8s]
+B f=8b b=1000 sigma=1.00e-01: esc/n 1.031e+04 allowed 2.000e-03  L/sigma=1.111e+05 vs f=8000  FAIL [12s]
+B f=8b b=10000 sigma=1.00e-08: esc/n -3.954e-04 allowed 2.000e-02  L/sigma=4.046e+04 vs f=8e+04  OK [2s]
+B f=8b b=10000 sigma=1.00e-05: esc/n -6.660e-01 allowed 2.000e-02  L/sigma=1.34e+04 vs f=8e+04  OK [5s]
+B f=8b b=10000 sigma=1.00e-02: esc/n -3.020e+02 allowed 2.000e-02  L/sigma=4.98e+04 vs f=8e+04  OK [8s]
+B f=8b b=10000 sigma=1.25e-01: esc/n 5.457e+03 allowed 2.000e-02  L/sigma=1.237e+05 vs f=8e+04  FAIL [10s]
+Traceback (most recent call last):
+  File "C:\Users\Varun\Documents\Projects\Math Research\sorting-network\upper-bound\experiments\fringe-duality\rd_scaled_out\fladder_B.py", line 13, in <module>
+    e = S.escapes_s(b, sig, f)
+        ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Varun\Documents\Projects\Math Research\sorting-network\upper-bound\experiments\fringe-duality\rd_scaled_out\..\rd_scaled.py", line 336, in escapes_s
+    total += high_rows_s(b, sigma, int(lo - b), n0=n0, verbose=verbose)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Varun\Documents\Projects\Math Research\sorting-network\upper-bound\experiments\fringe-duality\rd_scaled_out\..\rd_scaled.py", line 281, in high_rows_s
+    pe = N * (math.log(math.e / N) + math.log(math.e * (w / N + 1))) if N > 0 else 0.0
+              ^^^^^^^^^^^^^^^^^^^^
+ValueError: math domain error
