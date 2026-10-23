@@ -699,3 +699,13 @@ The cover:
 These sizes are absurd, but the limsup needs them. **Fix to do:** give (B) the same merged single
 multiplicity union as (A), so that the union over S is paid once and not per level. Then the
 `ln(1/σ)/t` cost appears once, and with `t ≈ ln(f)` it is below `f` for every σ ≥ 1/n.
+
+**Correction (same day): the "asymptotic corner" above is spurious.**
+* The (B) evaluator depends on j only through b and `n₀(b)`, so no large-j corner exists in (B).
+* For tiny σ, the bottom cell `[0, σ₀]` applies, since the count is nondecreasing in σ. For example, at
+  b = 10 the count is 1.1e-7 at σ = 1e-13 and 5.1e-9 at σ = 1e-149, against the allowance 2e-5. At
+  b = 1e-6 it is about 1e-14 or less, against 2e-12.
+* The merged-multiplicity total was added anyway, as a valid tightening (min of both totals).
+
+**Still open in (B):** b → 0 below the cover's 1e-6. Counts scale about linearly in b down to 1e-6; an
+argument for all smaller b is needed.

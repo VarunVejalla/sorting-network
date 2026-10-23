@@ -362,6 +362,7 @@ def escapes_cell(b_lo, b_hi, s_lo, s_hi, f, L0x=0, ratio=1.6, dtop=1e5):
     sig = s_hi
     e_S = sig * (1 - math.log(sig)) + eps
     total = sig * L0
+    ks = []
     lo = L0
     while lo - b_hi < dtop:
         off = lo - b_hi
@@ -377,7 +378,13 @@ def escapes_cell(b_lo, b_hi, s_lo, s_hi, f, L0x=0, ratio=1.6, dtop=1e5):
         if d >= 1:
             cnt = min(cnt, A / (4 * max(d - 1, 0.5)) + k)
         total += min(sig * (hi - lo), cnt)
+        ks.append(min(k, sig * (hi - lo)))
         lo = hi
+    # merged alternative: one multiplicity union over all level rows [L0, lo): sum_i (M_i - c)_+ <= (M_tot - c)_+
+    Htot = int(lo - L0)
+    if Htot >= 1:
+        merged = sig * L0 + min(c * sum(ks) + mult_excess_s(Htot, sig, e_S + eps, c) for c in CS if c <= Htot or c == 1)
+        total = min(total, merged)
     total += high_rows_s(b_hi, sig, int(math.floor(lo - b_hi)), n0=n0)
     return total, total - f * s_lo
 
