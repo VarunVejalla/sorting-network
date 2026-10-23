@@ -287,6 +287,65 @@ theorem segmentSort_cnt_rows_le {m b : ℕ} {offs : List ℕ} (hd : SegDisjoint 
       omega
   exact h1.trans (h2 ▸ h3)
 
+/-! ### Row identity for a sorted column -/
+
+open Finset in
+/-- A monotone Boolean column is `false` exactly on an initial segment `[0, k)`. -/
+theorem monotone_bool_initial {m : ℕ} (w : Fin m → Bool) (hw : Monotone w) :
+    ∃ k ≤ m, ∀ r : Fin m, w r = false ↔ r.val < k := by
+  classical
+  by_cases hT : ∃ r, w r = true
+  · set T := univ.filter fun r : Fin m => w r = true
+    have hne : T.Nonempty := by
+      obtain ⟨r, hr⟩ := hT
+      exact ⟨r, by simp [T, hr]⟩
+    have hmin : w (T.min' hne) = true := by
+      have := T.min'_mem hne
+      simpa [T] using this
+    refine ⟨(T.min' hne).val, (T.min' hne).2.le, fun r => ⟨fun hf => ?_, fun hlt => ?_⟩⟩
+    · by_contra hc
+      push_neg at hc
+      have hle : T.min' hne ≤ r := Fin.le_iff_val_le_val.2 hc
+      have := hw hle
+      rw [hmin, hf] at this
+      exact absurd this (by decide)
+    · by_contra hc
+      have hrt : w r = true := by simpa using hc
+      have := T.min'_le r (by simp [T, hrt])
+      exact absurd hlt (not_lt.2 (Fin.le_iff_val_le_val.1 this))
+  · push_neg at hT
+    exact ⟨m, le_rfl, fun r => ⟨fun _ => r.2, fun _ => by simpa using hT r⟩⟩
+
+open Finset in
+/-- **Row identity (one sorted column).** The `false`s at rows `≥ h` number `F − h`, `F` the column's
+`false`s: this is the margin excess `(F − h)₊` of the round-1 count. -/
+theorem cntT_rows_false_of_monotone {m : ℕ} (w : Fin m → Bool) (hw : Monotone w) (h : ℕ) :
+    cntT (univ.filter fun r : Fin m => h ≤ r.val) w false = cntT univ w false - h := by
+  classical
+  obtain ⟨k, hkm, hk⟩ := monotone_bool_initial w hw
+  have hall : cntT univ w false = k := by
+    unfold cntT
+    rw [show (univ.filter fun r : Fin m => w r = false) = univ.filter fun r : Fin m => r.val < k from
+      Finset.filter_congr fun r _ => hk r]
+    refine (Finset.card_bij (fun r _ => r.val) ?_ ?_ ?_).trans (Finset.card_range k)
+    · intro r hr; simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hr; simpa using hr
+    · intro a _ c _ hac; exact Fin.ext hac
+    · intro x hx
+      simp only [Finset.mem_range] at hx
+      exact ⟨⟨x, by omega⟩, by simp [hx], rfl⟩
+  rw [hall]
+  unfold cntT
+  rw [Finset.filter_filter, show (univ.filter fun r : Fin m => h ≤ r.val ∧ w r = false) =
+    univ.filter fun r : Fin m => h ≤ r.val ∧ r.val < k from Finset.filter_congr fun r _ => by rw [hk r]]
+  refine (Finset.card_bij (fun r _ => r.val) ?_ ?_ ?_).trans (Nat.card_Ico h k)
+  · intro r hr
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hr
+    simp [Finset.mem_Ico, hr.1, hr.2]
+  · intro a _ c _ hac; exact Fin.ext hac
+  · intro x hx
+    simp only [Finset.mem_Ico] at hx
+    exact ⟨⟨x, by omega⟩, by simp [hx.1, hx.2], rfl⟩
+
 end Bitonic
 
 end

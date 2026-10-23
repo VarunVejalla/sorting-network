@@ -173,6 +173,28 @@ theorem bandStage_rowCount_le {m n : ℕ} (hn : 0 < n) (b : ℕ) {offs : List �
   rw [ecol]
   exact Bitonic.segmentSort_cnt_rows_le hd hfit hhi hseg _ bv
 
+open Finset in
+/-- **L3a for the merge-first, band-repaired separator.** On a column-run-sorted `0–1` input, the `false`s
+(keys of the low threshold set) at rows `≥ i` of the output number at most `Σ_j (F_j − h)`, where `F_j` is
+the count of `false`s in column `j` after the second sort (semantic layout): the round-1 margin excess at
+row `h`, provided every band segment reaching rows `≥ i` starts at row `≥ h` (`h ≤ i`). -/
+theorem mergeBandPack2Net_low_crossings_le {m n : ℕ} (hn : 0 < n) (l b : ℕ) {offs : List ℕ}
+    (hd : Bitonic.SegDisjoint b offs) (hfit : ∀ o ∈ offs, o + 2 ^ b ≤ m) (σ1 σ2 : Scramble m n)
+    {h i : ℕ} (hhi : h ≤ i) (hseg : ∀ o ∈ offs, i < o + 2 ^ b → h ≤ o) (v : Fin (m * n) → Bool)
+    (hv : ColumnRunSorted m n hn l v) :
+    rowCount hn ((mergeBandPack2Net m n hn l b offs σ1 σ2).exec v) i false ≤
+      ∑ j : Fin n, (Bitonic.cntT univ (semanticExec hn σ1 v ∘ columnWireEmbed m n hn j) false - h) := by
+  rw [mergeBandPack2Net_exec_eq hn l b offs σ1 σ2 v hv]
+  refine (bandStage_rowCount_le hn b hd hfit σ1 σ2 hhi hseg _ false).trans (le_of_eq ?_)
+  rw [physicalPackNet_exec, rowCount_comp_perm hn _ (matrixRow_rowScrambleWirePerm hn σ1) _ _ false,
+    rowCount_eq_sum_columns _ _ _ false]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  have hmono : Monotone (semanticExec hn σ1 v ∘ columnWireEmbed m n hn j) := by
+    intro r s hrs
+    simp only [Function.comp, columnWireEmbed_apply]
+    exact columnSortNetwork_columnMonotone hn _ j hrs
+  exact Bitonic.cntT_rows_false_of_monotone _ hmono h
+
 end Chvatal
 
 end
