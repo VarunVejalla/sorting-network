@@ -722,3 +722,9 @@ So every fixed b works with the current code. All b → 0 needs either:
    (as the closed round-1 tail was); or
 2. moving `b < 1e-6` to (A). There `n ≥ 1e6 j`, so the collision `q ≤ 2e s₂/(λ·1e6)` is small for
    `s₂ ≲ 1e5`, and larger s₂ would need the monotone average closed below that.
+
+**(B) cover complete** (`rd_scaled_out/coverB_*.out`): **107 b-cells, `b ∈ [1e-6, 1.25e6]`, all OK**.
+* Every σ ∈ (0, b/f] is covered: the bottom cell, adaptively subdivided cells, and closure by the
+  monotone average.
+* The worst margin is about −15 % to −20 % of the allowance at small b, wider at larger b.
+* The (A) cover is at 180 of about 190 intervals, all OK.
