@@ -314,3 +314,14 @@ reach sub-500 provably.** Two reasons:
 The sub-500 pieces that stay valuable regardless: the certified tails, the Lean segment-sort/L3 theorems,
 the all-depth width box, and route (d)'s n → ∞ machinery. They are recorded in
 `experiments/sub500-screen/INDUCTION-v6.md` §16 and `LLM-helpers/SUB500-MAP.md`.
+
+**F-cut repair: first costing (2026-10-23).** The leak needs fringe keys moved down from heights up to about
+`sqrt(2j)` (≥ 2^19 once n ≳ 2^28; z ≤ sqrt(2·(f/8)·n)). Stage depth is the max over parallel segments:
+* a larger F segment (2^21), fully sorted: depth S(21) = 231 instead of 190;
+* the same with selection (sort 2^19 blocks, then merge-select the f lowest of 4 blocks): about
+  190 + 2·log₂(2f) ≈ 216, i.e. a cost of about 507;
+* a whole-column gather (tile with 2^19 blocks, merge-select across 32 blocks): about 190 + 5·13 = 255.
+
+None of these goes below 500. A leak-free design needs a first round that caps the round-1 column heights,
+or a fringe allowance J much smaller than 5e5, which conflicts with the outsider budget δ. **Verdict: no
+sub-500 route with the current architecture; needs a new idea.**
