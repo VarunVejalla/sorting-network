@@ -154,6 +154,138 @@ theorem segmentSort_seg_perm {m b : ℕ} {offs : List ℕ} (hd : SegDisjoint b o
     (fun j : Fin (2 ^ b) => v ⟨o + j.val, by have := j.2; omega⟩)
   exact ⟨ρ, funext fun i => by rw [segmentSort_exec_seg hd ho hfit, hρ]⟩
 
+/-! ### Counting form of "keys never leave their segment" (L3a, one column) -/
+
+open Finset in
+/-- Number of `true`s of `w` on `S`. -/
+def cntT {m : ℕ} (S : Finset (Fin m)) (w : Fin m → Bool) : ℕ := (S.filter fun r => w r = true).card
+
+open Finset in
+/-- The wires of segment `[o, o + 2^b)`. -/
+def segSet (m b o : ℕ) : Finset (Fin m) := univ.filter fun r : Fin m => o ≤ r.val ∧ r.val < o + 2 ^ b
+
+open Finset in
+theorem cntT_comp_perm {N : ℕ} (w : Fin N → Bool) (ρ : Equiv.Perm (Fin N)) :
+    (univ.filter fun i => (w ∘ ρ) i = true).card = (univ.filter fun i => w i = true).card := by
+  refine Finset.card_bij (fun i _ => ρ i) (fun i hi => by simpa using hi)
+    (fun a _ b _ h => ρ.injective h) (fun j hj => ⟨ρ.symm j, by simpa using hj, by simp⟩)
+
+open Finset in
+/-- Counting on a fitting segment through the local view. -/
+theorem cntT_segSet {m b o : ℕ} (hfit : o + 2 ^ b ≤ m) (w : Fin m → Bool) :
+    cntT (segSet m b o) w =
+      (univ.filter fun i : Fin (2 ^ b) => w ⟨o + i.val, by have := i.2; omega⟩ = true).card := by
+  unfold cntT segSet
+  refine (Finset.card_bij (fun i _ => (⟨o + i.val, by have := i.2; omega⟩ : Fin m)) ?_ ?_ ?_).symm
+  · intro i hi
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hi ⊢
+    exact ⟨⟨by omega, by have := i.2; omega⟩, hi⟩
+  · intro a _ c _ h
+    exact Fin.ext (by have := congrArg Fin.val h; simp at this; omega)
+  · intro r hr
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hr
+    refine ⟨⟨r.val - o, by omega⟩, ?_, Fin.ext (by simp; omega)⟩
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+    have e : (⟨o + (r.val - o), by omega⟩ : Fin m) = r := Fin.ext (by simp; omega)
+    rw [e]; exact hr.2
+
+/-- **The number of `true`s on each segment is preserved.** -/
+theorem segmentSort_cntT_seg {m b : ℕ} {offs : List ℕ} (hd : SegDisjoint b offs) {o : ℕ}
+    (ho : o ∈ offs) (hfit : o + 2 ^ b ≤ m) (v : Fin m → Bool) :
+    cntT (segSet m b o) ((segmentSort m b offs).exec v) = cntT (segSet m b o) v := by
+  obtain ⟨ρ, hρ⟩ := segmentSort_seg_perm hd ho hfit v
+  rw [cntT_segSet hfit, cntT_segSet hfit]
+  have : (fun i : Fin (2 ^ b) => (segmentSort m b offs).exec v ⟨o + i.val, by have := i.2; omega⟩) =
+      (fun j : Fin (2 ^ b) => v ⟨o + j.val, by have := j.2; omega⟩) ∘ ρ := hρ
+  simp only [show ∀ i : Fin (2 ^ b), (segmentSort m b offs).exec v ⟨o + i.val, by have := i.2; omega⟩ =
+      ((fun j : Fin (2 ^ b) => v ⟨o + j.val, by have := j.2; omega⟩) ∘ ρ) i from fun i => congr_fun this i]
+  exact cntT_comp_perm (fun j : Fin (2 ^ b) => v ⟨o + j.val, by have := j.2; omega⟩) ρ
+
+open Finset in
+/-- **L3a, one column**: if every segment reaching rows `≥ i` starts at row `≥ h` (and `h ≤ i`), then
+the `true`s at rows `≥ i` after the segment sort number at most the `true`s at rows `≥ h` before. -/
+theorem segmentSort_cnt_rows_le {m b : ℕ} {offs : List ℕ} (hd : SegDisjoint b offs)
+    (hfit : ∀ o ∈ offs, o + 2 ^ b ≤ m) {h i : ℕ} (hhi : h ≤ i)
+    (hseg : ∀ o ∈ offs, i < o + 2 ^ b → h ≤ o) (v : Fin m → Bool) :
+    cntT (univ.filter fun r : Fin m => i ≤ r.val) ((segmentSort m b offs).exec v) ≤
+      cntT (univ.filter fun r : Fin m => h ≤ r.val) v := by
+  classical
+  set out := (segmentSort m b offs).exec v
+  set Mf : Finset ℕ := (offs.filter fun o => decide (i < o + 2 ^ b)).toFinset with hMf
+  have hMf_mem : ∀ o, o ∈ Mf ↔ o ∈ offs ∧ i < o + 2 ^ b := fun o => by
+    simp [hMf, List.mem_filter]
+  set U : Finset (Fin m) := Mf.biUnion (segSet m b) with hU
+  set Ri : Finset (Fin m) := univ.filter fun r : Fin m => i ≤ r.val
+  set Rout := Ri \ U
+  -- pairwise disjoint segments
+  have hsymm : Symmetric fun o₁ o₂ : ℕ => o₁ + 2 ^ b ≤ o₂ ∨ o₂ + 2 ^ b ≤ o₁ :=
+    fun _ _ h => h.symm
+  have hpd : (Mf : Set ℕ).PairwiseDisjoint (segSet m b) := by
+    intro o₁ h₁ o₂ h₂ hne
+    have h₁' := ((hMf_mem o₁).1 h₁).1
+    have h₂' := ((hMf_mem o₂).1 h₂).1
+    have hr := List.Pairwise.forall hsymm hd h₁' h₂' hne
+    rw [Function.onFun, Finset.disjoint_left]
+    intro r hr₁ hr₂
+    simp only [segSet, Finset.mem_filter, Finset.mem_univ, true_and] at hr₁ hr₂
+    omega
+  -- outside wires are fixed
+  have hout : ∀ r ∈ Rout, out r = v r := by
+    intro r hr
+    simp only [Rout, Ri, Finset.mem_sdiff, Finset.mem_filter, Finset.mem_univ, true_and, hU,
+      Finset.mem_biUnion, not_exists, not_and] at hr
+    refine segmentSort_exec_outside offs v r fun o ho => ?_
+    by_cases hm : i < o + 2 ^ b
+    · have := hr.2 o ((hMf_mem o).2 ⟨ho, hm⟩)
+      simp only [segSet, Finset.mem_filter, Finset.mem_univ, true_and, not_and, not_lt] at this
+      by_cases h1 : o ≤ r.val
+      · exact Or.inr (this h1)
+      · exact Or.inl (by omega)
+    · exact Or.inr (by omega)
+  have hdisj : Disjoint Rout U := Finset.sdiff_disjoint
+  have hcntU : ∀ w : Fin m → Bool, cntT U w = ∑ o ∈ Mf, cntT (segSet m b o) w := by
+    intro w
+    unfold cntT
+    rw [hU, Finset.filter_biUnion, Finset.card_biUnion]
+    intro o₁ h₁ o₂ h₂ hne
+    exact Finset.disjoint_filter_filter (hpd h₁ h₂ hne)
+  have hcntT : ∀ w : Fin m → Bool, cntT (Rout ∪ U) w = cntT Rout w + cntT U w := by
+    intro w
+    unfold cntT
+    rw [Finset.filter_union, Finset.card_union_of_disjoint (Finset.disjoint_filter_filter hdisj)]
+  -- step 1: rows >= i inside T
+  have h1 : cntT Ri out ≤ cntT (Rout ∪ U) out := by
+    unfold cntT
+    refine Finset.card_le_card (Finset.filter_subset_filter _ ?_)
+    intro r hr
+    by_cases hu : r ∈ U
+    · exact Finset.mem_union_right _ hu
+    · exact Finset.mem_union_left _ (Finset.mem_sdiff.2 ⟨hr, hu⟩)
+  -- step 2: T's count is preserved
+  have h2 : cntT (Rout ∪ U) out = cntT (Rout ∪ U) v := by
+    rw [hcntT, hcntT, hcntU, hcntU]
+    congr 1
+    · unfold cntT
+      congr 1
+      exact Finset.filter_congr fun r hr => by rw [hout r hr]
+    · exact Finset.sum_congr rfl fun o ho =>
+        segmentSort_cntT_seg hd ((hMf_mem o).1 ho).1 (hfit o ((hMf_mem o).1 ho).1) v
+  -- step 3: T lies in rows >= h
+  have h3 : cntT (Rout ∪ U) v ≤ cntT (univ.filter fun r : Fin m => h ≤ r.val) v := by
+    unfold cntT
+    refine Finset.card_le_card (Finset.filter_subset_filter _ ?_)
+    intro r hr
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+    rcases Finset.mem_union.1 hr with hr | hr
+    · have := (Finset.mem_sdiff.1 hr).1
+      simp only [Ri, Finset.mem_filter, Finset.mem_univ, true_and] at this
+      omega
+    · obtain ⟨o, ho, hro⟩ := Finset.mem_biUnion.1 hr
+      have := hseg o ((hMf_mem o).1 ho).1 ((hMf_mem o).1 ho).2
+      simp only [segSet, Finset.mem_filter, Finset.mem_univ, true_and] at hro
+      omega
+  exact h1.trans (h2 ▸ h3)
+
 end Bitonic
 
 end
