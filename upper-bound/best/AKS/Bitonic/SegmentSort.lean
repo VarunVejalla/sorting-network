@@ -346,6 +346,148 @@ theorem cntT_rows_false_of_monotone {m : ℕ} (w : Fin m → Bool) (hw : Monoton
     simp only [Finset.mem_Ico] at hx
     exact ⟨⟨x, by omega⟩, by simp [hx.1, hx.2], rfl⟩
 
+/-! ### L3b, one column: escapes at a cut inside a sorted segment -/
+
+open Finset in
+/-- Counts on a disjoint union of row ranges add up. -/
+theorem cntT_rows_split {m : ℕ} (w : Fin m → Bool) (bv : Bool) {a c : ℕ} (hac : a ≤ c) :
+    cntT (univ.filter fun r : Fin m => a ≤ r.val) w bv =
+      cntT (univ.filter fun r : Fin m => a ≤ r.val ∧ r.val < c) w bv +
+        cntT (univ.filter fun r : Fin m => c ≤ r.val) w bv := by
+  classical
+  unfold cntT
+  rw [← Finset.card_union_of_disjoint]
+  · congr 1
+    ext r
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union]
+    constructor
+    · rintro ⟨h1, h2⟩
+      by_cases hc : r.val < c
+      · exact Or.inl ⟨⟨h1, hc⟩, h2⟩
+      · exact Or.inr ⟨by omega, h2⟩
+    · rintro (⟨⟨h1, -⟩, h2⟩ | ⟨h1, h2⟩)
+      · exact ⟨h1, h2⟩
+      · exact ⟨by omega, h2⟩
+  · rw [Finset.disjoint_left]
+    intro r h1 h2
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at h1 h2
+    omega
+
+open Finset in
+/-- In a sorted segment `[o, o + 2^b)` holding `B` `false`s, the `false`s at rows `≥ i`
+(`o ≤ i ≤ o + 2^b`) number `B − (i − o)`. -/
+theorem seg_sorted_false_above {m b o : ℕ} (hfit : o + 2 ^ b ≤ m) (w : Fin m → Bool)
+    (hmono : Monotone fun j : Fin (2 ^ b) => w ⟨o + j.val, by have := j.2; omega⟩)
+    {i : ℕ} (hoi : o ≤ i) (hi : i ≤ o + 2 ^ b) :
+    cntT (univ.filter fun r : Fin m => i ≤ r.val ∧ r.val < o + 2 ^ b) w false =
+      cntT (segSet m b o) w false - (i - o) := by
+  classical
+  obtain ⟨k, hk2, hk⟩ := monotone_bool_initial _ hmono
+  have hseg : cntT (segSet m b o) w false = k := by
+    rw [cntT_segSet hfit]
+    rw [show (univ.filter fun j : Fin (2 ^ b) => w ⟨o + j.val, by have := j.2; omega⟩ = false) =
+      univ.filter fun j : Fin (2 ^ b) => j.val < k from Finset.filter_congr fun j _ => hk j]
+    refine (Finset.card_bij (fun j _ => j.val) ?_ ?_ ?_).trans (Finset.card_range k)
+    · intro j hj; simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hj; simpa using hj
+    · intro a _ c _ hac; exact Fin.ext hac
+    · intro x hx; simp only [Finset.mem_range] at hx; exact ⟨⟨x, by omega⟩, by simp [hx], rfl⟩
+  rw [hseg]
+  unfold cntT
+  have hiff : ∀ r : Fin m, (i ≤ r.val ∧ r.val < o + 2 ^ b) ∧ w r = false ↔
+      (i ≤ r.val ∧ r.val < o + k) := by
+    intro r
+    constructor
+    · rintro ⟨⟨h1, h2⟩, h3⟩
+      have := (hk ⟨r.val - o, by omega⟩).1 (by
+        have e : (⟨o + (r.val - o), by omega⟩ : Fin m) = r := Fin.ext (by simp; omega)
+        simpa [e] using h3)
+      simp at this; omega
+    · rintro ⟨h1, h2⟩
+      refine ⟨⟨h1, by omega⟩, ?_⟩
+      have := (hk ⟨r.val - o, by omega⟩).2 (by simp; omega)
+      have e : (⟨o + (r.val - o), by omega⟩ : Fin m) = r := Fin.ext (by simp; omega)
+      simpa [e] using this
+  rw [Finset.filter_filter, show (univ.filter fun r : Fin m => (i ≤ r.val ∧ r.val < o + 2 ^ b) ∧ w r = false) =
+    univ.filter fun r : Fin m => i ≤ r.val ∧ r.val < o + k from Finset.filter_congr fun r _ => hiff r]
+  refine (Finset.card_bij (fun r _ => r.val) ?_ ?_ ?_).trans ((Nat.card_Ico i (o + k)).trans (by omega))
+  · intro r hr; simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hr; simp [Finset.mem_Ico, hr.1, hr.2]
+  · intro a _ c _ hac; exact Fin.ext hac
+  · intro x hx; simp only [Finset.mem_Ico] at hx; exact ⟨⟨x, by omega⟩, by simp [hx.1, hx.2], rfl⟩
+
+open Finset in
+/-- Wires of rows `< o` split into `true`s and `false`s. -/
+theorem cntT_below_tf {m : ℕ} (w : Fin m → Bool) {o : ℕ} (ho : o ≤ m) :
+    cntT (univ.filter fun r : Fin m => r.val < o) w true +
+      cntT (univ.filter fun r : Fin m => r.val < o) w false = o := by
+  classical
+  unfold cntT
+  rw [← Finset.card_union_of_disjoint (Finset.disjoint_filter.2 fun r _ h1 h2 => by simp_all)]
+  rw [Finset.filter_union_right]
+  have : ((univ.filter fun r : Fin m => r.val < o).filter fun r => w r = true ∨ w r = false) =
+      univ.filter fun r : Fin m => r.val < o := Finset.filter_true_of_mem fun r _ => by cases w r <;> simp
+  rw [this]
+  refine (Finset.card_bij (fun r _ => r.val) ?_ ?_ ?_).trans (Finset.card_range o)
+  · intro r hr; simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hr; simpa using hr
+  · intro a _ c _ hac; exact Fin.ext hac
+  · intro x hx; simp only [Finset.mem_range] at hx; exact ⟨⟨x, by omega⟩, by simp [hx], rfl⟩
+
+open Finset in
+/-- **L3b, one column.** For a cut `i` inside segment `[o, o + 2^b)`, the `false`s at rows `≥ i` after the
+segment sort are at most: the input `false`s at rows `≥ o + 2^b` (left alone), plus `(C − i)₊` (`C` the
+column's `false`s, the round-2 excess at the cut), plus the input `true`s below the segment. -/
+theorem segmentSort_escapes_le {m b : ℕ} {offs : List ℕ} (hd : SegDisjoint b offs)
+    (hfit : ∀ o ∈ offs, o + 2 ^ b ≤ m) {o : ℕ} (ho : o ∈ offs) {i : ℕ} (hoi : o ≤ i)
+    (hi : i ≤ o + 2 ^ b) (v : Fin m → Bool) :
+    cntT (univ.filter fun r : Fin m => i ≤ r.val) ((segmentSort m b offs).exec v) false ≤
+      cntT (univ.filter fun r : Fin m => o + 2 ^ b ≤ r.val) v false +
+        (cntT univ v false - i) + cntT (univ.filter fun r : Fin m => r.val < o) v true := by
+  classical
+  set L := 2 ^ b
+  set out := (segmentSort m b offs).exec v
+  have hfo := hfit o ho
+  -- rows >= o + L: only whole segments above, so the count does not grow
+  have hU : cntT (univ.filter fun r : Fin m => o + L ≤ r.val) out false ≤
+      cntT (univ.filter fun r : Fin m => o + L ≤ r.val) v false := by
+    refine segmentSort_cnt_rows_le hd hfit le_rfl (fun o' ho' h' => ?_) v false
+    by_cases hoo : o' = o
+    · subst hoo; omega
+    · have := List.Pairwise.forall (fun _ _ h => Or.symm h) hd ho' ho hoo
+      omega
+  -- the segment, sorted, with B falses
+  have hB : cntT (segSet m b o) out false = cntT (segSet m b o) v false :=
+    segmentSort_cntT_seg hd ho hfo v false
+  have hS := seg_sorted_false_above hfo out (segmentSort_seg_monotone hd ho hfo v) hoi hi
+  -- split the output rows >= i
+  have hsplit := cntT_rows_split out false (show i ≤ o + L by omega)
+  -- split the input column: rows < o, the segment, rows >= o + L
+  have hall : cntT univ v false = cntT (univ.filter fun r : Fin m => r.val < o) v false +
+      cntT (segSet m b o) v false + cntT (univ.filter fun r : Fin m => o + L ≤ r.val) v false := by
+    have h0 := cntT_rows_split v false (show 0 ≤ o by omega)
+    have h1 := cntT_rows_split v false (show o ≤ o + L by omega)
+    have e0 : (univ.filter fun r : Fin m => 0 ≤ r.val) = univ := by ext r; simp
+    have e1 : (univ.filter fun r : Fin m => 0 ≤ r.val ∧ r.val < o) =
+        univ.filter fun r : Fin m => r.val < o := by ext r; simp
+    rw [e0, e1] at h0
+    have e2 : (univ.filter fun r : Fin m => o ≤ r.val ∧ r.val < o + L) = segSet m b o := rfl
+    rw [e2] at h1
+    omega
+  have htf := cntT_below_tf v (show o ≤ m by omega)
+  rw [hsplit, hS, hB]
+  omega
+
+open Finset in
+/-- Sorted column: the `true`s below row `o` number `o − F` (`F` the column's `false`s). -/
+theorem cntT_below_true_of_monotone {m : ℕ} (w : Fin m → Bool) (hw : Monotone w) {o : ℕ} (ho : o ≤ m) :
+    cntT (univ.filter fun r : Fin m => r.val < o) w true = o - cntT univ w false := by
+  have htf := cntT_below_tf w ho
+  have hab := cntT_rows_false_of_monotone w hw o
+  have hs := cntT_rows_split w false (show 0 ≤ o by omega)
+  have e0 : (univ.filter fun r : Fin m => 0 ≤ r.val) = univ := by ext r; simp
+  have e1 : (univ.filter fun r : Fin m => 0 ≤ r.val ∧ r.val < o) =
+      univ.filter fun r : Fin m => r.val < o := by ext r; simp
+  rw [e0, e1] at hs
+  omega
+
 end Bitonic
 
 end

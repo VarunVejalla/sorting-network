@@ -195,6 +195,116 @@ theorem mergeBandPack2Net_low_crossings_le {m n : ℕ} (hn : 0 < n) (l b : ℕ) 
     exact columnSortNetwork_columnMonotone hn _ j hrs
   exact Bitonic.cntT_rows_false_of_monotone _ hmono h
 
+/-! ### L3b at matrix and network level: escapes at a cut inside a band segment -/
+
+open Finset in
+/-- Wires at rows `< o` carrying `bv`. -/
+def rowCountBelow {m n : ℕ} (hn : 0 < n) (v : Fin (m * n) → Bool) (o : ℕ) (bv : Bool) : ℕ :=
+  (univ.filter fun w : Fin (m * n) => (matrixRow m n hn w).val < o ∧ v w = bv).card
+
+open Finset in
+theorem rowCountBelow_comp_perm {m n : ℕ} (hn : 0 < n) (π : Equiv.Perm (Fin (m * n)))
+    (hπ : ∀ w, matrixRow m n hn (π w) = matrixRow m n hn w) (x : Fin (m * n) → Bool) (o : ℕ) (bv : Bool) :
+    rowCountBelow hn (x ∘ π) o bv = rowCountBelow hn x o bv := by
+  unfold rowCountBelow
+  refine Finset.card_bij (fun w _ => π w) ?_ (fun a _ b _ h => π.injective h) ?_
+  · intro w hw
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Function.comp] at hw ⊢
+    rw [hπ]; exact hw
+  · intro w hw
+    refine ⟨π.symm w, ?_, by simp⟩
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Function.comp, Equiv.apply_symm_apply] at hw ⊢
+    have := hπ (π.symm w)
+    rw [Equiv.apply_symm_apply] at this
+    rw [← this]; exact hw
+
+open Finset in
+theorem rowCountBelow_eq_sum_columns {m n : ℕ} (hn : 0 < n) (v : Fin (m * n) → Bool) (o : ℕ) (bv : Bool) :
+    rowCountBelow hn v o bv = ∑ j : Fin n,
+      Bitonic.cntT (univ.filter fun r : Fin m => r.val < o) (v ∘ columnWireEmbed m n hn j) bv := by
+  unfold rowCountBelow
+  rw [Finset.card_eq_sum_card_fiberwise (f := matrixCol m n hn) (t := univ) (fun _ _ => mem_univ _)]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  unfold Bitonic.cntT
+  refine (Finset.card_bij (fun r _ => matrixWire m n r j) ?_ ?_ ?_).symm
+  · intro r hr
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Function.comp, columnWireEmbed_apply] at hr ⊢
+    rw [(matrixWire_row_col hn r j).1, (matrixWire_row_col hn r j).2]
+    exact ⟨hr, rfl⟩
+  · intro a _ c _ h
+    exact (matrixWire_injective hn h).1
+  · intro w hw
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hw
+    obtain ⟨⟨hr, hv⟩, rfl⟩ := hw
+    refine ⟨matrixRow m n hn w, ?_, matrixWire_matrixRow_col hn w⟩
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Function.comp, columnWireEmbed_apply]
+    refine ⟨hr, ?_⟩
+    rw [matrixWire_matrixRow_col]; exact hv
+
+open Finset in
+/-- **L3b for the merge-first, band-repaired separator.** For a cut `i` inside band segment
+`[o, o + 2^b)`, `o ∈ offs`, on a column-run-sorted `0–1` input, the low-set keys (`false`s) at rows `≥ i` of
+the output are at most
+`Σ_j (F_j − (o + 2^b))` (round-1 excess above the segment) `+ Σ_j (C_j − i)` (round-2 excess at the cut)
+`+ Σ_j (o − F_j)` (round-1 deficit below the segment),
+with `F_j` the `false`s of column `j` after the second sort (semantic layout) and `C_j` those of column `j`
+of the band stage's second-scrambled input. -/
+theorem mergeBandPack2Net_escapes_le {m n : ℕ} (hn : 0 < n) (l b : ℕ) {offs : List ℕ}
+    (hd : Bitonic.SegDisjoint b offs) (hfit : ∀ o ∈ offs, o + 2 ^ b ≤ m) (σ1 σ2 : Scramble m n)
+    {o : ℕ} (ho : o ∈ offs) {i : ℕ} (hoi : o ≤ i) (hi : i ≤ o + 2 ^ b) (v : Fin (m * n) → Bool)
+    (hv : ColumnRunSorted m n hn l v) :
+    rowCount hn ((mergeBandPack2Net m n hn l b offs σ1 σ2).exec v) i false ≤
+      (∑ j : Fin n, (Bitonic.cntT univ (semanticExec hn σ1 v ∘ columnWireEmbed m n hn j) false -
+          (o + 2 ^ b))) +
+      (∑ j : Fin n, (Bitonic.cntT univ ((physicalPackNet m n hn σ1).exec v ∘
+          (rowScrambleWirePerm2 m n hn σ1 σ2).symm ∘ columnWireEmbed m n hn j) false - i)) +
+      (∑ j : Fin n, (o - Bitonic.cntT univ (semanticExec hn σ1 v ∘ columnWireEmbed m n hn j) false)) := by
+  classical
+  set P := rowScrambleWirePerm2 m n hn σ1 σ2
+  have hP : ∀ w, matrixRow m n hn (P w) = matrixRow m n hn w := matrixRow_rowScrambleWirePerm2 hn σ1 σ2
+  have hPs : ∀ w, matrixRow m n hn (P.symm w) = matrixRow m n hn w :=
+    matrixRow_rowScrambleWirePerm2_symm hn σ1 σ2
+  set x := (physicalPackNet m n hn σ1).exec v
+  have hx : x = semanticExec hn σ1 v ∘ rowScrambleWirePerm m n hn σ1 := physicalPackNet_exec hn σ1 v
+  have hR : ∀ w, matrixRow m n hn (rowScrambleWirePerm m n hn σ1 w) = matrixRow m n hn w :=
+    matrixRow_rowScrambleWirePerm hn σ1
+  have hmono : ∀ j : Fin n, Monotone (semanticExec hn σ1 v ∘ columnWireEmbed m n hn j) :=
+    fun j r s hrs => by
+      simp only [Function.comp, columnWireEmbed_apply]
+      exact columnSortNetwork_columnMonotone hn _ j hrs
+  have hom : o ≤ m := le_trans (Nat.le_add_right _ _) (hfit o ho)
+  rw [mergeBandPack2Net_exec_eq hn l b offs σ1 σ2 v hv]
+  unfold bandStage
+  rw [relabelNet_exec]
+  have e1 : (fun w => (columnSegmentRepairNetwork m n hn b offs).exec (x ∘ P.symm) (P.symm.symm w)) =
+      ((columnSegmentRepairNetwork m n hn b offs).exec (x ∘ P.symm)) ∘ P := by
+    funext w; simp
+  rw [e1, rowCount_comp_perm hn P hP _ _ false, rowCount_eq_sum_columns _ _ _ false]
+  have hA : (∑ j : Fin n, (Bitonic.cntT univ (semanticExec hn σ1 v ∘ columnWireEmbed m n hn j) false -
+      (o + 2 ^ b))) =
+      ∑ j : Fin n, Bitonic.cntT (univ.filter fun r : Fin m => o + 2 ^ b ≤ r.val)
+        ((x ∘ P.symm) ∘ columnWireEmbed m n hn j) false := by
+    rw [← rowCount_eq_sum_columns hn _ _ false, rowCount_comp_perm hn P.symm hPs _ _ false, hx,
+      rowCount_comp_perm hn _ hR _ _ false, rowCount_eq_sum_columns _ _ _ false]
+    exact Finset.sum_congr rfl fun j _ => (Bitonic.cntT_rows_false_of_monotone _ (hmono j) _).symm
+  have hC : (∑ j : Fin n, (o - Bitonic.cntT univ (semanticExec hn σ1 v ∘ columnWireEmbed m n hn j) false)) =
+      ∑ j : Fin n, Bitonic.cntT (univ.filter fun r : Fin m => r.val < o)
+        ((x ∘ P.symm) ∘ columnWireEmbed m n hn j) true := by
+    rw [← rowCountBelow_eq_sum_columns hn _ _ true, rowCountBelow_comp_perm hn P.symm hPs _ _ true, hx,
+      rowCountBelow_comp_perm hn _ hR _ _ true, rowCountBelow_eq_sum_columns _ _ _ true]
+    exact Finset.sum_congr rfl fun j _ => (Bitonic.cntT_below_true_of_monotone _ (hmono j) hom).symm
+  rw [hA, hC, ← Finset.sum_add_distrib, ← Finset.sum_add_distrib]
+  refine Finset.sum_le_sum fun j _ => ?_
+  have ecol : (columnSegmentRepairNetwork m n hn b offs).exec (x ∘ P.symm) ∘ columnWireEmbed m n hn j =
+      (Bitonic.segmentSort m b offs).exec ((x ∘ P.symm) ∘ columnWireEmbed m n hn j) := by
+    funext r
+    simp only [Function.comp, columnWireEmbed_apply]
+    unfold columnSegmentRepairNetwork
+    rw [columnNet_exec_matrixWire]
+  rw [ecol]
+  have := Bitonic.segmentSort_escapes_le hd hfit ho hoi hi ((x ∘ P.symm) ∘ columnWireEmbed m n hn j)
+  simpa [Function.comp] using this
+
 end Chvatal
 
 end
