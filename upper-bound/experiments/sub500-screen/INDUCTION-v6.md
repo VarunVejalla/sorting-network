@@ -785,3 +785,30 @@ With `ε_* = μ/k` the t = 0 root send has `ε_* a/(μc′) = a/(kc′) = 1`, le
 | `outs_sub ≤ Δ₁` on the end-child upper side (review) | **not yet verified**: plausibly inside D's `μδA²k` term; if it is separate, it is `≤ Δ₁/c′ = 0.004 μ`, which still fits |
 
 The total is about 0.0050 μc′, below `ROUND = 0.01 μc′`.
+
+## 16. REVIEW-v7 (2026-10-23): the 477 package is not supported as written
+
+An independent review (`REVIEW-v7.md`) found two HIGH errors. Both are confirmed:
+
+1. **Band budget.** L3b gives `d/2 + 2T(W)` escapes per cut and direction. A block takes intruders from
+   two cuts, so the band needs `d + 4T(W) ≤ ε_B`, not `d + 2T(W)` (as in PROOFS line 152, §8, §10 and
+   `screen.band`).
+   * At 2W = 2^18: `1.491e-5 + 4·3.609e-6 = 2.93e-5 > ε_B = 2.25e-5`.
+   * Raising ε_B breaks the width box (1.036 at 2.5e-5).
+   * **Candidate fix:** W = 2^18, a band of 2^19 rows, depth S(19) = 190, about **490**. This needs the
+     certified tails `T(2^18)` (`cert_tail_W2e18.out`, running) and the far-margin tail at about 187,000 rows
+     (`cert_tail_W187000.out`, running), then the box rerun.
+2. **Route (d) omits the band stage.** At the F₁|B₁ cut, fringe keys at rows ≥ 2W after the second
+   scramble are never moved down. That adds `Σ_T (z_T − 2W)₊` escapes, which the structured attack (fact 3)
+   makes comparable to the allowance j/J. Every route (d) evaluator must add this term, and the coverage
+   must be rerun.
+
+MEDIUM items:
+* the 321,400-row margin is not reached at m = 16547000 (actual ≈ 318,700);
+* the Lean segments have fixed length (the clipped F-cut segment is shifted to `[0, 2W)`, which shrinks
+  the cB margin);
+* "cuts ≥ 2W apart" is unproved at spill senders;
+* route (d) gaps: s29 must finish; b < 1e-6 rests on a sketch; `f_max = 1e7` needs a lemma.
+
+**Current status: no sub-500 package is supported.** A ≈490 variant is the candidate, pending (1), (2)
+and the MEDIUM items.
