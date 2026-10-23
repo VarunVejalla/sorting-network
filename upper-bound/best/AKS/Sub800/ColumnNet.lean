@@ -11,6 +11,7 @@ module
 public import AKS.Chvatal.MatrixBridge
 public import AKS.Bitonic.RunMerge
 public import AKS.Bitonic.BlockSort
+public import AKS.Bitonic.SegmentSort
 public import Mathlib.Data.Fin.Tuple.Sort
 
 @[expose] public section
@@ -213,6 +214,54 @@ theorem columnNet_depth_le {m n : Nat} (hn : 0 < n) (N : ComparatorNetwork m) :
 theorem columnBandRepairNetwork_depth_le {m n : Nat} (hn : 0 < n) (b : Nat) :
     (columnBandRepairNetwork m n hn b).depth ≤ bitonicDepthBudget b :=
   (columnNet_depth_le hn _).trans (Bitonic.blockSortNetwork_depth_le b m)
+
+
+/-! ### Band repair centred on the cuts (PROOFS-L3-L4.md, L3 full proof) -/
+
+/-- Band repair centred on the cuts: in every column, sort the row segments `[o, o + 2^b)`, `o ∈ offs`. -/
+def columnSegmentRepairNetwork (m n : Nat) (hn : 0 < n) (b : Nat) (offs : List Nat) :
+    ComparatorNetwork (m * n) :=
+  columnNet hn (Bitonic.segmentSort m b offs)
+
+theorem columnSegmentRepairNetwork_depth_le {m n : Nat} (hn : 0 < n) (b : Nat) {offs : List Nat}
+    (hd : Bitonic.SegDisjoint b offs) :
+    (columnSegmentRepairNetwork m n hn b offs).depth ≤ bitonicDepthBudget b :=
+  (columnNet_depth_le hn _).trans (Bitonic.segmentSort_depth_le m b hd)
+
+/-- Rows outside every segment are unchanged, in every column. -/
+theorem columnSegmentRepair_exec_outside {m n : Nat} (hn : 0 < n) (b : Nat) (offs : List Nat)
+    {α : Type*} [LinearOrder α] (v : Fin (m * n) → α) (j : Fin n) (r : Fin m)
+    (hr : ∀ o ∈ offs, r.val < o ∨ o + 2 ^ b ≤ r.val) :
+    (columnSegmentRepairNetwork m n hn b offs).exec v (matrixWire m n r j) = v (matrixWire m n r j) := by
+  unfold columnSegmentRepairNetwork
+  rw [columnNet_exec_matrixWire, Bitonic.segmentSort_exec_outside offs _ r hr]
+  simp [Function.comp, columnWireEmbed_apply]
+
+/-- **Keys never leave their segment**: each column segment of the output is a permutation of the
+same column segment of the input, and it is sorted. -/
+theorem columnSegmentRepair_seg {m n : Nat} (hn : 0 < n) (b : Nat) {offs : List Nat}
+    (hd : Bitonic.SegDisjoint b offs) {o : Nat} (ho : o ∈ offs) (hfit : o + 2 ^ b ≤ m)
+    {α : Type*} [LinearOrder α] (v : Fin (m * n) → α) (j : Fin n) :
+    (∃ ρ : Equiv.Perm (Fin (2 ^ b)),
+      (fun i : Fin (2 ^ b) => (columnSegmentRepairNetwork m n hn b offs).exec v
+          (matrixWire m n ⟨o + i.val, by have := i.2; omega⟩ j)) =
+        (fun i : Fin (2 ^ b) => v (matrixWire m n ⟨o + i.val, by have := i.2; omega⟩ j)) ∘ ρ) ∧
+    Monotone (fun i : Fin (2 ^ b) => (columnSegmentRepairNetwork m n hn b offs).exec v
+          (matrixWire m n ⟨o + i.val, by have := i.2; omega⟩ j)) := by
+  have hcol : ∀ i : Fin (2 ^ b), (columnSegmentRepairNetwork m n hn b offs).exec v
+      (matrixWire m n ⟨o + i.val, by have := i.2; omega⟩ j) =
+      (Bitonic.segmentSort m b offs).exec (v ∘ columnWireEmbed m n hn j)
+        ⟨o + i.val, by have := i.2; omega⟩ := fun i => by
+    unfold columnSegmentRepairNetwork
+    rw [columnNet_exec_matrixWire]
+  obtain ⟨ρ, hρ⟩ := Bitonic.segmentSort_seg_perm hd ho hfit (v ∘ columnWireEmbed m n hn j)
+  refine ⟨⟨ρ, funext fun i => ?_⟩, fun x y hxy => ?_⟩
+  · rw [hcol]
+    have := congr_fun hρ i
+    simpa [Function.comp, columnWireEmbed_apply] using this
+  · show (columnSegmentRepairNetwork m n hn b offs).exec v _ ≤ (columnSegmentRepairNetwork m n hn b offs).exec v _
+    rw [hcol, hcol]
+    exact Bitonic.segmentSort_seg_monotone hd ho hfit (v ∘ columnWireEmbed m n hn j) hxy
 
 theorem columnRunMergeNetwork_depth_le {m n : Nat} (hn : 0 < n) (l : Nat) :
     (columnRunMergeNetwork m n hn l).depth + bitonicDepthBudget l ≤
