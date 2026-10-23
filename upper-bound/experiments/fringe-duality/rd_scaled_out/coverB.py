@@ -23,15 +23,24 @@ for idx, (bl, bh) in enumerate(edges):
     cnt0, _ = S.escapes_cell(bl, bh, s0 * 1e-9, s0, f)
     ok = cnt0 <= allowed
     worst = cnt0 - allowed
+    def check(sl, sh, depth):
+        """returns (worst e - allowed, closed) for [sl, sh], bisecting (geometrically) failing cells."""
+        cnt, e = S.escapes_cell(bl, bh, sl, sh, f)
+        if e < allowed or depth >= 14:
+            return e - allowed, cnt / sh < f
+        sm = math.sqrt(sl * sh)
+        w1, c1 = check(sl, sm, depth + 1)
+        w2, c2 = check(sm, sh, depth + 1)
+        return max(w1, w2), c2
     sl = s0
     closed = False
     while sl < bl / f:
         sh = min(2 * sl, bl / f)
-        cnt, e = S.escapes_cell(bl, bh, sl, sh, f)
-        if e >= allowed:
+        w, cl = check(sl, sh, 0)
+        if w >= 0:
             ok = False
-        worst = max(worst, e - allowed)
-        if cnt / sh < f:
+        worst = max(worst, w)
+        if cl:
             closed = True
             break
         sl = sh
