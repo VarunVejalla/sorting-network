@@ -664,3 +664,7 @@ every b reaches a σ where the average load is below f.
 | `≥ 2^40` | `≤ 100·J·ln n` | (A), floor `max(2^40, e^{j/(100J)})`, plus the analytic bound for j ≥ 1e6 J |
 
 Grid points still have to be turned into cell covers, and everything into interval arithmetic.
+
+**Sweeps `rd_nr2/s30 … s39` complete** (every n in `[2^30, 2^40)`, j up to the A/B boundary
+`100·J·ln(2n)`, every fringe class): **0 FAIL**, 149 – 151 intervals each. The sweeps for `2^13 … 2^29`
+(all j, f-ladder to 1e7) are still running, with 0 FAIL so far.
