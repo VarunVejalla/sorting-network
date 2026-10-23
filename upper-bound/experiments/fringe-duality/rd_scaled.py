@@ -169,7 +169,9 @@ def mult_excess_s(Hh, sigma, e_s, c=1):
     base = lp[c + 1:]
     kk = ks[c + 1:]
     best = math.inf
-    for t in [0.02 * 1.12 ** i for i in range(80)]:
+    for t in [0.02 * 1.12 ** i for i in range(140)]:
+        if t > 700:
+            break
         x = base + t * (kk - c)
         mx = float(x.max())
         lse = mx + math.log(float(np.exp(x - mx).sum()))
@@ -371,7 +373,7 @@ def escapes_s(b, sigma, f, L0x=0, ratio=1.6, eps=None, dtop=None, verbose=False)
     return total - f * sigma
 
 
-def escapes_cell(b_lo, b_hi, s_lo, s_hi, f, L0x=0, ratio=1.6, dtop=1e5):
+def escapes_cell(b_lo, b_hi, s_lo, s_hi, f, L0x=0, ratio=1.6, dtop=None):
     """per n: escapes for every density b in [b_lo, b_hi] and set fraction sigma in [s_lo, s_hi] at once.
     Conventions (each term is monotone; ROUND1-ENERGY.md, regime-B cells): lam b, the mass cap, n0(b) and
     eps use b_hi; the caps R = ceil(hi - b_lo); level floors d = floor(lo + 1 - b_hi); free rows
@@ -379,6 +381,9 @@ def escapes_cell(b_lo, b_hi, s_lo, s_hi, f, L0x=0, ratio=1.6, dtop=1e5):
     the linear credit at s_lo, with the fringe class f (pass f = max(3967, 8 b_lo))."""
     n0 = n0_of_b(b_hi)
     eps = eps_level(1.0, b_hi, n0)
+    if dtop is None:      # b -> 0: the profile unions above D cost ~ ln(1/b) b/D^2; D(b) ~ sqrt(J ln(1/b)), >= 20 ln(1/b)
+        Lb = max(0.0, -math.log(b_hi))
+        dtop = max(1e5, 4e3 * math.sqrt(Lb), 20 * Lb)
     L0 = math.ceil(b_hi) + L0x
     sig = s_hi
     e_S = sig * (1 - math.log(sig)) + eps

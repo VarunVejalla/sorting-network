@@ -773,3 +773,32 @@ The small residual drift comes from the high-rows profile union `N ln(1/N)/t` wi
 3. Write the limit argument. Every explicit `ln(1/b)` is divided by `s ≈ ln(1/b)` (collision) or by D²
    (high rows), so the per-b bound converges as b → 0; monotone beyond some b₁ by the same Möbius-in-`ln(1/b)`
    argument as (A).
+
+**b → 0 closed numerically down to 1e-290, with a limit sketch.** Changes:
+* adaptive `D(b) = max(1e5, 4e3·sqrt(L_b), 20·L_b)`, with `L_b = ln(1/b)`;
+* the multiplicity t-grid widened, so `t ≈ θ·L_b` is reachable.
+
+esc/(b/J):
+
+| τ | b = 1e-6 | 1e-48 | 1e-192 | 1e-290 |
+|---|---:|---:|---:|---:|
+| 1e-14 | 0.007 | 0.007 | 0.004 | 0.003 |
+| 1e-9 | 0.482 | 0.339 | 0.320 | 0.318 |
+| 1e-6 | −1744 | −1750 | −1751 | −1751 |
+| 1e-4 | −1.913e5 | −1.932e5 | −1.932e5 | −1.932e5 |
+
+**Limit sketch (per-b units, `σ = τ b`).** Every per-n term is b times a function of `(τ, L_b)`:
+* `kmax_sources`: `τ F(w) ≤ α̂`, b-free.
+* Collision: `q = b·q̂`. With `s = L_b/2 + s′`, `ln(1 + y)/b ≤ q̂² e^{2s′}`, and
+  `e_S/(b s) = [τ(1 + ln(1/τ) + L_b) + ε/b]/(L_b/2 + s′)`, a Möbius map in L_b with limit `2τ`.
+* Multiplicity: `P(M = k) ≤ binom(H,k)(τb)^k`. With `t = θ L_b` (θ ≤ 1), the n-term per b is `O(b^{k−1−θ(k−c)}) → 0`;
+  the union term is a Möbius map with limit `τ/θ`.
+* Round-1 level energies above D: the entropy `(α̂/d²)·L_b·R/κ` is bounded for `d ≥ 20 L_b`.
+* High-rows profile: `(α̂/D²)·L_b/t ≤ 1/(10J)` for `D ≥ 4e3·sqrt(L_b)`.
+* `ε/b → c_ln/(CJ)`.
+
+So for `L_b ≥ L₁` the per-b bound is at most the max of its value at L₁ and its `L_b → ∞` limit, each term
+being monotone or Möbius in L_b. The numbers above show the limit is about the b = 1e-290 value.
+
+**Status:** numerics to 1e-290 plus this sketch. A written, checked limit argument and interval arithmetic
+are still to do.
