@@ -9,7 +9,7 @@ S.n0_of_b = lambda b, nm=2.0 ** 24: o(b, nm)
 J = 5e5
 part, nparts = int(sys.argv[1]), int(sys.argv[2])
 edges = []
-b = 1e-6
+b = 150.0    # below this, (B) at floor 2^24 cannot close (eps ~ allowance); n < 2^30 there is covered by sweeps s24 - s29 (s28, s29 extended to b >= 150), n >= 2^30 by the floor-2^30 cover
 while b < 1.25e6:
     edges.append((b, min(1.25e6, b * 1.3)))
     b *= 1.3

@@ -817,3 +817,10 @@ class. s24 – s29 have passed `100·J·ln(2n)` (now at ≥ 3.5e4 J). So if (B) 
 
 **(A) cover complete** (`rd_scaled_out/coverA_*.out`): **all 193 j-intervals OK**, 0 FAIL. This is every
 j ∈ [1, 1e6 J], every `n ≥ max(2^40, e^{j_a/(100J)})`, and every set size.
+
+**(B) at floor 2^24 only closes for b ≥ about 150.** Below that, at n near 2^24, the absolute ln-terms
+(`ε ≈ 5e-5`) are as large as the allowance `b/J`. So the split for `n ∈ [2^24, 2^30)` is:
+* sweeps s24 – s29 cover every b up to `j_reached/(2n)`. s24 – s27 already reach b ≥ 176. **s28 must reach
+  j ≥ 1.6e5 J and s29 j ≥ 3.2e5 J** (b ≥ 150); both are running.
+* (B) with floor 2^24 covers b ≥ 150 (`coverB24_*`, 35 cells, running).
+* `n ≥ 2^30`: the floor-2^30 (B) cover (complete) for every b.
