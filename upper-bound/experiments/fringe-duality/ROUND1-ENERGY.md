@@ -802,3 +802,15 @@ being monotone or Möbius in L_b. The numbers above show the limit is about the 
 
 **Status:** numerics to 1e-290 plus this sketch. A written, checked limit argument and interval arithmetic
 are still to do.
+
+**Sweeps s13 – s23 complete, 0 FAIL**: every n in `[2^13, 2^24)`, every j up to `f_max·2n/8`, every fringe
+class. s24 – s29 have passed `100·J·ln(2n)` (now at ≥ 3.5e4 J). So if (B) with floor 2^24 passes
+(`coverB24_*`, running), the coverage is:
+
+| n | j | method |
+|---|---|---|
+| `[2^13, 2^24)` | all | sweeps (done) |
+| `[2^24, 2^40)` | `≤ 100·J·ln(2n)` | sweeps (s24 – s39: done up to that bound) |
+| `≥ 2^24` | `≥ 100·J·ln n` | (B), floor 2^24 |
+| `≥ 2^40` | `≤ 100·J·ln n` | (A) cover (184 of ~190 OK) plus the analytic bound for j ≥ 1e6 J |
+| `b < 1e-6` | | (B) per-b numerics to 1e-290, plus the limit sketch |

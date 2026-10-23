@@ -169,3 +169,10 @@ sweep n = 2^28, J = 5e+05, f = 3967, j in [1, 1e20], f-ladder to 1e+07 (f_eff = 
   j in [ 2.697e+04,  3.102e+04] J: worst       2628.5 at s2 <=       1  allowed    26973.8  OK
   j in [ 3.102e+04,  3.567e+04] J: worst       3043.0 at s2 <=       2  allowed    31019.9  OK
   j in [ 3.567e+04,  4.102e+04] J: worst       3567.2 at s2 <=       2  allowed    35672.9  OK
+  j in [ 4.102e+04,  4.718e+04] J: worst       4133.7 at s2 <=       2  allowed    41023.8  OK
+  j in [ 4.718e+04,  5.425e+04] J: worst       4740.0 at s2 <=       2  allowed    47177.4  OK
+  j in [ 5.425e+04,  6.239e+04] J: worst       5519.2 at s2 <=       3  allowed    54254.0  OK
+  j in [ 6.239e+04,  7.175e+04] J: worst       6424.6 at s2 <=       3  allowed    62392.1  OK
+  j in [ 7.175e+04,  8.251e+04] J: worst       7474.3 at s2 <=       4  allowed    71750.9  OK
+  j in [ 8.251e+04,  9.489e+04] J: worst       8668.0 at s2 <=       5  allowed    82513.5  OK
+  j in [ 9.489e+04,  1.091e+05] J: worst      10174.0 at s2 <=       6  allowed    94890.5  OK

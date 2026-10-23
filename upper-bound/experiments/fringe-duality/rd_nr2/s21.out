@@ -196,3 +196,16 @@ sweep n = 2^21, J = 5e+05, f = 3967, j in [1, 1e20], f-ladder to 1e+07 (f_eff = 
   j in [ 1.174e+06,   1.35e+06] J: worst    -770988.3 at s2 <=       1  allowed  1174313.5  OK
   j in [  1.35e+06,  1.553e+06] J: worst    -889698.1 at s2 <=       1  allowed  1350460.5  OK
   j in [ 1.553e+06,  1.786e+06] J: worst   -1025760.4 at s2 <=       1  allowed  1553029.5  OK
+  j in [ 1.786e+06,  2.054e+06] J: worst   -1182283.0 at s2 <=       1  allowed  1785984.0  OK
+  j in [ 2.054e+06,  2.362e+06] J: worst   -1362543.8 at s2 <=       1  allowed  2053881.6  OK
+  j in [ 2.362e+06,  2.716e+06] J: worst   -1570212.5 at s2 <=       1  allowed  2361963.8  OK
+  j in [ 2.716e+06,  3.124e+06] J: worst   -1809160.9 at s2 <=       1  allowed  2716258.4  OK
+  j in [ 3.124e+06,  3.592e+06] J: worst   -2083953.5 at s2 <=       1  allowed  3123697.1  OK
+  j in [ 3.592e+06,  4.131e+06] J: worst   -2401030.5 at s2 <=       1  allowed  3592251.7  OK
+  j in [ 4.131e+06,  4.751e+06] J: worst   -2764950.1 at s2 <=       1  allowed  4131089.4  OK
+  j in [ 4.751e+06,  5.463e+06] J: worst   -3183551.4 at s2 <=       1  allowed  4750752.9  OK
+  j in [ 5.463e+06,  6.283e+06] J: worst   -3665076.4 at s2 <=       1  allowed  5463365.8  OK
+  j in [ 6.283e+06,  7.225e+06] J: worst   -4218911.0 at s2 <=       1  allowed  6282870.7  OK
+  j in [ 7.225e+06,  8.309e+06] J: worst   -4857150.2 at s2 <=       1  allowed  7225301.3  OK
+  j in [ 8.309e+06,  9.555e+06] J: worst   -5591476.1 at s2 <=       1  allowed  8309096.5  OK
+  j in [ 9.555e+06,  1.049e+07] J: worst   -6557017.4 at s2 <=       1  allowed  9555460.9  OK
