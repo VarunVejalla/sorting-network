@@ -252,3 +252,19 @@ assert this rather than rely on it; the assert is added below.
 Not in Lean: the probabilistic bound `Σ_j (F_j − h) ≤ T(margin)·mn`. That is the round-1 walk bound at a
 margin, certified in interval arithmetic (`cert_walk_n.py tail`). L3b (band escapes at the cut, which uses
 BULK2 round 2) is not in Lean either.
+
+**L3b in Lean (2026-10-23).** `Chvatal.mergeBandPack2Net_escapes_le` (standard axioms) states: for a cut i
+inside band segment `[o, o + 2^b)`, on a column-run-sorted 0–1 input,
+
+    low-set keys at rows ≥ i of the output  ≤  Σ_j (F_j − (o + 2^b))  +  Σ_j (C_j − i)  +  Σ_j (o − F_j),
+
+* `F_j`: column counts after the second sort, so the first and last sums are the round-1 margin excess E⁺
+  and deficit E⁻;
+* `C_j`: column counts of the second-scrambled band input, so the middle sum is BULK2's round-2 excess.
+
+This is L3b's deterministic content, matching the paper proof above. Per-column pieces:
+`Bitonic.segmentSort_escapes_le`, `seg_sorted_false_above`, `cntT_below_true_of_monotone`.
+
+**So both L3a and L3b are deterministic theorems in Lean.** What remains of L3 is the probabilistic input:
+the round-1 margin tails and BULK2 round 2. Both are certified in interval arithmetic (`cert_walk_n.py`),
+but are not in Lean at these parameters.
