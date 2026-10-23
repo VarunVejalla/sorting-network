@@ -237,3 +237,18 @@ the count form v6 §2 states. ∎
 **Meeting prefixes.** When `θ_low + θ_high` exhausts every child's cap, all children are prefix children.
 `width_sim.py` records `spill_children_max = 11 < k = 16` (low 9 + high 7 never meet). The code should
 assert this rather than rely on it; the assert is added below.
+
+**Lean status of L3a (2026-10-23).** The deterministic part is kernel-checked, with standard axioms only:
+* `Chvatal.mergeBandPack2Net_low_crossings_le` (`best/AKS/Sub800/MergeBandPack.lean`): on a
+  column-run-sorted 0–1 input, the low-set keys (`false`s) at rows ≥ i of the merge-first, band-repaired
+  separator's output number at most `Σ_j (F_j − h)`. Here `F_j` is the low-set count in column j after the
+  second sort, provided every band segment reaching rows ≥ i starts at row ≥ h.
+* Components:
+  * `Bitonic.segmentSort_cnt_rows_le` (one column);
+  * `Chvatal.bandStage_rowCount_le` (through the scramble);
+  * `Bitonic.cntT_rows_false_of_monotone` (the row identity);
+  * `rowCount_comp_perm`, `rowCount_eq_sum_columns`.
+
+Not in Lean: the probabilistic bound `Σ_j (F_j − h) ≤ T(margin)·mn`. That is the round-1 walk bound at a
+margin, certified in interval arithmetic (`cert_walk_n.py tail`). L3b (band escapes at the cut, which uses
+BULK2 round 2) is not in Lean either.
