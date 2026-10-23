@@ -651,3 +651,16 @@ The margin cost at n = 2^20, NR = 2 is small: −3694 → −3690 at J, −2823 
 **Runs (`rd_nr2/s13 … s29.out`).** One sweep per `k = 13 … 29`, with `NR = 2` and the f-ladder to 1e7.
 These cover **every n in `[2^13, 2^30)` and every class f** at once. The older `NR = 1` runs (`rd_pkg/e*`,
 `fl*`) were stopped. They are superseded, since n ≥ 2^30 is regimes (A) and (B).
+
+**Final split** (after `floor30_A`: (A) with floor 2^30 FAILs at j = 1000J, with collisions lost at large
+s₂). The full (B) grid (`fullB.out`, b = 1e-6 … 1.25e6, f = max(3967, 8b), floor 2^30) has **no FAIL**:
+every b reaches a σ where the average load is below f.
+
+| n | j | method |
+|---|---|---|
+| `[2^13, 2^30)` | all (f-ladder to 1e7) | NR = 2 sweeps `rd_nr2/s13 … s29` |
+| `[2^30, 2^40)` | `≤ 100·J·ln(2n)` | NR = 2 sweeps `rd_nr2/s30 … s39` (j capped at the regime boundary) |
+| `≥ 2^30` | `≥ 100·J·ln n` | (B), floor 2^30 |
+| `≥ 2^40` | `≤ 100·J·ln n` | (A), floor `max(2^40, e^{j/(100J)})`, plus the analytic bound for j ≥ 1e6 J |
+
+Grid points still have to be turned into cell covers, and everything into interval arithmetic.
