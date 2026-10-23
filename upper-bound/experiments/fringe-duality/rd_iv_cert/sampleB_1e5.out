@@ -1,0 +1,1 @@
+b in [1e+05, 1.3e+05] f=8e+05: bottom count float 3.409941e-04 cert 3.409941e-04 (allowed 2.000e-01); worst esc - allowed: float -1.996590e-01 cert -1.996590e-01 (rel. to allowance -0.9983 / -0.9983); closed at sigma 2.000e-09: True; leaves cert 1 failed 0  CERT-OK [3s] {'A_fail': 0, 'kb_fail': 0, 'tail_fail': 0, 'iv_evals': 182}

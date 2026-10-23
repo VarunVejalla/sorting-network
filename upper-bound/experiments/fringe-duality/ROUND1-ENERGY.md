@@ -843,3 +843,28 @@ j ∈ [1, 1e6 J], every `n ≥ max(2^40, e^{j_a/(100J)})`, and every set size.
 | b → 0 | numerics to 1e-290 plus the limit sketch |
 
 All float-level. Still to do: interval arithmetic and a review.
+
+### Interval-certified evaluators (2026-10-23; `IV-CERT.md`, `rd_scaled_iv.py`, `rd_sparse_iv.py`)
+
+Built by a sub-agent from the `cert_walk_n.py` pattern. The float search picks every parameter, and the
+final inequalities are checked in `mpmath.iv` with outward rounding. On the 7 sample cells, certified and
+float values agree (`rd_iv_cert/`).
+
+**Soundness issues found in the float code** (fixed in the iv versions; no sample value changed):
+1. `ln_count_s` used `νH(κ/ν)`, which undercounts for κ > ν/2.
+2. `k_bool_s` took H at a cell's top end.
+3. `round1_level_tail`'s `x ln(e/x)` decreases for x > 1.
+4. `b0` underflows in rd_sparse.
+5. A float `ceil` rounding direction.
+
+So the float covers above are not trustworthy as certificates. The iv covers supersede them once rerun.
+
+**Not yet certified:**
+* the (b, σ) cell-monotonicity conventions;
+* the monotone-average closure;
+* the round-1 tail for all d ≥ d₀ (only d₀ is checked);
+* `c_ln = 80`;
+* the sup-over-n reductions.
+
+**Do not run the full iv covers yet.** REVIEW-v7 HIGH 2 adds a band-stage term to every route (d)
+evaluator. Covers have to be rerun after that change.
