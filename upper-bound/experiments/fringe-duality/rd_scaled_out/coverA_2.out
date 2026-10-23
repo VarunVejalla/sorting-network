@@ -44,3 +44,5 @@ j in [4.102e+04, 4.718e+04] J (n >= e^410.2): worst 3217 at s2 <= 2  allowed 4.1
 j in [7.175e+04, 8.251e+04] J (n >= e^717.5): worst 5641 at s2 <= 4  allowed 7.175e+04  OK [214s]
 j in [1.255e+05, 1.443e+05] J (n >= e^1255): worst 9873 at s2 <= 7  allowed 1.255e+05  OK [287s]
 j in [2.195e+05, 2.524e+05] J (n >= e^2195): worst 1.732e+04 at s2 <= 13  allowed 2.195e+05  OK [478s]
+j in [3.839e+05, 4.415e+05] J (n >= e^3839): worst 3.033e+04 at s2 <= 22  allowed 3.839e+05  OK [828s]
+j in [6.714e+05, 7.721e+05] J (n >= e^6714): worst 5.332e+04 at s2 <= 40  allowed 6.714e+05  OK [1392s]

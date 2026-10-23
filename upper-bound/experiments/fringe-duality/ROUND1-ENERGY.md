@@ -814,3 +814,6 @@ class. s24 – s29 have passed `100·J·ln(2n)` (now at ≥ 3.5e4 J). So if (B) 
 | `≥ 2^24` | `≥ 100·J·ln n` | (B), floor 2^24 |
 | `≥ 2^40` | `≤ 100·J·ln n` | (A) cover (184 of ~190 OK) plus the analytic bound for j ≥ 1e6 J |
 | `b < 1e-6` | | (B) per-b numerics to 1e-290, plus the limit sketch |
+
+**(A) cover complete** (`rd_scaled_out/coverA_*.out`): **all 193 j-intervals OK**, 0 FAIL. This is every
+j ∈ [1, 1e6 J], every `n ≥ max(2^40, e^{j_a/(100J)})`, and every set size.
