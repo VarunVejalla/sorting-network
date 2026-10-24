@@ -1,0 +1,4 @@
+floor 2^44 C=800 j=2600J ln n0=30.5: L/s 1:4341 2:3529 4:2837  closed at 4  worst(pow2) 1012 allowed 2600  [25s]
+floor 2^44 C=800 j=2883J ln n0=30.5: L/s 1:4472 2:3703 4:2928  closed at 4  worst(pow2) 1143 allowed 2883  [25s]
+floor 2^44 C=800 j=4000J ln n0=30.5: L/s 1:5009 2:4145 4:3318  closed at 4  worst(pow2) 1680 allowed 4000  [25s]
+floor 2^44 C=800 j=5000J ln n0=30.5: L/s 1:5520 2:4412 4:3718 8:3081  closed at 8  worst(pow2) 2191 allowed 5000  [33s]

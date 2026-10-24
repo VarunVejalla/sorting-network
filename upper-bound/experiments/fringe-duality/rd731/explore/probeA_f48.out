@@ -1,0 +1,4 @@
+floor 2^48 C=800 j=5000J ln n0=33.3: L/s 1:5097 2:4112 4:3318  closed at 4  worst(pow2) 1768 allowed 5000  [24s]
+floor 2^48 C=800 j=8000J ln n0=33.3: L/s 1:5953 2:4792 4:4007 8:3182  closed at 8  worst(pow2) 2925 allowed 8000  [32s]
+floor 2^48 C=800 j=10000J ln n0=33.3: L/s 1:6436 2:5274 4:4317 8:3472 16:2817  closed at 16  worst(pow2) 3953 allowed 10000  [40s]
+floor 2^48 C=800 j=15000J ln n0=33.3: L/s 1:7651 2:6077 4:4965 8:4083 16:3289  closed at 16  worst(pow2) 6543 allowed 15000  [40s]

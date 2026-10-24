@@ -1,0 +1,5 @@
+floor 2^25 C=10.0 n0=3.36e+07 b=100.0 f=3329.0: worst rel 0.873 at tau 1.58e-10
+floor 2^25 C=10.0 n0=3.36e+07 b=150.0 f=3329.0: worst rel 0.741 at tau 1.26e-10
+floor 2^25 C=10.0 n0=3.36e+07 b=250.0 f=3329.0: worst rel 0.654 at tau 1.58e-10
+floor 2^25 C=10.0 n0=3.36e+07 b=400.0 f=3329.0: worst rel 0.610 at tau 1.58e-10
+floor 2^25 C=10.0 n0=3.36e+07 b=500.0 f=4000.0: worst rel 0.454 at tau 1.00e-10

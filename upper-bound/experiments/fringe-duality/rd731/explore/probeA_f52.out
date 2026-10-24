@@ -1,0 +1,3 @@
+floor 2^52 C=800 j=15000J ln n0=36.0: L/s 1:7396 2:5739 4:4557 8:3727 16:2914  closed at 16  worst(pow2) 4914 allowed 15000  [40s]
+floor 2^52 C=800 j=20000J ln n0=36.0: L/s 1:8485 2:6317 4:5060 8:4095 16:3215  closed at 16  worst(pow2) 6922 allowed 20000  [40s]
+floor 2^52 C=800 j=27000J ln n0=36.0: L/s 1:9348 2:7106 4:5635 8:4454 16:3654 32:3005  closed at 32  worst(pow2) 9224 allowed 27000  [48s]
