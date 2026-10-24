@@ -795,6 +795,28 @@
         "upper-bound/backlog/sub500-routes.md"
       ],
       "notes": "Screen gates (fringe idealized away): T >= 5.5 for < 500, >= 36 for < 300, >= 101 for < 200 (model grid floor). Periodic T = 1000: P = 4 gives 302, P = 8 gives 208. The only modelled sub-300 routes; relates to UB-27 and the tapered invariant (UB-07/UB-24)."
+    },
+    {
+      "id": "UB-43",
+      "title": "Design P with route (d) fringe (731.25) plus merge-first first sort (about 690)",
+      "priority": "P1",
+      "status": "active",
+      "claim_level": "model",
+      "baseline": 789.75,
+      "projected": 690,
+      "owner": "Claude",
+      "branch": "ub-43-mergefirst-731",
+      "depends_on": [
+        "UB-34",
+        "UB-39"
+      ],
+      "first_deliverable": "Certify route (d) at the 731.25 parameters ((4,5,3), rows in [27254890, 2^25], J >= 1651190, fringe classes f+1 in (3329, 4024] and (210012, 258048]) with the interval evaluators; then a Lean lemma that every R1 sender's input is column-run-sorted (unaligned runs of length >= f+1), so mergePack2Net (with an unaligned run-merge variant) applies.",
+      "evidence": [
+        "upper-bound/experiments/fringe-duality/FRINGE-DUALITY.md",
+        "upper-bound/experiments/fringe-duality/ROUND1-ENERGY.md",
+        "upper-bound/best/AKS/Sub800/MergePack.lean"
+      ],
+      "notes": "Stage 3*S(25) = 975 -> 731.25; merge-first with unaligned runs of length f+1 (l = 11) saves S(11) - 11 = 55 -> 920 -> 690. No change to the invariant (design P); merge-first equals physicalPack2Net on run-sorted inputs (Lean)."
     }
   ]
 }
