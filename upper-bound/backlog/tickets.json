@@ -798,25 +798,86 @@
     },
     {
       "id": "UB-43",
-      "title": "Design P with route (d) fringe (731.25) plus merge-first first sort (about 690)",
+      "title": "Design P with the route (d) fringe at the 731.25 point (certify and formalize)",
       "priority": "P1",
-      "status": "active",
+      "status": "parked",
       "claim_level": "model",
       "baseline": 789.75,
-      "projected": 690,
+      "projected": 731.25,
       "owner": "Claude",
       "branch": "ub-43-mergefirst-731",
       "depends_on": [
         "UB-34",
         "UB-39"
       ],
-      "first_deliverable": "Certify route (d) at the 731.25 parameters ((4,5,3), rows in [27254890, 2^25], J >= 1651190, fringe classes f+1 in (3329, 4024] and (210012, 258048]) with the interval evaluators; then a Lean lemma that every R1 sender's input is column-run-sorted (unaligned runs of length >= f+1), so mergePack2Net (with an unaligned run-merge variant) applies.",
+      "first_deliverable": "Interval version of route_d_rigorous_nr.py (per-n sweeps), certified rerun on a fine n-grid (NR = 2^(1/4), j-ratio 1.05) where margins are thin; write the b -> 0 limit and analytic (A) tail; review; then Lean for the route (d) probability lemmas plugged into R1's fringe interface.",
       "evidence": [
-        "upper-bound/experiments/fringe-duality/FRINGE-DUALITY.md",
+        "upper-bound/experiments/fringe-duality/CERT-731.md",
         "upper-bound/experiments/fringe-duality/ROUND1-ENERGY.md",
-        "upper-bound/best/AKS/Sub800/MergePack.lean"
+        "upper-bound/experiments/fringe-duality/IV-CERT.md"
       ],
-      "notes": "Stage 3*S(25) = 975 -> 731.25; merge-first with unaligned runs of length f+1 (l = 11) saves S(11) - 11 = 55 -> 920 -> 690. No change to the invariant (design P); merge-first equals physicalPack2Net on run-sorted inputs (Lean)."
+      "notes": "2026-10-24: float coverage complete with 0 FAIL for n >= 2^17, all j, both fringe classes (CERT-731.md). Dense and sparse covers are interval-certified; the per-n sweeps (2^17-2^56) are float only; b -> 0 and large-j are sketches. Merge-first was split off to UB-44 (not wireable in the current R1)."
+    },
+    {
+      "id": "UB-44",
+      "title": "Merge-first first sort in R1: per-node cell orders so separator inputs are column-run-sorted (731.25 -> 697.5)",
+      "priority": "P2",
+      "status": "proposed",
+      "claim_level": "model",
+      "baseline": 731.25,
+      "projected": 697.5,
+      "owner": null,
+      "branch": null,
+      "depends_on": [
+        "UB-43"
+      ],
+      "first_deliverable": "Design the per-node input placement and output order (untangled comparators) so that every R1 separator input has runs >= f+1 rows; then the placement invariant (ColumnDescentsApart 3330) at every stage and a restricted NodeSpecAll.",
+      "evidence": [
+        "upper-bound/best/notes/sub800/MERGE-FIRST-WIRING.md",
+        "upper-bound/best/AKS/Bitonic/UnalignedRunMerge.lean",
+        "upper-bound/best/AKS/Sub800/UnalignedMergePack.lean"
+      ],
+      "notes": "On branch ub-43-mergefirst-731 (commit 9bca0bd): the unaligned run merge (depth 2s-1) and uMergePack2Net (= physicalPack2Net on run-sorted inputs; stage <= 930 at 2^25 rows) are proved in Lean. The current R1 wiring gives run length 1 (child F blocks stride about 256 rows), so a re-port of the stage modules is needed: about 3-6k lines, multi-week."
+    },
+    {
+      "id": "UB-45",
+      "title": "Centred sided invariant with three full sorts (no band repair): about 600 (about 570 with UB-44)",
+      "priority": "P2",
+      "status": "proposed",
+      "claim_level": "model",
+      "baseline": 789.75,
+      "projected": 600,
+      "owner": null,
+      "branch": null,
+      "depends_on": [
+        "UB-34"
+      ],
+      "first_deliverable": "Rerun the all-depth width box (transbox_analytic.py) at the full-sort parameters (eps_B = bulk precision only); write the margin version of BULK2 round 2 for far crossings without band locality; then plan the Lean for the invariant.",
+      "evidence": [
+        "upper-bound/experiments/sub500-screen/INDUCTION-v6.md",
+        "upper-bound/experiments/sub500-screen/PROOFS-L3-L4.md",
+        "upper-bound/experiments/sub500-screen/REVIEW-v7.md"
+      ],
+      "notes": "Band repair was dropped: REVIEW-v7 plus the F-cut fringe leak block it (backlog/sub500-routes.md 2026-10-23). With full sorts at (4,4,3): 3*300 = 900 per stage, times 2/3, gives 600. The width box, L3/L4 and S1-S4 are written but unreviewed at these parameters."
+    },
+    {
+      "id": "UB-46",
+      "title": "Round-1 energy theorem: E = sum z^2 <= C j with C about 3-4 for all inputs (truth about 3j; current bound 120-180j)",
+      "priority": "P2",
+      "status": "proposed",
+      "claim_level": "model",
+      "baseline": null,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "A proof strategy beating the union-over-output-sets loss: e.g. chained pairwise-discrepancy over nested families, or the collision approach extended to all levels; check it against adversary_energy.py.",
+      "evidence": [
+        "upper-bound/experiments/fringe-duality/ROUND1-ENERGY.md",
+        "upper-bound/experiments/fringe-duality/FRINGE-DUALITY.md",
+        "upper-bound/backlog/sub500-routes.md"
+      ],
+      "notes": "This is the root obstruction to smaller fringes (the 731.25 margin), to band repair at the F cuts (leak sum (z - 2W)_+ <= E/(8W)), and to fringe bounds at small f generally."
     }
   ]
 }
