@@ -1,0 +1,27 @@
+JRATIO=1.05 python -I sweep731.py 21 1486071000 2146547000 1.189207115 > sweeps_fine/s21_f.out 2>&1
+JRATIO=1.05 python -I sweep731.py 21.25 1486071000 2146547000 1.189207115 > sweeps_fine/s21.25_f.out 2>&1
+JRATIO=1.05 python -I sweep731.py 21.5 1486071000 2146547000 1.189207115 > sweeps_fine/s21.5_f.out 2>&1
+JRATIO=1.05 python -I sweep731.py 21.75 1486071000 2146547000 1.189207115 > sweeps_fine/s21.75_f.out 2>&1
+python -I /tmp/xB5.py 800 21 300,420,480 > explore/Bfloor21.out 2>&1
+python -I /tmp/xB5.py 800 24 300,420,480 > explore/Bfloor24.out 2>&1
+python -I /tmp/xB5.py 800 27 300,420,480 > explore/Bfloor27.out 2>&1
+python -I coverA731_iv.py 1 4 > coverA/coverA_1.out 2>&1
+python -I coverA731_iv.py 2 4 > coverA/coverA_2.out 2>&1
+python -I coverA731_iv.py 3 4 > coverA/coverA_3.out 2>&1
+python -I sweep731.py 23 > sweeps/s23.out 2>&1
+python -I sweep731.py 25 > sweeps/s25.out 2>&1
+python -I sweep731.py 26 > sweeps/s26.out 2>&1
+python -I sweep731.py 27 > sweeps/s27.out 2>&1
+python -I sweep731.py 28 > sweeps/s28.out 2>&1
+python -I sweep731.py 29 > sweeps/s29.out 2>&1
+python -I sweep731.py 30 1 B800 > sweeps/s30.out 2>&1
+python -I sweep731.py 31 1 B800 > sweeps/s31.out 2>&1
+python -I sweep731.py 32 1 B800 > sweeps/s32.out 2>&1
+python -I sweep731.py 33 1 B800 > sweeps/s33.out 2>&1
+python -I sweep731.py 34 1 B800 > sweeps/s34.out 2>&1
+python -I sweep731.py 35 1 B800 > sweeps/s35.out 2>&1
+python -I sweep731.py 36 1 B800 > sweeps/s36.out 2>&1
+python -I sweep731.py 37 1 B800 > sweeps/s37.out 2>&1
+python -I sweep731.py 38 1 B800 > sweeps/s38.out 2>&1
+python -I sweep731.py 39 1 B800 > sweeps/s39.out 2>&1
+python -I bzero731.py 800 3 > explore/bzero731.out 2>&1

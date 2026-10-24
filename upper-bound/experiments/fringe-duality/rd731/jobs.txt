@@ -1,0 +1,28 @@
+python -I coverB731_iv.py 0 3 > coverB/coverB_0.out 2>&1
+python -I coverB731_iv.py 1 3 > coverB/coverB_1.out 2>&1
+python -I coverB731_iv.py 2 3 > coverB/coverB_2.out 2>&1
+python -I sweep731.py 18 > sweeps/s18.out 2>&1
+python -I sweep731.py 19 > sweeps/s19.out 2>&1
+python -I sweep731.py 21 > sweeps/s21.out 2>&1
+python -I sweep731.py 22 > sweeps/s22.out 2>&1
+python -I coverA731_iv.py 0 4 > coverA/coverA_0.out 2>&1
+python -I coverA731_iv.py 1 4 > coverA/coverA_1.out 2>&1
+python -I coverA731_iv.py 2 4 > coverA/coverA_2.out 2>&1
+python -I coverA731_iv.py 3 4 > coverA/coverA_3.out 2>&1
+python -I sweep731.py 23 > sweeps/s23.out 2>&1
+python -I sweep731.py 25 > sweeps/s25.out 2>&1
+python -I sweep731.py 26 > sweeps/s26.out 2>&1
+python -I sweep731.py 27 > sweeps/s27.out 2>&1
+python -I sweep731.py 28 > sweeps/s28.out 2>&1
+python -I sweep731.py 29 > sweeps/s29.out 2>&1
+python -I sweep731.py 30 1 B800 > sweeps/s30.out 2>&1
+python -I sweep731.py 31 1 B800 > sweeps/s31.out 2>&1
+python -I sweep731.py 32 1 B800 > sweeps/s32.out 2>&1
+python -I sweep731.py 33 1 B800 > sweeps/s33.out 2>&1
+python -I sweep731.py 34 1 B800 > sweeps/s34.out 2>&1
+python -I sweep731.py 35 1 B800 > sweeps/s35.out 2>&1
+python -I sweep731.py 36 1 B800 > sweeps/s36.out 2>&1
+python -I sweep731.py 37 1 B800 > sweeps/s37.out 2>&1
+python -I sweep731.py 38 1 B800 > sweeps/s38.out 2>&1
+python -I sweep731.py 39 1 B800 > sweeps/s39.out 2>&1
+python -I bzero731.py 800 3 > explore/bzero731.out 2>&1

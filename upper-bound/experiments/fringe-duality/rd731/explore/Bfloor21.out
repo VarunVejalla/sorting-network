@@ -1,0 +1,3 @@
+floor 2^21 C=800.0 b=300.0 f=3329.0: worst rel 0.521 at tau 1.58e-10
+floor 2^21 C=800.0 b=420.0 f=3360.0: worst rel 0.553 at tau 1.58e-10
+floor 2^21 C=800.0 b=480.0 f=3840.0: worst rel 0.462 at tau 1.26e-10
