@@ -1,0 +1,4 @@
+b in [6.275e-06, 8.157e-06] f=3967: bottom cell count 8.432e-14 (allowed 1.255e-11); worst esc - allowed 6.997e-12; closed by monotone average at sigma 1.645e-14: True  FAIL [92s]
+b in [5.119e-05, 6.654e-05] f=3967: bottom cell count 6.893e-13 (allowed 1.024e-10); worst esc - allowed 6.763e-11; closed by monotone average at sigma 1.342e-13: True  FAIL [75s]
+b in [0.0004175, 0.0005428] f=3967: bottom cell count 5.635e-12 (allowed 8.351e-10); worst esc - allowed 6.620e-10; closed by monotone average at sigma 1.095e-12: True  FAIL [82s]
+b in [0.003406, 0.004428] f=3967: bottom cell count 4.574e-11 (allowed 6.812e-09); worst esc - allowed 6.493e-09; closed by monotone average at sigma 8.929e-12: True  FAIL [69s]

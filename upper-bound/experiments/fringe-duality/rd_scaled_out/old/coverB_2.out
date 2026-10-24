@@ -1,0 +1,6 @@
+b in [1.69e-06, 2.197e-06] f=3967: bottom cell count 2.259e-14 (allowed 3.380e-12); worst esc - allowed 1.747e-12; closed by monotone average at sigma 4.430e-15: True  FAIL [58s]
+b in [1.379e-05, 1.792e-05] f=3967: bottom cell count 1.847e-13 (allowed 2.757e-11); worst esc - allowed 1.628e-11; closed by monotone average at sigma 3.614e-14: True  FAIL [46s]
+b in [0.0001125, 0.0001462] f=3967: bottom cell count 1.386e-12 (allowed 2.249e-10); worst esc - allowed 1.556e-10; closed by monotone average at sigma 2.948e-13: True  FAIL [40s]
+b in [0.0009173, 0.001193] f=3967: bottom cell count 1.130e-11 (allowed 1.835e-09); worst esc - allowed 1.498e-09; closed by monotone average at sigma 2.405e-12: True  FAIL [81s]
+b in [0.007483, 0.009728] f=3967: bottom cell count 9.231e-11 (allowed 1.497e-08); worst esc - allowed 1.471e-08; closed by monotone average at sigma 1.962e-11: True  FAIL [55s]
+b in [0.06104, 0.07935] f=3967: bottom cell count 8.250e-10 (allowed 1.221e-07); worst esc - allowed 1.476e-07; closed by monotone average at sigma 1.600e-10: True  FAIL [76s]
