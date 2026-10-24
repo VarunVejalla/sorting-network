@@ -38,14 +38,14 @@ fails there (rel 1.02). With `C = 800` the worst pointwise value is about 0.6.
 | the k = 21, 22, 23 FAIL intervals | `[900,1300] J`, `[2100,2600] J`, `[3700,5100] J` | fine sweeps: NR = 2^{1/4} (4 sub-octaves), j-ratio 1.05 | float | `sweeps_fine/` | 0 FAIL, worst 0.643. **The FAILs are discretization artifacts.** |
 | `[2^26, 2^30)`, k = 26 … 29 | `j ≤ 150·2^{k+1}` (b < 150) | per-n sweeps, NR = 2 | float | `sweeps/s26 … s29.out` | PENDING |
 | `≥ 2^25` | `b ∈ [150, f_max/8]` | (B) cells: floor 2^25, C = 10 (so `n₀(b) ≤ 2^25` for every b ≥ 150) | **interval** | `coverB25/` | 57 cells, all CERT-OK |
-| `[2^30, 2^40)`, k = 30 … 39 | `j ≤ 800 J ln(2^{k+1})` | per-n sweeps, NR = 2 | float | `sweeps/s30 … s39.out` | PENDING |
+| `[2^30, 2^40)`, k = 30 … 39 | `j ≤ 800 J ln(2^{k+1})` | per-n sweeps, NR = 2 | float | `sweeps/s30 … s39.out` | **0 FAIL**, worst 0.471 (k = 30) to 0.405 (k = 39) |
 | `≥ max(2^30, n₀(b))`, which contains every `j ≥ 800 J ln n` | `b ∈ [1e-6, f_max/8 = 32256]` | (B) cells: floor 2^30, C = 800, b-ratio 1.1, adaptive σ-bisection | **interval** | `coverB/` | 254 cells, all CERT-OK |
 | `≥ 2^40` | `j ≤ 2507 J` | (A) cells, floor 2^40 | **interval** | `coverA/` | CERT-OK |
 | `≥ e^{j_a/(800J)}`, for `j ≥ 3.1e4 J` | `j ∈ [3.1e4 J, 1e6 J]` | (A) cells, floor 2^40, C = 800 (here `ln n₀ = j_a/(800J) ≥ 38.8`) | **interval** | `coverA/` | CERT-OK (184 cells in all) |
 | `j ∈ [2507, 3.1e4] J`, large n | | (A) ladder: floor 2^44 for `[2507, 5798] J`, 2^48 for `[5798, 15420] J`, 2^52 for `[15420, 26970] J`, 2^56 for `[26970, 31020] J` | **interval** | `coverA_ladder/A44 … A56.out` | 22 cells, all CERT-OK |
-| `[2^40, 2^56)` below the ladder floor | j from the ladder's lower end to `800 J ln(2^{k+1})`: `[2400 J, ·]` for k = 40 – 43, `[5000 J, ·]` for 44 – 47, `[1.5e4 J, ·]` for 48 – 51, `[2.6e4 J, ·]` for 52 – 55 | per-n sweeps, NR = 2 | float | `sweeps_gap/s40 … s55.out` | worst 0.40 so far; PENDING |
+| `[2^40, 2^56)` below the ladder floor | j from the ladder's lower end to `800 J ln(2^{k+1})`: `[2400 J, ·]` for k = 40 – 43, `[5000 J, ·]` for 44 – 47, `[1.5e4 J, ·]` for 48 – 51, `[2.6e4 J, ·]` for 52 – 55 | per-n sweeps, NR = 2 | float | `sweeps_gap/s40 … s55.out` | **0 FAIL** in all 16, worst 0.402 (k = 40) |
 | (A), `j > 1e6 J` | | analytic bound (below) | sketch | | passes, ratio 0.49 |
-| (B), `b < 1e-6` | | per-b numerics plus the limit sketch of ROUND1-ENERGY.md | float + sketch | `explore/bzero731.out` | PENDING |
+| (B), `b < 1e-6` | | per-b numerics plus the limit sketch of ROUND1-ENERGY.md | float + sketch | `explore/bzero731.out` | flat in b to 1e-290; worst normalized escapes 0.216 of the allowance (τ = 1e-10) |
 
 **Superseded.** `coverA/` has 18 CERT-FAIL cells, `j ∈ [2507, 3.1e4] J`, from the single floor 2^40. With
 `n₀ = 2^40`, the collision ratio `q₀ = eRu/(λ n₀)` reaches 1 at about 12 columns, so the load bound becomes
@@ -119,7 +119,7 @@ Status: sketch, unchanged from the earlier one except for the constants.
 
 ## Remaining for a complete fringe certificate at this point
 
-1. Finish the PENDING float runs listed in the table.
+1. ~~Finish the PENDING float runs~~: done 2026-10-24. **Float coverage is complete, with no FAIL**, for every n ≥ 2^17, every j and both fringe classes.
 2. Write an interval version of the per-n evaluator, `route_d_rigorous_nr.py` (Kingman `A*`, `k_bool`,
    collision, multiplicity, `Kmax`). Then rerun the sweeps above in it. Margins near class A's ceiling
    are thin (0.95 – 1.0 at NR = 2), so a certified rerun will need the fine n-grid in the dense band:

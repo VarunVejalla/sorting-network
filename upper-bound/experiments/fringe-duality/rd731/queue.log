@@ -1,0 +1,73 @@
+2026-10-24 01:28:42 start: python -I coverB731_iv.py 0 3 > coverB/coverB_0.out 2>&1
+2026-10-24 01:28:48 start: python -I coverB731_iv.py 1 3 > coverB/coverB_1.out 2>&1
+2026-10-24 01:28:53 start: python -I coverB731_iv.py 2 3 > coverB/coverB_2.out 2>&1
+2026-10-24 01:28:58 start: python -I sweep731.py 18 > sweeps/s18.out 2>&1
+2026-10-24 01:40:08 start: python -I sweep731.py 19 > sweeps/s19.out 2>&1
+2026-10-24 01:50:38 start: python -I sweep731.py 21 > sweeps/s21.out 2>&1
+2026-10-24 01:51:24 start: python -I sweep731.py 22 > sweeps/s22.out 2>&1
+2026-10-24 02:06:57 start: python -I coverA731_iv.py 0 4 > coverA/coverA_0.out 2>&1
+2026-10-24 02:12:24 start: python -I coverA731_iv.py 1 4 > coverA/coverA_1.out 2>&1
+2026-10-24 02:17:57 start: JRATIO=1.05 python -I sweep731.py 21 1486071000 2146547000 1.189207115 > sweeps_fine/s21_f.out 2>&1
+2026-10-24 02:18:23 start: JRATIO=1.05 python -I sweep731.py 21.25 1486071000 2146547000 1.189207115 > sweeps_fine/s21.25_f.out 2>&1
+2026-10-24 02:18:48 start: JRATIO=1.05 python -I sweep731.py 21.5 1486071000 2146547000 1.189207115 > sweeps_fine/s21.5_f.out 2>&1
+2026-10-24 02:18:53 start: JRATIO=1.05 python -I sweep731.py 21.75 1486071000 2146547000 1.189207115 > sweeps_fine/s21.75_f.out 2>&1
+2026-10-24 02:19:19 start: python -I /tmp/xB5.py 800 21 300,420,480 > explore/Bfloor21.out 2>&1
+2026-10-24 02:19:44 start: python -I /tmp/xB5.py 800 24 300,420,480 > explore/Bfloor24.out 2>&1
+2026-10-24 02:20:50 start: python -I /tmp/xB5.py 800 27 300,420,480 > explore/Bfloor27.out 2>&1
+2026-10-24 02:21:15 start: python -I coverA731_iv.py 1 4 > coverA/coverA_1.out 2>&1
+2026-10-24 02:26:02 start: python -I coverA731_iv.py 2 4 > coverA/coverA_2.out 2>&1
+2026-10-24 02:26:28 start: python -I coverA731_iv.py 3 4 > coverA/coverA_3.out 2>&1
+2026-10-24 02:27:33 start: python -I sweep731.py 23 > sweeps/s23.out 2>&1
+2026-10-24 02:28:39 start: python -I sweep731.py 25 > sweeps/s25.out 2>&1
+2026-10-24 02:59:52 start: python -I /tmp/xB6.py 10 25 100,150,250,400,500 > explore/Bfloor25_C10.out 2>&1
+2026-10-24 05:43:42 queue drained
+2026-10-24 05:44:06 start: C=10 NMIN_LOG2=25 python -I coverB731_iv.py 0 2 150 32256 > coverB25/coverB25_0.out 2>&1
+2026-10-24 05:44:11 start: C=10 NMIN_LOG2=25 python -I coverB731_iv.py 1 2 150 32256 > coverB25/coverB25_1.out 2>&1
+2026-10-24 05:58:40 start: python -I explore/probeA_floor.py 44 800 2600,2883,4000,5000 > explore/probeA_f44.out 2>&1
+2026-10-24 06:00:46 start: python -I explore/probeA_floor.py 48 800 5000,8000,1e4,1.5e4 > explore/probeA_f48.out 2>&1
+2026-10-24 06:03:12 start: python -I explore/probeA_floor.py 52 800 1.5e4,2e4,2.7e4 > explore/probeA_f52.out 2>&1
+2026-10-24 06:05:38 start: python -I explore/probeA_floor.py 56 800 2.7e4,3.1e4 > explore/probeA_f56.out 2>&1
+2026-10-24 06:06:04 start: JRATIO=1.05 python -I sweep731.py 22 3467499000 4293094000 1.189207115 > sweeps_fine/s22_f.out 2>&1
+2026-10-24 06:07:10 start: JRATIO=1.05 python -I sweep731.py 22.25 3467499000 4293094000 1.189207115 > sweeps_fine/s22.25_f.out 2>&1
+2026-10-24 06:08:15 start: JRATIO=1.05 python -I sweep731.py 22.5 3467499000 4293094000 1.189207115 > sweeps_fine/s22.5_f.out 2>&1
+2026-10-24 06:09:41 start: JRATIO=1.05 python -I sweep731.py 22.75 3467499000 4293094000 1.189207115 > sweeps_fine/s22.75_f.out 2>&1
+2026-10-24 06:12:48 start: JRATIO=1.05 python -I sweep731.py 23 6109403000 8421069000 1.189207115 > sweeps_fine/s23_f.out 2>&1
+2026-10-24 06:14:14 start: JRATIO=1.05 python -I sweep731.py 23.25 6109403000 8421069000 1.189207115 > sweeps_fine/s23.25_f.out 2>&1
+2026-10-24 06:15:40 start: JRATIO=1.05 python -I sweep731.py 23.5 6109403000 8421069000 1.189207115 > sweeps_fine/s23.5_f.out 2>&1
+2026-10-24 06:17:26 start: JRATIO=1.05 python -I sweep731.py 23.75 6109403000 8421069000 1.189207115 > sweeps_fine/s23.75_f.out 2>&1
+2026-10-24 06:20:38 start: FLOOR=44 JFROM=2507 JTOP=5798 python -I coverA731_iv.py 0 1 > coverA_ladder/A44.out 2>&1
+2026-10-24 06:26:06 start: FLOOR=48 JFROM=5798 JTOP=15420 python -I coverA731_iv.py 0 1 > coverA_ladder/A48.out 2>&1
+2026-10-24 06:26:11 start: FLOOR=52 JFROM=15420 JTOP=26970 python -I coverA731_iv.py 0 1 > coverA_ladder/A52.out 2>&1
+2026-10-24 06:26:36 start: FLOOR=56 JFROM=26970 JTOP=31020 python -I coverA731_iv.py 0 1 > coverA_ladder/A56.out 2>&1
+2026-10-24 06:28:22 start: python -I sweep731.py 40 3962856000 B800 > sweeps_gap/s40.out 2>&1
+2026-10-24 06:36:31 start: python -I sweep731.py 41 3962856000 B800 > sweeps_gap/s41.out 2>&1
+2026-10-24 06:37:37 start: python -I sweep731.py 42 3962856000 B800 > sweeps_gap/s42.out 2>&1
+2026-10-24 06:38:43 start: python -I sweep731.py 43 3962856000 B800 > sweeps_gap/s43.out 2>&1
+2026-10-24 06:57:37 start: python -I sweep731.py 44 8255950000 B800 > sweeps_gap/s44.out 2>&1
+2026-10-24 06:59:23 start: python -I sweep731.py 45 8255950000 B800 > sweeps_gap/s45.out 2>&1
+2026-10-24 07:05:10 start: python -I sweep731.py 46 8255950000 B800 > sweeps_gap/s46.out 2>&1
+2026-10-24 07:05:36 start: python -I sweep731.py 47 8255950000 B800 > sweeps_gap/s47.out 2>&1
+2026-10-24 07:06:21 start: python -I sweep731.py 48 24767850000 B800 > sweeps_gap/s48.out 2>&1
+2026-10-24 07:09:48 start: python -I sweep731.py 49 24767850000 B800 > sweeps_gap/s49.out 2>&1
+2026-10-24 07:26:01 start: python -I sweep731.py 50 24767850000 B800 > sweeps_gap/s50.out 2>&1
+2026-10-24 07:26:07 start: python -I sweep731.py 51 24767850000 B800 > sweeps_gap/s51.out 2>&1
+2026-10-24 07:29:33 start: python -I sweep731.py 52 42930940000 B800 > sweeps_gap/s52.out 2>&1
+2026-10-24 07:30:39 start: python -I sweep731.py 53 42930940000 B800 > sweeps_gap/s53.out 2>&1
+2026-10-24 07:32:25 start: python -I sweep731.py 54 42930940000 B800 > sweeps_gap/s54.out 2>&1
+2026-10-24 07:34:51 start: python -I sweep731.py 55 42930940000 B800 > sweeps_gap/s55.out 2>&1
+2026-10-24 07:41:19 start: python -I sweep731.py 26 1 20132659200 > sweeps/s26.out 2>&1
+2026-10-24 07:42:25 start: python -I sweep731.py 27 1 40265318400 > sweeps/s27.out 2>&1
+2026-10-24 07:46:34 start: python -I sweep731.py 28 1 80530636800 > sweeps/s28.out 2>&1
+2026-10-24 07:46:39 start: python -I sweep731.py 29 1 161061273600 > sweeps/s29.out 2>&1
+2026-10-24 07:46:44 start: python -I sweep731.py 30 1 B800 > sweeps/s30.out 2>&1
+2026-10-24 08:00:37 start: python -I sweep731.py 31 1 B800 > sweeps/s31.out 2>&1
+2026-10-24 08:20:57 start: python -I sweep731.py 32 1 B800 > sweeps/s32.out 2>&1
+2026-10-24 08:23:23 start: python -I sweep731.py 33 1 B800 > sweeps/s33.out 2>&1
+2026-10-24 08:43:02 start: python -I sweep731.py 34 1 B800 > sweeps/s34.out 2>&1
+2026-10-24 08:49:53 start: python -I sweep731.py 35 1 B800 > sweeps/s35.out 2>&1
+2026-10-24 09:02:04 start: python -I sweep731.py 36 1 B800 > sweeps/s36.out 2>&1
+2026-10-24 09:05:32 start: python -I sweep731.py 37 1 B800 > sweeps/s37.out 2>&1
+2026-10-24 09:26:40 start: python -I sweep731.py 38 1 B800 > sweeps/s38.out 2>&1
+2026-10-24 09:34:35 start: python -I sweep731.py 39 1 B800 > sweeps/s39.out 2>&1
+2026-10-24 10:03:55 start: python -I bzero731.py 800 3 > explore/bzero731.out 2>&1
+2026-10-24 10:04:00 queue drained
