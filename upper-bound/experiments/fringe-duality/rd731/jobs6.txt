@@ -1,0 +1,35 @@
+FLOOR=44 JFROM=2507 JTOP=5798 python -I coverA731_iv.py 0 1 > coverA_ladder/A44.out 2>&1
+FLOOR=48 JFROM=5798 JTOP=15420 python -I coverA731_iv.py 0 1 > coverA_ladder/A48.out 2>&1
+FLOOR=52 JFROM=15420 JTOP=26970 python -I coverA731_iv.py 0 1 > coverA_ladder/A52.out 2>&1
+FLOOR=56 JFROM=26970 JTOP=31020 python -I coverA731_iv.py 0 1 > coverA_ladder/A56.out 2>&1
+python -I sweep731.py 40 3962856000 B800 > sweeps_gap/s40.out 2>&1
+python -I sweep731.py 41 3962856000 B800 > sweeps_gap/s41.out 2>&1
+python -I sweep731.py 42 3962856000 B800 > sweeps_gap/s42.out 2>&1
+python -I sweep731.py 43 3962856000 B800 > sweeps_gap/s43.out 2>&1
+python -I sweep731.py 44 8255950000 B800 > sweeps_gap/s44.out 2>&1
+python -I sweep731.py 45 8255950000 B800 > sweeps_gap/s45.out 2>&1
+python -I sweep731.py 46 8255950000 B800 > sweeps_gap/s46.out 2>&1
+python -I sweep731.py 47 8255950000 B800 > sweeps_gap/s47.out 2>&1
+python -I sweep731.py 48 24767850000 B800 > sweeps_gap/s48.out 2>&1
+python -I sweep731.py 49 24767850000 B800 > sweeps_gap/s49.out 2>&1
+python -I sweep731.py 50 24767850000 B800 > sweeps_gap/s50.out 2>&1
+python -I sweep731.py 51 24767850000 B800 > sweeps_gap/s51.out 2>&1
+python -I sweep731.py 52 42930940000 B800 > sweeps_gap/s52.out 2>&1
+python -I sweep731.py 53 42930940000 B800 > sweeps_gap/s53.out 2>&1
+python -I sweep731.py 54 42930940000 B800 > sweeps_gap/s54.out 2>&1
+python -I sweep731.py 55 42930940000 B800 > sweeps_gap/s55.out 2>&1
+python -I sweep731.py 26 1 20132659200 > sweeps/s26.out 2>&1
+python -I sweep731.py 27 1 40265318400 > sweeps/s27.out 2>&1
+python -I sweep731.py 28 1 80530636800 > sweeps/s28.out 2>&1
+python -I sweep731.py 29 1 161061273600 > sweeps/s29.out 2>&1
+python -I sweep731.py 30 1 B800 > sweeps/s30.out 2>&1
+python -I sweep731.py 31 1 B800 > sweeps/s31.out 2>&1
+python -I sweep731.py 32 1 B800 > sweeps/s32.out 2>&1
+python -I sweep731.py 33 1 B800 > sweeps/s33.out 2>&1
+python -I sweep731.py 34 1 B800 > sweeps/s34.out 2>&1
+python -I sweep731.py 35 1 B800 > sweeps/s35.out 2>&1
+python -I sweep731.py 36 1 B800 > sweeps/s36.out 2>&1
+python -I sweep731.py 37 1 B800 > sweeps/s37.out 2>&1
+python -I sweep731.py 38 1 B800 > sweeps/s38.out 2>&1
+python -I sweep731.py 39 1 B800 > sweeps/s39.out 2>&1
+python -I bzero731.py 800 3 > explore/bzero731.out 2>&1

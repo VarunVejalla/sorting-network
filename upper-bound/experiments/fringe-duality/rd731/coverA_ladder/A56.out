@@ -1,0 +1,4 @@
+coverA731_iv: J = 1651190, C = 800, floor 2^56, j in [1, 31020 J], 178 cells, part 0/1
+j in [2.346e+04, 2.697e+04] J (n >= e^38.8162): worst float 9084.807051 cert 9084.807051 at s2 <= 19  allowed 2.346e+04  margin float 14370.7 cert 14370.7  CERT-OK [161s] {'A_fail': 0, 'kb_fail': 0, 'tail_fail': 0, 'iv_evals': 107}
+j in [2.697e+04, 3.102e+04] J (n >= e^38.8162): worst float 10417.44703 cert 10417.44703 at s2 <= 22  allowed 2.697e+04  margin float 16556.4 cert 16556.4  CERT-OK [196s] {'A_fail': 0, 'kb_fail': 0, 'tail_fail': 0, 'iv_evals': 228}
+j in [3.102e+04, 3.102e+04] J (n >= e^38.8162): worst float 10417.47272 cert 10417.47272 at s2 <= 22  allowed 3.102e+04  margin float 20602.4 cert 20602.4  CERT-OK [196s] {'A_fail': 0, 'kb_fail': 0, 'tail_fail': 0, 'iv_evals': 349}

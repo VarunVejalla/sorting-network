@@ -1,0 +1,8 @@
+coverA731_iv: J = 1651190, C = 800, floor 2^44, j in [1, 5798 J], 166 cells, part 0/1
+j in [2507, 2883] J (n >= e^30.4985): worst float 1142.734634 cert 1142.734634 at s2 <= 3  allowed 2507  margin float 1363.83 cert 1363.83  CERT-OK [24s] {'A_fail': 0, 'kb_fail': 0, 'tail_fail': 0, 'iv_evals': 22}
+j in [2883, 3315] J (n >= e^30.4985): worst float 1346.793391 cert 1346.793391 at s2 <= 4  allowed 2883  margin float 1535.76 cert 1535.76  CERT-OK [33s] {'A_fail': 0, 'kb_fail': 0, 'tail_fail': 0, 'iv_evals': 51}
+j in [3315, 3812] J (n >= e^30.4985): worst float 1587.187706 cert 1587.187706 at s2 <= 4  allowed 3315  margin float 1727.75 cert 1727.75  CERT-OK [33s] {'A_fail': 0, 'kb_fail': 0, 'tail_fail': 0, 'iv_evals': 80}
+j in [3812, 4384] J (n >= e^30.4985): worst float 1872.172722 cert 1872.172722 at s2 <= 5  allowed 3812  margin float 1940 cert 1940  CERT-OK [41s] {'A_fail': 0, 'kb_fail': 0, 'tail_fail': 0, 'iv_evals': 118}
+j in [4384, 5042] J (n >= e^30.4985): worst float 2212.539204 cert 2212.539204 at s2 <= 6  allowed 4384  margin float 2171.46 cert 2171.46  CERT-OK [49s] {'A_fail': 0, 'kb_fail': 0, 'tail_fail': 0, 'iv_evals': 167}
+j in [5042, 5798] J (n >= e^30.4985): worst float 2601.999623 cert 2601.999623 at s2 <= 8  allowed 5042  margin float 2439.6 cert 2439.6  CERT-OK [63s] {'A_fail': 0, 'kb_fail': 0, 'tail_fail': 0, 'iv_evals': 243}
+j in [5798, 5798] J (n >= e^30.4985): worst float 2602.089676 cert 2602.089676 at s2 <= 8  allowed 5798  margin float 3195.75 cert 3195.75  CERT-OK [65s] {'A_fail': 0, 'kb_fail': 0, 'tail_fail': 0, 'iv_evals': 319}

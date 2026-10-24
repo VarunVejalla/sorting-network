@@ -1,0 +1,7 @@
+sweep731 n in [2^22.75, 1.18921 2^22.75], j ratio 1.05, J = 1651190, classes ((3329.0, 4023.0), (210012.0, 258047.0)), j in [3.4675e+09, 4.29309e+09] = [2100, 2600] J
+  j in [      2100,       2205] J f=   3329.0: worst       1350.6 at s2 <=       1  allowed     2100.0  OK [40s]
+  j in [      2205,       2315] J f=   3472.2: worst       1298.9 at s2 <=       1  allowed     2205.0  OK [42s]
+  j in [      2315,       2431] J f=   3645.8: worst       1218.7 at s2 <=       1  allowed     2315.2  OK [30s]
+  j in [      2431,       2553] J f=   3828.1: worst       1135.5 at s2 <=       1  allowed     2431.0  OK [28s]
+  j in [      2553,       2600] J f=   4019.5: worst        989.2 at s2 <=       1  allowed     2552.6  OK [29s]
+DONE k=22.75: 0 FAIL, worst esc/allowed 0.6431

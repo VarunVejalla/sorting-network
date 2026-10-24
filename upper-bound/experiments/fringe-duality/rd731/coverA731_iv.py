@@ -6,7 +6,7 @@ at J, evaluated at j_b against the allowance j_a/J (1 for j_b <= J), for every n
 (certified lower bound of the exponent), every set size. Fringe f = 3329 (class A floor): in (A) b = j/n <=
 JTOP J / 2^FLOOR < 2, so 8 b < 3329 and the class-aware f_eff is the class-A floor.
 
-Usage:  python -I coverA731_iv.py part nparts
+Usage:  python -I coverA731_iv.py part nparts      (env JFROM, JTOP in J units restrict the cells: ladder runs)
         python -I coverA731_iv.py near j1/J [j2/J ...]
 """
 import math
@@ -25,6 +25,7 @@ import params731 as P  # noqa: E402
 C = float(os.environ.get('C', '800'))
 FLOOR = float(os.environ.get('FLOOR', '40'))
 JTOP = float(os.environ.get('JTOP', '1e6'))
+JFROM = float(os.environ.get('JFROM', '0'))      # ladder runs: only the cells with j_b > JFROM J
 J = P.J
 CJ = C * J
 f = P.F_MIN
@@ -63,6 +64,7 @@ if __name__ == "__main__":
         sys.exit(0)
     part, nparts = int(sys.argv[1]), int(sys.argv[2])
     print(f"coverA731_iv: J = {J:.0f}, C = {C:g}, floor 2^{FLOOR:g}, j in [1, {JTOP:g} J], {len(cells)} cells, part {part}/{nparts}", flush=True)
-    for idx, (a, b) in enumerate(cells):
+    sel = [c for c in cells if c[1] > JFROM * J * (1 + 1e-12)]
+    for idx, (a, b) in enumerate(sel):
         if idx % nparts == part:
             run(a, b)
