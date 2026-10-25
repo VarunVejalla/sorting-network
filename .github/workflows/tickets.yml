@@ -4,12 +4,14 @@ on:
   push:
     paths:
       - 'upper-bound/backlog/tickets.json'
+      - 'lower-bound/backlog/tickets.json'
       - 'upper-bound/STATUS.json'
       - 'scripts/tickets'
       - 'scripts/check-status'
   pull_request:
     paths:
       - 'upper-bound/backlog/tickets.json'
+      - 'lower-bound/backlog/tickets.json'
       - 'upper-bound/STATUS.json'
       - 'scripts/tickets'
       - 'scripts/check-status'
@@ -22,5 +24,7 @@ jobs:
       - uses: actions/checkout@v5
       - name: Validate the ticket registry
         run: python3 scripts/tickets
+      - name: Validate the lower-bound ticket registry
+        run: python3 scripts/tickets --lb
       - name: STATUS.json consistent with the sources
         run: python3 scripts/check-status

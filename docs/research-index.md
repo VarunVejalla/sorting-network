@@ -137,6 +137,9 @@ Entry point: `lake build AKS.Kahale`. See
 [the detailed proof map](kahale-lower-bound.md) and
 [the asymptotic endpoints](../lower-bound/best/AKS/Bounds/KahaleAsymptotic.lean).
 This reproduces the published lower bound; stronger constants remain research.
+Lower-bound research is planned in [the LB backlog](../lower-bound/backlog/README.md)
+(survey, `LB-NN` tickets, ruled-out barriers); the `kahale-*.md` notes are indexed
+by topic and status in [lower-bound/notes/INDEX.md](../lower-bound/notes/INDEX.md).
 
 ## Proved milestones
 
@@ -153,7 +156,7 @@ This reproduces the published lower bound; stronger constants remain research.
 | Trust audit | [PatersonAxioms](../upper-bound/alternatives/legacy/AKS/Halver/PatersonAxioms.lean) | Compile-time axiom checks for the main local results: only `propext`, `Classical.choice`, `Quot.sound`. |
 
 The supported contract is intentionally weaker than the existing
-[`IsSeparator`](../lower-bound/experiments/AKS/Separator/Defs.lean): its cohort support `1/50` is smaller
+[`IsSeparator`](../upper-bound/alternatives/legacy/AKS/Separator/Defs.lean): its cohort support `1/50` is smaller
 than its fringe fraction `1/32`. The first-level large-cohort contract remains
 available in `firstLevelNetwork_good`; it must be used by the future bag proof.
 

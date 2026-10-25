@@ -1,0 +1,511 @@
+{
+  "schema": "upper-bound/backlog/tickets.schema.md",
+  "scope": "lower-bound",
+  "updated": "2026-10-24",
+  "tickets": [
+    {
+      "id": "LB-01",
+      "title": "Explicit finite lower bound max(fan-in lg n, counting lg n!/floor(n/2), Kahale Fibonacci) in Lean",
+      "priority": "P1",
+      "status": "ready",
+      "claim_level": "none",
+      "baseline": 3.2706,
+      "projected": 3.2706,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "Lean: Sorts net -> n.factorial <= 2^(comparator count) via ComparisonTrace.exec_trace_injective; then D(n)*floor(n/2) >= lg n! and D(n) >= clog 2 n; one combined finite theorem",
+      "evidence": [
+        "lower-bound/backlog/SURVEY.md",
+        "lower-bound/experiments/AKS/Kahale/ComparisonTrace.lean",
+        "lower-bound/best/AKS/Bounds/Kahale.lean"
+      ],
+      "notes": "Folklore bounds. The checked Fibonacci bound is weaker than the counting bound below n ~ 2^33 (SURVEY (a) table). Constant unchanged; the value is the correct finite statement for every n."
+    },
+    {
+      "id": "LB-02",
+      "title": "Two-sided (zero and one) certificate-height relaxation: does joint (h0,h1) with the intersection / n+2 coupling exceed 3.2706?",
+      "priority": "P2",
+      "status": "ready",
+      "claim_level": "none",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "Exact DP/LP for the joint height-histogram relaxation (analogue of kahale_height_barrier.py): its optimal rate, or a mirrored positional schedule meeting both sides at 3.2706",
+      "evidence": [
+        "lower-bound/backlog/SURVEY.md",
+        "docs/kahale-certificate-families.md",
+        "docs/kahale-union-coupling.md",
+        "lower-bound/experiments/AKS/Kahale/CertificateCompatibility.lean",
+        "lower-bound/experiments/AKS/Kahale/UnionCoupling.lean",
+        "lower-bound/experiments/scripts/kahale_height_barrier.py"
+      ],
+      "notes": "The positional barrier schedule fails sorting exactly by disjoint zero/one certificates; the scalar method sees only zero heights. Kill quickly if a min/max-symmetric schedule saturates both sides."
+    },
+    {
+      "id": "LB-03",
+      "title": "Coupled information/certificate tradeoff: Kahale-extremal schedules waste comparison information",
+      "priority": "P3",
+      "status": "proposed",
+      "claim_level": "none",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "Exact or analytic sum of (1-h_g) on the positional barrier family and sorted-block families as a function of d; if the slot saving rho is well above 0.388 on extremal schedules, state the tradeoff inequality",
+      "evidence": [
+        "lower-bound/backlog/SURVEY.md",
+        "docs/kahale-proof-plan.md",
+        "docs/kahale-positional-barrier.md",
+        "docs/kahale-swap-charging.md"
+      ],
+      "notes": "Counting (2) and Kahale (3.27) are each tight on their own relaxations; a joint inequality could beat both. Risk: the charging problem of LB-26 returns."
+    },
+    {
+      "id": "LB-04",
+      "title": "Formalize constant-depth k-sorter network lower bounds (Dobrokhotova-Maikova, Kozachinskiy, Podolskii, ITCS 2023)",
+      "priority": "P2",
+      "status": "proposed",
+      "claim_level": "none",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "Lean model of k-sorter layers; prove depth 3 needs k >= ceil(n/2); then d >= 2 log_k n - O(1)",
+      "evidence": [
+        "lower-bound/backlog/SURVEY.md",
+        "upper-bound/experiments/k-sorting-2024/README.md"
+      ],
+      "notes": "Target is a published result, not yet formalized here. Restricted-class bound; lower-bound side of UB-08. baseline/projected refer to binary D(n) and do not change."
+    },
+    {
+      "id": "LB-05",
+      "title": "Depth lower bound for epsilon-halvers and approximate selectors from the Kahale machinery",
+      "priority": "P2",
+      "status": "proposed",
+      "claim_level": "none",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "Standalone Lean theorem: an (n,eps)-halver / approximate selector has depth >= f(eps,n), reusing ApproxSelection, SelectionCounting and Fanout",
+      "evidence": [
+        "lower-bound/backlog/SURVEY.md",
+        "lower-bound/best/AKS/Kahale/ApproxSelection.lean",
+        "lower-bound/best/AKS/Kahale/SelectionCounting.lean",
+        "upper-bound/backlog/ruled-out.md"
+      ],
+      "notes": "Calibrates upper-side halver/separator ideas (UB-04, UB-06). May only reproduce a lg(1/eps)-type bound."
+    },
+    {
+      "id": "LB-06",
+      "title": "Kernel-checked exact D(n) for small n (n <= 8, stretch 10)",
+      "priority": "P2",
+      "status": "proposed",
+      "claim_level": "none",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "D(4)=3 and D(5)=5 by kernel decide over normalized first layers (no native_decide); measure kernel cost before scaling",
+      "evidence": [
+        "lower-bound/backlog/SURVEY.md"
+      ],
+      "notes": "Target is a published result, not yet formalized here. D(n) is known exactly for n <= 17 (Parberry; Bundala-Zavodny; Codish et al.); D(18..32) >= 10 only. No asymptotic consequence."
+    },
+    {
+      "id": "LB-07",
+      "title": "Formalize the KLMPSS size lower bound (1.12 - o(1)) n lg n",
+      "priority": "P3",
+      "status": "proposed",
+      "claim_level": "none",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [
+        "LB-01"
+      ],
+      "first_deliverable": "Map the paper's size argument onto the existing certificate/selection modules and list the missing lemmas with size estimates",
+      "evidence": [
+        "lower-bound/backlog/SURVEY.md",
+        "docs/kahale-lower-bound.md",
+        "docs/225058.225178.pdf"
+      ],
+      "notes": "Target is a published result, not yet formalized here. Size, not depth: the depth coefficient is unchanged."
+    },
+    {
+      "id": "LB-08",
+      "title": "Scale-compatible signed quadratic witness charge via conditional pair routing at central baselines",
+      "priority": "P3",
+      "status": "proposed",
+      "claim_level": "simulation",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "Exact 6-7 wire LP screen: quadratic cross-image charge with unit layer drop and sorted endpoint at central Hamming weights; a feasible potential or an exact Farkas certificate",
+      "evidence": [
+        "docs/kahale-witness-charge.md",
+        "docs/kahale-low-rank-barrier.md",
+        "lower-bound/experiments/scripts/kahale_witness_charge.py"
+      ],
+      "notes": "The only route that recovered exact D(4), D(5) (claim level from LB-30). Successor of LB-30; avoid the zero-baseline-only family killed in LB-31."
+    },
+    {
+      "id": "LB-09",
+      "title": "Formalize Plaxton-Suel Omega(lg^2 n / lg lg n) depth for shuffle-based networks",
+      "priority": "P3",
+      "status": "proposed",
+      "claim_level": "none",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "Precise model statement (shuffle-unshuffle networks) and a proof outline with lemma list",
+      "evidence": [
+        "lower-bound/backlog/SURVEY.md"
+      ],
+      "notes": "Target is a published result, not yet formalized here. Superlogarithmic bound for a restricted class; far from the repo's upper architecture."
+    },
+    {
+      "id": "LB-10",
+      "title": "Depth lower bound for networks that sort all but a small fraction of inputs",
+      "priority": "P3",
+      "status": "proposed",
+      "claim_level": "none",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "Identify where SelectionCounting needs worst-case inputs; decide whether the 3.27 depth argument survives averaging",
+      "evidence": [
+        "lower-bound/backlog/SURVEY.md",
+        "lower-bound/best/AKS/Kahale/SelectionCounting.lean"
+      ],
+      "notes": "Leighton-Plaxton's 7.44 lg n usually-sorting circuit makes this the smallest-gap model. KLMPSS extend their size bound to fraction-sorting; the depth case is unsure."
+    },
+    {
+      "id": "LB-11",
+      "title": "Decouple the liminf headline from the legacy 102*10^62 upper bound",
+      "priority": "P1",
+      "status": "ready",
+      "claim_level": "none",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "EReal-valued liminf (or the eventual form as headline) proved without minimum_div_logb_cobounded; optionally move `minimum` to a neutral module",
+      "evidence": [
+        "lower-bound/best/AKS/Bounds/KahaleAsymptotic.lean",
+        "lower-bound/best/AKS/Bounds/Minimum.lean"
+      ],
+      "notes": "Trust and dependency clarity only; no mathematical change."
+    },
+    {
+      "id": "LB-12",
+      "title": "Merging networks: depth ceil(lg(m+n)) and Miltersen-Paterson-Tarui size optimality",
+      "priority": "P3",
+      "status": "proposed",
+      "claim_level": "none",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [
+        "LB-01"
+      ],
+      "first_deliverable": "Lean fan-in depth lower bound for merging networks",
+      "evidence": [
+        "lower-bound/backlog/SURVEY.md"
+      ],
+      "notes": "Target is a published result, not yet formalized here. Low value for the main question; self-contained."
+    },
+    {
+      "id": "LB-20",
+      "title": "Recombine Kahale's scalar binomial inequalities (full weighted system)",
+      "priority": "P2",
+      "status": "rejected",
+      "claim_level": "kernel-checked",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "none (barrier)",
+      "evidence": [
+        "docs/kahale-method-barrier.md",
+        "lower-bound/experiments/AKS/Kahale/MethodBarrier.lean",
+        "lower-bound/experiments/scripts/kahale_height_barrier.py"
+      ],
+      "notes": "A fractional (and integral) height population saturates every prefix inequality at rate 3.2706."
+    },
+    {
+      "id": "LB-21",
+      "title": "Positional zero-height boundary constraints",
+      "priority": "P2",
+      "status": "rejected",
+      "claim_level": "hand-proof",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "none (barrier)",
+      "evidence": [
+        "docs/kahale-positional-barrier.md",
+        "lower-bound/experiments/AKS/Kahale/PositionalBarrier.lean",
+        "lower-bound/experiments/scripts/kahale_positional_barrier.py"
+      ],
+      "notes": "Explicit schedule on floor(2^d/((d+1)F_{d+1})) wires meets all positional height conditions; it does not sort."
+    },
+    {
+      "id": "LB-22",
+      "title": "Certificate families: zero/one intersection and union coupling",
+      "priority": "P2",
+      "status": "parked",
+      "claim_level": "kernel-checked",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "see LB-02",
+      "evidence": [
+        "docs/kahale-certificate-families.md",
+        "docs/kahale-union-coupling.md",
+        "lower-bound/experiments/AKS/Kahale/CertificateCompatibility.lean",
+        "lower-bound/experiments/AKS/Kahale/UnionCoupling.lean",
+        "docs/kahale-certificate-witness.json"
+      ],
+      "notes": "Local constraints kernel-checked (intersection characterizes sorting; z_max+o_min <= n+2); no rate. Continued as LB-02."
+    },
+    {
+      "id": "LB-23",
+      "title": "Additive monomial joint potentials sum z^p o^q",
+      "priority": "P2",
+      "status": "rejected",
+      "claim_level": "kernel-checked",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "none (barrier)",
+      "evidence": [
+        "docs/kahale-joint-potential.md",
+        "lower-bound/experiments/AKS/Kahale/JointPotential.lean",
+        "lower-bound/experiments/scripts/kahale_joint_potential.py"
+      ],
+      "notes": "A uniform multiplicative stage bound caps the coefficient at 2; (z,o) does not determine its own update."
+    },
+    {
+      "id": "LB-24",
+      "title": "Pairwise union costs and remaining-depth (suffix) potentials",
+      "priority": "P2",
+      "status": "parked",
+      "claim_level": "simulation",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "a rate-bearing pair inequality",
+      "evidence": [
+        "docs/kahale-weighted-union.md",
+        "docs/kahale-suffix-potential.md",
+        "lower-bound/experiments/AKS/Kahale/PairUnionRecurrence.lean",
+        "lower-bound/experiments/scripts/kahale_weighted_union.py",
+        "lower-bound/experiments/scripts/kahale_suffix_potential.py"
+      ],
+      "notes": "Closed upper recurrence; evidence is a 5-wire catalogue only; no rate."
+    },
+    {
+      "id": "LB-25",
+      "title": "Rank congestion / coalition Hall capacity at suffix cuts",
+      "priority": "P2",
+      "status": "parked",
+      "claim_level": "kernel-checked",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "a loss factor r > 1 accumulated over theta*d stages",
+      "evidence": [
+        "docs/kahale-rank-congestion.md",
+        "docs/kahale-congestion-rate.md",
+        "lower-bound/experiments/AKS/Kahale/RankCongestion.lean",
+        "lower-bound/experiments/AKS/Kahale/CongestionBarrier.lean",
+        "lower-bound/experiments/scripts/kahale_congestion_search.py",
+        "lower-bound/experiments/scripts/kahale_rank_congestion.py"
+      ],
+      "notes": "Valid collective obstruction but only in terminal layers; full reachability makes coalition inequalities automatic; symbolic searches inconclusive."
+    },
+    {
+      "id": "LB-26",
+      "title": "Information accounting and slot-saving banks (target 4)",
+      "priority": "P2",
+      "status": "parked",
+      "claim_level": "kernel-checked",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "a charging lemma with an O(n) exception budget",
+      "evidence": [
+        "docs/kahale-proof-plan.md",
+        "docs/kahale-target-four.md",
+        "docs/kahale-swap-charging.md",
+        "docs/kahale-layer-bank.md",
+        "docs/kahale-boundary-transfer.md",
+        "docs/kahale-transfer-charging.md",
+        "docs/kahale-rankset-transition.md",
+        "docs/kahale-hierarchy-layer.md",
+        "lower-bound/experiments/AKS/Kahale/ComparisonTrace.lean",
+        "lower-bound/experiments/AKS/Kahale/ComparatorInformation.lean",
+        "lower-bound/experiments/AKS/Kahale/HierarchyRefinement.lean"
+      ],
+      "notes": "Exact identities kernel-checked (trace, fiber merge, boundary transfer); the charging lemma sum E_g <= sum S_g + (M-G)/2 is missing; layers can beat single-gate gains; joint hierarchy adds no Shannon entropy."
+    },
+    {
+      "id": "LB-27",
+      "title": "Occupation spectra and degree recycling as a certificate-inefficiency charge",
+      "priority": "P2",
+      "status": "rejected",
+      "claim_level": "hand-proof",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "none (barrier)",
+      "evidence": [
+        "docs/kahale-layer-occupation.md",
+        "docs/kahale-degree-recycling.md",
+        "lower-bound/experiments/AKS/Kahale/OccupationLayer.lean",
+        "lower-bound/experiments/AKS/Kahale/OccupationCounterexample.lean",
+        "lower-bound/experiments/scripts/kahale_layer_occupation.py",
+        "lower-bound/experiments/scripts/kahale_degree_recycling.py"
+      ],
+      "notes": "Local charge false at arbitrarily large sizes (a sorted-block median comparison clears all spectral degrees); equal-height comparators can finish sorting."
+    },
+    {
+      "id": "LB-28",
+      "title": "Activation hypergraphs and amortized certificate-growth (preparation) charges",
+      "priority": "P2",
+      "status": "rejected",
+      "claim_level": "hand-proof",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "must measure residual sorting work (LB-29)",
+      "evidence": [
+        "docs/kahale-joint-groups.md",
+        "docs/kahale-activation-scales.md",
+        "docs/kahale-certificate-preparation.md",
+        "lower-bound/experiments/scripts/kahale_certificate_preparation.py",
+        "lower-bound/experiments/scripts/kahale_activation_scales.py"
+      ],
+      "notes": "The full certificate potential has amortized growth 3/2 on depth-log aligned prefixes; a uniform growth bound below 3/2 is false."
+    },
+    {
+      "id": "LB-29",
+      "title": "Residual image difficulty with dependency / reachability charges",
+      "priority": "P2",
+      "status": "rejected",
+      "claim_level": "simulation",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "retain AND/OR semantics (LB-30)",
+      "evidence": [
+        "docs/kahale-image-difficulty.md",
+        "lower-bound/experiments/scripts/kahale_image_difficulty.py"
+      ],
+      "notes": "Dependency-only models have an asymptotic ceiling of one lg coefficient; cube and information costs do not add."
+    },
+    {
+      "id": "LB-30",
+      "title": "Shared polarity and amortized mixed-witness charges",
+      "priority": "P2",
+      "status": "parked",
+      "claim_level": "simulation",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "see LB-08",
+      "evidence": [
+        "docs/kahale-joint-polarity.md",
+        "docs/kahale-witness-charge.md",
+        "lower-bound/experiments/scripts/kahale_joint_polarity.py",
+        "lower-bound/experiments/scripts/kahale_witness_charge.py"
+      ],
+      "notes": "Additive witness charges of every order fail (exact LP dual); signed quadratic charges recover D(4)=3, D(5)=5. Continued as LB-08."
+    },
+    {
+      "id": "LB-31",
+      "title": "Fiber-charge correction chain (singleton/pair preimage corrections, low-rank charges)",
+      "priority": "P2",
+      "status": "rejected",
+      "claim_level": "hand-proof",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "none (barrier)",
+      "evidence": [
+        "docs/kahale-preimage-capacity.md",
+        "docs/kahale-capacity-lift.md",
+        "docs/kahale-singleton-correction.md",
+        "docs/kahale-pair-correction.md",
+        "docs/kahale-pair-constraint-generation.md",
+        "docs/kahale-low-rank-barrier.md",
+        "lower-bound/experiments/scripts/kahale_pair_constraint_generation.py",
+        "lower-bound/experiments/scripts/kahale_low_rank_barrier.py"
+      ],
+      "notes": "Quadratic pair corrections are infeasible on 6 wires (exact Farkas certificate); any charge reading only input weights <= 3 has total drop <= 3 ceil(lg n), coefficient <= 3."
+    },
+    {
+      "id": "LB-32",
+      "title": "Coupled Boolean faces and discrepancy transport",
+      "priority": "P2",
+      "status": "parked",
+      "claim_level": "kernel-checked",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": null,
+      "branch": null,
+      "depends_on": [],
+      "first_deliverable": "pair-matrix closure or a face-coalescence rate",
+      "evidence": [
+        "docs/kahale-coupled-faces.md",
+        "docs/kahale-face-transport.md",
+        "lower-bound/experiments/AKS/Kahale/CoupledFaces.lean",
+        "lower-bound/experiments/AKS/Kahale/FaceTransport.lean",
+        "lower-bound/experiments/AKS/Kahale/FaceSortingCriterion.lean",
+        "lower-bound/experiments/scripts/kahale_coupled_faces.py",
+        "lower-bound/experiments/scripts/kahale_face_transport.py"
+      ],
+      "notes": "Exact face model and sorting criterion kernel-checked; pair-matrix closure open for ordered comparators (counterexample when orientation is unrestricted); no depth-rate lemma."
+    }
+  ]
+}

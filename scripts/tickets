@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
-"""Validate and render the upper-bound ticket registry (upper-bound/backlog/tickets.json).
+"""Validate and render a ticket registry.
+
+Default: the upper-bound registry (upper-bound/backlog/tickets.json, ids UB-NN). With `--lb` (or
+`--registry lb`), the lower-bound registry (lower-bound/backlog/tickets.json, ids LB-NN); `--registry PATH`
+takes any tickets.json, the id prefix being read from its first ticket. `--all` validates both.
 
   scripts/tickets                 # validate (exit 1 on errors; warnings are printed)
+  scripts/tickets --lb            # validate the lower-bound registry (combine with the options below)
+  scripts/tickets --all           # validate both registries
   scripts/tickets --table         # print the ticket table in markdown (for README paste)
   scripts/tickets --list [status] # one line per ticket, optionally filtered by status
   scripts/tickets --show UB-14    # print one ticket
@@ -12,11 +18,17 @@ never a theorem unless claim_level is 'kernel-checked'.
 import json
 import os
 import re
+import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-REG = os.path.join(ROOT, "upper-bound", "backlog", "tickets.json")
+REGISTRIES = {
+    "ub": os.path.join(ROOT, "upper-bound", "backlog", "tickets.json"),
+    "lb": os.path.join(ROOT, "lower-bound", "backlog", "tickets.json"),
+}
+REG = REGISTRIES["ub"]
 README = os.path.join(ROOT, "upper-bound", "backlog", "README.md")
+PREFIX = "UB"
 
 STATUSES = ["proposed", "ready", "active", "blocked", "parked", "done", "rejected"]
 CLAIMS = ["none", "conjecture", "simulation", "model", "hand-proof", "kernel-checked"]
@@ -42,8 +54,8 @@ def validate(tickets):
         for k in REQUIRED:
             if k not in t:
                 errors.append(f"{tid}: missing field '{k}'")
-        if not re.fullmatch(r"UB-\d{2,}", str(t.get("id", ""))):
-            errors.append(f"{tid}: id must look like UB-NN")
+        if not re.fullmatch(PREFIX + r"-\d{2,}", str(t.get("id", ""))):
+            errors.append(f"{tid}: id must look like {PREFIX}-NN")
         if t.get("status") not in STATUSES:
             errors.append(f"{tid}: status '{t.get('status')}' not in {STATUSES}")
         if t.get("claim_level") not in CLAIMS:
@@ -88,10 +100,10 @@ def validate(tickets):
         text = open(README, encoding="utf-8").read()
         for t in tickets:
             if t.get("id") and t["id"] not in text:
-                warnings.append(f"{t['id']} not mentioned in backlog/README.md (README is a hand-maintained view)")
-        for m in set(re.findall(r"UB-\d{2,}", text)):
+                warnings.append(f"{t['id']} not mentioned in {os.path.relpath(README, ROOT).replace(os.sep, "/")} (README is a hand-maintained view)")
+        for m in set(re.findall(PREFIX + r"-\d{2,}", text)):
             if m not in idset:
-                warnings.append(f"backlog/README.md mentions {m}, which is not in tickets.json")
+                warnings.append(f"{os.path.relpath(README, ROOT).replace(os.sep, "/")} mentions {m}, which is not in tickets.json")
     return errors, warnings
 
 
@@ -104,9 +116,34 @@ def table(tickets):
     return "\n".join(lines)
 
 
+def select(args):
+    """Strip registry options from args and point REG/README/PREFIX at the chosen registry."""
+    global REG, README, PREFIX
+    if "--lb" in args:
+        args.remove("--lb")
+        REG = REGISTRIES["lb"]
+    if "--registry" in args:
+        i = args.index("--registry")
+        val = args[i + 1]
+        del args[i:i + 2]
+        REG = REGISTRIES.get(val, os.path.abspath(val))
+    README = os.path.join(os.path.dirname(REG), "README.md")
+    with open(REG, encoding="utf-8") as f:
+        first = (json.load(f).get("tickets") or [{}])[0].get("id", "UB-00")
+    PREFIX = first.split("-")[0]
+    return args
+
+
 def main():
-    tickets = load()
     args = sys.argv[1:]
+    if args[:1] == ["--all"]:
+        rc = 0
+        for key in ("ub", "lb"):
+            print(f"[{key}] {os.path.relpath(REGISTRIES[key], ROOT).replace(os.sep, '/')}", flush=True)
+            rc |= subprocess.call([sys.executable, os.path.abspath(__file__), "--registry", key] + args[1:])
+        return rc
+    args = select(args)
+    tickets = load()
     if args[:1] == ["--table"]:
         print(table(tickets))
         return 0

@@ -29,7 +29,7 @@ sorting bound; trace correctness and depth through the global scheduler.
 - For Lean changes, keep definitions computable when appropriate, state complexity in network depth, and avoid adding axioms, `sorry`, `native_decide`, or trust extensions without clear justification and explicit user agreement. Follow local module conventions and cite the mathematical source of nontrivial constructions.
 - Verify only as needed for the requested work. A focused check is usually preferable to an unnecessarily broad build; report exactly what was checked and what was not.
 - Keep unrelated changes and generated/build artifacts out of commits. Do not push, publish, or contact others unless explicitly asked.
-- Parallel agents: follow [`docs/agent-protocol.md`](docs/agent-protocol.md) (own worktree per ticket, never leave uncommitted edits in the `main` checkout, claim levels, handoff report, verification checklist). Tickets are in `upper-bound/backlog/tickets.json` (`python3 scripts/tickets`).
+- Parallel agents: follow [`docs/agent-protocol.md`](docs/agent-protocol.md) (own worktree per ticket, never leave uncommitted edits in the `main` checkout, claim levels, handoff report, verification checklist). Tickets are in `upper-bound/backlog/tickets.json` (`python3 scripts/tickets`). Lower-bound tickets (`LB-NN`) are in `lower-bound/backlog/tickets.json` (`python3 scripts/tickets --lb`).
 - Verifying a claimed upper bound: read [`upper-bound/TRUSTED.md`](upper-bound/TRUSTED.md); run `python3 scripts/check-contribution`. The accepted constant is recorded in `upper-bound/STATUS.json`.
 
 ## Repository map
