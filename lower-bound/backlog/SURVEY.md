@@ -45,7 +45,8 @@ replaced by this single-term-per-`s` sum, which loses only a polynomial factor.
   (Seiferas/Paterson for `n ≥ 1024`, bitonic below that). It does not use the 789.75 package.
 - `eventually_minimum_depth_ge_kahale_logb` does not need the cobounded premise. It still imports the legacy package
   through the definition of `minimum`.
-- Ticket LB-11 decouples the headline from the upper construction.
+- LB-11 (`AKS/Bounds/KahaleUnconditional`) adds an `EReal` `liminf`, an every-`c < 1/(1-lg φ)` eventual form and an
+  explicit-premise real `liminf`, none using `minimum_depth_le`.
 
 **Strength at finite `n` (computed here, model).** The finite Fibonacci inequality is weak for moderate `n`. The
 table gives the smallest `d` it allows, next to the elementary counting bound `⌈lg(n!)/⌊n/2⌋⌉`:
@@ -57,8 +58,8 @@ table gives the smallest `d` it allows, next to the elementary counting bound `�
 | `2^36` | 73 | 70 | 36 |
 | `2^64` | 157 | 126 | 64 |
 
-Kahale overtakes the counting bound only near `n ≈ 2^33`. Neither the counting bound nor the fan-in bound is
-formalized; LB-01 adds them. `ComparisonTrace.exec_trace_injective` in `lower-bound/experiments` (output plus swap
+Kahale overtakes the counting bound only near `n ≈ 2^33`. Both are now formalized (LB-01,
+`AKS/Bounds/FiniteLower`: `minimum_ge_max_bounds`, `minimum_two_pow_sixteen_ge`). `ComparisonTrace.exec_trace_injective` in `lower-bound/experiments` (output plus swap
 trace determines the input) is most of the counting bound.
 
 **Experiments package** (`lower-bound/experiments/AKS/Kahale/*`, about 50 modules, each with an `*Axioms` guard).

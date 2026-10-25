@@ -7,20 +7,21 @@
       "id": "LB-01",
       "title": "Explicit finite lower bound max(fan-in lg n, counting lg n!/floor(n/2), Kahale Fibonacci) in Lean",
       "priority": "P1",
-      "status": "active",
-      "claim_level": "none",
+      "status": "done",
+      "claim_level": "kernel-checked",
       "baseline": 3.2706,
       "projected": 3.2706,
-      "owner": "Claude",
+      "owner": null,
       "branch": "lb-01-finite",
       "depends_on": [],
       "first_deliverable": "Lean: Sorts net -> n.factorial <= 2^(comparator count) via ComparisonTrace.exec_trace_injective; then D(n)*floor(n/2) >= lg n! and D(n) >= clog 2 n; one combined finite theorem",
       "evidence": [
-        "lower-bound/backlog/SURVEY.md",
-        "lower-bound/experiments/AKS/Kahale/ComparisonTrace.lean",
-        "lower-bound/best/AKS/Bounds/Kahale.lean"
+        "lower-bound/best/AKS/Bounds/FiniteLower.lean",
+        "lower-bound/best/AKS/Bounds/FiniteLowerAxioms.lean",
+        "lower-bound/best/README.md",
+        "lower-bound/backlog/SURVEY.md"
       ],
-      "notes": "Folklore bounds. The checked Fibonacci bound is weaker than the counting bound below n ~ 2^33 (SURVEY (a) table). Constant unchanged; the value is the correct finite statement for every n."
+      "notes": "Done on lb-01-finite: SortingDepth.minimum_ge_max_bounds (every n): max(clog 2 n, countingBound n, kahaleBound n) <= D(n), countingBound n = ceil(clog 2 n! / floor(n/2)), kahaleBound = least d with n fib(d+1) <= 2^(d+1)(d+1)^2. Counting proved self-contained (comparator at most 2-to-1 on inputs; layer <= floor(n/2) comparators), not via ComparisonTrace. Corollary D(2^k) >= 2k-2 (k >= 2), D(2^16) >= 30. Axiom-clean. Constant unchanged."
     },
     {
       "id": "LB-02",
@@ -198,19 +199,20 @@
       "id": "LB-11",
       "title": "Decouple the liminf headline from the legacy 102*10^62 upper bound",
       "priority": "P1",
-      "status": "active",
-      "claim_level": "none",
+      "status": "done",
+      "claim_level": "kernel-checked",
       "baseline": 3.2706,
       "projected": null,
-      "owner": "Claude",
+      "owner": null,
       "branch": "lb-01-finite",
       "depends_on": [],
       "first_deliverable": "EReal-valued liminf (or the eventual form as headline) proved without minimum_div_logb_cobounded; optionally move `minimum` to a neutral module",
       "evidence": [
-        "lower-bound/best/AKS/Bounds/KahaleAsymptotic.lean",
-        "lower-bound/best/AKS/Bounds/Minimum.lean"
+        "lower-bound/best/AKS/Bounds/KahaleUnconditional.lean",
+        "lower-bound/best/AKS/Bounds/FiniteLowerAxioms.lean",
+        "lower-bound/best/README.md"
       ],
-      "notes": "Trust and dependency clarity only; no mathematical change."
+      "notes": "Done on lb-01-finite: eventually_mul_logb_le_minimum (all c < 1/(1-lg phi)), ereal_liminf_minimum_div_logb_ge_kahale (EReal liminf, no premise), liminf_minimum_div_logb_ge_kahale_of_cobounded (premise explicit). #guard_avoids checks their closures avoid minimum_depth_le. minimum still lives in the legacy package (bitonic witness); moving it to a neutral module not done."
     },
     {
       "id": "LB-12",

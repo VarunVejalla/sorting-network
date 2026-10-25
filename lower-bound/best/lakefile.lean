@@ -13,9 +13,12 @@ require legacy_upper from "../../upper-bound/alternatives/legacy"
 @[default_target]
 lean_lib LowerBest where
   roots := #[
+    `AKS.Bounds.FiniteLower,
+    `AKS.Bounds.FiniteLowerAxioms,
     `AKS.Bounds.Kahale,
     `AKS.Bounds.KahaleAsymptotic,
     `AKS.Bounds.KahaleAxioms,
+    `AKS.Bounds.KahaleUnconditional,
     `AKS.Bounds.Minimum,
     `AKS.Kahale.ApproxSelection,
     `AKS.Kahale.BinomialPotential,
