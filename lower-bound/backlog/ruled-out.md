@@ -17,6 +17,15 @@ specific family, not to the general idea behind it; recheck an entry if its assu
   - An explicit schedule on `⌊2^d/((d+1)F_{d+1})⌋` wires meets `h_{d-s}(i) ≥ s+1` for all `i ≥ 2^{s+1}`. It does
     not sort.
   - Evidence: `kahale-positional-barrier.md`.
+* **Two-sided per-wire certificate heights (LB-02).**
+  - The joint `(z, o)` relaxation has rate exactly `3.2706`. It includes zero and one heights, the graded window
+    requirements on both sides, the `n+2` coupling and the active width `j-i <= 2^(s'+1)-1`.
+  - The histogram form projects onto Kahale's system. Kahale's block-halving schedule, with over-wide blocks idled,
+    meets every positional constraint at `N_d` wires (exact check, `d <= 1024`).
+  - **Barrier:** per-wire two-sided data is exactly the attainable rank interval. The zero and one requirements bind
+    on disjoint wires (top and bottom `2^(s+1)` positions), so no per-wire coupling binds. Any gain must be
+    cross-wire (disjoint `S in Z_j`, `T in O_i`; LB-24).
+  - Evidence: `kahale-two-sided-heights.md`, `kahale_two_sided_heights.py`.
 * **Additive monomial joint potentials `Σ z_i^p o_i^q` with a uniform per-stage factor (LB-23).**
   - The coefficient is at most `2`.
   - `(z, o)` does not determine its own update, even at non-redundant comparators (kernel-checked on 4 wires).
@@ -65,7 +74,7 @@ specific family, not to the general idea behind it; recheck an entry if its assu
   - This improves only the finite error, not the leading coefficient (`docs/kahale-lower-bound.md`).
 
 Parked, not dead:
-- LB-22: two-sided certificates, continued as LB-02.
+- LB-22: two-sided certificates. Its per-wire part is dead (LB-02); the cross-wire part continues in LB-24.
 - LB-24: pair union costs.
 - LB-25: congestion rate.
 - LB-26: the charging lemma.
