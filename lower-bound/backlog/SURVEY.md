@@ -309,6 +309,10 @@ success probability. Items 2, 3 and 8 are the attempts on the constant itself.
    - *Follow-up LB-24 (2026-10-24): killed.* Pair union costs also have rate 3.2706 (`docs/kahale-pair-union-rate.md`).
      The defect sits on middle wires, where every union bound saturates at `n`. Next: mixed-polarity restriction
      families, or correlation (BK/Reimer) potentials.
+   - *Follow-up LB-33 (2026-10-24): killed.* Harris potentials equal the sizes relaxation (monomials `p^c`), and BK is
+     vacuous on middle wires: the overlap-only share is about 1, and the sorted target has no disjoint mass
+     (`docs/kahale-correlation-potential.md`). The barrier defect is a read-once amplification deficit
+     (`c ≈ 0.25` bits/stage), which no sound bound yet sees. Next: hybrid-schedule kill test, then LB-34.
 3. **LB-03 — Coupled information and certificate tradeoff.**
    - *Why:* the counting bound (2) and Kahale (3.27) are separately tight. Kahale-extremal schedules may waste many
      comparisons (low `h_g`). A coupled inequality "height slack + information slack ≥ ..." could beat both, whereas

@@ -63,3 +63,4 @@ Supporting files:
 | LB-30 | Shared polarity and witness charges | parked → LB-08 |
 | LB-31 | Fiber-charge correction chain | rejected |
 | LB-32 | Coupled Boolean faces and transport | parked |
+| LB-33 | Correlation (Harris/BK/Reimer) potentials | rejected |

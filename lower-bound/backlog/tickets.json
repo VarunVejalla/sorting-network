@@ -516,23 +516,26 @@
     },
     {
       "priority": "P2",
-      "claim_level": "none",
+      "claim_level": "simulation",
       "baseline": 3.2706,
-      "projected": null,
+      "projected": 3.2706,
       "depends_on": [
         "LB-24"
       ],
       "id": "LB-33",
       "title": "Correlation (BK/Reimer) potential: charge overlapping certificates on middle wires via disjoint-occurrence inequalities",
-      "status": "active",
-      "owner": "Claude",
-      "branch": "lb-33-correlation",
+      "status": "rejected",
+      "owner": null,
+      "branch": null,
       "first_deliverable": "On the LB-02/LB-24 barrier schedule, compute a random-input potential that uses P(A box B) <= P(A)P(B) for disjoint certificate occurrences; test whether it detects the middle-wire defect (rank error ~0.067 n) at an exponential rate in d, i.e. a loss of about 0.02 d bits.",
       "evidence": [
         "docs/kahale-pair-union-rate.md",
-        "docs/kahale-two-sided-heights.md"
+        "docs/kahale-two-sided-heights.md",
+        "docs/kahale-correlation-potential.md",
+        "docs/kahale-correlation-potential-output.txt",
+        "lower-bound/experiments/scripts/kahale_correlation_potential.py"
       ],
-      "notes": "Recommended by the LB-24 barrier analysis: union bounds saturate (z = n) on middle wires, and 1/(1 - log2 phi) matches Valiant's read-once amplification exponent (Boppana's limit). A potential must exploit the dependence between compared wires."
+      "notes": "Rejected 2026-10-24 (docs/kahale-correlation-potential.md). Harris lower bounds stay monomials p^c with c the min-plus sizes bound, and p^m <= P(Bin >= m), so Harris potentials (per-wire, pair, k-wise) detect exactly what sizes detect: rate 3.2706. BK is vacuous on middle wires: the overlap-only share of mu(A n B) reaches >= 0.96 by about log2 n + 7 stages (exact, n <= 14), and the sorted target has zero disjoint mass on middle pairs. Mixed polarity gets no lower bounds. Diagnostic: the barrier defect is an amplification deficit. The independent/read-once middle width stays ~0.03 against ~n^(-1/2) needed, c ~ 0.25 bits of n per stage; the sampled truth scan agrees. No sound influence-growth bound beats the sum rule. Next: hybrid-schedule kill test for the amplification route, else LB-34."
     },
     {
       "priority": "P2",

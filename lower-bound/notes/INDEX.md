@@ -43,6 +43,7 @@ Ticket statuses live in [`../backlog/tickets.json`](../backlog/tickets.json). Th
 | [kahale-weighted-union.md](../../docs/kahale-weighted-union.md) | `S:kahale_weighted_union.py`, `L:PairUnionRecurrence` | rejected, LB-24 |
 | [kahale-suffix-potential.md](../../docs/kahale-suffix-potential.md) | `S:kahale_suffix_potential.py` | rejected, LB-24 |
 | [kahale-pair-union-rate.md](../../docs/kahale-pair-union-rate.md) | `S:kahale_pair_union_rate.py`, `docs/kahale-pair-union-rate-output.txt` | rejected, LB-24 (rate barrier) |
+| [kahale-correlation-potential.md](../../docs/kahale-correlation-potential.md) | `S:kahale_correlation_potential.py`, `docs/kahale-correlation-potential-output.txt` | rejected, LB-33 (Harris = sizes; BK vacuous) |
 
 ## Congestion and routing
 
