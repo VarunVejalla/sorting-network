@@ -513,6 +513,46 @@
         "lower-bound/experiments/scripts/kahale_face_transport.py"
       ],
       "notes": "Exact face model and sorting criterion kernel-checked; pair-matrix closure open for ordered comparators (counterexample when orientation is unrestricted); no depth-rate lemma."
+    },
+    {
+      "priority": "P2",
+      "claim_level": "none",
+      "baseline": 3.2706,
+      "projected": null,
+      "depends_on": [
+        "LB-24"
+      ],
+      "id": "LB-33",
+      "title": "Correlation (BK/Reimer) potential: charge overlapping certificates on middle wires via disjoint-occurrence inequalities",
+      "status": "active",
+      "owner": "Claude",
+      "branch": "lb-33-correlation",
+      "first_deliverable": "On the LB-02/LB-24 barrier schedule, compute a random-input potential that uses P(A box B) <= P(A)P(B) for disjoint certificate occurrences; test whether it detects the middle-wire defect (rank error ~0.067 n) at an exponential rate in d, i.e. a loss of about 0.02 d bits.",
+      "evidence": [
+        "docs/kahale-pair-union-rate.md",
+        "docs/kahale-two-sided-heights.md"
+      ],
+      "notes": "Recommended by the LB-24 barrier analysis: union bounds saturate (z = n) on middle wires, and 1/(1 - log2 phi) matches Valiant's read-once amplification exponent (Boppana's limit). A potential must exploit the dependence between compared wires."
+    },
+    {
+      "priority": "P2",
+      "claim_level": "none",
+      "baseline": 3.2706,
+      "projected": null,
+      "depends_on": [
+        "LB-24"
+      ],
+      "id": "LB-34",
+      "title": "Mixed-polarity restriction families: (1,0)-forcing partial assignments for wire pairs with tracked supports",
+      "status": "proposed",
+      "owner": null,
+      "branch": null,
+      "first_deliverable": "A closed (or upper-closed) recurrence for pair-forcing assignment families with support compatibility, evaluated on the barrier schedule at small d; does it see the middle-wire failure?",
+      "evidence": [
+        "docs/kahale-pair-union-rate.md",
+        "lower-bound/experiments/AKS/Kahale/PairUnionRecurrence.lean"
+      ],
+      "notes": "Second recommendation from LB-24; plain k-wise union costs are not recommended (n^k cost, same saturation)."
     }
   ]
 }
