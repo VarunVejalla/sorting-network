@@ -556,6 +556,27 @@
         "lower-bound/experiments/AKS/Kahale/PairUnionRecurrence.lean"
       ],
       "notes": "Second recommendation from LB-24; plain k-wise union costs are not recommended (n^k cost, same saturation)."
+    },
+    {
+      "id": "LB-35",
+      "title": "Amplification kill test: add read-once-optimal middle-wire amplification to the Kahale-tight barrier schedule",
+      "priority": "P2",
+      "status": "active",
+      "claim_level": "none",
+      "baseline": 3.2706,
+      "projected": null,
+      "owner": "Claude",
+      "branch": "lb-35-amplification",
+      "depends_on": [
+        "LB-33"
+      ],
+      "first_deliverable": "Insert amplification layers (read-once optimal, Valiant/Boppana exponent) for the middle wires into idle slots of the skip-wide barrier schedule within the width rule; check Kahale/LB-24 feasibility and the middle threshold width at N_d. If both pass, amplification-plus-Kahale cannot exceed 3.2706.",
+      "evidence": [
+        "docs/kahale-correlation-potential.md",
+        "docs/kahale-pair-union-rate.md",
+        "docs/kahale-two-sided-heights.md"
+      ],
+      "notes": "LB-33: the barrier network's defect is lack of middle-wire amplification (width ~0.03 vs n^-1/2 needed, ~0.25 bits of n per stage), not correlation."
     }
   ]
 }
