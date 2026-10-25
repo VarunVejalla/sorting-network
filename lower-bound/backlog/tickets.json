@@ -317,22 +317,25 @@
       "id": "LB-24",
       "title": "Pairwise union costs and remaining-depth (suffix) potentials",
       "priority": "P2",
-      "status": "active",
+      "status": "rejected",
       "claim_level": "simulation",
       "baseline": 3.2706,
-      "projected": null,
-      "owner": "Claude",
-      "branch": "lb-24-pair-union",
+      "projected": 3.2706,
+      "owner": null,
+      "branch": null,
       "depends_on": [],
-      "first_deliverable": "a rate-bearing pair inequality",
+      "first_deliverable": "none (barrier): the pair union-cost relaxation (Z, O matrices, closed layer recurrence, sized graded windows, exact terminal thresholds, width W) is met by the LB-02 barrier schedule (+2 cleanup layers) at N_d for every tested d <= 64; rate 3.2706",
       "evidence": [
         "docs/kahale-weighted-union.md",
         "docs/kahale-suffix-potential.md",
         "lower-bound/experiments/AKS/Kahale/PairUnionRecurrence.lean",
         "lower-bound/experiments/scripts/kahale_weighted_union.py",
-        "lower-bound/experiments/scripts/kahale_suffix_potential.py"
+        "lower-bound/experiments/scripts/kahale_suffix_potential.py",
+        "docs/kahale-pair-union-rate.md",
+        "docs/kahale-pair-union-rate-output.txt",
+        "lower-bound/experiments/scripts/kahale_pair_union_rate.py"
       ],
-      "notes": "Closed upper recurrence; evidence is a 5-wire catalogue only; no rate."
+      "notes": "Terminal pair condition (no disjoint zero-cert of j / one-cert of i, i<j) is equivalent to the per-wire thresholds, so pairs only sharpen upper bounds via overlap. Pair relaxation is inside Kahale's (n*_pair <= U_d). Kill test: skip-wide block halving + 2 odd-even layers passes the full n x n pair matrix at N_d for d = 24..64 (n <= 16530, exact). Schedule-family scans: pair costs ~1 bit of n vs per-wire sizes, not growing in d. Exact relaxation depth for n = 3..6 equals D(n). The actual barrier network fails on middle wires (rank error ~0.07 n, window violated from s ~ log2 n - 4), where every union bound is capped at n; savings peak at t ~ log2 n and vanish by the binding window. Next: mixed-polarity restriction families or BK/Reimer correlation potentials on middle wires. Remark: 3.2706 = Valiant/Boppana read-once amplification exponent."
     },
     {
       "id": "LB-25",

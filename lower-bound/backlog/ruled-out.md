@@ -26,6 +26,16 @@ specific family, not to the general idea behind it; recheck an entry if its assu
     on disjoint wires (top and bottom `2^(s+1)` positions), so no per-wire coupling binds. Any gain must be
     cross-wire (disjoint `S in Z_j`, `T in O_i`; LB-24).
   - Evidence: `kahale-two-sided-heights.md`, `kahale_two_sided_heights.py`.
+* **Pairwise union-cost matrices `Z_ij`, `O_ij` with the closed layer recurrence (LB-24).**
+  - The terminal pair condition (no disjoint zero certificate of `j` and one certificate of `i`, `i < j`) is
+    equivalent to the per-wire thresholds. Pairs can only sharpen upper bounds via overlap, and the relaxation sits
+    inside Kahale's (`n*_pair <= U_d`).
+  - The LB-02 barrier schedule plus 2 odd-even layers meets the full `n x n` pair relaxation at `N_d` (exact,
+    `d = 24..64`, `n <= 16530`). Within the schedule family the pair matrix costs about 1 bit of `n`, constant in `d`.
+  - **Barrier:** the actual defect is on middle wires (rank error about `0.07 n`), where every union bound is capped
+    at `n`. `Z` and `O` never interact, and overlap savings die out before the binding window. Any gain needs
+    non-saturating, mixed-polarity, three-or-more-way overlap information.
+  - Evidence: `kahale-pair-union-rate.md`, `kahale_pair_union_rate.py`.
 * **Additive monomial joint potentials `Σ z_i^p o_i^q` with a uniform per-stage factor (LB-23).**
   - The coefficient is at most `2`.
   - `(z, o)` does not determine its own update, even at non-redundant comparators (kernel-checked on 4 wires).
@@ -74,8 +84,8 @@ specific family, not to the general idea behind it; recheck an entry if its assu
   - This improves only the finite error, not the leading coefficient (`docs/kahale-lower-bound.md`).
 
 Parked, not dead:
-- LB-22: two-sided certificates. Its per-wire part is dead (LB-02); the cross-wire part continues in LB-24.
-- LB-24: pair union costs.
+- LB-22: two-sided certificates. Its per-wire part is dead (LB-02). The pair union-cost part is dead too (LB-24).
+  Mixed-polarity restriction families remain open.
 - LB-25: congestion rate.
 - LB-26: the charging lemma.
 - LB-30: quadratic witness charges, continued as LB-08.

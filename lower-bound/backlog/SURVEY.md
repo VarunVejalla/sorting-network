@@ -215,10 +215,13 @@ brackets is the matching LB ticket.
    - `(z, o)` does not determine its own update; this is kernel-checked on 4 wires.
    - **Barrier:** time-independent additive monomial potentials are dead.
 5. **Pairwise union costs and suffix potentials** (`kahale-weighted-union.md`, `kahale-suffix-potential.md`,
-   `PairUnionRecurrence.lean`) [LB-24, parked].
+   `PairUnionRecurrence.lean`, `kahale-pair-union-rate.md`) [LB-24, rejected].
    - Pair costs `Z_ij`, `O_ij` give a closed upper recurrence.
    - On 5 wires, pair costs restore the remaining-depth information that per-wire costs lose.
-   - **Barrier:** finite only. The recurrence is an upper bound, and no rate follows.
+   - The rate test fails to separate. The barrier schedule plus 2 layers meets the full pair relaxation at `N_d`
+     (`d <= 64`).
+   - **Barrier:** the defect is on middle wires, where union bounds are capped at `n`. The pair condition is
+     per-wire at the end.
 6. **Rank congestion and coalition Hall** (`kahale-rank-congestion.md`, `kahale-congestion-rate.md`,
    `RankCongestion.lean`, `CongestionBarrier.lean`) [LB-25, parked].
    - A coalition of 12 zeros has only 11 targets in the barrier schedule.
@@ -303,6 +306,9 @@ success probability. Items 2, 3 and 8 are the attempts on the constant itself.
    - *Outcome (2026-10-24): killed.* The joint relaxation, with graded requirements and active width, has rate
      exactly 3.2706. A positional schedule meets both sides (`docs/kahale-two-sided-heights.md`). Next: cross-wire
      (LB-24).
+   - *Follow-up LB-24 (2026-10-24): killed.* Pair union costs also have rate 3.2706 (`docs/kahale-pair-union-rate.md`).
+     The defect sits on middle wires, where every union bound saturates at `n`. Next: mixed-polarity restriction
+     families, or correlation (BK/Reimer) potentials.
 3. **LB-03 — Coupled information and certificate tradeoff.**
    - *Why:* the counting bound (2) and Kahale (3.27) are separately tight. Kahale-extremal schedules may waste many
      comparisons (low `h_g`). A coupled inequality "height slack + information slack ≥ ..." could beat both, whereas

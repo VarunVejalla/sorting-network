@@ -40,8 +40,9 @@ Ticket statuses live in [`../backlog/tickets.json`](../backlog/tickets.json). Th
 | [kahale-union-coupling.md](../../docs/kahale-union-coupling.md) | `L:UnionCoupling`, `L:RankCrossing`, `L:ActiveWidth` | parked, LB-22 |
 | [kahale-two-sided-heights.md](../../docs/kahale-two-sided-heights.md) | `S:kahale_two_sided_heights.py`, `docs/kahale-two-sided-heights-output.txt` | rejected, LB-02 |
 | [kahale-joint-potential.md](../../docs/kahale-joint-potential.md) | `S:kahale_joint_potential.py`, `L:JointPotential` | rejected, LB-23 |
-| [kahale-weighted-union.md](../../docs/kahale-weighted-union.md) | `S:kahale_weighted_union.py`, `L:PairUnionRecurrence` | parked, LB-24 |
-| [kahale-suffix-potential.md](../../docs/kahale-suffix-potential.md) | `S:kahale_suffix_potential.py` | parked, LB-24 |
+| [kahale-weighted-union.md](../../docs/kahale-weighted-union.md) | `S:kahale_weighted_union.py`, `L:PairUnionRecurrence` | rejected, LB-24 |
+| [kahale-suffix-potential.md](../../docs/kahale-suffix-potential.md) | `S:kahale_suffix_potential.py` | rejected, LB-24 |
+| [kahale-pair-union-rate.md](../../docs/kahale-pair-union-rate.md) | `S:kahale_pair_union_rate.py`, `docs/kahale-pair-union-rate-output.txt` | rejected, LB-24 (rate barrier) |
 
 ## Congestion and routing
 

@@ -1,0 +1,54 @@
+# LB-24 outputs (kahale_pair_union_rate.py); exact integer computations unless marked sampled
+
+## validate 6 8 10 --depth 8
+{"n": 6, "trials": 30, "depth": 8, "all_upper_bounds_valid": true, "fraction_entries_exact": 0.4598, "max_single_gain_over_wire": 3}
+{"n": 8, "trials": 30, "depth": 8, "all_upper_bounds_valid": true, "fraction_entries_exact": 0.4559, "max_single_gain_over_wire": 3}
+{"n": 10, "trials": 30, "depth": 8, "all_upper_bounds_valid": true, "fraction_entries_exact": 0.4618, "max_single_gain_over_wire": 4}
+
+## run --cleanup 2 (kill test at N_d); overlap_track summarised as peak/final saving share
+{"depth": 26, "main_depth": 24, "cleanup": 2, "n": 8, "heights_ok": true, "wire_interior_min_margin": 2, "wire_interior_min_ratio": 1.3333333333333333, "wire_terminal_margin": 0, "wire_interior_ok": true, "wire_ok": true, "pair_interior_min_margin": 2, "pair_interior_min_ratio": 1.3333333333333333, "pair_terminal_margin": 0, "pair_interior_ok": true, "pair_ok": true, "scale": 1.0, "d_over_log2_n": 8.0, "saving_share_peak": 0.2051, "saving_share_final": 0.13725}
+{"depth": 30, "main_depth": 28, "cleanup": 2, "n": 18, "heights_ok": true, "wire_interior_min_margin": 2, "wire_interior_min_ratio": 1.125, "wire_terminal_margin": 0, "wire_interior_ok": true, "wire_ok": true, "pair_interior_min_margin": 2, "pair_interior_min_ratio": 1.125, "pair_terminal_margin": 0, "pair_interior_ok": true, "pair_ok": true, "scale": 1.0, "d_over_log2_n": 6.714749063907681, "saving_share_peak": 0.2316, "saving_share_final": 0.08364}
+{"depth": 34, "main_depth": 32, "cleanup": 2, "n": 36, "heights_ok": true, "wire_interior_min_margin": 2, "wire_interior_min_ratio": 1.0588235294117647, "wire_terminal_margin": 0, "wire_interior_ok": true, "wire_ok": true, "pair_interior_min_margin": 1, "pair_interior_min_ratio": 1.0588235294117647, "pair_terminal_margin": 0, "pair_interior_ok": true, "pair_ok": true, "scale": 1.0, "d_over_log2_n": 6.189644915752666, "saving_share_peak": 0.2412, "saving_share_final": 0.05056}
+{"depth": 38, "main_depth": 36, "cleanup": 2, "n": 76, "heights_ok": true, "wire_interior_min_margin": 2, "wire_interior_min_ratio": 1.027027027027027, "wire_terminal_margin": 0, "wire_interior_ok": true, "wire_ok": true, "pair_interior_min_margin": 1, "pair_interior_min_ratio": 1.027027027027027, "pair_terminal_margin": 0, "pair_interior_ok": true, "pair_ok": true, "scale": 1.0, "d_over_log2_n": 5.761910637173569, "saving_share_peak": 0.259, "saving_share_final": 0.02805}
+{"depth": 42, "main_depth": 40, "cleanup": 2, "n": 161, "heights_ok": true, "wire_interior_min_margin": 2, "wire_interior_min_ratio": 1.0125786163522013, "wire_terminal_margin": 0, "wire_interior_ok": true, "wire_ok": true, "pair_interior_min_margin": 2, "pair_interior_min_ratio": 1.0125786163522013, "pair_terminal_margin": 0, "pair_interior_ok": true, "pair_ok": true, "scale": 1.0, "d_over_log2_n": 5.4563434103876105, "saving_share_peak": 0.3123, "saving_share_final": 0.0172}
+{"depth": 46, "main_depth": 44, "cleanup": 2, "n": 344, "heights_ok": true, "wire_interior_min_margin": 2, "wire_interior_min_ratio": 1.0058479532163742, "wire_terminal_margin": 0, "wire_interior_ok": true, "wire_ok": true, "pair_interior_min_margin": 1, "pair_interior_min_ratio": 1.0058479532163742, "pair_terminal_margin": 0, "pair_interior_ok": true, "pair_ok": true, "scale": 1.0, "d_over_log2_n": 5.2217680408684926, "saving_share_peak": 0.3229, "saving_share_final": 0.00926}
+{"depth": 50, "main_depth": 48, "cleanup": 2, "n": 738, "heights_ok": true, "wire_interior_min_margin": 2, "wire_interior_min_ratio": 1.002717391304348, "wire_terminal_margin": 0, "wire_interior_ok": true, "wire_ok": true, "pair_interior_min_margin": 1, "pair_interior_min_ratio": 1.002717391304348, "pair_terminal_margin": 0, "pair_interior_ok": true, "pair_ok": true, "scale": 1.0, "d_over_log2_n": 5.038059915491516, "saving_share_peak": 0.2586, "saving_share_final": 0.00493}
+{"depth": 54, "main_depth": 52, "cleanup": 2, "n": 1593, "heights_ok": true, "wire_interior_min_margin": 2, "wire_interior_min_ratio": 1.0012570710245128, "wire_terminal_margin": 0, "wire_interior_ok": true, "wire_ok": true, "pair_interior_min_margin": 2, "pair_interior_min_ratio": 1.0012570710245128, "pair_terminal_margin": 0, "pair_interior_ok": true, "pair_ok": true, "scale": 1.0, "d_over_log2_n": 4.888352587861075, "saving_share_peak": 0.3471, "saving_share_final": 0.0025}
+{"depth": 58, "main_depth": 56, "cleanup": 2, "n": 3459, "heights_ok": true, "wire_interior_min_margin": 2, "wire_interior_min_ratio": 1.000578536303153, "wire_terminal_margin": 0, "wire_interior_ok": true, "wire_ok": true, "pair_interior_min_margin": 2, "pair_interior_min_ratio": 1.000578536303153, "pair_terminal_margin": 0, "pair_interior_ok": true, "pair_ok": true, "scale": 1.0, "d_over_log2_n": 4.763468565547749, "saving_share_peak": 0.3343, "saving_share_final": 0.00128}
+{"depth": 62, "main_depth": 60, "cleanup": 2, "n": 7545, "wire_interior_min_margin": 2, "wire_interior_min_ratio": 1.0002651464934376, "wire_terminal_margin": 0, "wire_interior_ok": true, "wire_ok": true, "pair_interior_min_margin": 2, "pair_interior_min_ratio": 1.0002651464934376, "pair_terminal_margin": 0, "pair_interior_ok": true, "pair_ok": true, "scale": 1.0, "d_over_log2_n": 4.657913086939366}
+{"depth": 66, "main_depth": 64, "cleanup": 2, "n": 16530, "wire_interior_min_margin": 2, "wire_interior_min_ratio": 1.0001210067763795, "wire_terminal_margin": 0, "wire_interior_ok": true, "wire_ok": true, "pair_interior_min_margin": 1, "pair_interior_min_ratio": 1.0001210067763795, "pair_terminal_margin": 0, "pair_interior_ok": true, "pair_ok": true, "scale": 1.0, "d_over_log2_n": 4.567253089420968}
+
+## run --cleanup 0 (plain schedule)
+{"depth": 32, "n": 36, "wire_ok": true, "pair_interior_ok": true, "pair_terminal_margin": -1}
+{"depth": 40, "n": 161, "wire_ok": true, "pair_interior_ok": true, "pair_terminal_margin": -1}
+(terminal -1 also at d = 48, 52, 56: one side of wire n-3, o = 2 < 3; --cleanup 1 fixes d=40 but not d=32)
+
+## scan --cleanup 2 (grid 2^(k/8))
+{"main_depth": 20, "cleanup": 2, "N_d": 4, "max_n_pair_interior_ok": 35, "max_n_pair_ok": 29}
+{"main_depth": 24, "cleanup": 2, "N_d": 8, "max_n_pair_interior_ok": 279, "max_n_pair_ok": 279}
+{"main_depth": 28, "cleanup": 2, "N_d": 18, "max_n_pair_interior_ok": 664, "max_n_pair_ok": 664}
+{"main_depth": 32, "cleanup": 2, "N_d": 36, "max_n_pair_interior_ok": 2048, "max_n_pair_ok": 2048}
+{"main_depth": 36, "cleanup": 2, "N_d": 76, "max_n_pair_interior_ok": 4467, "max_n_pair_ok": 4467}
+{"main_depth": 20, "cleanup": 2, "max_n_heights_ok": 279, "max_n_wire_interior_ok": 54, "max_n_wire_ok": 54}
+{"main_depth": 24, "cleanup": 2, "max_n_heights_ok": 664, "max_n_wire_interior_ok": 609, "max_n_wire_ok": 609}
+{"main_depth": 28, "cleanup": 2, "max_n_heights_ok": 1722, "max_n_wire_interior_ok": 1448, "max_n_wire_ok": 1448}
+{"main_depth": 32, "cleanup": 2, "max_n_heights_ok": 4096, "max_n_wire_interior_ok": 4096, "max_n_wire_ok": 4096}
+{"main_depth": 36, "cleanup": 2, "max_n_heights_ok": 9742, "max_n_wire_interior_ok": 8192, "max_n_wire_ok": 8192}
+{"main_depth": 40, "cleanup": 2, "max_n_heights_ok": 25268, "max_n_wire_interior_ok": 23170, "max_n_wire_ok": 23170}
+{"main_depth": 44, "cleanup": 2, "max_n_heights_ok": 60097, "max_n_wire_interior_ok": 55109, "max_n_wire_ok": 55109}
+{"main_depth": 48, "cleanup": 2, "max_n_heights_ok": 142935, "max_n_wire_interior_ok": 131072, "max_n_wire_ok": 131072}
+{"main_depth": 52, "cleanup": 2, "max_n_heights_ok": 339959, "max_n_wire_interior_ok": 339959, "max_n_wire_ok": 339959}
+{"main_depth": 56, "cleanup": 2, "max_n_heights_ok": 808563, "max_n_wire_interior_ok": 808563, "max_n_wire_ok": 808563}
+
+## exact 3 4 5 6 --depth 8 (BFS over all width-legal schedules)
+{"n": 3, "exact_min_depth": {"wire": 3, "pair": 3}}
+{"n": 4, "exact_min_depth": {"wire": 3, "pair": 3}}
+{"n": 5, "exact_min_depth": {"wire": 5, "pair": 5}}
+{"n": 6, "exact_min_depth": {"wire": 5, "pair": 5}}
+
+## truth 32 40 48 56 64 --cleanup 2 --samples 1024 (sampled; violations are witnessed)
+{"main_depth": 32, "cleanup": 2, "n": 36, "samples": 1024, "first_witnessed_violation": {"t": 33, "s": 1, "max_window_violation": 1}, "terminal_violation": 2, "worst_zero_wire": 17, "its_min_rank": 16, "worst_one_wire": 26, "its_max_rank": 28, "by_s": {"12": -4091, "11": -2044, "10": -1020, "9": -508, "8": -252, "7": -124, "6": -60, "5": -28, "4": -12, "3": -5, "2": -1, "1": 1, "0": 2}}
+{"main_depth": 40, "cleanup": 2, "n": 161, "samples": 1024, "first_witnessed_violation": {"t": 39, "s": 3, "max_window_violation": 4}, "terminal_violation": 11, "worst_zero_wire": 85, "its_min_rank": 75, "worst_one_wire": 74, "its_max_rank": 85, "by_s": {"12": -4081, "11": -2034, "10": -1010, "9": -498, "8": -243, "7": -115, "6": -51, "5": -19, "4": -3, "3": 4, "2": 8, "1": 10, "0": 11}}
+{"main_depth": 48, "cleanup": 2, "n": 738, "samples": 1024, "first_witnessed_violation": {"t": 45, "s": 5, "max_window_violation": 20}, "terminal_violation": 51, "worst_zero_wire": 401, "its_min_rank": 350, "worst_one_wire": 424, "its_max_rank": 473, "by_s": {"12": -4041, "11": -1993, "10": -969, "9": -457, "8": -202, "7": -74, "6": -12, "5": 20, "4": 36, "3": 44, "2": 48, "1": 50, "0": 51}}
+{"main_depth": 56, "cleanup": 2, "n": 3459, "samples": 1024, "first_witnessed_violation": {"t": 51, "s": 7, "max_window_violation": 113}, "terminal_violation": 240, "worst_zero_wire": 1853, "its_min_rank": 1613, "worst_one_wire": 1542, "its_max_rank": 1769, "by_s": {"12": -3842, "11": -1796, "10": -772, "9": -271, "8": -15, "7": 113, "6": 177, "5": 209, "4": 225, "3": 233, "2": 237, "1": 239, "0": 240}}
+{"main_depth": 64, "cleanup": 2, "n": 16530, "samples": 1024, "first_witnessed_violation": {"t": 56, "s": 10, "max_window_violation": 52}, "terminal_violation": 1075, "worst_zero_wire": 8725, "its_min_rank": 7650, "worst_one_wire": 7510, "its_max_rank": 8572, "by_s": {"12": -2996, "11": -972, "10": 52, "9": 564, "8": 820, "7": 948, "6": 1012, "5": 1044, "4": 1060, "3": 1068, "2": 1072, "1": 1074, "0": 1075}}

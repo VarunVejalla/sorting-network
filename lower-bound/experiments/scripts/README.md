@@ -54,3 +54,10 @@ potentials over the complete image catalogues. It rationalizes SciPy
 solutions and checks primal and dual certificates exactly. See
 `docs/kahale-witness-charge.md` for the additive barrier, nonlinear finite
 escape, and the missing scale-compatible inequality.
+
+`kahale_pair_union_rate.py` (LB-24) runs the closed pair union-cost layer
+recurrence (full `n x n` zero and one matrices, int16 storage) on the LB-02
+barrier schedule. It checks the sized window and terminal requirements, and
+scans the largest feasible `n` per model. `exact` is a breadth-first search
+over every width-legal schedule for tiny `n`. `truth` runs the actual network
+on random permutations. See `docs/kahale-pair-union-rate.md`.
