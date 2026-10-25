@@ -304,13 +304,14 @@ The search was not exhaustive for 2025–26.
 
 ## Reproduce
 
-Run from the repository root (about 10 minutes in total, single core).
+Run from the repository root (under an hour in total, single core).
 
 ```sh
 S=lower-bound/experiments/scripts/kahale_correlation_potential.py
 python -B $S bk 10 12 14 --depth 26
 python -B $S ind 32 36 40 44 48 52 56 60 64 68 72 --P 400 --smax 14
 python -B $S truth 36 40 44 48 52 56 --samples 1024 --smax 14
+python -B $S truth 64 --samples 512 --smax 14 --P 64      # ~15 min
 python -B $S scan 24 28 32 36 40 44 48 --models truth --samples 1024
 ```
 
