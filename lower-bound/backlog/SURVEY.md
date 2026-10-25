@@ -299,6 +299,9 @@ success probability. Items 2, 3 and 8 are the attempts on the constant itself.
      witness.
    - *Risk:* a mirrored (min/max symmetric) schedule may satisfy both sides at the same rate, and the coupling is
      local. Quick to kill.
+   - *Outcome (2026-10-24): killed.* The joint relaxation, with graded requirements and active width, has rate
+     exactly 3.2706. A positional schedule meets both sides (`docs/kahale-two-sided-heights.md`). Next: cross-wire
+     (LB-24).
 3. **LB-03 — Coupled information and certificate tradeoff.**
    - *Why:* the counting bound (2) and Kahale (3.27) are separately tight. Kahale-extremal schedules may waste many
      comparisons (low `h_g`). A coupled inequality "height slack + information slack ≥ ..." could beat both, whereas

@@ -26,23 +26,25 @@
       "id": "LB-02",
       "title": "Two-sided (zero and one) certificate-height relaxation: does joint (h0,h1) with the intersection / n+2 coupling exceed 3.2706?",
       "priority": "P2",
-      "status": "active",
-      "claim_level": "none",
+      "status": "rejected",
+      "claim_level": "simulation",
       "baseline": 3.2706,
-      "projected": null,
-      "owner": "Claude",
-      "branch": "lb-02-two-sided",
+      "projected": 3.2706,
+      "owner": null,
+      "branch": null,
       "depends_on": [],
-      "first_deliverable": "Exact DP/LP for the joint height-histogram relaxation (analogue of kahale_height_barrier.py): its optimal rate, or a mirrored positional schedule meeting both sides at 3.2706",
+      "first_deliverable": "none (barrier): joint (z,o) relaxation with Z, O, graded G, n+2 coupling and active width W has rate exactly 3.2706",
       "evidence": [
-        "lower-bound/backlog/SURVEY.md",
+        "docs/kahale-two-sided-heights.md",
+        "docs/kahale-two-sided-heights-output.txt",
+        "lower-bound/experiments/scripts/kahale_two_sided_heights.py",
         "docs/kahale-certificate-families.md",
         "docs/kahale-union-coupling.md",
         "lower-bound/experiments/AKS/Kahale/CertificateCompatibility.lean",
         "lower-bound/experiments/AKS/Kahale/UnionCoupling.lean",
-        "lower-bound/experiments/scripts/kahale_height_barrier.py"
+        "lower-bound/experiments/AKS/Kahale/ActiveWidth.lean"
       ],
-      "notes": "The positional barrier schedule fails sorting exactly by disjoint zero/one certificates; the scalar method sees only zero heights. Kill quickly if a min/max-symmetric schedule saturates both sides."
+      "notes": "Histogram form: the z-projection is Kahale's system (n <= U_d, kernel-checked), and equal-z pairing passes both sides at N_d for d <= 1024, so the rate is exactly 3.2706. Positional form: the block-halving schedule, with over-wide blocks idled, meets Z, O, G (both sides) and W at N_d for every tested d <= 1024 (exact run-length check). Per-wire two-sided data is exactly the rank interval (min zero size lo+1, min one size n-hi). The zero and one requirements bind on disjoint wire sets, so the n+2 coupling never binds. An all-d proof of the one side is numerical only (the schedule is not exactly self-dual). Next: cross-wire disjointness D_ij (LB-24)."
     },
     {
       "id": "LB-03",
