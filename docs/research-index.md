@@ -29,6 +29,8 @@ its dated constants and inline command paths may describe earlier layouts.
 Independent coefficient-at-most300 work is on branch `sub300-structural` in
 `.claude/worktrees/sub300`; see the [current D2 handoff](../upper-bound/experiments/prefix-flux/HANDOFF.md)
 and [source map](../upper-bound/experiments/prefix-flux/README.md).
+For the durable objective, priorities, and working rules, see the
+[sub-300 work plan](sub300-work-plan.md).
 The longer [search ledger](sub300-search.md) is historical and contains
 superseded candidate directions.
 The first proposed persistent-column local contract was rejected after exact
