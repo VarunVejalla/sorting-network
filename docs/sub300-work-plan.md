@@ -108,8 +108,8 @@ the contract adapters, ordinary-child profile transition, role-specific root
 profiles, and two-visit endpoint reserve transition. They still assume prior
 full-tree core snapshots. `D2RootFrontierCase.lean` now proves that an active
 level-zero node is top-descending and its deficit is zero under the prior-core
-hypothesis. Snapshots 0, 1, and 2 are checked by
-`D2AffineCoreBootstrap.lean`; establish snapshot 3 next. Then prove a
+hypothesis. Bootstrap snapshots 0 through 3 are checked by
+`D2AffineCoreBootstrap.lean`. Next prove a
 reusable step from snapshots `t` and `t-1` to `t+1`, deriving balance from the
 invariant. Do not redo these local lemmas.
 
