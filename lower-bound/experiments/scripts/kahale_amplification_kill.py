@@ -26,6 +26,8 @@ Schedules (every comparator satisfies the width rule (W) for the TOTAL depth):
   zadj K, zq K     the same, replaced by an equal-height matching (coupled_layers)
   zs K, qs K       zq with the pair kept only if the wire of larger q has the
                    lower index (zs: inside a height group, qs: whole band)
+  tr K             whole band paired by closest mean rank, estimated on 64
+                   design permutations of the actual network (fresh in ranks)
   zh K             barrier halves, closest-curve bijection between them
 
 Checks on the same layer list (all exact integer arithmetic except ind/truth):
@@ -40,7 +42,9 @@ Modes:
   need   d ...            smallest A (append) with ind middle width <= sorted
   blind  d ...            largest K with the middle band deletable (relaxations pass)
   budget d K d K ...      width to gain vs read-once budget in the blind window
-  ranks  d ...            actual network: per-wire rank mean/std, sharp vs placed
+  ranks  d ...            actual network: per-wire rank mean/std, sharp vs placed,
+                          exact-sort rate, errors on structured inputs
+                          (reverse, half rotation, sawtooth, organ pipe)
   pairk  d ... --Ks a,b   LB-24 pair relaxation on a list of K
   valiant                 read-once arithmetic (stages needed from width w0)
 Finite computations of relaxations and sampled runs; no sorting claim, no Lean.
@@ -131,6 +135,10 @@ def coupled_layers(d, n, K, frac, rule, extra=2):
     b0, b1 = n // 2 - half, n // 2 + half
     inband = (idx >= b0) & (idx < b1)
     q = np.full(n, 0.5)                       # ind model at p = 1/2
+    # 'tr': design sample (actual network), used only to choose comparators;
+    # evaluation in cmd_ranks uses fresh permutations (different seed)
+    Xd = (np.argsort(np.random.default_rng(5).random((64, n)), axis=1).astype(np.int32)
+          if rule == "tr" else None)
     for t in range(d):
         later = d - t - 1 + extra
         wmax = wmax_after(later)
@@ -176,10 +184,12 @@ def coupled_layers(d, n, K, frac, rule, extra=2):
         if t >= d - K and rule != "zh":
             al, ah = [], []
             bw = idx[inband]
-            for h in ([0] if rule == "qs" else np.unique(z[bw])):
-                g = bw if rule == "qs" else bw[z[bw] == h]
+            for h in ([0] if rule in ("qs", "tr") else np.unique(z[bw])):
+                g = bw if rule in ("qs", "tr") else bw[z[bw] == h]
                 if rule in ("zq", "zs", "qs"):
                     g = g[np.argsort(-q[g], kind="stable")]
+                elif rule == "tr":            # closest estimated mean rank
+                    g = g[np.argsort(Xd[:, g].mean(0), kind="stable")]
                 g = g[(t % 2):]
                 a, b = g[0:-1:2], g[1::2]
                 m = min(a.size, b.size)
@@ -196,13 +206,16 @@ def coupled_layers(d, n, K, frac, rule, extra=2):
         z[lo], z[hi] = np.minimum(zl, zh), np.maximum(zl, zh) + 1
         ql, qh = q[lo], q[hi]
         q[lo], q[hi] = ql + qh - ql * qh, ql * qh
+        if Xd is not None:
+            u, v = Xd[:, lo], Xd[:, hi]
+            Xd[:, lo], Xd[:, hi] = np.minimum(u, v), np.maximum(u, v)
         yield lo, hi
 
 
 def build(d, n, sched, A=0, rule="oet", K=0, frac=0.5):
     cleanup = 2
     D = d + cleanup + A
-    if sched.startswith(("zadj", "zq", "zh", "zs", "qs")):
+    if sched.startswith(("zadj", "zq", "zh", "zs", "qs", "tr")):
         rl = sched[:4] if sched.startswith("zadj") else sched[:2]
         base = list(coupled_layers(d, n, K, frac, rl,
                                    cleanup + A))
@@ -456,12 +469,20 @@ def cmd_ranks(a):
         L = build(d, n, a.sched, a.A, a.rule, a.K, a.frac)
         m1, m2, done = np.zeros(n), np.zeros(n), 0
         mn, mx = np.full(n, n), np.full(n, -1)
-        while done < a.samples:
-            b = min(64, a.samples - done)
-            X = np.argsort(rng.random((b, n)), axis=1).astype(np.int32)
+        exact, wrong = 0, 0.0
+
+        def run_net(X):
             for lo, hi in L:
                 u, v = X[:, lo], X[:, hi]
                 X[:, lo], X[:, hi] = np.minimum(u, v), np.maximum(u, v)
+            return X
+
+        while done < a.samples:
+            b = min(64, a.samples - done)
+            X = np.argsort(rng.random((b, n)), axis=1).astype(np.int32)
+            X = run_net(X)
+            exact += int((X == np.arange(n)).all(1).sum())
+            wrong += float((X != np.arange(n)).sum())
             m1 += X.sum(0)
             mn, mx = np.minimum(mn, X.min(0)), np.maximum(mx, X.max(0))
             m2 += (X.astype(np.float64) ** 2).sum(0)
@@ -470,6 +491,16 @@ def cmd_ranks(a):
         std = np.sqrt(np.maximum(0, m2 / done - mean ** 2))
         i = np.arange(n)
         rt = math.sqrt(n)
+        err = np.maximum(mx - i, i - mn)
+        # structured inputs: a sorting network must also get these right
+        h = n // 2
+        rot = (i + h) % n
+        saw = np.argsort(np.r_[np.arange(0, n, 2), np.arange(1, n, 2)], kind="stable")
+        pipe = np.r_[np.arange(0, n, 2), np.arange(n - 1 - (n % 2 == 0) * 0, 0, -2)[:n // 2]]
+        pipe = np.argsort(np.argsort(pipe, kind="stable"), kind="stable")
+        rev = n - 1 - i
+        S = np.stack([rev, rot, saw, pipe]).astype(np.int32)
+        Y = run_net(S.copy())
         c0, c1 = n // 2 - n // 4, n // 2 + n // 4
         core = np.abs(i - n // 2) <= rt
         order = np.argsort(mean, kind="stable")
@@ -484,7 +515,12 @@ def cmd_ranks(a):
                "disp/n_median_midhalf": round(float(np.median(np.abs(mean[c0:c1] - i[c0:c1]))) / n, 4),
                "disp/n_max": round(float(np.abs(mean - i).max()) / n, 4),
                "rank_err/n_max": round(float(max((mx - i).max(), (i - mn).max())) / n, 4),
-               "rank_err/sqrtn_median": round(float(np.median(np.maximum(mx - i, i - mn))) / rt, 2),
+               "rank_err/sqrtn_median": round(float(np.median(err)) / rt, 2),
+               "rank_err/n_q99": round(float(np.quantile(err, 0.99)) / n, 4),
+               "exact_sorted_frac": round(exact / done, 4),
+               "wrong_wires_frac_mean": round(wrong / done / n, 4),
+               "structured_mean_err/n": [round(float(np.abs(Y[k] - i).mean()) / n, 4) for k in range(4)],
+               "structured_max_err/n": [round(float(np.abs(Y[k] - i).max()) / n, 4) for k in range(4)],
                "sharp_placed_frac_all": round(float(((np.abs(mean - i) <= rt)
                                                      & (std <= rt / 2)).mean()), 4),
                "relabel_sharp_placed_frac": round(float(((np.abs(mean[order] - i) <= rt)
