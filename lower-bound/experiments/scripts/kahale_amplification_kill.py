@@ -45,6 +45,7 @@ Modes:
   ranks  d ...            actual network: per-wire rank mean/std, sharp vs placed,
                           exact-sort rate, errors on structured inputs
                           (reverse, half rotation, sawtooth, organ pipe)
+  nscan  d ... --grid a,b  rule tr on n = N_d 2^(j/2): largest sharp / exact n
   pairk  d ... --Ks a,b   LB-24 pair relaxation on a list of K
   valiant                 read-once arithmetic (stages needed from width w0)
 Finite computations of relaxations and sampled runs; no sorting claim, no Lean.
@@ -67,6 +68,7 @@ from kahale_correlation_potential import (pgrid, tails, violation,  # noqa: E402
 PHI = (1 + 5 ** 0.5) / 2
 KAHALE = 1 / (1 - math.log2(PHI))
 GAIN = math.log2(2 / PHI)          # read-once optimal slope gain per layer
+DESIGN = 64                        # design permutations of rule 'tr'
 
 
 def wmax_after(later):
@@ -137,7 +139,7 @@ def coupled_layers(d, n, K, frac, rule, extra=2):
     q = np.full(n, 0.5)                       # ind model at p = 1/2
     # 'tr': design sample (actual network), used only to choose comparators;
     # evaluation in cmd_ranks uses fresh permutations (different seed)
-    Xd = (np.argsort(np.random.default_rng(5).random((64, n)), axis=1).astype(np.int32)
+    Xd = (np.argsort(np.random.default_rng(5).random((DESIGN, n)), axis=1).astype(np.int32)
           if rule == "tr" else None)
     for t in range(d):
         later = d - t - 1 + extra
@@ -449,6 +451,46 @@ def cmd_budget(a):
                           "surplus_bits": round(GAIN * K - need, 3)}), flush=True)
 
 
+def cmd_nscan(a):
+    """Rule tr, band = all wires: on a grid n = N_d 2^(j/2) report the exact
+    sort rate on fresh permutations, the sharp-and-placed fraction, and the
+    relaxations.  n_exact = largest n with rate >= 1/2; n_sharp = largest n
+    with sharp-and-placed >= 0.99 (both restricted to relaxation-passing n)."""
+    rng = np.random.default_rng(23)
+    lo_j, hi_j = [int(x) for x in a.grid.split(",")]
+    for d in a.depths:
+        N = arity(d)
+        K = a.K or d // 2
+        for j in range(lo_j, hi_j + 1):
+            n = max(8, int(round(N * 2 ** (j / 2))))
+            L = build(d, n, "tr", 0, "oet", K, 1.0)
+            rel = check_relaxations(L, n, ("heights", "wire"))
+            ex, m1, m2, done = 0, np.zeros(n), np.zeros(n), 0
+            i = np.arange(n)
+            while done < a.samples:
+                b = min(32, a.samples - done)
+                X = np.argsort(rng.random((b, n)), axis=1).astype(np.int32)
+                for lo, hi in L:
+                    u, v = X[:, lo], X[:, hi]
+                    X[:, lo], X[:, hi] = np.minimum(u, v), np.maximum(u, v)
+                ex += int((X == i).all(1).sum())
+                m1 += X.sum(0)
+                m2 += (X.astype(np.float64) ** 2).sum(0)
+                done += b
+            mean = m1 / done
+            std = np.sqrt(np.maximum(0, m2 / done - mean ** 2))
+            rt = math.sqrt(n)
+            print(json.dumps({"d": d, "K": K, "N_d": N, "j": j, "n": n,
+                              "log2(n/N_d)": round(math.log2(n / N), 2),
+                              "depth/log2n": round((d + 2) / math.log2(n), 3),
+                              "heights_ok": rel["heights_ok"], "wire_ok": rel["wire_ok"],
+                              "exact_sorted_frac": round(ex / done, 3),
+                              "sharp_placed": round(float(((np.abs(mean - i) <= rt)
+                                                           & (std <= rt / 2)).mean()), 4),
+                              "std/sqrtn_median": round(float(np.median(std)) / rt, 4)}),
+                  flush=True)
+
+
 def cmd_pairk(a):
     """LB-24 pair relaxation only, on a list of K values."""
     for d in a.depths:
@@ -549,7 +591,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="mode", required=True)
-    for name in ("idle", "run", "need", "blind", "budget", "ranks", "pairk"):
+    for name in ("idle", "run", "need", "blind", "budget", "ranks", "pairk", "nscan"):
         s = sub.add_parser(name)
         s.add_argument("depths", type=int, nargs="+")
         s.add_argument("--n", type=int, default=0)
@@ -565,9 +607,13 @@ def main():
         s.add_argument("--frac", type=float, default=0.5)
         s.add_argument("--smax", type=int, default=8)
         s.add_argument("--Ks", default="0")
+        s.add_argument("--grid", default="-8,8")
+        s.add_argument("--M", type=int, default=64)
     sub.add_parser("valiant")
     a = ap.parse_args()
-    {"idle": cmd_idle, "run": cmd_run, "need": cmd_need, "blind": cmd_blind, "budget": cmd_budget, "ranks": cmd_ranks, "pairk": cmd_pairk,
+    global DESIGN
+    DESIGN = getattr(a, "M", DESIGN)
+    {"idle": cmd_idle, "run": cmd_run, "need": cmd_need, "blind": cmd_blind, "budget": cmd_budget, "ranks": cmd_ranks, "pairk": cmd_pairk, "nscan": cmd_nscan,
      "valiant": cmd_valiant}[a.mode](a)
 
 
