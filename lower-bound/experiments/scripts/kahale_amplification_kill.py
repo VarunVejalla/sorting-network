@@ -46,6 +46,7 @@ Modes:
                           exact-sort rate, errors on structured inputs
                           (reverse, half rotation, sawtooth, organ pipe)
   nscan  d ... --grid a,b  rule tr on n = N_d 2^(j/2): largest sharp / exact n
+  fit    file ...         n_exact, and the sharpness trend, from nscan output
   pairk  d ... --Ks a,b   LB-24 pair relaxation on a list of K
   valiant                 read-once arithmetic (stages needed from width w0)
 Finite computations of relaxations and sampled runs; no sorting claim, no Lean.
@@ -491,6 +492,54 @@ def cmd_nscan(a):
                   flush=True)
 
 
+def cmd_fit(a):
+    """Fit nscan output.  n_exact(d) = interpolated n with exact rate 1/2.
+    Sharpness: least squares log2(std/sqrt n) = A d + B log2(n/N_d) + C.  The
+    largest sharp n solves std/sqrt n = 1/2; if the trend persisted, its
+    deficit against N_d grows A/B bits per stage, so the implied asymptotic
+    coefficient of this heuristic is 1/(1/c - A/B).  Extrapolation of one
+    heuristic: an upper estimate of what schedules need, never a lower bound."""
+    rows = []
+    for f in a.files:
+        for line in open(f):
+            if line.startswith("{"):
+                r = json.loads(line)
+                if "exact_sorted_frac" in r and "j" in r:
+                    rows.append(r)
+    exact = []
+    for d in sorted({r["d"] for r in rows}):
+        g = sorted((r for r in rows if r["d"] == d), key=lambda r: r["n"])
+        ne = None
+        for u, v in zip(g, g[1:]):
+            if u["exact_sorted_frac"] >= 0.5 > v["exact_sorted_frac"]:
+                t = (u["exact_sorted_frac"] - 0.5) / (u["exact_sorted_frac"] - v["exact_sorted_frac"])
+                ne = 2 ** (math.log2(u["n"]) + t * (math.log2(v["n"]) - math.log2(u["n"])))
+        exact.append((d, g[0]["N_d"], ne))
+        passing = [r for r in g if r["heights_ok"] and r["wire_ok"]]
+        print(json.dumps({"d": d, "N_d": g[0]["N_d"],
+                          "n_exact": round(ne) if ne else None,
+                          "log2(N_d/n_exact)": round(math.log2(g[0]["N_d"] / ne), 2) if ne else None,
+                          "largest_relaxation_passing_n": passing[-1]["n"] if passing else None,
+                          "min_sharp_placed_on_grid": min(r["sharp_placed"] for r in g),
+                          "min_depth/log2n_on_grid": min(r["depth/log2n"] for r in g)}))
+    use = [r for r in rows if r["std/sqrtn_median"] >= 0.002]
+    M = np.array([[r["d"], r["log2(n/N_d)"], 1.0] for r in use])
+    y = np.log2([r["std/sqrtn_median"] for r in use])
+    (A, B, C), *_ = np.linalg.lstsq(M, y, rcond=None)
+    res = y - M @ np.array([A, B, C])
+    print(json.dumps({"fit_rows": len(use), "A_bits_per_stage": round(float(A), 4),
+                      "B_bits_per_bit_of_n": round(float(B), 4), "C": round(float(C), 3),
+                      "resid_rms": round(float(np.sqrt((res ** 2).mean())), 3),
+                      "sharp_deficit_slope_A/B": round(float(A / B), 4),
+                      "implied_coefficient": round(1 / (1 / KAHALE - float(A / B)), 3),
+                      "d_where_sharp_limit_reaches_N_d": round((-1 - float(C)) / float(A), 1)}))
+    ds = [(d, math.log2(N / ne)) for d, N, ne in exact if ne]
+    if len(ds) >= 2:
+        x, z = np.array(ds).T
+        sl = np.polyfit(x, z, 1)[0]
+        print(json.dumps({"exact_deficit_slope_bits_of_n_per_stage": round(float(sl), 4)}))
+
+
 def cmd_pairk(a):
     """LB-24 pair relaxation only, on a list of K values."""
     for d in a.depths:
@@ -610,10 +659,14 @@ def main():
         s.add_argument("--grid", default="-8,8")
         s.add_argument("--M", type=int, default=64)
     sub.add_parser("valiant")
+    f = sub.add_parser("fit")
+    f.add_argument("files", nargs="+")
     a = ap.parse_args()
     global DESIGN
     DESIGN = getattr(a, "M", DESIGN)
-    {"idle": cmd_idle, "run": cmd_run, "need": cmd_need, "blind": cmd_blind, "budget": cmd_budget, "ranks": cmd_ranks, "pairk": cmd_pairk, "nscan": cmd_nscan,
+    if a.mode == "fit":
+        return cmd_fit(a)
+    {"idle": cmd_idle, "run": cmd_run, "need": cmd_need, "blind": cmd_blind, "budget": cmd_budget, "ranks": cmd_ranks, "pairk": cmd_pairk, "nscan": cmd_nscan, "fit": cmd_fit,
      "valiant": cmd_valiant}[a.mode](a)
 
 
