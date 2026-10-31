@@ -36,13 +36,30 @@ rebuild affected modules from current source before relying on them.
 
 ## Main unresolved gate
 
-The exact arbitrary-root profile transfer is still open. The fixed-tile
-provider is uniform over Boolean tile inputs, but the global proof must carry
-the actual 64-column height profile, partial-tile offsets, and schedule
-receiver tags from one stage to the next. The corrected arbitrary-root
-selected-cut LP keeps exact total root mass yet still admits large terminal
-error under the current independent tail constraints. This shows that those
-constraints are too weak; it is not a counterexample to the fixed network.
+The fixed-core-to-schedule **count identity** is still open. Some of its
+address geometry is already exact, so do not redo it:
+`D2StaticWireSets.lean` proves
+`destinationPiece_staticHoleList_child_inter_cell`, which identifies the
+intersection of an actual child rank-port piece with a destination cell as
+the corresponding ordered gap-run rank fragments. In
+`D2VariableTilePhysicalFlowTransfer.lean`, `staticGapRankPort_cells` and its
+injectivity theorem show that aligned 4096-rank pieces of such a sender map
+to distinct whole physical cells. The sender-port boundaries are proved
+grid-aligned conditionally from the stage invariants.
+
+What is not yet proved is the numerical composition: from those set
+identities, the core's Boolean column profile, and the actual candidate-run
+stage, show that summing true bits over the tagged fragments is exactly each
+next receiver tile's mass, and that the grouped ideal counts equal the
+next-stage native masses/deficits. This must cover all ordinary roles and
+also startup, `botRise`, clipped final tiles, and any exceptional intervals.
+Then apply the existing arbitrary-tag `+448` transfer with hypotheses that
+are actually derivable from the run, rather than postulating cuts and tags.
+
+The corrected arbitrary-root selected-cut LP keeps exact total root mass yet
+still admits large terminal error under the current independent tail
+constraints. This shows those constraints are too weak; it is not a
+counterexample to the fixed network.
 
 After the exact profile transition, the proof still needs an all-depth sender
 invariant, a spatial/distance-sensitive terminal bound, fixed terminal
@@ -51,11 +68,16 @@ terminal purity or bounded displacement.
 
 ## Next proof gate
 
-Specify one exact stage transition on the full tile profile and physical
-receiver tags, including the first-sort dominance and arbitrary root profile.
-Check whether that state closes under the actual `(3,3,2)` recurrence and
-implies a distance-sensitive terminal criterion. Do not treat independent
-local tail caps or finite oracle traces as a substitute for this gate.
+Prove the count identity for one ordinary active sender using the existing
+static-hole/rank-port-to-cell identities, with arbitrary legal input
+profiles and the actual `d2FlowCandidateRun` tags. This is now the smallest
+decisive Lean gate: compare each receiver's post-core true count with its
+`d2FlowStage`-predicted mass/deficit, including the parent residual pieces.
+If it closes, extend the same statement to every role and startup/ragged
+case, then test whether the resulting `+448` recurrence yields an
+all-depth spatial/distance invariant and terminal cleanup. Do not treat the
+aggregate `512` budget alone as terminal purity, or independent local tail
+caps/finite oracle traces as a substitute for the count identity.
 
 ## Files and artifacts
 
