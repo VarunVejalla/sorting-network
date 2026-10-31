@@ -58,6 +58,27 @@ including clipped final tiles and startup/exceptional roles. State its root
 profile hypotheses explicitly; a selected-cut LP that allows independently
 chosen local cuts is only a relaxation and cannot verify this identity.
 
+There is a profile-shape mismatch to resolve before composing the current
+false-profile provider. `D2FalseClippedTransfer.lean` compares against a
+single exact-rank prefix. Ordinary flow children instead receive a two-front
+deficit (low-prefix plus high-suffix); the checked witness in
+`D2PrefixTwoFrontObstruction.lean` gives child deficits `5, 4` while the
+single-prefix reference of total mass `9` gives `9, 0`. The sender's Boolean
+false mass has **not** been identified with pre-stage `G`; `G` is a flow
+deficit, while the physical provider counts false wires in actual source
+tiles. `D2FlowRankBridge.lean` proves only that an *ideal* single-prefix mass
+`G` has total positive overrun above the two-front child reserves at most
+`G-min(G,low+quota/2)`. Under the all-stage gate
+`4096*G <= 23*capacity` and candidate quota floor, this is at most 31 per
+`capacity/8192` unit. If this unit is one physical core tile, adding the local
+448 fits the 512-per-tile doubling budget; neither that unit conversion nor
+the mass identification is proved. The remaining gate must define a joint
+state relating actual tile false masses to the flow ideal profile, establish
+the physical unit conversion, derive receiver groups/tags, and extend the
+accounting to ragged, startup, and exceptional roles. The size-10 witness is
+a profile non-equality example, not a counterexample to sorting or evidence
+that this semantic bridge holds.
+
 Treat the gate as passed only when that identity is proved for arbitrary legal
 root profiles and all stages, and the induced transition admits an
 all-depth spatial/distance bound strong enough for terminal cleanup. The

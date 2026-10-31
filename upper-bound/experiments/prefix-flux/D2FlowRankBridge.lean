@@ -169,6 +169,230 @@ theorem d2FlowStage_regular_child_deficit_eq_rank_mass
     (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) -
       high - quota i (role i) / 2) j
 
+/-- If the sender's pre-stage deficit fits inside the low frontier, then its
+single-prefix exact-rank mass in each child interval is bounded by that
+child's two-front post-stage deficit. This is the comparison needed to use a
+single-prefix false-mass provider with the flow's larger two-front reserves.
+-/
+theorem d2FlowStage_regular_child_dominates_parent_prefix_mass
+    {active : Nat → Bool} {role : Nat → D2Role}
+    {quota : Nat → D2Role → Nat} {h i G low high : Nat}
+    (children : Fin 8 → D2FlowTree h)
+    (ha : active i = true)
+    (hr : role i = .topRise ∨ role i = .mid ∨ role i = .botDesc)
+    (hbalance : G = low + high)
+    (hfront : high ≤ quota i (role i) / 2)
+    (j : Fin 8) :
+    prefixIntervalMass G
+        (d2FlowRankBoundary
+        (fun k => d2FlowTreeRootDeficit (children k)) j.val)
+        (d2FlowRankBoundary
+        (fun k => d2FlowTreeRootDeficit (children k)) (j.val + 1)) ≤
+      d2FlowTreeRootDeficit
+        (d2FlowTreeChild
+          (d2FlowStage active role quota (h + 1) i
+            (.node G low high children)) j) := by
+  have hleft : G ≤ low + quota i (role i) / 2 := by omega
+  rw [d2FlowStage_regular_child_deficit_eq_rank_mass children ha hr j]
+  unfold d2FlowTwoFrontMass
+  exact (prefixIntervalMass_mono hleft).trans
+    (Nat.le_add_right _ _)
+
+/-- Across all eight child intervals, the total amount by which a one-prefix
+reference can exceed the two-front reserves is at most the part of its mass
+that lies beyond the reserved low prefix. The high suffix only decreases this
+overrun. -/
+theorem d2FlowTwoFront_prefix_excess_sum_le
+    (sizes : Fin 8 → Nat) (G left right : Nat)
+    (hG : G ≤ d2FlowTotal sizes) :
+    (Finset.univ.sum fun j : Fin 8 =>
+      prefixIntervalMass G (d2FlowRankBoundary sizes j.val)
+        (d2FlowRankBoundary sizes (j.val + 1)) -
+      d2FlowTwoFrontMass sizes left right j) ≤
+      G - min G left := by
+  let cuts := d2FlowRankBoundary sizes
+  have hzero : cuts 0 = 0 := d2FlowRankBoundary_zero sizes
+  have hend : cuts 8 = d2FlowTotal sizes := d2FlowRankBoundary_end sizes
+  have hmono : ∀ i < 8, cuts i ≤ cuts (i + 1) :=
+    d2FlowRankBoundary_mono sizes
+  have hleftTotal : min G left ≤ d2FlowTotal sizes :=
+    le_trans (Nat.min_le_left _ _) hG
+  have hpart (H : Nat) (hH : H ≤ d2FlowTotal sizes) :
+      (Finset.univ.sum fun j : Fin 8 =>
+        prefixIntervalMass H (cuts j.val) (cuts (j.val + 1))) = H := by
+    rw [Fin.sum_univ_eq_sum_range
+      (fun i : Nat => prefixIntervalMass H (cuts i) (cuts (i + 1)))]
+    rw [prefixIntervalMass_partition H cuts 8 (d2FlowTotal sizes)
+      hzero hend hmono]
+    simp [prefixIntervalMass, hH]
+  have hprefixMono (j : Fin 8) :
+      prefixIntervalMass (min G left) (cuts j.val) (cuts (j.val + 1)) ≤
+        prefixIntervalMass G (cuts j.val) (cuts (j.val + 1)) :=
+    prefixIntervalMass_mono (Nat.min_le_left _ _)
+  have hdiffsum :
+      (Finset.univ.sum fun j : Fin 8 =>
+        prefixIntervalMass G (cuts j.val) (cuts (j.val + 1)) -
+        prefixIntervalMass (min G left) (cuts j.val) (cuts (j.val + 1))) =
+      G - min G left := by
+    rw [Finset.sum_tsub_distrib Finset.univ (by
+      intro j hj
+      exact hprefixMono j)]
+    rw [hpart G hG, hpart (min G left) hleftTotal]
+  have hprefixLeReserve (j : Fin 8) :
+      prefixIntervalMass (min G left) (cuts j.val) (cuts (j.val + 1)) ≤
+        d2FlowTwoFrontMass sizes left right j := by
+    unfold d2FlowTwoFrontMass cuts
+    exact (prefixIntervalMass_mono (Nat.min_le_right _ _)).trans
+      (Nat.le_add_right _ _)
+  calc
+    _ ≤ Finset.univ.sum fun j : Fin 8 =>
+        prefixIntervalMass G (cuts j.val) (cuts (j.val + 1)) -
+          prefixIntervalMass (min G left) (cuts j.val) (cuts (j.val + 1)) := by
+      apply Finset.sum_le_sum
+      intro j hj
+      exact Nat.sub_le_sub_left (hprefixLeReserve j) _
+    _ = G - min G left := hdiffsum
+
+/-- With the strict `G <= capacity/512` input reserve and the candidate
+ordinary quota lower bound `quota >= 15*capacity/4096`, the unmatched
+single-prefix mass is at most `capacity/8192`. -/
+theorem d2FlowTwoFront_prefix_excess_le_capacity
+    (G low quota capacity half : Nat)
+    (hhalf : quota = 2 * half)
+    (hdeficit : 512 * G ≤ capacity)
+    (hquota : 15 * capacity ≤ 4096 * quota) :
+    8192 * (G - min G (low + half)) ≤ capacity := by
+  have hG : 8192 * G ≤ 16 * capacity := by nlinarith [hdeficit]
+  have hhalfquota : 15 * capacity ≤ 8192 * half := by
+    rw [hhalf] at hquota
+    nlinarith [hquota]
+  by_cases hsmall : G ≤ half
+  · have hmin : min G (low + half) = G :=
+      Nat.min_eq_left (by omega)
+    rw [hmin]
+    simp
+  · have hmin : half ≤ min G (low + half) := by omega
+    have hgap : G - min G (low + half) ≤ G - half := by omega
+    have hGsplit : G = (G - half) + half := by omega
+    rw [hGsplit] at hG
+    have hraw : 8192 * (G - half) ≤ capacity := by
+      nlinarith [hG, hhalfquota]
+    nlinarith [hgap, hraw]
+
+/-- Tolerant all-stage version of the unmatched-prefix estimate. -/
+theorem d2FlowTwoFront_prefix_excess_le_tolerant_capacity
+    (G low quota capacity half : Nat)
+    (hhalf : quota = 2 * half)
+    (hdeficit : 4096 * G ≤ 23 * capacity)
+    (hquota : 15 * capacity ≤ 4096 * quota) :
+    8192 * (G - min G (low + half)) ≤ 31 * capacity := by
+  have hG : 8192 * G ≤ 46 * capacity := by nlinarith [hdeficit]
+  have hhalfquota : 15 * capacity ≤ 8192 * half := by
+    rw [hhalf] at hquota
+    nlinarith [hquota]
+  by_cases hsmall : G ≤ half
+  · have hmin : min G (low + half) = G :=
+      Nat.min_eq_left (by omega)
+    rw [hmin]
+    simp
+  · have hmin : half ≤ min G (low + half) := by omega
+    have hgap : G - min G (low + half) ≤ G - half := by omega
+    have hGsplit : G = (G - half) + half := by omega
+    rw [hGsplit] at hG
+    have hraw : 8192 * (G - half) ≤ 31 * capacity := by
+      nlinarith [hG, hhalfquota]
+    nlinarith [hgap, hraw]
+
+/-- If the sender capacity consists of 4096-by-64 tiles, the strict reserve
+and ordinary quota lower bound leave at most 32 unmatched prefix units per
+tile. -/
+theorem d2FlowTwoFront_prefix_excess_le_tiles
+    (G low quota capacity half tiles : Nat)
+    (hcapacity : capacity = 262144 * tiles)
+    (hhalf : quota = 2 * half)
+    (hdeficit : 512 * G ≤ capacity)
+    (hquota : 15 * capacity ≤ 4096 * quota) :
+    G - min G (low + half) ≤ 32 * tiles := by
+  have h := d2FlowTwoFront_prefix_excess_le_capacity
+    G low quota capacity half hhalf hdeficit hquota
+  rw [hcapacity] at h
+  omega
+
+/-- The actual all-stage tolerance `G <= 23*capacity/4096`, together with
+the candidate quota floor, leaves at most 31 unmatched prefix units per
+8192-unit flow tile. -/
+theorem d2FlowTwoFront_prefix_excess_le_tolerant_tiles
+    (G low quota capacity half tiles : Nat)
+    (hcapacity : capacity = 8192 * tiles)
+    (hhalf : quota = 2 * half)
+    (hdeficit : 4096 * G ≤ 23 * capacity)
+    (hquota : 15 * capacity ≤ 4096 * quota) :
+    G - min G (low + half) ≤ 31 * tiles := by
+  have h := d2FlowTwoFront_prefix_excess_le_tolerant_capacity
+    G low quota capacity half hhalf hdeficit hquota
+  rw [hcapacity] at h
+  omega
+
+/-- The 448 core error plus the 31-unit two-front overrun fits the
+512-per-output-tile budget after the input tile count doubles. -/
+theorem d2Flow_tolerant_profile_budget_doubles
+    (tiles parentError : Nat)
+    (hparent : parentError ≤ 512 * tiles) :
+    parentError + 448 * tiles + 31 * tiles ≤ 512 * (2 * tiles) := by
+  omega
+
+/-- Stage form of the aggregate two-front comparison: the total positive
+overrun of exact-prefix child masses above their post-stage deficit reserves
+is bounded by the sender's unmatched prefix mass. -/
+theorem d2FlowStage_regular_child_prefix_excess_sum_le
+    {active : Nat → Bool} {role : Nat → D2Role}
+    {quota : Nat → D2Role → Nat} {h i G low high : Nat}
+    (children : Fin 8 → D2FlowTree h)
+    (ha : active i = true)
+    (hr : role i = .topRise ∨ role i = .mid ∨ role i = .botDesc)
+    (hG : G ≤ d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j))) :
+    (Finset.univ.sum fun j : Fin 8 =>
+      prefixIntervalMass G
+        (d2FlowRankBoundary
+          (fun k => d2FlowTreeRootDeficit (children k)) j.val)
+        (d2FlowRankBoundary
+          (fun k => d2FlowTreeRootDeficit (children k)) (j.val + 1)) -
+      d2FlowTreeRootDeficit
+        (d2FlowTreeChild
+          (d2FlowStage active role quota (h + 1) i
+            (.node G low high children)) j)) ≤
+      G - min G (low + quota i (role i) / 2) := by
+  let sizes : Fin 8 → Nat := fun j => d2FlowTreeRootDeficit (children j)
+  let left := low + quota i (role i) / 2
+  let right := d2FlowTotal sizes - high - quota i (role i) / 2
+  have hbase := d2FlowTwoFront_prefix_excess_sum_le sizes G left right
+    (by simpa [sizes] using hG)
+  simpa [sizes, left, right,
+    d2FlowStage_regular_child_deficit_eq_rank_mass children ha hr] using hbase
+
+/-- Convert a grouped local L1 transfer and a flow-reserve overrun estimate
+into a one-sided bound on actual mass above the child reserves. -/
+theorem grouped_mass_overrun_le_transfer_add_ideal_overrun
+    (actual ideal reserve : Fin 8 → Nat) (transferError idealOverrun : Nat)
+    (htransfer : (Finset.univ.sum fun j : Fin 8 =>
+      countDistance (actual j) (ideal j)) ≤ transferError)
+    (hideal : (Finset.univ.sum fun j : Fin 8 =>
+      ideal j - reserve j) ≤ idealOverrun) :
+    (Finset.univ.sum fun j : Fin 8 => actual j - reserve j) ≤
+      transferError + idealOverrun := by
+  calc
+    _ ≤ Finset.univ.sum fun j : Fin 8 =>
+        countDistance (actual j) (ideal j) + (ideal j - reserve j) := by
+      apply Finset.sum_le_sum
+      intro j hj
+      unfold countDistance
+      omega
+    _ = (Finset.univ.sum fun j : Fin 8 =>
+        countDistance (actual j) (ideal j)) +
+          (Finset.univ.sum fun j : Fin 8 => ideal j - reserve j) := by
+      rw [Finset.sum_add_distrib]
+    _ ≤ transferError + idealOverrun := Nat.add_le_add htransfer hideal
+
 /-- Summing the preceding identity identifies the entire child profile after
 any active ordinary role with its concrete two-front rank-mass profile. -/
 theorem d2FlowStage_regular_child_profile_sum

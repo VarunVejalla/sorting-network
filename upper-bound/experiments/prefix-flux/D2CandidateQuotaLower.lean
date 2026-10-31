@@ -62,6 +62,21 @@ theorem d2FlowCandidateQuota_lower_ordinary {d i t : Nat}
       rw [hscaled]
   | botRise => simp [hr] at hrole
 
+/-- Every active ordinary sender capacity contains an integral number of
+8192-unit flow-capacity blocks. This is the arithmetic normalization used by
+the two-front overrun estimate; it does not identify these blocks with
+physical core invocations. -/
+theorem d2FlowCandidateCapacity_eq_8192_mul {d i t : Nat}
+    (hd : 7 ≤ d) (ha : active d (tfD2 d) i t) :
+    ∃ blocks, d2FlowCandidateCapacity d i t = 8192 * blocks := by
+  have he := d2FlowCandidateCapacityExponent_ge_twenty hd ha
+  let e := d2FlowCandidateCapacityExponent d i t
+  refine ⟨2 ^ (e - 13), ?_⟩
+  have heq : e = 13 + (e - 13) := by dsimp [e]; omega
+  change 2 ^ e = 8192 * 2 ^ (e - 13)
+  rw [heq, Nat.pow_add]
+  norm_num
+
 /-- The integer candidate capacity, like its rational schedule counterpart,
 drops by exactly sixteen at the same level over two stages. -/
 theorem d2FlowCandidateCapacity_two_stage_ratio {d i t : Nat}

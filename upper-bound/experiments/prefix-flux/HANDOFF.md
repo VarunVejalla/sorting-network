@@ -125,6 +125,45 @@ updated descendant deficits. A receiver-mass proof must account for those
 descendant updates and the actual tagged address pieces together; the root
 deficit or its drop alone is not a receiver's ideal false mass.
 
+### Single-prefix versus two-front profile mismatch
+
+`D2FalseClippedTransfer.lean` compares grouped output false counts with one
+single exact-rank prefix per sender. The ordinary flow update is explicitly a
+two-front quantity: `d2FlowStage_regular_child_deficit_eq_rank_mass` identifies
+each new child deficit with a low-prefix plus high-suffix mass. This is a real
+non-equality, but it need not block a one-sided error argument. The checked witness
+`D2PrefixTwoFrontObstruction.lean` takes eight size-10 children, `G=5`,
+`low=3`, `high=2`, and quota 4. It gives first/last child deficits 5 and 4;
+the single-prefix profile of the *post-stage* total mass 9 gives 9 and 0.
+However, this is only a comparison of ideal profiles: the actual sender's
+Boolean false mass has not been identified with its pre-stage deficit `G=5`.
+The flow tree stores deficit data, while the physical provider counts false
+wires in source tiles. Thus the witness corrects the profile equality test but
+does not establish that the ideal prefix is the right reference for the
+physical sender.
+
+`D2FlowRankBridge.lean` now proves the general domination budget: across the
+eight children, total positive overrun of the pre-stage exact-prefix mass over
+the post-stage two-front reserves is at most
+`G - min(G, low + quota/2)`. The relevant all-stage input contract is the
+tolerant `4096*G <= 23*capacity`, not the stronger `512*G <= capacity`.
+Together with the candidate quota floor `15*capacity <= 4096*quota` and even
+quota, the unmatched mass is at most `31*capacity/8192`. If one `8192` unit
+corresponds to one input core tile in the actual transition, this contributes
+31 per input tile; adding the local 448 gives 479, within the 512-per-input
+tile allowance needed when tile count doubles. The arithmetic is
+kernel-checked, but the capacity-to-physical-tile conversion and actual
+sender-mass/tag identities are not yet proved. Do not treat 479 as an
+established recurrence until that unit conversion is formalized.
+
+The substantive remaining bridge is to relate actual sender input false mass
+to a flow-derived ideal profile with an explicit parent count error, show that
+the `capacity/8192` unit converts to the number of physical core tiles, and
+prove that static receiver tags group the local exact-prefix port counts into
+the eight post-stage reserves. Then prove the same bounds for ragged, startup,
+and exceptional cases. The witness is not a counterexample to sorting or to
+this one-sided route.
+
 After the exact profile transition, the proof still needs an all-depth sender
 invariant, a spatial/distance-sensitive terminal bound, fixed terminal
 cleanup, and depth/padding accounting. Aggregate L1 error alone does not imply
@@ -132,13 +171,15 @@ terminal purity or bounded displacement.
 
 ## Next proof gate
 
-Use `clipped_fullheight_false_core_grouped_error_le_parent_add_448` for one
-ordinary sender of an actual `d2FlowCandidateRun` transition. Prove its ten
-port intervals, receiver tags, input false mass, and per-child ideal false
-masses from the run's rank boundaries and static sender sets. If this identity
-closes for arbitrary legal profiles, extend to ragged heights and exceptional
-roles; then test whether the recurrence yields an all-depth spatial/distance
-invariant and terminal cleanup. Aggregate error alone is not terminal purity.
+First specify a joint sender state: actual per-tile Boolean false masses,
+their ideal rank-profile masses, the map from the flow deficit to that ideal
+profile, and the parent error charged between them. Then prove the grouped
+parent-error-plus-448 transfer and compose it with the checked 31-per-
+`capacity/8192` two-front overrun allowance. Only after proving the physical
+unit conversion and actual receiver tags should this be called an ordinary
+sender transition. Extend it to ragged heights and exceptional roles, then
+test for an all-depth spatial/distance invariant and terminal cleanup.
+Aggregate error alone is not terminal purity.
 
 ## Files and artifacts
 
