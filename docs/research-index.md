@@ -31,6 +31,7 @@ Independent coefficient-at-most300 work is on branch `sub300-structural` in
 and [source map](../upper-bound/experiments/prefix-flux/README.md).
 For the durable objective, priorities, and working rules, see the
 [sub-300 work plan](sub300-work-plan.md).
+The concise resumable goal is [sub300-goal.md](sub300-goal.md).
 The longer [search ledger](sub300-search.md) is historical and contains
 superseded candidate directions.
 The first proposed persistent-column local contract was rejected after exact
