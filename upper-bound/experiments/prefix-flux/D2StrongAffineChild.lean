@@ -197,4 +197,55 @@ theorem d2FlowCandidateRun_path_parent_affine_child
   rw [hchildCap]
   nlinarith [hj]
 
+/-- Ordinary active parents write balanced root data into every child,
+independently of the ancestor overwrite history. -/
+theorem d2FlowTreeRunWithParentOverwrites_child_balanced
+    {h i n G low high : Nat}
+    (initial : D2FlowTree (h + 1))
+    (active : Nat → Nat → Bool) (role : Nat → Nat → D2Role)
+    (quota : Nat → Nat → D2Role → Nat)
+    (overwrite : Nat → Nat × Nat × Nat)
+    (children : Fin 8 → D2FlowTree h)
+    (hnode : d2FlowTreeRunWithParentOverwrites initial i active role quota
+      overwrite n = .node G low high children)
+    (ha : active n i = true)
+    (hr : role n i = .topRise ∨ role n i = .mid ∨ role n i = .botDesc)
+    (j : Fin 8) :
+    (d2FlowTreeRootData
+      (d2FlowTreeChild
+        (d2FlowTreeRunWithParentOverwrites initial i active role quota
+          overwrite (n + 1)) j)).2.1 +
+      (d2FlowTreeRootData
+        (d2FlowTreeChild
+          (d2FlowTreeRunWithParentOverwrites initial i active role quota
+            overwrite (n + 1)) j)).2.2 =
+      d2FlowTreeRootDeficit
+        (d2FlowTreeChild
+          (d2FlowTreeRunWithParentOverwrites initial i active role quota
+            overwrite (n + 1)) j) := by
+  change (d2FlowTreeRootData
+      (d2FlowTreeChild
+        (d2FlowTreeSetRoot
+          (d2FlowStage (active n) (role n) (quota n) (h + 1) i
+            (d2FlowTreeRunWithParentOverwrites initial i active role quota
+              overwrite n))
+          (overwrite n).1 (overwrite n).2.1 (overwrite n).2.2) j)).2.1 +
+      (d2FlowTreeRootData
+        (d2FlowTreeChild
+          (d2FlowTreeSetRoot
+            (d2FlowStage (active n) (role n) (quota n) (h + 1) i
+              (d2FlowTreeRunWithParentOverwrites initial i active role quota
+                overwrite n))
+            (overwrite n).1 (overwrite n).2.1 (overwrite n).2.2) j)).2.2 =
+      d2FlowTreeRootDeficit
+        (d2FlowTreeChild
+          (d2FlowTreeSetRoot
+            (d2FlowStage (active n) (role n) (quota n) (h + 1) i
+              (d2FlowTreeRunWithParentOverwrites initial i active role quota
+                overwrite n))
+            (overwrite n).1 (overwrite n).2.1 (overwrite n).2.2) j)
+  rw [d2FlowTreeChild_setRoot]
+  rw [hnode]
+  exact d2FlowStage_regular_child_balanced children ha hr j
+
 end Chvatal.D2Reserve

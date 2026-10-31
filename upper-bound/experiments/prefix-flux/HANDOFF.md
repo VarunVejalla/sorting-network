@@ -197,7 +197,12 @@ assembles the eight children and the complete root snapshot. For stage three,
 the bottom-rise nodes need only the balance field already supplied by strict
 inputs; the top-rise subtree reuses the proved endpoint reserves. The affine
 bootstrap snapshots 0 through 3 pass a focused current-source rebuild. The
-general induction step remains open.
+general induction step remains open. `D2StrongAffineChild.lean` now also
+proves `d2FlowTreeRunWithParentOverwrites_child_balanced`: an ordinary active
+parent writes balanced root data into each child even through arbitrary
+ancestor-overwrite history. This local lemma passes a focused current-source
+rebuild. Its schedule-level composition with the top-descending reset case is
+not yet proved; that is the next useful subgoal for the full-tree step.
 
 The exact compressed-flow screen
 `d2_deficit_tolerance_screen.py --depth 100 --scale 8192 --params 3 3 2`
@@ -218,7 +223,10 @@ terminal purity or bounded displacement.
 
 The immediate formal gate is to prove a reusable full-tree transition from
 snapshots `t` and `t-1` to `t+1`, then compose it into an all-time
-core-provider induction. A reusable step should use
+core-provider induction. First combine the new ordinary-parent child-balance
+lemma with the top-descending reset path and existing child role-profile and
+endpoint-reserve adapters. The step also needs the stage invariant at snapshot
+`t` to guarantee invariant/balance propagation. A reusable step should use
 core snapshots at `t` and `t-1` to prove the next snapshot: the prior core
 gives invariant/balance, `D2TopDescHistory.lean` supplies role-specific root
 profiles, and `D2CoreProviderReserveStep.lean` supplies two-visit endpoint
