@@ -31,6 +31,13 @@ price only; no limsup bound below 300 is proved.
   exactly the sum of the masses of pieces tagged for it. This is the
   count-valued form of the existing set partition, not yet the physical
   profile-to-flow identity.
+- `D2ProfileOrientationGate.lean` proves the fixed core's `bottomUnaryProfile`
+  has true bits in the bottom `height` rows and that physical row interval
+  `[lo,hi)` has count
+  `prefixIntervalMass height (4096-hi) (4096-lo)`. It also gives a
+  one-true witness that the unreflected expression
+  `prefixIntervalMass height 0 64` is not the count in the top physical
+  64-row cell. The stage bridge must explicitly justify its row orientation.
 - Stage-specific reserve/invariant proofs reach the Run-20-to-Run-21
   transition. `D2AllStageInvariant.lean` lifts a provider to all stages
   conditionally; the required universal sender-input provider is missing.
@@ -48,6 +55,9 @@ composition, and sender-set lemmas from current Lean sources. It does not
 verify a construction-specific all-stage hypothesis or close either global
 transition gate.
 
+The same focused checker now passes `D2ProfileOrientationGate.lean`, which
+kernel-checks the reflected-cut formula and the one-true mismatch witness.
+
 ## Main unresolved gate
 
 The fixed-core-to-schedule **count identity** is still open. Some of its
@@ -61,17 +71,17 @@ injectivity theorem show that aligned 4096-rank pieces of such a sender map
 to distinct whole physical cells. The sender-port boundaries are proved
 grid-aligned conditionally from the stage invariants.
 
-The remaining ordinary-sender composition has two explicit steps: identify
-each piece's true-bit count with the physical core's Boolean column-profile
-interval count, then identify the corresponding ideal profile sum with the
-next child capacity/deficit from `d2FlowStage`. The first is a coordinate
-identity between 64-row-by-64-column cells and the `variableColumnGrouped`
-cuts; the second is the child-specific rank-mass calculation, not merely its
-sum over all eight children. Both must use the actual `d2FlowCandidateRun`
-rank boundaries and tags. Then apply the existing arbitrary-tag `+448`
-transfer with hypotheses derivable from that run. Extend the ordinary case
-to startup, `botRise`, clipped final tiles, and exceptional intervals only
-after this gate passes.
+The remaining ordinary-sender composition has two explicit steps: first,
+connect the `variableColumnGrouped` cuts to physical row intervals with the
+correct orientation (for bottom-unary outputs, physical `[lo,hi)` counts use
+the reflected cuts `[4096-hi,4096-lo)`); second, identify the corresponding
+ideal profile sum with the next child capacity/deficit from `d2FlowStage`.
+The child-specific rank-mass calculation is needed, not merely its sum over
+all eight children. Both steps must use the actual
+`d2FlowCandidateRun` rank boundaries and tags. Then apply the existing
+arbitrary-tag `+448` transfer with hypotheses derivable from that run. Extend
+the ordinary case to startup, `botRise`, clipped final tiles, and exceptional
+intervals only after this gate passes.
 
 The corrected arbitrary-root selected-cut LP keeps exact total root mass yet
 still admits large terminal error under the current independent tail
@@ -85,15 +95,17 @@ terminal purity or bounded displacement.
 
 ## Next proof gate
 
-Prove the ordinary-sender coordinate identity: each tagged rank-port piece
-intersected with a 4096-wire cell has the same true-bit count as the
-corresponding per-column profile intervals. Use
-`routedTargetPiece_trueMass_eq_sum` to aggregate pieces by receiver, then
-prove the per-child ideal-count/deficit equation from the two-front rank
-formula. Quantify over arbitrary legal input profiles and use the actual
-`d2FlowCandidateRun` boundaries/tags. If this closes, extend to startup and
-exceptional roles, then test whether the resulting `+448` recurrence yields
-an all-depth spatial/distance invariant and terminal cleanup. The aggregate
+Prove which way the actual candidate placement maps the core's row coordinate
+to sender rank/address order. The checked core profile is bottom-unary, while
+`rowMajorFlowCuts` are top-oriented; either prove that the placement reverses
+these coordinates or rebase the physical profile transfer on reflected cuts.
+Then prove the ordinary-sender identity from tagged rank-port pieces to the
+corresponding per-column counts, aggregate with
+`routedTargetPiece_trueMass_eq_sum`, and establish the per-child
+ideal-count/deficit equation. Quantify over arbitrary legal input profiles
+and use actual run boundaries/tags. If this closes, extend to startup and
+exceptional roles, then test whether the `+448` recurrence yields an
+all-depth spatial/distance invariant and terminal cleanup. The aggregate
 `512` budget alone is not terminal purity.
 
 ## Files and artifacts
