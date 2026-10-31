@@ -34,6 +34,15 @@ These are source-level results with focused Lean checks recorded in the
 historical log. The moved `.olean` files are caches, not verification evidence;
 rebuild affected modules from current source before relying on them.
 
+Focused source rebuilds on 2026-10-31 passed for
+`D2VariableTilePhysicalFlowTransfer.lean`, `D2LocalRankDisplacement.lean`,
+`D2CrossingToDisplacement.lean`, `D2RankDisplacementComposition.lean`, and
+`D2BlockSortDisplacement.lean` via `check_prefix_flux_lean.py`. This verifies
+the cited static-cell/port, local 832-displacement, abstract crossing,
+composition, and sender-set lemmas from current Lean sources. It does not
+verify a construction-specific all-stage hypothesis or close either global
+transition gate.
+
 ## Main unresolved gate
 
 The fixed-core-to-schedule **count identity** is still open. Some of its
