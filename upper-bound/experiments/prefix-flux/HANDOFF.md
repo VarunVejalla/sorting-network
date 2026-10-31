@@ -186,9 +186,10 @@ root-frontier case is isolated in `D2RootFrontierCase.lean`: an active
 level-zero node is top-descending, and its current deficit is zero given the
 prior core at `t-2`. `D2FlowPathLast.lean` adds a checked last-edge
 decomposition for root-first paths to support composing the path adapters.
-`D2AffineCoreBootstrap.lean` proves the initial run snapshot satisfies the
-full affine core provider. Positive startup snapshots 1 through 3 remain
-open before the general induction step applies.
+`D2AffineCoreBootstrap.lean` proves the initial and first post-bootstrap run
+snapshots satisfy the full affine core provider. The first positive snapshot
+uses the exact top-rise role and full-grandchild endpoint reserves. Snapshots
+2 and 3 remain open before the general induction step applies.
 
 The exact compressed-flow screen
 `d2_deficit_tolerance_screen.py --depth 100 --scale 8192 --params 3 3 2`
@@ -213,7 +214,7 @@ core snapshots at `t` and `t-1` to prove the next snapshot: the prior core
 gives invariant/balance, `D2TopDescHistory.lean` supplies role-specific root
 profiles, and `D2CoreProviderReserveStep.lean` supplies two-visit endpoint
 reserves. `D2RootFrontierCase.lean` closes the level-zero role/reset case
-under the same prior-core hypothesis. Establish snapshots 1 through 3, then
+under the same prior-core hypothesis. Establish snapshots 2 and 3, then
 compose a reusable step for later stages. Confirm these
 ingredients compose before adding more stage-specific bridges. This closes
 only the flow-reserve induction; the physical sender-mass/tag identity

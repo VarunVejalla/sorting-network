@@ -108,9 +108,10 @@ the contract adapters, ordinary-child profile transition, role-specific root
 profiles, and two-visit endpoint reserve transition. They still assume prior
 full-tree core snapshots. `D2RootFrontierCase.lean` now proves that an active
 level-zero node is top-descending and its deficit is zero under the prior-core
-hypothesis. Prove a reusable step from snapshots `t` and `t-1` to `t+1`;
-derive balance from the invariant and establish the startup snapshots
-explicitly. Do not redo these local lemmas.
+hypothesis. Snapshots 0 and 1 are already checked by
+`D2AffineCoreBootstrap.lean`; establish snapshots 2 and 3 next. Then prove a
+reusable step from snapshots `t` and `t-1` to `t+1`, deriving balance from the
+invariant. Do not redo these local lemmas.
 
 Passing that flow-reserve gate does not establish the physical stage
 transition. The central construction gate remains the joint state linking
