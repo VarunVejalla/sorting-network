@@ -106,6 +106,39 @@ theorem keyRank_lt_of_lo {N : ℕ} (K : Finset (Fin N)) (Ilo : ℕ) {κ : Fin N}
     exact ⟨hx.1, by have := hx.2; rw [Fin.lt_def] at this; omega⟩).2
       ⟨κ, by simp [hκK, hκ], by simp⟩)
 
+/-- Exactly `j` keys occupy the top `j` ranks of a finite sender. -/
+theorem top_rank_prefix_card_eq {N : ℕ} (K : Finset (Fin N)) (j : ℕ)
+    (hj : j ≤ K.card) :
+    (K.filter fun κ : Fin N => K.card - j ≤ rankIn K κ).card = j := by
+  have hset :
+      K.filter (fun κ : Fin N => K.card - j ≤ rankIn K κ) =
+        blockOf K (K.card - j) K.card := by
+    ext κ
+    simp only [Finset.mem_filter, mem_blockOf]
+    constructor
+    · rintro ⟨hκ, hlow⟩
+      exact ⟨hκ, hlow, rankIn_lt_card hκ⟩
+    · rintro ⟨hκ, hlow, _⟩
+      exact ⟨hκ, hlow⟩
+  rw [hset, blockOf_card (le_rfl : K.card ≤ K.card)]
+  omega
+
+/-- Exactly `j` keys occupy the bottom `j` ranks of a finite sender. -/
+theorem bottom_rank_prefix_card_eq {N : ℕ} (K : Finset (Fin N)) (j : ℕ)
+    (hj : j ≤ K.card) :
+    (K.filter fun κ : Fin N => rankIn K κ < j).card = j := by
+  have hset :
+      K.filter (fun κ : Fin N => rankIn K κ < j) = blockOf K 0 j := by
+    ext κ
+    simp only [Finset.mem_filter, mem_blockOf]
+    constructor
+    · rintro ⟨hκ, hhigh⟩
+      exact ⟨hκ, Nat.zero_le _, hhigh⟩
+    · rintro ⟨hκ, _, hhigh⟩
+      exact ⟨hκ, hhigh⟩
+  rw [hset, blockOf_card hj]
+  omega
+
 /-- Fringe part (Lemma 4.4, parent part): keys sent down outside the address interval are
 bounded by the F-property applied to the top `|Hhi|` and bottom `|Hlo|` ranks.
 (`π ≤ a`, injectivity of `pos` and `pos < a` are not needed.) -/
@@ -155,5 +188,65 @@ theorem sent_outside_le {N : ℕ} (K : Finset (Fin N)) (pos : Fin N → ℕ) (π
       simp
     · exact (hfL _ hpos hHlo hLa).le
   linarith
+
+/-- Profile-valued fringe-send bound. Unlike `sent_outside_le`, the escape
+provider is stated for every rank prefix `j` up to the sender size, so no
+separate `Jmax` support hypothesis is needed. The resulting child spill is
+the sum of the top and bottom tail budgets evaluated at the actual outsider
+counts. -/
+theorem sent_outside_le_of_tail_profile {N : ℕ}
+    (K : Finset (Fin N)) (pos : Fin N → ℕ) (π Ilo Ihi : ℕ)
+    (tail : ℕ → ℝ)
+    (hfH : ∀ j, j ≤ K.card →
+      ((K.filter fun (κ : Fin N) =>
+        K.card - j ≤ rankIn K κ ∧ pos κ < K.card - π / 2).card : ℝ) ≤ tail j)
+    (hfL : ∀ j, j ≤ K.card →
+      ((K.filter fun (κ : Fin N) =>
+        rankIn K κ < j ∧ π / 2 ≤ pos κ).card : ℝ) ≤ tail j)
+    :
+    (((K.filter fun (κ : Fin N) =>
+      π / 2 ≤ pos κ ∧ pos κ < K.card - π / 2).filter
+        fun (κ : Fin N) => ¬ (Ilo ≤ (κ : ℕ) ∧ (κ : ℕ) < Ihi)).card : ℝ) ≤
+      tail ((K.filter fun (κ : Fin N) => Ihi ≤ (κ : ℕ)).card) +
+        tail ((K.filter fun (κ : Fin N) => (κ : ℕ) < Ilo).card) := by
+  classical
+  set Hhi := K.filter fun κ : Fin N => Ihi ≤ (κ : ℕ) with hHhidef
+  set Hlo := K.filter fun κ : Fin N => (κ : ℕ) < Ilo with hHlodef
+  set Sent := K.filter fun κ : Fin N =>
+    π / 2 ≤ pos κ ∧ pos κ < K.card - π / 2 with hSent
+  have hsub : Sent.filter (fun (κ : Fin N) =>
+      ¬ (Ilo ≤ (κ : ℕ) ∧ (κ : ℕ) < Ihi)) ⊆
+      (K.filter fun (κ : Fin N) =>
+        K.card - Hhi.card ≤ rankIn K κ ∧ pos κ < K.card - π / 2) ∪
+      (K.filter fun (κ : Fin N) =>
+        rankIn K κ < Hlo.card ∧ π / 2 ≤ pos κ) := by
+    intro κ hκ
+    simp only [hSent, Finset.mem_filter, Finset.mem_union] at hκ ⊢
+    obtain ⟨⟨hK, hp1, hp2⟩, hn⟩ := hκ
+    by_cases hhi : Ihi ≤ (κ : ℕ)
+    · left
+      exact ⟨hK, keyRank_ge_of_hi K Ihi hhi, hp2⟩
+    · right
+      have hlo : (κ : ℕ) < Ilo := by omega
+      exact ⟨hK, keyRank_lt_of_lo K Ilo hK hlo, hp1⟩
+  have hcard := (Finset.card_le_card hsub).trans (Finset.card_union_le _ _)
+  have hcast := (Nat.cast_le (α := ℝ)).2 hcard
+  push_cast at hcast
+  have hHa : Hhi.card ≤ K.card := Finset.card_le_card (Finset.filter_subset _ _)
+  have hLa : Hlo.card ≤ K.card := Finset.card_le_card (Finset.filter_subset _ _)
+  have h1 :
+      ((K.filter fun (κ : Fin N) =>
+        K.card - Hhi.card ≤ rankIn K κ ∧ pos κ < K.card - π / 2).card : ℝ) ≤
+        tail Hhi.card := hfH Hhi.card hHa
+  have h2 :
+      ((K.filter fun (κ : Fin N) =>
+        rankIn K κ < Hlo.card ∧ π / 2 ≤ pos κ).card : ℝ) ≤
+        tail Hlo.card := hfL Hlo.card hLa
+  have hresult :
+      ((Sent.filter (fun (κ : Fin N) =>
+        ¬ (Ilo ≤ (κ : ℕ) ∧ (κ : ℕ) < Ihi))).card : ℝ) ≤
+        tail Hhi.card + tail Hlo.card := by
+    exact hcast.trans (add_le_add h1 h2)
+  simpa [hSent, hHhidef, hHlodef] using hresult
 
 end Chvatal

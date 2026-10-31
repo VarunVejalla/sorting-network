@@ -19,18 +19,53 @@ def minimum_rectangular_prefix_zeros(total,zeros,cut,rows=4096):
     columns=total//rows; cut=max(0,min(total,cut))
     full,partial=divmod(cut,columns)
     if full==rows: return zeros
+    if partial==0:
+        # With a whole-row prefix, a column of height h contributes
+        # min(h,full) zeros to that prefix. To store `zeros` total zeros with
+        # minimum prefix mass, fill floor(zeros/rows) columns completely,
+        # then put the remainder in one column. The general inverse-envelope
+        # search below is unnecessary in this common case.
+        whole,remainder=divmod(zeros,rows)
+        return whole*full+min(remainder,full)
     low_columns=columns-partial
-    best=zeros
-    # Select j columns to receive at least their whole prefix contribution;
-    # those columns then have capacity `rows` at fixed cost. The rest can
-    # hold only their prefix height at unit cost.
-    for j in range(columns+1):
-        low=min(j,low_columns); high=j-low
-        base=j*full+high
-        remaining_capacity=(low_columns-low)*full+(partial-high)*(full+1)
-        if base<=zeros<=rows*j+remaining_capacity:
-            best=min(best,base+max(0,zeros-rows*j))
-    return best
+
+    def max_zeros_with_prefix_budget(budget):
+        """Maximum total zeros with at most `budget` prefix zeros.
+
+        A column of prefix height h either stays unsaturated, storing x<=h
+        zeros at prefix cost x, or is saturated, storing all `rows` zeros at
+        cost h. Saturation has the best gain/cost for smaller h, so use the
+        full-height columns (height `full`) before the `partial` columns
+        (height `full+1`); spend leftover budget in unsaturated columns.
+        """
+        mass=0
+        if full==0:
+            # Columns beyond the cut can be filled at zero prefix cost.
+            mass=rows*low_columns
+            low_saturated=low_columns
+            used=0
+        else:
+            low_saturated=min(low_columns,budget//full)
+            mass=rows*low_saturated
+            used=full*low_saturated
+        remaining=budget-used
+        high_saturated=min(partial,remaining//(full+1))
+        mass+=rows*high_saturated
+        remaining-=(full+1)*high_saturated
+        capacity=(low_columns-low_saturated)*full+(partial-high_saturated)*(full+1)
+        return mass+min(remaining,capacity)
+
+    # Invert the monotone maximum-mass envelope. This is logarithmic in the
+    # prefix size instead of scanning every column, which matters at depth d
+    # where the root rectangle has k**d columns.
+    lo,hi=0,cut
+    while lo<hi:
+        mid=(lo+hi)//2
+        if max_zeros_with_prefix_budget(mid)>=zeros:
+            hi=mid
+        else:
+            lo=mid+1
+    return lo
 
 
 def first_column(word,q=12):

@@ -30,8 +30,7 @@ its numbers) · **retired** (superseded; kept in history only).
 | `packets/` (branch `ub-25-packets` only) | Lean + notes + screens | active (Codex, worktree `ub-25`) | UB-25 | persistent sorted packets / merge-and-deal; terminal gate recorded NO-GO for the fixed-round candidate (`TERMINAL-GATE.md`); not merged to `main` |
 
 | `persistent-columns/` | notes + exact count witnesses + model screen | parked | UB-41 | small-C all-profile recurrence and weak one-pass fringe promise refuted in fresh review; stronger reachable-state variants open. Start at `STATUS.md`; no improved bound. |
-| `prefix-flux/` | notes + compressed flow + ordered profile oracle | active (Codex, worktree `sub300`) | UB-42 | D2 ordered-profile transfer remains open. The uniform-flow 13-bit candidate has reviewed 273-stage arithmetic, but its f=15 F2 screen passes only at `delta<=10^-12`; the induced small-rank cap is zero in many active geometries. Global transfer is the deciding gate. Start at `STATUS.md`; no improved bound. |
-
+| `prefix-flux/` | D2 proof sources + screens | active (Codex, worktree `sub300`) | UB-42 | Current handoff: `prefix-flux/HANDOFF.md`. Fixed core: 276 layers, conditional coefficient 230; arbitrary-root profile transfer, all-stage sender provider, and terminal cleanup remain open. Generated artifacts are separated into the ignored sub300 cache. |
 ## Policy for Lean forks
 
 A fork of the whole best package is ≈190 MB with its build cache and every committed copy stays in history. Therefore:
@@ -42,5 +41,5 @@ A fork of the whole best package is ≈190 MB with its build cache and every com
 3. Record the branch and last good commit in the ticket (`branch` field) and in the folder's `STATUS.md`.
 4. A fork that is finished is promoted (copy tracked files into `../best`, move the old best to `../alternatives`,
    follow `../TRUSTED.md`) and then removed from `main`.
-| `sub500-screen/` | scripts + notes | reference | UB-37 | R1 re-price sweep and structural screen (model): single levers, combinations and gates below 500/300/200. Start at `SCREEN.md` |
+| `sub500-screen/` | scripts + notes | reference | UB-37, UB-40 | R1 re-price and mixed-precision cost screens (model only); periodic restoration remains unproved. Start at `SCREEN.md`; current D2 handoff is in `prefix-flux/HANDOFF.md`. |
 | `fringe-duality/` | scripts + notes | active (Claude) | UB-34 | fringe by double weak duality (model): zero escapes at J = 190000 for f ~ 1000 (vs certified 7934); dense regime open. Start at `FRINGE-DUALITY.md` |

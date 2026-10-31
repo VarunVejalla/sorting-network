@@ -27,18 +27,24 @@ its dated constants and inline command paths may describe earlier layouts.
 ### Active upper research
 
 Independent coefficient-at-most300 work is on branch `sub300-structural` in
-`.claude/worktrees/sub300`; see [its search ledger](sub300-search.md).
+`.claude/worktrees/sub300`; see the [current D2 handoff](../upper-bound/experiments/prefix-flux/HANDOFF.md)
+and [source map](../upper-bound/experiments/prefix-flux/README.md).
+The longer [search ledger](sub300-search.md) is historical and contains
+superseded candidate directions.
 The first proposed persistent-column local contract was rejected after exact
 count witnesses and fresh review (UB-41). No improved global bound is claimed.
 
 The UB-28 annealed first-moment recurrence is exact: independent uniform
-matchings preserve independent slot-permutation symmetry, and conditional on
-the complete block-count vector the patterns are independent uniform subsets.
-The earlier claimed matched-block dependence was a coordinate-label error;
-the fixed-input counterexample does not apply after averaging over uniform
-inputs and fresh matchings. The count-only screens therefore model the stated
-ensemble. Their all-size rate certificate, including every edge phase and
-boundary, remains open. See [the joint-pattern state sketch](../upper-bound/experiments/UB28-JOINT-PATTERN-STATE.md).
+matchings preserve independent slot-permutation symmetry, and conditional
+on the complete block-count vector the patterns are independent uniform
+subsets. The earlier claimed matched-block dependence was a coordinate-label
+error; the fixed-input counterexample does not apply after averaging over
+uniform inputs and fresh matchings. However, the width-32 candidate has a
+feasible off-grid modal path to a bad terminal boundary: see the lower
+section and `UB28-WIDTH32-TAIL.md`. Its restricted-grid rate screen cannot
+certify a first-moment upper bound. Resolve the all-scale modal recurrence
+before pursuing a continuous rate certificate. The joint-pattern model is
+in [the state sketch](../upper-bound/experiments/UB28-JOINT-PATTERN-STATE.md).
 
 The earlier Chvatal fringe-repair experiments below are historical context for
 the 1770-era design; the promoted endpoint is now 789.75 (UB-31, previously 1419). The current high-upside

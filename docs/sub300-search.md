@@ -1,6 +1,8 @@
 # Independent search for a proved coefficient at most300
 
-Date: 2026-10-21. Owner: Codex (GPT-6). Goal remains active and unachieved.
+> Current handoff: [prefix-flux/HANDOFF.md](../upper-bound/experiments/prefix-flux/HANDOFF.md). This file is a historical search ledger; its older candidate prices and next steps are not current status.
+
+Date: 2026-10-25. Owner: Codex (GPT-6). Goal remains active and unachieved.
 Worktree `.claude/worktrees/sub300`, branch `sub300-structural`, based on
 main `5f03290`. The root checkout and UB-34/UB-37 work are untouched.
 
@@ -129,6 +131,20 @@ dominance is decisive. The ordered per-trace oracle passes outer/left/right
 band samples after a small assumed root error, but does not construct a fixed
 provider or handle arbitrary root profiles. The paper route's next gate is a
 closed all-input recurrence that carries this comparator reachability.
+
+### Independent UB-28 randomized-network candidate
+
+The most promising current structural lead is UB-28 with an exact depth-15
+sorter on every fixed 32-wire block, followed by randomized matching stages
+only at widths `h >= 64`. The remaining bad event is a boundary predicate on
+two block counts, `left > 0` and `right < 32`. A top-relative `(223,27)`
+round schedule has modeled coefficient 250. At `n=2^24`, its grid-16
+max-path screen over 97 boundary/interior representatives has minimum
+`0.7233649`, above `ln 2`; keeping all width-32 counts through the first
+width-64 stage barely changes the sampled center rate. This replaces the
+complicated small exact-tail event with a simpler block-count event.
+
+The rate direction needs care: maximizing log-probability over a restricted count lattice gives a lower maximum log-probability and therefore an upper bound on the minimum negative-log cost over all trajectories. More seriously, the grid misses a feasible modal path: from balanced top halves, the (223,27) schedule reaches terminal counts (29,28), which trigger the bad boundary event. Each modal transition costs at most log(h+1), so this path has only an exp(-O(log^2 n)) probability for a balanced input type. The script reproduces the bad terminal profile for all exponents 7 through 100 and sampled exponents through 1024; proving the recurrence for all scales is the next check. If it holds asymptotically, the random-network first-moment route is dead. Do not invest in a continuous Bellman certificate for this schedule before resolving that path. Details are in [UB28-WIDTH32-TAIL.md](../upper-bound/experiments/UB28-WIDTH32-TAIL.md).
 
 No credible <=300 construction has yet passed the paper gates. Prioritize a
 new local/global contract rather than another scalar retune. Two precise
@@ -577,3 +593,675 @@ under the actual upper prefix has not been bounded. The finite suffix must be
 included in the coupled rate calculation and cannot be assumed to sort all
 locally count-ordered inputs.
 
+### D2 endpoint reserve status (2026-10-22)
+
+In the standalone schedule model, the exceptional `botRise` predecessor now
+has a kernel-checked child-reserve lemma: inactive children remain at native
+deficit until their later cut, exactly supplying its `c/128` endpoint
+reserve. The focused file check passes. This advances one branch of the
+candidate's reserve induction, but does not connect the ordinary predecessor's
+cut geometry or establish native-size bounds on its children. The eight-child
+quota sum is now resolved from schedule roles, conditional on those native
+bounds: regular child roles give total mass `15/16`, while the exceptional
+`botRise` branch gives mass1 and forces the older sender's quota to `15/4096`.
+The factor corollary compiles under the exact two-step identity and deficit
+caps. A separate compiled lemma now forces current cuts to be noncrossing when
+the two-stage predecessor is ordinary, given native allocation bounds and
+the same exact identity/caps; the `botRise` predecessor has its trace-based
+route, now including a compiled `a/c<=1/16` bound from trace conservation.
+These are still conditional induction interfaces, not an all-depth flow
+proof. The D2 coefficient candidates (273 for the row-13 `(3,3,2)` core, or
+227.5 for the sparse-bottom variant) remain conditional; the shrinking-fringe
+screens, exact-shape obstruction, local provider, global rank recurrence, and
+terminal sorting contract still prevent calling either a realistic completed
+path below300.
+
+Later the same day, `D2ScheduleReserve.lean` gained a sentinel-aware
+`D2FlowTree`, a kernel-checked full-tree initialization invariant, and a
+recursive `d2FlowStage` matching the compressed Python step's
+descendant-first/old-child-root order. Its callbacks now implement the rounded
+D2 activity, role, and scale8192 integer quotas. Schedule/role matching,
+active capacity exponent `>=20`, rational quota agreement, and leaf inactivity
+through the horizon are kernel-checked. Bot-rise uses the live allocation;
+the root index is `d`, and its initialized allocation is exactly `8192*8^d`.
+The tree invariant now also includes `G<=sum(child G)` at every non-leaf; the
+initial tree proves this, and the condition gives the exact allocation
+subtraction needed by the executable recurrence. Scale8192 FlowDAG scans found
+no reachable child-cover violation through depth100 (373,240 non-leaf states
+checked at depth100); this is finite diagnostic evidence.
+Lean proves root-deficit monotonicity for every recursive stage; child-cover
+therefore persists at inactive and bot-rise nodes. The ordinary roles preserve
+it as equality under the cut hypotheses, and top-desc does so under `G=0`.
+The bot-rise parent native cap also follows from its children's native bounds
+and child-cover. Ordinary-role native caps and reachable proofs of the branch
+hypotheses remain open. A conditional full `d2FlowTreeInv` preservation theorem
+for active ordinary nodes now composes recursive child invariants and explicit
+parent/child native caps with the aggregate cut result. Its companion derives
+front fit and those caps from the existing reserve lemma. A candidate-specific
+bridge turns the normalized schedule-port inequality into the integer
+quota-within-allocation premise. Proving this port bound and the sender/endpoint
+reserves on reachable states remains open.
+Prefix positions are proved contiguous; ordinary child cuts, top-desc clears,
+and bot-rise child preservation reduce to the existing local update formulas.
+The eight left/right cut lengths telescope exactly. Under balanced parent
+endpoints, even quota, in-range fronts, and noncrossing fronts,
+`d2FlowOrdinaryCut_conserves` proves the ordinary child deficits sum to
+`G+pi`; `d2FlowStage_regular_child_mass` composes this with the recursive
+stage for active top-rise, mid, and bottom-descending nodes. These are
+conditional local results, not a reachable-state invariant proof.
+Fresh review caught and fixed the
+false unconditional `low+high=G` invariant at saturated nodes. The finite
+depth100/scale8192 audit finds 100 saturated states where endpoint balance is
+false, while all 482,411 non-saturated stored states and all active rows obey
+it. The total Lean transition still needs conservation, quota parity, and valid
+cuts proved on reachable states; there is no one-stage invariant-preservation
+proof yet. This narrows the flow bridge but does not close its all-depth
+induction. Details are in
+[`D2-FLOW-STATE-SPEC.md`](../upper-bound/experiments/prefix-flux/D2-FLOW-STATE-SPEC.md).
+
+## UB-28 thin-tail gate and cutoff repair (2026-10-24)
+
+The 260/20 top-heavy rate screen's 150-random-round width-8 anchor has a
+candidate subexponential failure path: mode transitions reach central
+width-8 counts `(2,1,7,6)` for tested `log_n=16..96`, and the exact conditional
+width-8-plus-tail failure probability is a fixed positive rational. A
+per-transition mode-mass bound gives an `exp(-O(log^2 n))` prefix cost if the
+profile stabilization is proved. This is not yet an all-depth no-go, but it
+shows why the coarse grid-16 rate `0.8165` is unsafe as an upper-bound screen:
+it omits thin count profiles. Details and reproduction are in
+[`UB28-TOP-HEAVY-SCHEDULE.md`](../upper-bound/experiments/UB28-TOP-HEAVY-SCHEDULE.md)
+and `ub28-thin-tail-path.py`.
+
+A plausible repair is to use exact cyclic stages through a growing cutoff
+`H=largest power of two <= (log_2 n)/2`, then use the 260/20 random schedule
+above `H`. The exact tail costs `4H-2 <= 2 log_2 n`, giving modeled total
+coefficient at most 282. This only prices the variant; the global exact-tail
+transfer and an all-profile exponential-rate bound remain open. The D2
+`V+E/2` route also remains blocked at the current relaxation: the depth-7
+three-stage gate returned a feasible positive-drift witness, documented in
+`prefix-flux/STATUS.md`.
+
+## Route viability checkpoint (2026-10-24)
+
+There is not yet a realistic end-to-end proof path below 300. The two priced
+candidates are still conditional: UB-28 at about 282 (randomized top-heavy
+prefix plus a growing exact tail), and D2 at 273 (fixed-height row sorts plus
+a global rank/flow invariant). A direct zero-one exhaustive check confirms
+that an exact tail stopped at `H < n/2` does not sort arbitrary inputs (for
+example, a single one at wire 7 survives for `n=16,H=4`); it can only help
+through a property of the prefix's delivered profile. UB-28 therefore still
+needs a certified all-profile path-rate/terminal-transfer argument. D2 has
+the stronger compositional routing idea, but its relaxed rank-transfer gates
+admit alignment circulation or positive drift, and its viable ragged local
+provider is not yet proved. UB-40's cost schedule is not an independent route:
+its required refresh must contract a coupled global state, while the tested
+one-snapshot alignment cap and fixed scalar potentials fail that gate.
+
+A new exact integer D2 gate sharpens this: at depth 4, the full global-cut
+MILP with an ideal local refresh has an integral `M_2` equality path and 2,691
+terminal wrong keys. This is still a selected-cut relaxation, not a trace of
+the fixed network, but it rules out strict contraction of this distance moment
+from the present transition constraints alone. Reproduction and the solver
+certificate are recorded in `prefix-flux/STATUS.md`. The same gate also has
+an exact M3 equality path, so merely increasing the fixed moment order does
+not resolve the selected-cut circulation.
+
+The alternate aggregate-error interface has a larger exact local screen:
+for one fixed four-column, 32-row two-scramble core, exhaustive enumeration of
+all 1,185,921 height profiles found maximum summed defect 13, versus pointwise
+caps summing to 598. This supports testing aggregate-plus-seam provider
+budgets, but is far from the 8192-row, all-sender, weighted-tail theorem.
+
+The strongest new cost point is a four-sort 4096-row core for the `(3,2,2)`
+D2 flow: it prices at260, with40 coefficient left for cleanup. Three scramble-
+sort rounds lowered the searched aggregate defect by roughly 11--14x versus
+two rounds at 64 columns; the same trend persisted at 256 columns. The actual
+depth-100 flow at this height has only about2.45 fringe rows, however, so the
+current F2 provider does not apply. Details and reproduction are in
+`prefix-flux/D2-FOUR-SORT-4096-CANDIDATE.md`.
+
+The next decisive gate is a universal seam-weighted provider for this exact
+four-sort core on the reachable 4096-row ragged sender profiles, including
+fringe widths near2--3. If that gate passes, test its bounds in a phase-period
+rank adversary with actual sender/receiver ports and within-bag defect; if the
+provider needs more than the remaining40 coefficient, reject this cost point.
+Until both gates pass, the sub-300 objective remains exploratory rather than a
+realistic completed proof plan.
+
+The cyclic 64-column core now has a deterministic local variance result: a
+one-sided slope-profile DP for the last two cyclic rounds computes a final column
+range bound `<=15`, hence `A_w/64<=28.125<48`, for every input profile. This
+is a candidate width-64 `Gamma=48` provider without a random-core union bound,
+but the finite DP is not Lean-checked. It is not
+uniform in sender width: the same relaxation at 128 columns reaches range20,
+though a direct full-core search finds only6 and is not a proof. The remaining
+local question is an all-width provider or a priced finite-tile/seam scheme;
+global alignment and terminal exact-count transfer remain independent gates.
+The derivation and exact DP are in `prefix-flux/D2-FOUR-SORT-4096-CANDIDATE.md`
+and `prefix-flux/d2_slope_profile_bound.py`.
+
+
+
+## UB-40 scalar restoration versus fringe support (2026-10-24)
+
+The Lemma 4.3' order-zero recurrence makes the periodic screen more precise. At the screened `(4,6,3)` point, with `T=1000` cheap stages, ten cheap steps raise the scalar outsider coefficient from `7.56e-6` to `6.43e-3`; four `q=24` precise steps return it to `5.31e-6`. Their modeled mean cost is `294.64`, before startup/terminal and provider costs. Reproduce with `upper-bound/experiments/sub500-screen/ub40_scalar_recurrence_gate.py`.
+
+That scalar cycle is **incompatible with the current R1 Lemma 4.4 support condition**: the protected fringe can hold at most `delta_F*pi/(2c)=7.57e-6` outsider mass at this schedule (`delta_F=1/8`), about 850 times below the cheap-phase peak. Even taking `delta_F=1` leaves a 106-fold gap. More strongly, preserving the current support cap at each transition forces `epsilon_B<=4.58e-5`, hence bulk row exponent `q>=23` and about690 coefficient for the three-sort stage. Thus scalar periodic tolerance cannot meet300 while retaining the current support gate. UB-40 needs an invariant that separates short-range separator defect from the long-range outsider mass subject to fringe support, plus a bound on leakage between those components. The gate and derivation are in `upper-bound/experiments/sub500-screen/UB40-SCALAR-RESTORATION-GATE.md`.
+
+
+The available n-uniform round-one margin-tail certificate was also tried at
+the cheap q=9 height: even with margin W=m=512 it certifies only an upper
+bound 4.04e-3 versus the 7.57e-6 support target. This fails to certify the
+needed tail; it is not a lower bound on the true tail. The run is in
+`upper-bound/experiments/sub500-screen/cert_tail_q9.out`; source was read-only
+from branch `ub-34-fringe-duality`. A sharper full-stage tail bound is needed.
+
+
+The D2 distance-tail period gate (`upper-bound/experiments/prefix-flux/D2-DISTANCE-TAIL-PERIOD-GATE.md`) imports UB-34's interval margin-tail method, with the five large-distance caps rerun for the actual 64-column domain. The corrected eight-point profile still permits exactly 6,390 terminal wrong keys in the depth-2 integer selected-cut relaxation (optimal, zero gap). The older depth-5 LP used stronger, `N_CERT=8192` tail caps and already admits positive drift, so that witness also survives the corrected weaker caps. UB-34's tail method is a useful local sharpening/diagnostic, but it does not close global rank transfer; the remaining gate is richer spatial port correlation or a stronger invariant.
+
+The two-transition return-phase gate is also positive: the depth5 stage2->4 relaxation gives max drift +46,080 for `V+E/2` and +107,520 for `V+E`, even though the active level returns to level2. Thus tested fixed scalar weights fail to contract the full short period; a phase-dependent or richer spatial state is needed in this model.
+
+To test phase-dependent level weights, the LP now allows distinct weights at the source and destination phases. One chosen pair makes phase2->3 contract by87.5, but swapping it back for phase3->4 gives +3.52 million drift. This pair fails as a cycle; longer phase-dependent states remain untested. The option and results are in `D2-DISTANCE-TAIL-PERIOD-GATE.md`.
+
+The follow-up cutting-plane search jointly optimized normalized nonnegative
+level weights for phases2,3,4. Six optimal depth5 selected-cut witnesses give
+a strictly positive minimax lower bound `+1278.18` at `rho=0.99`, even when
+weights may be zero. Thus this entire level-only linear potential family fails
+for the tested 2->3->4 relaxation, not just the hand-picked weight pairs.
+Witness residuals are at most `1.63e-5`; the saved cuts are in the ignored
+`LLM-helpers/sub300-phase-weight-rho099-floor000001.json`. Further effort
+should test a richer spatial state (e.g. explicit port correlations), rather
+than continue tuning level-only weights. Details and the reproducible master
+search are in `D2-DISTANCE-TAIL-PERIOD-GATE.md` and
+`upper-bound/experiments/prefix-flux/optimize_phase_weights.py`.
+
+Separating spine-bag and off-spine alignment with independent phase/level
+weights also fails this relaxation: 24 witness cuts give a positive master
+lower bound `+1248.62` at `rho=0.99`, even allowing zero weights; maximum
+feasibility residual is `8.64e-5`. The optimized candidate reaches about
+`+1274.44`. A rank-profile/port-flow state or stronger transition correlations
+are now needed; more tuning of bag-total alignment weights is ruled out by
+these finite gates. Saved cuts are in the ignored
+`LLM-helpers/sub300-spine-phase-rho099-floor001.json`.
+
+The longer-span LP construction itself is now a bottleneck: depth13/24-step and depth10/15-step models reached multi-GB memory, and depth8/9-step remained in construction after eight minutes. All were stopped without optimizer output and are inconclusive. A compressed phase/role state model is needed to test the 24-stage return map efficiently.
+
+### Exact local D2 invariant gate (2026-10-24)
+
+I checked the proposed sender-side premises directly in the interned exact
+`(3,3,2)` D2 flow through depth100, including every distinct reachable active
+state (not just the strong/weak `botDesc` slices). For ordinary positive-up
+roles (`topRise`, `mid`, `botDesc`), all states satisfy
+`G/c <= 1/512`, `pi/c <= 1/256`, and both endpoint-child deficits are at
+least `c/128`. The exact maxima were `15/8192` for `G/c` and `15/4096` for
+`pi/c`; the endpoint floor is tight at `botDesc`, `1/128`. There were zero
+threshold failures. Reproduce with
+`python upper-bound/experiments/prefix-flux/d2_local_invariant_audit.py --depth 100`.
+
+This is stronger finite evidence for the local geometric bridge than the two
+phase identity audit alone, and it removes an obvious startup/role counterexample
+to those numerical premises. It is not an all-depth proof and does not address
+the global rank recurrence, common-provider condition, or sorting. The next
+paragraphs isolate the fixed-point transfer and its endpoint-reserve dependency.
+
+The endpoint recurrence has an even sharper exact fixed point. Every ordinary
+quota is `pi/c=15/4096`; if `G/c<=15/8192`, then for either end child
+`G' = low + pi/2` and `c'=2c`, so
+`G'/c' <= (15/8192)/2 + (15/4096)/4 = 15/8192`.
+The scratch module now contains this as
+`d2_ordinary_end_child_deficit_15over8192`. Its arithmetic was kernel-checked
+in isolation with the same hypotheses; a direct check of the full 780 KB
+scratch module was stopped after several minutes of unrelated elaboration, so
+the module as a whole is not claimed checked in this pass. This tight fixed
+point explains the finite depth-100 maximum exactly and is a better target for
+the schedule induction than the slack `1/512` bound. It still only propagates
+through ordinary endpoint cuts; it still needs a schedule-level proof that
+the required two-stage endpoint reserves hold from startup through parent
+overwrites.
+
+The schedule handles that apparent `botRise` exception more cleanly than a
+carried state: every active ordinary sender has an active parent one stage
+earlier, and that parent is never `botRise`. A `topRise` sender's preceding
+parent is `topDesc`, so its deficit is reset to zero. The existing Lean
+schedule lemmas `active_parent_of_not_topDesc` and
+`botRise_child_inactive_through_next` prove this exclusion, while
+`active_regular_prev_two_role_cases` identifies the same-level predecessor
+as ordinary or `botRise`. The abstract reserve transfer
+`d2_scheduled_endpoint_reserve_persists` already handles the intervening
+stage once the previous half-port is contained in the endpoint child. A finite
+audit at depth1000 checked 373,250 ordinary senders and
+confirmed that their preceding parent roles were only `topDesc`, `topRise`,
+`mid`, or `botDesc`; reproduce with
+`python upper-bound/experiments/prefix-flux/d2_schedule_parent_gate.py --depth 1000`.
+
+This reduces the normalized deficit induction to propagating the parent cut:
+topDesc gives zero; topRise starts with zero parent deficit and its `1/256`
+quota yields at most `1/1024` of child capacity; mid/botDesc use the fixed
+point `B/2+(15/4096)/4=B`, `B=15/8192`. The remaining coupling is geometric:
+one must first prove the parent's fronts stay in the end children, using the
+two-stage endpoint reserves. Thus the sender-deficit cap is no longer the
+main standalone obstacle, but its all-depth proof still depends on closing
+the endpoint-reserve induction; neither result addresses the global rank
+recurrence.
+
+The exact port-rank profile was added to the phase-weight search as a richer
+potential `V + beta*P`. At `beta=1/8`, the two-iteration witness-cut master
+still has a negative lower bound (`-225,747`), so contraction is unresolved.
+At `beta=1/2`, its lower bound is positive (`+382,121`) with maximum accepted
+primal residual `9.16e-6`, ruling out all tested phase/level spine/off-spine
+linear weights for that fixed coefficient in the finite selected-cut model.
+These gates do not concern traces of the fixed network. Further scalar tuning
+of this profile is not promising; the live gap is a richer reachable-state
+transition bound. Full setup and caveats are in
+`upper-bound/experiments/prefix-flux/D2-DISTANCE-TAIL-PERIOD-GATE.md`.
+
+The second-distance moment is now tested with a monotone sparse-cut enclosure;
+its gap bounds pass exhaustive small-word checks and match the exact objective
+when all cuts are retained. At depth5, the target 8192-row model gives
+negative `rho=0.9` drift in all four root-initialized transitions, and the
+arbitrary-source depth5 gates are negative at `rho=0.99`. Those constants do
+not persist: at depth7 the arbitrary-source one-step LP has optimal positive
+`rho=0.99` drift in phases3 and4, and phase5 also has a positive optimum. The
+depth7 four-stage return gate is numerically unresolved, with a feasible
+near-neutral candidate. Thus no all-depth potential recurrence is established;
+the full tests and limitations are in
+[D2-DISTANCE-TAIL-PERIOD-GATE.md](../upper-bound/experiments/prefix-flux/D2-DISTANCE-TAIL-PERIOD-GATE.md).
+
+### Exact phase/shell quotient of the D2 flow skeleton
+
+`d2_phase_shell_compression.py` now propagates classes from each stage root
+without enumerating every address. A class is determined by the interned full
+flow node state and the address's threshold-spine split shell (first differing
+base-8 digit, side, and digit offset). This is an exact quotient of the
+**deterministic flow skeleton**: every child class is obtained from the
+representative node's actual child ID, and multiplicities account for every
+static address. At depth8 it reduces 210,913,571 address-stage occurrences to
+4,033 state/shell classes (52,297x). Reproduce with
+`python upper-bound/experiments/prefix-flux/d2_phase_shell_compression.py --depths 8 --suffix-digits 4`;
+the reported `state_shell_classes` is the stronger quotient count.
+
+The simpler rule �shell plus a fixed number of trailing address digits� is not
+uniform: two digits first fail at depth7, level4; three fail at depth8, level5.
+The exact state/shell quotient remains small, but it does not yet compress
+separator output profiles. Before using one aggregate profile per class, prove
+that the local provider constraints and the rank-potential objective descend
+to this quotient; otherwise aggregation could lose reachable adversaries or
+underestimate the drift. The next gate is a quotient LP with independent
+per-sender outputs represented by summed identical local polytopes, and a
+comparison against the uncompressed LP on a small case.
+
+The rank-history prerequisite was tested with `--check-history` at depths5 and6,
+row height8192. The raw state/shell partition has15 groups whose interval
+history varies; adding each bag's exact nearest occupied-wire distance to the
+threshold yields1,199 and1,414 groups, respectively, with a unique history
+interval in every class. A logarithmic distance bin did not have this property
+at depth5. This exact-margin partition still is not transition-closed: at
+depth5 two groups at stage3/level2 have identical current labels but split
+into different child-history vectors. The quotient LP therefore needs a
+joint child-port/history state, or a conservative aggregate of those vectors;
+current-state compression alone is insufficient.
+
+The compressed local recurrence state was then expanded to a radius-one star:
+for each bag, record its own `(flow state, shell, H-interval)`, its parent label
+and child digit, and the eight child labels. At depths5/6, every repeated star
+has exactly the same next flow-state/history label: zero transition mismatches
+among4,084 and5,260 distinct stars, with at most1,488/1,512 stars at any
+single stage/level. This is finite exact evidence that a local neighborhood
+state captures the scalar interval update on these schedules. It still omits
+separator output-profile variables and is not an all-depth closure proof. The
+reusable check is `d2_phase_shell_compression.py --check-history`.
+
+The phase/shell equitable port-flow quotient was compared directly with the
+uncompressed LP at `depth=5, scale=8, row_count=8`, with no ordered-prefix or
+distance-tail constraints. Both solve optimally to `19,883` terminal wrong
+keys. The quotient uses 3,359 variables versus 3,807 raw (2,477 classes for
+2,925 vertices), only an 11.8% variable reduction. At depth3 the partition is
+the identity. This validates objective preservation on the toy case but shows
+that the current exact-state quotient alone does not deliver the hoped-for
+scaling; a more aggressive phase/shell/star aggregation would need a proof
+that it preserves local feasible transitions and the terminal objective.
+Reproduce with
+`python upper-bound/experiments/prefix-flux/d2_port_quotient_lp.py --depth 5 --scale 8 --row-count 8 --time-limit 60 --params 3 3 2 --sorted-root --compare-raw`.
+
+### Reuse audit: UB-34 fringe-duality branch (2026-10-27)
+
+UB-34 is useful as a source of probabilistic proof techniques, but its current
+result does not plug into the sub-300 D2 proof. Its route-(d) energy/collision
+argument bounds fringe escapes for fixed source sets under the UB-34 two-round
+separator. The D2 recurrence instead needs a uniform all-j rank-prefix
+position-escape profile for the actual scheduled local provider, then a
+transfer of that profile into a spatial rank/alignment potential. These are
+different observables and different network contracts; the UB-34 numeric
+fringe certificate cannot be substituted for the missing D2 provider or
+global recurrence.
+
+The potentially reusable pieces are the n-uniform collision estimate,
+fixed-set MGF/negative-association lemmas, and the level-crossing composition
+pattern. Reuse would require first proving a new bridge from those lemmas to
+the D2 provider's rank-prefix escape counts, uniformly over every active
+sender and every j; the current UB-34 notes explicitly leave some of their
+own asymptotic/certification steps open as well. Therefore the high-value next
+gate remains a structural arbitrary-depth D2 transition theorem (or a
+counterexample to the candidate invariant), not porting the UB-34 fringe
+constant. This audit is a research assessment, not a theorem or a proof
+milestone.
+
+
+### Correction: UB-34 band-repair lemma is a direct structural lead (2026-10-27)
+
+The earlier reuse audit was incomplete: besides route-(d) probability tools,
+the UB-34 branch has a deterministic band-repair lemma in
+`upper-bound/best/AKS/Sub800/MergeBandPack.lean`, notably
+`bandStage_rowCount_le` and `mergeBandPack2Net_low_crossings_le`. The D2
+worktree's `D2Slope25MarginTail.lean` proves a fixed-core variance bound that
+implies every output-column height is within52 rows of its mean. If this
+profile is the one immediately before a row-preserving scramble, the band
+lemma with radius28 gives zero crossings from rank-distance at least80 at an
+aligned cut (with a small rounding charge for nonaligned cuts). This is a
+deterministic way to replace the missing probabilistic far-tail provider.
+
+The screened implementation would sort three 4096-row columns (234 layers),
+then sort 56- or 64-row repair bands in parallel (21 layers), and optionally
+retain a 21-layer sparse-edge repair. Its modeled coefficients are 212.5 or
+230, respectively, using the current 5/6 stage/log rate. Both are below300,
+but they are conditional cost calculations, not a sorter proof. The UB-34
+lemma is written for its Sub800 matrix-network model and is absent from this
+branch's current source base, so a model adapter or a separately proved D2
+version is required. The variance bound must be shown to apply at the correct
+point in the full stage; the cut bands must be realized by actual addresses
+and be disjoint at every active sender; and the resulting bounded-distance
+errors must be propagated through the full schedule to a terminal cleanup
+whose depth is sublinear in log n.
+
+This is currently the strongest concrete below-300 lead found in the UB-34
+material: it reuses a deterministic structural lemma, not the branch's
+unfinished fringe certificate. The next gate is to specify and prove one full
+D2 macro-stage (including the physical band network) with its exact crossing
+contract, then derive the all-depth rank-displacement/terminal-cleanup lemma.
+Until that global lemma is established, the 212.5/230 coefficients remain
+models only.
+
+### Arbitrary-root port quotient correction (2026-10-28)
+
+The D2 local-profile quotient gate previously fixed the root to a sorted
+threshold profile. Its arbitrary-root mode now keeps only the exact root mass
+and permits local root prefixes throughout the modeled margin-tail bounds;
+transfer of those caps to the actual D2 core remains unproved. With the
+width-64 distance-tail caps, the depth-5 quotient remains optimal and feasible
+but leaves 4.377M summed terminal wrong mass (versus 5.859M without tails);
+equality/inequality residuals are below `2.2e-9`. This rules out the current
+independent local-tail constraints as a sufficient global alignment invariant
+in this relaxation, not the fixed D2 network. The run and caveats are in
+`prefix-flux/D2-DISTANCE-TAIL-PERIOD-GATE.md`. The next proof-relevant
+strengthening must encode actual shared core output profiles or schedule
+reachability correlations; retuning tail caps alone is not supported by this
+gate.
+
+
+### Proof-priority correction (2026-10-31)
+
+The prefix-flux source already proves the schedule-wide statements
+`d2FlowCandidateRun_alignment_all` and
+`d2FlowCandidateRun_frontContract_all` in `D2CutAlignment.lean`; these give
+all-stage tile alignment and the recursive endpoint-front congruences for the
+actual candidate run. The separate finite depth/time-shift screens are not a
+necessary route to those facts and should not be extended as a substitute for
+the remaining proof. The missing run-level provider is stronger:
+`d2FlowStageInvInputs` (or its tolerant version) requires a quantitative
+per-sender deficit cap, quota/allocation feasibility, and both endpoint
+reserves at every active sender. Existing `D2Stage19/20PreservesInv.lean`
+prove only individual startup transitions; `D2AllStageInvariant.lean` shows
+that a universal provider would immediately lift to every run stage. After
+that invariant, the global spatial rank-profile recurrence and terminal
+sorting criterion remain separate obligations.
+
+The UB-34 checkout on branch `ub-34-fringe-duality` now contains checked
+network-level band-crossing lemmas (`mergeBandPack2Net_low_crossings_le` and
+`mergeBandPack2Net_escapes_le`), including the previously omitted band-stage
+escape term. These strengthen the local separator analysis but do not close
+the D2 run provider or global spatial recurrence, and the route's current
+costing is not a sub-300 proof. Treat them as reusable local mathematics, not
+as a replacement global construction.
+
+
+### Affine sender-profile gate refresh (2026-10-31)
+
+A fresh exact-integer FlowDAG diagnostic at `d=110`, scale `8192`, checked
+273,700 active ordinary senders across 994,746 interned states. All passed the
+affine profile `8192*G + 7 <= 15*cap` and `4096*quota <= 15*cap`; special
+roles balanced, and every `topDesc` root was zero. Worst deficit/cap was
+`4533471823554859405148153 / 2475880078570760549798248448` (about
+`0.0018307`), below `15/8192`; minimum endpoint reserve ratio was exactly 1.
+Reproduce with `python upper-bound/experiments/prefix-flux/d2_reachable_reserve_audit.py --depth 110 --scale 8192 --require-affine`. This is finite evidence only.
+
+The matching formal interface already exists in `D2StrongFlowStage.lean`:
+`d2FlowStageAffineInputs` is sufficient for one-stage reserve-invariant
+preservation, and `d2FlowCandidateRun_preserves_inv_of_affine_all_inputs`
+lifts it over any finite run horizon. The unresolved theorem is therefore a
+schedule-parametric provider of those affine sender inputs for every actual
+stage, including the exact reserve and allocation conditions. Do not spend more
+time extending finite stage bridges unless they establish a reusable induction
+step for that provider. Even after it, physical rank-profile transfer, global
+inversion contraction, terminal sorting, and the coefficient accounting remain
+open.
+
+
+### Affine input contract reduction (2026-10-31)
+
+Added `D2StrongFlowNoAlloc.lean` and checked it with Lean. Its recursive
+`d2FlowStageAffineInputsNoAlloc` contract omits `quota <= totalChildDeficit - G`
+from each active ordinary sender. `d2FlowStageAffineInputs_of_noAlloc` recovers
+that condition from the existing deficit/quota caps and the left endpoint
+reserve; the corresponding all-horizon theorem then reuses the checked
+affine stage-preservation lift. The all-stage provider is now reduced to
+balance/role cases, affine deficit control, even quota, and endpoint reserves
+(recursive children follow by the definition). This is an interface reduction,
+not a provider: the actual uniform deficit and reserve estimates remain open,
+as do physical rank transfer, global inversion contraction, terminal sorting,
+and the coefficient proof.
+
+
+### Tree-core provider interface (2026-10-31)
+
+`D2StrongFlowCoreInputs.lean` is now kernel-checked. It removes the schedule-
+determined quota bounds and parity from the missing positive-stage provider.
+For every positive stage, the actual tree's recursive balance, top-rise/top-
+descending root conditions, affine mid/bot-descending deficit envelope, and
+endpoint reserves suffice: `d2FlowCandidateStageAffineCoreInputs_to_noAlloc`
+reconstructs quota and parity fields from the closed-form schedule. The stage-0
+reset is proved separately. `d2FlowCandidateRun_preserves_inv_of_core_provider`
+then lifts any positive-stage core provider to the reserve invariant at every
+run horizon. Thus the unresolved provider is sharply focused on actual tree
+balance/role states, affine deficit control, and endpoint reserves. This still
+does not prove that provider or the later rank-profile, sorting, and
+depth-accounting obligations.
+
+
+### Actual-run two-visit endpoint transport (2026-10-31)
+
+`D2RunTwoVisitReserve.lean` is kernel-checked. The theorem
+`d2FlowCandidateRun_path_endpoint_reserve_of_prior_sender` now transports the
+local two-stage ordinary endpoint-reserve estimate to an arbitrary path in the
+actual full candidate run. It explicitly models ancestor root overwrites and
+uses only the schedule fact that the sender is inactive at the intervening
+stage. Thus, for a sender with ordinary inputs at its prior visit `t-2`, both
+endpoint reserves persist at its current visit `t`. This closes the path-history
+bridge previously missing from the proposed per-sender time induction. It does
+not establish the prior sender inputs, the exceptional bot-rise predecessor
+case, or the affine deficit recurrence from the parent level.
+
+### Affine child-profile scale adapter (2026-10-31)
+
+`upper-bound/experiments/prefix-flux/D2StrongAffineChild.lean` is kernel-checked. It packages the local ordinary update as `d2_regular_update_preserves_child_affine_profile`: the parent's sharp affine profile gives every child `8192*G_child + 7 <= 30*c`. `d2_parent_affine_profile_to_child_capacity` rewrites this using the candidate's next-level capacity `2*c`, giving the child's `15*capacity` profile. This closes only the local arithmetic/scale adapter. Still required: lift the parent update through arbitrary paths in the actual run, handle startup and bot-rise, and combine with reserves into the all-stage core provider; global rank transfer, terminal sorting, and depth accounting remain open.
+### Arbitrary-path affine child transport (2026-10-31)
+
+Extended `D2StrongAffineChild.lean` with a kernel-checked history-level
+one-step theorem and `d2FlowCandidateRun_path_parent_affine_child`. The latter
+transports a parent sender's affine profile through its actual update to every
+child on an arbitrary path in the full D2 candidate run; the path-history
+context includes all ancestor root overwrites. Using the candidate's capacity
+identity for child stage `t+1`, the child receives exactly the required
+`15*capacity` affine profile. This closes the path-projection gap for the
+regular-parent profile recurrence. It does not provide the parent local inputs
+for every stage, and top-descending/startup and bottom-rise parent cases still
+need to be composed with this ordinary step; the all-stage invariant, rank
+transfer, terminal sorting and depth accounting remain open.
+### Actual candidate arbitrary-path affine step (2026-10-31)
+
+The checked `d2FlowCandidateRun_path_parent_affine_child` theorem in
+`D2StrongAffineChild.lean` now composes that local update with
+`d2FlowCandidateRun_path_as_history` and the path-context API. For any path
+selecting an active ordinary parent in the actual candidate run, if the node at
+that snapshot meets the affine sender contract, every child in the next
+snapshot has the affine profile at its next-stage capacity. The proof accounts
+for arbitrary ancestor overwrites. The capacity-doubling equality is an
+explicit premise of this interface. The substantive unsolved part is now to
+supply the per-sender contract for all stages, including startup and exceptional
+roles, and then close the global rank/profile and terminal-sort arguments.
+### Core-contract path extraction (2026-10-31)
+
+Added and kernel-checked `d2FlowStageAffineCoreInputs_atPath` and
+`d2FlowCandidateRun_core_provider_noAlloc_atPath` in
+`D2StrongFlowCoreInputs.lean`, plus the generic recursive extraction lemma
+`d2FlowStageAffineInputsNoAlloc_atPath` in `D2StrongFlowNoAlloc.lean`. Thus a
+positive-stage full-tree core provider can now be restricted directly to the
+actual sender subtree at any path, preserving its schedule level and all local
+fields after the core-to-no-allocation adapter. This packages the hypotheses
+needed by the newly checked actual-path affine child theorem. It still assumes
+the all-stage core provider; proving that provider uniformly is the dominant
+open D2-flow obligation.
+### Checked Lean artifacts for affine path interface (2026-10-31)
+
+The updated `D2StrongFlowNoAlloc.lean` and `D2StrongFlowCoreInputs.lean`
+compile to kernel-checked oleans. The latter now includes
+`d2FlowCandidateRun_core_provider_noAlloc_atPath`: any positive-stage full-tree
+core provider restricts to the exact no-allocation affine contract on any
+selected sender subtree. `D2StrongAffineChild.lean` also compiles to an olean
+with the local and actual-run affine child transport results. This improves
+composition of the provider interface, but does not prove the provider itself.
+### Full local sender contract at arbitrary paths (2026-10-31)
+
+Added and kernel-checked `d2FlowCandidateRun_core_provider_affine_atPath` in
+`D2StrongFlowCoreInputs.lean`. Given the proposed positive-stage core provider,
+it returns the full affine sender contract on any actual subtree path, including
+quota parity and the quota-versus-allocation inequality recovered from the
+endpoint reserve. This is the precise local input expected by the stage
+preservation and child-profile lemmas. The missing theorem remains the
+schedule-wide core provider itself.
+### Core-provider ordinary endpoint reserve transition (2026-10-31)
+
+`D2CoreProviderReserveStep.lean` now kernel-checks
+`d2FlowCandidateRun_core_provider_endpoint_reserve_step`. Assuming the affine
+core provider at the ordinary sender's prior visit `t-2`, it extracts the full
+local sender contract at that path, derives child cover from the affine deficit
+cap plus the left reserve, applies the schedule quota floor and two-stage
+capacity ratio, then invokes the actual-path two-visit theorem. The result is
+both endpoint reserves at the sender's current visit in the full run. This
+closes the ordinary-predecessor branch of the reserve recurrence under the
+core provider. The separate `botRise` predecessor/startup cases and the
+schedule-wide core provider itself remain open.
+The checked ordinary-reserve module also compiles to an olean. Its hypotheses
+are intentionally split at the predecessor role: the theorem proves only the
+ordinary `topRise`/`mid`/`botDesc` branch. The remaining schedule branch is a
+`botRise` two-stage native-child argument, with startup handled separately; it
+must be composed before claiming the recursive core contract is inductive.
+### Complete two-visit endpoint reserve split (2026-10-31)
+
+Extended `D2CoreProviderReserveStep.lean` with a checked `botRise` predecessor
+case and a combined `d2FlowCandidateRun_core_provider_endpoint_reserve_step_all_roles`
+interface. The ordinary branch uses the assumed affine core provider at `t-2`;
+the exceptional branch uses the existing callback-window theorem to preserve
+both native endpoint child roots up to the current visit. The current capacity
+is exactly 128 times that native size, so both endpoint reserves follow. The
+module compiled directly with Lean to `D2CoreProviderReserveStep.olean`.
+This closes the role split for the *conditional reserve transition*, not the
+schedule-wide core-provider induction. Startup, construction of that provider,
+global rank/inversion contraction, terminal sorting, and coefficient
+accounting remain outstanding; no improved limsup bound is proved.The combined theorem derives the predecessor-role split from the current active
+regular role via `active_regular_prev_two_role_cases`; callers do not need to
+supply a separate prior-role classification. Its remaining non-schedule premise
+is the proposed core-provider contract at the prior snapshot.
+### Tree-wide local transitions from a proposed core provider (2026-10-31)
+
+`D2CoreProviderReserveStep.lean` now has two additional checked adapters.
+`d2FlowCandidateRun_core_provider_endpoint_reserves_at_active_path` derives
+the prior-role split from the schedule and lifts the conditional reserve step
+to any active regular sender path, assuming the full-tree core provider at
+`t-2`. `d2FlowCandidateRun_core_provider_affine_child_at_active_parent`
+projects the full-tree core provider at `t` to an actual active ordinary
+parent, extracts its sharp profile/allocation/reserve fields, and applies the
+arbitrary-path update plus the schedule capacity-doubling identity to obtain
+the next child profile. `d2FlowStageAffineInputs_ordinary_fields` now also
+returns the sharp profile-cap disjunction, needed for this composition.
+Both files compiled directly with Lean to oleans.
+
+These do not yet close an all-stage induction. They cover the case where a
+node's profile at the next time is written by an active ordinary parent. The
+remaining source cases—parent inactive, top-descending reset, and bottom-rise
+preservation—must be unified with the temporal state of that child; top-rise
+zero deficit also needs its own schedule/history argument. Thus the core
+provider is still unproved, and the global rank-profile contraction, terminal
+sorting, and total-depth coefficient are still open.
+### Top-rise parent schedule identity (2026-10-31)
+
+Added and kernel-checked `d2ScheduleRole_parent_of_active_topRise` in
+`D2CoreProviderReserveStep.lean`: an active top-rise sender at `(i,t)` has a
+parent at `(i-1,t-1)`, and the exact parity-rounded frontier inequalities force
+that parent to be `topDesc`. This identifies the source of the required zero
+root: the previous-stage parent update resets the child root. The remaining
+work for this case is an arbitrary-path actual-run lemma transporting that
+reset to the queried sender snapshot. The schedule identity and the ordinary
+child-profile and two-visit reserve transitions are checked; the all-role,
+all-stage core provider is still not established.
+### Arbitrary-path top-rise zero-root closure (2026-10-31)
+
+The remaining top-rise reset bridge is now proved. In
+`D2CoreProviderReserveStep.lean`,
+`d2FlowTreeRunWithParentOverwrites_topDesc_child_zero` shows a top-descending
+parent history sets the selected child root to zero on the next step;
+`d2FlowCandidateRun_topDesc_parent_child_zero_at_path` transports this through
+any path in the actual candidate run, including all ancestor overwrites.
+`d2ScheduleRole_parent_of_active_topRise` then identifies the previous-stage
+parent of an active top-rise sender as top-descending, and
+`d2FlowCandidateRun_active_topRise_root_zero_at_any_parent_path` composes the
+schedule fact with the actual-run reset. It kernel-compiles to the module olean.
+This closes the top-rise zero-root subcase of the core contract after startup.
+It does not close topDesc-active nodes, ordinary affine profiles beyond the
+active-parent transition, the recursive all-time core provider, or the later
+sorting and coefficient proof.
+### Profile sourcing for every active non-top-descending child (2026-10-31)
+
+Added the checked theorem
+`d2FlowCandidateRun_core_provider_affine_profile_at_active_nonTopDesc_child`.
+From a full-tree core provider at parent stage `t`, every active child at `t+1`
+whose role is not top-descending gets its affine deficit profile: the schedule
+ensures its parent was active at `t` and not bot-rise; an ordinary parent uses
+the arbitrary-path affine child transition, while a top-descending parent uses
+the just-proved reset. This includes the top-rise schedule region's zero-root
+source (also separately stated as `d2FlowCandidateRun_active_topRise_root_zero_at_any_parent_path`).
+Thus the remaining role-specific profile gap is narrowed to active
+ top-descending children themselves, plus the general startup/all-stage
+provider induction. The module compiled directly with Lean.
+### Current `topDesc` root-profile gap (2026-10-31)
+
+The missing active-`topDesc` profile case appears to have a bounded two-stage source, rather than requiring a long backward search. An exhaustive schedule audit for dimensions `7..999` found that every active `topDesc` sender at stage `t >= 4` is active at the same level at `t-2`, with role `topDesc` or `topRise`; it is inactive at `t-1`. The `t-2` role has zero root deficit under the core contract, and its own update outputs zero. At the intervening stage, either the parent is inactive and the sender retains zero, or the parent is active `topDesc` and the already checked parent-reset theorem writes zero again. Startup/root-level cases need to be stated separately. This audit is evidence only, not a Lean proof.
+
+The next formal interface should split on the parent action at `t-1`: (a) active `topDesc`, discharged by `d2FlowCandidateRun_topDesc_parent_child_zero_at_path`; (b) inactive, discharged by a two-stage path-history projection plus the `t-2` `topDesc`/`topRise` zero-root contract. The schedule lemmas needed are: current active `topDesc` implies same-level active at `t-2` with role in `{topDesc, topRise}`, and the parent at `t-1` is either inactive or `topDesc`. Do not infer these from the earlier failed claim that the immediate previous-stage parent is always active; it is false.
+### Correction: exact active top-descending history (2026-10-31)
+
+The previous paragraph's audit claim that every active top-descending sender was itself `topDesc` or `topRise` two stages earlier was false. Counterexample: `d=7, i=2, t=6`; the sender at `t-2=4` is `botDesc`. This is a reset case: the parent at `i-1` is active `topDesc` at `t-1`, so the existing `d2FlowCandidateRun_topDesc_parent_child_zero_at_path` applies. The authoritative schedule theorem `alpha_topDesc_two_step_patterns` gives the complete split: (1) same-level `topDesc` at `t-2`, with frontier at `i+1` at `t-1`; (2) same-level `topRise` at `t-2`, with frontier at `i-1` at `t-1`; or (3) frontier at `i-2` then `i-1`. In cases (2) and (3), the level `i-1` parent is top-descending at `t-1` and should reset the queried root. Case (1) is the only one requiring propagation from the prior same-level zero-root state through the intervening inactive stage.
+
+Added `D2TopDescHistory.lean`; `active_topDesc_two_stage_frontier_cases` packages the existing frontier split for an active top-descending sender and kernel-compiles. This replaces the earlier audit-based proposed interface. Remaining formal work: derive the parent-active/topDesc schedule fact in cases (2)/(3), then prove case (1)'s two-stage path-history zero-root transport. The exhaustive Python audit was diagnostic only.
+### Checked closure of the repeated-frontier `topDesc` source (2026-10-31)
+
+`D2TopDescHistory.lean` now kernel-checks three reusable pieces. First, `d2FlowStage_path_eq_of_inactive_prefix` proves that a recursive stage projects to the same local stage whenever every ancestor on the selected path is inactive. Second, `active_topDesc_has_two_stage_reset_source` packages the exact frontier split: an active top-descending sender either has an active top-descending parent at stage `t-1`, or is itself active top-descending at `t-2`. The parent activity and role in the latter frontier cases are formal, using a new one-step bound on `omega`.
+
+Third, `d2FlowCandidateRun_priorTopDesc_root_zero_after_inactive_stage` transports the latter source through the actual run at arbitrary path depth. It assumes the all-level affine core contract at snapshot `t-2`; under that contract the node's root deficit is zero, its top-descending update retains zero, and the inactive next stage retains zero. It uses the inactive-ancestor projection theorem, so this is now a checked actual-run result rather than a schedule-only simulation.
+
+The remaining top-descending integration is the other source branch: connect the active parent-reset theorem to a path's final edge (the current path API is prefix-oriented). After that, this role's zero-root profile can be fed into the all-stage core-provider induction. Neither that induction nor the downstream sorting/depth/coefficient proof is closed.
+
+### Top-descending child root interface (2026-10-31)
+
+`D2TopDescHistory.lean` now proves `d2FlowCandidateRun_priorTopDesc_child_root_zero`: if a child is active `topDesc` at snapshot `t-1`, has zero root under the affine core contract there, and the two following parent updates are inactive, then that child root remains zero at snapshot `t+1`. The proof projects the full run through the inactive ancestor prefix and handles the child's local two-stage update.
+
+The new theorem `d2FlowCandidateRun_active_topDesc_child_root_zero_of_prior_core` composes this with the exact schedule split. An active `topDesc` child at `t+1` has either an active `topDesc` parent at `t` (direct reset through the arbitrary-path overwrite theorem) or the repeated-frontier source at `t-1` (the new two-stage child lemma). In the latter case, the affine core at `t-1` supplies the source zero. The module compiles with Lean. This closes the active-`topDesc` child zero-root interface under a prior core hypothesis; it does **not** establish the all-stage core invariant. The next formal target is a recursive one-step provider theorem that constructs the complete affine core at snapshot `t+1` from the required prior core snapshots, including startup. The global rank/inversion contraction and final sorting-depth accounting remain separate, major proof obligations.

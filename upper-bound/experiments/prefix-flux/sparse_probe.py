@@ -51,6 +51,67 @@ def inversion_count(errors,q,N):
     return left_weight-l*(l-1)//2 + right_weight-r*(r-1)//2 + l*r
 
 
+def distance_moment(errors,q,power):
+    """Exact sum of threshold distances^power over misplaced wires.
+
+    Left-side wrong ones have distance q-x; right-side wrong zeros have
+    distance x-q. The nearest right-side wire has weight zero, and power 1
+    agrees exactly with the global inversion count.
+    """
+    def prefix(n):
+        if n<=0: return 0
+        if power==1: return n*(n+1)//2
+        if power==2: return n*(n+1)*(2*n+1)//6
+        if power==3: return (n*(n+1)//2)**2
+        raise ValueError('distance moment power must be 1, 2, or 3')
+    total=0
+    for lo,hi in errors:
+        left_lo,left_hi=lo,min(hi,q)
+        if left_lo<left_hi:
+            low=q-left_hi+1; high=q-left_lo
+            total+=prefix(high)-prefix(low-1)
+        right_lo,right_hi=max(lo,q),hi
+        if right_lo<right_hi:
+            low=right_lo-q; high=right_hi-q-1
+            total+=prefix(high)-prefix(low-1)
+    return total
+
+
+def sum_abs_integer_interval(lo,hi,q):
+    """Sum |x-q| over integer wire positions lo <= x < hi."""
+    split=max(lo,min(hi,q))
+    left=split-lo
+    right=hi-split
+    return left*q-(lo+split-1)*left//2 + (split+hi-1)*right//2-right*q
+
+
+def rank_distance_sum(wires,start,stop,q):
+    """Sum |wire-q| over local ranks [start,stop) of ordered wire intervals."""
+    total=0; rank=0
+    for lo,hi in wires:
+        a=max(start,rank); b=min(stop,rank+hi-lo)
+        if a<b:
+            wire_lo=lo+a-rank; wire_hi=lo+b-rank
+            total+=sum_abs_integer_interval(wire_lo,wire_hi,q)
+        rank+=hi-lo
+    assert stop<=rank
+    return total
+
+
+def bag_alignment_inversion(flow,t,errors,q):
+    """Exact inversion of the word obtained by sorting every bag at time t."""
+    total=0
+    for lev,idx,node,wires in affected(flow,t,errors,q)[0]:
+        labels=colored(wires,errors,q)
+        H=sum((hi-lo)*bit for lo,hi,bit in labels)
+        P=sum(max(0,min(hi,q)-lo) for lo,hi,_ in labels)
+        if H>P:
+            total+=rank_distance_sum(wires,P,H,q)
+        elif H<P:
+            total+=rank_distance_sum(wires,H,P,q)
+    return total
+
+
 def subtract(intervals,remove):
     out=[]
     for lo,hi in intervals:
@@ -128,7 +189,7 @@ def rank_prefix_lower(a,H,ends,qrows=12):
 
 def probe(d,horizon,root_eps,eps_b,eps_f,delta,threshold,moderate=True,
           initial='band',first_sort=True,scale=1,rank_core=False,
-          params=(2,3,2),row_bits=12):
+          params=(2,3,2),row_bits=12,trace_stages=False):
     flow=FlowDAG(d,scale=scale,p=Par(*params)).build(); p=flow.p; N=p.k**d*scale; q=int(threshold*N)
     e=min(int(root_eps*N/2),q,N-q)
     assert initial in ('band','outer','left','right','stripes')
@@ -150,14 +211,26 @@ def probe(d,horizon,root_eps,eps_b,eps_f,delta,threshold,moderate=True,
             return out
         errors=merge(stripes(0,q,n//7)+stripes(q,N,5*n//7))
     history=[2*e]; inv_history=[inversion_count(errors,q,N)]; rng=random.Random(0)
+    stage_trace=[]
+    initial_alignment=bag_alignment_inversion(flow,0,errors,q) if trace_stages else None
     assert e>0,'choose a larger diagnostic N for nonzero initial error'
     # Each profile has maximum diagonal prefix deficit e, hence fits the root
     # bulk bound. No root fringe guarantee is asserted by this initializer.
     for t in range(1,min(horizon,len(flow.rows))):
         bags,_=affected(flow,t,errors,q)
+        before_inv=inv_history[-1]
+        roles={}; events=[]
         for lev,idx,node,wires in bags:
             a,pi,blocks=flow.rows[t][node]
             if pi==a: continue
+            role=p.role(d,lev,t)
+            roles[role]=roles.get(role,0)+1
+            event=None
+            if trace_stages:
+                event=dict(role=role,level=lev,index=idx,a=a,pi=pi,
+                           blocks=tuple(blocks),
+                           wrong_before=overlap(errors,*flow.subtree_interval(node,idx)))
+                events.append(event)
             labels=colored(wires,errors,q)
             incoming=normalize_word([(hi-lo,bit) for lo,hi,bit in labels])
             original=incoming
@@ -195,6 +268,9 @@ def probe(d,horizon,root_eps,eps_b,eps_f,delta,threshold,moderate=True,
             for lo,hi,bit in output:
                 if bit==0 and lo<q: new.append((lo,min(hi,q)))
                 if bit==1 and hi>q: new.append((max(lo,q),hi))
+            if event is not None:
+                event.update(input_zeros=H,threshold_zeros=P,
+                             wrong_after=sum(hi-lo for lo,hi in new))
             errors=merge(subtract(errors,wires)+new)
         total=sum(b-a for a,b in errors)
         assert total<=history[-1]
@@ -202,6 +278,20 @@ def probe(d,horizon,root_eps,eps_b,eps_f,delta,threshold,moderate=True,
         inv_next=inversion_count(errors,q,N)
         assert inv_next<=inv_history[-1]
         inv_history.append(inv_next)
+        if trace_stages:
+            alignment=bag_alignment_inversion(flow,t+1,errors,q)
+            assert 0<=alignment<=inv_next,(t,alignment,inv_next)
+            moment1=distance_moment(errors,q,1)
+            assert moment1==inv_next,(moment1,inv_next)
+            stage_trace.append(dict(t=t,bags=len(bags),roles=roles,
+                                    before=before_inv,after=inv_next,
+                                    drop=before_inv-inv_next,
+                                    wrong_bits=total,alignment=alignment,
+                                    local_defect_area=inv_next-alignment,
+                                    distance_moment_1=moment1,
+                                    distance_moment_2=distance_moment(errors,q,2),
+                                    distance_moment_3=distance_moment(errors,q,3),
+                                    events=events))
         _,cuts=affected(flow,t+1,errors,q)
         for lev,idx,wrong in cuts:
             future=sum(flow.row(u,lev,idx)[1] for u in range(t+1,len(flow.rows))
@@ -229,7 +319,9 @@ def probe(d,horizon,root_eps,eps_b,eps_f,delta,threshold,moderate=True,
     return dict(fail=False,history=history,inversion_history=inv_history,
                 initial_inversions=inv_history[0],final_inversions=final_inv,
                 final_inversion_exponent=(log2(final_inv)/log2(N) if final_inv else 0.0),
-                states=len(flow.nodes),terminal=terminal)
+                states=len(flow.nodes),terminal=terminal,
+                initial_alignment=initial_alignment,
+                stage_trace=stage_trace if trace_stages else None)
 
 
 if __name__=='__main__':

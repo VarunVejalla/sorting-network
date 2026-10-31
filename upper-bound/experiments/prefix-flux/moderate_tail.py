@@ -28,8 +28,29 @@ def bound(i,f,n,m,baseline_factor=1):
     """Return float upper envelope at a fixed rounded rational witness."""
     def fun(v):
         return envelope(i,f,n,m,math.exp(v[0]),v[1],baseline_factor=baseline_factor)
+    def jac(v):
+        theta=math.exp(v[0]); p0=v[1]
+        u=math.expm1(theta); exp_theta=u+1; denom=1+u*p0
+        slope=i*u/denom
+        intercept=i*math.log1p(u*p0)-slope*p0
+        z=slope-f*theta
+        if z >= 0:
+            sigmoid=1/(1+math.exp(-z))
+        else:
+            ez=math.exp(z); sigmoid=ez/(1+ez)
+        g=(i+1)*math.log1p(i)-i*math.log(i)
+        overhead=math.log(2*m*baseline_factor*(n-1)/0.001)/n
+        total=g+overhead+intercept+math.log1p(math.exp(-abs(z)))+max(0,z)
+        d_slope_theta=i*exp_theta/(denom*denom)
+        d_slope_p=-i*u*u/(denom*denom)
+        d_intercept_theta=i*p0*p0*u*exp_theta/(denom*denom)
+        d_intercept_p=i*u*u*p0/(denom*denom)
+        d_total_theta=d_intercept_theta+sigmoid*(d_slope_theta-f)
+        d_total_p=d_intercept_p+sigmoid*d_slope_p
+        return ((d_total_theta*theta-total)/theta,
+                d_total_p/theta)
     candidates=[minimize(fun,[math.log(t),p],method='L-BFGS-B',
-                        bounds=[(-9,3),(0,1)])
+                        jac=jac,bounds=[(-9,3),(0,1)])
                 for t,p in [(0.2,0.1),(0.7,0.3),(2,0.01)]]
     result=min(candidates,key=lambda r:r.fun)
     denom=2**20

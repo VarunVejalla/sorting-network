@@ -1,7 +1,7 @@
 """Certified check of the two-round F proof (F2ROUND.md), interval arithmetic (mpmath.iv, outward rounding).
 
 Copy of ../lateral-repair/fringe_cert_param.py (itself a parametrized copy of
-upper-bound/best/notes/two-round/f2round/cert.py) with ONE addition, documented in FRINGE-CERT.md:
+upper-bound/best/notes/two-round/f2round/cert.py) with two refinements, documented in FRINGE-CERT.md:
 a tighter rigorous R2 tail for E > E2.  The original tail bounds ln(e(B-1)s/(nT_s)) by
 ln(ebE/(nPhi)) and so has slope q0 - c LY, which is negative at moderate J.  Keeping T_s = Phi s + E
 inside the log gives, with s = theta E / Phi and kappa1 = ((E2+1)/E2) b D / J,
@@ -11,6 +11,10 @@ inside the log gives, with s = theta E / Phi and kappa1 = ((E2+1)/E2) b D / J,
 
 h concave (certified by bisection on h' as for psi*).  Slope Lam2 = -(c LY + H*).  The tail used is
 the smaller of the two valid tails; the check passes if either slope is positive.
+
+An optional rational R1b bracket can replace the crude closed bound by a
+concavity/tangent estimate for the maximizer of psi; this is used for the
+13-row `(3,3,2)` local provider candidate.
 Usage:  python fringe_cert_v2.py F G1 G2 C_NUM C_DEN B J DELTA_NUM DELTA_DEN
 Optional --exact-small keeps ceil(2c) at E=2 and starts generic closed sums at3.
 Defaults: f=131040, g1=52416 (=2f/5), g2=104832 (=4f/5), c=1/3, b=7000.
@@ -35,7 +39,8 @@ def up(x):   # upper end of an interval as mpf
 def lo(x):
     return x.a
 
-def certify(f, g1, g2, c, b, J, delta, verbose=False, exact_small=False):
+def certify(f, g1, g2, c, b, J, delta, verbose=False, exact_small=False,
+            failure_budget=Fr(1, 1000), r1b_bracket=None):
     """Run the F2ROUND certificate with J = 1/eps_F and fringe fraction delta as parameters."""
     st = {'ok': True, 'fail': [], 'exact_ok': True, 'closed_ok': True}
     phase = ['exact']
@@ -201,7 +206,22 @@ def certify(f, g1, g2, c, b, J, delta, verbose=False, exact_small=False):
     if verbose: print("--- closed-form (Lean-friendly) bounds ---")
     sig_coef = ln(e * Jv / Dv) + Dl * ln(e * Dv / Dl)
     check("crude psi: sigma coefficient ln(eJ/D)+Delta ln(eD/Delta) <= 0", up(sig_coef) <= 0)
-    lam_bc = -(ts + bv * ln(e * Dv / Dl) + 1 / e)
+    if r1b_bracket is None:
+        lam_bc = -(ts + bv * ln(e * Dv / Dl) + 1 / e)
+    else:
+        # A fixed rational bracket can replace the crude global psi bound.
+        # Concavity puts psi's maximizer between these endpoints when
+        # psi'(lo)>0>psi'(hi), and the tangent at lo bounds psi there.
+        slo_b, shi_b = map(I, r1b_bracket)
+        check("R1b bracket ordered and positive",
+              lo(slo_b) > 0 and lo(shi_b - slo_b) > 0)
+        check("bracket psi'(lo) > 0", lo(dpsi(slo_b)) > 0)
+        check("bracket psi'(hi) < 0", up(dpsi(shi_b)) < 0)
+        psi_upper_b = psi(slo_b) + dpsi(slo_b) * (shi_b - slo_b)
+        lam_bc = -(ts + psi_upper_b)
+        if verbose:
+            print("R1b bracket psi*<=%.6g, lambda_b>=%.6g" %
+                  (up(psi_upper_b), lo(lam_bc)))
     check("crude lambda_b > 0", lo(lam_bc) > 0)
     S0, S1, S2 = geo_sums(iv.exp(-lam_bc), 2)
     Sum_bc = cv * alpha * S2 + (cv + alpha) * S1 + S0
@@ -228,8 +248,10 @@ def certify(f, g1, g2, c, b, J, delta, verbose=False, exact_small=False):
     if verbose and st['closed_ok']:
         print("closed: lambda_b'=%.6g LamI=%.6g LamII=%.6g ; ln(2P1) <= %.6g ; ln(2P2) <= %.6g"
               % (lo(lam_bc), lo(LamI), lo(LamN), up(ln(2 * P1c)), up(ln(2 * P2c))))
-    check("closed 2*P1 <= 1/1000", up(2 * P1c) <= mpf(1) / 1000)
-    check("closed 2*P2 <= 1/1000", up(2 * P2c) <= mpf(1) / 1000)
+    budget = Fr(failure_budget)
+    budget_iv = mpf(budget.numerator) / budget.denominator
+    check(f"closed 2*P1 <= {budget}", up(2 * P1c) <= budget_iv)
+    check(f"closed 2*P2 <= {budget}", up(2 * P2c) <= budget_iv)
     # This script checks probability envelopes, not every current Lean API guard.
     # Tiny delta requires a zero/nonzero-jmax extension of F2Pre.hf16.
     st['current_hf16']=bool(Fr(delta)*f*16>=1)

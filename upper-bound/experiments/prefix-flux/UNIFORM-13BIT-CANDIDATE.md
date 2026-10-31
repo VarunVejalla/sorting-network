@@ -138,3 +138,12 @@ screen counts 25,430 `(time,level)` cases with zero support cap over depths
 would handle only zero residual mass in those cases. This does not rule out
 other large-rank clauses, but a global proof must close those stages without
 using the small-rank estimate.
+
+The reviewed generic `MODERATE-TAIL` envelope does not fill this gap at the
+smallest mid rectangle: with `m=8190`, `n=16384`, `f=15`, and one residual
+row (`i=1`, total mass at most `n`), its fixed-dyadic outward interval bound
+allows escape up to `0.32011*n`. For the small bottom-descending role
+(`m=8160`, `n=1024`, `f=240`) it allows `0.18495*n`. These bounds can be
+reproduced with `moderate_tail.bound` followed by `interval_envelope`; neither
+round contracts a one-row residual to zero. Thus the current two local
+interfaces leave a large gap on these narrow rectangles.

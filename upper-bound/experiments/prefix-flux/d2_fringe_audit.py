@@ -32,6 +32,17 @@ def schedule_audit(last_depth, p):
                     continue
                 if p.up(d, i, t) <= 0:
                     continue
+                role = p.role(d, i, t)
+                if role in {"mid", "botDesc"}:
+                    assert p.cap(d, i, t) >= 2**13, (
+                        d, t, i, role, p.cap(d, i, t), "cap >= 2^13"
+                    )
+                    cases["mid/botDesc cap>=2^13"] += 1
+                elif role == "topRise":
+                    assert p.cap(d, i, t) >= 2**12, (
+                        d, t, i, role, p.cap(d, i, t), "cap >= 2^12"
+                    )
+                    cases["topRise cap>=2^12"] += 1
                 if t == 1:
                     assert p.role(d, i, t) == "topRise"
                     assert p.up(d, i, t) / p.cap(d, i, t) == F(1, 256)
@@ -48,6 +59,19 @@ def schedule_audit(last_depth, p):
                 assert t >= 3
                 assert p.active(d, i, t - 2), (d, t, i, "inactive at t-2")
                 old_role = p.role(d, i, t - 2)
+                child_active = p.active(d, i + 1, t - 1)
+                child_role = p.role(d, i + 1, t - 1) if child_active else "inactive"
+                assert child_role != "topRise", (d, t, i, "topRise child")
+                assert child_role != "topDesc", (d, t, i, "topDesc child")
+                if child_role == "inactive":
+                    assert old_role == "botRise", (
+                        d, t, i, "inactive child without botRise predecessor", old_role
+                    )
+                    assert F(p.k ** (d - i), 1) / p.cap(d, i, t) <= F(1, 16)
+                    cases["inactive child; botRise predecessor"] += 1
+                if child_role == "botRise":
+                    assert p.role(d, i, t) == "botDesc", (d, t, i, "botRise child current role")
+                    assert old_role == "botDesc", (d, t, i, "botRise child previous role")
                 if old_role in ORDINARY:
                     parent = (i - 1, t - 3)
                     assert parent[0] >= 0 and p.active(d, *parent), (d, t, i, "inactive parent", parent)
@@ -78,12 +102,15 @@ def flow_audit(depth, p, scale):
             rho = F(pi, 1) / c
             ratio = F(a, 1) / c
             counts[role] += 1
-            maxima[role] = max(maxima.get(role, (F(0), F(0), F(0))),
-                               (ratio, rho, g))
+            if role not in maxima:
+                maxima[role] = [F(0), F(0), F(0)]
+            maxima[role][0] = max(maxima[role][0], ratio)
+            maxima[role][1] = max(maxima[role][1], rho)
+            maxima[role][2] = max(maxima[role][2], g)
             assert rho <= F(1, 256), ("rho", depth, t, lev, role, rho)
             if role in ORDINARY and pi:
-                assert ratio <= F(9, 8), ("a/c", depth, t, lev, role, ratio)
-                assert g <= F(1, 256), ("g", depth, t, lev, role, g)
+                assert ratio <= F(279, 256), ("a/c", depth, t, lev, role, ratio)
+                assert g <= F(1, 512), ("g", depth, t, lev, role, g)
             if (t, lev) == (2, 2):
                 startup_ratio = ratio
                 assert ratio <= F(1, 16)

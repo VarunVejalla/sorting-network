@@ -10,9 +10,10 @@ from oracle import Par
 
 
 class FlowDAG:
-    def __init__(self,d,scale=1,p=None):
+    def __init__(self,d,scale=1,p=None,sparse_bottom=False):
         self.d=d; self.scale=scale; self.p=p or Par(2,3,2)
-        self.nodes=[]; self.intern={}; self.roots=[]; self.rows=[]
+        self.sparse_bottom=sparse_bottom
+        self.nodes=[]; self.intern={}; self.roots=[]; self.rows=[]; self.transitions=[]
         @lru_cache(None)
         def initial(lev):
             children=(initial(lev+1),)*self.p.k if lev<d else ()
@@ -34,13 +35,15 @@ class FlowDAG:
                 self.native(lev))-G
 
     def step(self):
-        t=len(self.rows); rows={}; p=self.p
+        t=len(self.rows); rows={}; transitions={}; p=self.p
         @lru_cache(None)
         def update(node):
             lev,G,low,high,children=self.nodes[node]
             newchildren=[update(c) for c in children]
             if not ((lev==0) if t==0 else p.active(self.d,lev,t)):
-                return self.make(lev,G,low,high,newchildren)
+                out=self.make(lev,G,low,high,newchildren)
+                transitions[node]=out
+                return out
             a=self.allocation(node)
             assert a>=0 and low+high==G,(t,lev,a,G,low,high)
             role='topDesc' if t==0 else p.role(self.d,lev,t)
@@ -50,13 +53,19 @@ class FlowDAG:
                 raw=0 if t==0 else self.scale*p.up(self.d,lev,t)
                 assert int(raw)==raw
                 pi=int(raw)
+                # In a sparse-bottom D2 node, the formula's upward quota can
+                # exceed its current allocation. Send the whole bag upward;
+                # the two cut fronts then meet and fully clear its child ranges.
+                if self.sparse_bottom and pi >= a:
+                    pi=a
                 U=[self.nodes[c][1] for c in children]
                 if role=='topDesc':
                     cuts=[(0,0)]*len(children)
                 else:
                     assert pi%2==0
                     left=low+pi//2; right=sum(U)-high-pi//2; pos=0; cuts=[]
-                    assert left<=right
+                    assert left<=right, (t, lev, a, pi, left, right,
+                                         low, high, sum(U), role)
                     for u in U:
                         end=pos+u
                         cuts.append((max(0,min(end,left)-pos),
@@ -69,8 +78,11 @@ class FlowDAG:
                     newchildren[j]=self.make(clev,cl+ch,cl,ch,grandchildren)
             assert all(b>=0 for b in blocks) and sum(blocks)+pi==a
             rows[node]=(a,pi,blocks)
-            return self.make(lev,G+pi,low+pi//2,high+pi-pi//2,newchildren)
+            out=self.make(lev,G+pi,low+pi//2,high+pi-pi//2,newchildren)
+            transitions[node]=out
+            return out
         self.roots.append(update(self.roots[-1])); self.rows.append(rows)
+        self.transitions.append(transitions)
 
     def build(self,horizon=None):
         stop=self.p.tf(self.d) if horizon is None else min(horizon,self.p.tf(self.d))

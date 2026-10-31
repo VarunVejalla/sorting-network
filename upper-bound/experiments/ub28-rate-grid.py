@@ -11,6 +11,7 @@ result either.
 """
 
 import argparse
+import ctypes
 import math
 from functools import lru_cache
 
@@ -25,6 +26,29 @@ maxpath = module_from_spec(spec)
 spec.loader.exec_module(maxpath)
 
 NEG_INF = -math.inf
+_NATIVE_REVERSE = None
+_NATIVE_LIBRARY = None
+
+
+def enable_native_kernel(library_path):
+    """Enable the optional fused C++ reverse-pass kernel from a shared library."""
+    global _NATIVE_REVERSE, _NATIVE_LIBRARY
+    _NATIVE_LIBRARY = ctypes.CDLL(str(library_path))
+    _NATIVE_REVERSE = _NATIVE_LIBRARY.ub28_reverse_maxplus
+    double_ptr = ctypes.POINTER(ctypes.c_double)
+    _NATIVE_REVERSE.argtypes = [double_ptr, double_ptr, double_ptr,
+                                ctypes.c_int, ctypes.c_int]
+    _NATIVE_REVERSE.restype = None
+
+
+def touching_pair_lefts(support, blocks, offset):
+    """Return only matching pairs that intersect the live support."""
+    lefts = set()
+    for index in support:
+        left = index if (index - offset) % 2 == 0 else index - 1
+        if offset <= left and left + 1 < blocks:
+            lefts.add(left)
+    return sorted(lefts)
 
 
 @lru_cache(maxsize=None)
@@ -114,8 +138,103 @@ def reverse_split(support, table, grid, child_width):
     return support, table / 2.0
 
 
+def exact_split_pass(support, table, blocks, width, offset):
+    """Reverse one deterministic complete-bipartite count-split pass."""
+    for left in touching_pair_lefts(support, blocks, offset):
+        right = left + 1
+        if left not in support and right not in support:
+            continue
+        expanded = tuple(sorted(set(support) | {left, right}))
+        if expanded != support:
+            table = np.broadcast_to(
+                table.reshape(tuple(width + 1 if i in support else 1
+                                    for i in expanded)),
+                (width + 1,) * len(expanded),
+            ).copy()
+            support = expanded
+        li, ri = support.index(left), support.index(right)
+        # This deterministic compare-split map touches only two count axes.
+        # Apply its inverse indices to the full table in NumPy instead of
+        # enumerating (width + 1)^|support| states in Python.
+        left_shape = [1] * table.ndim
+        right_shape = [1] * table.ndim
+        left_shape[li] = width + 1
+        right_shape[ri] = width + 1
+        left_counts = np.arange(width + 1).reshape(left_shape)
+        right_counts = np.arange(width + 1).reshape(right_shape)
+        total = left_counts + right_counts
+        index = []
+        for axis, size in enumerate(table.shape):
+            if axis == li:
+                index.append(np.maximum(total - width, 0))
+            elif axis == ri:
+                index.append(np.minimum(total, width))
+            else:
+                shape = [1] * table.ndim
+                shape[axis] = size
+                index.append(np.arange(size).reshape(shape))
+        table = table[tuple(index)]
+    return support, table
+
+
+def exact_small_anchor_state(n, edge):
+    """Max-path table before random widths, with exact widths 8 and 16."""
+    support, terminal = maxpath.exact.exact_tail_event(n, edge)
+    table = np.full((5,) * len(support), NEG_INF)
+    for state, bad in terminal.items():
+        if bad:
+            table[state] = 0.0
+
+    blocks, width = n // 4, 4
+    support, table = maxpath.reverse_split(support, table, width)
+    blocks //= 2
+    width *= 2
+    for offset in (1, 0):
+        support, table = exact_split_pass(support, table, blocks, width, offset)
+    support, table = maxpath.reverse_split(support, table, width)
+    blocks //= 2
+    width *= 2
+    for offset in (1, 0):
+        support, table = exact_split_pass(support, table, blocks, width, offset)
+    return support, table, blocks
+
+
+def _reverse_pass_native(support, table, blocks, grid, offset, kernels):
+    double_ptr = ctypes.POINTER(ctypes.c_double)
+    packed_kernels = np.concatenate(
+        [kernels[total][1].ravel() for total in range(2 * grid + 1)]
+    )
+    for left in touching_pair_lefts(support, blocks, offset):
+        right = left + 1
+        if left not in support and right not in support:
+            continue
+        expanded = tuple(sorted(set(support) | {left, right}))
+        if expanded != support:
+            table = np.broadcast_to(
+                table.reshape(tuple(grid + 1 if i in support else 1
+                                    for i in expanded)),
+                (grid + 1,) * len(expanded),
+            ).copy()
+            support = expanded
+        a, b = support.index(left), support.index(right)
+        rest = [i for i in range(table.ndim) if i not in (a, b)]
+        moved = np.moveaxis(table, (a, b, *rest), tuple(range(table.ndim)))
+        flat = np.ascontiguousarray(moved.reshape(grid + 1, grid + 1, -1))
+        out = np.empty_like(flat)
+        _NATIVE_REVERSE(
+            flat.ctypes.data_as(double_ptr), out.ctypes.data_as(double_ptr),
+            packed_kernels.ctypes.data_as(double_ptr), grid, flat.shape[-1],
+        )
+        table = np.moveaxis(out.reshape(moved.shape),
+                            tuple(range(table.ndim)), (a, b, *rest))
+    return support, table
+
+
 def reverse_pass(support, table, blocks, grid, width, offset, kernels):
-    for left in range(offset, blocks - 1, 2):
+    if _NATIVE_REVERSE is not None:
+        return _reverse_pass_native(support, table, blocks, grid, offset,
+                                    kernels)
+    for left in touching_pair_lefts(support, blocks, offset):
         right = left + 1
         if left not in support and right not in support:
             continue
@@ -148,11 +267,20 @@ def reverse_pass(support, table, blocks, grid, width, offset, kernels):
 def asymptotic_rate(exponent, rounds, grid, anchor_edge, alternating=False,
                     high_parity=0, top_alternating=False,
                     top_high=151, top_low=149, placement="center",
-                    anchor_rounds=150):
+                    anchor_rounds=150, exact_anchor=False):
     anchor_n = 256
-    support, finite_table, blocks = maxpath.edge_state_at_width(
-        anchor_n, anchor_edge, anchor_rounds, 16
-    )
+    if exact_anchor:
+        support, finite_table, blocks = exact_small_anchor_state(
+            anchor_n, anchor_edge
+        )
+    else:
+        support, finite_table, blocks = maxpath.edge_state_at_width(
+            anchor_n, anchor_edge, anchor_rounds, 16
+        )
+    if not np.isfinite(finite_table).any():
+        # The exact terminal event is unreachable even before the random
+        # scales, so every coarser reverse transfer remains empty.
+        return math.inf
     if 16 % grid:
         raise ValueError("grid must divide 16 so the anchor counts embed exactly")
     stride = 16 // grid
@@ -210,7 +338,10 @@ def main():
     parser.add_argument("--rounds", type=int, default=70)
     parser.add_argument("--anchor-rounds", type=int, default=150,
                         help="rounds at widths 8 and 16 in the finite anchor")
+    parser.add_argument("--exact-small-anchor", action="store_true",
+                        help="use exact cyclic splitters at widths 8 and 16")
     parser.add_argument("--grid", type=int, default=16)
+    parser.add_argument("--native-dll", help="optional compiled ub28-maxplus-kernel shared library")
     parser.add_argument("--anchor-edge", type=int, default=126)
     parser.add_argument("--alternate-149-151", action="store_true")
     parser.add_argument("--high-parity", type=int, choices=(0, 1), default=0)
@@ -221,13 +352,15 @@ def main():
                         default="center",
                         help="translate the finite anchor to the corresponding global position")
     args = parser.parse_args()
+    if args.native_dll:
+        enable_native_kernel(args.native_dll)
     if args.log_n < 8 or args.grid not in (1, 2, 4, 8, 16):
         raise ValueError("requires log-n >= 8 and a grid dividing 16")
     rate = asymptotic_rate(args.log_n, args.rounds, args.grid, args.anchor_edge,
                            args.alternate_149_151, args.high_parity,
                            args.top_alternating_149_151,
                            args.top_high, args.top_low, args.placement,
-                           args.anchor_rounds)
+                           args.anchor_rounds, args.exact_small_anchor)
     print(f"log_n={args.log_n} rounds={args.rounds} anchor_rounds={args.anchor_rounds} grid={args.grid}")
     if args.alternate_149_151:
         print(f"alternating_rounds=149/151 high_scale_parity={args.high_parity}")

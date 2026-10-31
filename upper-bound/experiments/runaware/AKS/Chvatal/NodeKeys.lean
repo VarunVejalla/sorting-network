@@ -86,6 +86,100 @@ theorem NodeSpec.fLow_keys (h : NodeSpec a π τ net EB Jmax εF) {xr : Fin a �
   have := h.fLow (rankPerm hxr) j hj hjm hja
   simpa only [exec_rankPerm hxr net] using this
 
+/-- Extend `fHigh` to every rank prefix: use the separator guarantee through
+`Jmax`, and the trivial cardinality bound above it. -/
+theorem NodeSpec.fHigh_tail_profile (h : NodeSpec a π τ net EB Jmax εF)
+    {xr : Fin a → Fin M} (hxr : Function.Injective xr) (j : ℕ) (hja : j ≤ a) :
+    ((Finset.univ.filter fun c : Fin a =>
+      a - j ≤ rk (keySet xr) (net.exec xr c) ∧ c.val < a - π / 2).card : ℝ) ≤
+      if j ≤ Jmax then εF * j else j := by
+  classical
+  let K := keySet xr
+  let Y := Finset.univ.filter fun c : Fin a =>
+    a - j ≤ rk K (net.exec xr c) ∧ c.val < a - π / 2
+  have hjK : j ≤ K.card := by simpa [K, card_keySet hxr] using hja
+  have hTop : (K.filter fun x : Fin M => a - j ≤ rk K x).card = j := by
+    have hset : K.filter (fun x : Fin M => K.card - j ≤ rankIn K x) =
+        blockOf K (K.card - j) K.card := by
+      ext x
+      simp only [Finset.mem_filter, mem_blockOf]
+      constructor
+      · rintro ⟨hx, hlow⟩
+        exact ⟨hx, hlow, rankIn_lt_card hx⟩
+      · rintro ⟨hx, hlow, _⟩
+        exact ⟨hx, hlow⟩
+    have hraw : (K.filter fun x : Fin M => K.card - j ≤ rankIn K x).card = j := by
+      rw [hset, blockOf_card (le_rfl : K.card ≤ K.card)]
+      omega
+    have hK : K.card = a := by simp [K, card_keySet hxr]
+    rw [hK] at hraw
+    simpa [K, rk, rankIn] using hraw
+  have hsub : Y.image (net.exec xr) ⊆
+      K.filter (fun x : Fin M => a - j ≤ rk K x) := by
+    intro x hmem
+    rcases Finset.mem_image.mp hmem with ⟨c, hc, rfl⟩
+    simp only [Y, Finset.mem_filter, Finset.mem_univ, true_and] at hc
+    exact Finset.mem_filter.mpr (⟨exec_mem_keySet (xr := xr) net c, hc.1⟩)
+  have hcardY : Y.card = (Y.image (net.exec xr)).card := by
+    rw [Finset.card_image_of_injective _ (exec_keySet_injective hxr net)]
+  have hbound : (Y.card : ℝ) ≤ j := by
+    calc
+      (Y.card : ℝ) = ((Y.image (net.exec xr)).card : ℝ) := by exact_mod_cast hcardY
+      _ ≤ ((K.filter (fun x : Fin M => a - j ≤ rk K x)).card : ℝ) := by
+        exact_mod_cast Finset.card_le_card hsub
+      _ = j := by exact_mod_cast hTop
+  by_cases hjm : j ≤ Jmax
+  · by_cases hj0 : j = 0
+    · subst j
+      simpa [Y] using hbound
+    · have hstrong := (h.fHigh_keys hxr j (Nat.pos_of_ne_zero hj0) hjm hja).le
+      simpa [Y, hjm] using hstrong
+  · simpa [Y, hjm] using hbound
+
+/-- Extend `fLow` to every rank prefix by the same hybrid tail. -/
+theorem NodeSpec.fLow_tail_profile (h : NodeSpec a π τ net EB Jmax εF)
+    {xr : Fin a → Fin M} (hxr : Function.Injective xr) (j : ℕ) (hja : j ≤ a) :
+    ((Finset.univ.filter fun c : Fin a =>
+      rk (keySet xr) (net.exec xr c) < j ∧ π / 2 ≤ c.val).card : ℝ) ≤
+      if j ≤ Jmax then εF * j else j := by
+  classical
+  let K := keySet xr
+  let Y := Finset.univ.filter fun c : Fin a =>
+    rk K (net.exec xr c) < j ∧ π / 2 ≤ c.val
+  have hBottom : (K.filter fun x : Fin M => rk K x < j).card = j := by
+    have hset : K.filter (fun x : Fin M => rankIn K x < j) = blockOf K 0 j := by
+      ext x
+      simp only [Finset.mem_filter, mem_blockOf]
+      constructor
+      · rintro ⟨hx, hhigh⟩
+        exact ⟨hx, Nat.zero_le _, hhigh⟩
+      · rintro ⟨hx, _, hhigh⟩
+        exact ⟨hx, hhigh⟩
+    have hraw : (K.filter fun x : Fin M => rankIn K x < j).card = j := by
+      rw [hset, blockOf_card (by simpa [K, card_keySet hxr] using hja)]
+      simp
+    simpa [K, rk, rankIn] using hraw
+  have hsub : Y.image (net.exec xr) ⊆ K.filter (fun x : Fin M => rk K x < j) := by
+    intro x hmem
+    rcases Finset.mem_image.mp hmem with ⟨c, hc, rfl⟩
+    simp only [Y, Finset.mem_filter, Finset.mem_univ, true_and] at hc
+    exact Finset.mem_filter.mpr (⟨exec_mem_keySet (xr := xr) net c, hc.1⟩)
+  have hcardY : Y.card = (Y.image (net.exec xr)).card := by
+    rw [Finset.card_image_of_injective _ (exec_keySet_injective hxr net)]
+  have hbound : (Y.card : ℝ) ≤ j := by
+    calc
+      (Y.card : ℝ) = ((Y.image (net.exec xr)).card : ℝ) := by exact_mod_cast hcardY
+      _ ≤ ((K.filter (fun x : Fin M => rk K x < j)).card : ℝ) := by
+        exact_mod_cast Finset.card_le_card hsub
+      _ = j := by exact_mod_cast hBottom
+  by_cases hjm : j ≤ Jmax
+  · by_cases hj0 : j = 0
+    · subst j
+      simpa [Y] using hbound
+    · have hstrong := (h.fLow_keys hxr j (Nat.pos_of_ne_zero hj0) hjm hja).le
+      simpa [Y, hjm] using hstrong
+  · simpa [Y, hjm] using hbound
+
 /-- **Intruder bound (K2.2/K2.3).** The keys sitting in the cell window `[s, s+τ)`,
 `s = π/2 + j τ`, whose rank (among the node's keys) lies outside `[s, s+τ)` number at most
 `2·EB`. -/

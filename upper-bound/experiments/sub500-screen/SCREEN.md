@@ -192,3 +192,8 @@ same schedule.
 * Periodic restoration assumes an invariant that lets errors grow by T for P − 1 stages and then
   restores them in one precise stage. No such invariant is known.
 * Bulk precision below `2^8` rows is clamped to the table's first entry.
+
+### UB-40 refresh-size sensitivity (2026-10-24)
+
+I reused `screen.py`'s periodic model and varied the precise refresh row exponent instead of fixing it at 26. With the same idealized `T=1000` tolerance and fringe removed, the least screened schedule is `(x,y,z)=(4,6,3)` with cheap-stage `q=9`. For period `P=8`, the modeled coefficients are 164.1, 177.5, 192.2, and 208.1 at refresh exponents `q_prec=20,22,24,26`, respectively. Thus a sub-200 cost screen does not require a 2^26-row refresh; `q_prec<=24` suffices at `P=8` in this model. This only prices the schedule: it assumes the refresh restores the required global invariant and idealizes away fringe cost. No restoration lemma or sorter follows from the screen.
+The scalar-restoration follow-up, including the four-consecutive-refresh gate, is in [`UB40-SCALAR-RESTORATION-GATE.md`](UB40-SCALAR-RESTORATION-GATE.md).

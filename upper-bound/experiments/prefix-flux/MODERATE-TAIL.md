@@ -132,8 +132,81 @@ wires cost231 and fit that stage budget. This is a hypothesis, not a theorem.
 
 Open gates: a capacity-compatible global invariant using the full tail
 curve; a sufficiently strong tiny-rank guarantee from the same fixed core;
-common-witness probability budgets with a certified ragged bulk bound;
+simultaneous local contracts for every sender geometry with a certified
+ragged bulk bound;
 initial root treatment; exact terminal purity; and fresh review of the
 complete construction before Lean. The moderate tail alone can allow a
 single rare key to escape, so it cannot be silently used as the tiny-rank
 termination guarantee.
+
+## Choose a fixed witness per sender geometry
+
+The local tail statement is already simultaneous over every binary input
+profile, output-column subset, rank `i`, fringe width, and both orientations
+for one sampled core. That quantifier order changes how witnesses should be
+assembled globally. Let `theta` record one finite local geometry (wire
+arity, ragged mask, and provider parameters), and let `Good(theta)` be the
+conjunction of all local postconditions required at that geometry. If the
+local probability calculation proves `Pr(Good(theta))>0`, then a deterministic
+core `C_theta` satisfying every input to that geometry exists.
+
+Choose such a core separately for each geometry, and use it at every sender
+with that geometry. The global proof uses the universal local postcondition;
+it does not require one random sample to succeed simultaneously at distinct
+sender occurrences or at distinct geometries. For each fixed input size the
+schedule has finitely many senders, and over all sizes the family of finite
+integer geometries is countable. Thus there is no union-bound factor for the
+number of scheduled senders or stages. In Lean, the local existence theorem
+can be turned into a provider function by choice. Its depth bound must be
+uniform in `theta`, as in the proposed fixed 13-bit core.
+
+The probability budget is needed only inside `Good(theta)`: union the failures
+of the bulk, fringe, both directions, and any other simultaneous local
+clauses for that one geometry, with total strictly below one. A fixed local
+failure budget such as `eta=1/1000` is therefore appropriate across
+geometries; the moderate-tail entropy term is
+`ln(2*m*(n-1)/eta)/n`, with no `N` or stage-count factor. For `m=8192`,
+`n=3832`, the conditional minimum provider dimension, and `eta=1/1000`, this
+term is about `0.00649`. It still must fit the local spill allowance and its
+associated tail bound; this argument does not prove that numerical gate.
+
+This removes the need for the proposed `O(ln ln N)` exact-sort cleanup of
+small senders, provided the fixed-eta local provider works for every geometry
+that occurs. The remaining local task is to prove the simultaneous provider
+contract at the minimum dimensions, not to sum random failure probabilities
+over sender occurrences. Tiny-rank control and the global rank-transfer
+induction remain separate obligations.
+
+### Audit of the proposed small-sender terminal cleanup (2026-10-26)
+
+I counted actual provider-using sender occurrences, expanding interned
+flow-state multiplicities, for `FlowDAG(d, scale=8192, p=Par(3,3,2))`.
+`botRise` is excluded because it bypasses the local separator, and the
+zero-up `topDesc` is excluded as well. The branching factor is `k=8`, so
+`N=8192*8^d`; the proposed cleanup cutoff is `a < 8192*(ln N)^2`. The exact
+flow has `3d-14` stages. `d2_small_sender_audit.py` checks multiplicities
+against explicit address enumeration at small depths. Its finite results are:
+
+| `d` | stages | minimum provider columns `ceil(a/8192)` | cutoff | first small-sender stage | last | occupied stages |
+|---:|---:|---:|---:|---:|---:|---:|
+| 16 | 34 | 3,983 | 14,645,376 | none | — | 0 |
+| 24 | 58 | 3,983 | 28,436,669 | none | — | 0 |
+| 32 | 82 | 3,983 | 46,762,084 | 46 | 80 | 7 |
+| 48 | 130 | 3,983 | 97,015,286 | 65 | 128 | 22 |
+| 64 | 178 | 3,983 | 165,404,983 | 89 | 176 | 45 |
+| 96 | 274 | 3,983 | 356,593,857 | 137 | 272 | 92 |
+| 128 | 370 | 3,983 | 620,328,707 | 185 | 368 | 154 |
+
+The minimum provider columns over depths 6 through 128 are 3,983 or more
+(depth 6 has 4,032; depths 7 and 8 have 4,004 and 3,990). Below-cutoff
+ordinary senders do persist across many late stages at larger depths, so
+exact-sorting them is not a short terminal cleanup. But their finite minimum
+column count is already above the conditional F2 threshold `n>=3832` in
+`RAGGED-ALL-SENDERS-GATE.md`; this is evidence for the fixed-eta per-geometry
+provider route, not evidence against it. The all-depth dimension theorem and
+the small-dimension spill checks remain to be completed.
+
+Run `python d2_small_sender_audit.py --check-small` to verify the DAG
+multiplicities against explicit address enumeration before the default depth
+audit. This audit is about the unnecessary exact-cleanup alternative; it does
+not establish the provider theorem or the global rank recurrence.
