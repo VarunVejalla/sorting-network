@@ -547,9 +547,9 @@
       ],
       "id": "LB-34",
       "title": "Mixed-polarity restriction families: (1,0)-forcing partial assignments for wire pairs with tracked supports",
-      "status": "proposed",
+      "status": "active",
       "owner": null,
-      "branch": null,
+      "branch": "lb-34-worst-case",
       "first_deliverable": "A closed (or upper-closed) recurrence for pair-forcing assignment families with support compatibility, evaluated on the barrier schedule at small d; does it see the middle-wire failure?",
       "evidence": [
         "docs/kahale-pair-union-rate.md",
