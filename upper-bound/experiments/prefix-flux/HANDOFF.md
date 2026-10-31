@@ -26,11 +26,10 @@ price only; no limsup bound below 300 is proved.
 - `D2StaticWireSets.lean`, `D2VariableTilePhysicalFlowTransfer.lean`, and
   `D2NativePathIntervals.lean` provide pieces of cell, rank-slice, and
   boundary geometry. They do not identify the actual all-stage profile map.
-- `D2RoutedMass.lean` proves `routedTargetPiece_trueMass_eq_sum`: for any
-  disjoint pieces of one sender, the true-bit mass assigned to a receiver is
-  exactly the sum of the masses of pieces tagged for it. This is the
-  count-valued form of the existing set partition, not yet the physical
-  profile-to-flow identity.
+- `D2RoutedMass.lean` proves both true- and false-mass receiver partition
+  identities for disjoint sender pieces. The false form is ready for the
+  prefix-oriented profile route; neither form yet identifies the physical
+  profile slices with the concrete schedule pieces.
 - `D2ProfileOrientationGate.lean` proves the fixed core's `bottomUnaryProfile`
   has true bits in the bottom `height` rows and that physical row interval
   `[lo,hi)` has count
@@ -70,6 +69,8 @@ It also passes current-source rebuilds of `D2BandRepair4096Network.lean`,
 the false-profile 448 port theorem and its direct dependencies. The theorem
 resolves the local row-orientation/provider issue; it does not identify the
 schedule's actual sender cuts, tags, or output mass.
+The focused checker also passes the updated `D2RoutedMass.lean` with its
+false-mass receiver partition identity.
 
 ## Main unresolved gate
 

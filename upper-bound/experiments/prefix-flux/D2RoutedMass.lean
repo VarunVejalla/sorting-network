@@ -31,4 +31,27 @@ theorem routedTargetPiece_trueMass_eq_sum
   rw [Finset.card_biUnion (fun d _ d' _ hne =>
     Finset.disjoint_filter_filter (hdisjoint i d d' hne))]
 
+/-- The number of false Boolean values in a finite wire set. -/
+def falseMass {T : Type*} [DecidableEq T] (value : T -> Bool)
+    (wires : Finset T) : Nat :=
+  (wires.filter fun w => value w = false).card
+
+/-- False mass obeys the same receiver partition identity. This is the form
+used when rank ports are counted in the top-prefix false-profile orientation. -/
+theorem routedTargetPiece_falseMass_eq_sum
+    {T I D J : Type*} [DecidableEq T] [Fintype D] [DecidableEq D]
+    [DecidableEq J]
+    (localPiece : I -> D -> Finset T) (target : I -> D -> J)
+    (hdisjoint : forall i d d', (d = d' -> False) ->
+      Disjoint (localPiece i d) (localPiece i d'))
+    (value : T -> Bool) (i : I) (j : J) :
+    falseMass value (routedTargetPiece localPiece target i j) =
+      Finset.sum (Finset.univ.filter fun d : D => target i d = j)
+        (fun d => falseMass value (localPiece i d)) := by
+  classical
+  unfold falseMass routedTargetPiece
+  rw [Finset.filter_biUnion]
+  rw [Finset.card_biUnion (fun d _ d' _ hne =>
+    Finset.disjoint_filter_filter (hdisjoint i d d' hne))]
+
 end Chvatal.D2RoutedMass
