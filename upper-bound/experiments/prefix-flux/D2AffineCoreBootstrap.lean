@@ -103,4 +103,156 @@ theorem d2FlowCandidateRun_stage1_affine_core (d : Nat) (hd : 5 ≤ d) :
       (.node 0 0 0 (fun _ => d2FlowTreeFull 8192 d))) ∧ True
   exact ⟨fun _ => hsender, trivial⟩
 
+/-! ### Stage-two boundary sender -/
+
+/-- The newly active stage-two bottom-descending boundary sender satisfies
+the sharper affine core profile.  The existing strict-input theorem supplies
+the endpoint reserves; the exact two-point deficit profile supplies the
+stronger affine inequality. -/
+theorem d2FlowCandidateStage2_boundary_affine_sender
+    (d : Nat) (hd : 5 ≤ d) (G low high : Nat)
+    (hG : G = 0 ∨ G = 2 ^ (3 * d + 7))
+    (hbal : low + high = G) :
+    d2FlowStageAffineCoreInputs
+      (fun i => d2FlowCandidateActive (d + 2) 2 i)
+      (fun i => d2FlowCandidateRole (d + 2) 2 i)
+      (fun i => d2FlowCandidateCapacity (d + 2) i 2) 2
+      (.node G low high (fun _ => d2FlowTreeFull 8192 (d - 1))) := by
+  have hstrict := d2FlowCandidateStage2_sender_inputs d hd G low high hG hbal
+  have hrole := d2FlowCandidateStage2_boundary_role d hd
+  have hcap : d2FlowCandidateCapacity (d + 2) 2 2 = 2 ^ (3 * d + 17) := by
+    simp [d2FlowCandidateCapacity, d2FlowCandidateCapacityExponent]
+    congr 1 <;> omega
+  have hprofile : 8192 * G + 7 ≤
+      15 * d2FlowCandidateCapacity (d + 2) 2 2 := by
+    rw [hcap]
+    rcases hG with hG | hG
+    · simp [hG]
+      have hx : 0 < 2 ^ (3 * d + 17) := by positivity
+      omega
+    · rw [hG]
+      have hp : 2 ^ (3 * d + 17) = 1024 * 2 ^ (3 * d + 7) := by
+        rw [show 3 * d + 17 = 10 + (3 * d + 7) by omega, pow_add]
+        norm_num
+      rw [hp]
+      have hx : 0 < 2 ^ (3 * d + 7) := by positivity
+      omega
+  simp only [d2FlowStageAffineCoreInputs]
+  refine ⟨?_, ?_⟩
+  · intro j
+    exact d2FlowStageAffineCoreInputs_of_inactive_tail
+      (i := 3) (tree := d2FlowTreeFull 8192 (d - 1)) (by
+        intro k hk
+        simp [d2FlowCandidateActive]
+        omega)
+  · rcases hrole with ⟨hactive, hrole⟩
+    simp only [hactive, if_pos, hrole]
+    simp only [d2FlowStageInvInputs] at hstrict
+    rcases hstrict with ⟨_, hlocal⟩
+    simp only [hactive, if_pos, hrole] at hlocal
+    rcases hlocal with ⟨hbalance, _, _, _, _, hleft, hright⟩
+    exact ⟨hbalance, hprofile, hleft, hright⟩
+
+/-- Each child left by the first sender is an affine-core stage-two sender.
+All eight children are active; only the two endpoint deficits are nonzero. -/
+theorem d2FlowCandidateStage1_child_stage2_affine
+    (d : Nat) (hd : 5 ≤ d) (j : Fin 8) :
+    d2FlowStageAffineCoreInputs
+      (fun i => d2FlowCandidateActive (d + 2) 2 i)
+      (fun i => d2FlowCandidateRole (d + 2) 2 i)
+      (fun i => d2FlowCandidateCapacity (d + 2) i 2) 2
+      (d2FlowTreeChild
+        (d2FlowStage (d2FlowCandidateActive (d + 2) 1)
+          (d2FlowCandidateRole (d + 2) 1)
+          (d2FlowCandidateQuota (d + 2) 1)
+          (d + 1) 1 (.node 0 0 0 (fun _ => d2FlowTreeFull 8192 d))) j) := by
+  rw [d2FlowCandidateStage1_child_tree d hd j]
+  cases d with
+  | zero => omega
+  | succ d' =>
+      by_cases h0 : j.val = 0
+      · simpa [h0, d2FlowTreeSetRoot, d2FlowTreeFull] using
+          (d2FlowCandidateStage2_boundary_affine_sender (d := d' + 1) (by omega)
+            (2 ^ (3 * (d' + 1) + 7))
+            (2 ^ (3 * (d' + 1) + 7)) 0 (Or.inr rfl) (by simp))
+      · by_cases h7 : j.val = 7
+        · simpa [h0, h7, d2FlowTreeSetRoot, d2FlowTreeFull] using
+            (d2FlowCandidateStage2_boundary_affine_sender (d := d' + 1) (by omega)
+              (2 ^ (3 * (d' + 1) + 7)) 0
+              (2 ^ (3 * (d' + 1) + 7)) (Or.inr rfl) (by simp))
+        · simpa [h0, h7, d2FlowTreeSetRoot, d2FlowTreeFull] using
+            (d2FlowCandidateStage2_boundary_affine_sender (d := d' + 1) (by omega)
+              0 0 0 (Or.inl rfl) (by simp))
+
+/-- The entire first-sender subtree satisfies the affine stage-two contract. -/
+theorem d2FlowCandidateStage1_subtree_stage2_affine
+    (d : Nat) (hd : 5 ≤ d) :
+    d2FlowStageAffineCoreInputs
+      (fun i => d2FlowCandidateActive (d + 2) 2 i)
+      (fun i => d2FlowCandidateRole (d + 2) 2 i)
+      (fun i => d2FlowCandidateCapacity (d + 2) i 2) 1
+      (d2FlowStage (d2FlowCandidateActive (d + 2) 1)
+        (d2FlowCandidateRole (d + 2) 1)
+        (d2FlowCandidateQuota (d + 2) 1)
+        (d + 1) 1 (.node 0 0 0
+          (fun _ => d2FlowTreeFull 8192 d))) := by
+  have hfalse : d2FlowCandidateActive (d + 2) 2 1 = false := by
+    simp [d2FlowCandidateActive]
+  cases htree : d2FlowStage (d2FlowCandidateActive (d + 2) 1)
+      (d2FlowCandidateRole (d + 2) 1)
+      (d2FlowCandidateQuota (d + 2) 1)
+      (d + 1) 1 (.node 0 0 0 (fun _ => d2FlowTreeFull 8192 d)) with
+  | node G low high children =>
+      simp only [d2FlowStageAffineCoreInputs]
+      refine ⟨?_, ?_⟩
+      · intro j
+        have hchild : children j = d2FlowTreeChild
+            (d2FlowStage (d2FlowCandidateActive (d + 2) 1)
+              (d2FlowCandidateRole (d + 2) 1)
+              (d2FlowCandidateQuota (d + 2) 1)
+              (d + 1) 1 (.node 0 0 0
+                (fun _ => d2FlowTreeFull 8192 d))) j := by
+          rw [htree]
+          rfl
+        rw [hchild]
+        exact d2FlowCandidateStage1_child_stage2_affine d hd j
+      · simp [hfalse]
+
+/-- The complete stage-two run snapshot satisfies the affine core provider. -/
+theorem d2FlowCandidateRun_stage2_affine_core (d : Nat) (hd : 5 ≤ d) :
+    d2FlowStageAffineCoreInputs
+      (fun i => d2FlowCandidateActive (d + 2) 2 i)
+      (fun i => d2FlowCandidateRole (d + 2) 2 i)
+      (fun i => d2FlowCandidateCapacity (d + 2) i 2) 0
+      (d2FlowCandidateRun (d + 2)
+        (d2FlowTreeInitial 8192 (d + 2)) 2) := by
+  have htree : d2FlowCandidateRun (d + 2)
+      (d2FlowTreeInitial 8192 (d + 2)) 2 =
+      .node 0 0 0 (fun _ =>
+        d2FlowStage (d2FlowCandidateActive (d + 2) 1)
+          (d2FlowCandidateRole (d + 2) 1)
+          (d2FlowCandidateQuota (d + 2) 1)
+          (d + 1) 1 (.node 0 0 0
+            (fun _ => d2FlowTreeFull 8192 d))) := by
+    rw [show d2FlowCandidateRun (d + 2)
+        (d2FlowTreeInitial 8192 (d + 2)) 2 =
+          d2FlowCandidateStage (d + 2) 1
+            (d2FlowCandidateRun (d + 2)
+              (d2FlowTreeInitial 8192 (d + 2)) 1) by rfl,
+      show d2FlowCandidateRun (d + 2)
+        (d2FlowTreeInitial 8192 (d + 2)) 1 =
+          d2FlowCandidateStage (d + 2) 0
+            (d2FlowTreeInitial 8192 (d + 2)) by rfl,
+      d2FlowCandidateBootstrap_shape (d + 1)]
+    simp [d2FlowCandidateStage, d2FlowStage, d2FlowCandidateActive,
+      d2FlowTreeSetRoot, d2FlowTreeFull]
+  rcases d2FlowCandidateStage2_root_role d hd with ⟨hactive, hrole⟩
+  rw [htree]
+  simp only [d2FlowStageAffineCoreInputs]
+  refine ⟨?_, ?_⟩
+  · intro j
+    exact d2FlowCandidateStage1_subtree_stage2_affine d hd
+  · simp [hactive, hrole]
+
+
 end Chvatal.D2Reserve

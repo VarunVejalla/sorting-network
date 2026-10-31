@@ -189,7 +189,13 @@ decomposition for root-first paths to support composing the path adapters.
 `D2AffineCoreBootstrap.lean` proves the initial and first post-bootstrap run
 snapshots satisfy the full affine core provider. The first positive snapshot
 uses the exact top-rise role and full-grandchild endpoint reserves. Snapshots
-2 and 3 remain open before the general induction step applies.
+2 is now checked as well. The stage-two proof first upgrades the exact
+bottom-descending boundary sender from the strict input contract to the sharper
+affine profile; its deficit cases are exactly `0` and `2^(3*d+7)`, and the
+endpoint reserves come from `d2FlowCandidateStage2_sender_inputs`. It then
+assembles the eight children and the complete root snapshot. A focused
+current-source rebuild of `D2AffineCoreBootstrap.lean` passes. Snapshot 3 and
+the general induction step remain open.
 
 The exact compressed-flow screen
 `d2_deficit_tolerance_screen.py --depth 100 --scale 8192 --params 3 3 2`
@@ -208,14 +214,15 @@ terminal purity or bounded displacement.
 
 ## Next proof gate
 
-The immediate formal gate is to compose the existing path-level adapters into
-an all-time full-tree core-provider induction. A reusable step should use
+The immediate formal gate is snapshot 3, then to compose the existing
+path-level adapters into an all-time full-tree core-provider induction. A
+reusable step should use
 core snapshots at `t` and `t-1` to prove the next snapshot: the prior core
 gives invariant/balance, `D2TopDescHistory.lean` supplies role-specific root
 profiles, and `D2CoreProviderReserveStep.lean` supplies two-visit endpoint
 reserves. `D2RootFrontierCase.lean` closes the level-zero role/reset case
-under the same prior-core hypothesis. Establish snapshots 2 and 3, then
-compose a reusable step for later stages. Confirm these
+under the same prior-core hypothesis. Snapshot 2 now provides one more
+concrete case for testing the composition. Confirm these
 ingredients compose before adding more stage-specific bridges. This closes
 only the flow-reserve induction; the physical sender-mass/tag identity
 (including ragged heights), spatial terminal invariant, cleanup, and depth
