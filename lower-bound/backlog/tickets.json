@@ -1,7 +1,7 @@
 {
   "schema": "upper-bound/backlog/tickets.schema.md",
   "scope": "lower-bound",
-  "updated": "2026-10-24",
+  "updated": "2026-10-31",
   "tickets": [
     {
       "id": "LB-01",
@@ -561,22 +561,25 @@
       "id": "LB-35",
       "title": "Amplification kill test: add read-once-optimal middle-wire amplification to the Kahale-tight barrier schedule",
       "priority": "P2",
-      "status": "active",
+      "status": "rejected",
       "claim_level": "none",
       "baseline": 3.2706,
       "projected": null,
-      "owner": "Claude",
-      "branch": "lb-35-amplification",
+      "owner": null,
+      "branch": null,
       "depends_on": [
         "LB-33"
       ],
       "first_deliverable": "Insert amplification layers (read-once optimal, Valiant/Boppana exponent) for the middle wires into idle slots of the skip-wide barrier schedule within the width rule; check Kahale/LB-24 feasibility and the middle threshold width at N_d. If both pass, amplification-plus-Kahale cannot exceed 3.2706.",
       "evidence": [
+        "docs/kahale-amplification-kill.md",
+        "docs/kahale-amplification-kill-output.txt",
+        "lower-bound/experiments/scripts/kahale_amplification_kill.py",
         "docs/kahale-correlation-potential.md",
         "docs/kahale-pair-union-rate.md",
         "docs/kahale-two-sided-heights.md"
       ],
-      "notes": "LB-33: the barrier network's defect is lack of middle-wire amplification (width ~0.03 vs n^-1/2 needed, ~0.25 bits of n per stage), not correlation."
+      "notes": "Rejected 2026-10-31 (docs/kahale-amplification-kill.md). Sharpness potentials do not beat 3.2706; no rate barrier is proved. Proved: influence is conserved at a comparator, the sound growth bound (factor 2 per layer) propagates to the formula leaf count, so it never binds. Numeric: a no-extra-depth hybrid (barrier, then mean-rank pairing in the last K stages) repairs the middle defect on the actual network at N_d: sharp-and-placed wires 2.2% to 99.4% at d=80, heights and wire relaxations pass through d=80 and the pair relaxation through d=56. Sharp-and-placed stays >= 0.97 at 64 N_d, depth ~3.3 log2 n, past where the relaxations fail. Not a rate barrier: the heuristic's sharpness trend is 0.075 bits/stage (extrapolated coefficient ~4.3, an upper estimate only). Correction to LB-33: exact sorting of random inputs still lags N_d by ~0.21 bits/stage and structured inputs stay wrong by ~4% of n, so sharpness was not the whole defect. The conditional inequality d >= (a + 1/(2 log2 kappa)) log2 n exceeds 3.5 only with a=2, kappa <= 1.26 and no comparator sharing; only a=1, kappa=2 are sound. Formula-only 3.5 needs L_mon(MAJ) >= n^3.5 against a known n^2. Next: LB-34 aimed at worst-case inputs, with this hybrid as the adversary."
     }
   ]
 }

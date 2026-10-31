@@ -44,10 +44,21 @@ specific family, not to the general idea behind it; recheck an entry if its assu
     `>= 0.96` within about `log2 n + 7` stages (exact, `n <= 14`), and the sorted target has zero disjoint mass on
     middle pairs. Correlation is required by sorting, so it cannot be charged. Mixed-polarity events get no lower
     bounds from FKG or Reimer.
-  - Not dead: amplification. The barrier defect is a middle-wire sharpness deficit already visible under independence
-    (read-once width about `0.03` against about `n^(-1/2)` needed, `c ≈ 0.25` bits of `n` per stage). No sound
-    influence-growth bound better than the sum rule is known.
+  - The barrier's middle-wire sharpness deficit (`c ≈ 0.25` bits of `n` per stage) was a separate lead; see LB-35 below.
   - Evidence: `kahale-correlation-potential.md`, `kahale_correlation_potential.py`.
+* **Middle-wire sharpness and influence potentials (LB-35).**
+  - Proved: influence is conserved at a comparator, and the sound growth bound (factor 2 per layer) propagates to the
+    formula leaf count, so a sum-rule potential never binds.
+  - Numeric only: a hybrid with no extra depth (barrier, then mean-rank pairing in the last `K` stages) repairs the
+    defect on the actual network. Sharp-and-placed wires go from 2.2% to 99.4% at `d = 80`, `n = N_d`. Heights and wire
+    relaxations pass through `d = 80`, the pair relaxation through `d = 56`. Sharpness survives to `64 N_d`, past where
+    the relaxations fail.
+  - **Not a proved rate barrier.** The heuristic's trend extrapolates to about 4.3, an upper estimate only.
+  - Sharpness was not the whole defect: exact sorting of random inputs still lags `N_d` by about 0.21 bits per stage,
+    and structured inputs stay wrong by about `0.04 n`. Those two are not ruled out.
+  - The conditional bound `(a + 1/(2 lg kappa)) lg n` exceeds 3.5 only with `a = 2`, `kappa <= 1.26` and no comparator
+    sharing. Sound values are `a = 1`, `kappa = 2`. Formula-only 3.5 needs `n^3.5` against a known `n^2`.
+  - Evidence: `kahale-amplification-kill.md`, `kahale_amplification_kill.py`.
 * **Additive monomial joint potentials `Σ z_i^p o_i^q` with a uniform per-stage factor (LB-23).**
   - The coefficient is at most `2`.
   - `(z, o)` does not determine its own update, even at non-redundant comparators (kernel-checked on 4 wires).
@@ -97,7 +108,8 @@ specific family, not to the general idea behind it; recheck an entry if its assu
 
 Parked, not dead:
 - LB-22: two-sided certificates. Its per-wire part is dead (LB-02). The pair union-cost part is dead too (LB-24), and
-  so are correlation potentials (LB-33). Mixed-polarity restriction families remain open (LB-34).
+  so are correlation potentials (LB-33) and sharpness potentials (LB-35). Mixed-polarity restriction families remain
+  open (LB-34).
 - LB-25: congestion rate.
 - LB-26: the charging lemma.
 - LB-30: quadratic witness charges, continued as LB-08.

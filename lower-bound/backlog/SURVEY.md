@@ -313,6 +313,10 @@ success probability. Items 2, 3 and 8 are the attempts on the constant itself.
      vacuous on middle wires: the overlap-only share is about 1, and the sorted target has no disjoint mass
      (`docs/kahale-correlation-potential.md`). The barrier defect is a read-once amplification deficit
      (`c ≈ 0.25` bits/stage), which no sound bound yet sees. Next: hybrid-schedule kill test, then LB-34.
+   - *Follow-up LB-35 (2026-10-31): sharpness potentials rejected, no rate barrier proved.* A hybrid with no extra depth
+     repairs the sharpness deficit on the actual network at tested `N_d` (`d <= 80`), and the sound influence bound never
+     binds. Exact sorting of random inputs (about 0.21 bits/stage) and structured inputs remain unrepaired
+     (`docs/kahale-amplification-kill.md`). Next: LB-34, aimed at worst-case inputs.
 3. **LB-03 — Coupled information and certificate tradeoff.**
    - *Why:* the counting bound (2) and Kahale (3.27) are separately tight. Kahale-extremal schedules may waste many
      comparisons (low `h_g`). A coupled inequality "height slack + information slack ≥ ..." could beat both, whereas
