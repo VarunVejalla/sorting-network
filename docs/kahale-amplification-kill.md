@@ -237,7 +237,7 @@ These are small sizes, and this says nothing about the limit.
 **The trend is not flat.** A least-squares fit over the scan gives
 
 ```text
-log2(std/sqrt n) = 0.064 d + 0.85 log2(n/N_d) - 12.4       (rms residual 0.30)
+log2(std/sqrt n) = 0.064 d + 0.85 log2(n/N_d) - 12.4       (rms residual 0.29)
 ```
 
 Holding `std/sqrt n` fixed loses `0.064/0.85 = 0.075` bits of `n` per stage. If the
@@ -392,7 +392,10 @@ used above.
 - `sp`, `exact` and the error figures are sampled on random permutations, with few
   samples at the top: 64 at `d = 80`, 16 to 32 in the extended scan.
 - Pair relaxation on `tr` was not run above `d = 56`. On `zq` it passes at
-  `d = 60`, `K = 26`.
+  `d = 60`, `K = 26`; the `K = 30` run was stopped unfinished.
+- The extended scan stops at `d = 64`, `n/N_d = 32` (one row at that depth). The
+  planned `d = 68, 72` rows and the rest of `d = 64` were not run. The fit did not
+  move when the last rows were added.
 - Correlation relaxations (LB-33) were not rerun. Harris potentials equal the sizes
   relaxation by LB-33 §2, and BK is vacuous on the middle.
 - The structured inputs are four examples, not a worst-case search.
