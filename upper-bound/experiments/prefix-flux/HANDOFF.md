@@ -26,6 +26,11 @@ price only; no limsup bound below 300 is proved.
 - `D2StaticWireSets.lean`, `D2VariableTilePhysicalFlowTransfer.lean`, and
   `D2NativePathIntervals.lean` provide pieces of cell, rank-slice, and
   boundary geometry. They do not identify the actual all-stage profile map.
+- `D2RoutedMass.lean` proves `routedTargetPiece_trueMass_eq_sum`: for any
+  disjoint pieces of one sender, the true-bit mass assigned to a receiver is
+  exactly the sum of the masses of pieces tagged for it. This is the
+  count-valued form of the existing set partition, not yet the physical
+  profile-to-flow identity.
 - Stage-specific reserve/invariant proofs reach the Run-20-to-Run-21
   transition. `D2AllStageInvariant.lean` lifts a provider to all stages
   conditionally; the required universal sender-input provider is missing.
@@ -56,14 +61,17 @@ injectivity theorem show that aligned 4096-rank pieces of such a sender map
 to distinct whole physical cells. The sender-port boundaries are proved
 grid-aligned conditionally from the stage invariants.
 
-What is not yet proved is the numerical composition: from those set
-identities, the core's Boolean column profile, and the actual candidate-run
-stage, show that summing true bits over the tagged fragments is exactly each
-next receiver tile's mass, and that the grouped ideal counts equal the
-next-stage native masses/deficits. This must cover all ordinary roles and
-also startup, `botRise`, clipped final tiles, and any exceptional intervals.
-Then apply the existing arbitrary-tag `+448` transfer with hypotheses that
-are actually derivable from the run, rather than postulating cuts and tags.
+The remaining ordinary-sender composition has two explicit steps: identify
+each piece's true-bit count with the physical core's Boolean column-profile
+interval count, then identify the corresponding ideal profile sum with the
+next child capacity/deficit from `d2FlowStage`. The first is a coordinate
+identity between 64-row-by-64-column cells and the `variableColumnGrouped`
+cuts; the second is the child-specific rank-mass calculation, not merely its
+sum over all eight children. Both must use the actual `d2FlowCandidateRun`
+rank boundaries and tags. Then apply the existing arbitrary-tag `+448`
+transfer with hypotheses derivable from that run. Extend the ordinary case
+to startup, `botRise`, clipped final tiles, and exceptional intervals only
+after this gate passes.
 
 The corrected arbitrary-root selected-cut LP keeps exact total root mass yet
 still admits large terminal error under the current independent tail
@@ -77,16 +85,16 @@ terminal purity or bounded displacement.
 
 ## Next proof gate
 
-Prove the count identity for one ordinary active sender using the existing
-static-hole/rank-port-to-cell identities, with arbitrary legal input
-profiles and the actual `d2FlowCandidateRun` tags. This is now the smallest
-decisive Lean gate: compare each receiver's post-core true count with its
-`d2FlowStage`-predicted mass/deficit, including the parent residual pieces.
-If it closes, extend the same statement to every role and startup/ragged
-case, then test whether the resulting `+448` recurrence yields an
-all-depth spatial/distance invariant and terminal cleanup. Do not treat the
-aggregate `512` budget alone as terminal purity, or independent local tail
-caps/finite oracle traces as a substitute for the count identity.
+Prove the ordinary-sender coordinate identity: each tagged rank-port piece
+intersected with a 4096-wire cell has the same true-bit count as the
+corresponding per-column profile intervals. Use
+`routedTargetPiece_trueMass_eq_sum` to aggregate pieces by receiver, then
+prove the per-child ideal-count/deficit equation from the two-front rank
+formula. Quantify over arbitrary legal input profiles and use the actual
+`d2FlowCandidateRun` boundaries/tags. If this closes, extend to startup and
+exceptional roles, then test whether the resulting `+448` recurrence yields
+an all-depth spatial/distance invariant and terminal cleanup. The aggregate
+`512` budget alone is not terminal purity.
 
 ## Files and artifacts
 
