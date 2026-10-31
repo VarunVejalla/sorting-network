@@ -114,6 +114,17 @@ still admits large terminal error under the current independent tail
 constraints. This shows those constraints are too weak; it is not a
 counterexample to the fixed network.
 
+### Allocation shortcut checked and rejected
+
+Do not identify a child's post-stage subtree allocation with its previous
+allocation plus the parent's down-port width. `d2FlowStage` recursively steps
+the child subtree first, then overwrites the child's root deficit using the
+parent's cut. The down-port width is exactly old child-root deficit minus new
+child-root deficit, but the child's allocation also depends on the recursively
+updated descendant deficits. A receiver-mass proof must account for those
+descendant updates and the actual tagged address pieces together; the root
+deficit or its drop alone is not a receiver's ideal false mass.
+
 After the exact profile transition, the proof still needs an all-depth sender
 invariant, a spatial/distance-sensitive terminal bound, fixed terminal
 cleanup, and depth/padding accounting. Aggregate L1 error alone does not imply
