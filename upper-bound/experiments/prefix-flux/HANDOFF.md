@@ -37,7 +37,14 @@ price only; no limsup bound below 300 is proved.
   `prefixIntervalMass height (4096-hi) (4096-lo)`. It also gives a
   one-true witness that the unreflected expression
   `prefixIntervalMass height 0 64` is not the count in the top physical
-  64-row cell. The stage bridge must explicitly justify its row orientation.
+  64-row cell.
+- `D2FalseProfileTransfer.lean` now proves
+  `reflected_core_false_exact_rank_port_error_le_448`: for arbitrary legal
+  input column counts, the reflected physical core's false-count profile has
+  range at most 13 and incurs at most 448 exact-rank error over any monotone
+  port cuts. This is the prefix orientation needed for rank routing; its
+  hypotheses include the actual output false mass. The remaining stage bridge
+  must identify that mass and those cuts/tags with the concrete run.
 - Stage-specific reserve/invariant proofs reach the Run-20-to-Run-21
   transition. `D2AllStageInvariant.lean` lifts a provider to all stages
   conditionally; the required universal sender-input provider is missing.
@@ -57,6 +64,12 @@ transition gate.
 
 The same focused checker now passes `D2ProfileOrientationGate.lean`, which
 kernel-checks the reflected-cut formula and the one-true mismatch witness.
+It also passes current-source rebuilds of `D2BandRepair4096Network.lean`,
+`D2LiftedShuffleBridge.lean`, `D2ReflectedPhysicalPack.lean`,
+`D2Range13PortError.lean`, and `D2FalseProfileTransfer.lean`. This rebuilds
+the false-profile 448 port theorem and its direct dependencies. The theorem
+resolves the local row-orientation/provider issue; it does not identify the
+schedule's actual sender cuts, tags, or output mass.
 
 ## Main unresolved gate
 
@@ -71,17 +84,18 @@ injectivity theorem show that aligned 4096-rank pieces of such a sender map
 to distinct whole physical cells. The sender-port boundaries are proved
 grid-aligned conditionally from the stage invariants.
 
-The remaining ordinary-sender composition has two explicit steps: first,
-connect the `variableColumnGrouped` cuts to physical row intervals with the
-correct orientation (for bottom-unary outputs, physical `[lo,hi)` counts use
-the reflected cuts `[4096-hi,4096-lo)`); second, identify the corresponding
-ideal profile sum with the next child capacity/deficit from `d2FlowStage`.
-The child-specific rank-mass calculation is needed, not merely its sum over
-all eight children. Both steps must use the actual
-`d2FlowCandidateRun` rank boundaries and tags. Then apply the existing
-arbitrary-tag `+448` transfer with hypotheses derivable from that run. Extend
-the ordinary case to startup, `botRise`, clipped final tiles, and exceptional
-intervals only after this gate passes.
+The local orientation/provider is now available by tracking false counts:
+the fixed core theorem compares top-prefix false profiles directly to the
+exact false-rank profile at a cost of 448. The remaining ordinary-sender
+composition must (1) identify the core's output false mass with the sender's
+actual false mass in `d2FlowCandidateRun`, (2) identify each physical interval
+count with the corresponding `variableColumnGrouped` cut and actual receiver
+tag, and (3) prove the per-child ideal false-mass sum equals the next child's
+capacity/deficit. The child-specific rank-mass calculation is needed, not
+merely its sum over all eight children. Use actual run boundaries and tags,
+then apply the arbitrary-tag `+448` transfer. Extend the ordinary case to
+startup, `botRise`, clipped final tiles, and exceptional intervals only after
+this gate passes.
 
 The corrected arbitrary-root selected-cut LP keeps exact total root mass yet
 still admits large terminal error under the current independent tail
@@ -95,18 +109,15 @@ terminal purity or bounded displacement.
 
 ## Next proof gate
 
-Prove which way the actual candidate placement maps the core's row coordinate
-to sender rank/address order. The checked core profile is bottom-unary, while
-`rowMajorFlowCuts` are top-oriented; either prove that the placement reverses
-these coordinates or rebase the physical profile transfer on reflected cuts.
-Then prove the ordinary-sender identity from tagged rank-port pieces to the
-corresponding per-column counts, aggregate with
-`routedTargetPiece_trueMass_eq_sum`, and establish the per-child
-ideal-count/deficit equation. Quantify over arbitrary legal input profiles
-and use actual run boundaries/tags. If this closes, extend to startup and
-exceptional roles, then test whether the `+448` recurrence yields an
-all-depth spatial/distance invariant and terminal cleanup. The aggregate
-`512` budget alone is not terminal purity.
+Instantiate the false-profile provider on one ordinary sender of an actual
+`d2FlowCandidateRun` transition. Prove the sender's false mass, its 9 port
+cuts, and each receiver tag from the run's rank boundaries; then show that
+the resulting grouped false counts equal the next stage's child false masses.
+The exact child identity must be shown per child, not only after summing all
+eight. Quantify over arbitrary legal sender profiles. If it closes, extend to
+startup, `botRise`, clipped final tiles, and exceptional roles; then test
+whether the resulting recurrence supplies an all-depth spatial/distance
+invariant and terminal cleanup. Aggregate error alone is not terminal purity.
 
 ## Files and artifacts
 
