@@ -84,14 +84,41 @@ least `15/8192` of capacity. The implication is kernel-checked in
 `D2CandidateTwoFrontBridge.lean`. The strict `1/512` reserve gives at most
 32 overrun per physical tile, so local cost 480 fits the 512-per-tile budget.
 
+The sharp local recurrence is already kernel-checked in
+`D2StrongDeficitPropagation.lean`. Its affine profile is the disjunction
+`G = 0 ∧ 256*pi ≤ c`, or
+`8192*G + 7 ≤ 15*c ∧ 4096*pi ≤ 15*c`. The file proves this profile propagates
+through an ordinary eight-child update at capacity `2*c`, implies the existing
+`512*G ≤ capacity` and quota gates, and handles the seven-unit integer slack.
+Do not redo this local arithmetic. The missing step is to establish the
+profile's hypotheses for every sender in the actual scheduled run, including
+startup, top-rise, mid, bottom-descending, and exceptional/ragged roles.
+
 The exact compressed-flow screen
 `d2_deficit_tolerance_screen.py --depth 100 --scale 8192 --params 3 3 2`
-checks 217470 reachable stage/node entries, passes the strict `1/512` gate
-with maximum ratio exactly `15/8192`, and finds no role-specific gate
-violations. This is finite model evidence only. The next gate is an all-depth
-proof of the `15/8192` reserve on the actual candidate run, then the joint
-state linking Boolean tile masses to flow ideal profiles and the receiver
-group/tag identity. Neither witness disproves the fixed sorting algorithm.
+checks 217470 reachable stage/node entries, passes the strict `1/512` gate,
+and observes maximum ratio `15/8192 - 7/capacity`. This is finite model
+evidence only.
+
+The immediate formal gate is to compose the existing path-level adapters into
+an all-time full-tree core-provider induction. The sources
+`D2StrongFlowCoreInputs.lean`, `D2StrongAffineChild.lean`,
+`D2TopDescHistory.lean`, and `D2CoreProviderReserveStep.lean` already provide
+the contract adapters, ordinary-child profile transition, role-specific root
+profiles, and two-visit endpoint reserve transition. They still assume prior
+full-tree core snapshots. `D2RootFrontierCase.lean` now proves that an active
+level-zero node is top-descending and its deficit is zero under the prior-core
+hypothesis. Prove a reusable step from snapshots `t` and `t-1` to `t+1`;
+derive balance from the invariant and establish the startup snapshots
+explicitly. Do not redo these local lemmas.
+
+Passing that flow-reserve gate does not establish the physical stage
+transition. The central construction gate remains the joint state linking
+Boolean tile masses to flow ideal profiles and the actual receiver group/tag
+identity, including ragged heights. Then prove an all-depth spatial or
+distance-sensitive terminal bound, fixed cleanup, and complete depth
+accounting. Neither finite stage screens nor local witnesses settle the fixed
+sorting algorithm.
 
 Treat the gate as passed only when that identity is proved for arbitrary legal
 root profiles and all stages, and the induced transition admits an
@@ -129,6 +156,10 @@ or aggregate error alone as the desired limsup theorem.
 - Before a significant new proof or experiment, state its exact claim, inputs,
   quantifiers, and what outcome would pass or reject the gate. Prefer small,
   decisive structural tests over broad exploratory sweeps.
+- Resume by reading the current
+  [prefix-flux handoff](../upper-bound/experiments/prefix-flux/HANDOFF.md),
+  then inspect only the source files named for the current gate. Keep the
+  handoff and experiment index aligned when the recommended next step changes.
 - Keep claims labeled as conjecture, simulation/model, hand argument, or
   kernel-checked. A Lean file or finite audit does not by itself establish the
   global recurrence.

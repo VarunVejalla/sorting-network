@@ -164,13 +164,41 @@ The weaker strict `512*G <= capacity` reserve gives 32 per physical tile;
 either strict bound leaves the local 448 charge within the 512-per-tile
 doubling budget.
 
+`D2StrongDeficitPropagation.lean` already proves the sharp local affine
+profile transition for ordinary eight-child updates. The profile is
+`G = 0 ∧ 256*pi <= c`, or
+`8192*G + 7 <= 15*c ∧ 4096*pi <= 15*c`; it propagates to every child at
+capacity `2*c`, implies the existing deficit and quota caps, and preserves the
+seven-unit slack. This local arithmetic is closed and should not be repeated.
+
+Further current-source adapters are already present: `D2StrongFlowCoreInputs.lean`
+converts a full-tree affine core provider to the sender contract;
+`D2StrongAffineChild.lean` transports the profile through a concrete ordinary
+parent update; `D2TopDescHistory.lean` handles reset history and classifies
+active child root profiles; and `D2CoreProviderReserveStep.lean` transports
+both profiles and two-visit endpoint reserves along actual paths. Focused
+current-source checks passed for `D2StrongFlowCoreInputs.lean`,
+`D2TopDescHistory.lean`, `D2CoreProviderReserveStep.lean`,
+`D2RootFrontierCase.lean`, `D2FlowPathLast.lean`, and
+`D2AffineCoreBootstrap.lean`. The path adapters still assume prior full-tree
+core snapshots. There is no all-time core-provider induction yet. The moving
+root-frontier case is isolated in `D2RootFrontierCase.lean`: an active
+level-zero node is top-descending, and its current deficit is zero given the
+prior core at `t-2`. `D2FlowPathLast.lean` adds a checked last-edge
+decomposition for root-first paths to support composing the path adapters.
+`D2AffineCoreBootstrap.lean` proves the initial run snapshot satisfies the
+full affine core provider. Positive startup snapshots 1 through 3 remain
+open before the general induction step applies.
+
 The exact compressed-flow screen
 `d2_deficit_tolerance_screen.py --depth 100 --scale 8192 --params 3 3 2`
-checks 217470 reachable stage/node entries. All ordinary senders satisfy
-`G/capacity <= 15/8192`, with equality at the maximum, and all quota and
-endpoint gates pass. This is finite model evidence, not an all-depth theorem.
-The all-depth reserve proof and the physical sender-mass/tag identity remain
-open; ragged, startup, and exceptional cases also need coverage.
+checks 217470 reachable stage/node entries. Its maximum is
+`G/capacity = 15/8192 - 7/capacity`; all quota and endpoint gates pass. This
+is finite model evidence, not an all-depth theorem. The affine local update
+is proved; what remains is to establish its side conditions for every sender
+in the actual schedule, including startup, top-rise, mid, bottom-descending,
+exceptional, and ragged roles. The physical sender-mass/tag identity is also
+open.
 
 After the exact profile transition, the proof still needs an all-depth sender
 invariant, a spatial/distance-sensitive terminal bound, fixed terminal
@@ -179,17 +207,18 @@ terminal purity or bounded displacement.
 
 ## Next proof gate
 
-Prove the all-depth candidate-run reserve `8192*G <= 15*capacity` for every
-active ordinary sender. The exact compressed-flow screen through depth 100
-has maximum ratio `15/8192`; the local per-role recurrences in
-`D2ScheduleReserve.lean` already include
-`normalized_same_child_preserves_15over8192`. Then use the checked zero-overrun
-implication to close the arithmetic part of the 512-per-tile recurrence.
-Independently specify the joint state linking actual per-tile false masses to
-flow ideal rank profiles and prove the actual receiver tags. Extend both parts
-to ragged heights and exceptional roles. After the exact profile transition,
-prove an all-depth spatial/distance invariant and terminal cleanup. Aggregate
-error alone is not terminal purity.
+The immediate formal gate is to compose the existing path-level adapters into
+an all-time full-tree core-provider induction. A reusable step should use
+core snapshots at `t` and `t-1` to prove the next snapshot: the prior core
+gives invariant/balance, `D2TopDescHistory.lean` supplies role-specific root
+profiles, and `D2CoreProviderReserveStep.lean` supplies two-visit endpoint
+reserves. `D2RootFrontierCase.lean` closes the level-zero role/reset case
+under the same prior-core hypothesis. Establish snapshots 1 through 3, then
+compose a reusable step for later stages. Confirm these
+ingredients compose before adding more stage-specific bridges. This closes
+only the flow-reserve induction; the physical sender-mass/tag identity
+(including ragged heights), spatial terminal invariant, cleanup, and depth
+accounting remain open. Aggregate error alone is not terminal purity.
 
 ## Files and artifacts
 
