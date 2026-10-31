@@ -145,24 +145,32 @@ physical sender.
 `D2FlowRankBridge.lean` now proves the general domination budget: across the
 eight children, total positive overrun of the pre-stage exact-prefix mass over
 the post-stage two-front reserves is at most
-`G - min(G, low + quota/2)`. The relevant all-stage input contract is the
-tolerant `4096*G <= 23*capacity`, not the stronger `512*G <= capacity`.
-Together with the candidate quota floor `15*capacity <= 4096*quota` and even
-quota, the unmatched mass is at most `31*capacity/8192`. If one `8192` unit
-corresponds to one input core tile in the actual transition, this contributes
-31 per input tile; adding the local 448 gives 479, within the 512-per-input
-tile allowance needed when tile count doubles. The arithmetic is
-kernel-checked, but the capacity-to-physical-tile conversion and actual
-sender-mass/tag identities are not yet proved. Do not treat 479 as an
-established recurrence until that unit conversion is formalized.
+`G - min(G, low + quota/2)`. The tolerant `4096*G <= 23*capacity` contract is too weak for the proposed
+per-tile profile recurrence. Candidate capacity is in 8192-unit flow blocks,
+while one physical 4096-by-64 core tile is 262144 wires (32 such blocks).
+Thus the tolerant estimate `31*capacity/8192` is 992 per physical tile, not
+31, and does not fit with the local 448 core error inside the 512-per-tile
+doubling budget.
 
-The substantive remaining bridge is to relate actual sender input false mass
-to a flow-derived ideal profile with an explicit parent count error, show that
-the `capacity/8192` unit converts to the number of physical core tiles, and
-prove that static receiver tags group the local exact-prefix port counts into
-the eight post-stage reserves. Then prove the same bounds for ragged, startup,
-and exceptional cases. The witness is not a counterexample to sorting or to
-this one-sided route.
+`D2TolerantOverrunScaleObstruction.lean` gives a local witness satisfying
+the tolerant predicate: capacity 1048576 (four core tiles), deficit 5888,
+quota 3840, and eight children of size 131072. Its first-child ideal-prefix
+overrun is 3968 = 992 per tile. This refutes deriving the recurrence from the
+tolerant predicate alone; it is not a reachable-run counterexample. The
+stronger `8192*G <= 15*capacity` reserve makes the ideal overrun zero because
+half the candidate quota is at least `15/8192` of capacity. This implication
+is kernel-checked in `candidate_sender_two_front_overrun_zero_of_15over8192`.
+The weaker strict `512*G <= capacity` reserve gives 32 per physical tile;
+either strict bound leaves the local 448 charge within the 512-per-tile
+doubling budget.
+
+The exact compressed-flow screen
+`d2_deficit_tolerance_screen.py --depth 100 --scale 8192 --params 3 3 2`
+checks 217470 reachable stage/node entries. All ordinary senders satisfy
+`G/capacity <= 15/8192`, with equality at the maximum, and all quota and
+endpoint gates pass. This is finite model evidence, not an all-depth theorem.
+The all-depth reserve proof and the physical sender-mass/tag identity remain
+open; ragged, startup, and exceptional cases also need coverage.
 
 After the exact profile transition, the proof still needs an all-depth sender
 invariant, a spatial/distance-sensitive terminal bound, fixed terminal
@@ -171,15 +179,17 @@ terminal purity or bounded displacement.
 
 ## Next proof gate
 
-First specify a joint sender state: actual per-tile Boolean false masses,
-their ideal rank-profile masses, the map from the flow deficit to that ideal
-profile, and the parent error charged between them. Then prove the grouped
-parent-error-plus-448 transfer and compose it with the checked 31-per-
-`capacity/8192` two-front overrun allowance. Only after proving the physical
-unit conversion and actual receiver tags should this be called an ordinary
-sender transition. Extend it to ragged heights and exceptional roles, then
-test for an all-depth spatial/distance invariant and terminal cleanup.
-Aggregate error alone is not terminal purity.
+Prove the all-depth candidate-run reserve `8192*G <= 15*capacity` for every
+active ordinary sender. The exact compressed-flow screen through depth 100
+has maximum ratio `15/8192`; the local per-role recurrences in
+`D2ScheduleReserve.lean` already include
+`normalized_same_child_preserves_15over8192`. Then use the checked zero-overrun
+implication to close the arithmetic part of the 512-per-tile recurrence.
+Independently specify the joint state linking actual per-tile false masses to
+flow ideal rank profiles and prove the actual receiver tags. Extend both parts
+to ragged heights and exceptional roles. After the exact profile transition,
+prove an all-depth spatial/distance invariant and terminal cleanup. Aggregate
+error alone is not terminal purity.
 
 ## Files and artifacts
 

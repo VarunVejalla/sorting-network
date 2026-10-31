@@ -66,18 +66,32 @@ deficit (low-prefix plus high-suffix); the checked witness in
 single-prefix reference of total mass `9` gives `9, 0`. The sender's Boolean
 false mass has **not** been identified with pre-stage `G`; `G` is a flow
 deficit, while the physical provider counts false wires in actual source
-tiles. `D2FlowRankBridge.lean` proves only that an *ideal* single-prefix mass
-`G` has total positive overrun above the two-front child reserves at most
-`G-min(G,low+quota/2)`. Under the all-stage gate
-`4096*G <= 23*capacity` and candidate quota floor, this is at most 31 per
-`capacity/8192` unit. If this unit is one physical core tile, adding the local
-448 fits the 512-per-tile doubling budget; neither that unit conversion nor
-the mass identification is proved. The remaining gate must define a joint
-state relating actual tile false masses to the flow ideal profile, establish
-the physical unit conversion, derive receiver groups/tags, and extend the
-accounting to ragged, startup, and exceptional roles. The size-10 witness is
-a profile non-equality example, not a counterexample to sorting or evidence
-that this semantic bridge holds.
+tiles. `D2FlowRankBridge.lean` proves only that an *ideal* single-prefix
+mass `G` has total positive overrun above the two-front child reserves at
+most `G-min(G,low+quota/2)`. Candidate capacities are multiples of 8192,
+but a physical core tile is 262144 wires, so there are 32 flow blocks per
+core tile. Thus the all-stage gate `4096*G <= 23*capacity` and quota floor
+give at most 992 overrun per physical tile, not 31; after the local 448 this
+does not fit the 512-per-tile doubling budget.
+
+`D2TolerantOverrunScaleObstruction.lean` gives an exact local witness at
+capacity 1048576 (four core tiles): it satisfies the tolerant stage-input
+predicate, yet its first-child ideal-prefix overrun is 3968 = 992 per tile.
+This refutes deriving the target recurrence from that local predicate alone;
+it is not a reachable-run counterexample. The stronger reserve `8192*G <=
+15*capacity` makes the overrun zero, because half the candidate quota is at
+least `15/8192` of capacity. The implication is kernel-checked in
+`D2CandidateTwoFrontBridge.lean`. The strict `1/512` reserve gives at most
+32 overrun per physical tile, so local cost 480 fits the 512-per-tile budget.
+
+The exact compressed-flow screen
+`d2_deficit_tolerance_screen.py --depth 100 --scale 8192 --params 3 3 2`
+checks 217470 reachable stage/node entries, passes the strict `1/512` gate
+with maximum ratio exactly `15/8192`, and finds no role-specific gate
+violations. This is finite model evidence only. The next gate is an all-depth
+proof of the `15/8192` reserve on the actual candidate run, then the joint
+state linking Boolean tile masses to flow ideal profiles and the receiver
+group/tag identity. Neither witness disproves the fixed sorting algorithm.
 
 Treat the gate as passed only when that identity is proved for arbitrary legal
 root profiles and all stages, and the induced transition admits an

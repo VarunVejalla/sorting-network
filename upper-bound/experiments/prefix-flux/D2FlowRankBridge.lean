@@ -303,6 +303,22 @@ theorem d2FlowTwoFront_prefix_excess_le_tolerant_capacity
       nlinarith [hG, hhalfquota]
     nlinarith [hgap, hraw]
 
+/-- If the parent deficit is at most `15/8192` of capacity, the candidate
+quota floor puts the whole ideal prefix inside the reserved low front, so the
+single-prefix-to-two-front overrun is zero. -/
+theorem d2FlowTwoFront_prefix_excess_zero_of_15over8192
+    (G low quota capacity half : Nat)
+    (hhalf : quota = 2 * half)
+    (hdeficit : 8192 * G <= 15 * capacity)
+    (hquota : 15 * capacity <= 4096 * quota) :
+    G - min G (low + half) = 0 := by
+  have hhalfQuota : 15 * capacity <= 8192 * half := by
+    rw [hhalf] at hquota
+    nlinarith [hquota]
+  have hGHalf : G <= half := by nlinarith [hdeficit, hhalfQuota]
+  have hmin : min G (low + half) = G := by omega
+  omega
+
 /-- If the sender capacity consists of 4096-by-64 tiles, the strict reserve
 and ordinary quota lower bound leave at most 32 unmatched prefix units per
 tile. -/

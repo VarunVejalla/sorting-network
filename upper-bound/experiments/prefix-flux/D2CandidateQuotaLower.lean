@@ -77,6 +77,19 @@ theorem d2FlowCandidateCapacity_eq_8192_mul {d i t : Nat}
   rw [heq, Nat.pow_add]
   norm_num
 
+/-- Every active candidate capacity is also an integral number of the actual
+4096-by-64 physical core tiles (262144 wires each). -/
+theorem d2FlowCandidateCapacity_eq_262144_mul {d i t : Nat}
+    (hd : 7 ≤ d) (ha : active d (tfD2 d) i t) :
+    ∃ tiles, d2FlowCandidateCapacity d i t = 262144 * tiles := by
+  have he := d2FlowCandidateCapacityExponent_ge_twenty hd ha
+  let e := d2FlowCandidateCapacityExponent d i t
+  refine ⟨2 ^ (e - 18), ?_⟩
+  have heq : e = 18 + (e - 18) := by dsimp [e]; omega
+  change 2 ^ e = 262144 * 2 ^ (e - 18)
+  rw [heq, Nat.pow_add]
+  norm_num
+
 /-- The integer candidate capacity, like its rational schedule counterpart,
 drops by exactly sixteen at the same level over two stages. -/
 theorem d2FlowCandidateCapacity_two_stage_ratio {d i t : Nat}
