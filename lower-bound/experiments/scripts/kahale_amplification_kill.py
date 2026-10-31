@@ -24,6 +24,8 @@ Schedules (every comparator satisfies the width rule (W) for the TOTAL depth):
   drop K           the same deletion, with no replacement
   bfly K           the same, replaced by a cycling butterfly (Valiant wires)
   zadj K, zq K     the same, replaced by an equal-height matching (coupled_layers)
+  zs K, qs K       zq with the pair kept only if the wire of larger q has the
+                   lower index (zs: inside a height group, qs: whole band)
   zh K             barrier halves, closest-curve bijection between them
 
 Checks on the same layer list (all exact integer arithmetic except ind/truth):
@@ -39,6 +41,7 @@ Modes:
   blind  d ...            largest K with the middle band deletable (relaxations pass)
   budget d K d K ...      width to gain vs read-once budget in the blind window
   ranks  d ...            actual network: per-wire rank mean/std, sharp vs placed
+  pairk  d ... --Ks a,b   LB-24 pair relaxation on a list of K
   valiant                 read-once arithmetic (stages needed from width w0)
 Finite computations of relaxations and sampled runs; no sorting claim, no Lean.
 """
@@ -173,15 +176,18 @@ def coupled_layers(d, n, K, frac, rule, extra=2):
         if t >= d - K and rule != "zh":
             al, ah = [], []
             bw = idx[inband]
-            for h in np.unique(z[bw]):
-                g = bw[z[bw] == h]
-                if rule == "zq":
+            for h in ([0] if rule == "qs" else np.unique(z[bw])):
+                g = bw if rule == "qs" else bw[z[bw] == h]
+                if rule in ("zq", "zs", "qs"):
                     g = g[np.argsort(-q[g], kind="stable")]
                 g = g[(t % 2):]
                 a, b = g[0:-1:2], g[1::2]
                 m = min(a.size, b.size)
-                a, b = np.minimum(a[:m], b[:m]), np.maximum(a[:m], b[:m])
+                a0, b0_ = a[:m], b[:m]
+                a, b = np.minimum(a0, b0_), np.maximum(a0, b0_)
                 ok = (b - a) <= wmax
+                if rule in ("zs", "qs"):      # orientation agrees with position
+                    ok &= a0 < b0_
                 al.append(a[ok])
                 ah.append(b[ok])
             lo = np.r_[lo, np.concatenate(al)].astype(np.int64)
@@ -196,8 +202,8 @@ def coupled_layers(d, n, K, frac, rule, extra=2):
 def build(d, n, sched, A=0, rule="oet", K=0, frac=0.5):
     cleanup = 2
     D = d + cleanup + A
-    if sched.startswith(("zadj", "zq", "zh")):
-        rl = "zadj" if sched.startswith("zadj") else ("zq" if sched.startswith("zq") else "zh")
+    if sched.startswith(("zadj", "zq", "zh", "zs", "qs")):
+        rl = sched[:4] if sched.startswith("zadj") else sched[:2]
         base = list(coupled_layers(d, n, K, frac, rl,
                                    cleanup + A))
     else:
@@ -430,6 +436,15 @@ def cmd_budget(a):
                           "surplus_bits": round(GAIN * K - need, 3)}), flush=True)
 
 
+def cmd_pairk(a):
+    """LB-24 pair relaxation only, on a list of K values."""
+    for d in a.depths:
+        n = a.n or arity(d)
+        for K in map(int, a.Ks.split(",")):
+            r = check_relaxations(build(d, n, a.sched, 0, "oet", K, a.frac), n, ("pair",))
+            print(json.dumps({"d": d, "n": n, "sched": a.sched, "K": K, **r}), flush=True)
+
+
 def cmd_ranks(a):
     """Actual network on random permutations: per-wire rank mean and std.
     sharp: std(R_i) <= sqrt(n)/2 (the width of the wire is then within a
@@ -440,6 +455,7 @@ def cmd_ranks(a):
         n = a.n or arity(d)
         L = build(d, n, a.sched, a.A, a.rule, a.K, a.frac)
         m1, m2, done = np.zeros(n), np.zeros(n), 0
+        mn, mx = np.full(n, n), np.full(n, -1)
         while done < a.samples:
             b = min(64, a.samples - done)
             X = np.argsort(rng.random((b, n)), axis=1).astype(np.int32)
@@ -447,6 +463,7 @@ def cmd_ranks(a):
                 u, v = X[:, lo], X[:, hi]
                 X[:, lo], X[:, hi] = np.minimum(u, v), np.maximum(u, v)
             m1 += X.sum(0)
+            mn, mx = np.minimum(mn, X.min(0)), np.maximum(mx, X.max(0))
             m2 += (X.astype(np.float64) ** 2).sum(0)
             done += b
         mean = m1 / done
@@ -466,9 +483,12 @@ def cmd_ranks(a):
                "placed_frac_midhalf": round(float((np.abs(mean[c0:c1] - i[c0:c1]) <= rt).mean()), 4),
                "disp/n_median_midhalf": round(float(np.median(np.abs(mean[c0:c1] - i[c0:c1]))) / n, 4),
                "disp/n_max": round(float(np.abs(mean - i).max()) / n, 4),
-               "relabel_placed_frac": round(float((np.abs(mean[order] - i) <= rt).mean()), 4),
-               "relabel_sharp_and_placed_frac": round(float(((np.abs(mean[order] - i) <= rt)
-                                                              & (std[order] <= rt / 2)).mean()), 4)}
+               "rank_err/n_max": round(float(max((mx - i).max(), (i - mn).max())) / n, 4),
+               "rank_err/sqrtn_median": round(float(np.median(np.maximum(mx - i, i - mn))) / rt, 2),
+               "sharp_placed_frac_all": round(float(((np.abs(mean - i) <= rt)
+                                                     & (std <= rt / 2)).mean()), 4),
+               "relabel_sharp_placed_frac": round(float(((np.abs(mean[order] - i) <= rt)
+                                                         & (std[order] <= rt / 2)).mean()), 4)}
         print(json.dumps(res), flush=True)
 
 
@@ -493,7 +513,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="mode", required=True)
-    for name in ("idle", "run", "need", "blind", "budget", "ranks"):
+    for name in ("idle", "run", "need", "blind", "budget", "ranks", "pairk"):
         s = sub.add_parser(name)
         s.add_argument("depths", type=int, nargs="+")
         s.add_argument("--n", type=int, default=0)
@@ -508,9 +528,10 @@ def main():
         s.add_argument("--tol", type=float, default=0.25)
         s.add_argument("--frac", type=float, default=0.5)
         s.add_argument("--smax", type=int, default=8)
+        s.add_argument("--Ks", default="0")
     sub.add_parser("valiant")
     a = ap.parse_args()
-    {"idle": cmd_idle, "run": cmd_run, "need": cmd_need, "blind": cmd_blind, "budget": cmd_budget, "ranks": cmd_ranks,
+    {"idle": cmd_idle, "run": cmd_run, "need": cmd_need, "blind": cmd_blind, "budget": cmd_budget, "ranks": cmd_ranks, "pairk": cmd_pairk,
      "valiant": cmd_valiant}[a.mode](a)
 
 
