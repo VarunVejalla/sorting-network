@@ -1001,4 +1001,92 @@ theorem d2FlowCandidateRun_active_child_role_root_contract
   | mid => exact hprofile (by simp [hrole])
   | botDesc => exact hprofile (by simp [hrole])
 
+/-- The role/profile transition also supplies the balance field required by
+the affine core. A top-descending child has zero root from the two-stage
+history and is balanced by the next invariant. Every other active child has a
+top-descending or ordinary active parent, both of which write balanced data. -/
+theorem d2FlowCandidateRun_active_child_balanced_of_prior_core
+    {h i t : Nat} (hd : 7 ≤ h + 2 + i) (ht : 3 ≤ t)
+    (path : D2FlowPath i) (port : Fin 8)
+    (hchildActive : active (h + 2 + i) (tfD2 (h + 2 + i))
+      (i + 1) (t + 1))
+    (hcorePrev : d2FlowStageAffineCoreInputs
+      (fun k => d2FlowCandidateActive (h + 2 + i) (t - 1) k)
+      (fun k => d2FlowCandidateRole (h + 2 + i) (t - 1) k)
+      (fun k => d2FlowCandidateCapacity (h + 2 + i) k (t - 1)) 0
+      (d2FlowCandidateRun (h + 2 + i)
+        (d2FlowTreeInitial 8192 (h + 2 + i)) (t - 1)))
+    (hinvNext : d2FlowTreeInv 8192
+      (d2FlowCandidateRun (h + 2 + i)
+        (d2FlowTreeInitial 8192 (h + 2 + i)) (t + 1))) :
+    (d2FlowTreeRootData
+      (d2FlowTreeChild
+        (d2FlowTreeAtPath i
+          (d2FlowCandidateRun (h + 2 + i)
+            (d2FlowTreeInitial 8192 (h + 2 + i)) (t + 1)) path) port)).2.1 +
+    (d2FlowTreeRootData
+      (d2FlowTreeChild
+        (d2FlowTreeAtPath i
+          (d2FlowCandidateRun (h + 2 + i)
+            (d2FlowTreeInitial 8192 (h + 2 + i)) (t + 1)) path) port)).2.2 =
+    d2FlowTreeRootDeficit
+      (d2FlowTreeChild
+        (d2FlowTreeAtPath i
+          (d2FlowCandidateRun (h + 2 + i)
+            (d2FlowTreeInitial 8192 (h + 2 + i)) (t + 1)) path) port) := by
+  classical
+  let d := h + 2 + i
+  let child := d2FlowTreeChild
+    (d2FlowTreeAtPath i
+      (d2FlowCandidateRun d (d2FlowTreeInitial 8192 d) (t + 1)) path) port
+  have hzeroBalance (hzero : d2FlowTreeRootDeficit child = 0) :
+      (d2FlowTreeRootData child).2.1 + (d2FlowTreeRootData child).2.2 =
+        d2FlowTreeRootDeficit child := by
+    cases hnode : child with
+    | node G low high children =>
+        have hbal := d2FlowCandidateRun_zero_child_balanced_of_inv
+          (path := path) (port := port) (children := children)
+          (by simpa [child] using hnode) (by simpa [d] using hinvNext)
+          (by simpa [child] using hzero)
+        simpa [hnode, d2FlowTreeRootData, d2FlowTreeRootDeficit] using hbal
+  by_cases htop : d2ScheduleRole d (i + 1) (t + 1) = .topDesc
+  · have hzero := d2FlowCandidateRun_active_topDesc_child_root_zero_of_prior_core
+      (h := h) (i := i) (t := t) (by simpa [d] using hd) ht path port
+      hchildActive (by simpa [d] using htop) (by simpa [d] using hcorePrev)
+    exact hzeroBalance (by simpa [child] using hzero)
+  · have hparentCases := active_nonTop_parent_role_cases
+      (d := d) (tf := tfD2 d) (i := i + 1) (t := t + 1)
+      (by omega) (by omega) hchildActive htop
+    have hparentActive : d2FlowCandidateActive d t i = true := by
+      rw [d2FlowCandidateActive_matches_schedule (d := d) (t := t)
+        (i := i) (by omega)]
+      exact decide_eq_true hparentCases.1
+    have hparentRoles : d2FlowCandidateRole d t i = .topDesc ∨
+        d2FlowCandidateRole d t i = .topRise ∨
+        d2FlowCandidateRole d t i = .mid ∨
+        d2FlowCandidateRole d t i = .botDesc := by
+      rw [d2FlowCandidateRole_matches_schedule (d := d) (t := t)
+        (i := i) (by omega)]
+      exact hparentCases.2
+    cases hnode : d2FlowTreeAtPath i
+        (d2FlowCandidateRun d (d2FlowTreeInitial 8192 d) t) path with
+    | node G low high children =>
+        rcases hparentRoles with hreset | hregular
+        · have hzero := d2FlowCandidateRun_topDesc_parent_child_zero_at_path
+            (h := h + 1) (i := i) (t := t) path children hnode
+            (by simpa [d] using hparentActive)
+            (by simpa [d] using hreset) port
+          exact hzeroBalance (by simpa [child, d] using hzero)
+        · rcases hregular with hrise | hregular
+          · exact d2FlowCandidateRun_regular_parent_child_balanced
+              (h := h) (i := i) (t := t) path children hnode hparentActive
+              (Or.inl hrise) port
+          · rcases hregular with hmid | hbot
+            · exact d2FlowCandidateRun_regular_parent_child_balanced
+                (h := h) (i := i) (t := t) path children hnode hparentActive
+                (Or.inr (Or.inl hmid)) port
+            · exact d2FlowCandidateRun_regular_parent_child_balanced
+                (h := h) (i := i) (t := t) path children hnode hparentActive
+                (Or.inr (Or.inr hbot)) port
+
 end Chvatal.D2Reserve

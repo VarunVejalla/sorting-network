@@ -512,6 +512,75 @@ theorem d2FlowCandidateRun_topDesc_parent_child_zero_at_path
   rw [hpath (t + 1)]
   simpa [d, initial, ctx] using hzero
 
+/-- Regular active parents write balanced endpoint data to their children in
+the concrete candidate run, even when the parent lies below active ancestors. -/
+theorem d2FlowCandidateRun_regular_parent_child_balanced
+    {h i t G low high : Nat} (path : D2FlowPath i)
+    (children : Fin 8 → D2FlowTree (h + 1))
+    (hnode : d2FlowTreeAtPath i
+      (d2FlowCandidateRun (h + 2 + i)
+        (d2FlowTreeInitial 8192 (h + 2 + i)) t) path =
+      .node G low high children)
+    (ha : d2FlowCandidateActive (h + 2 + i) t i = true)
+    (hr : d2FlowCandidateRole (h + 2 + i) t i = .topRise ∨
+      d2FlowCandidateRole (h + 2 + i) t i = .mid ∨
+      d2FlowCandidateRole (h + 2 + i) t i = .botDesc)
+    (port : Fin 8) :
+    (d2FlowTreeRootData
+      (d2FlowTreeChild
+        (d2FlowTreeAtPath i
+          (d2FlowCandidateRun (h + 2 + i)
+            (d2FlowTreeInitial 8192 (h + 2 + i)) (t + 1)) path) port)).2.1 +
+    (d2FlowTreeRootData
+      (d2FlowTreeChild
+        (d2FlowTreeAtPath i
+          (d2FlowCandidateRun (h + 2 + i)
+            (d2FlowTreeInitial 8192 (h + 2 + i)) (t + 1)) path) port)).2.2 =
+    d2FlowTreeRootDeficit
+      (d2FlowTreeChild
+        (d2FlowTreeAtPath i
+          (d2FlowCandidateRun (h + 2 + i)
+            (d2FlowTreeInitial 8192 (h + 2 + i)) (t + 1)) path) port) := by
+  classical
+  let d := h + 2 + i
+  let initial := d2FlowTreeInitial 8192 d
+  let runActive := d2FlowCandidateRunActive d
+  let runRole := d2FlowCandidateRunRole d
+  let runQuota := d2FlowCandidateRunQuota d
+  let overwrite := d2FlowCandidateRunOverwrite d initial
+  let ctx := d2FlowTreePathContext i initial path 0
+    runActive runRole runQuota overwrite
+  have hlevel : ctx.level = i := by
+    simpa [ctx, runActive, runRole, runQuota, overwrite, d, initial] using
+      d2FlowTreePathContext_level initial path 0 runActive runRole runQuota
+        overwrite
+  have hpath (s : Nat) :
+      d2FlowTreeAtPath i (d2FlowCandidateRun d initial s) path =
+        d2FlowTreeRunWithParentOverwrites ctx.initial ctx.level
+          runActive runRole runQuota ctx.overwrite s := by
+    rw [d2FlowCandidateRun_path_as_history]
+    exact d2FlowTreePathHistory_eq_context_run initial path 0
+      (d2FlowCandidateRunActive d) (d2FlowCandidateRunRole d)
+      (d2FlowCandidateRunQuota d) (d2FlowCandidateRunOverwrite d initial) s
+  have hnodeHistory :
+      d2FlowTreeRunWithParentOverwrites ctx.initial ctx.level
+        runActive runRole runQuota ctx.overwrite t = .node G low high children := by
+    calc
+      _ = d2FlowTreeAtPath i (d2FlowCandidateRun d initial t) path :=
+        (hpath t).symm
+      _ = .node G low high children := by simpa [d, initial] using hnode
+  have haHistory : runActive t ctx.level = true := by
+    simpa [runActive, hlevel, d] using ha
+  have hrHistory : runRole t ctx.level = .topRise ∨
+      runRole t ctx.level = .mid ∨ runRole t ctx.level = .botDesc := by
+    simpa [runRole, hlevel, d] using hr
+  have hbalanced := d2FlowTreeRunWithParentOverwrites_child_balanced
+    (h := h + 1) (i := ctx.level) (n := t) (G := G) (low := low)
+    (high := high) ctx.initial runActive runRole runQuota ctx.overwrite
+    children hnodeHistory haHistory hrHistory port
+  rw [hpath (t + 1)]
+  simpa [d, initial, ctx] using hbalanced
+
 /-- Every active top-rise sender has zero deficit at its current path: its
 active parent one stage earlier is top-descending and resets that child root.
 -/
