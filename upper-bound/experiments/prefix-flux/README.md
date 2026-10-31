@@ -11,6 +11,7 @@ and should be consulted only for provenance.
 |---|---|---|
 | Fixed physical core | `D2-FOUR-SORT-4096-CANDIDATE.md`, `D2ReflectedPhysicalPack.lean`, `D2BandRepair4096Network.lean` | Depth 276; checked 832-wire Boolean band for one fixed tile. Local result only. |
 | Local rank/profile transfer | `D2LocalRankDisplacement.lean`, `D2PhysicalProfileGlobalTransfer.lean`, `D2GeometricProfileBudget.lean` | 832 local displacement and 448-per-tile aggregate interfaces; actual stage tags/correlation remain open. |
+| False-profile clipped transfer | `D2FalseProfileTransfer.lean`, `D2FalseClippedTransfer.lean` | Checked 448 local port error and parent-error-plus-448 arbitrary-tag recurrence for full-height tiles; actual `d2FlowCandidateRun` tags/child masses and ragged source heights remain open. |
 | Flow and reserves | `D2-FLOW-STATE-SPEC.md`, `D2ScheduleReserve.lean`, `D2Stage20PreservesInv.lean`, `D2AllStageInvariant.lean` | Finite stage bridge through stage 20; the all-stage theorem is conditional on an unproved sender-input provider. |
 | Physical routing | `D2StaticWireSets.lean`, `D2VariableTilePhysicalFlowTransfer.lean`, `D2NativePathIntervals.lean` | Cell/rank-slice and boundary geometry; no closed all-depth spatial recurrence. |
 | Arbitrary-root gates | `D2-DISTANCE-TAIL-PERIOD-GATE.md`, `D2-PORT-VARIANCE-TRANSFER.md` | Selected-cut relaxations expose alignment failures; they are not executions of the fixed network. |

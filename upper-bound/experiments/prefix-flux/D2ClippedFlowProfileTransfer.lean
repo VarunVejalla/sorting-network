@@ -275,6 +275,10 @@ private theorem countDistance_rat_eq_abs (a b : Nat) :
     rw [abs_of_nonneg (sub_nonneg.mpr (by exact_mod_cast hba))]
     ring
 
+theorem countDistance_rat_eq_abs_for_profiles (a b : Nat) :
+    (countDistance a b : Rat) = abs ((a : Rat) - (b : Rat)) :=
+  countDistance_rat_eq_abs a b
+
 /-- Clipping one global rank partition into partial tiles preserves the local
 448 error bound on the entire 64-column profile, not only on the tile total. -/
 theorem clipped_global_core_profile_error_le_448_per_tile

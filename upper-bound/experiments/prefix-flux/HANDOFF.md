@@ -41,9 +41,16 @@ price only; no limsup bound below 300 is proved.
   `reflected_core_false_exact_rank_port_error_le_448`: for arbitrary legal
   input column counts, the reflected physical core's false-count profile has
   range at most 13 and incurs at most 448 exact-rank error over any monotone
-  port cuts. This is the prefix orientation needed for rank routing; its
-  hypotheses include the actual output false mass. The remaining stage bridge
-  must identify that mass and those cuts/tags with the concrete run.
+  full-height port cuts. `reflected_core_false_total_eq_input` proves the
+  core preserves total false mass, and the `_of_input_mass` wrapper supplies
+  the local port theorem from the sender's input false count.
+- `D2FalseClippedTransfer.lean` proves the full-height clipped extension and
+  its arbitrary-tag composition: for any global monotone rank partition and
+  receiver tags, the grouped false-profile error is at most parent mass error
+  plus `448 * tiles`. This composes actual clipped cuts with the core provider.
+  It does not yet show that a candidate-run sender's tags or child ideal
+  masses are the ones passed to this theorem. Ragged source heights below 4096
+  are also not covered by this extension.
 - Stage-specific reserve/invariant proofs reach the Run-20-to-Run-21
   transition. `D2AllStageInvariant.lean` lifts a provider to all stages
   conditionally; the required universal sender-input provider is missing.
@@ -71,6 +78,10 @@ resolves the local row-orientation/provider issue; it does not identify the
 schedule's actual sender cuts, tags, or output mass.
 The focused checker also passes the updated `D2RoutedMass.lean` with its
 false-mass receiver partition identity.
+Current-source focused checks additionally pass `D2ClippedFlowProfileTransfer.lean`
+and `D2FalseClippedTransfer.lean`; the former exposes the existing rational to
+integer error conversion lemma, and the latter proves the clipped full-height
+false-profile transfer for arbitrary tags.
 
 ## Main unresolved gate
 
@@ -85,18 +96,18 @@ injectivity theorem show that aligned 4096-rank pieces of such a sender map
 to distinct whole physical cells. The sender-port boundaries are proved
 grid-aligned conditionally from the stage invariants.
 
-The local orientation/provider is now available by tracking false counts:
-the fixed core theorem compares top-prefix false profiles directly to the
-exact false-rank profile at a cost of 448. The remaining ordinary-sender
-composition must (1) identify the core's output false mass with the sender's
-actual false mass in `d2FlowCandidateRun`, (2) identify each physical interval
-count with the corresponding `variableColumnGrouped` cut and actual receiver
-tag, and (3) prove the per-child ideal false-mass sum equals the next child's
-capacity/deficit. The child-specific rank-mass calculation is needed, not
-merely its sum over all eight children. Use actual run boundaries and tags,
-then apply the arbitrary-tag `+448` transfer. Extend the ordinary case to
-startup, `botRise`, clipped final tiles, and exceptional intervals only after
-this gate passes.
+The local orientation/provider and its full-height clipped arbitrary-tag
+composition are now available. The remaining ordinary-sender composition
+must (1) instantiate the Boolean input tile and its column profile on the
+actual `d2FlowCandidateRun`, (2) identify the cumulative rank cuts and each
+receiver tag from the run's static sender sets, and (3) prove the per-child
+ideal false mass equals the next child's capacity/deficit. The exact child
+identity is required per child, not only after summing all eight. A regular
+sender has ten ordered ports (two parent halves and eight child intervals),
+so its cuts are the eleven boundary positions `0..10`. Prove the parent mass
+error from the flow state and use the arbitrary-tag `+448` theorem. Then
+extend to sub-4096 ragged heights, startup, `botRise`, and exceptional
+intervals; none of those cases is supplied by the current full-height lemma.
 
 The corrected arbitrary-root selected-cut LP keeps exact total root mass yet
 still admits large terminal error under the current independent tail
@@ -110,14 +121,12 @@ terminal purity or bounded displacement.
 
 ## Next proof gate
 
-Instantiate the false-profile provider on one ordinary sender of an actual
-`d2FlowCandidateRun` transition. Prove the sender's false mass, its 9 port
-cuts, and each receiver tag from the run's rank boundaries; then show that
-the resulting grouped false counts equal the next stage's child false masses.
-The exact child identity must be shown per child, not only after summing all
-eight. Quantify over arbitrary legal sender profiles. If it closes, extend to
-startup, `botRise`, clipped final tiles, and exceptional roles; then test
-whether the resulting recurrence supplies an all-depth spatial/distance
+Use `clipped_fullheight_false_core_grouped_error_le_parent_add_448` for one
+ordinary sender of an actual `d2FlowCandidateRun` transition. Prove its ten
+port intervals, receiver tags, input false mass, and per-child ideal false
+masses from the run's rank boundaries and static sender sets. If this identity
+closes for arbitrary legal profiles, extend to ragged heights and exceptional
+roles; then test whether the recurrence yields an all-depth spatial/distance
 invariant and terminal cleanup. Aggregate error alone is not terminal purity.
 
 ## Files and artifacts

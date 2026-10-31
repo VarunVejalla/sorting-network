@@ -17,8 +17,44 @@ abbrev Col := Fin 64
 abbrev Row := Fin 4096
 abbrev Wire := Fin (4096 * 64)
 
-set_option maxRecDepth 8192
-set_option maxHeartbeats 2000000
+set_option maxRecDepth 32768
+set_option maxHeartbeats 4000000
+
+theorem comparatorNetwork_false_count_preserved {n : Nat}
+    (net : ComparatorNetwork n) (v : Fin n -> Bool) :
+    (Finset.univ.filter fun w : Fin n => net.exec v w = false).card =
+      (Finset.univ.filter fun w : Fin n => v w = false).card := by
+  obtain ⟨pi, hpi⟩ := ComparatorNetwork.exec_eq_comp_perm net v
+  have hset :
+      (Finset.univ.filter fun w : Fin n => v (pi w) = false).map pi.toEmbedding =
+        Finset.univ.filter fun w : Fin n => v w = false := by
+    ext x
+    simp only [Finset.mem_map, Finset.mem_filter, Finset.mem_univ, true_and]
+    constructor
+    · rintro ⟨y, hy, rfl⟩
+      exact hy
+    · intro hx
+      exact ⟨pi.symm x, by simpa using hx, by simp⟩
+  rw [hpi]
+  calc
+    _ = (Finset.univ.filter fun w : Fin n => v (pi w) = false).card := rfl
+    _ = ((Finset.univ.filter fun w : Fin n => v (pi w) = false).map
+        pi.toEmbedding).card := by simp
+    _ = _ := congrArg Finset.card hset
+
+theorem reflected_core_false_total_eq_input (v : Wire -> Bool) :
+    (Finset.univ.sum fun c : Col => matrixColumnFalseCount c
+      ((Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+        Chvatal.D2ReflectedPhysicalPack.reflectedSigma35
+        Chvatal.D2ReflectedPhysicalPack.reflectedSigma25).exec v)) =
+      (Finset.univ.filter fun w : Wire => v w = false).card := by
+  let net := Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+    Chvatal.D2ReflectedPhysicalPack.reflectedSigma35
+    Chvatal.D2ReflectedPhysicalPack.reflectedSigma25
+  calc
+    _ = (Finset.univ.filter fun w : Wire => net.exec v w = false).card :=
+      (matrixFalseTotal_eq_sumColumns (net.exec v)).symm
+    _ = _ := comparatorNetwork_false_count_preserved net v
 
 /-- The reflected physical core's false-count profile has the same range-13
 port bound as its true-count profile. False wires occupy the top prefix of
@@ -74,7 +110,7 @@ theorem reflected_core_false_exact_rank_port_error_le_448
         have hc := c.isLt
         omega)
       have hfalse' : out (Chvatal.matrixWire 4096 64 r c) = false := by
-        simpa [out, net] using hfalse
+        simpa [out] using hfalse
       rw [hfalse'] at hr
       cases hr
     have hcard := Finset.card_le_card hsubset
@@ -93,7 +129,7 @@ theorem reflected_core_false_exact_rank_port_error_le_448
         rw [Chvatal.matrixWire_row]
         have hc := c.isLt
         omega)
-      simpa [out, net] using htrue
+      simpa [out] using htrue
     have hcard := Finset.card_le_card hsubset
     rw [card_filter_val_ge 4096 b (by omega)] at hcard
     exact hcard
@@ -115,8 +151,32 @@ theorem reflected_core_false_exact_rank_port_error_le_448
         _ = (4096 - b) + b := (Nat.sub_add_cancel (by omega)).symm
         _ <= _ := Nat.add_le_add_right (htrueLower c) b
     omega
-  simpa [actual, out, net] using
-    exact_rank_port_error_le_448 actual cuts ports H hzero hend hmono
-      hactual hH a b hlo hhi hba
+  have hresult := exact_rank_port_error_le_448 actual cuts ports H
+    hzero hend hmono hactual (by simpa [actual, out, net] using hH)
+      a b hlo hhi hba
+  simpa [actual, out, net] using hresult
+
+theorem reflected_core_false_exact_rank_port_error_le_448_of_input_mass
+    (v : Wire -> Bool) (h : Col -> Nat)
+    (hcount : forall c, Chvatal.matrixColumnTrueCount c v = h c)
+    (hbound : forall c, h c <= 4096)
+    (H ports : Nat) (cuts : Col -> Nat -> Nat)
+    (hH : H = (Finset.univ.filter fun w : Wire => v w = false).card)
+    (hzero : forall c, cuts c 0 = 0)
+    (hend : forall c, cuts c ports = 4096)
+    (hmono : forall c i, i < ports -> cuts c i <= cuts c (i + 1)) :
+    (Finset.univ.sum fun cell : Prod Col (Fin ports) =>
+      abs ((prefixIntervalMass
+          (matrixColumnFalseCount cell.1
+            ((Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+              Chvatal.D2ReflectedPhysicalPack.reflectedSigma35
+              Chvatal.D2ReflectedPhysicalPack.reflectedSigma25).exec v))
+          (cuts cell.1 cell.2.val) (cuts cell.1 (cell.2.val + 1)) : Rat) -
+        (prefixIntervalMass (exactRankColumnHeight H cell.1)
+          (cuts cell.1 cell.2.val) (cuts cell.1 (cell.2.val + 1)) : Rat))) <= 448 := by
+  exact reflected_core_false_exact_rank_port_error_le_448
+    v h hcount hbound H ports cuts
+      (hH.trans (reflected_core_false_total_eq_input v).symm)
+      hzero hend hmono
 
 end Chvatal.D2FalseProfileTransfer
