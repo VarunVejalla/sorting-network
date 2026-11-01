@@ -797,3 +797,23 @@ with hashes in its `MANIFEST.tsv`. Use
 `python LLM-helpers/sub300-check/check_prefix_flux_lean.py <source> --repo-root
 .claude/worktrees/sub300` for focused checks; rebuild dependencies when their
 sources changed.
+
+
+## Bot-rise allocation parity checkpoint (2026-11-01)
+
+`D2BotRiseStaticFit.lean` now proves, for every reachable candidate-run
+`botRise` path snapshot, that the symmetric parent allocation
+`d2FlowTotal(children deficits) - G` is even. The proof uses the existing
+all-stage alignment theorem: every selected node has `4096` dividing `G`; all eight
+children are saturated in this role, so their total deficit is a multiple of
+4096 as well. The local `bot_rise_sender_piece_partition` theorem in
+`D2OrdinaryRankRouting.lean` therefore has its parity premise available for
+these snapshots, alongside the previously proved exact sender cardinality and
+child-root preservation. Focused current-source Lean check: PASS for
+`D2BotRiseStaticFit`. This remains a local bot-rise routing fact; it does not
+identify routed receiver sets with next-stage bags, establish the full
+all-role physical transition, or prove profile contraction/terminal cleanup.
+Next, use this parity result to instantiate the local partition at the actual
+clamped static sender (if useful to the receiver-layout gate), then prioritize
+the all-role sender-set/cardinality transition and arbitrary-root profile
+recurrence. The central sub-300 risk is unchanged.

@@ -11,6 +11,7 @@ open Chvatal.D2Reserve
 open Chvatal.D2PhysicalBagState
 open Chvatal.D2StaticWireSets
 open Chvatal.D2AllStagePortGrid
+open Chvatal.D2OrdinaryRankRouting
 
 /-- At a reachable `botRise` snapshot, every child remains saturated from the
 standard initialization. Therefore the updated parent has clamped static-hole
@@ -31,6 +32,7 @@ theorem candidate_botRise_path_static_fit_clamped
       (d2FlowNodeStaticBag (n := 8 * (8192 * 8 ^ h)) 0
         (8192 * 8 ^ h) G low high children).card =
           8 * (8192 * 8 ^ h) - G /\
+      (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - G) % 2 = 0 /\
       StaticHolesFit
         (low + (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - G) / 2)
         (d2FlowNodeStaticHolesClamped 0 (8192 * 8 ^ h)
@@ -104,6 +106,13 @@ theorem candidate_botRise_path_static_fit_clamped
       simpa [d, d2FlowCandidateRunActive] using hroleActive.1
     have hr : d2FlowCandidateRole d (3 * j) (j + 2) = .botRise := by
       simpa [d, d2FlowCandidateRunRole] using hroleActive.2
+    have htileRoot := (d2FlowCandidateRun_alignment_all (d := d) hd (3 * j)
+      (by omega : 1 <= 3 * j)).1
+    have htileSelected := d2FlowTileAligned_atPath
+      (d2FlowCandidateRun d initial (3 * j)) path htileRoot
+    have htileNode : d2FlowTileAligned (.node G low high children) := by
+      simpa [tree, run, initial, d, hnode] using htileSelected
+    have hGgrid : 4096 ∣ G := htileNode.1
     have hstageInput := hinputsNode.2
     simp only [ha, if_pos, hr] at hstageInput
     have hbalance : low + high = G := hstageInput.1
@@ -132,6 +141,17 @@ theorem candidate_botRise_path_static_fit_clamped
           intro k hk
           exact hsat k
         _ = 8 * (8192 * 8 ^ h) := by simp
+    have htotalGrid : 4096 ∣ d2FlowTotal
+        (fun k => d2FlowTreeRootDeficit (children k)) := by
+      rw [htotal]
+      exact ⟨16 * 8 ^ h, by ring⟩
+    have hallocationGrid : 4096 ∣ (d2FlowTotal
+        (fun k => d2FlowTreeRootDeficit (children k)) - G) :=
+      d2_dvd_sub_trunc htotalGrid hGgrid
+    have hallocationEven : (d2FlowTotal
+        (fun k => d2FlowTreeRootDeficit (children k)) - G) % 2 = 0 := by
+      rcases hallocationGrid with ⟨m, hm⟩
+      omega
     have hsourceCard :
         (d2FlowNodeStaticBag (n := 8 * (8192 * 8 ^ h)) 0
           (8192 * 8 ^ h) G low high children).card =
@@ -169,6 +189,7 @@ theorem candidate_botRise_path_static_fit_clamped
     exact ⟨G, low, high, children, hnode,
       by simpa [d, width] using hsourceFit,
       by simpa [d, width] using hsourceCard,
+      by simpa [d] using hallocationEven,
       by simpa [d, width] using hfit, by simpa [d, width] using hbag⟩
 
 end Chvatal.D2BotRiseStaticFit
