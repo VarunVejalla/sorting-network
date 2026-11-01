@@ -785,9 +785,13 @@ The flat route now also has checked parent/child level lemmas and
 `d2SenderNodeRouteTarget_level_relation`: every piece reaching a receiver
 originates at the same level (inactive self-retention) or an adjacent level
 (active parent/child transfer). This is the first structural reduction of
-the incoming-port sum. Next combine it with the schedule's no-adjacent-active
-levels property to eliminate impossible senders and identify the surviving
-port terms with the inactive allocation recurrence.
+the incoming-port sum. The schedule's no-adjacent-active-levels property is
+now composed with this classification to prove
+`d2SenderNodeRoutedBag_active_empty`: every active receiver has an empty
+post-stage bag. The remaining cardinality case is an inactive receiver;
+reduce its incoming sum to its retained self-piece, active parent's down-port,
+and active children's up-ports, then match those widths to the flow allocation
+recurrence.
 
 `D2DynamicSenderNode.lean` now also defines a concrete static physical bag for
 each flat flow-tree node, using its native base-eight address and the checked

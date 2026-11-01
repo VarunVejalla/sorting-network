@@ -721,6 +721,35 @@ theorem d2SenderNodeRouteTarget_level_relation {depth : Nat}
       simpa [d2SenderNodeRouteTarget, ha] using hroute)
     exact Or.inr (Or.inr (congrArg (fun n : D2SenderNode depth => n.1.val) heq))
 
+/-- Under a no-adjacent-active-level schedule, active receivers receive no
+pieces: inactive nodes only retain themselves, and active neighbors are
+excluded by the schedule. -/
+theorem d2SenderNodeRouteTarget_not_active_receiver {depth : Nat}
+    (active : Nat → Bool) (node receiver : D2SenderNode depth)
+    (port : D2SenderRoutePort)
+    (hnoadj : ∀ i, active i = true → active (i + 1) = true → False)
+    (hreceiver : active receiver.1.val = true) :
+    d2SenderNodeRouteTarget active node port ≠ some receiver := by
+  intro hroute
+  by_cases hnode : active node.1.val = true
+  · cases port with
+    | none =>
+        have hp : d2SenderNodeParent? node = some receiver := by
+          simpa [d2SenderNodeRouteTarget, hnode] using hroute
+        have hlevel := d2SenderNodeParent?_some_level node receiver hp
+        exact hnoadj receiver.1.val hreceiver (by simpa [hlevel] using hnode)
+    | some j =>
+        have hc : d2SenderNodeChild? node j = some receiver := by
+          simpa [d2SenderNodeRouteTarget, hnode] using hroute
+        have hlevel := d2SenderNodeChild?_some_level node j receiver hc
+        have hreceiver' := hreceiver
+        rw [← hlevel] at hreceiver'
+        exact hnoadj node.1.val hnode hreceiver'
+  · have heq : node = receiver := Option.some.inj (by
+      simpa [d2SenderNodeRouteTarget, hnode] using hroute)
+    have : active node.1.val = true := by simpa [heq] using hreceiver
+    exact hnode this
+
 /-- Local rank pieces, with an inactive node's entire bag treated as its
 retained self piece on the parent-port label. -/
 def d2SenderNodeLocalPiece {Wire : Type*} [DecidableEq Wire]
@@ -1385,6 +1414,34 @@ theorem d2SenderNodeRoutedBag_external_empty
   · intro hx
     have hfalse : False := Finset.notMem_empty x hx
     exact hfalse.elim
+
+/-- The flat stage route gives no incoming wires to an active receiver when
+active levels are separated by at least one inactive level. -/
+theorem d2SenderNodeRoutedBag_active_empty
+    {Wire : Type*} [DecidableEq Wire] {depth : Nat}
+    (active : Nat → Bool) (source : D2SenderNode depth → Finset Wire)
+    (split : D2SenderNode depth → D2SenderPorts Wire)
+    (hnoadj : ∀ i, active i = true → active (i + 1) = true → False)
+    (receiver : D2SenderNode depth)
+    (hreceiver : active receiver.1.val = true) :
+    d2SenderNodeRoutedBag active source split (some receiver) = Finset.empty := by
+  classical
+  apply Finset.ext
+  intro x
+  constructor
+  · intro hx
+    unfold d2SenderNodeRoutedBag at hx
+    simp only [Finset.mem_biUnion, Finset.mem_univ, true_and] at hx
+    obtain ⟨node, hx⟩ := hx
+    change x ∈ routedTargetPiece (d2SenderNodeLocalPiece active source split)
+      (d2SenderNodeRouteTarget active) node (some receiver) at hx
+    unfold routedTargetPiece at hx
+    obtain ⟨port, hport, hxpiece⟩ := Finset.mem_biUnion.mp hx
+    have hroute := (Finset.mem_filter.mp hport).2
+    exact (d2SenderNodeRouteTarget_not_active_receiver active node receiver port
+      hnoadj hreceiver hroute).elim
+  · intro hx
+    exact (Finset.notMem_empty x hx).elim
 
 /-- The flat D2 route preserves a global wire partition once source bags and
 each sender's local pieces satisfy the partition contracts. This is the
