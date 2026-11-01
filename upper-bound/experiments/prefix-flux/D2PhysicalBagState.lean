@@ -1569,6 +1569,65 @@ theorem d2FlowStage_active_bot_rise_static_bag_empty
   · simpa [Nat.zero_add, pi] using hstop
   · simpa [pi] using hsum
 
+/-- A top-descending reset makes every child hole its full native slot, so the
+clamped hole list fits exactly across the parent. -/
+theorem d2FlowStage_active_top_desc_static_fit_clamped
+    {scale h i G low high : Nat} {active : Nat → Bool}
+    {role : Nat → D2Role} {quota : Nat → D2Role → Nat}
+    (children : Fin 8 → D2FlowTree h)
+    (ha : active i = true) (hr : role i = .topDesc)
+    (hwidth : 0 < scale * 8 ^ h) :
+    StaticHolesFit 0
+      (d2FlowNodeStaticHolesClamped 0 (scale * 8 ^ h) 0 0
+        (fun j => d2FlowTreeChild
+          (d2FlowStage active role quota (h + 1) i
+            (.node G low high children)) j))
+      (8 * (scale * 8 ^ h)) := by
+  let postChildren : Fin 8 → D2FlowTree h := fun j =>
+    d2FlowTreeChild (d2FlowStage active role quota (h + 1) i
+      (.node G low high children)) j
+  have hpostG (j : Fin 8) : d2FlowTreeRootDeficit (postChildren j) = 0 := by
+    simp [postChildren, d2FlowStage, ha, hr, d2FlowTreeChild,
+      d2FlowTreeSetRoot_deficit]
+  have hpostData (j : Fin 8) : d2FlowTreeRootData (postChildren j) =
+      (0, 0, 0) := by
+    simp [postChildren, d2FlowStage, ha, hr, d2FlowTreeChild,
+      d2FlowTreeRootData_setRoot]
+  have hscale : scale ≠ 0 := by
+    intro hs
+    subst scale
+    simp at hwidth
+  let width := scale * 8 ^ h
+  let lo : Fin 8 → Nat := fun j =>
+    (d2EightChildHoleClamped 0 width 0 0 postChildren j).1
+  let hi : Fin 8 → Nat := fun j =>
+    (d2EightChildHoleClamped 0 width 0 0 postChildren j).2
+  have hslot (j : Fin 8) : lo j = j.val * width ∧
+      hi j = (j.val + 1) * width := by
+    have hnot : d2FlowTreeRootDeficit (postChildren j) ≠ width := by
+      rw [hpostG j]
+      omega
+    simp [lo, hi, width, d2EightChildHoleClamped, d2EightChildHole,
+      hpostG, hpostData, hnot, hscale]
+  have hfit := staticHoleList_fits 0 (8 * width) lo hi (by omega)
+    (by
+      intro j
+      rw [(hslot j).1]
+      exact Nat.zero_le _)
+    (by
+      intro j
+      rw [(hslot j).1, (hslot j).2]
+      exact Nat.mul_le_mul_right width (Nat.le_succ j.val))
+    (by
+      intro j
+      rw [(hslot j).2]
+      exact Nat.mul_le_mul_right width (by omega))
+    (by
+      intro j k hjk
+      rw [(hslot j).2, (hslot k).1]
+      exact Nat.mul_le_mul_right width (Nat.succ_le_of_lt hjk))
+  simpa [width, lo, hi, postChildren, d2FlowNodeStaticHolesClamped] using hfit
+
 /-- The startup top-descending reset also leaves no residual parent bag:
 its eight children occupy the full parent interval. -/
 theorem d2FlowStage_active_top_desc_static_bag_empty

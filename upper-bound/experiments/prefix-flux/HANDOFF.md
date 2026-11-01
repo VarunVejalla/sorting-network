@@ -524,8 +524,10 @@ when child deficits and both fronts move inward. Thus the inactive-node stage
 case is now proved from a clamped input fit. The active ordinary-stage fit is
 also converted to clamped fit by
 `d2FlowStage_active_ordinary_static_fit_clamped`. Existing initial-fit results
-can be converted as well. The active top-descending and bottom-rising fit
-cases and routed next-bag identity remain open.
+can be converted as well. The active top-descending fit is now proved by
+`d2FlowStage_active_top_desc_static_fit_clamped`, since all eight child holes
+are their full native slots after reset. The active bottom-rising fit case and
+routed next-bag identity remain open.
 
 The same file now proves `d2FlowStage_active_top_desc_static_bag_empty` for
 positive native width: the startup top-descending reset sets all eight child
