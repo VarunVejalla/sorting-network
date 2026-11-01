@@ -3,6 +3,18 @@
 State checked against the `sub300-structural` worktree on 2026-10-31. This is
 research status, not a proved improvement to the repository's accepted bound.
 
+## Latest focused checkpoint (2026-10-31)
+
+`D2BotRiseStaticFit.lean` now proves that every candidate-run `botRise`
+snapshot has clamped static-hole fit at the updated parent, for any selected
+path satisfying the schedule window. The proof uses `D2BotRiseRunBridge.lean`
+to identify the role and show that all immediate children remained saturated
+through the preceding callback history, then applies the collapsed-boundary
+fit lemma in `D2PhysicalBagState.lean`. Current-source focused checks pass for
+all three modules. This closes the `botRise` static-fit side condition only;
+it does not identify routed pieces with next-stage bags or establish physical
+receiver tags/counts. The next exact-transition obligation remains unchanged.
+
 ## Candidate and price
 
 The strongest deterministic candidate is the `(3,3,2)` D2 schedule with the

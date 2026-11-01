@@ -2026,6 +2026,87 @@ theorem d2FlowNode_active_ordinary_piece_partition
     (regular_stage_sender_piece_partition children sender ha hr hbalance
       hfront.1 hfront.2.1 hfront.2.2.1 hfront.2.2.2 hsender)
 
+/-- If every child is saturated, its clamped hole is the empty point at the
+parent boundary. When the parent interval has zero length, these eight
+markers fit regardless of their original slot order. -/
+theorem d2FlowNodeStaticHolesClamped_fit_of_all_children_saturated
+    {h base width low high : Nat} (children : Fin 8 -> D2FlowTree h)
+    (hbalance : low + high = 8 * width)
+    (hsaturated : forall j, d2FlowTreeRootDeficit (children j) = width) :
+    StaticHolesFit (base + low)
+      (d2FlowNodeStaticHolesClamped base width low high children)
+      (base + 8 * width - high) := by
+  have hstop : base + 8 * width - high = base + low := by omega
+  have hfit := staticHoleList_fits (base + low) (base + low)
+      (fun _ : Fin 8 => base + low) (fun _ : Fin 8 => base + low)
+      le_rfl (by intro j; exact le_rfl) (by intro j; exact le_rfl)
+      (by intro j; exact le_rfl) (by intro i j hij; exact le_rfl)
+  simpa [d2FlowNodeStaticHolesClamped, d2EightChildHoleClamped,
+    hsaturated, hstop] using hfit
+
+/-- At a bot-rise whose immediate children are all saturated and inactive,
+the update fills the parent deficit completely. Its clamped holes then fit at
+the collapsed parent boundary without separate endpoint-front hypotheses. -/
+theorem d2FlowStage_active_bot_rise_static_fit_clamped_of_saturated_children
+    {scale h i G low high : Nat} {active : Nat -> Bool}
+    {role : Nat -> D2Role} {quota : Nat -> D2Role -> Nat}
+    {cap : Nat -> Nat} (children : Fin 8 -> D2FlowTree h)
+    (htree : d2FlowTreeInv scale (.node G low high children))
+    (hinputs : d2FlowStageInvInputs scale active role quota cap i
+      (.node G low high children))
+    (ha : active i = true) (hr : role i = .botRise)
+    (hnext : active (i + 1) = false)
+    (hsaturated : forall j,
+      d2FlowTreeRootDeficit (children j) = scale * 8 ^ h) :
+    StaticHolesFit
+      (low + (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2)
+      (d2FlowNodeStaticHolesClamped 0 (scale * 8 ^ h)
+        (low + (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2)
+        (high + (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) -
+          (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2)
+        (fun j => d2FlowTreeChild
+          (d2FlowStage active role quota (h + 1) i
+            (.node G low high children)) j))
+      (8 * (scale * 8 ^ h) -
+        (high + (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) -
+          (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2)) := by
+  let width := scale * 8 ^ h
+  let total := d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j))
+  let pi := total - G
+  let nextChildren : Fin 8 -> D2FlowTree h := fun j =>
+    d2FlowStage active role quota h (i + 1) (children j)
+  have htotal : total = 8 * width := by
+    unfold total d2FlowTotal
+    calc
+      Finset.univ.sum (fun j : Fin 8 => d2FlowTreeRootDeficit (children j)) =
+          Finset.univ.sum (fun _ : Fin 8 => width) := by
+        apply Finset.sum_congr rfl
+        intro j hj
+        simpa [width] using hsaturated j
+      _ = 8 * width := by simp
+  have hbalance : low + high = G := by
+    have hstage := hinputs.2
+    simp [ha, hr] at hstage
+    exact hstage
+  have hGpi : G + pi = 8 * width := by
+    dsimp [pi]
+    have hcover : G <= total := by
+      simpa [total] using htree.2.1
+    rw [htotal]
+    omega
+  have hnewBalance : (low + pi / 2) + (high + pi - pi / 2) = 8 * width := by
+    omega
+  have hnextSat : forall j, d2FlowTreeRootDeficit (nextChildren j) = width := by
+    intro j
+    dsimp [nextChildren]
+    rw [d2FlowStage_root_deficit_of_inactive (children j) hnext]
+    simpa [width] using hsaturated j
+  have hfit := d2FlowNodeStaticHolesClamped_fit_of_all_children_saturated
+    (base := 0) (width := width) (low := low + pi / 2)
+    (high := high + pi - pi / 2) nextChildren hnewBalance hnextSat
+  simpa [width, total, pi, htotal, nextChildren, d2FlowStage, ha, hr,
+    d2FlowTreeChild] using hfit
+
 /-- The tree-capacity/balance invariant alone does not guarantee that a
 node's child holes fit between its fronts. Thus the candidate proof must use
 the schedule's endpoint-reserve input, not just `d2FlowTreeInv`. -/

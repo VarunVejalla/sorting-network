@@ -22,6 +22,54 @@ theorem d2FlowTreePathContext_level
       rw [ih]
       omega
 
+/-- At the exceptional boundary time, the parent is active and classified as
+`botRise`; its immediate child level is inactive. -/
+theorem d2FlowCandidate_botRise_current_active_role
+    {d j : Nat} (hd : 7 <= d) (hj : 1 <= j)
+    (hwindow : 3 * j + 2 <= tfD2 d) :
+    d2FlowCandidateRunActive d (3 * j) (j + 2) = true ∧
+      d2FlowCandidateRunRole d (3 * j) (j + 2) = .botRise := by
+  classical
+  have hlevel : j + 3 <= d := by
+    unfold tfD2 at hwindow
+    omega
+  have hactive : active d (tfD2 d) (j + 2) (3 * j) := by
+    have ht : 2 <= 3 * j := by omega
+    have htf : 3 * j <= tfD2 d := by omega
+    have hpar : (j + 2) % 2 = (3 * j) % 2 := by omega
+    have hlow : 3 * (j + 2) + 3 * d >= 2 * (3 * j) + 11 := by omega
+    have hup : 3 * (j + 2) < 3 * j + 8 := by omega
+    unfold active
+    simp only [if_neg (by omega : 3 * j ≠ 1)]
+    exact ⟨ht, htf, hpar, hlow, hup⟩
+  have hactiveBool :
+      d2FlowCandidateRunActive d (3 * j) (j + 2) = true := by
+    rw [d2FlowCandidateRunActive]
+    rw [d2FlowCandidateActive_matches_schedule (d := d) (t := 3 * j)
+      (i := j + 2) (by omega)]
+    simp [hactive]
+  have hfront := botRise_boundary_frontier (by omega)
+    (show 3 * (j + 2) = 3 * j + 6 by omega)
+  have htf : 3 * j < tfD2 d := by omega
+  have hgap := frontiers_separated_before_tf hd (by omega) htf
+  have hnotTop : j + 2 ≠ alpha d (3 * j) := by
+    intro heq
+    rw [hfront.1, heq] at hgap
+    omega
+  have hnotMove : ¬ omega (3 * j) < omega (3 * j + 1) := by
+    have hnext : omega (3 * j + 1) = j + 1 := by omega
+    rw [hfront.1, hnext]
+    omega
+  have hrole : d2ScheduleRole d (j + 2) (3 * j) = .botRise := by
+    rw [d2ScheduleRole, if_neg hnotTop, if_pos hfront.1.symm,
+      if_neg hnotMove]
+  have hrole' : d2FlowCandidateRunRole d (3 * j) (j + 2) = .botRise := by
+    rw [d2FlowCandidateRunRole,
+      d2FlowCandidateRole_matches_schedule (d := d) (t := 3 * j)
+        (i := j + 2) (by omega)]
+    exact hrole
+  exact ⟨hactiveBool, hrole'⟩
+
 /-- Schedule callbacks along the exceptional bottom-rise history: the child
 is inactive throughout; the parent is inactive except at the rise itself. -/
 theorem d2FlowCandidate_botRise_callback_window
