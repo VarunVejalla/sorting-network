@@ -4,6 +4,7 @@ import D2StaticWireSets
 import D2PhysicalRankRouting
 import D2ReflectedPhysicalPack
 import D2LiftedShuffleBridge
+import D2VariableTilePhysicalFlowTransfer
 
 set_option maxHeartbeats 500000
 
@@ -18,6 +19,8 @@ open Chvatal.D2RankProfileRouting
 open Chvatal.D2RankAlignment
 open Chvatal.D2LiftedShuffleBridge
 open Chvatal.D2ReflectedPhysicalPack
+open Chvatal.D2VariableTilePhysicalFlowTransfer
+open Chvatal.D2Reserve
 
 abbrev Col := Fin 64
 abbrev Row := Fin 4096
@@ -443,5 +446,89 @@ theorem reflected_core_complete_tiles_child_false_count_eq_profile
   intro t ht
   exact reflected_core_ordered_tile_child_false_count_eq_profile
     S bounds t p child boundary left rightStart (input t) (hcomplete t) hlo hhi
+
+/-- Specialize the complete-tile identity to one of the eight child ports of
+an ordinary D2 sender. The cumulative cuts are the flow's actual sender-port
+boundaries, and the destination tag is the matching child rank interval. -/
+theorem reflected_core_ordinary_child_tile_false_count_eq_profile
+    {tiles n : Nat} (S : Finset (Fin n))
+    (quota : Nat) (widths : Fin 8 -> Nat) (child : Fin 8)
+    (t : Fin tiles) (input : Wire -> Bool)
+    (hconserve : quota + d2FlowTotal widths = S.card)
+    (hcomplete : (t.val + 1) * 262144 <= S.card) :
+    (Finset.univ.sum fun c : Col =>
+      prefixIntervalMass
+        (matrixColumnFalseCount c
+          ((Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+            reflectedSigma35 reflectedSigma25).exec input))
+        (clippedFlowProfileCuts 4096
+          (fun i : Fin 11 => d2SenderPortBoundaryNat quota S.card widths i.val)
+          t c (child.val + 1))
+        (clippedFlowProfileCuts 4096
+          (fun i : Fin 11 => d2SenderPortBoundaryNat quota S.card widths i.val)
+          t c (child.val + 2))) =
+    (Finset.univ.sum fun b : Wire =>
+      if S.orderEmbOfFin rfl
+          (Fin.mk (t.val * 262144 + b.val) (by
+            have hb := b.isLt
+            omega)) ∈ destinationPiece (ports := 8) S
+              (d2FlowRankBoundary widths) (quota / 2)
+              (S.card - quota / 2) (some child) ∧
+          (Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+            reflectedSigma35 reflectedSigma25).exec input b = false
+      then 1 else 0) := by
+  let bounds : Fin 11 -> Nat := fun i =>
+    d2SenderPortBoundaryNat quota S.card widths i.val
+  let port : Fin 10 := ⟨child.val + 1, by omega⟩
+  have hlo : bounds (Fin.castSucc port) =
+      quota / 2 + d2FlowRankBoundary widths child.val := by
+    simp [bounds, port, d2SenderPortBoundaryNat]
+    omega
+  have hhi : bounds (Fin.succ port) =
+      quota / 2 + d2FlowRankBoundary widths (child.val + 1) := by
+    simp [bounds, port, d2SenderPortBoundaryNat]
+    omega
+  exact reflected_core_ordered_tile_child_false_count_eq_profile
+    S bounds t port child (d2FlowRankBoundary widths) (quota / 2)
+    (S.card - quota / 2) input hcomplete hlo hhi
+
+/-- Aggregate the ordinary-child identity over all complete tiles of one
+ordinary sender. The tile inputs may vary arbitrarily; each is routed through
+the same reflected core and canonical sender-rank address map. -/
+theorem reflected_core_ordinary_child_complete_tiles_false_count_eq_profile
+    {tiles n : Nat} (S : Finset (Fin n))
+    (quota : Nat) (widths : Fin 8 -> Nat) (child : Fin 8)
+    (input : Fin tiles -> Wire -> Bool)
+    (hconserve : quota + d2FlowTotal widths = S.card)
+    (hcomplete : forall t : Fin tiles,
+      (t.val + 1) * 262144 <= S.card) :
+    (Finset.univ.sum fun t : Fin tiles =>
+      Finset.univ.sum fun c : Col =>
+        prefixIntervalMass
+          (matrixColumnFalseCount c
+            ((Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+              reflectedSigma35 reflectedSigma25).exec (input t)))
+          (clippedFlowProfileCuts 4096
+            (fun i : Fin 11 => d2SenderPortBoundaryNat quota S.card widths i.val)
+            t c (child.val + 1))
+          (clippedFlowProfileCuts 4096
+            (fun i : Fin 11 => d2SenderPortBoundaryNat quota S.card widths i.val)
+            t c (child.val + 2))) =
+    (Finset.univ.sum fun t : Fin tiles =>
+      Finset.univ.sum fun b : Wire =>
+        if S.orderEmbOfFin rfl
+            (Fin.mk (t.val * 262144 + b.val) (by
+              have hb := b.isLt
+              have ht := hcomplete t
+              omega)) ∈ destinationPiece (ports := 8) S
+                (d2FlowRankBoundary widths) (quota / 2)
+                (S.card - quota / 2) (some child) ∧
+            (Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+              reflectedSigma35 reflectedSigma25).exec (input t) b = false
+        then 1 else 0) := by
+  apply Finset.sum_congr rfl
+  intro t ht
+  exact reflected_core_ordinary_child_tile_false_count_eq_profile
+    S quota widths child t (input t) hconserve (hcomplete t)
 
 end Chvatal.D2ClippedCellRankInterval

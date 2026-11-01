@@ -298,6 +298,19 @@ rank intervals and receiver labels agree with these tile cuts, (b) covering
 the ragged suffix, and (c) connecting total physical false mass to the flow
 deficit.
 
+The child-port specialization is now checked as well:
+`reflected_core_ordinary_child_tile_false_count_eq_profile` instantiates the
+ten ordinary sender cuts `d2SenderPortBoundaryNat` at port `child + 1`, and
+uses `d2FlowRankBoundary widths` and `quota / 2` for the corresponding child
+destination. Its all-complete-tiles form,
+`reflected_core_ordinary_child_complete_tiles_false_count_eq_profile`, sums
+the actual child counts and clipped core profile masses over all full tiles
+for arbitrary per-tile Boolean inputs. It assumes sender conservation and
+that every indexed tile is complete. It does not yet prove that these inputs
+are the recursively scheduled sender contents or cover the residual suffix;
+the key remaining physical step is identifying this canonical rank-tile
+execution with the concrete static-hole stage and its next-run child bags.
+
 `D2StrongDeficitPropagation.lean` already proves the sharp local affine
 profile transition for ordinary eight-child updates. The profile is
 `G = 0 ∧ 256*pi <= c`, or
