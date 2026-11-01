@@ -1001,6 +1001,252 @@ theorem d2FlowNodeStaticHolesClamped_fit_of_endpoint_front_bounds
           simpa [Nat.zero_add] using hbound)
   simpa using hfit
 
+/-- The ordinary two-front contract makes both updated root fronts at most
+`width` whenever scheduled capacity is at most `256 * width`. -/
+theorem d2FlowStage_active_ordinary_fronts_le_width_of_capacity
+    {scale h width i G low high : Nat} {active : Nat -> Bool}
+    {role : Nat -> D2Role} {quota : Nat -> D2Role -> Nat}
+    {cap : Nat -> Nat} (children : Fin 8 -> D2FlowTree h)
+    (hinputs : d2FlowStageInvInputs scale active role quota cap i
+      (.node G low high children)) (ha : active i = true)
+    (hr : role i = .topRise \/ role i = .mid \/ role i = .botDesc)
+    (hcap : cap i <= 256 * width) :
+    low + quota i (role i) / 2 <= width /\
+      high + quota i (role i) / 2 <= width := by
+  have hcore := d2FlowStageInvInputs_ordinary_cut_core children hinputs ha hr
+  have hlow : low <= G := by omega
+  have hhigh : high <= G := by omega
+  have hsmallLow : 512 * low <= cap i := by
+    exact le_trans (Nat.mul_le_mul_left 512 hlow) hcore.2.1
+  have hsmallHigh : 512 * high <= cap i := by
+    exact le_trans (Nat.mul_le_mul_left 512 hhigh) hcore.2.1
+  have hsmallQuota : 256 * quota i (role i) <= cap i := hcore.2.2.1
+  have hbudget : cap i + cap i <= 512 * width := by omega
+  have hleftSum : 512 * low + 256 * quota i (role i) <=
+      512 * width := by omega
+  have hrightSum : 512 * high + 256 * quota i (role i) <=
+      512 * width := by omega
+  constructor <;> omega
+
+/-- If the tree height at path level `i` is `d-i`, an active ordinary
+grandchild two levels below forces the candidate's scheduled capacity below
+256 times one native grandchild slot. -/
+theorem d2FlowCandidateCapacity_le_256_grandchild_slot
+    {d i t h : Nat} (hd : 7 <= d) (ht : 2 <= t)
+    (htf : t < tfD2 d)
+    (hgrandchild : d2FlowCandidateActive d t (i + 2) = true)
+    (hdepth : d = i + h + 3) :
+    d2FlowCandidateCapacity d i t <= 256 * (8192 * 8 ^ (h + 1)) := by
+  classical
+  have hgrandchildSchedule : active d (tfD2 d) (i + 2) t := by
+    rw [d2FlowCandidateActive_matches_schedule (d := d) (t := t)
+      (i := i + 2) (show 0 < t by omega)] at hgrandchild
+    exact of_decide_eq_true hgrandchild
+  have hfront := (active_iff_frontiers (d := d) (tf := tfD2 d)
+    (i := i + 2) (t := t) ht).1 hgrandchildSchedule
+  have hthreshold := (i_le_omega_iff_threshold ht hfront.2.2.2).1
+    hfront.2.2.1
+  have htime : 3 * i - 3 <= t := by omega
+  have hexp : d2FlowCandidateCapacityExponent d i t <= 24 + 3 * h := by
+    rw [hdepth]
+    unfold d2FlowCandidateCapacityExponent
+    omega
+  have h8pow : (8 : Nat) ^ (h + 1) = (2 : Nat) ^ (3 * (h + 1)) := by
+    rw [show (8 : Nat) = 2 ^ 3 by norm_num, Nat.pow_mul]
+  have hscale : (2 : Nat) ^ (24 + 3 * h) =
+      256 * (8192 * 8 ^ (h + 1)) := by
+    rw [h8pow]
+    norm_num [Nat.pow_add]
+    ring
+  calc
+    d2FlowCandidateCapacity d i t =
+        2 ^ d2FlowCandidateCapacityExponent d i t := rfl
+    _ <= 2 ^ (24 + 3 * h) := Nat.pow_le_pow_right (by omega) hexp
+    _ = 256 * (8192 * 8 ^ (h + 1)) := hscale
+
+/-- In the active-ordinary-grandchild case, the first child overwritten by an
+ordinary parent has a fitted clamped root interval. The only extra scale gate
+is that the parent's scheduled capacity be at most 256 times one grandchild
+slot; the endpoint-cut theorem supplies the unsaturated edge-front bound. -/
+theorem d2FlowCandidateStage_first_child_clamped_fit_of_ordinary_grandchild
+    {d i t h G low high : Nat} (children : Fin 8 -> D2FlowTree (h + 2))
+    (hd : 7 <= d) (ht : 2 <= t)
+    (hparent : d2FlowCandidateActive d t i = true)
+    (hparentRole : d2FlowCandidateRole d t i = .topRise \/
+      d2FlowCandidateRole d t i = .mid \/
+      d2FlowCandidateRole d t i = .botDesc)
+    (hgrandchild : d2FlowCandidateActive d t (i + 2) = true)
+    (hgrandchildRole : d2FlowCandidateRole d t (i + 2) = .topRise \/
+      d2FlowCandidateRole d t (i + 2) = .mid \/
+      d2FlowCandidateRole d t (i + 2) = .botDesc)
+    (htf : t < tfD2 d) (hdepth : d = i + h + 3)
+    (htree : d2FlowTreeInv 8192 (.node G low high children))
+    (hinputs : d2FlowStageInvInputs 8192
+      (d2FlowCandidateActive d t) (d2FlowCandidateRole d t)
+      (d2FlowCandidateQuota d t)
+      (fun k => d2FlowCandidateCapacity d k t) i
+      (.node G low high children)) :
+    let stage := d2FlowStage (d2FlowCandidateActive d t)
+      (d2FlowCandidateRole d t) (d2FlowCandidateQuota d t)
+      (h + 3) i (.node G low high children)
+    let left := low + d2FlowCandidateQuota d t i
+      (d2FlowCandidateRole d t i) / 2
+    StaticHolesFit left
+      (d2FlowNodeStaticHolesClamped 0 (8192 * 8 ^ (h + 1)) left 0
+        (fun k => d2FlowTreeChild (d2FlowTreeChild stage 0) k))
+      (8 * (8192 * 8 ^ (h + 1))) := by
+  let stage := d2FlowStage (d2FlowCandidateActive d t)
+    (d2FlowCandidateRole d t) (d2FlowCandidateQuota d t)
+    (h + 3) i (.node G low high children)
+  let left := low + d2FlowCandidateQuota d t i
+    (d2FlowCandidateRole d t i) / 2
+  let grandchildren : Fin 8 -> D2FlowTree (h + 1) :=
+    fun k => d2FlowStage (d2FlowCandidateActive d t)
+      (d2FlowCandidateRole d t) (d2FlowCandidateQuota d t)
+      (h + 1) (i + 2) (d2FlowTreeChild (children 0) k)
+  have hnext := d2FlowCandidateActive_adjacent_false_of_active hparent
+  have hdeep (k : Fin 8) :
+      d2FlowTreeChild (d2FlowTreeChild stage 0) k = grandchildren k := by
+    have heq := d2FlowStage_regular_child_grandchild_stage
+      (active := d2FlowCandidateActive d t)
+      (role := d2FlowCandidateRole d t)
+      (quota := d2FlowCandidateQuota d t) (h := h + 1) (i := i)
+      (G := G) (low := low) (high := high) children
+      hparent hparentRole hnext 0 k
+    simpa [stage, grandchildren] using heq
+  have hrootBound := d2FlowStage_active_ordinary_fronts_le_width_of_capacity
+    (scale := 8192) (h := h + 2) (width := 8192 * 8 ^ (h + 1))
+    (i := i) (G := G) (low := low) (high := high)
+    (active := d2FlowCandidateActive d t)
+    (role := d2FlowCandidateRole d t)
+    (quota := d2FlowCandidateQuota d t)
+    (cap := fun k => d2FlowCandidateCapacity d k t)
+    children hinputs hparent hparentRole
+    (d2FlowCandidateCapacity_le_256_grandchild_slot hd ht htf
+      hgrandchild hdepth)
+  have hsupport := d2FlowCandidateStage_regular_cut_endpoint_support
+    children hparent hparentRole hinputs
+  have hcut : d2FlowCutChild
+      (d2FlowPosition (fun j => d2FlowTreeRootDeficit (children j)) 0)
+      (d2FlowTreeRootDeficit (children 0)) left
+      (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - high -
+        d2FlowCandidateQuota d t i (d2FlowCandidateRole d t i) / 2) =
+      (left, left, 0) := by
+    simpa [left] using hsupport 0
+  have hcutLeft :
+      (d2FlowCutChild
+        (d2FlowPosition (fun j => d2FlowTreeRootDeficit (children j)) 0)
+        (d2FlowTreeRootDeficit (children 0)) left
+        (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - high -
+          d2FlowCandidateQuota d t i (d2FlowCandidateRole d t i) / 2)).2.1 =
+        left := by rw [hcut]
+  have hcutSmall : left <= 8192 * 8 ^ (h + 1) := by
+    exact hrootBound.1
+  have hgrandchildrenInv : forall k, d2FlowTreeInv 8192 (grandchildren k) := by
+    intro k
+    exact d2FlowStage_preserves_inv_of_inputs
+      (d2FlowTreeChild (children 0) k)
+      (d2FlowTreeInv_grandchild (.node G low high children) htree 0 k)
+      (d2FlowStageInvInputs_grandchild (.node G low high children)
+        hinputs 0 k)
+  have hfirstEndpoint := d2FlowCandidateStage_regular_first_cut_le_grandchild_left_front
+    children hd ht hparent hparentRole hgrandchild hgrandchildRole hinputs
+  have hfirstStage : d2FlowTreeChild (d2FlowTreeChild stage 0) 0 =
+      grandchildren 0 := hdeep 0
+  have hfirst : d2FlowTreeRootDeficit (grandchildren 0) <
+      8192 * 8 ^ (h + 1) ->
+      left <= (d2FlowTreeRootData (grandchildren 0)).2.1 := by
+    intro _
+    have hb : left <= (d2FlowTreeRootData
+        (d2FlowTreeChild (d2FlowTreeChild stage 0) 0)).2.1 := by
+      have hb' := hfirstEndpoint
+      rw [hcutLeft] at hb'
+      simpa [left, stage] using hb'
+    simpa [hfirstStage, grandchildren] using hb
+  have hfit := d2FlowNodeStaticHolesClamped_fit_of_endpoint_front_bounds
+    (scale := 8192) (h := h + 1) (width := 8192 * 8 ^ (h + 1))
+    (left := left) (right := 0) grandchildren rfl hgrandchildrenInv
+    (by omega) hcutSmall (by omega) hfirst
+    (by intro; exact Nat.zero_le _)
+  have hchildren : (fun k => d2FlowTreeChild (d2FlowTreeChild stage 0) k) =
+      grandchildren := by
+    funext k
+    exact hdeep k
+  simpa [stage, left, hchildren] using hfit
+
+/-- An ordinary active parent's six interior children receive zero root cuts,
+so their post-stage clamped root fit is automatic from the native slots. -/
+theorem d2FlowCandidateStage_inner_child_clamped_fit
+    {d i t h G low high : Nat} (children : Fin 8 -> D2FlowTree (h + 2))
+    (j : Fin 8) (hj0 : j.val ≠ 0) (hj7 : j.val ≠ 7)
+    (hparent : d2FlowCandidateActive d t i = true)
+    (hparentRole : d2FlowCandidateRole d t i = .topRise \/
+      d2FlowCandidateRole d t i = .mid \/
+      d2FlowCandidateRole d t i = .botDesc)
+    (htree : d2FlowTreeInv 8192 (.node G low high children))
+    (hinputs : d2FlowStageInvInputs 8192
+      (d2FlowCandidateActive d t) (d2FlowCandidateRole d t)
+      (d2FlowCandidateQuota d t)
+      (fun k => d2FlowCandidateCapacity d k t) i
+      (.node G low high children)) :
+    let stage := d2FlowStage (d2FlowCandidateActive d t)
+      (d2FlowCandidateRole d t) (d2FlowCandidateQuota d t)
+      (h + 3) i (.node G low high children)
+    StaticHolesFit 0
+      (d2FlowNodeStaticHolesClamped 0 (8192 * 8 ^ (h + 1)) 0 0
+        (fun k => d2FlowTreeChild (d2FlowTreeChild stage j) k))
+      (8 * (8192 * 8 ^ (h + 1))) := by
+  let stage := d2FlowStage (d2FlowCandidateActive d t)
+    (d2FlowCandidateRole d t) (d2FlowCandidateQuota d t)
+    (h + 3) i (.node G low high children)
+  let grandchildren : Fin 8 -> D2FlowTree (h + 1) :=
+    fun k => d2FlowStage (d2FlowCandidateActive d t)
+      (d2FlowCandidateRole d t) (d2FlowCandidateQuota d t)
+      (h + 1) (i + 2) (d2FlowTreeChild (children j) k)
+  have hnext := d2FlowCandidateActive_adjacent_false_of_active hparent
+  have hdeep (k : Fin 8) :
+      d2FlowTreeChild (d2FlowTreeChild stage j) k = grandchildren k := by
+    have heq := d2FlowStage_regular_child_grandchild_stage
+      (active := d2FlowCandidateActive d t)
+      (role := d2FlowCandidateRole d t)
+      (quota := d2FlowCandidateQuota d t) (h := h + 1) (i := i)
+      (G := G) (low := low) (high := high) children
+      hparent hparentRole hnext j k
+    simpa [stage, grandchildren] using heq
+  have hsupport := d2FlowCandidateStage_regular_cut_endpoint_support
+    children hparent hparentRole hinputs
+  have hcutZero :
+      d2FlowCutChild
+        (d2FlowPosition (fun k => d2FlowTreeRootDeficit (children k)) j)
+        (d2FlowTreeRootDeficit (children j))
+        (low + d2FlowCandidateQuota d t i
+          (d2FlowCandidateRole d t i) / 2)
+        (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - high -
+          d2FlowCandidateQuota d t i (d2FlowCandidateRole d t i) / 2) =
+      (0, 0, 0) := by
+    have hjne : j ≠ (0 : Fin 8) := by
+      intro heq
+      apply hj0
+      simpa using congrArg Fin.val heq
+    simpa [hjne, hj7] using hsupport j
+  have hgrandchildrenInv : forall k, d2FlowTreeInv 8192 (grandchildren k) := by
+    intro k
+    exact d2FlowStage_preserves_inv_of_inputs
+      (d2FlowTreeChild (children j) k)
+      (d2FlowTreeInv_grandchild (.node G low high children) htree j k)
+      (d2FlowStageInvInputs_grandchild (.node G low high children)
+        hinputs j k)
+  have hfit := d2FlowNodeStaticHolesClamped_fit_of_endpoint_front_bounds
+    (scale := 8192) (h := h + 1) (width := 8192 * 8 ^ (h + 1))
+    (left := 0) (right := 0) grandchildren rfl hgrandchildrenInv
+    (by omega) (by omega) (by omega)
+    (by intro; exact Nat.zero_le _) (by intro; exact Nat.zero_le _)
+  have hchildren : (fun k => d2FlowTreeChild (d2FlowTreeChild stage j) k) =
+      grandchildren := by
+    funext k
+    exact hdeep k
+  simpa [stage, hchildren] using hfit
+
 /-! The geometric fit itself has a natural recursive invariant in the clamped
 representation. The transition below isolates the sole exceptional local
 provider (botRise); the ordinary, inactive, and topDesc cases are discharged

@@ -1039,3 +1039,32 @@ theorems already bound the outer cuts by the updated edge-grandchild fronts.
 It does not yet assemble child-stage recursive fit, the inactive/saturated and
 exceptional schedule cases, or an all-stage invariant. Focused Lean checking
 passes for `D2NestedCutContainment.lean`.
+
+
+## Ordinary first-child overwrite fit
+
+`D2NestedCutContainment.lean` now proves
+`d2FlowCandidateStage_first_child_clamped_fit_of_ordinary_grandchild`. For
+an active ordinary parent with an active ordinary grandchild two levels below,
+the first overwritten child's clamped root interval fits, assuming the local
+tree-height relation `d = i + h + 3`. The capacity side condition needed for
+the saturated-edge case is discharged by
+`d2FlowCandidateCapacity_le_256_grandchild_slot`: the grandchild's activity
+gives the required bottom-front inequality. The generic endpoint-front adapter
+then handles unsaturated and saturated edge grandchildren, and the inactive
+intermediate stage identifies the exact updated grandchild trees. Focused
+Lean checking passes for `D2NestedCutContainment.lean`.
+
+This closes only the first child's root fit in the active-ordinary-grandchild
+case. The symmetric last-child fit, inner children, botDesc with saturated or
+inactive grandchildren, botRise/topDesc cases, extraction of recursive child
+fit, and path-level all-stage invariant remain open. In particular, this is
+not yet a proof that the current candidate run has `d2FlowTreeClampedStaticFits`.
+
+
+`d2FlowCandidateStage_inner_child_clamped_fit` also proves root fit for each
+of the six interior children: the actual endpoint-support theorem gives a zero
+root tuple, and its nested grandchild stage preserves the flow invariant. Thus
+for an ordinary parent the remaining child-root geometry is concentrated at
+the first and last children; the first active-ordinary-grandchild branch is
+closed, while the symmetric last boundary and bottom-frontier cases remain.
