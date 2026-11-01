@@ -210,6 +210,17 @@ rebuilds pass for both modules. The remaining flow-reserve step must combine
 this balance theorem with the existing child profile and endpoint-reserve
 theorems and package them over the entire recursive tree.
 
+The final-stage edge case in the two-visit endpoint reserve is now closed.
+`D2TerminalScheduleFacts.lean` proves the exact top-frontier levels at `tfD2`
+and two stages before it, then extends the regular-sender predecessor-role
+classification to include `t = tfD2`. `D2CoreProviderReserveStep.lean` now
+uses the non-strict terminal bound throughout; current-source focused rebuilds
+pass for that module and its `D2TopDescHistory.lean` dependent. This closes the
+strict-before-terminal schedule side condition for endpoint reserves. It does
+not yet compose the endpoint result with the other active-child contracts:
+the child-path append has a dependent tree-height association that still needs
+a reusable projection lemma or a formulation avoiding that cast.
+
 The exact compressed-flow screen
 `d2_deficit_tolerance_screen.py --depth 100 --scale 8192 --params 3 3 2`
 checks 217470 reachable stage/node entries. Its maximum is
@@ -233,8 +244,11 @@ core-provider induction. The local balance component is now closed by
 `d2FlowCandidateRun_active_child_balanced_of_prior_core`; next combine it with
 `d2FlowCandidateRun_active_child_role_root_contract` and
 `d2FlowCandidateRun_core_provider_endpoint_reserves_at_active_path`, then
-package the resulting local contracts over the entire recursive tree. The step
-also needs the stage invariant at snapshot `t` for invariant propagation. A
+package the resulting local contracts over the entire recursive tree. Endpoint
+reserves now cover the terminal active stage as well. First resolve the
+child-path height association needed to apply the reserve adapter to the same
+child tree as the balance/profile adapters. The step also needs the stage
+invariant at snapshot `t` for invariant propagation. A
 reusable step should use
 core snapshots at `t` and `t-1` to prove the next snapshot: the prior core
 gives invariant/balance, `D2TopDescHistory.lean` supplies role-specific root

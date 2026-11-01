@@ -2,6 +2,7 @@ import D2StrongFlowCoreInputs
 import D2RunTwoVisitReserve
 import D2PathNativePreservation
 import D2StrongAffineChild
+import D2TerminalScheduleFacts
 
 namespace Chvatal.D2Reserve
 
@@ -122,7 +123,7 @@ at the sender's next same-level visit in the actual candidate run. This
 isolates the non-`botRise` branch of the simultaneous reserve induction. -/
 theorem d2FlowCandidateRun_core_provider_endpoint_reserve_step
     {h i t G low high : Nat} (hd : 7 <= h + 1 + i)
-    (ht : 4 <= t) (htf : t < tfD2 (h + 1 + i))
+    (ht : 4 <= t) (htf : t <= tfD2 (h + 1 + i))
     (path : D2FlowPath i) (children : Fin 8 -> D2FlowTree h)
     (hnode : d2FlowTreeAtPath i
       (d2FlowCandidateRun (h + 1 + i)
@@ -155,7 +156,7 @@ theorem d2FlowCandidateRun_core_provider_endpoint_reserve_step
               (d2FlowTreeInitial 8192 (h + 1 + i)) t) path) 7) := by
   classical
   let d := h + 1 + i
-  have hprevRoles := active_regular_prev_two_role_cases hd ht htf hcurrent hrole
+  have hprevRoles := active_regular_prev_two_role_cases_le hd ht htf hcurrent hrole
   have hprevActive := hprevRoles.1
   have htPrev : 0 < t - 2 := by omega
   have hprevActiveBool : d2FlowCandidateActive d (t - 2) i = true := by
@@ -212,7 +213,7 @@ the native child sizes: the exceptional window preserves both child roots,
 and the current capacity is exactly 128 times that native size. -/
 theorem d2FlowCandidateRun_botRise_endpoint_reserve_step
     {h i t : Nat} (hd : 7 <= h + 1 + i)
-    (ht : 4 <= t) (htf : t < tfD2 (h + 1 + i))
+    (ht : 4 <= t) (htf : t <= tfD2 (h + 1 + i))
     (path : D2FlowPath i)
     (hcurrent : active (h + 1 + i) (tfD2 (h + 1 + i)) i t)
     (hprevRole : d2FlowCandidateRole (h + 1 + i) (t - 2) i = .botRise) :
@@ -246,7 +247,7 @@ theorem d2FlowCandidateRun_botRise_endpoint_reserve_step
     have hwindow : 3 * j + 2 <= tfD2 (h + 1 + (i + 1)) := by
       calc
         3 * j + 2 = t := htime.symm
-        _ <= tfD2 (h + 1 + (i + 1)) := Nat.le_of_lt htf
+        _ <= tfD2 (h + 1 + (i + 1)) := htf
     have hpres := d2FlowCandidate_botRise_callback_window
       (d := h + 1 + (i + 1)) (j := j) (by omega) hj hwindow
     have hleft := d2FlowCandidateRun_path_child_root_preserved
@@ -271,7 +272,7 @@ uses the affine core provider; the exceptional botRise case uses native
 endpoint preservation. -/
 theorem d2FlowCandidateRun_core_provider_endpoint_reserve_step_all_roles
     {h i t G low high : Nat} (hd : 7 <= h + 1 + i)
-    (ht : 4 <= t) (htf : t < tfD2 (h + 1 + i))
+    (ht : 4 <= t) (htf : t <= tfD2 (h + 1 + i))
     (path : D2FlowPath i) (children : Fin 8 -> D2FlowTree h)
     (hnode : d2FlowTreeAtPath i
       (d2FlowCandidateRun (h + 1 + i)
@@ -299,7 +300,7 @@ theorem d2FlowCandidateRun_core_provider_endpoint_reserve_step_all_roles
           (d2FlowTreeAtPath i
             (d2FlowCandidateRun (h + 1 + i)
               (d2FlowTreeInitial 8192 (h + 1 + i)) t) path) 7) := by
-  have hprevRoles := active_regular_prev_two_role_cases
+  have hprevRoles := active_regular_prev_two_role_cases_le
     hd ht htf hcurrent hrole
   have htPrev : 0 < t - 2 := by omega
   have hpriorRole : d2FlowCandidateRole (h + 1 + i) (t - 2) i = .topRise \/
@@ -326,7 +327,7 @@ every active regular sender path at time t. This is the tree-wide induction
 interface for the reserve component of the core provider. -/
 theorem d2FlowCandidateRun_core_provider_endpoint_reserves_at_active_path
     {h i t : Nat} (hd : 7 <= h + 1 + i)
-    (ht : 4 <= t) (htf : t < tfD2 (h + 1 + i))
+    (ht : 4 <= t) (htf : t <= tfD2 (h + 1 + i))
     (path : D2FlowPath i)
     (hcurrent : active (h + 1 + i) (tfD2 (h + 1 + i)) i t)
     (hrole : d2ScheduleRole (h + 1 + i) i t = .topRise \/
