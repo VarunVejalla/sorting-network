@@ -83,6 +83,7 @@ Ticket statuses live in [`../backlog/tickets.json`](../backlog/tickets.json). Th
 | [kahale-image-difficulty.md](../../docs/kahale-image-difficulty.md) | `S:kahale_image_difficulty.py` | rejected, LB-29 |
 | [kahale-joint-polarity.md](../../docs/kahale-joint-polarity.md) | `S:kahale_joint_polarity.py` | parked, LB-30 |
 | [kahale-witness-charge.md](../../docs/kahale-witness-charge.md) | `S:kahale_witness_charge.py` | parked, LB-30 → LB-08 |
+| [kahale-signed-charge-screen.md](../../docs/kahale-signed-charge-screen.md) | `S:kahale_signed_charge_screen.py`, `S:kahale_signed_charge_check.py` | parked, LB-08 (central band rejected) |
 | [kahale-preimage-capacity.md](../../docs/kahale-preimage-capacity.md) | `S:kahale_preimage_capacity.py` | rejected, LB-31 |
 | [kahale-capacity-lift.md](../../docs/kahale-capacity-lift.md) | `S:kahale_capacity_lift.py` | rejected, LB-31 |
 | [kahale-singleton-correction.md](../../docs/kahale-singleton-correction.md) | `S:kahale_singleton_correction.py` | rejected, LB-31 |

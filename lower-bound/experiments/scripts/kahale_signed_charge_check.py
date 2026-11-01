@@ -1,7 +1,9 @@
-"""Independent checker for the LB-08 certificates (standard library only).
+"""Independent checker for the LB-08 certificates.
 
 Shares no code with kahale_signed_charge_screen.py and uses no solver. Images
 are Python sets of integers, recomputed from the stored comparator lists.
+The one exception to "standard library only" is the 7-wire primal check, which
+needs numpy for speed (448,276,983 transitions).
 
 Certificates (see docs/kahale-signed-charge-certificates.json):
 
@@ -173,6 +175,87 @@ def check_primal(c):
     return len(seen), checked, start, drop
 
 
+def check_primal_numpy(c):
+    """The same exhaustive check for n = 7, where Python sets are too slow.
+
+    Images are pairs of 64-bit words; numpy is used for speed only. All values
+    are integers (weights are stored over a common denominator).
+    """
+    import numpy as np
+    n, ranks = c["n"], set(c["ranks"])
+    assert n == 7
+    den = int(c["denominator"])
+    terms = [(tuple(p), tuple(q), int(v)) for p, q, v in c["integer_terms"]]
+    assert all(p[0] in ranks and q[0] in ranks and p <= q and abs(p[0] - q[0]) <= 1 for p, q, _ in terms)
+
+    def words(pred):
+        lo = sum(1 << x for x in range(64) if pred(x))
+        hi = sum(1 << (x - 64) for x in range(64, 128) if pred(x))
+        return np.uint64(lo), np.uint64(hi)
+
+    table = {}
+    for a in range(n):
+        for b in range(a + 1, n):
+            table[a, b] = words(lambda x: (x >> a) & 1 and not (x >> b) & 1), (1 << b) - (1 << a)
+
+    def act(lo, hi, a, b):
+        (ml, mh), s = table[a, b]
+        fl, fh = lo & ml, hi & mh
+        rl, rh = lo ^ fl, hi ^ fh
+        if s < 64:
+            return rl | (fl << np.uint64(s)), rh | (fh << np.uint64(s)) | (fl >> np.uint64(64 - s))
+        return rl, rh | (fl << np.uint64(s - 64))
+
+    def distinct(lo, hi):
+        pair = np.empty(len(lo), dtype=[("h", "u8"), ("l", "u8")])
+        pair["h"], pair["l"] = hi, lo
+        return np.unique(pair)
+
+    known = distinct(np.array([~np.uint64(0)]), np.array([~np.uint64(0)]))
+    fresh = known
+    while len(fresh):
+        found = [act(fresh["l"], fresh["h"], a, b) for a, b in table]
+        new = distinct(np.concatenate([f[0] for f in found]), np.concatenate([f[1] for f in found]))
+        fresh = np.setdiff1d(new, known)
+        known = np.union1d(known, fresh)
+    lo, hi = known["l"], known["h"]
+
+    def present(f):
+        k, a, b = f
+        ml, mh = words(lambda x: bin(x).count("1") == k and (x >> a) & 1 and not (x >> b) & 1)
+        return ((lo & ml) | (hi & mh)) != 0
+
+    flags = {f: present(f) for f in sorted({f for p, q, _ in terms for f in (p, q)})}
+    phi = np.zeros(len(known), dtype=np.int64)
+    for p, q, v in terms:
+        phi[flags[p] & flags[q]] += v
+
+    def layers(free, cur):
+        if not free:
+            if cur:
+                yield cur
+            return
+        rest = free[1:]
+        yield from layers(rest, cur)
+        for i, b in enumerate(rest):
+            yield from layers(rest[:i] + rest[i + 1:], cur + [(free[0], b)])
+
+    worst, count = None, 0
+    probe = np.empty(len(known), dtype=known.dtype)
+    for ly in layers(list(range(n)), []):
+        l2, h2 = lo, hi
+        for a, b in ly:
+            l2, h2 = act(l2, h2, a, b)
+        probe["h"], probe["l"] = h2, l2
+        at = np.searchsorted(known, probe)
+        assert (known[at] == probe).all(), "image set is not closed"
+        d = int((phi - phi[at]).max())
+        worst = d if worst is None or d > worst else worst
+        count += len(known)
+    full = int(np.searchsorted(known, distinct(np.array([~np.uint64(0)]), np.array([~np.uint64(0)])))[0])
+    return len(known), count, Fraction(int(phi[full]), den), Fraction(worst, den)
+
+
 def check_sorter(c):
     """Every input whose weight is in ranks is sorted by the stored network."""
     n, ranks = c["n"], set(c["ranks"])
@@ -196,7 +279,7 @@ def main(path):
             ok = v == Fraction(c["claimed_bound"])
             print(f"{name}: farkas n={c['n']} ranks={c['ranks']} rows={len(c['rows'])} bound={v} ({float(v):.6f}) {'OK' if ok else 'MISMATCH'}")
         elif c["kind"] == "primal":
-            images, checked, start, drop = check_primal(c)
+            images, checked, start, drop = check_primal_numpy(c) if "integer_terms" in c else check_primal(c)
             ok = drop == Fraction(c["claimed_drop"]) and start == Fraction(c["claimed_start"]) and start / drop > c["needs_above"]
             print(f"{name}: primal n={c['n']} ranks={c['ranks']} images={images} transitions={checked} "
                   f"start={float(start):.6f} worst_drop={float(drop):.8f} start/drop={float(start / drop):.6f} {'OK' if ok else 'MISMATCH'}")

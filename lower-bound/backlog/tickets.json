@@ -147,20 +147,24 @@
       "id": "LB-08",
       "title": "Scale-compatible signed quadratic witness charge via conditional pair routing at central baselines",
       "priority": "P3",
-      "status": "active",
-      "claim_level": "simulation",
+      "status": "parked",
+      "claim_level": "hand-proof",
       "baseline": 3.2706,
       "projected": null,
-      "owner": "claude-lb-08",
+      "owner": null,
       "branch": "lb-08-witness-screen",
       "depends_on": [],
-      "first_deliverable": "Exact 6-7 wire LP screen: quadratic cross-image charge with unit layer drop and sorted endpoint at central Hamming weights; a feasible potential or an exact Farkas certificate",
+      "first_deliverable": "none further: exact screen done. Central-band family rejected at n = 4..7 (exact certificates, any function of the state); ranks 2..n-2 feasible at n = 6, 7 as a finite fit; no recurrence",
       "evidence": [
+        "docs/kahale-signed-charge-screen.md",
+        "docs/kahale-signed-charge-output.txt",
+        "docs/kahale-signed-charge-certificates.json",
+        "lower-bound/experiments/scripts/kahale_signed_charge_screen.py",
+        "lower-bound/experiments/scripts/kahale_signed_charge_check.py",
         "docs/kahale-witness-charge.md",
-        "docs/kahale-low-rank-barrier.md",
-        "lower-bound/experiments/scripts/kahale_witness_charge.py"
+        "docs/kahale-low-rank-barrier.md"
       ],
-      "notes": "The only route that recovered exact D(4), D(5) (claim level from LB-30). Successor of LB-30; avoid the zero-baseline-only family killed in LB-31."
+      "notes": "Parked 2026-10-31 (docs/kahale-signed-charge-screen.md). No coefficient above 3.2706. Exact over every reachable image and layer, so sound for every network at that n; no all-n inequality. Rejected: rank-adjacent signed quadratic witness charges on the central band: V = 2, 4, 2.695, 4.122 at n = 4..7, where more than 2, 4, 4, 5 is needed; state quotient distance <= D(n)-1, so no function of that state at any degree works. Single rank n/2 is capped by D(n/2)+1 for any function (half-cleaner), which is no rate bound. Feasible, finite: ranks 2..n-2 give 32/7 at n = 6 and 5.04019 at n = 7 (2115 terms, margin 0.04); these reprove known D(6), D(7). Scaling: V(8, ranks 3..5) <= 39/7 by a relaxation, not refuted; n = 10 no data. The conditional-baseline lift of the 6-wire charge to 7 wires reaches about 3.63, needing 5. Reopen only with a rule for the weights, not by refitting."
     },
     {
       "id": "LB-09",

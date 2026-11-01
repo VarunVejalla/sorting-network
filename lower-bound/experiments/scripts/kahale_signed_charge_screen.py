@@ -22,7 +22,6 @@ from math import isqrt
 
 import numpy as np
 import scipy.sparse as sp
-from scipy.optimize import linprog
 
 KNOWN_D = {1: 0, 2: 1, 3: 3, 4: 3, 5: 5, 6: 5, 7: 6, 8: 6, 9: 7, 10: 7, 11: 8, 12: 8, 16: 9}
 
@@ -419,6 +418,94 @@ def cp_highs(g, C, adjacent=True, signed=True, box=1024.0, tol=1e-7, seed_rows=4
                 worst=worst, converged=done, box_binding=binding, O=O, c_orb=c_orb)
 
 
+def mosek_lp(A, c, box, threads=3):
+    """max c w, A w <= 1, by interior point with basis identification."""
+    import mosek
+    A = A.tocsc()
+    m, k = A.shape
+    with mosek.Env() as env, env.Task() as t:
+        t.putintparam(mosek.iparam.num_threads, threads)
+        t.putintparam(mosek.iparam.optimizer, mosek.optimizertype.intpnt)
+        t.putintparam(mosek.iparam.intpnt_basis, mosek.basindtype.always)
+        t.appendvars(k)
+        t.appendcons(m)
+        t.putobjsense(mosek.objsense.maximize)
+        t.putclist(list(range(k)), c.tolist())
+        for j in range(k):
+            lo, hi = A.indptr[j], A.indptr[j + 1]
+            if hi > lo:
+                t.putacol(j, A.indices[lo:hi].tolist(), A.data[lo:hi].tolist())
+        if box is None:
+            t.putvarboundsliceconst(0, k, mosek.boundkey.fr, 0.0, 0.0)
+        else:
+            t.putvarboundsliceconst(0, k, mosek.boundkey.ra, -box, box)
+        t.putconboundsliceconst(0, m, mosek.boundkey.up, 0.0, 1.0)
+        t.optimize()
+        if t.getsolsta(mosek.soltype.bas) != mosek.solsta.optimal:
+            raise RuntimeError(str(t.getsolsta(mosek.soltype.bas)))
+        return np.array(t.getxx(mosek.soltype.bas)), np.array(t.getsuc(mosek.soltype.bas))
+
+
+def cp_mosek(g, C, box=1024.0, per_round=4000, log=print, max_seconds=4000):
+    """Constraint generation for n = 7: simplex re-solves are too slow there."""
+    n = g.n
+    t0 = time.time()
+    base = base_features(n, C)
+    F = signatures(n, g.images, base)
+    pairs, groups = merged_pairs(F, quad_columns(base))
+    I = np.array([p[0] for p in pairs])
+    J = np.array([p[1] for p in pairs])
+    c = (F[g.i0, I] & F[g.i0, J]).astype(float)
+    orbit, norb = reflection_orbits(n, base, pairs, groups)
+    O = sp.csr_matrix((np.ones(len(pairs)), (np.arange(len(pairs)), orbit)), shape=(len(pairs), norb))
+    c_orb = O.T @ c
+    log(f"  merged={len(pairs)} orbits={norb}")
+    rng = np.random.default_rng(1)
+    rows = []
+    for layer in g.layers:
+        ids = rng.integers(0, len(g.images), 20)
+        rows += [(int(a), int(b)) for a, b in zip(ids, layer_targets(g.succ, g.comps, layer, ids))]
+    seen, active, A = set(), [], None
+    freed, rnd, done = False, 0, False
+    while True:
+        fresh = []
+        for r in rows:
+            if r not in seen:
+                seen.add(r)
+                if (F[r[0]] != F[r[1]]).any():
+                    fresh.append(r)
+        if fresh:
+            s = np.array([a for a, b in fresh])
+            t = np.array([b for a, b in fresh])
+            D = sp.csr_matrix((F[s][:, I] & F[s][:, J]).astype(np.float64)) \
+                - sp.csr_matrix((F[t][:, I] & F[t][:, J]).astype(np.float64))
+            active += fresh
+            A = (D @ O).tocsr() if A is None else sp.vstack([A, (D @ O).tocsr()], format="csr")
+        wo, y = mosek_lp(A, c_orb, None if freed else box)
+        w = O @ wo
+        value = float(c_orb @ wo)
+        W = np.zeros((len(base), len(base)))
+        W[I, J] = w
+        _, worst, cuts = separate(g, F, W, 2e-6, per_layer=20)
+        cuts = list(dict.fromkeys(cuts))
+        if len(cuts) > per_round:
+            cuts = [cuts[i] for i in rng.choice(len(cuts), per_round, replace=False)]
+        binding = 0 if freed else int((np.abs(wo) > box - 1e-6).sum())
+        log(f"  round {rnd} rows={A.shape[0]} value={value:.8f} worst={worst:.6f} cuts={len(cuts)} box={binding} t={time.time()-t0:.0f}")
+        rnd += 1
+        if not cuts:
+            if binding and not freed:
+                freed, rows = True, []
+                continue
+            done = True
+            break
+        if time.time() - t0 > max_seconds:
+            break
+        rows = cuts
+    return dict(base=base, pairs=pairs, groups=groups, F=F, c=c, active=active, w=w, y=y, value=value,
+                worst=worst, converged=done, box_binding=binding, O=O, c_orb=c_orb)
+
+
 # ---------------------------------------------------------------- exact solve
 
 P = 8388593  # prime just below 2^23: sums of 2^12 products stay inside int64
@@ -530,6 +617,8 @@ def certificate(g, res, rows, ex):
     refl = lambda cs: [[n - 1 - b, n - 1 - a] for a, b in cs]
     entries = []
     for (a, b), v in zip(rows, ex):
+        if v == 0:
+            continue
         layer = next(ly for ly in g.layers
                      if int(layer_targets(g.succ, g.comps, ly, np.array([a]))[0]) == b)
         pre, ly = g.prefix(a), [list(c) for c in layer]
@@ -860,11 +949,11 @@ def main(args):
             log(f"n={n} ranks={C} signatures={len(sigs)} quotient_distance={q} slice_sort_depth={dc} t={time.time()-t0:.0f}")
             certs[f"path_{n}_{C}"] = path_certificate(g, C, path)
             if n in args.lp_wires and (n, len(C)) not in args.skip:
-                r = cp_highs(g, C, log=lambda m: print(m, flush=True), max_seconds=args.lp_seconds,
-                             stop_below=args.stop.get(n))
+                solve = cp_mosek if args.solver == "mosek" else cp_highs
+                r = solve(g, C, log=lambda m: print(m, flush=True), max_seconds=args.lp_seconds)
                 log(f"n={n} ranks={C} LP value={r['value']:.8f} converged={r['converged']} worst_drop={r['worst']:.9f} box={r['box_binding']} rows={len(r['active'])}")
                 rows, ex = exact_dual(g, r)
-                assert min(ex) > 0
+                assert min(ex) >= 0
                 c = certificate(g, r, rows, ex)
                 c.update(kind="farkas", claimed_bound=c.pop("value"))
                 certs[f"farkas_{n}_{C}"] = c
@@ -904,8 +993,9 @@ if __name__ == "__main__":
     ap.add_argument("--wires", type=int, nargs="+", default=[4, 5, 6])
     ap.add_argument("--lp-wires", type=int, nargs="*", default=[4, 5, 6])
     ap.add_argument("--lp-seconds", type=float, default=3600)
+    ap.add_argument("--solver", choices=["highs", "mosek"], default="highs")
     ap.add_argument("--selectors", action="store_true")
     ap.add_argument("--resume", action="store_true")
     a = ap.parse_args()
-    a.skip, a.stop = set(), {}
+    a.skip = set()
     main(a)

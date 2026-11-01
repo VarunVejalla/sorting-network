@@ -40,7 +40,7 @@ Supporting files:
 | LB-05 | P2 | ε-halver / approximate-selector depth bound | proposed | reuse `ApproxSelection` / `SelectionCounting` |
 | LB-06 | P2 | Exact `D(n)` for small `n` | proposed | `D(4)=3`, `D(5)=5` by kernel `decide` |
 | LB-07 | P3 | KLMPSS size bound `1.12 n lg n` | proposed | lemma map onto existing modules |
-| LB-08 | P3 | Scale-compatible signed quadratic witness charge | proposed | 6–7-wire central-baseline LP screen |
+| LB-08 | P3 | Scale-compatible signed quadratic witness charge | parked | central band rejected; ranks `2..n-2` a finite fit at `n = 6, 7`, no recurrence |
 | LB-09 | P3 | Plaxton–Suel shuffle-based `Ω(lg² n/lg lg n)` | proposed | model statement and outline |
 | LB-10 | P3 | Depth for "usually sorts" networks | proposed | worst-case use in `SelectionCounting` |
 | LB-11 | P1 | Liminf headline without the legacy upper bound | ready | `EReal` liminf statement |

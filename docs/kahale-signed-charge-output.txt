@@ -1,0 +1,66 @@
+== n=4 images=44 layers=9 D=3 needs value > 2
+n=4 ranks=[2] signatures=19 quotient_distance=2 slice_sort_depth=2 t=0
+n=4 ranks=[2] LP value=2.00000000 converged=True worst_drop=1.000000000 box=0 rows=148
+n=4 ranks=[2] exact family upper bound 2 (float 2.000000) dual_rows=4
+n=4 ranks=[1, 2, 3] signatures=44 quotient_distance=3 slice_sort_depth=3 t=0
+n=4 ranks=[1, 2, 3] LP value=3.00000000 converged=True worst_drop=1.000000000 box=0 rows=177
+n=4 ranks=[1, 2, 3] exact family upper bound 3 (float 3.000000) dual_rows=6
+n=4 ranks=[1, 2, 3] dyadic potential: start=3.0000000 worst_drop=1.000000000 ratio=3.0000000 terms=33
+== n=5 images=581 layers=25 D=5 needs value > 4
+n=5 ranks=[2, 3] signatures=261 quotient_distance=4 slice_sort_depth=5 t=0
+n=5 ranks=[2, 3] LP value=4.00000000 converged=True worst_drop=1.000000000 box=0 rows=2153
+n=5 ranks=[2, 3] exact family upper bound 4 (float 4.000000) dual_rows=8
+n=5 ranks=[1, 2, 3, 4] signatures=567 quotient_distance=5 slice_sort_depth=5 t=0
+n=5 ranks=[1, 2, 3, 4] LP value=4.43793103 converged=True worst_drop=1.000000000 box=0 rows=2457
+n=5 ranks=[1, 2, 3, 4] exact family upper bound 1287/290 (float 4.437931) dual_rows=110
+n=5 ranks=[1, 2, 3, 4] dyadic potential: start=4.4379311 worst_drop=1.000000417 ratio=4.4379292 terms=221
+== n=6 images=19334 layers=75 D=5 needs value > 4
+n=6 ranks=[3] signatures=1151 quotient_distance=3 slice_sort_depth=3 t=0
+n=6 ranks=[3] LP value=2.69528066 converged=True worst_drop=1.000000000 box=0 rows=7240
+n=6 ranks=[3] exact family upper bound 2.695280662201975 (float 2.695281) dual_rows=132
+n=6 ranks=[2, 3, 4] signatures=7442 quotient_distance=5 slice_sort_depth=5 t=2
+n=6 ranks=[2, 3, 4] LP value=4.57142857 converged=True worst_drop=1.000000000 box=0 rows=16826
+n=6 ranks=[2, 3, 4] exact family upper bound 32/7 (float 4.571429) dual_rows=36
+n=6 ranks=[2, 3, 4] dyadic potential: start=4.5714282 worst_drop=1.000001013 ratio=4.5714236 terms=734
+n=6 ranks=[1, 2, 3, 4, 5] signatures=17320 quotient_distance=5 slice_sort_depth=5 t=170
+n=6 ranks=[1, 2, 3, 4, 5] LP value=4.66666667 converged=True worst_drop=1.000000000 box=0 rows=19048
+n=6 ranks=[1, 2, 3, 4, 5] exact family upper bound 14/3 (float 4.666667) dual_rows=36
+n=6 ranks=[1, 2, 3, 4, 5] dyadic potential: start=4.6666673 worst_drop=1.000001192 ratio=4.6666618 terms=866
+half-cleaner selector on 8 wires: depth 4 sorts weight 4; D(8) = 6
+half-cleaner selector on 16 wires: depth 7 sorts weight 8; D(16) = 9
+beam: n=6 ranks=[3] depth 3; D(6) = 5
+beam: n=8 ranks=[4] depth 4; D(8) = 6
+beam: n=10 ranks=[5] depth 6; D(10) = 7
+beam: n=12 ranks=[6] depth 6; D(12) = 8
+beam: n=8 ranks=[3, 4, 5] depth 6; D(8) = 6
+beam: n=10 ranks=[4, 5, 6] depth 7; D(10) = 7
+beam: n=12 ranks=[5, 6, 7] depth 8; D(12) = 8
+== n=7 images=1940593 layers=231 D=6 needs value > 5
+n=7 ranks=[3, 4] signatures=78736 quotient_distance=5 slice_sort_depth=6 t=157
+n=7 ranks=[2, 3, 4, 5] signatures=623579 quotient_distance=6 slice_sort_depth=6 t=222
+n=7 ranks=[1, 2, 3, 4, 5, 6] signatures=1453250 quotient_distance=6 slice_sort_depth=6 t=307
+== n=7 linear programs (Mosek constraint generation, scratch driver; certificates stored)
+n=7 ranks=[3, 4] LP value=4.12170423 converged=True; exact dual verified, 888 rows
+n=7 ranks=[2, 3, 4, 5] LP value=5.04019476 converged=True rows=70694; exact dual verified, 2038 rows
+n=7 ranks=[2, 3, 4, 5] integer potential over 2^30: start=5.040194725618 worst_drop=1.000000007451 ratio=5.04019468807 terms=2115 transitions=448276983
+== n=8 relaxation (sampled true rows)
+n=8 ranks=[3, 4, 5] upper bound 39/7 from 18627 rows; exact dual verified, 74 rows; needs > 5
+n=10 ranks=[4, 5, 6] stopped at 4253 rows, value 52075.9; no bound
+== 6-wire potential (ranks 2..4) lifted to 7 wires by freezing one wire (floating point, all transitions)
+n=7 lift, mean over 14 single-wire fibers: start 4.571428571428561
+worst drop 1.4808518905349253 ratio 3.087026191239985 needs > 5
+{0: 0} start 4.5714 worst 3.4653 ratio 1.3192
+{0: 1} start 4.5714 worst 5.2609 ratio 0.8689
+{1: 0} start 4.5714 worst 3.4653 ratio 1.3192
+{1: 1} start 4.5714 worst 4.1983 ratio 1.0889
+{2: 0} start 4.5714 worst 3.2277 ratio 1.4163
+{2: 1} start 4.5714 worst 3.8089 ratio 1.2002
+{3: 0} start 4.5714 worst 3.6861 ratio 1.2402
+{3: 1} start 4.5714 worst 3.7178 ratio 1.2296
+{4: 0} start 4.5714 worst 3.9469 ratio 1.1582
+{4: 1} start 4.5714 worst 3.8821 ratio 1.1776
+{5: 0} start 4.5714 worst 4.9848 ratio 0.9171
+{5: 1} start 4.5714 worst 3.3624 ratio 1.3596
+{6: 0} start 4.5714 worst 4.9959 ratio 0.915
+{6: 1} start 4.5714 worst 3.8128 ratio 1.199
+best signed combination of the 14 fibers: value 3.62836, needs > 5

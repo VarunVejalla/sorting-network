@@ -91,7 +91,7 @@ specific family, not to the general idea behind it; recheck an entry if its assu
   - Evidence: `kahale-image-difficulty.md`.
 * **Additive mixed-witness charges of any order, even signed (part of LB-30).**
   - An exact LP dual (a two-line 4-wire proof) refutes them.
-  - Only signed **quadratic** cross-image charges escape, and those are parked as LB-08.
+  - Only signed **quadratic** cross-image charges escape; see LB-08 below.
   - Evidence: `kahale-witness-charge.md`.
 * **Fiber-charge corrections (LB-31).**
   - The 10-term 4-wire charge breaks on actual 5-wire conditional fibers (drop 2), and singleton-routing
@@ -102,6 +102,16 @@ specific family, not to the general idea behind it; recheck an entry if its assu
     and the sorted endpoint value, has total range `≤ 3⌈lg n⌉`, so its coefficient is at most 3.
   - Evidence: `kahale-capacity-lift.md`, `kahale-singleton-correction.md`, `kahale-pair-constraint-generation.md`,
     `kahale-low-rank-barrier.md`.
+* **Central-band signed quadratic witness charges (part of LB-08).**
+  - Rank-adjacent signed quadratic charges on ranks `{floor(n/2), ceil(n/2)}`, with unit layer drop on every reachable
+    image and the sorted endpoint, have exact optima `2, 4, 2.695, 4.122` at `n = 4..7`. They need more than `2, 4, 4, 5`.
+  - **Barrier, any degree:** a function of a state has range at most the distance in the state quotient. For the central
+    witness state that distance is at most `D(n) - 1` at `n = 4..7`.
+  - Any function of the single rank `n/2` slice has range at most `D(n/2) + 1` (sort the halves, then a mirror layer). That
+    is not a rate bound.
+  - **Not ruled out:** ranks `{2, ..., n-2}` certify `D(6)`, `D(7)` (`32/7`, `5.04019`). This is a finite fit of up to 2115
+    terms, with no recurrence: a 7-wire baseline lift reaches about 3.63, needing 5. `n = 8` is not refuted (`V <= 39/7`).
+  - Evidence: `kahale-signed-charge-screen.md`, `kahale_signed_charge_screen.py`, `kahale_signed_charge_check.py`.
 * **Coalition Hall capacity under full reachability (part of LB-25).**
   - Every coalition inequality is automatic (`CongestionBarrier.lean`).
   - Observed deficits (12 zeros into 11 targets) sit in the last layers and may be repeated manifestations of one
@@ -122,5 +132,6 @@ Parked, not dead:
   so are correlation potentials (LB-33), sharpness potentials (LB-35) and mixed-polarity restriction families (LB-34).
 - LB-25: congestion rate.
 - LB-26: the charging lemma.
+- LB-08: quadratic witness charges outside the central band (a finite fit; reopen only with a rule for the weights).
 - LB-30: quadratic witness charges, continued as LB-08.
 - LB-32: face pair-matrix closure.
