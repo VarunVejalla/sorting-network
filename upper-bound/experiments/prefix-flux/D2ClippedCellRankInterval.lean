@@ -623,4 +623,53 @@ theorem reflected_core_ordinary_child_grouped_count_eq_physical
   exact reflected_core_ordinary_child_complete_tiles_false_count_eq_profile
     S quota widths child input hcomplete
 
+/-- Read each full physical core tile directly from a global Boolean word on
+the sender set, in canonical sender-rank order. -/
+def canonicalSenderRankTileInput {tiles n : Nat} (S : Finset (Fin n))
+    (word : Fin n -> Bool)
+    (hcomplete : forall t : Fin tiles,
+      (t.val + 1) * 262144 <= S.card) : Fin tiles -> Wire -> Bool :=
+  fun t b => word (S.orderEmbOfFin rfl (Fin.mk
+    (t.val * 262144 + b.val) (by
+      have hb := b.isLt
+      have ht := hcomplete t
+      omega)))
+
+/-- The grouped child-count identity now holds for the actual sender slice of
+an arbitrary global input word, not merely unrelated per-tile Boolean inputs.
+This is the canonical rank-order tile interface for a concrete physical
+sender; global recursive realization and the ragged suffix are separate. -/
+theorem reflected_core_sender_word_ordinary_child_grouped_count_eq_physical
+    {tiles n : Nat} (S : Finset (Fin n))
+    (quota : Nat) (widths : Fin 8 -> Nat) (child : Fin 8)
+    (word : Fin n -> Bool)
+    (tag : Fin tiles -> Prod Col (Fin 10) -> Option (Fin 8))
+    (hcomplete : forall t : Fin tiles,
+      (t.val + 1) * 262144 <= S.card)
+    (htag : forall t c q,
+      tag t (c, q) = some child <-> q.val = child.val + 1) :
+    clippedFlowGroupedActualOfProfile 4096
+        (fun i : Fin 11 => d2SenderPortBoundaryNat quota S.card widths i.val)
+        (fun t c => matrixColumnFalseCount c
+          ((Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+            reflectedSigma35 reflectedSigma25).exec
+              (canonicalSenderRankTileInput S word hcomplete t)))
+        tag (some child) =
+      Finset.univ.sum fun t : Fin tiles =>
+        Finset.univ.sum fun b : Wire =>
+          if S.orderEmbOfFin rfl
+              (Fin.mk (t.val * 262144 + b.val) (by
+                have hb := b.isLt
+                have ht := hcomplete t
+                omega)) ∈ destinationPiece (ports := 8) S
+                  (d2FlowRankBoundary widths) (quota / 2)
+                  (S.card - quota / 2) (some child) ∧
+              (Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+                reflectedSigma35 reflectedSigma25).exec
+                (canonicalSenderRankTileInput S word hcomplete t) b = false
+          then 1 else 0 := by
+  exact reflected_core_ordinary_child_grouped_count_eq_physical
+    S quota widths child (canonicalSenderRankTileInput S word hcomplete)
+    tag hcomplete htag
+
 end Chvatal.D2ClippedCellRankInterval

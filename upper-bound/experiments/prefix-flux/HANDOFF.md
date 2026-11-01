@@ -305,11 +305,9 @@ uses `d2FlowRankBoundary widths` and `quota / 2` for the corresponding child
 destination. Its all-complete-tiles form,
 `reflected_core_ordinary_child_complete_tiles_false_count_eq_profile`, sums
 the actual child counts and clipped core profile masses over all full tiles
-for arbitrary per-tile Boolean inputs. It assumes sender conservation and
-that every indexed tile is complete. It does not yet prove that these inputs
-are the recursively scheduled sender contents or cover the residual suffix;
-the key remaining physical step is identifying this canonical rank-tile
-execution with the concrete static-hole stage and its next-run child bags.
+for arbitrary per-tile Boolean inputs. It assumes only that every indexed
+tile is complete. It does not yet prove that these inputs are the recursively
+scheduled sender contents or cover the residual suffix.
 
 The fixed-core count bridge now reaches the actual one-step ordinary sender
 port formulas: for child `j`, port `j+1` of
@@ -327,6 +325,13 @@ label composition at full-tile scale. It is not yet an identification with a
 recursive run: the schedule still must provide the same finite set `S`,
 per-tile inputs, static-hole destination sets, and next child bags, as well as
 the leftover suffix and startup/exceptional adapters.
+
+`canonicalSenderRankTileInput` now extracts each full tile directly from an
+arbitrary global Boolean word using `S.orderEmbOfFin` in sender-rank order.
+The checked theorem `reflected_core_sender_word_ordinary_child_grouped_count_eq_physical`
+states the grouped child-count identity for this canonical input, eliminating
+the unrelated-per-tile-input gap. It still does not define or identify the
+recursive sequence of sender sets across stages.
 
 `D2StrongDeficitPropagation.lean` already proves the sharp local affine
 profile transition for ordinary eight-child updates. The profile is
