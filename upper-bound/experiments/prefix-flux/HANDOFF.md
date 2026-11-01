@@ -705,6 +705,19 @@ The dynamic layout still needs an all-node cardinality bridge to
 root overwrites. A direct nested `Finset.biUnion` conservation proof was
 discarded after elaboration failures; do not resume that proof strategy.
 
+## Flat-index checkpoint (2026-11-01)
+
+`D2DynamicSenderNode.lean` now defines a finite `Sigma` index for every node
+across levels `0..depth`, with parent/child option-valued navigation and a
+projection from an indexed node to its corresponding `D2FlowTree` subtree.
+It reuses the existing cast-aware path-snoc theorem in `D2FlowPathLast.lean`.
+The focused check passes. This is indexing infrastructure only: no target map
+for routed ports, global partition theorem instantiation, or allocation
+agreement is proved yet. The next decisive step is to define the actual
+one-stage destination map on this flat index and see whether the generic
+partition theorem's local-piece hypotheses can be supplied without assuming
+the desired flow cardinalities.
+
 ## Files and artifacts
 
 Start at `README.md` for the module map. `STATUS-HISTORY.md` preserves the
