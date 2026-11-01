@@ -30,6 +30,120 @@ def d2FlowNodeStaticHoles {h : Nat} (base width low high : Nat)
       (fun k => (d2FlowTreeRootData (children k)).2.1)
       (fun k => (d2FlowTreeRootData (children k)).2.2) j).2)
 
+/-- Alternative point locations for saturated empty holes. Clamping the slot
+marker into the parent interval preserves the removed wire set and can keep
+the hole list ordered when a parent frontier passes several native slots. -/
+def d2EightChildHoleClamped {h : Nat} (base width left right : Nat)
+    (children : Fin 8 → D2FlowTree h) (j : Fin 8) : Nat × Nat :=
+  if d2FlowTreeRootDeficit (children j) = width then
+    let cursor := base + left
+    let stop := base + 8 * width - right
+    let point := max cursor (min (base + j.val * width) stop)
+    (point, point)
+  else
+    d2EightChildHole base width left right
+      (fun k => d2FlowTreeRootDeficit (children k))
+      (fun k => (d2FlowTreeRootData (children k)).2.1)
+      (fun k => (d2FlowTreeRootData (children k)).2.2) j
+
+/-- Moving an empty saturated-hole marker does not change its wire set. -/
+theorem d2EightChildHoleClamped_interval_eq {n h : Nat}
+    (base width left right : Nat) (children : Fin 8 → D2FlowTree h)
+    (j : Fin 8) :
+    staticWireInterval (n := n)
+        (d2EightChildHole base width left right
+          (fun k => d2FlowTreeRootDeficit (children k))
+          (fun k => (d2FlowTreeRootData (children k)).2.1)
+          (fun k => (d2FlowTreeRootData (children k)).2.2) j).1
+        (d2EightChildHole base width left right
+          (fun k => d2FlowTreeRootDeficit (children k))
+          (fun k => (d2FlowTreeRootData (children k)).2.1)
+          (fun k => (d2FlowTreeRootData (children k)).2.2) j).2 =
+      staticWireInterval (n := n)
+        (d2EightChildHoleClamped base width left right children j).1
+        (d2EightChildHoleClamped base width left right children j).2 := by
+  by_cases hsat : d2FlowTreeRootDeficit (children j) = width
+  · have hleft :
+        (d2EightChildHole base width left right
+          (fun k => d2FlowTreeRootDeficit (children k))
+          (fun k => (d2FlowTreeRootData (children k)).2.1)
+          (fun k => (d2FlowTreeRootData (children k)).2.2) j).1 =
+        (d2EightChildHole base width left right
+          (fun k => d2FlowTreeRootDeficit (children k))
+          (fun k => (d2FlowTreeRootData (children k)).2.1)
+          (fun k => (d2FlowTreeRootData (children k)).2.2) j).2 := by
+      by_cases hj0 : j.val = 0
+      · simp [d2EightChildHole, hsat, hj0]
+      · by_cases hj7 : j.val = 7
+        · simp [d2EightChildHole, hsat, hj0, hj7]
+        · simp [d2EightChildHole, hsat, hj0, hj7]
+    have hright :
+        (d2EightChildHoleClamped base width left right children j).1 =
+        (d2EightChildHoleClamped base width left right children j).2 := by
+      simp only [d2EightChildHoleClamped, if_pos hsat]
+    have hempty (p : Nat × Nat) (hp : p.1 = p.2) :
+        staticWireInterval (n := n) p.1 p.2 = ∅ := by
+      rcases p with ⟨lo, hi⟩
+      change lo = hi at hp
+      subst hi
+      simp [staticWireInterval]
+    calc
+      staticWireInterval (n := n)
+          (d2EightChildHole base width left right
+            (fun k => d2FlowTreeRootDeficit (children k))
+            (fun k => (d2FlowTreeRootData (children k)).2.1)
+            (fun k => (d2FlowTreeRootData (children k)).2.2) j).1
+          (d2EightChildHole base width left right
+            (fun k => d2FlowTreeRootDeficit (children k))
+            (fun k => (d2FlowTreeRootData (children k)).2.1)
+            (fun k => (d2FlowTreeRootData (children k)).2.2) j).2 = ∅ :=
+        hempty _ hleft
+      _ = staticWireInterval (n := n)
+          (d2EightChildHoleClamped base width left right children j).1
+          (d2EightChildHoleClamped base width left right children j).2 :=
+        (hempty _ hright).symm
+  · simp [d2EightChildHole, d2EightChildHoleClamped, hsat]
+
+/-- Hole list with the clamped point convention for saturated children. -/
+def d2FlowNodeStaticHolesClamped {h : Nat} (base width low high : Nat)
+    (children : Fin 8 → D2FlowTree h) : List (Nat × Nat) :=
+  staticHoleList 8
+    (fun j => (d2EightChildHoleClamped base width low high children j).1)
+    (fun j => (d2EightChildHoleClamped base width low high children j).2)
+
+theorem staticHoleList_union_eq_of_pointwise_interval_eq {n m : Nat}
+    (lo hi lo' hi' : Fin m → Nat)
+    (heq : ∀ j, staticWireInterval (n := n) (lo j) (hi j) =
+      staticWireInterval (n := n) (lo' j) (hi' j)) :
+    staticHoleUnion (n := n) (staticHoleList m lo hi) =
+      staticHoleUnion (n := n) (staticHoleList m lo' hi') := by
+  induction m with
+  | zero => simp [staticHoleList, staticHoleUnion]
+  | succ m ih =>
+      let first : Fin (m + 1) := ⟨0, by omega⟩
+      change staticWireInterval (n := n) (lo first) (hi first) ∪
+          staticHoleUnion (staticHoleList m (fun j => lo j.succ)
+            (fun j => hi j.succ)) =
+        staticWireInterval (n := n) (lo' first) (hi' first) ∪
+          staticHoleUnion (staticHoleList m (fun j => lo' j.succ)
+            (fun j => hi' j.succ))
+      rw [heq first]
+      congr 1
+      exact ih (fun j => lo j.succ) (fun j => hi j.succ)
+        (fun j => lo' j.succ) (fun j => hi' j.succ)
+        (fun j => heq j.succ)
+
+/-- The original and clamped hole lists remove exactly the same wires. -/
+theorem d2FlowNodeStaticHoles_union_eq_clamped {n h : Nat}
+    (base width low high : Nat) (children : Fin 8 → D2FlowTree h) :
+    staticHoleUnion (n := n)
+        (d2FlowNodeStaticHoles base width low high children) =
+      staticHoleUnion (n := n)
+        (d2FlowNodeStaticHolesClamped base width low high children) := by
+  apply staticHoleList_union_eq_of_pointwise_interval_eq
+  intro j
+  exact d2EightChildHoleClamped_interval_eq base width low high children j
+
 /-- For a non-saturated child, its static hole is exactly its occupied
 native interval in the parent's address coordinates. -/
 theorem d2FlowNodeChildHole_eq_interval
@@ -52,6 +166,20 @@ def d2FlowNodeStaticBag {n h : Nat} (base width G low high : Nat)
   if G = 8 * width then ∅ else
     staticWireInterval (base + low) (base + 8 * width - high) \
       staticHoleUnion (d2FlowNodeStaticHoles base width low high children)
+
+/-- The clamped empty-hole convention is extensionally the same physical
+sender set; only its ordered-run representation can differ. -/
+theorem d2FlowNodeStaticBag_eq_clamped_holes {n h : Nat}
+    (base width G low high : Nat) (children : Fin 8 → D2FlowTree h) :
+    d2FlowNodeStaticBag (n := n) base width G low high children =
+      if G = 8 * width then ∅ else
+        staticWireInterval (base + low) (base + 8 * width - high) \
+          staticHoleUnion (d2FlowNodeStaticHolesClamped
+            base width low high children) := by
+  by_cases hsat : G = 8 * width
+  · simp [d2FlowNodeStaticBag, hsat]
+  · simp [d2FlowNodeStaticBag, hsat,
+      d2FlowNodeStaticHoles_union_eq_clamped]
 
 /-- The ordered address runs of a flow node's sender bag. -/
 def d2FlowNodeStaticRuns {n h : Nat} (base width G low high : Nat)

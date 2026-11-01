@@ -90,9 +90,15 @@ and recursive whole-tree preservation remain. The startup top-descending
 reset also has a local empty-parent-bag theorem,
 `d2FlowStage_active_top_desc_static_bag_empty`; its actual receiver-tag and
 profile transition is still open. `d2FlowStage_root_fronts_mono` also proves
-that a subtree's own recursive stage never decreases either root front. Use
-this to attack inactive-ancestor static-fit preservation, while treating a
-parent's later `setRoot` overwrite separately. `D2OrdinaryRankRouting.lean`
+that a subtree's own recursive stage never decreases either root front, and
+`d2FlowStage_inactive_node_static_fit` closes the inactive-ancestor fit case.
+However, the current `StaticHolesFit` predicate is not a reachable all-stage
+invariant: `static_hole_fit_screen.py` finds failures from out-of-order
+canonical markers for saturated empty holes. A clamped-marker alternative
+preserves the physical sender set by a kernel-checked Lean lemma and passes
+that finite screen, but no all-stage fit or run-slice proof uses it yet.
+Resolve this representation gate before extending the old fit induction. The
+screen is model evidence only. `D2OrdinaryRankRouting.lean`
 already proves the generic ordinary sender destination-piece partition.
 `D2PhysicalBagState.lean` now proves the actual static bag has cardinality
 `child-total - G`, from the eight child-hole lengths and the flow-tree

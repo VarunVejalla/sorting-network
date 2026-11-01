@@ -466,7 +466,7 @@ from retained inactive bags, parent down-ports, and child up-ports, then checks
 exact interval equality and no duplicate routing. The receiver-context logic
 in `receiver_fiber_types.py` additionally records the important parent-root
 overwrite case. These scripts are source (not generated artifacts), but the
-finite checks through depth 6 are only model evidence. On the Lean side,
+compressed exact-routing screen through depth 12 is only model evidence. On the Lean side,
 `D2OrdinaryRankRouting.lean` proves local pieces partition an arbitrary
 sender and has the generic `routed_local_destinations_preserve_partition`,
 which takes the target map as input; the static-hole lemmas do not yet prove
@@ -502,6 +502,19 @@ monotonicity preserves an inactive parent's hole fit through the recursive
 stage. This is local geometry only; recursive whole-tree preservation and
 active exceptional/overwrite cases remain open.
 
+Important correction: the current canonical point markers for saturated
+empty holes do **not** define an all-stage `StaticHolesFit` invariant. The
+reproducible `static_hole_fit_screen.py` finds failures in exact reachable
+`FlowDAG` states: 20/100 node-stages at d=7, 36/184 at d=8, 76/426 at d=10,
+and 128/800 at d=12. The first failures are stage 3, level 3, where saturated
+hole markers fall out of address order after a frontier moves across slots.
+The exact wire-routing screen still passes, so this is a marker/representation
+failure, not a routing counterexample. `D2PhysicalBagState.lean` now defines
+clamped markers and kernel-checks that they remove the same wire set as the
+current markers. The clamped fit passes the same finite screen, but no Lean
+fit-preservation proof uses it yet. Rework the physical bag/run representation
+around this fact before extending the old `StaticHolesFit` bridge.
+
 The same file now proves `d2FlowStage_active_top_desc_static_bag_empty` for
 positive native width: the startup top-descending reset sets all eight child
 root tuples to zero, so their static holes fill the parent interval. This
@@ -526,16 +539,13 @@ the routed child port with the next-stage child's static bag.
 For `.botRise`, `D2OrdinaryRankRouting.lean` proves that, when the child level
 is inactive, the whole sender is routed to its parent and the child pieces are
 empty. `D2PhysicalBagState.lean` now proves the matching conditional
-conservation fact, `d2FlowStage_active_bot_rise_static_bag_empty`. The fit
-premise is reduced by `d2FlowNodeStaticHoles_fit_of_child_endpoint_bounds`:
-child invariants put each hole in its native slot, so it suffices to bound the
-updated parent fronts by one native child width and check the first/last
-endpoint holes. Each endpoint check is a disjunction: that endpoint child is
-saturated, or its root front reaches past the updated parent front. The
-existing `D2CoreProviderReserveStep.lean` botRise predecessor reserve appears
-relevant to the saturation branch, but no adapter to this static-fit contract
-is proved yet. The exact receiver union (parent down-port, retained self bag,
-and child up-ports) equaling its next-stage static bag remains open.
+conservation fact, `d2FlowStage_active_bot_rise_static_bag_empty`, with a
+post-step fit hypothesis. The attempted full-list fit reduction is not an
+actual reachable invariant under the current canonical empty-hole markers
+(see the correction above); retain the empty-bag cardinality result, but use a
+clamped or nonordered empty-marker representation for an all-stage statement.
+The exact receiver union (parent down-port, retained self bag, and child
+up-ports) equaling its next-stage static bag remains open.
 
 `D2OrdinaryRankRouting.lean` already proves the generic local destination-piece
 partition for an abstract sender set; do not reprove it.
