@@ -58,26 +58,31 @@ The missing theorem must instantiate these interfaces on one actual
 `d2FlowCandidateRun` transition: from the Boolean 64-column profiles in its
 source tiles, use the physical core's exact output map, then derive every
 column cut and receiver tag from the run's static sender sets and rank ports.
-The resulting grouped counts must be exactly the next run's tile profiles,
+The resulting grouped counts must match the actual next run's tile profiles,
 including clipped final tiles and startup/exceptional roles. State its root
 profile hypotheses explicitly; a selected-cut LP that allows independently
 chosen local cuts is only a relaxation and cannot verify this identity.
 
-There is a profile-shape mismatch to resolve before composing the current
-false-profile provider. `D2FalseClippedTransfer.lean` compares against a
-single exact-rank prefix. Ordinary flow children instead receive a two-front
-deficit (low-prefix plus high-suffix); the checked witness in
-`D2PrefixTwoFrontObstruction.lean` gives child deficits `5, 4` while the
-single-prefix reference of total mass `9` gives `9, 0`. The sender's Boolean
-false mass has **not** been identified with pre-stage `G`; `G` is a flow
-deficit, while the physical provider counts false wires in actual source
-tiles. `D2FlowRankBridge.lean` proves only that an *ideal* single-prefix
-mass `G` has total positive overrun above the two-front child reserves at
-most `G-min(G,low+quota/2)`. Candidate capacities are multiples of 8192,
-but a physical core tile is 262144 wires, so there are 32 flow blocks per
-core tile. Thus the all-stage gate `4096*G <= 23*capacity` and quota floor
-give at most 992 overrun per physical tile, not 31; after the local 448 this
-does not fit the 512-per-tile doubling budget.
+Exact equality between the single-prefix profile used by
+`D2FalseClippedTransfer.lean` and the ordinary flow's two-front child
+deficits is false: the checked witness in `D2PrefixTwoFrontObstruction.lean`
+gives child deficits `5, 4`, versus single-prefix masses `9, 0`. This exact
+profile mismatch is no longer the immediate analytic blocker. The all-stage
+affine reserve in `D2AllStageTwoFrontGate.lean` proves each ideal exact-prefix
+child mass is at most its corresponding two-front reserve. Its theorem
+`d2FlowCandidateRun_active_ordinary_mass_overrun_le_transfer_atPath` further
+shows that if the actual eight grouped counts are within aggregate L1 error
+`E` of those ideal masses, their total positive overrun above the next
+two-front reserves is at most `E`.
+
+The physical sender's Boolean false mass and tags are still **not** identified
+with the flow deficit `G` and the rank intervals. The older tolerant gate
+`4096*G <= 23*capacity` alone gives up to 992 ideal overrun per 262144-wire
+core tile (32 flow blocks), so it cannot pay for the local 448 transfer error
+within the 512-per-tile doubling budget. The stronger affine reserve removes
+that ideal overrun, but applying the new one-sided interface still requires
+proving that the actual schedule supplies its hypotheses. Ragged tiles,
+startup, and exceptional roles also remain open.
 
 `D2TolerantOverrunScaleObstruction.lean` gives an exact local witness at
 capacity 1048576 (four core tiles): it satisfies the tolerant stage-input

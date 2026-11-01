@@ -95,7 +95,14 @@ rebuild passes. This closes the abstract flow-reserve induction; it does not
 identify physical sender counts or receiver tags.
 `D2AllStageTwoFrontGate.lean` additionally proves zero aggregate ideal-prefix
 overrun and per-child domination of exact-prefix mass by two-front reserves
-for every active ordinary candidate path.
+for every active ordinary candidate path. It also proves
+`d2FlowCandidateRun_active_ordinary_mass_overrun_le_transfer_atPath`: if the
+eight actual grouped child counts have aggregate L1 error at most `E` from
+their exact-prefix ideal counts, and those ideal counts are bounded by the
+corresponding rank-interval masses, then actual overrun above the next
+two-front reserves is at most `E`. A focused current-source rebuild passes.
+This provides the one-sided analytic interface, but not its physical count
+and rank/tag hypotheses.
 
 ## Main unresolved gate
 
@@ -119,8 +126,10 @@ source false mass against the sender flow deficit `G`. Exact equality between
 single-prefix masses and two-front child deficits is false in general and is
 not required: `D2AllStageTwoFrontGate.lean` proves each ideal exact-prefix
 child mass is at most its corresponding two-front reserve for actual
-candidate flow states. Use this one-sided comparison with the arbitrary-tag
-`+448` transfer and the parent mass error. A regular sender has ten ordered
+candidate flow states. Its transfer-error theorem means the physical bridge
+only needs aggregate L1 error against those ideal child masses; that error
+directly bounds reserve overrun. The arbitrary-tag `+448` transfer and parent
+mass error are candidate sources for that estimate. A regular sender has ten ordered
 ports (two parent halves and eight child intervals), so its cuts are the
 eleven boundary positions `0..10`. Then extend to sub-4096 ragged heights,
 startup, `botRise`, and exceptional intervals; those cases are not supplied
@@ -180,7 +189,8 @@ is kernel-checked in `candidate_sender_two_front_overrun_zero_of_15over8192`,
 and `D2AllStageTwoFrontGate.lean` derives the reserve at every active ordinary
 candidate path, then proves each ideal prefix child mass is bounded by its
 corresponding two-front reserve. This remains an abstract flow fact; actual
-physical source-tile false mass is not yet shown to equal `G`.
+physical source-tile false mass and receiver groups are not yet shown to
+instantiate the transfer-error hypothesis.
 The weaker strict `512*G <= capacity` reserve gives 32 per physical tile;
 either strict bound leaves the local 448 charge within the 512-per-tile
 doubling budget.

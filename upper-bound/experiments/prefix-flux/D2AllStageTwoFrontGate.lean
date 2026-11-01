@@ -158,4 +158,57 @@ theorem d2FlowCandidateRun_active_ordinary_two_front_overrun_zero_atPath
     (h := h) (i := i) (G := G) (low := low) (high := high)
     children ha hr hGtotal hzeroConcrete j
 
+/-- Transfer error against the sender's exact-prefix ideal profile directly
+controls the actual mass above each next-child two-front reserve. This is the
+one-stage interface for the physical provider: its transfer theorem supplies
+`htransfer`, and its rank/tag geometry supplies `hideal`. -/
+theorem d2FlowCandidateRun_active_ordinary_mass_overrun_le_transfer_atPath
+    {h i t : Nat} (hd : 7 <= (h + 1) + i) (ht : 0 < t)
+    (path : D2FlowPath i)
+    (ha : d2FlowCandidateActive ((h + 1) + i) t i = true)
+    (hr : d2FlowCandidateRole ((h + 1) + i) t i = .topRise ∨
+      d2FlowCandidateRole ((h + 1) + i) t i = .mid ∨
+      d2FlowCandidateRole ((h + 1) + i) t i = .botDesc)
+    (G low high : Nat) (children : Fin 8 -> D2FlowTree h)
+    (hnode : d2FlowTreeAtPath i
+      (d2FlowCandidateRun ((h + 1) + i)
+        (d2FlowTreeInitial 8192 ((h + 1) + i)) t) path =
+        .node G low high children)
+    (actual ideal : Fin 8 -> Nat) (transferError : Nat)
+    (htransfer : (Finset.univ.sum fun j : Fin 8 =>
+      countDistance (actual j) (ideal j)) <= transferError)
+    (hideal : forall j : Fin 8, ideal j <= prefixIntervalMass G
+      (d2FlowRankBoundary (fun k => d2FlowTreeRootDeficit (children k)) j.val)
+      (d2FlowRankBoundary (fun k => d2FlowTreeRootDeficit (children k)) (j.val + 1))) :
+    (Finset.univ.sum fun j : Fin 8 => actual j -
+      d2FlowTreeRootDeficit
+        (d2FlowTreeChild
+          (d2FlowStage (d2FlowCandidateActive ((h + 1) + i) t)
+            (d2FlowCandidateRole ((h + 1) + i) t)
+            (d2FlowCandidateQuota ((h + 1) + i) t)
+            (h + 1) i (.node G low high children)) j)) <= transferError := by
+  have hdom := d2FlowCandidateRun_active_ordinary_two_front_overrun_zero_atPath
+    hd ht path ha hr G low high children hnode
+  let reserve : Fin 8 -> Nat := fun j =>
+    d2FlowTreeRootDeficit
+      (d2FlowTreeChild
+        (d2FlowStage (d2FlowCandidateActive ((h + 1) + i) t)
+          (d2FlowCandidateRole ((h + 1) + i) t)
+          (d2FlowCandidateQuota ((h + 1) + i) t)
+          (h + 1) i (.node G low high children)) j)
+  have hidealReserve : forall j : Fin 8, ideal j <= reserve j := by
+    intro j
+    exact le_trans (hideal j) (hdom.2 j)
+  have hidealError : (Finset.univ.sum fun j : Fin 8 =>
+      ideal j - reserve j) <= 0 := by
+    have hsum : (Finset.univ.sum fun j : Fin 8 =>
+        ideal j - reserve j) = 0 := by
+      apply Finset.sum_eq_zero
+      intro j hj
+      exact Nat.sub_eq_zero_of_le (hidealReserve j)
+    rw [hsum]
+  have hbound := grouped_mass_overrun_le_transfer_add_ideal_overrun
+    actual ideal reserve transferError 0 htransfer hidealError
+  simpa [reserve] using hbound
+
 end Chvatal.D2Reserve
