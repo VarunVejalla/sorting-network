@@ -942,4 +942,30 @@ inequalities remain open; this quota comparison alone does not prove static fit.
 
 `D2BotRiseStaticFit.lean` exports `candidate_botRise_path_children_saturated` and `candidate_botRise_path_post_root_saturated`. `D2PathNativePreservation.lean` now proves `d2FlowCandidateRun_botDesc_grandchild_root_native`: in either `botDesc` phase, the level-`i+2` grandchild root stays native along every actual candidate-run path, using the exact earlier `botRise` callback history where needed. Focused current-source checks pass for `D2PhysicalBagState.lean`, `D2BotRiseStaticFit.lean`, `D2BotRiseRunBridge.lean`, and `D2PathNativePreservation.lean`.
 
-This closes the schedule-side ordinary-or-saturated case split. Still open: instantiate the descendant quota comparison at actual candidate roles/exponents and derive both endpoint cut-containment inequalities. The recursive physical fit provider, fixed-core profile transition, and sorting bound remain open.
+This closes the schedule-side ordinary-or-saturated case split. At that point
+the endpoint cut-containment inequalities were still open; the next checkpoint
+records the ordinary-grandchild case now proved. The recursive physical fit
+provider, fixed-core profile transition, and sorting bound remain open.
+
+## Nested cut containment arithmetic (2026-11-02)
+
+`D2NestedCutContainment.lean` now kernel-checks the missing ordinary-grandchild
+endpoint comparison. For an active ordinary parent with `512*G <= capacity`
+and `256*quota <= capacity`, and an active ordinary grandchild two levels
+below, its updated half-quota exceeds either parent front plus half the
+parent quota. The proof uses the exact six-bit capacity increase and the
+ordinary grandchild quota lower bound; it does not rely on a finite depth
+screen. The file also proves that adjacent levels cannot both be active in
+the candidate schedule, and gives generic first/last cut containment lemmas:
+when the intermediate node is inactive, the first/last cut lies within the
+corresponding grandchild's post-update root front. The right endpoint lemma
+states the needed balance, child-cover, parent-allocation, and even-grandchild
+quota premises explicitly.
+
+Focused current-source Lean check passes for `D2NestedCutContainment.lean`.
+This closes the local ordinary-grandchild arithmetic and the adjacent-level
+schedule fact, but not a whole-tree clamped-fit induction: exceptional
+`botDesc`/`botRise` paths, the case where the grandchild is inactive or
+saturated, and path-level assembly of all stage-input premises still need
+separate handling. Even after geometric fit closes, the actual routed-bag and
+Boolean profile transition remains the principal obstacle to a sub-300 proof.
