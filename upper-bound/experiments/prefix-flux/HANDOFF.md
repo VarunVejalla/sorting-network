@@ -974,3 +974,9 @@ of the fit invariant using the bag-equivalent clamped holes, and proves its
 initial-tree base case by converting the existing canonical initial fit.
 This gives the right representation for a future all-stage induction; no
 stage-preservation theorem for that recursive predicate has been proved yet.
+It also proves `d2FlowCutChild_endpoint_support` for arbitrary nonuniform
+child masses: when the left and right fronts fit inside the first and last
+child masses, respectively, only those two endpoint children receive cuts.
+This supplies the cut-shape reduction needed to lift grandchild endpoint
+inequalities to each overwritten child; the full adapter still needs to
+assemble the stage-input reserves and recursive child fits.

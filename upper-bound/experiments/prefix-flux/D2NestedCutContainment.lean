@@ -160,6 +160,82 @@ theorem d2FlowCutChild_last_right_le_parent_front
   rw [hlast', hright]
   omega
 
+theorem d2FlowCutChild_endpoint_support
+    (sizes : Fin 8 -> Nat) (left right : Nat)
+    (hleft : left <= sizes 0) (hright : right <= sizes 7) :
+    forall j : Fin 8,
+      d2FlowCutChild (d2FlowPosition sizes j) (sizes j) left
+        (d2FlowTotal sizes - right) =
+      if j.val = 0 then (left, left, 0)
+      else if j.val = 7 then (right, 0, right) else (0, 0, 0) := by
+  have hordered := d2FlowPositionedChildren_ordered sizes
+  have hend := d2FlowPosition_last_end sizes
+  have hend' : d2FlowPosition sizes 7 + sizes 7 = d2FlowTotal sizes := by
+    simpa using hend
+  have htail : d2FlowPosition sizes 7 <= d2FlowTotal sizes - right := by
+    have hsum : d2FlowPosition sizes 7 + right <= d2FlowTotal sizes := by
+      rw [← hend']
+      exact Nat.add_le_add_left hright _
+    exact Nat.le_sub_of_add_le hsum
+  have hprefix (j : Fin 8) (hj : 0 < j.val) :
+      left <= d2FlowPosition sizes j := by
+    by_cases hj7 : j.val = 7
+    · have hj' : j = 7 := Fin.ext hj7
+      have hpos : d2FlowPosition sizes j = d2FlowPosition sizes 7 := by
+        simpa [d2FlowPosition, hj7]
+      rw [hpos]
+      exact le_trans hleft hordered.1
+    · have hjlt : j.val < 7 := by omega
+      exact le_trans hleft (hordered.2 j hj hjlt).1
+  have hsuffix (j : Fin 8) (hj : j.val < 7) :
+      d2FlowPosition sizes j + sizes j <= d2FlowTotal sizes - right := by
+    have hbefore : d2FlowPosition sizes j + sizes j <=
+        d2FlowPosition sizes 7 := by
+      by_cases hj0 : j.val = 0
+      · have hj' : j = 0 := Fin.ext hj0
+        rw [hj']
+        simpa [d2FlowPosition_zero] using hordered.1
+      · exact (hordered.2 j (by omega) hj).2
+    exact le_trans hbefore htail
+  intro j
+  by_cases hj0 : j.val = 0
+  · have hj : j = 0 := Fin.ext hj0
+    subst j
+    rw [d2FlowPosition_zero]
+    simp only [d2FlowCutChild, d2LeftCut, d2RightCut]
+    have hmin : min (sizes 0) left = left := Nat.min_eq_right hleft
+    have hs0 : sizes 0 <= d2FlowTotal sizes - right := by
+      have := hsuffix (0 : Fin 8) (by norm_num)
+      simpa [d2FlowPosition_zero] using this
+    simp [d2FlowCutChild, d2LeftCut, d2RightCut,
+      d2FlowPosition_zero, hmin, hs0]
+  · by_cases hj7 : j.val = 7
+    · have hj : j = 7 := Fin.ext hj7
+      subst j
+      simp only [d2FlowCutChild, d2LeftCut, d2RightCut]
+      have hleftPos : left <= d2FlowPosition sizes 7 := hprefix 7 (by norm_num)
+      have hleftZero : min (d2FlowPosition sizes 7 + sizes 7) left -
+          d2FlowPosition sizes 7 = 0 := by omega
+      have hrightEq : d2FlowPosition sizes 7 + sizes 7 -
+          max (d2FlowPosition sizes 7) (d2FlowTotal sizes - right) = right := by
+        rw [Nat.max_eq_right htail]
+        rw [hend']
+        omega
+      simp only [hleftZero, hrightEq]
+      simp
+    · have hleftPos := hprefix j (by omega)
+      have hrightPos := hsuffix j (by omega)
+      simp only [d2FlowCutChild, d2LeftCut, d2RightCut]
+      have hleftZero : min (d2FlowPosition sizes j + sizes j) left -
+          d2FlowPosition sizes j = 0 := by omega
+      have hrightZero : d2FlowPosition sizes j + sizes j -
+          max (d2FlowPosition sizes j) (d2FlowTotal sizes - right) = 0 := by omega
+      have hjne0 : j ≠ 0 := by
+        intro heq
+        have hv : j.val = 0 := by simpa using congrArg Fin.val heq
+        omega
+      simp [hleftZero, hrightZero, hjne0, hj7]
+
 theorem d2FlowStage_active_ordinary_root_left_front
     {active : Nat -> Bool} {role : Nat -> D2Role}
     {quota : Nat -> D2Role -> Nat}
