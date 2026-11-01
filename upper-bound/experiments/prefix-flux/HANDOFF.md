@@ -84,8 +84,12 @@ integer error conversion lemma, and the latter proves the clipped full-height
 false-profile transfer for arbitrary tags.
 `D2TreePathGeometry.lean` also kernel-checks the height-zero branch needed by
 the recursive core-provider transition: a full-depth path lands at a leaf,
-where the affine-core predicate has no terminal obligations. The positive-height
-recursive step and all-time provider remain open.
+where the affine-core predicate has no terminal obligations. It now also proves
+the positive-height path transition and its root specialization: assuming affine
+core snapshots at `t-1` and `t`, plus the invariant at `t`, the full affine-core
+provider holds at `t+1`. A focused current-source rebuild passes. This is a
+conditional one-step theorem; the all-time induction from the bootstrap is not
+yet assembled.
 
 ## Main unresolved gate
 
@@ -252,17 +256,15 @@ terminal purity or bounded displacement.
 
 ## Next proof gate
 
-The immediate formal gate is now to package the checked local root/child
-contracts recursively into a reusable full-tree transition from snapshots
-`t-1,t` to `t+1`, then compose it into an all-time core-provider induction.
+The reusable full-tree one-step transition is now kernel-checked in
+`D2TreePathGeometry.lean`. The next formal gate is to compose it into an
+all-time core-provider induction from the checked bootstrap snapshots,
+maintaining the stage invariant alongside the affine core.
 The local child theorem combines balance, root profile, and two endpoint
 reserves; one-step invariant propagation is available from the current core
-and invariant. The path-snoc projection resolves height association. The
-remaining tree-level proof must recurse through every descendant and assemble
-the root-frontier case with the child contracts. Its full-depth leaf case is
-isolated in `D2TreePathGeometry.lean`; the positive-height recursive step is
-still open. A
-reusable step should use
+and invariant. The path-snoc projection resolves height association. The tree
+recursion now assembles every descendant and the root-frontier case from the
+local contracts. The all-time induction should use
 core snapshots at `t` and `t-1` to prove the next snapshot: the prior core
 gives invariant/balance, `D2TopDescHistory.lean` supplies role-specific root
 profiles, and `D2CoreProviderReserveStep.lean` supplies two-visit endpoint
