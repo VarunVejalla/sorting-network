@@ -450,33 +450,43 @@ distance-sensitive terminal bound, fixed terminal cleanup, and depth/padding
 accounting. Aggregate L1 error alone does not imply terminal purity or bounded
 displacement.
 
-## Next proof gate
+## Next proof gate: define the physical recursive run
 
-The all-time abstract full-tree affine-core plus invariant theorem is now
-kernel-checked in `D2AffineCoreAllStages.lean`, using the bootstrap snapshots
-and the one-step transition from `D2TreePathGeometry.lean`. The generic
-all-tile/all-column ideal port identity is also checked by
-`D2ClippedTilePortAggregation.lean`. The next formal gate is to derive actual
-receiver tags from the fixed static sender sets and show they select the
-corresponding flow ports (with the left-parent shift). Then identify the
-physical sender mass/profile with the ideal prefix restriction, including
-ragged heights and startup/exceptional roles. The existing path adapters
-establish only the abstract flow-reserve state; they do not link it to the
-Boolean tile profiles or actual receiver tags. After that identity, a spatial
-terminal invariant, fixed cleanup, and depth accounting remain open.
-Aggregate error alone is not terminal purity.
+The all-time abstract full-tree affine-core plus invariant theorem is kernel-
+checked in `D2AffineCoreAllStages.lean`; the all-tile/all-column ideal port
+identity is checked in `D2ClippedTilePortAggregation.lean`. The candidate-run
+path interface now also supplies sender-input invariants and aligned port
+boundaries at one path (`d2FlowCandidateRun_stage_inv_inputs_atPath` and
+`d2FlowCandidateRun_sender_boundary_grid_atPath` in `D2AllStagePortGrid.lean`).
 
-The candidate-run path interface is now explicit for both sender-input
-invariants and 4096-port boundary alignment (`d2FlowCandidateRun_stage_inv_inputs_atPath`
-and `d2FlowCandidateRun_sender_boundary_grid_atPath` in
-`D2AllStagePortGrid.lean`). This makes the abstract premises available at the
-same concrete path; it does not establish that the corresponding static-hole
-list is the actual recursive sender set or identify the routed Boolean counts.
-The next useful lemma should consume these path facts plus the static-hole fit
-and aligned-receiver-cell results to prove a receiver-tag/port identity for
-one ordinary sender. If that identity cannot be stated without reintroducing
-idealized sender sets, isolate that mismatch as the obstruction and stop
-adding path projections.
+The physical transition is specified in Python source, not yet proved in
+Lean. `flow_dag.py` defines the compressed tree updates and each bag's
+ordered static intervals; `wire_partition_check.py` assembles every next bag
+from retained inactive bags, parent down-ports, and child up-ports, then checks
+exact interval equality and no duplicate routing. The receiver-context logic
+in `receiver_fiber_types.py` additionally records the important parent-root
+overwrite case. These scripts are source (not generated artifacts), but the
+finite checks through depth 6 are only model evidence. On the Lean side,
+`D2OrdinaryRankRouting.lean` proves local pieces partition an arbitrary
+sender and has the generic `routed_local_destinations_preserve_partition`,
+which takes the target map as input; the static-hole lemmas do not yet prove
+that the Python interval recurrence is the candidate tree's all-depth
+physical execution.
+
+The next formal artifact should port the Python bag-address recurrence, not
+invent a new scheduler: define a node's occupied native interval and its
+sender bag as that interval minus its occupied child intervals, represented
+by ordered runs. Then prove one all-stage transition identity: the union of
+inactive retained bags, the parent's down-port, and active children's
+up-ports equals each next node's bag, with disjointness. Match the exact
+indices/overwrite behavior in `wire_partition_check.py` and
+`receiver_fiber_types.py`. This turns the finite audit into an induction
+target and supplies concrete receiver tags for the already checked clipped
+tile identity. Start with the ordinary case if it is a genuine lemma of the
+same general transition, and separately handle startup/exceptional/ragged
+cases. Only after the physical/flow identity is proved should the profile
+transition, spatial terminal invariant, fixed cleanup, and depth/padding
+accounting be resumed. Aggregate error alone is not terminal purity.
 
 ## Files and artifacts
 
