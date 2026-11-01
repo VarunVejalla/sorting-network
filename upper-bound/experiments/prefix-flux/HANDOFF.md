@@ -217,9 +217,15 @@ classification to include `t = tfD2`. `D2CoreProviderReserveStep.lean` now
 uses the non-strict terminal bound throughout; current-source focused rebuilds
 pass for that module and its `D2TopDescHistory.lean` dependent. This closes the
 strict-before-terminal schedule side condition for endpoint reserves. It does
-not yet compose the endpoint result with the other active-child contracts:
-the child-path append has a dependent tree-height association that still needs
-a reusable projection lemma or a formulation avoiding that cast.
+not by itself establish the full provider. `D2FlowPathLast.lean` now proves a
+cast-aware path-snoc projection and transports the candidate run/core contract
+across the associated height indices. Its
+`d2FlowCandidateRun_active_child_affine_local_contract` combines balance,
+the role-dependent root profile, and endpoint reserves for the *same* actual
+active child. The focused current-source rebuild passes. Thus the local child
+contract and its path/index adapter are closed; packaging those fields
+recursively into one full-tree transition from snapshots `t-1,t` to `t+1`
+remains open.
 
 The exact compressed-flow screen
 `d2_deficit_tolerance_screen.py --depth 100 --scale 8192 --params 3 3 2`
@@ -238,17 +244,16 @@ terminal purity or bounded displacement.
 
 ## Next proof gate
 
-The immediate formal gate is to prove a reusable full-tree transition from
-snapshots `t` and `t-1` to `t+1`, then compose it into an all-time
-core-provider induction. The local balance component is now closed by
-`d2FlowCandidateRun_active_child_balanced_of_prior_core`; next combine it with
-`d2FlowCandidateRun_active_child_role_root_contract` and
-`d2FlowCandidateRun_core_provider_endpoint_reserves_at_active_path`, then
-package the resulting local contracts over the entire recursive tree. Endpoint
-reserves now cover the terminal active stage as well. First resolve the
-child-path height association needed to apply the reserve adapter to the same
-child tree as the balance/profile adapters. The step also needs the stage
-invariant at snapshot `t` for invariant propagation. A
+The immediate formal gate is now to package the checked local child contract
+recursively into a reusable full-tree transition from snapshots `t-1,t` to
+`t+1`, then compose it into an all-time core-provider induction. The local
+balance, root-profile, and two endpoint-reserve fields are combined in
+`d2FlowCandidateRun_active_child_affine_local_contract`, with endpoint reserves
+covering the terminal active stage. The path-snoc projection resolves the
+height association for that local composition. The remaining tree-level proof
+must handle the root frontier, recursively provide the same contract for all
+descendants, and use the stage invariant at snapshot `t` for invariant
+propagation. A
 reusable step should use
 core snapshots at `t` and `t-1` to prove the next snapshot: the prior core
 gives invariant/balance, `D2TopDescHistory.lean` supplies role-specific root
