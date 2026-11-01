@@ -100,18 +100,20 @@ checks 217470 reachable stage/node entries, passes the strict `1/512` gate,
 and observes maximum ratio `15/8192 - 7/capacity`. This is finite model
 evidence only.
 
-The immediate formal gate is to compose the existing path-level adapters into
-an all-time full-tree core-provider induction. The sources
+The abstract all-time full-tree core-provider induction is now proved in
+`D2AffineCoreAllStages.lean`, combining the checked bootstrap with the
+full-tree one-step transition. Do not reassemble that induction. The immediate
+formal gate is the physical sender mass/tag identity for the actual schedule,
+including partial tiles and startup/exceptional roles. The sources
 `D2StrongFlowCoreInputs.lean`, `D2StrongAffineChild.lean`,
 `D2TopDescHistory.lean`, and `D2CoreProviderReserveStep.lean` already provide
 the contract adapters, ordinary-child profile transition, role-specific root
-profiles, and two-visit endpoint reserve transition. They still assume prior
-full-tree core snapshots. `D2RootFrontierCase.lean` now proves that an active
+profiles, and two-visit endpoint reserve transition used by the checked
+all-stage theorem. `D2RootFrontierCase.lean` proves that an active
 level-zero node is top-descending and its deficit is zero under the prior-core
 hypothesis. Bootstrap snapshots 0 through 3 are checked by
-`D2AffineCoreBootstrap.lean`. Next prove a
-reusable step from snapshots `t` and `t-1` to `t+1`, deriving balance from the
-invariant. Do not redo these local lemmas.
+`D2AffineCoreBootstrap.lean`; their composition into an all-stage theorem is
+also checked. Do not redo these local lemmas.
 
 Passing that flow-reserve gate does not establish the physical stage
 transition. The central construction gate remains the joint state linking

@@ -84,12 +84,13 @@ integer error conversion lemma, and the latter proves the clipped full-height
 false-profile transfer for arbitrary tags.
 `D2TreePathGeometry.lean` also kernel-checks the height-zero branch needed by
 the recursive core-provider transition: a full-depth path lands at a leaf,
-where the affine-core predicate has no terminal obligations. It now also proves
-the positive-height path transition and its root specialization: assuming affine
-core snapshots at `t-1` and `t`, plus the invariant at `t`, the full affine-core
-provider holds at `t+1`. A focused current-source rebuild passes. This is a
-conditional one-step theorem; the all-time induction from the bootstrap is not
-yet assembled.
+where the affine-core predicate has no terminal obligations. It also proves
+the positive-height path transition and its root specialization. Now
+`D2AffineCoreAllStages.lean` combines this with checked snapshots 0 through 3
+and invariant bootstrap to prove the abstract affine-core provider and tree
+invariant for every stage and dimension `d >= 7`. A focused current-source
+rebuild passes. This closes the abstract flow-reserve induction; it does not
+identify physical sender counts or receiver tags.
 
 ## Main unresolved gate
 
@@ -189,7 +190,8 @@ current-source checks passed for `D2StrongFlowCoreInputs.lean`,
 `D2TopDescHistory.lean`, `D2CoreProviderReserveStep.lean`,
 `D2RootFrontierCase.lean`, `D2FlowPathLast.lean`, and
 `D2AffineCoreBootstrap.lean`. The path adapters still assume prior full-tree
-core snapshots. There is no all-time core-provider induction yet. The moving
+core snapshots. `D2AffineCoreAllStages.lean` now closes the all-time abstract
+core-provider induction. The moving
 root-frontier case is isolated in `D2RootFrontierCase.lean`: an active
 level-zero node is top-descending, and its current deficit is zero given the
 prior core at `t-2`. `D2FlowPathLast.lean` adds a checked last-edge
@@ -205,7 +207,8 @@ assembles the eight children and the complete root snapshot. For stage three,
 the bottom-rise nodes need only the balance field already supplied by strict
 inputs; the top-rise subtree reuses the proved endpoint reserves. The affine
 bootstrap snapshots 0 through 3 pass a focused current-source rebuild. The
-general induction step remains open. `D2StrongAffineChild.lean` proves
+all-stage induction is closed by `D2AffineCoreAllStages.lean`.
+`D2StrongAffineChild.lean` proves
 `d2FlowTreeRunWithParentOverwrites_child_balanced`: an ordinary active parent
 writes balanced root data into each child even through arbitrary
 ancestor-overwrite history. `D2CoreProviderReserveStep.lean` lifts this to
@@ -256,24 +259,14 @@ terminal purity or bounded displacement.
 
 ## Next proof gate
 
-The reusable full-tree one-step transition is now kernel-checked in
-`D2TreePathGeometry.lean`. The next formal gate is to compose it into an
-all-time core-provider induction from the checked bootstrap snapshots,
-maintaining the stage invariant alongside the affine core.
-The local child theorem combines balance, root profile, and two endpoint
-reserves; one-step invariant propagation is available from the current core
-and invariant. The path-snoc projection resolves height association. The tree
-recursion now assembles every descendant and the root-frontier case from the
-local contracts. The all-time induction should use
-core snapshots at `t` and `t-1` to prove the next snapshot: the prior core
-gives invariant/balance, `D2TopDescHistory.lean` supplies role-specific root
-profiles, and `D2CoreProviderReserveStep.lean` supplies two-visit endpoint
-reserves. `D2RootFrontierCase.lean` closes the level-zero role/reset case
-under the same prior-core hypothesis. Bootstrap snapshots through 3 now
-provide concrete cases for testing the composition. Confirm these
-ingredients compose before adding more stage-specific bridges. This closes
-only the flow-reserve induction; the physical sender-mass/tag identity
-(including ragged heights), spatial terminal invariant, cleanup, and depth
+The all-time abstract full-tree affine-core plus invariant theorem is now
+kernel-checked in `D2AffineCoreAllStages.lean`, using the bootstrap snapshots
+and the one-step transition from `D2TreePathGeometry.lean`. The next formal
+gate is the physical sender-mass/tag identity for the actual schedule,
+including ragged heights and startup/exceptional roles. The existing path
+adapters establish only the abstract flow-reserve state; they do not link it to
+the Boolean tile profiles or actual receiver tags. After that identity, the
+remaining gates are a spatial terminal invariant, fixed cleanup, and depth
 accounting remain open. Aggregate error alone is not terminal purity.
 
 ## Files and artifacts
