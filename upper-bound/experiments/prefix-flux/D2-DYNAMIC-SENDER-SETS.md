@@ -1,9 +1,9 @@
 # Dynamic sender-set realization of the D2 flow
 
-Status: proposed proof architecture, not yet formalized. It is intended to
-replace the difficult equality between routed sets and the canonical
-static-hole bags. It does not remove the need for an all-stage spatial
-profile invariant or terminal cleanup.
+Status: partially formalized size interface; the tree-wide layout and profile
+invariant remain open. It is intended to replace the difficult equality
+between routed sets and the canonical static-hole bags. It does not remove the
+need for an all-stage spatial profile invariant or terminal cleanup.
 
 ## State and update
 
@@ -79,3 +79,26 @@ cardinality equal to the corresponding node's `d2FlowTreeAllocation` after
 If this theorem is materially harder than the static-bag identity, or its
 cardinality recurrence fails for a reachable case, reassess this architecture
 before building more profile lemmas on it.
+
+## Formal progress
+
+`D2DynamicSenderCardinality.lean` now kernel-checks three relevant interfaces:
+
+- `destinationPiece_d2_child_card` and
+  `destinationPiece_d2_parent_card` show that ordinary physical rank pieces
+  have exactly the flow port widths.
+- `routedReceiver_card_eq_sum_of_piece_cards` gives a receiver's set size as
+  the sum of incoming port-piece sizes whenever the previous sender sets are
+  disjoint and local pieces partition each sender.
+- `d2FlowTreeAllocation_after_inactive_recursive_stage` proves the matching
+  abstract recurrence: an inactive receiver's new allocation is its old
+  allocation plus the parent down-port (`old root - overwritten root`) plus
+  the total child up-port (`increase in child-root mass`). It assumes the
+  overwritten root remains below the recursively updated child mass.
+
+Thus the local size algebra is established. The next bridge must instantiate
+these facts together on the actual tree: establish the parent-port root drop,
+the post-overwrite child-cover condition for every role, and a recursively
+indexed family of sender sets whose local partitions route to the same nodes.
+Startup and exceptional role routing must be included. This still says
+nothing about contraction of the physical prefix defect or terminal cleanup.

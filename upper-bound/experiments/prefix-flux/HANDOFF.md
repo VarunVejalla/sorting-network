@@ -660,6 +660,18 @@ partition-plus-cardinality theorem before adding more profile adapters. If its
 allocation recurrence fails in a reachable case, record the counterexample
 and return to the static-bag transition gate.
 
+`D2DynamicSenderCardinality.lean` now closes the local size algebra. The D2
+parent and child rank pieces have their exact port widths, and the generic
+routed receiver cardinality is the sum of its incoming piece sizes. On the
+flow side, `d2FlowTreeAllocation_after_inactive_recursive_stage` proves that
+an inactive receiver's allocation changes by exactly its parent down-port
+plus its children's up-ports. It requires the parent-overwritten root to be
+below the receiver's recursively updated child mass. The unresolved physical
+bridge is now specifically to instantiate the source partition, root-drop,
+post-overwrite cover, and role routing together for the candidate tree; the
+generic size formulas alone do not establish that layout or its prefix-profile
+contraction.
+
 ## Files and artifacts
 
 Start at `README.md` for the module map. `STATUS-HISTORY.md` preserves the
