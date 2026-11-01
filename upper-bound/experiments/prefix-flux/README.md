@@ -18,6 +18,11 @@ and should be consulted only for provenance.
 | Arbitrary-root gates | `D2-DISTANCE-TAIL-PERIOD-GATE.md`, `D2-PORT-VARIANCE-TRANSFER.md`, `D2-RECEIVER-FIBER-DEGREE-SCREEN.md` | Selected-cut relaxations expose alignment failures; they are not executions of the fixed network. The receiver incidence screen finds fan-in up to 4 and fan-out up to 3 through depth 9; this is finite locality evidence, not an error contraction proof. |
 | Other candidates and screens | `D2-SPARSE-BOTTOM-300.md`, `D2-M3-REDUCED-GATE.md`, `PROFILE-GATE.md` | Cost/probability/moment diagnostics. Read the scope caveats before using a number. |
 
+`d2_cut_child_endpoint_screen.py` checks whether each parent cut leaves its
+post-stage child's first/last unsaturated grandchild fronts inside the
+overwritten child fronts. It is exact finite model evidence only; depths
+12–60 currently pass with minimum normalized endpoint slack `45/256`.
+
 Lean sources and scripts stay in the repository. Reproducible outputs and
 compiled artifacts live in the ignored worktree-specific cache at
 `LLM-helpers/sub300-check/artifacts/sub300-structural/`; its manifest records

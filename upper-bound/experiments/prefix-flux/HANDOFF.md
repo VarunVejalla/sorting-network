@@ -801,6 +801,20 @@ reduce its incoming sum to its retained self-piece, active parent's down-port,
 and active children's up-ports, then match those widths to the flow allocation
 recurrence.
 
+## Nested cut-child endpoint screen (2026-11-02)
+
+`d2_cut_child_endpoint_screen.py` checks the exact candidate `FlowDAG` after
+each active parent update. For every overwritten child it checks both
+first/last unsaturated grandchild inequalities needed for that child's
+clamped static-hole fit; saturated grandchildren are the clamped empty-marker
+case. Depths 12, 20, 24, 30, 40, and 60 have zero failures (747,200 checks at
+depth 60). The minimum observed slack is exactly `45/256` of parent capacity
+for each of `topDesc`, `topRise`, and `mid`; other observed edge cases are
+saturated. This is finite model evidence only. Next try to derive a uniform
+reserve for these exact two inequalities from the candidate stage/endpoint
+contracts, then prove the cut-child fit lemma in Lean. The screen is listed in
+the prefix-flux README.
+
 The recursive static-fit provider is itself still missing. The existing
 one-node clamped-fit lemmas establish that updated holes fit inside the current
 parent, but a parent may overwrite each child's root fronts after that child's
