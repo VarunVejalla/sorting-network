@@ -71,7 +71,8 @@ def check(depth, scale, params, sparse_bottom=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--depths", type=int, nargs="+", default=[7, 8, 10, 12])
+    parser.add_argument("--depths", type=int, nargs="+",
+                        default=[7, 8, 10, 12, 14, 16, 20])
     parser.add_argument("--scale", type=int, default=8192)
     parser.add_argument("--params", type=int, nargs=3, default=(3, 3, 2))
     parser.add_argument("--sparse-bottom", action="store_true")

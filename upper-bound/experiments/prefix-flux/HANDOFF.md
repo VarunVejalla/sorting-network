@@ -466,7 +466,8 @@ from retained inactive bags, parent down-ports, and child up-ports, then checks
 exact interval equality and no duplicate routing. The receiver-context logic
 in `receiver_fiber_types.py` additionally records the important parent-root
 overwrite case. These scripts are source (not generated artifacts), but the
-compressed exact-routing screen through depth 12 is only model evidence. On the Lean side,
+compressed exact-routing screen through depth 20 is only model evidence. On
+the Lean side,
 `D2OrdinaryRankRouting.lean` proves local pieces partition an arbitrary
 sender and has the generic `routed_local_destinations_preserve_partition`,
 which takes the target map as input; the static-hole lemmas do not yet prove
@@ -506,14 +507,16 @@ Important correction: the current canonical point markers for saturated
 empty holes do **not** define an all-stage `StaticHolesFit` invariant. The
 reproducible `static_hole_fit_screen.py` finds failures in exact reachable
 `FlowDAG` states: 20/100 node-stages at d=7, 36/184 at d=8, 76/426 at d=10,
-and 128/800 at d=12. The first failures are stage 3, level 3, where saturated
-hole markers fall out of address order after a frontier moves across slots.
-The exact wire-routing screen still passes, so this is a marker/representation
-failure, not a routing counterexample. `D2PhysicalBagState.lean` now defines
-clamped markers and kernel-checks that they remove the same wire set as the
-current markers. The clamped fit passes the same finite screen, but no Lean
-fit-preservation proof uses it yet. Rework the physical bag/run representation
-around this fact before extending the old `StaticHolesFit` bridge.
+128/800 at d=12, and 456/4138 at d=20. The first failures are stage 3,
+level 3, where saturated-hole markers fall out of address order after a
+frontier moves across slots. The compressed wire-routing screen still passes
+at d=20 (32,750 routing cases, 4,831 shared states), so this is a
+marker/representation failure, not a routing counterexample.
+`D2PhysicalBagState.lean` kernel-checks that clamped markers remove the same
+wire set as the current markers. Clamped fit has zero failures at all tested
+depths through 20, but no Lean fit-preservation proof uses it yet. Rework the
+physical bag/run representation around this fact before extending the old
+`StaticHolesFit` bridge.
 
 The same file now proves `d2FlowStage_active_top_desc_static_bag_empty` for
 positive native width: the startup top-descending reset sets all eight child
