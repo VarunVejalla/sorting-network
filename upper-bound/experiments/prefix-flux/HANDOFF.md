@@ -526,8 +526,12 @@ also converted to clamped fit by
 `d2FlowStage_active_ordinary_static_fit_clamped`. Existing initial-fit results
 can be converted as well. The active top-descending fit is now proved by
 `d2FlowStage_active_top_desc_static_fit_clamped`, since all eight child holes
-are their full native slots after reset. The active bottom-rising fit case and
-routed next-bag identity remain open.
+are their full native slots after reset. The active bottom-rising case also
+has `d2FlowStage_active_bot_rise_static_fit_clamped`, which proves clamped fit
+under the explicit native-front and first/last-child containment conditions
+already used by the bot-rise bag-conservation lemma. Supplying these
+conditions from the arbitrary-path schedule history remains open, as does
+routed next-bag identity.
 
 The same file now proves `d2FlowStage_active_top_desc_static_bag_empty` for
 positive native width: the startup top-descending reset sets all eight child
