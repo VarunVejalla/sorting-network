@@ -40,6 +40,16 @@ the flat layout and prove its receiver bags have the post-stage flow
 allocations, including inactive nodes and overwrite cases. The spatial profile
 recurrence remains the main analytic blocker.
 
+`D2DynamicSenderCardinality.lean` now packages the inactive internal-node
+case as `d2FlowTreeAllocation_after_inactive_node_ports`: when the node retains
+its root, its allocation increases exactly by the sum of child up-port widths.
+This follows from the recursive capacity-mass increment and the allocation
+overwrite identity. Focused current-source checks pass for both
+`D2DynamicSenderCardinality.lean` and its downstream
+`D2DynamicSenderNode.lean`. This closes one arithmetic case of the receiver
+size recurrence; it does not prove that physical routed pieces have those
+widths/tags or identify a receiver bag with the flow allocation.
+
 ## Candidate and price
 
 The strongest deterministic candidate is the `(3,3,2)` D2 schedule with the

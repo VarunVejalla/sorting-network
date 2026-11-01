@@ -185,6 +185,45 @@ theorem d2FlowTreeAllocation_after_inactive_recursive_stage
     (d2FlowTreeCapacityMass_inactive_stage_mono
       active role quota i tree ha)
 
+/-- At an inactive internal node, the flow allocation increases by exactly
+the sum of the up-port widths emitted by its children. This is the arithmetic
+step needed to match the retained local sender bag and incoming child pieces
+in the dynamic layout. -/
+theorem d2FlowTreeAllocation_after_inactive_node_ports
+    {active : Nat -> Bool} {role : Nat -> D2Role}
+    {quota : Nat -> D2Role -> Nat} {h scale i G low high : Nat}
+    (children : Fin 8 -> D2FlowTree h)
+    (ha : active i = false)
+    (hinv : d2FlowTreeInv scale (.node G low high children)) :
+    d2FlowTreeAllocation scale
+        (d2FlowStage active role quota (h + 1) i
+          (.node G low high children)) =
+      d2FlowTreeAllocation scale (.node G low high children) +
+        d2FlowTotal (fun j =>
+          d2FlowStagePort active role quota h (i + 1) (children j)) := by
+  have hcover : G <= d2FlowTreeCapacityMass scale (.node G low high children) :=
+    d2FlowTreeInv_root_le_capacityMass (.node G low high children) hinv
+  have hmassMono := d2FlowTreeCapacityMass_inactive_stage_mono
+    (h := h + 1) (scale := scale) active role quota i
+      (.node G low high children) ha
+  have hnewCover : G <= d2FlowTreeCapacityMass scale
+      (d2FlowStage active role quota (h + 1) i
+        (.node G low high children)) := by
+    exact le_trans hcover hmassMono
+  have halloc := d2FlowTreeAllocation_after_inactive_recursive_stage
+    (.node G low high children) ha hinv G low high hnewCover (by rfl)
+  have hstageEq : d2FlowTreeSetRoot
+      (d2FlowStage active role quota (h + 1) i
+        (.node G low high children)) G low high =
+      d2FlowStage active role quota (h + 1) i
+        (.node G low high children) := by
+    simp [d2FlowTreeSetRoot, d2FlowStage, ha]
+  rw [hstageEq] at halloc
+  have hincrement := d2FlowTreeCapacityMass_inactive_stage_increment
+    active role quota (h := h) (scale := scale) i children G low high ha
+  rw [← hincrement] at halloc
+  simpa [d2FlowTreeRootDeficit] using halloc
+
 /-- An active ordinary parent only lowers a child's root deficit. This is
 the exact down-port width charged in the inactive-receiver recurrence. -/
 theorem d2FlowStage_regular_child_root_drop
