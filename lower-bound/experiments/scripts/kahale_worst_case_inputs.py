@@ -558,11 +558,20 @@ def cmd_cegar(a):
         mean, std = X.mean(1), X.std(1)
         rt = math.sqrt(n)
         errs, sets = {}, {}
-        for w in np.arange(0, n, a.stride):
+        if a.adv == "tree":
             for side in (0, 1):
-                S = refine(L, n, int(w), side, rng, iters=a.iters, alpha=float(rng.choice([0.5, 1.0, 1.0])))
-                errs[(int(w), side)] = err_of(int(w), int(S.sum()), n, side)
-                sets[(int(w), side)] = S
+                Sz, _ = tree_family(L, n, side)
+                cnt = np.bitwise_count(Sz).sum(1).astype(np.int64)
+                for w in range(n):
+                    errs[(w, side)] = err_of(w, int(cnt[w]), n, side)
+                    if errs[(w, side)] > 0:
+                        sets[(w, side)] = bits_to_mask(Sz[w], n)
+        else:
+            for w in np.arange(0, n, a.stride):
+                for side in (0, 1):
+                    S = refine(L, n, int(w), side, rng, iters=a.iters, alpha=float(rng.choice([0.5, 1.0, 1.0])))
+                    errs[(int(w), side)] = err_of(int(w), int(S.sum()), n, side)
+                    sets[(int(w), side)] = S
         top = sorted(errs, key=lambda q: -errs[q])[:a.add]
         new = [(~sets[q]) if q[1] == 0 else sets[q].copy() for q in top if errs[q] > 0]
         worst = max(errs.values())
@@ -575,6 +584,10 @@ def cmd_cegar(a):
                           "frac_err>0.01n": round(float(np.mean([e > 0.01 * n for e in errs.values()])), 4),
                           "secs": round(time.time() - t0, 1)}), flush=True)
         if not new:
+            if a.adv == "tree" and a.final:          # passed the tree test: stronger adversary
+                w = worst_scan(L, n, rng, 30, a.stride, 30, a.final)
+                print(json.dumps({"d": d, "n": n, "tree_passed_at_round": rnd, "search_err": w["worst_err"],
+                                  "search_err/n": w["worst_err/n"]}), flush=True)
             break
         A = np.concatenate([A, np.array(new).T], axis=1)
 
@@ -734,6 +747,41 @@ def z3_unsorted(L, n, tlimit):
     return str(s.check())
 
 
+def z3_error_at_least(L, n, e, tlimit, wires=None):
+    """SAT: is there a wire w and an input with at most w + 1 - e zeros and w = 0, or
+    at most n - w - e ones and w = 1?  A sat answer is re-simulated."""
+    import z3
+    x = [z3.Bool(f"x{i}") for i in range(n)]
+    v = list(x)
+    s = z3.Solver()
+    s.set("timeout", int(tlimit * 1000))
+    c = 0
+    for lo, hi in L:
+        for a, b in zip(lo.tolist(), hi.tolist()):
+            p, q = z3.Bool(f"a{c}"), z3.Bool(f"b{c}")
+            c += 1
+            s.add(p == z3.And(v[a], v[b]), q == z3.Or(v[a], v[b]))
+            v[a], v[b] = p, q
+    ones = lambda m: z3.AtMost(*x, m)            # at most m ones
+    ones_ge = lambda m: z3.AtLeast(*x, m)        # at least m ones
+    opts = []
+    for w in (range(n) if wires is None else wires):
+        if w + 1 - e >= 0:
+            opts.append(z3.And(z3.Not(v[w]), ones_ge(n - (w + 1 - e))))
+        if n - w - e >= 0:
+            opts.append(z3.And(v[w], ones(n - w - e)))
+    s.add(z3.Or(opts))
+    r = str(s.check())
+    wit = None
+    if r == "sat":
+        mdl = s.model()
+        y = np.array([z3.is_true(mdl.eval(q, model_completion=True)) for q in x])
+        _, _, E = errors(sim(L, y.copy()))
+        wit = int(E[0])
+        assert wit >= e
+    return r, wit
+
+
 def cmd_exact(a):
     """Exact worst rank error at small d.  n <= 22: all 2^n inputs.  Otherwise a MILP
     per wire and side, seeded by nothing; status 0 = optimal, else time limit."""
@@ -760,6 +808,11 @@ def cmd_exact(a):
             print(json.dumps({"d": d, "n": n, "method": "z3 QF_FD", "unsorted_input_exists": z3_unsorted(L, n, a.z3),
                               "secs": round(time.time() - t0, 1)}), flush=True)
             continue
+        if a.ge:
+            r, wit = z3_error_at_least(L, n, a.ge, a.tlimit)
+            print(json.dumps({"d": d, "n": n, "method": "z3 E >= e", "e": a.ge, "result": r, "witness_E": wit,
+                              "secs": round(time.time() - t0, 1)}), flush=True)
+            continue
         wires = range(n) if not a.wires else [int(x) for x in a.wires.split(",")]
         rows, unresolved, worst = [], 0, 0
         for w in wires:
@@ -781,7 +834,7 @@ def cmd_exact(a):
                           "secs": round(time.time() - t0, 1)}), flush=True)
 
 
-INF = 1 << 30
+INF = 1 << 62
 
 
 def beam_zero(L, n, B, side, keep_rule="size"):
@@ -835,8 +888,9 @@ def beam_report(L, n, B):
     return {"worst_err": wit[0][0] if wit else 0, "targets_err>0": len(wit), "closest_margin": closest}, wit
 
 
-def merge_families(f1, f2):
-    """All pairs of two beams (P, B, w); keep compatible unions."""
+def merge_families(f1, f2, rank="size"):
+    """All pairs of two beams (P, B, w); keep compatible unions.  rank 'size': the
+    rank is the true support size; rank 'tree': the sum of the parents' ranks."""
     S1, T1, c1 = f1
     S2, T2, c2 = f2
     P, B, w = S1.shape
@@ -844,13 +898,16 @@ def merge_families(f1, f2):
     b = T1[:, :, None, :] | T2[:, None, :, :]
     clash = ((a & b) != 0).any(3)
     both = (c1[:, :, None] < INF) & (c2[:, None, :] < INF)
-    size = (np.bitwise_count(a) + np.bitwise_count(b)).sum(3).astype(np.int64)
+    if rank == "size":
+        size = (np.bitwise_count(a) + np.bitwise_count(b)).sum(3).astype(np.int64)
+    else:
+        size = np.minimum(np.minimum(c1, 1 << 60)[:, :, None] + np.minimum(c2, 1 << 60)[:, None, :], 1 << 61)
     ok = both & ~clash
     size = np.where(ok, size, INF)
     return (a.reshape(P, B * B, w), b.reshape(P, B * B, w), size.reshape(P, B * B)), int(both.sum()), int(ok.sum())
 
 
-def pair_family(L, n, B):
+def pair_family(L, n, B, rank="size"):
     """Mixed-polarity recurrence with supports (the ticket's object).  F[u, v] holds at
     most B restrictions (S -> 0, T -> 1) forcing wire u = 1 and wire v = 0.  One layer:
     u = 1 needs one input of a max output, both inputs of a min output; v = 0 needs one
@@ -883,7 +940,7 @@ def pair_family(L, n, B):
 
         def mrg(x, y):
             nonlocal tried, compat
-            r, tr, ok = merge_families(x, y)
+            r, tr, ok = merge_families(x, y, rank)
             tried += tr
             compat += ok
             return r
@@ -942,7 +999,7 @@ def cmd_family(a):
                                       "err/n": round(r["worst_err"] / n, 4),
                                       "secs": round(time.time() - t0, 1)}), flush=True)
                 else:
-                    S, T, c, st = pair_family(L, n, B)
+                    S, T, c, st = pair_family(L, n, B, a.rank)
                     live = c[:, :, 0] < INF
                     iu = np.triu(np.ones((n, n), bool), 1)
                     pairs = np.argwhere(live & iu)
@@ -957,7 +1014,7 @@ def cmd_family(a):
                             y[Sm], y[Tm] = False, True
                             o = sim(L, y.copy())
                             assert o[u] and not o[v]
-                    print(json.dumps({"d": d, "n": n, "sched": sched, "family": "pair", "B": B,
+                    print(json.dumps({"d": d, "n": n, "sched": sched, "family": "pair", "rank": a.rank, "B": B,
                                       "terminal_inversions": int(pairs.shape[0]),
                                       "per_layer": [st[i] for i in range(4, len(st), 6)] + [st[-1]],
                                       "secs": round(time.time() - t0, 1)}), flush=True)
@@ -1022,6 +1079,291 @@ def cmd_fib(a):
                           "phi": 1.618}), flush=True)
 
 
+def tree_family(L, n, side, rng=None, alpha=1.0):
+    """One support set per wire, ranked by uncapped tree cost, not by set size:
+       OR output  : the set of the input with the smaller tree cost,
+       AND output : the union of both sets; tree cost max + alpha * min.
+    A forward recurrence: state (cost, set) per wire.  Upper-closed: every set is a true
+    certificate.  With alpha = 1 the cost is the LB-24 wire recurrence without the cap,
+    so this adds exactly one thing to LB-24: the union of the leaves of its own argmin
+    tree, in place of their multiset count."""
+    w = (n + 63) // 64
+    Sz = np.zeros((n, w), np.uint64)
+    Sz[np.arange(n), np.arange(n) // 64] = np.uint64(1) << (np.arange(n) % 64).astype(np.uint64)
+    c = np.ones(n) if rng is None else 1 + 1e-6 * rng.random(n)
+    for lo, hi in L:
+        andw, orw = (hi, lo) if side == 0 else (lo, hi)
+        A, B = Sz[lo].copy(), Sz[hi].copy()
+        ca, cb = c[lo].copy(), c[hi].copy()
+        pick = (ca <= cb)[:, None]
+        Sz[orw] = np.where(pick, A, B)
+        Sz[andw] = A | B
+        mn, mx = np.minimum(ca, cb), np.maximum(ca, cb)
+        c[orw], c[andw] = mn, mx + alpha * mn
+    return Sz, c
+
+
+def tree_report(L, n, alpha=1.0, rng=None):
+    best, at, pos, wit = 0, None, 0, None
+    sizes = {}
+    for side in (0, 1):
+        Sz, c = tree_family(L, n, side, rng, alpha)
+        cnt = np.bitwise_count(Sz).sum(1).astype(np.int64)
+        sizes[side] = cnt
+        e = (np.arange(n) + 1 - cnt) if side == 0 else (n - np.arange(n) - cnt)
+        pos += int((e > 0).sum())
+        j = int(e.argmax())
+        if e[j] > best:
+            best, at, wit = int(e[j]), (j, side), bits_to_mask(Sz[j], n)
+    if wit is not None:
+        check_cert(L, n, wit, at[0], at[1])
+    return {"worst_err": best, "err/n": round(best / n, 4), "at": at, "targets_err>0": pos,
+            "frac_targets": round(pos / (2 * n), 4)}, sizes
+
+
+def cmd_tree(a):
+    """The tree family on tr and barrier; every worst witness is re-simulated."""
+    from kahale_amplification_kill import build
+    rng = np.random.default_rng(a.seed)
+    for d in a.depths:
+        n = a.n or arity(d)
+        for sched in a.scheds.split(","):
+            if sched == "tr":
+                L = tr_layers(d, n, a.K or None)[0]
+            else:
+                L = build(d, n, "barrier")
+            for al in [float(x) for x in a.alpha.split(",")]:
+                t0 = time.time()
+                best = None
+                for r in range(a.reps):
+                    q, _ = tree_report(L, n, al, rng if r else None)
+                    if best is None or q["worst_err"] > best["worst_err"]:
+                        best = q
+                print(json.dumps({"d": d, "n": n, "sched": sched, "alpha": al, "reps": a.reps, **best,
+                                  "secs": round(time.time() - t0, 1)}), flush=True)
+
+
+def random_barrier(d, n, seed=1, extra=2):
+    """The barrier with random wiring: same blocks, same halves, same heights in every
+    stage, but the bijection from the lower half to the upper half of each block is
+    random (kept to i <-> i + u when a random pair could break the width rule)."""
+    from kahale_amplification_kill import wmax_after
+    rng = np.random.default_rng(seed)
+    z = np.zeros(n, dtype=np.int16)
+    L = []
+    for t in range(d):
+        wmax = wmax_after(d - t - 1 + extra)
+        starts = np.flatnonzero(np.r_[True, z[1:] != z[:-1]])
+        sizes = np.diff(np.r_[starts, n])
+        lo_all, hi_all = [], []
+        for b, sz in zip(starts.tolist(), sizes.tolist()):
+            m, u = sz // 2, (sz + 1) // 2
+            if m == 0 or u > wmax:
+                continue
+            lo = np.arange(b, b + m)
+            hi = lo + u
+            if 2 * u - 1 <= wmax:
+                hi = rng.permutation(hi)
+            lo_all.append(lo)
+            hi_all.append(hi)
+        lo = np.concatenate(lo_all).astype(np.int64) if lo_all else np.zeros(0, np.int64)
+        hi = np.concatenate(hi_all).astype(np.int64) if hi_all else np.zeros(0, np.int64)
+        zl, zh = z[lo], z[hi]
+        z[lo], z[hi] = np.minimum(zl, zh), np.maximum(zl, zh) + 1
+        L.append((lo, hi))
+    return L
+
+
+def hybrid(d, n, K, seed=1, M=64):
+    """random_barrier for d - K stages, then the `tr` tail; K = 0: plain random barrier."""
+    from kahale_amplification_kill import wmax_after
+    base = random_barrier(d, n, seed)[:d - K]
+    L = list(base)
+    half = max(1, int(round(n / 2)))
+    band0, band1 = max(0, n // 2 - half), min(n, n // 2 + half)
+    Xd = np.argsort(np.random.default_rng(5).random((M, n)), axis=1).astype(np.int32)
+    for lo, hi in base:
+        u, v = Xd[:, lo], Xd[:, hi]
+        Xd[:, lo], Xd[:, hi] = np.minimum(u, v), np.maximum(u, v)
+    for t in range(d - K, d):
+        wmax = wmax_after(d - t - 1 + 2)
+        g = band0 + np.argsort(Xd[:, band0:band1].mean(0), kind="stable")
+        h = g[(t % 2):]
+        m = min(h[0:-1:2].size, h[1::2].size)
+        a0, b0 = h[0:-1:2][:m], h[1::2][:m]
+        a, b = np.minimum(a0, b0), np.maximum(a0, b0)
+        ok = (b - a) <= wmax
+        lo, hi = a[ok].astype(np.int64), b[ok].astype(np.int64)
+        L.append((lo, hi))
+        u, v = Xd[:, lo], Xd[:, hi]
+        Xd[:, lo], Xd[:, hi] = np.minimum(u, v), np.maximum(u, v)
+    for c in range(2):
+        lo = np.arange(c % 2, n - 1, 2)
+        L.append((lo, lo + 1))
+    return L
+
+
+def batcher(n):
+    """Batcher odd-even merge sort on the next power of two, layered greedily and
+    cut to the n lowest wires (a sorter stays a sorter when the top wires are removed,
+    since those inputs may be taken as +infinity)."""
+    N = 1
+    while N < n:
+        N *= 2
+    comps = []
+
+    def merge(lo, hi, r):
+        step = r * 2
+        if step < hi - lo:
+            merge(lo, hi, step)
+            merge(lo + r, hi, step)
+            for i in range(lo + r, hi - r, step):
+                comps.append((i, i + r))
+        else:
+            comps.append((lo, lo + r))
+
+    def sort(lo, hi):
+        if hi - lo >= 1:
+            m = lo + (hi - lo) // 2
+            sort(lo, m)
+            sort(m + 1, hi)
+            merge(lo, hi, 1)
+    sort(0, N - 1)
+    last = [0] * N
+    layers = {}
+    for a, b in comps:
+        t = max(last[a], last[b])
+        last[a] = last[b] = t + 1
+        if b < n:
+            layers.setdefault(t, []).append((a, b))
+    L = []
+    for t in range(max(last)):
+        c = np.array(layers.get(t, np.zeros((0, 2))), np.int64).reshape(-1, 2)
+        L.append((c[:, 0], c[:, 1]))
+    return L, max(last)
+
+
+def cmd_matrix(a):
+    """Schedules x adversaries at n = N_d.  sched: barrier, tr, rb (random barrier), rbtr
+    (random prefix, tr tail).  adversaries: tree family, proof-tree search."""
+    from kahale_amplification_kill import build, check_relaxations
+    rng = np.random.default_rng(a.seed)
+    for d in a.depths:
+        n = a.n or arity(d)
+        K = a.K or KS[d]
+        for sched in a.scheds.split(","):
+            t0 = time.time()
+            if sched == "barrier":
+                L = build(d, n, "barrier")
+            elif sched == "tr":
+                L = tr_layers(d, n, K)[0]
+            elif sched == "rb":
+                L = hybrid(d, n, 0, a.seed)
+            else:
+                L = hybrid(d, n, K, a.seed)
+            rel = check_relaxations(L, n, tuple(a.models.split(",")))
+            X = np.argsort(np.random.default_rng(11).random((a.samples, n)), axis=1).astype(np.int32).T
+            X = sim_perm(L, X)
+            i = np.arange(n)
+            mean, std = X.mean(1), X.std(1)
+            rt = math.sqrt(n)
+            res = {"d": d, "n": n, "sched": sched, **{k: v for k, v in rel.items() if k.endswith("_ok")},
+                   "sp": round(float(((np.abs(mean - i) <= rt) & (std <= rt / 2)).mean()), 4),
+                   "exact": round(float((X == i[:, None]).all(0).mean()), 3),
+                   "rand_max_err/n": round(float(np.abs(X - i[:, None]).max()) / n, 4)}
+            t, _ = tree_report(L, n)
+            res["tree_err"], res["tree_err/n"], res["tree_targets"] = t["worst_err"], t["err/n"], t["frac_targets"]
+            if a.budget > 0:
+                w = worst_scan(L, n, rng, a.iters, a.stride, a.top, a.budget)
+                res["search_err"], res["search_err/n"] = w["worst_err"], w["worst_err/n"]
+            res["secs"] = round(time.time() - t0, 1)
+            print(json.dumps(res), flush=True)
+
+
+def cmd_batcher(a):
+    """Soundness control: the tree family and the search must find nothing on a sorter."""
+    rng = np.random.default_rng(1)
+    for n in a.depths:
+        L, D = batcher(n)
+        if n <= 64:
+            p = np.argsort(rng.random((256, n)), axis=1).T.astype(np.int32)
+            assert (sim_perm(L, p) == np.arange(n)[:, None]).all()
+        q, _ = tree_report(L, n)
+        w = worst_scan(L, n, rng, 8, max(1, n // 64), 8, 60)
+        print(json.dumps({"n": n, "depth": D, "tree_err": q["worst_err"], "search_err": w["worst_err"]}), flush=True)
+
+
+def cmd_treepass(a):
+    """Largest n on the grid N_d 2^(j/2) passing the tree test, per schedule.  The test is
+    not monotone in n, so this reports the largest passing grid point.  Schedule
+    specific: never a statement about the optimum over schedules."""
+    from kahale_amplification_kill import build
+    lo_j, hi_j = [int(x) for x in a.grid.split(",")]
+    for d in a.depths:
+        N = arity(d)
+        for sched in a.scheds.split(","):
+            best, rows = None, []
+            for j in range(lo_j, hi_j + 1):
+                n = max(8, int(round(N * 2 ** (j / 2))))
+                K = d // 2
+                if sched == "tr":
+                    L = tail_schedule(d, n, K, "tr")
+                elif sched == "rbtr":
+                    L = hybrid(d, n, K, 1)
+                elif sched == "rb":
+                    L = hybrid(d, n, 0, 1)
+                else:
+                    L = build(d, n, "barrier")
+                q, _ = tree_report(L, n)
+                rows.append((j, q["worst_err"]))
+                if q["worst_err"] == 0:
+                    best = n
+            print(json.dumps({"d": d, "N_d": N, "sched": sched, "largest_pass_n": best,
+                              "log2(N_d/n)": round(math.log2(N / best), 2) if best else None,
+                              "rows": rows}), flush=True)
+
+
+def cmd_compare(a):
+    """Certificate size at the worst wires: LB-24 wire bound, size-ranked beam, tree family,
+    proof-tree search; and the need."""
+    from kahale_pair_union_rate import step_wire as sw
+    for d in a.depths:
+        L, n = tr_layers(d)
+        f = np.load(f"{a.save}_{d}_{n}.npz")
+        keys, sets = f["keys"], f["sets"]
+        z, o = np.ones(n, np.int64), np.ones(n, np.int64)
+        zc, oc = np.ones(n), np.ones(n)
+        for lo, hi in L:
+            sw(z, o, lo, hi, n)
+        bz = beam_zero(L, n, a.B, 0)[1][:, 0]
+        bo = beam_zero(L, n, a.B, 1)[1][:, 0]
+        tz = np.bitwise_count(tree_family(L, n, 0)[0]).sum(1).astype(np.int64)
+        to = np.bitwise_count(tree_family(L, n, 1)[0]).sum(1).astype(np.int64)
+        for q in range(min(a.top, len(keys))):
+            w, side = int(keys[q, 0]), int(keys[q, 1])
+            print(json.dumps({"d": d, "n": n, "wire": w, "side": side,
+                              "need": w + 1 if side == 0 else n - w,
+                              "lb24_bound": int((z if side == 0 else o)[w]),
+                              f"beam{a.B}": int((bz if side == 0 else bo)[w]),
+                              "tree": int((tz if side == 0 else to)[w]),
+                              "search": int(sets[q].sum())}), flush=True)
+
+
+def cmd_dump(a):
+    """Best saved witness per depth as hex (bit i = input i in the certificate), after
+    re-simulating it on the rebuilt network; check verifies a dumped line."""
+    for d in a.depths:
+        L, n = tr_layers(d)
+        f = np.load(f"{a.save}_{d}_{n}.npz")
+        w, side = int(f["keys"][0, 0]), int(f["keys"][0, 1])
+        S = f["sets"][0]
+        out = check_cert(L, n, S, w, side)
+        k, m, E = errors(out)
+        print(json.dumps({"d": d, "n": n, "wire": w, "side": side, "size": int(S.sum()), "zeros_k": int(k[0]),
+                          "misplaced_m": int(m[0]), "rank_err_E": int(E[0]),
+                          "hex": np.packbits(S, bitorder="little").tobytes().hex()}), flush=True)
+
+
 def cmd_struct(a):
     """Anatomy of the saved witnesses."""
     for d in a.depths:
@@ -1074,8 +1416,6 @@ def cmd_scan(a):
                 sets[(int(w), side)] = S if errs[(int(w), side)] > 0 else None
             if time.time() - t0 > a.budget * 0.6:
                 break
-        for side in (0, 1):                      # try the neighbours of good wires
-            pass
         top = sorted(errs, key=lambda q: -errs[q])[:a.top]
         for w, side in top:
             for al in (1.0, 0.7, 0.4):
@@ -1164,6 +1504,8 @@ def main():
     s.add_argument("--iters", type=int, default=4)
     s.add_argument("--add", type=int, default=64)
     s.add_argument("--fix", type=int, default=2000)
+    s.add_argument("--adv", default="search")
+    s.add_argument("--final", type=float, default=0)
     s.add_argument("--seed", type=int, default=1)
     s = sub.add_parser("exact")
     s.add_argument("depths", type=int, nargs="+")
@@ -1172,6 +1514,7 @@ def main():
     s.add_argument("--budget", type=float, default=1200)
     s.add_argument("--verbose", action="store_true")
     s.add_argument("--T", type=int, default=0)
+    s.add_argument("--ge", type=int, default=0)
     s.add_argument("--z3", type=float, default=0)
     s = sub.add_parser("family")
     s.add_argument("depths", type=int, nargs="+")
@@ -1179,6 +1522,7 @@ def main():
     s.add_argument("--kind", default="zero")
     s.add_argument("--scheds", default="tr,barrier")
     s.add_argument("--B", default="1,4,16")
+    s.add_argument("--rank", default="size")
     s = sub.add_parser("validate")
     s.add_argument("--reps", type=int, default=20)
     s.add_argument("--layers", type=int, default=6)
@@ -1187,8 +1531,42 @@ def main():
     s.add_argument("depths", type=int, nargs="+")
     s.add_argument("--save", default="")
     s.add_argument("--top", type=int, default=40)
+    s = sub.add_parser("tree")
+    s.add_argument("depths", type=int, nargs="+")
+    s.add_argument("--n", type=int, default=0)
+    s.add_argument("--K", type=int, default=0)
+    s.add_argument("--scheds", default="tr,barrier")
+    s.add_argument("--alpha", default="1")
+    s.add_argument("--reps", type=int, default=1)
+    s.add_argument("--seed", type=int, default=1)
+    s = sub.add_parser("matrix")
+    s.add_argument("depths", type=int, nargs="+")
+    s.add_argument("--n", type=int, default=0)
+    s.add_argument("--K", type=int, default=0)
+    s.add_argument("--scheds", default="barrier,tr,rb,rbtr")
+    s.add_argument("--models", default="heights,wire")
+    s.add_argument("--samples", type=int, default=64)
+    s.add_argument("--iters", type=int, default=8)
+    s.add_argument("--stride", type=int, default=4)
+    s.add_argument("--top", type=int, default=30)
+    s.add_argument("--budget", type=float, default=90)
+    s.add_argument("--seed", type=int, default=1)
+    s = sub.add_parser("batcher")
+    s.add_argument("depths", type=int, nargs="+")
+    s = sub.add_parser("treepass")
+    s.add_argument("depths", type=int, nargs="+")
+    s.add_argument("--scheds", default="barrier,tr,rb")
+    s.add_argument("--grid", default="-10,0")
+    s = sub.add_parser("compare")
+    s.add_argument("depths", type=int, nargs="+")
+    s.add_argument("--save", default="")
+    s.add_argument("--B", type=int, default=16)
+    s.add_argument("--top", type=int, default=3)
+    s = sub.add_parser("dump")
+    s.add_argument("depths", type=int, nargs="+")
+    s.add_argument("--save", default="")
     a = ap.parse_args()
-    {"validate": cmd_validate, "fib": cmd_fib, "family": cmd_family, "exact": cmd_exact, "certs": cmd_certs, "scan": cmd_scan, "struct": cmd_struct, "repair": cmd_repair,
+    {"dump": cmd_dump, "treepass": cmd_treepass, "compare": cmd_compare, "matrix": cmd_matrix, "batcher": cmd_batcher, "tree": cmd_tree, "validate": cmd_validate, "fib": cmd_fib, "family": cmd_family, "exact": cmd_exact, "certs": cmd_certs, "scan": cmd_scan, "struct": cmd_struct, "repair": cmd_repair,
      "thresh": cmd_thresh, "cegar": cmd_cegar}[a.mode](a)
 
 
