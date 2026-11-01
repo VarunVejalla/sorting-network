@@ -774,6 +774,82 @@ theorem d2FlowStage_active_ordinary_static_bag_empty
   · omega
   · exact hsum'
 
+/-- The startup top-descending reset also leaves no residual parent bag:
+its eight children occupy the full parent interval. -/
+theorem d2FlowStage_active_top_desc_static_bag_empty
+    {n scale h i G low high : Nat} {active : Nat → Bool}
+    {role : Nat → D2Role} {quota : Nat → D2Role → Nat}
+    {cap : Nat → Nat} (children : Fin 8 → D2FlowTree h)
+    (htree : d2FlowTreeInv scale (.node G low high children))
+    (hinputs : d2FlowStageInvInputs scale active role quota cap i
+      (.node G low high children))
+    (ha : active i = true) (hr : role i = .topDesc)
+    (hwidth : 0 < scale * 8 ^ h) (hstop : 8 * (scale * 8 ^ h) ≤ n) :
+    d2FlowNodeStaticBag (n := n) 0 (scale * 8 ^ h) 0 0 0
+      (fun j => d2FlowTreeChild
+        (d2FlowStage active role quota (h + 1) i
+          (.node G low high children)) j) = ∅ := by
+  have hstage := hinputs.2
+  simp only [ha, if_true, hr] at hstage
+  rcases hstage with ⟨hbalance, hG⟩
+  have hlow : low = 0 := by omega
+  have hhigh : high = 0 := by omega
+  have houtinv := d2FlowStage_preserves_inv_of_inputs
+    (.node G low high children) htree hinputs
+  let postChildren : Fin 8 → D2FlowTree h := fun j =>
+    d2FlowTreeChild (d2FlowStage active role quota (h + 1) i
+      (.node G low high children)) j
+  have hpostG (j : Fin 8) : d2FlowTreeRootDeficit (postChildren j) = 0 := by
+    simp [postChildren, d2FlowStage, ha, hr, d2FlowTreeChild,
+      d2FlowTreeSetRoot_deficit]
+  have hpostData (j : Fin 8) : d2FlowTreeRootData (postChildren j) =
+      (0, 0, 0) := by
+    simp [postChildren, d2FlowStage, ha, hr, d2FlowTreeChild,
+      d2FlowTreeRootData_setRoot]
+  have hsum : d2FlowTotal (fun j => d2FlowTreeRootDeficit (postChildren j)) = 0 := by
+    simp [d2FlowTotal, hpostG]
+  have hfit : StaticHolesFit 0
+      (d2FlowNodeStaticHoles 0 (scale * 8 ^ h) 0 0 postChildren)
+      (8 * (scale * 8 ^ h)) := by
+    let width := scale * 8 ^ h
+    let lo : Fin 8 → Nat := fun j =>
+      (d2EightChildHole 0 width 0 0
+        (fun k => d2FlowTreeRootDeficit (postChildren k))
+        (fun _ => 0) (fun _ => 0) j).1
+    let hi : Fin 8 → Nat := fun j =>
+      (d2EightChildHole 0 width 0 0
+        (fun k => d2FlowTreeRootDeficit (postChildren k))
+        (fun _ => 0) (fun _ => 0) j).2
+    have hslot (j : Fin 8) : lo j = j.val * width ∧
+        hi j = (j.val + 1) * width := by
+      have hnot : d2FlowTreeRootDeficit (postChildren j) ≠ width := by
+        rw [hpostG j]
+        omega
+      simp [lo, hi, width, d2EightChildHole, hnot]
+    have hfit' := staticHoleList_fits 0 (8 * width) lo hi
+      (by omega)
+      (by intro j; rw [(hslot j).1]; exact Nat.zero_le _)
+      (by
+        intro j
+        rw [(hslot j).1, (hslot j).2]
+        exact Nat.mul_le_mul_right width (Nat.le_succ j.val))
+      (by
+        intro j
+        rw [(hslot j).2]
+        exact Nat.mul_le_mul_right width (by omega))
+      (by
+        intro j k hjk
+        rw [(hslot j).2, (hslot k).1]
+        exact Nat.mul_le_mul_right width (Nat.succ_le_of_lt hjk))
+    simpa [width, lo, hi, d2FlowNodeStaticHoles, hpostG, hpostData] using hfit'
+  apply d2FlowNodeStaticBag_eq_empty_of_child_total_eq_G
+    (base := 0) (G := 0) (low := 0) (high := 0)
+    (children := postChildren)
+  · simpa [postChildren, d2FlowStage, ha, hr, hG, hlow, hhigh] using houtinv
+  · simpa [Nat.zero_add] using hfit
+  · simpa using hstop
+  · exact hsum
+
 /-- Instantiate the generic ordinary rank-port partition with the concrete
 static physical bag of a flow node. This partitions the current sender set;
 identifying the pieces with all next-stage bags is a separate global step. -/

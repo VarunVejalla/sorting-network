@@ -499,6 +499,13 @@ establish the equality between the cut endpoint `total - (high + quota/2)`
 and the stage assignment `total - high - quota/2`. Inactive/exceptional roles
 and recursive whole-tree preservation remain open.
 
+The same file now proves `d2FlowStage_active_top_desc_static_bag_empty` for
+positive native width: the startup top-descending reset sets all eight child
+root tuples to zero, so their static holes fill the parent interval. This
+closes the local parent-bag case for top-descending alongside the ordinary
+case; it does not establish the startup receiver-tag or Boolean-profile
+transition.
+
 `d2FlowNodeStaticBag_eq_empty_of_child_total_eq_G` proves that a fitted node
 bag is empty whenever its child deficits sum to the parent deficit. Combining
 ordinary-cut conservation with stage invariant preservation gives

@@ -86,7 +86,10 @@ ordinary-cut deficit conservation to show that an updated active ordinary
 parent has no residual sender wires. This is only a conservation fact: the
 next unresolved identity is still that each routed child/parent piece equals
 the corresponding next-stage physical bag. Inactive and exceptional roles
-and recursive whole-tree preservation remain. `D2OrdinaryRankRouting.lean`
+and recursive whole-tree preservation remain. The startup top-descending
+reset also has a local empty-parent-bag theorem,
+`d2FlowStage_active_top_desc_static_bag_empty`; its actual receiver-tag and
+profile transition is still open. `D2OrdinaryRankRouting.lean`
 already proves the generic ordinary sender destination-piece partition.
 `D2PhysicalBagState.lean` now proves the actual static bag has cardinality
 `child-total - G`, from the eight child-hole lengths and the flow-tree
