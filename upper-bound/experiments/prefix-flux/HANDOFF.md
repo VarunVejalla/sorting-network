@@ -7,11 +7,13 @@ research status, not a proved improvement to the repository's accepted bound.
 
 `D2BotRiseStaticFit.lean` now proves that every candidate-run `botRise`
 snapshot has clamped static-hole fit at the updated parent, for any selected
-path satisfying the schedule window. The proof uses `D2BotRiseRunBridge.lean`
-to identify the role and show that all immediate children remained saturated
-through the preceding callback history, then applies the collapsed-boundary
-fit lemma in `D2PhysicalBagState.lean`. Current-source focused checks pass for
-all three modules. This closes the `botRise` static-fit side condition only;
+path satisfying the schedule window. It also proves the updated parent's
+physical static sender bag is empty: the saturated-child history makes its
+post-step deficit equal full capacity. The proof uses
+`D2BotRiseRunBridge.lean` to identify the role and
+`D2PathNativePreservation.lean` to preserve child roots through callback
+history. Current-source focused checks pass for `D2PhysicalBagState.lean` and
+`D2BotRiseStaticFit.lean`. This closes the `botRise` post-bag geometry case;
 it does not identify routed pieces with next-stage bags or establish physical
 receiver tags/counts. The next exact-transition obligation remains unchanged.
 

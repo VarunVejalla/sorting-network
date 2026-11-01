@@ -38,7 +38,17 @@ theorem candidate_botRise_path_static_fit_clamped
               (h + 1) (j + 2) (.node G low high children)) k))
         (8 * (8192 * 8 ^ h) -
           (high + (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - G) -
-            (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - G) / 2)) := by
+            (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - G) / 2)) /\
+      d2FlowNodeStaticBag (n := 8 * (8192 * 8 ^ h)) 0 (8192 * 8 ^ h)
+        (G + (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - G))
+        (low + (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - G) / 2)
+        (high + (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - G) -
+          (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - G) / 2)
+        (fun k => d2FlowTreeChild
+          (d2FlowStage (d2FlowCandidateActive (h + 1 + (j + 2)) (3 * j))
+            (d2FlowCandidateRole (h + 1 + (j + 2)) (3 * j))
+            (d2FlowCandidateQuota (h + 1 + (j + 2)) (3 * j))
+            (h + 1) (j + 2) (.node G low high children)) k) = Finset.empty := by
   let d := h + 1 + (j + 2)
   let initial := d2FlowTreeInitial 8192 d
   let run := d2FlowCandidateRun d initial
@@ -94,6 +104,36 @@ theorem candidate_botRise_path_static_fit_clamped
     have hfit := d2FlowStage_active_bot_rise_static_fit_clamped_of_saturated_children
       (scale := 8192) (h := h) (i := j + 2) (children := children)
       htreeNode hinputsNode ha hr hnext hsat
-    exact ⟨G, low, high, children, hnode, by simpa [d] using hfit⟩
+    have htotal : d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) =
+        8 * (8192 * 8 ^ h) := by
+      unfold d2FlowTotal
+      calc
+        Finset.univ.sum (fun k : Fin 8 => d2FlowTreeRootDeficit (children k)) =
+            Finset.univ.sum (fun _ : Fin 8 => 8192 * 8 ^ h) := by
+          apply Finset.sum_congr rfl
+          intro k hk
+          exact hsat k
+        _ = 8 * (8192 * 8 ^ h) := by simp
+    have hcover : G <= d2FlowTotal
+        (fun k => d2FlowTreeRootDeficit (children k)) := by
+      simpa using htreeNode.2.1
+    have hfull : G +
+        (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - G) =
+        8 * (8192 * 8 ^ h) := by omega
+    have hbag : d2FlowNodeStaticBag (n := 8 * (8192 * 8 ^ h))
+        0 (8192 * 8 ^ h)
+        (G + (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - G))
+        (low + (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - G) / 2)
+        (high + (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - G) -
+          (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - G) / 2)
+        (fun k => d2FlowTreeChild
+          (d2FlowStage (d2FlowCandidateActive d (3 * j))
+            (d2FlowCandidateRole d (3 * j))
+            (d2FlowCandidateQuota d (3 * j))
+            (h + 1) (j + 2) (.node G low high children)) k) = Finset.empty := by
+      rw [d2FlowNodeStaticBag, if_pos (by simpa [d, htotal] using hfull)]
+      rfl
+    exact ⟨G, low, high, children, hnode,
+      by simpa [d] using hfit, by simpa [d] using hbag⟩
 
 end Chvatal.D2BotRiseStaticFit
