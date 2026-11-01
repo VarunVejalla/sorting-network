@@ -247,22 +247,22 @@ with those physical routed cells.
 column lie in a tile's clipped port iff their flattened coordinate
 `tile*262144 + 64*row + column` lies in the global port interval. Under the
 sender-rank placement equation, this proves the corresponding wire is in the
-child's physical destination. The focused current-source rebuild passes.
-This is still conditional on the rank-placement equation and does not identify
-the actual schedule's Boolean profile/counts; proving that placement remains
-the next bridge.
+child's physical destination. The new theorem
+`ordered_tile_profile_cell_wire_in_child_receiver` eliminates that placement
+equation for a complete rank tile: `Finset.orderEmbOfFin` supplies the actual
+sender wire, and its rank theorem supplies the coordinate. The focused
+current-source rebuild passes. This closes the local cell-to-address step for
+full tiles when the stage uses the canonical ordered embedding; ragged tiles
+and instantiating that embedding in the global stage remain open.
 
-There is a quantitative warning for that bridge. `D2RankCutSeamBound.lean`
-proves at most 14,985 all-slot port-label mismatches for one fixed core and
-nine sender seams. This is only a worst-case slot count, not a false-mass
-counterexample, but it is far above the current 64-per-tile headroom between
-the local 448 transfer error and the 512 recurrence budget. Do not charge this
-coarse count into the current recurrence. The next decisive gate is a
-false-weighted seam bound for the actual core and ordinary cuts, or a concrete
-input/cut witness showing that the needed allowance is too large. It must
-exploit the core's threshold profile, rather than just its maximum rank
-displacement. If the weighted allowance cannot fit an all-stage invariant,
-reassess this candidate before extending the Lean transition bridge.
+Correction to the previous priority note: `D2RankCutSeamBound.lean`'s 14,985
+bound compares an output slot with the rank of the value currently in that
+slot. It is not a direct additive error in the physical profile transfer,
+which compares output-slot cell counts to the exact-rank profile and already
+proves the aggregate 448 bound. Do not add the seam count to that recurrence.
+The next decisive gate is instead to compose the complete-tile ordered
+embedding, clipped cell counts, and receiver tags into one actual ordinary
+sender transition, then expose the partial-tile/startup exceptions.
 
 `D2StrongDeficitPropagation.lean` already proves the sharp local affine
 profile transition for ordinary eight-child updates. The profile is

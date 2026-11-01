@@ -1,5 +1,6 @@
 import D2ClippedFlowProfileTransfer
 import D2OrdinaryRankRouting
+import D2StaticWireSets
 
 set_option maxHeartbeats 500000
 
@@ -8,6 +9,7 @@ namespace Chvatal.D2ClippedCellRankInterval
 open Chvatal.D2ClippedFlowProfileTransfer
 open Chvatal.D2RowMajorFlowCuts
 open Chvatal.D2OrdinaryRankRouting
+open Chvatal.D2StaticWireSets
 
 abbrev Col := Fin 64
 
@@ -174,5 +176,34 @@ theorem clipped_profile_cell_wire_in_child_receiver
     exact hcoordinates.1
   · rw [hrank]
     exact hcoordinates.2
+
+/- The rank-placement equation used above is supplied by the canonical
+ordered embedding of a complete tile of sender ranks. Thus every profile
+slot in a child port has an actual sender wire address with that receiver
+label; no extra hypothesis about an arbitrary wire is needed. -/
+theorem ordered_tile_profile_cell_wire_in_child_receiver
+    {ports tiles n : Nat} (S : Finset (Fin n))
+    (bounds : Fin (ports + 1) -> Nat)
+    (t : Fin tiles) (p : Fin ports) (c : Col) (r : Nat)
+    (child : Fin 8) (boundary : Nat -> Nat) (left rightStart : Nat)
+    (hr : r < 4096)
+    (htile : (t.val + 1) * 262144 <= S.card)
+    (hrowLo : clippedFlowProfileCuts 4096 bounds t c p.val <= r)
+    (hrowHi : r < clippedFlowProfileCuts 4096 bounds t c (p.val + 1))
+    (hlo : bounds (Fin.castSucc p) = left + boundary child.val)
+    (hhi : bounds (Fin.succ p) = left + boundary (child.val + 1)) :
+    S.orderEmbOfFin rfl
+      (Fin.mk (t.val * 262144 + (64 * r + c.val)) (by
+        have hc := c.isLt
+        omega)) ∈
+      destinationPiece (ports := 8) S boundary left rightStart (some child) := by
+  let slot : Fin S.card := ⟨t.val * 262144 + (64 * r + c.val), by
+    have hc := c.isLt
+    omega⟩
+  have hrank : Chvatal.rankIn S (S.orderEmbOfFin rfl slot) = slot.val :=
+    Chvatal.D2StaticWireSets.rankIn_orderEmbOfFin S slot
+  exact clipped_profile_cell_wire_in_child_receiver bounds t p c r child
+    boundary left rightStart S (S.orderEmbOfFin rfl slot) hr hrowLo hrowHi
+    hlo hhi (Finset.orderEmbOfFin_mem S rfl slot) (by simpa [slot] using hrank)
 
 end Chvatal.D2ClippedCellRankInterval

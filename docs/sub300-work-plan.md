@@ -36,11 +36,13 @@ invariant and a distance-sensitive terminal cleanup bound. If this gate fails,
 record the obstruction and reassess the route before extending many stage
 specific Lean bridges.
 
-Within that gate, first test the false-weighted cost of physical-slot versus
-sender-rank port-label disagreements. The existing 14,985 all-slot seam bound
-is much larger than the 64-per-tile slack in the current 448-to-512 recurrence;
-it is not itself a false-mass lower bound, so derive a threshold-aware bound or
-an actual counterexample before attempting to charge it.
+Within that gate, compose the physical output-slot profile with the canonical
+`orderEmbOfFin` placement of each complete sender-rank tile and its receiver
+tags. The existing 14,985 seam bound compares slot position to the rank of the
+value in that slot; it is not a direct cost to the output-slot 448 profile
+transfer and should not be added to its recurrence. Resolve the actual
+stage-level count identity, including the partial-tile/startup cases, before
+extending the abstract invariant bridge.
 
 ### Exact transition gate
 
