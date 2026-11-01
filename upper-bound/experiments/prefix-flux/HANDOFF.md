@@ -936,3 +936,19 @@ that under every active ordinary parent, each unsaturated boundary grandchild
 is active with an ordinary role at level `i+2`, while inactive/botRise
 boundary grandchildren are saturated and hence handled by clamped markers.
 The finite screen exhibits that split through depth 100, but does not prove it.
+
+## Two-level active-interval gate
+
+`D2PhysicalBagState.lean` now proves
+`d2FlowCandidateActive_two_levels_below_or_botDesc`: for `d >= 7`, before the
+terminal frontier meeting, if an active sender has an ordinary role and its
+same-parity level-`i+2` descendant is outside the active interval, then the
+sender is the bottom frontier with role `botDesc`. Otherwise that descendant
+is active. A focused current-source rebuild of `D2PhysicalBagState.lean`
+passes. This removes the schedule-parity ambiguity for the nested endpoint
+containment gate, but does not classify the active descendant's role as
+ordinary and does not prove saturation in the `botDesc` exception. Next derive
+that stronger ordinary-or-saturated dichotomy from the reachable flow invariant;
+then use the two-level quota reserve to prove the first/last grandchild cut
+containment. The physical all-stage bag identity and profile/terminal gates
+remain open.

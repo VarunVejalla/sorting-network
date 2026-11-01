@@ -329,6 +329,63 @@ theorem d2FlowStage_root_fronts_mono
           simp [d2FlowStage, d2FlowTreeRootData, ha, hrole] <;> omega
       · simp [d2FlowStage, d2FlowTreeRootData, ha]
 
+/-- If an ordinary candidate sender has a same-parity grandchild outside the
+active interval, the sender must be the bottom frontier and have role
+`botDesc`. -/
+theorem d2FlowCandidateActive_two_levels_below_or_botDesc
+    {d i t : Nat} (hd : 7 ≤ d) (ht : 2 ≤ t) (htf : t < tfD2 d)
+    (hactive : d2FlowCandidateActive d t i = true)
+    (hrole : d2FlowCandidateRole d t i = .topRise \/
+      d2FlowCandidateRole d t i = .mid \/
+      d2FlowCandidateRole d t i = .botDesc) :
+    d2FlowCandidateActive d t (i + 2) = true \/
+      d2FlowCandidateRole d t i = .botDesc := by
+  classical
+  have hparent : active d (tfD2 d) i t := by
+    rw [d2FlowCandidateActive_matches_schedule (by omega)] at hactive
+    exact of_decide_eq_true hactive
+  have hfront := (active_iff_frontiers (d := d) (tf := tfD2 d)
+    (i := i) (t := t) ht).1 hparent
+  have hsep := frontiers_separated_before_tf (d := d) hd ht htf
+  have hrole' : d2ScheduleRole d i t = .topRise \/
+      d2ScheduleRole d i t = .mid \/ d2ScheduleRole d i t = .botDesc := by
+    simpa [d2FlowCandidateRole_matches_schedule (d := d) (t := t)
+      (i := i) (by omega)] using hrole
+  by_cases hwithin : i + 2 ≤ omega t
+  case pos =>
+    have hchild : active d (tfD2 d) (i + 2) t := by
+      apply (active_iff_frontiers (d := d) (tf := tfD2 d)
+        (i := i + 2) (t := t) ht).2
+      refine ⟨hfront.1, ?_, hwithin, ?_⟩
+      · omega
+      · have hpar := omega_parity t
+        omega
+    left
+    rw [d2FlowCandidateActive_matches_schedule (by omega)]
+    exact decide_eq_true hchild
+  case neg =>
+    have hbottom : i = omega t := by
+      have hnot : omega t < i + 2 := by omega
+      have hpar := omega_parity t
+      omega
+    have hωneq : omega t ≠ alpha d t := by
+      intro heq
+      omega
+    have hnotAlpha : i ≠ alpha d t := by simpa [hbottom] using hωneq
+    by_cases hmove : omega t < omega (t + 1)
+    case pos =>
+      have hbot : d2ScheduleRole d i t = .botDesc := by
+        rw [hbottom]
+        simp [d2ScheduleRole, hωneq, hmove]
+      right
+      rw [d2FlowCandidateRole_matches_schedule (d := d) (t := t)
+        (i := i) (by omega)]
+      exact hbot
+    case neg =>
+      have hbotRise : d2ScheduleRole d i t = .botRise := by
+        rw [d2ScheduleRole, if_neg hnotAlpha, if_pos hbottom, if_neg hmove]
+      simp [hbotRise] at hrole'
+
 /-! At the same stage, an ordinary sender two levels below has quota at
 least that of its ordinary ancestor. The capacity exponent grows by six;
 the smallest cross-role ratio is still 60. This is the arithmetic reserve
