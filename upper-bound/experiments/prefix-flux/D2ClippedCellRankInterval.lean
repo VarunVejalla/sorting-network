@@ -206,4 +206,48 @@ theorem ordered_tile_profile_cell_wire_in_child_receiver
     boundary left rightStart S (S.orderEmbOfFin rfl slot) hr hrowLo hrowHi
     hlo hhi (Finset.orderEmbOfFin_mem S rfl slot) (by simpa [slot] using hrank)
 
+/-- Exact local tag identity for an ordered sender tile: its row/column slot
+belongs to a child's physical destination exactly when the clipped profile
+assigns that row to the corresponding port. -/
+theorem ordered_tile_profile_cell_tag_iff
+    {ports tiles n : Nat} (S : Finset (Fin n))
+    (bounds : Fin (ports + 1) -> Nat)
+    (t : Fin tiles) (p : Fin ports) (c : Col) (r : Nat)
+    (child : Fin 8) (boundary : Nat -> Nat) (left rightStart : Nat)
+    (hr : r < 4096)
+    (htile : (t.val + 1) * 262144 <= S.card)
+    (hlo : bounds (Fin.castSucc p) = left + boundary child.val)
+    (hhi : bounds (Fin.succ p) = left + boundary (child.val + 1)) :
+    (clippedFlowProfileCuts 4096 bounds t c p.val <= r /\
+      r < clippedFlowProfileCuts 4096 bounds t c (p.val + 1)) <->
+    S.orderEmbOfFin rfl
+      (Fin.mk (t.val * 262144 + (64 * r + c.val)) (by
+        have hc := c.isLt
+        omega)) ∈
+      destinationPiece (ports := 8) S boundary left rightStart (some child) := by
+  let slot : Fin S.card := ⟨t.val * 262144 + (64 * r + c.val), by
+    have hc := c.isLt
+    omega⟩
+  have hrank : Chvatal.rankIn S (S.orderEmbOfFin rfl slot) = slot.val :=
+    Chvatal.D2StaticWireSets.rankIn_orderEmbOfFin S slot
+  constructor
+  · intro hrow
+    exact ordered_tile_profile_cell_wire_in_child_receiver S bounds t p c r
+      child boundary left rightStart hr htile hrow.1 hrow.2 hlo hhi
+  · intro hdest
+    have hblock : S.orderEmbOfFin rfl slot ∈
+        Chvatal.blockOf S (left + boundary child.val)
+          (left + boundary (child.val + 1)) := by
+      simpa [destinationPiece] using hdest
+    have hbounds : bounds (Fin.castSucc p) <=
+        Chvatal.rankIn S (S.orderEmbOfFin rfl slot) /\
+      Chvatal.rankIn S (S.orderEmbOfFin rfl slot) < bounds (Fin.succ p) := by
+      rw [hlo, hhi]
+      exact (Chvatal.mem_blockOf.mp hblock).2
+    have hglobal : bounds (Fin.castSucc p) <=
+        t.val * 262144 + (64 * r + c.val) /\
+      t.val * 262144 + (64 * r + c.val) < bounds (Fin.succ p) := by
+      simpa [hrank, slot] using hbounds
+    exact (clippedFlowProfile_cell_rank_iff_port bounds t p c r hr).1 hglobal
+
 end Chvatal.D2ClippedCellRankInterval

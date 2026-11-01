@@ -251,9 +251,12 @@ child's physical destination. The new theorem
 `ordered_tile_profile_cell_wire_in_child_receiver` eliminates that placement
 equation for a complete rank tile: `Finset.orderEmbOfFin` supplies the actual
 sender wire, and its rank theorem supplies the coordinate. The focused
-current-source rebuild passes. This closes the local cell-to-address step for
-full tiles when the stage uses the canonical ordered embedding; ragged tiles
-and instantiating that embedding in the global stage remain open.
+current-source rebuild passes. The strengthened theorem
+`ordered_tile_profile_cell_tag_iff` proves the converse too: the wire is in
+the child destination exactly when its row lies in the clipped port. This
+closes the local cell-to-address step for full tiles when the stage uses the
+canonical ordered embedding; ragged tiles and instantiating that embedding in
+the global stage remain open.
 
 Correction to the previous priority note: `D2RankCutSeamBound.lean`'s 14,985
 bound compares an output slot with the rank of the value currently in that
