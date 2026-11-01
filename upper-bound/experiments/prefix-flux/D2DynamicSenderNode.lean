@@ -1,4 +1,5 @@
 import D2DynamicSenderCardinality
+import D2DynamicSenderLayout
 import D2FlowPathLast
 
 /-! A finite flat index for every node of a full D2 flow tree. -/
@@ -85,5 +86,24 @@ def d2SenderNodeSubtree {depth : Nat} (tree : D2FlowTree depth)
   let fullTree : D2FlowTree ((depth - level) + level) :=
     cast (congrArg D2FlowTree heq.symm) tree
   exact d2FlowTreeAtPath level fullTree node.2
+
+/-- The root bag at a flat path in a recursive sender layout. -/
+def d2SenderLayoutBagAtPath {Wire : Type*} [DecidableEq Wire] :
+    (n : Nat) -> {h : Nat} -> D2SenderLayout Wire (h + n) ->
+      D2FlowPath n -> Finset Wire
+  | 0, _, layout, .nil => d2SenderLayoutRootBag layout
+  | n + 1, _, .node _ children, .cons j tail =>
+      d2SenderLayoutBagAtPath n (children j) tail
+
+/-- A sender bag indexed by the same flat node type as the abstract flow. -/
+def d2SenderNodeBag {Wire : Type*} [DecidableEq Wire] {depth : Nat}
+    (layout : D2SenderLayout Wire depth) (node : D2SenderNode depth) :
+    Finset Wire := by
+  let level := node.1.val
+  have hle : level ≤ depth := by omega
+  have heq : (depth - level) + level = depth := Nat.sub_add_cancel hle
+  let fullLayout : D2SenderLayout Wire ((depth - level) + level) :=
+    cast (congrArg (D2SenderLayout Wire) heq.symm) layout
+  exact d2SenderLayoutBagAtPath level fullLayout node.2
 
 end Chvatal.D2OrdinaryRankRouting

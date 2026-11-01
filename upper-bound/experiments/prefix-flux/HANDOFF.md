@@ -710,7 +710,8 @@ discarded after elaboration failures; do not resume that proof strategy.
 `D2DynamicSenderNode.lean` now defines a finite `Sigma` index for every node
 across levels `0..depth`, with parent/child option-valued navigation and a
 projection from an indexed node to its corresponding `D2FlowTree` subtree.
-It reuses the existing cast-aware path-snoc theorem in `D2FlowPathLast.lean`.
+It also extracts the recursive `D2SenderLayout` bag at each flat index. It
+reuses the existing cast-aware path-snoc theorem in `D2FlowPathLast.lean`.
 The focused check passes. This is indexing infrastructure only: no target map
 for routed ports, global partition theorem instantiation, or allocation
 agreement is proved yet. The next decisive step is to define the actual
