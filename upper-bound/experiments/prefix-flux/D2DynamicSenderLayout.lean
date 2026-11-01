@@ -23,6 +23,12 @@ def d2SenderLayoutRootBag {Wire : Type*} [DecidableEq Wire] :
   | 0, .leaf bag => bag
   | _ + 1, .node bag _ => bag
 
+def d2SenderLayoutWires {Wire : Type*} [DecidableEq Wire] :
+    {h : Nat} -> D2SenderLayout Wire h -> Finset Wire
+  | 0, .leaf bag => bag
+  | _ + 1, .node bag children =>
+      bag ∪ Finset.univ.biUnion (fun j => d2SenderLayoutWires (children j))
+
 /-- Replace a node's own set while preserving all child layouts. -/
 def d2SenderLayoutSetRoot {Wire : Type*} [DecidableEq Wire] :
     {h : Nat} -> D2SenderLayout Wire h -> Finset Wire -> D2SenderLayout Wire h
@@ -93,9 +99,28 @@ theorem d2SenderLayoutStage_node_inactive {Wire : Type*} [DecidableEq Wire]
   classical
   simp [d2SenderLayoutStage, ha, d2SenderLayoutRootBag]
 
+theorem d2SenderLayoutStage_up_empty_of_inactive {Wire : Type*}
+    [DecidableEq Wire] (active : Nat -> Bool)
+    (split : Nat -> Finset Wire -> D2SenderPorts Wire) {h : Nat}
+    (level : Nat) (layout : D2SenderLayout Wire h)
+    (ha : active level = false) :
+    (d2SenderLayoutStage active split h level layout).2 = Finset.empty := by
+  cases h <;> cases layout <;> simp [d2SenderLayoutStage, ha]
+
 @[simp] theorem d2SenderLayoutRootBag_setRoot {Wire : Type*} [DecidableEq Wire]
     {h : Nat} (layout : D2SenderLayout Wire h) (bag : Finset Wire) :
     d2SenderLayoutRootBag (d2SenderLayoutSetRoot layout bag) = bag := by
   cases layout <;> rfl
+
+theorem d2SenderLayoutWires_setRoot_union {Wire : Type*} [DecidableEq Wire]
+    {h : Nat} (layout : D2SenderLayout Wire h) (extra : Finset Wire) :
+    d2SenderLayoutWires
+        (d2SenderLayoutSetRoot layout
+          (d2SenderLayoutRootBag layout ∪ extra)) =
+      d2SenderLayoutWires layout ∪ extra := by
+  cases layout <;>
+    simp [d2SenderLayoutWires, d2SenderLayoutSetRoot,
+      d2SenderLayoutRootBag, Finset.union_assoc, Finset.union_left_comm,
+      Finset.union_comm]
 
 end Chvatal.D2OrdinaryRankRouting

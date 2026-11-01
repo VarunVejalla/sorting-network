@@ -691,12 +691,15 @@ contraction.
 `D2DynamicSenderLayout.lean` now defines the recursive set-valued transition:
 process children first; an inactive node keeps its set and absorbs child
 up-ports; an active node empties itself, adds its down-ports to child results,
-and returns its up-port. The active/inactive root equations are kernel-checked.
+and returns its up-port. The active/inactive root equations, empty up-port for
+inactive nodes, and flattening lemma for adding a down-port are kernel-checked.
 This makes the intended physical update concrete, but does not yet prove
 global coverage/disjointness or cardinality agreement with the flow. Next add
 the recursive partition invariant and prove its one-stage preservation under
 local port partitions, candidate no-adjacency, root/leaf boundary facts, and
-the role-specific flow width equalities.
+the role-specific flow width equalities. A first direct union-conservation
+proof was discarded because its `Finset.biUnion` rewrites were incomplete; do
+not rely on it.
 
 ## Files and artifacts
 
