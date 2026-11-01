@@ -754,6 +754,14 @@ interfaces are now in `D2DynamicSenderNode.lean`. A direct nested
 do not resume that proof strategy. The remaining construction-specific
 obligation is to identify actual schedule node bags and local port pieces with
 the flat interfaces, including exceptional roles and parent-root overwrites.
+Do not infer a recursive all-node `StaticFits` invariant from the existing
+one-node clamped-fit providers: those prove the updated holes fit inside the
+current parent, but the parent may overwrite each child's root fronts after
+the child's recursive stage. The child-internal hole fit must be re-established
+against those overwritten fronts. This is the precise missing induction step
+for a whole-tree clamped-fit provider; ordinary endpoint reserves and the
+bot-rise saturated-child fact need to be composed with the cut's post-overwrite
+fronts at every active parent.
 
 ## Flat-index checkpoint (2026-11-01)
 
