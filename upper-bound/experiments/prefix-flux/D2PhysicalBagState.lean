@@ -750,6 +750,37 @@ theorem d2FlowNodeStaticHolesClamped_fit_of_child_intervals_contained
     (by simpa [cursor, stop] using hparent) hstart hwidths hend hordered
   simpa [cursor, stop, d2FlowNodeStaticHolesClamped, lo, hi] using hfit
 
+/-- If the canonical hole list already fits, replacing its empty saturated
+markers by clamped markers preserves fit. -/
+theorem d2FlowNodeStaticHolesClamped_fit_of_static_fit
+    {scale h base width left right : Nat}
+    (children : Fin 8 → D2FlowTree h)
+    (hwidth : width = scale * 8 ^ h)
+    (hinv : ∀ j, d2FlowTreeInv scale (children j))
+    (hfit : StaticHolesFit (base + left)
+      (d2FlowNodeStaticHoles base width left right children)
+      (base + 8 * width - right)) :
+    StaticHolesFit (base + left)
+      (d2FlowNodeStaticHolesClamped base width left right children)
+      (base + 8 * width - right) := by
+  have hparent := staticHolesFit_parent_order hfit
+  have hbounds := staticHoleList_fit_bounds (base + left)
+    (base + 8 * width - right)
+    (fun j => (d2EightChildHole base width left right
+      (fun k => d2FlowTreeRootDeficit (children k))
+      (fun k => (d2FlowTreeRootData (children k)).2.1)
+      (fun k => (d2FlowTreeRootData (children k)).2.2) j).1)
+    (fun j => (d2EightChildHole base width left right
+      (fun k => d2FlowTreeRootDeficit (children k))
+      (fun k => (d2FlowTreeRootData (children k)).2.1)
+      (fun k => (d2FlowTreeRootData (children k)).2.2) j).2) (by
+        simpa [d2FlowNodeStaticHoles] using hfit)
+  apply d2FlowNodeStaticHolesClamped_fit_of_child_intervals_contained
+    children hwidth hinv hparent
+  intro j hunsat
+  have hneq : d2FlowTreeRootDeficit (children j) ≠ width := by omega
+  simpa [d2EightChildHole, hneq] using hbounds j
+
 /-- Monotone child fronts preserve an existing fitted parent hole list. -/
 theorem d2FlowNodeStaticHoles_fit_of_child_fronts_mono
     {scale h base width left right : Nat}

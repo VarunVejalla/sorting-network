@@ -514,17 +514,14 @@ at d=20 (32,750 routing cases, 4,831 shared states), so this is a
 marker/representation failure, not a routing counterexample.
 `D2PhysicalBagState.lean` kernel-checks that clamped markers remove the same
 wire set as the current markers. Clamped fit has zero failures at all tested
-depths through 20, but no Lean fit-preservation proof uses it yet. Rework the
-physical bag/run representation around this fact before extending the old
-`StaticHolesFit` bridge.
-
-Update: `d2FlowNodeStaticHolesClamped_fit_of_child_intervals_contained` now
-kernel-checks the clamped fit conditionally. Given a parent interval and the
-two endpoint-containment inequalities for every nonsaturated child, it proves
-the whole clamped hole list fits, using only the native deficit bound and root
-balance. This isolates the remaining fit obligation as a stage-history
-containment lemma. It does not yet supply that lemma for reachable snapshots
-or prove routed next-bag identity.
+depths through 20. Two Lean interfaces now support this representation:
+`d2FlowNodeStaticHolesClamped_fit_of_child_intervals_contained` proves fit
+from containment of every nonsaturated child interval, while
+`d2FlowNodeStaticHolesClamped_fit_of_static_fit` converts any already-fitting
+canonical list to the clamped list. Thus existing initial-fit and active
+ordinary-fit results can be reused; an all-stage proof still needs to handle
+inactive and exceptional updates, and the routed next-bag identity remains
+open.
 
 The same file now proves `d2FlowStage_active_top_desc_static_bag_empty` for
 positive native width: the startup top-descending reset sets all eight child
