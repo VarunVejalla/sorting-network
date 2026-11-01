@@ -474,6 +474,14 @@ which takes the target map as input; the static-hole lemmas do not yet prove
 that the Python interval recurrence is the candidate tree's all-depth
 physical execution.
 
+`D2-RECEIVER-FIBER-DEGREE-SCREEN.md` records a related finite locality
+diagnostic: with `scale=8192`, `(3,3,2)`, and depths 7–9, maximum source-tile
+fan-out is 3 while target fan-in reaches 4. This may help design a spatial
+potential, but it does not bound error mass or prove contraction. The current
+screen expands physical tiles and is too slow for deep asymptotic exploration;
+replace that expansion with compressed interval incidence before extending
+the numerical range.
+
 `D2PhysicalBagState.lean` now defines `d2FlowNodeStaticBag` as the node's
 occupied native interval minus its eight child holes, and
 `d2FlowNodeStaticRuns` as the corresponding ordered gaps. The checked theorem

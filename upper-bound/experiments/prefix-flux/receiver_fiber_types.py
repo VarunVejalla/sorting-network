@@ -123,23 +123,28 @@ def root_sources(flow,t):
     return sources,target
 
 
-def fiber_count(sources,target):
+def routing_summary(sources,target):
+    """Return max fan-in witness and both tile-incidence degrees."""
     incoming=defaultdict(set)
+    outgoing=defaultdict(set)
     i=j=0
     while i<len(sources) and j<len(target):
         slo,shi,source=sources[i]
         tlo,thi,dest=target[j]
         lo,hi=max(slo,tlo),min(shi,thi)
-        assert lo<hi, (sources[i],target[j])
-        incoming[dest].add(source)
+        if lo<hi:
+            incoming[dest].add(source)
+            outgoing[source].add(dest)
         end=min(shi,thi)
         if end==shi: i+=1
         if end==thi: j+=1
     assert i==len(sources) and j==len(target),(i,j,len(sources),len(target))
     if not incoming:
-        return 0, None, ()
+        return 0, None, (), 0, 0
     dest,sources=max(incoming.items(),key=lambda item: len(item[1]))
-    return len(sources),dest,tuple(sorted(sources,key=repr))
+    return (len(sources),dest,tuple(sorted(sources,key=repr)),
+            max(map(len,outgoing.values()),default=0),
+            max(map(len,incoming.values()),default=0))
 
 
 def check(depth,scale,params):
@@ -148,20 +153,23 @@ def check(depth,scale,params):
     for t in range(len(flow.rows)):
         reachable=flow.reachable(t)
         best=(0,None)
-        root_value=fiber_count(*root_sources(flow,t))
+        max_out=max_in=0
+        root_value=routing_summary(*root_sources(flow,t))
         best=(root_value[0],('root',flow.roots[t],root_value[1],root_value[2]))
+        max_out=max(max_out,root_value[3]); max_in=max(max_in,root_value[4])
         for parent in reachable:
             lev=flow.nodes[parent][0]
             if lev>=depth: continue
             for j in range(flow.p.k):
                 sources,target=receiver_sources(flow,t,parent,j)
                 try:
-                    value=fiber_count(sources,target)
+                    value=routing_summary(sources,target)
                 except AssertionError as error:
                     raise AssertionError((t, parent, lev, j, sources[:3], target[:3], error))
+                max_out=max(max_out,value[3]); max_in=max(max_in,value[4])
                 if value[0]>best[0]:
                     best=(value[0],(lev,parent,j,len(sources),len(target),value[1],value[2]))
-        stage_rows.append((t,best))
+        stage_rows.append((t,best,max_out,max_in))
     return len(flow.rows),len(flow.nodes),stage_rows
 
 
@@ -174,5 +182,7 @@ if __name__=='__main__':
     for d in args.depths:
         stages,states,rows=check(d,args.scale,args.params)
         print(f'd={d} scale={args.scale}: stages={stages}, DAG nodes={states}',flush=True)
-        print('max incoming source tiles by stage:',
-              [(t,v[0],v[1]) for t,v in rows],flush=True)
+        print('stage, max incoming sources, witness, max source fanout:',
+              [(t,v[0],v[1],max_out) for t,v,max_out,_ in rows],flush=True)
+        print('max source/target incidence degree by stage:',
+              [(t,max_out,max_in) for t,_,max_out,max_in in rows],flush=True)
