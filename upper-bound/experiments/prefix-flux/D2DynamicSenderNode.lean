@@ -106,4 +106,76 @@ def d2SenderNodeBag {Wire : Type*} [DecidableEq Wire] {depth : Nat}
     cast (congrArg (D2SenderLayout Wire) heq.symm) layout
   exact d2SenderLayoutBagAtPath level fullLayout node.2
 
+/-- Port labels for one sender: its parent/output port, or one of its eight
+child ports. -/
+abbrev D2SenderRoutePort := Option (Fin 8)
+
+/-- The receiver of a local port. `none` as a receiver is the external
+boundary: the root's parent output or a child below the represented tree. -/
+def d2SenderNodeRouteTarget {depth : Nat} (active : Nat → Bool)
+    (node : D2SenderNode depth) (port : D2SenderRoutePort) :
+    Option (D2SenderNode depth) :=
+  if active node.1.val then
+    match port with
+    | none => d2SenderNodeParent? node
+    | some j => d2SenderNodeChild? node j
+  else some node
+
+/-- Local rank pieces, with an inactive node's entire bag treated as its
+retained self piece on the parent-port label. -/
+def d2SenderNodeLocalPiece {Wire : Type*} [DecidableEq Wire]
+    {depth : Nat} (active : Nat → Bool)
+    (source : D2SenderNode depth → Finset Wire)
+    (split : D2SenderNode depth → D2SenderPorts Wire)
+    (node : D2SenderNode depth) (port : D2SenderRoutePort) : Finset Wire :=
+  if active node.1.val then
+    match port with
+    | none => (split node).up
+    | some j => (split node).down j
+  else
+    match port with
+    | none => source node
+    | some _ => Finset.empty
+
+/-- The flat one-stage receiver bags obtained by routing every local piece to
+its indexed parent/child (or to the explicit external boundary bucket). -/
+noncomputable def d2SenderNodeRoutedBag {Wire : Type*} [DecidableEq Wire]
+    {depth : Nat} (active : Nat → Bool)
+    (source : D2SenderNode depth → Finset Wire)
+    (split : D2SenderNode depth → D2SenderPorts Wire)
+    (receiver : Option (D2SenderNode depth)) : Finset Wire :=
+  Finset.univ.biUnion fun node =>
+    routedTargetPiece (d2SenderNodeLocalPiece active source split)
+      (d2SenderNodeRouteTarget active) node receiver
+
+/-- The flat D2 route preserves a global wire partition once source bags and
+each sender's local pieces satisfy the partition contracts. This is the
+finite-tree instantiation of `routed_local_destinations_preserve_partition`;
+the candidate schedule still has to supply these hypotheses. -/
+theorem d2SenderNodeRoute_preserves_partition
+    {Wire : Type*} [Fintype Wire] [DecidableEq Wire]
+    {depth : Nat} (active : Nat → Bool)
+    (source : D2SenderNode depth → Finset Wire)
+    (split : D2SenderNode depth → D2SenderPorts Wire)
+    (hsourceCover : Finset.univ.biUnion source = Finset.univ)
+    (hsourceDisjoint : ∀ node node', node ≠ node' →
+      Disjoint (source node) (source node'))
+    (hlocalSubset : ∀ node port,
+      d2SenderNodeLocalPiece active source split node port ⊆ source node)
+    (hlocalCover : ∀ node,
+      Finset.univ.biUnion (d2SenderNodeLocalPiece active source split node) =
+        source node)
+    (hlocalDisjoint : ∀ node port port', port ≠ port' →
+      Disjoint (d2SenderNodeLocalPiece active source split node port)
+        (d2SenderNodeLocalPiece active source split node port')) :
+    (∀ receiver receiver', receiver ≠ receiver' →
+      Disjoint (d2SenderNodeRoutedBag active source split receiver)
+        (d2SenderNodeRoutedBag active source split receiver')) ∧
+      Finset.univ.biUnion (d2SenderNodeRoutedBag active source split) =
+        Finset.univ := by
+  exact routed_local_destinations_preserve_partition source
+    (d2SenderNodeLocalPiece active source split)
+    (d2SenderNodeRouteTarget active)
+    hsourceCover hsourceDisjoint hlocalSubset hlocalCover hlocalDisjoint
+
 end Chvatal.D2OrdinaryRankRouting

@@ -710,14 +710,17 @@ discarded after elaboration failures; do not resume that proof strategy.
 `D2DynamicSenderNode.lean` now defines a finite `Sigma` index for every node
 across levels `0..depth`, with parent/child option-valued navigation and a
 projection from an indexed node to its corresponding `D2FlowTree` subtree.
-It also extracts the recursive `D2SenderLayout` bag at each flat index. It
-reuses the existing cast-aware path-snoc theorem in `D2FlowPathLast.lean`.
-The focused check passes. This is indexing infrastructure only: no target map
-for routed ports, global partition theorem instantiation, or allocation
-agreement is proved yet. The next decisive step is to define the actual
-one-stage destination map on this flat index and see whether the generic
-partition theorem's local-piece hypotheses can be supplied without assuming
-the desired flow cardinalities.
+It extracts the recursive `D2SenderLayout` bag at each flat index and defines
+the one-stage route: `none` is the parent port, `some j` is child `j`, and an
+`Option` receiver's `none` is the external boundary bucket. Inactive nodes
+retain their source bag locally. The theorem
+`d2SenderNodeRoute_preserves_partition` instantiates the generic destination
+partition theorem on this actual finite parent/child map. Its focused check
+passes, but its source partition and local-piece partition hypotheses have not
+been derived for the candidate execution; in particular, root-boundary output
+must be shown empty. The next decisive step is to identify the candidate's
+role-specific physical port pieces with this interface, then prove receiver
+cardinality matches the flow allocation without assuming that agreement.
 
 ## Files and artifacts
 
