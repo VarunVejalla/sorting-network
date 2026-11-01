@@ -70,15 +70,20 @@ sender-set cardinalities and aggregate error alone do not imply sorted output.
 
 ## First decisive Lean milestone
 
-Add a layout datatype mirroring `D2FlowTree`, storing one sender `Finset` at
-each node. Prove a one-stage theorem that, under the candidate activity and
-role callbacks plus the existing flow input contracts, (1) all next sender
-sets are pairwise disjoint and cover `Finset.univ`, and (2) every next set has
-cardinality equal to the corresponding node's `d2FlowTreeAllocation` after
-`d2FlowStage`. Include the `topDesc`, `botRise`, and parent-overwrite cases.
-If this theorem is materially harder than the static-bag identity, or its
-cardinality recurrence fails for a reachable case, reassess this architecture
-before building more profile lemmas on it.
+`D2DynamicSenderLayout.lean` now supplies the recursive layout and update.
+For the global partition proof, avoid a second recursive `Finset.biUnion`
+induction: `D2OrdinaryRankRouting.routed_local_destinations_preserve_partition`
+already proves conservation and disjointness for a finite flat sender index.
+Next encode all nodes of a depth-`d` tree as one finite index type and define
+the destination function for each local port (self, parent, or child). Treat
+the root's parent as an external sentinel and prove its piece empty from the
+root-role theorem. Then instantiate the existing generic partition theorem
+with the local active/inactive port partitions. Separately prove the receiver
+cardinality recurrence against `d2FlowTreeAllocation` after `d2FlowStage`,
+including startup, exceptional roles, and parent-root overwrites. The needed
+rank-port widths and inactive-receiver allocation equation are already
+formalized below; the dynamic layout and the finite node indexing are not yet
+identified with the candidate flow.
 
 ## Formal progress
 

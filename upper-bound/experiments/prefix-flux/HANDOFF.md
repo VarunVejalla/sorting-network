@@ -696,11 +696,14 @@ inactive nodes, flattening lemma for adding a down-port, and finite-union
 distributivity/congruence lemmas are kernel-checked.
 This makes the intended physical update concrete, but does not yet prove
 global coverage/disjointness or cardinality agreement with the flow. Next add
-the recursive partition invariant and prove its one-stage preservation under
-local port partitions, candidate no-adjacency, root/leaf boundary facts, and
-the role-specific flow width equalities. A first direct union-conservation
-proof was discarded because its `Finset.biUnion` rewrites were incomplete; do
-not rely on it.
+the finite global node index and target function, then instantiate the already
+proved `routed_local_destinations_preserve_partition` theorem rather than
+duplicating its partition induction over the recursive layout. Use a parent
+sentinel for the root and discharge its empty port from the root-role result.
+The dynamic layout still needs an all-node cardinality bridge to
+`d2FlowTreeAllocation` after `d2FlowStage`, including exceptional roles and
+root overwrites. A direct nested `Finset.biUnion` conservation proof was
+discarded after elaboration failures; do not resume that proof strategy.
 
 ## Files and artifacts
 
