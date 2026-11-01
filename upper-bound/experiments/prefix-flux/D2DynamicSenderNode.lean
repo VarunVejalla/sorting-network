@@ -110,6 +110,31 @@ theorem d2SenderNodeChild?_eq_none_iff {depth : Nat}
     · intro heq
       simp [hlt]
 
+/-- A parent edge decreases the flat tree level by exactly one. -/
+theorem d2SenderNodeParent?_some_level {depth : Nat}
+    (node parent : D2SenderNode depth)
+    (h : d2SenderNodeParent? node = some parent) :
+    parent.1.val + 1 = node.1.val := by
+  rcases node with ⟨⟨level, hlevel⟩, path⟩
+  cases level with
+  | zero => simp [d2SenderNodeParent?] at h
+  | succ level =>
+      cases Option.some.inj h
+      rfl
+
+/-- A child edge increases the flat tree level by exactly one. -/
+theorem d2SenderNodeChild?_some_level {depth : Nat}
+    (node : D2SenderNode depth) (port : Fin 8) (child : D2SenderNode depth)
+    (h : d2SenderNodeChild? node port = some child) :
+    node.1.val + 1 = child.1.val := by
+  rcases node with ⟨⟨level, hlevel⟩, path⟩
+  unfold d2SenderNodeChild? at h
+  by_cases hlt : level < depth
+  · simp [hlt] at h
+    cases h
+    rfl
+  · simp [hlt] at h
+
 /-- The recursive flow state at a flat sender index. -/
 def d2SenderNodeSubtree {depth : Nat} (tree : D2FlowTree depth)
     (node : D2SenderNode depth) : D2FlowTree (depth - node.1.val) := by
@@ -672,6 +697,29 @@ def d2SenderNodeRouteTarget {depth : Nat} (active : Nat → Bool)
     | none => d2SenderNodeParent? node
     | some j => d2SenderNodeChild? node j
   else some node
+
+/-- A routed piece can only stay at its inactive sender or move by one tree
+level to the sender's parent or child. This is the topological support fact
+needed to reduce the receiver-port sum to the local flow recurrence. -/
+theorem d2SenderNodeRouteTarget_level_relation {depth : Nat}
+    (active : Nat → Bool) (node receiver : D2SenderNode depth)
+    (port : D2SenderRoutePort)
+    (hroute : d2SenderNodeRouteTarget active node port = some receiver) :
+    node.1.val + 1 = receiver.1.val ∨
+      receiver.1.val + 1 = node.1.val ∨ node.1.val = receiver.1.val := by
+  by_cases ha : active node.1.val = true
+  · cases port with
+    | none =>
+        have hp : d2SenderNodeParent? node = some receiver := by
+          simpa [d2SenderNodeRouteTarget, ha] using hroute
+        exact Or.inr (Or.inl (d2SenderNodeParent?_some_level node receiver hp))
+    | some j =>
+        have hc : d2SenderNodeChild? node j = some receiver := by
+          simpa [d2SenderNodeRouteTarget, ha] using hroute
+        exact Or.inl (d2SenderNodeChild?_some_level node j receiver hc)
+  · have heq : node = receiver := Option.some.inj (by
+      simpa [d2SenderNodeRouteTarget, ha] using hroute)
+    exact Or.inr (Or.inr (congrArg (fun n : D2SenderNode depth => n.1.val) heq))
 
 /-- Local rank pieces, with an inactive node's entire bag treated as its
 retained self piece on the parent-port label. -/
