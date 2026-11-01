@@ -82,6 +82,10 @@ Current-source focused checks additionally pass `D2ClippedFlowProfileTransfer.le
 and `D2FalseClippedTransfer.lean`; the former exposes the existing rational to
 integer error conversion lemma, and the latter proves the clipped full-height
 false-profile transfer for arbitrary tags.
+`D2TreePathGeometry.lean` also kernel-checks the height-zero branch needed by
+the recursive core-provider transition: a full-depth path lands at a leaf,
+where the affine-core predicate has no terminal obligations. The positive-height
+recursive step and all-time provider remain open.
 
 ## Main unresolved gate
 
@@ -255,7 +259,9 @@ The local child theorem combines balance, root profile, and two endpoint
 reserves; one-step invariant propagation is available from the current core
 and invariant. The path-snoc projection resolves height association. The
 remaining tree-level proof must recurse through every descendant and assemble
-the root-frontier case with the child contracts. A
+the root-frontier case with the child contracts. Its full-depth leaf case is
+isolated in `D2TreePathGeometry.lean`; the positive-height recursive step is
+still open. A
 reusable step should use
 core snapshots at `t` and `t-1` to prove the next snapshot: the prior core
 gives invariant/balance, `D2TopDescHistory.lean` supplies role-specific root
