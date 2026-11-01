@@ -754,13 +754,19 @@ has size equal to that child's flow-deficit decrease, assuming the established
 cut gates and sender-cardinality equation. This supplies the local numeric
 input to the receiver recurrence. `d2OrdinaryRankSenderPorts_complete_contract`
 now packages the local partition and exact sizes together for downstream use.
-This remains conditional: the candidate schedule still must show that each
-actual sender set has the required flow cardinality and satisfies the cut
-gates. Every post-stage bag identity remains open. Next compose the port sizes
-through the recursive stage and compare each post-stage routed receiver with
-`d2FlowTreeAllocation`; startup/exceptional roles and root overwrites remain
-to be covered. The decisive risk remains whether this exact identity holds
-for all role and overwrite cases.
+`d2FlowNodeStaticBag_card_eq_flow_allocation_of_fit` and
+`d2FlowTreePhysicalBag_leaf_card_eq_allocation` discharge the sender
+cardinality equation for internal and leaf static bags, respectively, under
+the flow invariant, geometric fit (internal nodes), and wire-bound hypotheses.
+The ordinary local contract can therefore use static source bags once those
+geometric premises are supplied. They are not yet supplied for every reachable
+stage: canonical hole markers fail the all-stage fit screen, and the clamped
+representation still lacks an all-stage fit provider. Every post-stage bag
+identity remains open. Next close the reachable fit/provider gate, then
+compose the local port sizes through the recursive stage and compare each
+post-stage routed receiver with `d2FlowTreeAllocation`; startup/exceptional
+roles and root overwrites remain to be covered. The decisive risk remains
+whether this exact identity holds for all role and overwrite cases.
 
 ## Files and artifacts
 

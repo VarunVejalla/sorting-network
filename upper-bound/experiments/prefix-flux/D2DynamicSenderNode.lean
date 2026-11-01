@@ -181,6 +181,69 @@ def d2FlowTreePhysicalBag {n scale : Nat} :
   | base, h + 1, .node G low high children =>
       d2FlowNodeStaticBag base (scale * 8 ^ h) G low high children
 
+theorem d2FlowNodeStaticBag_card_eq_flow_allocation_of_fit
+    {n scale h : Nat} (base G low high : Nat)
+    (children : Fin 8 -> D2FlowTree h)
+    (hinv : d2FlowTreeInv scale (.node G low high children))
+    (hfit : StaticHolesFit (base + low)
+      (d2FlowNodeStaticHoles base (scale * 8 ^ h) low high children)
+      (base + 8 * (scale * 8 ^ h) - high))
+    (hstop : base + 8 * (scale * 8 ^ h) - high <= n) :
+    (d2FlowNodeStaticBag (n := n) base (scale * 8 ^ h)
+      G low high children).card =
+      d2FlowTreeAllocation scale (.node G low high children) := by
+  by_cases hsat : G = 8 * (scale * 8 ^ h)
+  case pos =>
+    have hinv' := hinv
+    simp only [d2FlowTreeInv] at hinv'
+    have hchildInv : forall j, d2FlowTreeInv scale (children j) := hinv'.2.2.2
+    have htotalLe : d2FlowTotal
+        (fun j => d2FlowTreeRootDeficit (children j)) <=
+          8 * (scale * 8 ^ h) := by
+      unfold d2FlowTotal
+      calc
+        _ <= Finset.univ.sum (fun _ : Fin 8 => scale * 8 ^ h) :=
+          Finset.sum_le_sum (fun j hj =>
+            d2FlowTreeInv_root_native_bound (children j) (hchildInv j))
+        _ = 8 * (scale * 8 ^ h) := by simp
+    have htotalEq : d2FlowTotal
+        (fun j => d2FlowTreeRootDeficit (children j)) = G := by
+      rw [hsat]
+      apply Nat.le_antisymm htotalLe
+      simpa [hsat] using hinv'.2.1
+    simp [d2FlowNodeStaticBag, hsat, d2FlowTreeAllocation, htotalEq]
+  case neg =>
+    have hcap : G <= 8 * (scale * 8 ^ h) := by
+      simpa [Nat.pow_succ, Nat.mul_assoc, Nat.mul_comm, Nat.mul_left_comm]
+        using hinv.1
+    have hGlt : G < 8 * (scale * 8 ^ h) := Nat.lt_of_le_of_ne hcap hsat
+    rw [d2FlowNodeStaticBag_card_eq_child_total_sub_G base G low high
+      children hinv hfit hstop hGlt]
+    rfl
+
+theorem d2FlowTreePhysicalBag_leaf_card_eq_allocation
+    {n scale : Nat} (base G low high : Nat)
+    (hinv : d2FlowTreeInv scale (.leaf G low high))
+    (hstop : base + scale - high <= n) :
+    (d2FlowTreePhysicalBag (n := n) (scale := scale) base
+      (.leaf G low high)).card =
+      d2FlowTreeAllocation scale (.leaf G low high) := by
+  by_cases hsat : G = scale
+  case pos =>
+    simp [d2FlowTreePhysicalBag, d2FlowTreeAllocation, hsat]
+    rfl
+  case neg =>
+    have hinv' : G <= scale /\ (G < scale -> low + high = G) := by
+      simpa [d2FlowTreeInv] using hinv
+    have hGlt : G < scale := by
+      have hGle : G <= scale := hinv'.1
+      omega
+    have hbal : low + high = G := hinv'.2 hGlt
+    simp only [d2FlowTreePhysicalBag, if_neg hsat]
+    rw [staticWireInterval_card hstop]
+    simp [d2FlowTreeAllocation]
+    omega
+
 /-- Recursive sender layout obtained from the concrete static physical bags. -/
 def d2FlowTreePhysicalLayout {n scale : Nat} :
     (base : Nat) -> {h : Nat} -> D2FlowTree h ->
