@@ -243,6 +243,49 @@ theorem d2FlowTreePhysicalLayout_bagAtPath {n scale base remaining levels : Nat}
               base + j.val * (scale * 8 ^ (remaining + levels)))
               (tree := children j))
 
+theorem d2FlowTreeAtPath_full (scale remaining levels : Nat)
+    (path : D2FlowPath levels) :
+    d2FlowTreeAtPath levels (d2FlowTreeFull scale (remaining + levels)) path =
+      d2FlowTreeFull scale remaining := by
+  induction path generalizing remaining with
+  | nil => simp [d2FlowTreeAtPath]
+  | @cons levels j tail ih =>
+      simp only [d2FlowTreeAtPath, d2FlowTreeFull]
+      simpa [Nat.add_assoc] using ih remaining
+
+theorem d2FlowTreeInitial_cast {a b scale : Nat} (h : a = b) :
+    cast (congrArg D2FlowTree h) (d2FlowTreeInitial scale a) =
+      d2FlowTreeInitial scale b := by
+  cases h
+  rfl
+
+theorem d2SenderNodeSubtree_initial_eq_full {scale depth : Nat}
+    (node : D2SenderNode depth) (hpos : 0 < node.1.val) :
+    d2SenderNodeSubtree (d2FlowTreeInitial scale depth) node =
+      d2FlowTreeFull scale (depth - node.1.val) := by
+  rcases node with ⟨⟨level, hlevel⟩, path⟩
+  cases level with
+  | zero => simp_all
+  | succ levels =>
+      have hle : levels + 1 ≤ depth := by omega
+      let remaining := depth - (levels + 1)
+      have hdecomp : remaining + (levels + 1) = depth :=
+        Nat.sub_add_cancel hle
+      let fullTree : D2FlowTree (remaining + (levels + 1)) :=
+        cast (congrArg D2FlowTree hdecomp.symm)
+          (d2FlowTreeInitial scale depth)
+      have hfullTree : fullTree =
+          d2FlowTreeInitial scale (remaining + (levels + 1)) := by
+        dsimp [fullTree]
+        exact d2FlowTreeInitial_cast hdecomp.symm
+      change d2FlowTreeAtPath (levels + 1) fullTree path =
+        d2FlowTreeFull scale remaining
+      rw [hfullTree]
+      cases path with
+      | cons j tail =>
+          simpa [d2FlowTreeAtPath, d2FlowTreeInitial, Nat.add_assoc] using
+            (d2FlowTreeAtPath_full scale remaining levels tail)
+
 theorem d2FlowTreePhysicalBag_full_eq_empty {n scale : Nat}
     (base h : Nat) :
     d2FlowTreePhysicalBag (n := n) (scale := scale) base
@@ -390,6 +433,118 @@ theorem d2SenderNodePhysicalBag_initial_root_eq_univ (scale depth : Nat) :
         simp [staticWireInterval]
         intro hw
         exact (Finset.not_nonempty_iff_eq_empty.mpr rfl) ⟨w, hw⟩
+
+theorem d2SenderNodeBag_initial_root_eq_univ (scale depth : Nat) :
+    d2SenderNodeBag
+      (d2FlowTreePhysicalLayout (n := scale * 8 ^ depth) (scale := scale) 0
+        (d2FlowTreeInitial scale depth)) (d2SenderNodeRoot depth) =
+      Finset.univ := by
+  rw [d2SenderNodeBag_physical_eq 0]
+  have hroot := d2SenderNodePhysicalBag_initial_root_eq_univ scale depth
+  rw [d2SenderNodePhysicalBag_root] at hroot
+  simpa [d2SenderNodeRoot, nativePathStart,
+    D2NativePathIntervals.pathIndex] using hroot
+
+theorem d2SenderNodeBag_initial_ne_root_eq_empty (scale depth : Nat)
+    (node : D2SenderNode depth) (hpos : 0 < node.1.val) :
+    d2SenderNodeBag
+      (d2FlowTreePhysicalLayout (n := scale * 8 ^ depth) (scale := scale) 0
+        (d2FlowTreeInitial scale depth)) node = Finset.empty := by
+  rw [d2SenderNodeBag_physical_eq 0]
+  rw [d2SenderNodeSubtree_initial_eq_full node hpos]
+  simpa using d2FlowTreePhysicalBag_full_eq_empty
+    (nativePathStart scale (depth - node.1.val) node.2)
+    (depth - node.1.val)
+
+
+
+
+theorem d2SenderNodeBag_initial_eq_if_root (scale depth : Nat)
+    (node : D2SenderNode depth) :
+    d2SenderNodeBag
+      (d2FlowTreePhysicalLayout (n := scale * 8 ^ depth) (scale := scale) 0
+        (d2FlowTreeInitial scale depth)) node =
+      if node = d2SenderNodeRoot depth then Finset.univ else Finset.empty := by
+  by_cases hlevel : node.1.val = 0
+  case pos =>
+    have hnode : node = d2SenderNodeRoot depth := by
+      cases node with
+      | mk level path =>
+        have hvalue : level.val = 0 := hlevel
+        have hfin : level = 0 := Fin.ext hvalue
+        subst level
+        cases path
+        rfl
+    subst node
+    rw [d2SenderNodeBag_initial_root_eq_univ]
+    simp
+  case neg =>
+    have hpos : 0 < node.1.val := Nat.pos_of_ne_zero hlevel
+    have hnotroot : Not (node = d2SenderNodeRoot depth) := by
+      intro h
+      apply hlevel
+      rw [h]
+      rfl
+    rw [d2SenderNodeBag_initial_ne_root_eq_empty scale depth node hpos]
+    simp [hnotroot]
+
+theorem d2SenderNodeBag_initial_physical_partition (scale depth : Nat) :
+    And
+      (forall node node' : D2SenderNode depth, Not (node = node') ->
+        Disjoint
+          (d2SenderNodeBag
+            (d2FlowTreePhysicalLayout (n := scale * 8 ^ depth) (scale := scale) 0
+              (d2FlowTreeInitial scale depth)) node)
+          (d2SenderNodeBag
+            (d2FlowTreePhysicalLayout (n := scale * 8 ^ depth) (scale := scale) 0
+              (d2FlowTreeInitial scale depth)) node'))
+      (Finset.univ.biUnion (fun node =>
+        d2SenderNodeBag
+          (d2FlowTreePhysicalLayout (n := scale * 8 ^ depth) (scale := scale) 0
+            (d2FlowTreeInitial scale depth)) node) = Finset.univ) := by
+  classical
+  let source : D2SenderNode depth -> Finset (Fin (scale * 8 ^ depth)) := fun node =>
+    d2SenderNodeBag
+      (d2FlowTreePhysicalLayout (n := scale * 8 ^ depth) (scale := scale) 0
+        (d2FlowTreeInitial scale depth)) node
+  have hsource : forall node, source node =
+      if node = d2SenderNodeRoot depth then Finset.univ else Finset.empty := by
+    intro node
+    exact d2SenderNodeBag_initial_eq_if_root scale depth node
+  constructor
+  case left =>
+    intro node node' hne
+    change Disjoint (source node) (source node')
+    rw [hsource node, hsource node']
+    by_cases hroot : node = d2SenderNodeRoot depth
+    case pos =>
+      subst node
+      have hnotroot : Not (node' = d2SenderNodeRoot depth) := by
+        intro h
+        subst node'
+        exact hne rfl
+      simp only [if_neg hnotroot]
+      apply Finset.disjoint_left.mpr
+      intro wire hwire hmem
+      exact (Finset.not_nonempty_iff_eq_empty.mpr rfl) ⟨wire, hmem⟩
+    case neg =>
+      rw [if_neg hroot]
+      apply Finset.disjoint_left.mpr
+      intro wire hwire _
+      exact (Finset.not_nonempty_iff_eq_empty.mpr rfl) ⟨wire, hwire⟩
+  case right =>
+    change Finset.univ.biUnion source = Finset.univ
+    ext wire
+    simp only [Finset.mem_biUnion, Finset.mem_univ, true_and]
+    constructor
+    case mp =>
+      intro _
+      trivial
+    case mpr =>
+      intro _
+      apply Exists.intro (d2SenderNodeRoot depth)
+      rw [hsource]
+      simp
 
 theorem d2FlowTreePhysicalLayout_initial_wires_eq_univ (scale depth : Nat) :
     d2SenderLayoutWires

@@ -744,11 +744,15 @@ flat-node adapter `d2SenderNodeBag_physical_eq`. The generic containment
 lemma `d2SenderLayoutBagAtPath_subset_wires` shows that a selected bag is
 contained in its recursive subtree's total wire set. This can be used with
 the empty-full-subtree result to prove non-root startup bags empty. The
-explicit initial flat source cover/disjointness proof and every post-stage bag
-identity remain open. Next derive the initial flat partition from these
-lemmas, then attempt the one-stage receiver-cardinality identity. The decisive
-risk remains whether post-stage receiver sets really have the
-`d2FlowTreeAllocation` sizes under all role and overwrite cases.
+startup flat source partition is now proved by
+`d2SenderNodeBag_initial_physical_partition`: the root bag is the full
+universe, every non-root bag is empty, and the bags are pairwise disjoint.
+This supplies the flat route theorem's source-partition premise at the
+initial state. Every post-stage bag identity remains open. Next match the
+post-stage routed receiver sizes to `d2FlowTreeAllocation`, beginning with a
+single ordinary active cut and then handling startup/exceptional roles and
+root overwrites. The decisive risk remains whether this exact identity holds
+for all role and overwrite cases.
 
 ## Files and artifacts
 
