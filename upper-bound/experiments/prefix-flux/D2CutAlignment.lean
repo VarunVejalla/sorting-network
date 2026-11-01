@@ -99,6 +99,20 @@ def d2FlowTileAligned : {h : Nat} → D2FlowTree h → Prop
       4096 ∣ G ∧ 2048 ∣ low ∧ 2048 ∣ high ∧
         ∀ j, d2FlowTileAligned (children j)
 
+theorem d2FlowTileAligned_atPath
+    {h n : Nat} (tree : D2FlowTree (h + n))
+    (path : D2FlowPath n) (htile : d2FlowTileAligned tree) :
+    d2FlowTileAligned (d2FlowTreeAtPath n tree path) := by
+  induction path generalizing h with
+  | nil => simpa [d2FlowTreeAtPath] using htile
+  | @cons n port tail ih =>
+      cases tree with
+      | node G low high children =>
+          have hchild : d2FlowTileAligned (children port) := by
+            simpa [d2FlowTileAligned] using htile.2.2.2 port
+          simpa [d2FlowTreeAtPath] using
+            ih (h := h) (tree := children port) hchild
+
 theorem d2FlowTileAligned_root_dvd {h : Nat} (tree : D2FlowTree h)
     (htree : d2FlowTileAligned tree) :
     4096 ∣ d2FlowTreeRootDeficit tree := by
@@ -443,6 +457,46 @@ def d2FlowStageDescEndpointsAligned (active : Nat → Bool)
           4096 ∣ (d2FlowTreeRootData (children j)).2.2) ∧
         d2FlowStageDescEndpointsAligned active role
           (h := h) (i + 1) (children j)
+
+/-- Project the recursive descendant-endpoint invariant to a concrete
+positive-depth path. The selected node's front alignment comes from its
+immediate parent, matching the scheduler's child-root overwrite convention. -/
+theorem d2FlowStageDescEndpointsAligned_atPath
+    {active : Nat → Bool} {role : Nat → D2Role}
+    {h n i : Nat} (tree : D2FlowTree (h + (n + 1)))
+    (path : D2FlowPath (n + 1))
+    (hdesc : d2FlowStageDescEndpointsAligned active role i tree)
+    (ha : active (i + (n + 1)) = true)
+    (hr : d2OrdinaryRole (role (i + (n + 1)))) :
+    4096 ∣ (d2FlowTreeRootData (d2FlowTreeAtPath (n + 1) tree path)).2.1 ∧
+      4096 ∣ (d2FlowTreeRootData (d2FlowTreeAtPath (n + 1) tree path)).2.2 := by
+  induction n generalizing h i with
+  | zero =>
+      cases path with
+      | cons j tail =>
+          cases tail with
+          | nil =>
+              cases tree with
+              | node G low high children =>
+                  simp only [d2FlowStageDescEndpointsAligned] at hdesc
+                  simpa [d2FlowTreeAtPath, d2FlowTreeChild] using (hdesc j).1 ha hr
+  | succ n ih =>
+      cases path with
+      | cons j tail =>
+          cases tree with
+          | node G low high children =>
+              simp only [d2FlowStageDescEndpointsAligned] at hdesc
+              have hindex : i + 1 + (n + 1) = i + (n + 1 + 1) := by omega
+              have ha' : active (i + 1 + (n + 1)) = true := by
+                rw [hindex]
+                exact ha
+              have hr' : d2OrdinaryRole (role (i + 1 + (n + 1))) := by
+                rw [hindex]
+                exact hr
+              have hchild := ih (h := h) (i := i + 1) (tree := children j)
+                (path := tail) (hdesc j).2 ha' hr'
+              simpa [d2FlowTreeAtPath, hindex]
+                using hchild
 
 theorem d2FlowStageDescEndpointsAligned_setRoot
     {active : Nat → Bool} {role : Nat → D2Role} {h i : Nat}
@@ -1422,6 +1476,32 @@ theorem d2FlowCandidateRun_alignment_all {d : Nat} (hd : 7 ≤ d) :
   cases t with
   | zero => omega
   | succ t => simpa using hsucc t
+
+/-- Every positive-depth active ordinary sender on the actual candidate run
+has 4096-aligned root fronts. This extracts the path-local premise used by
+the static-hole geometry from the all-stage descendant invariant. -/
+theorem d2FlowCandidateRun_active_ordinary_path_endpoints_aligned
+    {d h n t : Nat} (hd : 7 ≤ d) (ht : 1 ≤ t)
+    (hdepth : d = h + (n + 1)) (path : D2FlowPath (n + 1))
+    (ha : d2FlowCandidateActive d t (n + 1) = true)
+    (hr : d2OrdinaryRole (d2FlowCandidateRole d t (n + 1))) :
+    4096 ∣ (d2FlowTreeRootData
+      (d2FlowTreeAtPath (n + 1)
+        (cast (congrArg D2FlowTree hdepth)
+          (d2FlowCandidateRun d (d2FlowTreeInitial 8192 d) t)) path)).2.1 ∧
+      4096 ∣ (d2FlowTreeRootData
+        (d2FlowTreeAtPath (n + 1)
+          (cast (congrArg D2FlowTree hdepth)
+            (d2FlowCandidateRun d (d2FlowTreeInitial 8192 d) t)) path)).2.2 := by
+  cases hdepth
+  obtain ⟨_, _, hdesc⟩ := d2FlowCandidateRun_alignment_all hd t ht
+  simpa using d2FlowStageDescEndpointsAligned_atPath
+    (active := fun i => d2FlowCandidateActive (h + (n + 1)) t i)
+    (role := fun i => d2FlowCandidateRole (h + (n + 1)) t i)
+    (h := h) (n := n) (i := 0)
+    (d2FlowCandidateRun (h + (n + 1))
+      (d2FlowTreeInitial 8192 (h + (n + 1))) t)
+    path hdesc (by simpa using ha) (by simpa using hr)
 
 /-- The actual candidate satisfies the recursive front contract at every
 stage, including the nonordinary bootstrap stage. -/

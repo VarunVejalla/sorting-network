@@ -235,10 +235,18 @@ Two prerequisites for that gate are now kernel-checked. `D2AllStagePortGrid.lean
 derives the stage-input contract from the all-stage affine-core theorem and
 proves that every active ordinary candidate sender has 4096-aligned ten-port
 boundaries, at every stage and for every dimension `d >= 7`.
-`D2AlignedPortReceiverCells.lean` shows that, given the static-hole fit and
-grid premises, every 4096-rank fragment of an ordinary child port is a whole
-physical 4096-wire cell contained in that child's `destinationPiece`. This
-establishes the local receiver label for aligned fragments. Its new
+`D2CutAlignment.lean` now projects descendant endpoint alignment to a
+concrete positive-depth candidate path, while `D2AllStagePortGrid.lean`
+projects the all-stage sender-input contract to any path. In
+`D2StaticWireSets.lean`, `d2FlowStageInvInputs_static_holes` no longer assumes
+the schedule capacity equals the full native tree capacity: the actual
+deficit/quota limits and endpoint reserves directly imply the two-front hole
+fit from native child bounds. The exact path-level composition of these facts
+is still to be proved. `D2AlignedPortReceiverCells.lean` shows that, given the
+static-hole fit and grid premises, every 4096-rank fragment of an ordinary
+child port is a whole physical 4096-wire cell contained in that child's
+`destinationPiece`. This establishes the local receiver label for aligned
+fragments. Its new
 `ordinary_child_rank_port_cells_are_receiver_of_aligned_endpoints` wrapper
 derives the number of such fragments from aligned ordered endpoints, so callers
 need not supply a separate cell-count equation. Still to prove is

@@ -113,11 +113,16 @@ identify physical Boolean profiles with the ideal prefix model.
 
 The all-stage flow-side port-grid premise is now discharged by
 `D2AllStagePortGrid.lean`: every active ordinary sender has 4096-aligned
-ten-port boundaries for every stage and `d >= 7`. `D2AlignedPortReceiverCells.lean`
-also proves that a grid-aligned child-port fragment maps to a whole 4096-wire
-physical cell inside that child's static destination set. Next instantiate
-the static-hole fit/grid conditions from actual sender paths and connect each
-clipped tile/column profile count to those routed cells.
+ten-port boundaries for every stage and `d >= 7`; it now also projects the
+all-stage sender-input contract to any path. `D2CutAlignment.lean` projects
+endpoint alignment to active ordinary candidate paths. The static-hole fit
+lemma in `D2StaticWireSets.lean` now derives geometric fit directly from the
+actual deficit/quota limits and endpoint reserves, without assuming that the
+time-dependent schedule capacity equals the native tree capacity.
+`D2AlignedPortReceiverCells.lean` proves that an aligned child-port fragment
+is a whole 4096-wire cell inside that child's static destination set. Next
+compose these results into one path-level static-hole/grid theorem and connect
+each clipped tile/column profile count to those routed cells.
 
 The physical sender's Boolean false mass and tags are still **not** identified
 with the flow deficit `G` and the rank intervals. The remaining ordinary

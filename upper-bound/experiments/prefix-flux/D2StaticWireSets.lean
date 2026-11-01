@@ -7,6 +7,27 @@ open Chvatal
 open Chvatal.D2Reserve
 open Chvatal.D2OrdinaryRankRouting
 
+/-- Project the recursive stage-input contract to the subtree selected by a
+path. This lets local static-hole lemmas consume an all-stage root provider. -/
+theorem d2FlowStageInvInputs_atPath
+    {scale : Nat} {active : Nat → Bool} {role : Nat → D2Role}
+    {quota : Nat → D2Role → Nat} {cap : Nat → Nat}
+    {h n i : Nat} (tree : D2FlowTree (h + n))
+    (path : D2FlowPath n)
+    (hinputs : d2FlowStageInvInputs scale active role quota cap i tree) :
+    d2FlowStageInvInputs scale active role quota cap (i + n)
+      (d2FlowTreeAtPath n tree path) := by
+  induction path generalizing h i with
+  | nil => simpa [d2FlowTreeAtPath] using hinputs
+  | @cons n j tail ih =>
+      cases tree with
+      | node G low high children =>
+          simp only [d2FlowStageInvInputs] at hinputs
+          have hchild := ih (h := h) (i := i + 1)
+            (tree := children j) (hinputs.1 j)
+          simpa [d2FlowTreeAtPath, show i + 1 + n = i + (n + 1) by omega]
+            using hchild
+
 /-- Static addresses in the half-open interval `[lo, hi)`. -/
 def staticWireInterval {n : Nat} (lo hi : Nat) : Finset (Fin n) :=
   Finset.univ.filter fun w => lo ≤ w.val ∧ w.val < hi
@@ -846,10 +867,75 @@ theorem d2EightChildHolesFit_of_flow_reserves
     hleftWidth htailWidth hparent hsize hfronts hreserve.1 hreserve.2
   simpa [Nat.add_assoc] using hfit
 
-/-- The actual recursive tree invariant supplies the native child caps, and
-the ordinary-sender stage-input contract supplies the reserve inequalities.
-Under the scheduled capacity identity `cap i = scale * 8^(h+1)`, the complete
-eight-child static-hole fit follows for every active ordinary sender. -/
+/-- The ordinary reserve contract plus native child bounds is enough for the
+static cut geometry; the schedule capacity need not equal the full native
+tree capacity. -/
+theorem d2EightChildHolesFit_of_actual_reserves
+    {base width cap G low high pi : Nat} (sizes : Fin 8 → Nat)
+    (hbalance : G = low + high)
+    (hG : 512 * G ≤ cap) (hquota : 256 * pi ≤ cap)
+    (heven : pi % 2 = 0)
+    (hleftReserve : cap ≤ 128 * sizes ⟨0, by omega⟩)
+    (hrightReserve : cap ≤ 128 * sizes ⟨7, by omega⟩)
+    (hsize : ∀ j, sizes j ≤ width) :
+    StaticHolesFit (base + low + pi / 2)
+      (staticHoleList 8
+        (fun j => (d2EightChildHole base width (low + pi / 2)
+          (high + pi / 2)
+          (fun k => (d2FlowCutChild (d2FlowPosition sizes k) (sizes k)
+            (low + pi / 2) (d2FlowTotal sizes - (high + pi / 2))).1)
+          (fun k => (d2FlowCutChild (d2FlowPosition sizes k) (sizes k)
+            (low + pi / 2) (d2FlowTotal sizes - (high + pi / 2))).2.1)
+          (fun k => (d2FlowCutChild (d2FlowPosition sizes k) (sizes k)
+            (low + pi / 2) (d2FlowTotal sizes - (high + pi / 2))).2.2) j).1)
+        (fun j => (d2EightChildHole base width (low + pi / 2)
+          (high + pi / 2)
+          (fun k => (d2FlowCutChild (d2FlowPosition sizes k) (sizes k)
+            (low + pi / 2) (d2FlowTotal sizes - (high + pi / 2))).1)
+          (fun k => (d2FlowCutChild (d2FlowPosition sizes k) (sizes k)
+            (low + pi / 2) (d2FlowTotal sizes - (high + pi / 2))).2.1)
+          (fun k => (d2FlowCutChild (d2FlowPosition sizes k) (sizes k)
+            (low + pi / 2) (d2FlowTotal sizes - (high + pi / 2))).2.2) j).2))
+      (base + 8 * width - (high + pi / 2)) := by
+  have hlow : low ≤ G := by omega
+  have hhigh : high ≤ G := by omega
+  have hevenEq : pi = 2 * (pi / 2) := by omega
+  have hreserve := d2_endpoint_fronts_fit_of_reserve
+    hG hlow hhigh hquota hevenEq hleftReserve hrightReserve
+  have hpair : sizes ⟨0, by omega⟩ + sizes ⟨7, by omega⟩ ≤
+      d2FlowTotal sizes := by
+    have hsum := Finset.sum_le_sum_of_subset_of_nonneg
+      (Finset.subset_univ ({⟨0, by omega⟩, ⟨7, by omega⟩} : Finset (Fin 8)))
+      (fun j _ _ => Nat.zero_le (sizes j))
+    simpa [d2FlowTotal] using hsum
+  have hfrontSum : (low + pi / 2) + (high + pi / 2) ≤
+      d2FlowTotal sizes := by
+    calc
+      _ ≤ sizes ⟨0, by omega⟩ + sizes ⟨7, by omega⟩ :=
+        Nat.add_le_add hreserve.1 hreserve.2
+      _ ≤ d2FlowTotal sizes := hpair
+  have hfronts : low + pi / 2 ≤
+      d2FlowTotal sizes - (high + pi / 2) := by omega
+  have hleftWidth : low + pi / 2 ≤ width :=
+    le_trans hreserve.1 (hsize ⟨0, by omega⟩)
+  have hrightWidth : high + pi / 2 ≤ width :=
+    le_trans hreserve.2 (hsize ⟨7, by omega⟩)
+  have hparent : base + (low + pi / 2) ≤
+      base + 8 * width - (high + pi / 2) := by
+    have hsumWidth : (low + pi / 2) + (high + pi / 2) ≤ 8 * width := by
+      calc
+        _ ≤ d2FlowTotal sizes := hfrontSum
+        _ ≤ 8 * width := by
+          unfold d2FlowTotal
+          calc
+            _ ≤ ∑ _j : Fin 8, width := Finset.sum_le_sum fun j _ => hsize j
+            _ = 8 * width := by simp
+    omega
+  simpa [Nat.add_assoc] using d2EightChildHolesFit_of_two_front_cut sizes
+    hleftWidth hrightWidth hparent hsize hfronts hreserve.1 hreserve.2
+
+/-- The actual recursive tree invariant supplies native child caps, and the
+ordinary sender-input contract supplies the endpoint reserves. -/
 theorem d2FlowStageInvInputs_static_holes
     {h scale i : Nat} {active : Nat → Bool} {role : Nat → D2Role}
     {quota : Nat → D2Role → Nat} {cap : Nat → Nat} (base G low high : Nat)
@@ -858,8 +944,7 @@ theorem d2FlowStageInvInputs_static_holes
     (hinputs : d2FlowStageInvInputs scale active role quota cap
       (h := h + 1) i (.node G low high children))
     (ha : active i = true)
-    (hr : role i = .topRise ∨ role i = .mid ∨ role i = .botDesc)
-    (hcapacity : cap i = scale * 8 ^ (h + 1)) :
+    (hr : role i = .topRise ∨ role i = .mid ∨ role i = .botDesc) :
     StaticHolesFit (base + low + quota i (role i) / 2)
       (staticHoleList 8
         (fun j => (d2EightChildHole base (scale * 8 ^ h)
@@ -903,9 +988,6 @@ theorem d2FlowStageInvInputs_static_holes
   have hsize : ∀ j, d2FlowTreeRootDeficit (children j) ≤ scale * 8 ^ h := by
     intro j
     exact d2FlowTreeInv_root_native_bound (children j) (hchildInv j)
-  have hcapEq : cap i = 8 * (scale * 8 ^ h) := by
-    rw [hcapacity, Nat.pow_succ]
-    ring
   have hstage := hinputs.2
   simp [ha] at hstage
   cases hrole : role i with
@@ -914,71 +996,29 @@ theorem d2FlowStageInvInputs_static_holes
   | topRise =>
       simp [hrole] at hstage
       rcases hstage with ⟨hbalance, hG, hquota, _, heven, hleft, hright⟩
-      have hG' : 512 * G ≤ 8 * (scale * 8 ^ h) := by
-        rw [← hcapEq]
-        exact hG
-      have hquota' : 256 * quota i .topRise ≤ 8 * (scale * 8 ^ h) := by
-        rw [← hcapEq]
-        exact hquota
-      have hleft' : 8 * (scale * 8 ^ h) ≤
-          128 * d2FlowTreeRootDeficit (children ⟨0, by omega⟩) := by
-        rw [← hcapEq]
-        exact hleft
-      have hright' : 8 * (scale * 8 ^ h) ≤
-          128 * d2FlowTreeRootDeficit (children ⟨7, by omega⟩) := by
-        rw [← hcapEq]
-        exact hright
-      have hfit := d2EightChildHolesFit_of_flow_reserves
+      have hfit := d2EightChildHolesFit_of_actual_reserves
         (sizes := fun j => d2FlowTreeRootDeficit (children j))
-        (base := base) (width := scale * 8 ^ h) (G := G)
+        (base := base) (width := scale * 8 ^ h) (cap := cap i) (G := G)
         (low := low) (high := high) (pi := quota i .topRise)
-        hbalance.symm hG' hquota' heven hleft' hright' hsize
+        hbalance.symm hG hquota heven hleft hright hsize
       simpa [hrole] using hfit
   | mid =>
       simp [hrole] at hstage
       rcases hstage with ⟨hbalance, hG, hquota, _, heven, hleft, hright⟩
-      have hG' : 512 * G ≤ 8 * (scale * 8 ^ h) := by
-        rw [← hcapEq]
-        exact hG
-      have hquota' : 256 * quota i .mid ≤ 8 * (scale * 8 ^ h) := by
-        rw [← hcapEq]
-        exact hquota
-      have hleft' : 8 * (scale * 8 ^ h) ≤
-          128 * d2FlowTreeRootDeficit (children ⟨0, by omega⟩) := by
-        rw [← hcapEq]
-        exact hleft
-      have hright' : 8 * (scale * 8 ^ h) ≤
-          128 * d2FlowTreeRootDeficit (children ⟨7, by omega⟩) := by
-        rw [← hcapEq]
-        exact hright
-      have hfit := d2EightChildHolesFit_of_flow_reserves
+      have hfit := d2EightChildHolesFit_of_actual_reserves
         (sizes := fun j => d2FlowTreeRootDeficit (children j))
-        (base := base) (width := scale * 8 ^ h) (G := G)
+        (base := base) (width := scale * 8 ^ h) (cap := cap i) (G := G)
         (low := low) (high := high) (pi := quota i .mid)
-        hbalance.symm hG' hquota' heven hleft' hright' hsize
+        hbalance.symm hG hquota heven hleft hright hsize
       simpa [hrole] using hfit
   | botDesc =>
       simp [hrole] at hstage
       rcases hstage with ⟨hbalance, hG, hquota, _, heven, hleft, hright⟩
-      have hG' : 512 * G ≤ 8 * (scale * 8 ^ h) := by
-        rw [← hcapEq]
-        exact hG
-      have hquota' : 256 * quota i .botDesc ≤ 8 * (scale * 8 ^ h) := by
-        rw [← hcapEq]
-        exact hquota
-      have hleft' : 8 * (scale * 8 ^ h) ≤
-          128 * d2FlowTreeRootDeficit (children ⟨0, by omega⟩) := by
-        rw [← hcapEq]
-        exact hleft
-      have hright' : 8 * (scale * 8 ^ h) ≤
-          128 * d2FlowTreeRootDeficit (children ⟨7, by omega⟩) := by
-        rw [← hcapEq]
-        exact hright
-      have hfit := d2EightChildHolesFit_of_flow_reserves
+      have hfit := d2EightChildHolesFit_of_actual_reserves
         (sizes := fun j => d2FlowTreeRootDeficit (children j))
-        (base := base) (width := scale * 8 ^ h) (G := G)
+        (base := base) (width := scale * 8 ^ h) (cap := cap i) (G := G)
         (low := low) (high := high) (pi := quota i .botDesc)
-        hbalance.symm hG' hquota' heven hleft' hright' hsize
+        hbalance.symm hG hquota heven hleft hright hsize
       simpa [hrole] using hfit
 
 theorem staticHoleUnion_lower_bound {n : Nat} (cursor stop : Nat)
