@@ -675,6 +675,99 @@ def d2OrdinaryRankSenderPorts {n : Nat} (s : Finset (Fin n))
   down j := Chvatal.blockOf s (left + boundary j.val)
     (left + boundary (j.val + 1))
 
+theorem d2FlowRankBoundary_le_total_local (sizes : Fin 8 -> Nat)
+    (i : Nat) : d2FlowRankBoundary sizes i <= d2FlowTotal sizes := by
+  by_cases hlt : i < 8
+  case pos =>
+    simp only [d2FlowRankBoundary, dif_pos hlt]
+    unfold d2FlowPosition d2FlowTotal
+    exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
+      (by intro j hj hnot; exact Nat.zero_le _)
+  case neg =>
+    simp [d2FlowRankBoundary, hlt]
+
+theorem d2OrdinaryRankSenderPorts_card_eq_flow_widths
+    {active : Nat -> Bool} {role : Nat -> D2Role}
+    {quota : Nat -> D2Role -> Nat} {h i G low high n : Nat}
+    (children : Fin 8 -> D2FlowTree h) (s : Finset (Fin n))
+    (ha : active i = true)
+    (hr : Or (role i = .topRise)
+      (Or (role i = .mid) (role i = .botDesc)))
+    (hbal : G = low + high)
+    (heven : quota i (role i) % 2 = 0)
+    (hleft : low + quota i (role i) / 2 <=
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)))
+    (hright : high + quota i (role i) / 2 <=
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)))
+    (hgap : low + quota i (role i) / 2 <=
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) -
+        high - quota i (role i) / 2)
+    (hsender : s.card = d2FlowTotal
+      (fun j => d2FlowTreeRootDeficit (children j)) - G) :
+    let widths : Fin 8 -> Nat := fun j =>
+      d2FlowTreeRootDeficit (children j) -
+        d2FlowTreeRootDeficit
+          (d2FlowTreeChild
+            (d2FlowStage active role quota (h + 1) i
+              (.node G low high children)) j)
+    let boundary : Nat -> Nat := d2FlowRankBoundary widths
+    let ports := d2OrdinaryRankSenderPorts s boundary
+      (quota i (role i) / 2) (s.card - quota i (role i) / 2)
+    And (ports.up.card = quota i (role i))
+      (forall j, (ports.down j).card = widths j) := by
+  classical
+  let q := quota i (role i)
+  let left := q / 2
+  let widths : Fin 8 -> Nat := fun j =>
+    d2FlowTreeRootDeficit (children j) -
+      d2FlowTreeRootDeficit
+        (d2FlowTreeChild
+          (d2FlowStage active role quota (h + 1) i
+            (.node G low high children)) j)
+  let boundary := d2FlowRankBoundary widths
+  let ports := d2OrdinaryRankSenderPorts s boundary left (s.card - left)
+  have hconserve : q + d2FlowTotal widths =
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G := by
+    simpa [q, widths, d2FlowTotal] using
+      d2FlowStage_regular_rank_port_conservation children ha hr hbal heven
+        hleft hright hgap
+  have hcard : q + d2FlowTotal widths = s.card := by
+    rw [hsender]
+    exact hconserve
+  have hq : q = 2 * left := by
+    simp [q, left]
+    omega
+  have hleftLe : left <= s.card := by omega
+  have hseam : left <= s.card - left := by omega
+  have hprefixCard : (Chvatal.blockOf s 0 left).card = left := by
+    rw [Chvatal.blockOf_card hleftLe]
+    simp
+  have hsuffixCard : (Chvatal.blockOf s (s.card - left) s.card).card = left := by
+    rw [Chvatal.blockOf_card (Nat.le_refl _)]
+    omega
+  have hup : ports.up.card = q := by
+    dsimp [ports, d2OrdinaryRankSenderPorts]
+    rw [Finset.card_union_of_disjoint (Chvatal.disjoint_blockOf hseam),
+      hprefixCard, hsuffixCard, hq]
+    ring
+  have hdown (j : Fin 8) : (ports.down j).card = widths j := by
+    dsimp [ports, d2OrdinaryRankSenderPorts]
+    have hbound : left + boundary (j.val + 1) <= s.card := by
+      have htail : boundary (j.val + 1) <= d2FlowTotal widths := by
+        simpa [boundary] using
+          d2FlowRankBoundary_le_total_local widths (j.val + 1)
+      calc
+        left + boundary (j.val + 1) <= left + d2FlowTotal widths :=
+          Nat.add_le_add_left htail left
+        _ <= s.card := by omega
+    rw [Chvatal.blockOf_card hbound]
+    have hstep : boundary (j.val + 1) = boundary j.val + widths j := by
+      simpa [boundary] using d2FlowRankBoundary_succ widths j.val j.isLt
+    rw [hstep]
+    omega
+  simpa [q, left, widths, boundary, ports,
+    d2OrdinaryRankSenderPorts] using And.intro hup hdown
+
 /-- The ordinary rank-cut cover/disjointness theorem supplies the exact local
 partition contract for `d2SenderPorts_partition_contract`. -/
 theorem d2OrdinaryRankSenderPorts_contract {n : Nat}

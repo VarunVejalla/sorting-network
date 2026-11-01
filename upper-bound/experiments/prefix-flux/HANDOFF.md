@@ -748,11 +748,15 @@ startup flat source partition is now proved by
 `d2SenderNodeBag_initial_physical_partition`: the root bag is the full
 universe, every non-root bag is empty, and the bags are pairwise disjoint.
 This supplies the flat route theorem's source-partition premise at the
-initial state. Every post-stage bag identity remains open. Next match the
-post-stage routed receiver sizes to `d2FlowTreeAllocation`, beginning with a
-single ordinary active cut and then handling startup/exceptional roles and
-root overwrites. The decisive risk remains whether this exact identity holds
-for all role and overwrite cases.
+initial state. For an ordinary active cut, `d2OrdinaryRankSenderPorts_card_eq_flow_widths`
+now proves the parent port has exactly the role quota size and each child port
+has size equal to that child's flow-deficit decrease, assuming the established
+cut gates and sender-cardinality equation. This supplies the local numeric
+input to the receiver recurrence. Every post-stage bag identity remains open.
+Next compose the port sizes through the recursive stage and compare each
+post-stage routed receiver with `d2FlowTreeAllocation`; startup/exceptional
+roles and root overwrites remain to be covered. The decisive risk remains
+whether this exact identity holds for all role and overwrite cases.
 
 ## Files and artifacts
 
