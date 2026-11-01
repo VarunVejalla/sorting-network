@@ -781,6 +781,57 @@ theorem d2FlowNodeStaticHolesClamped_fit_of_static_fit
   have hneq : d2FlowTreeRootDeficit (children j) ≠ width := by omega
   simpa [d2EightChildHole, hneq] using hbounds j
 
+/-- The ordinary active-stage fit transfers to the bag-equivalent clamped
+hole representation. -/
+theorem d2FlowStage_active_ordinary_static_fit_clamped
+    {scale h i G low high : Nat} {active : Nat → Bool}
+    {role : Nat → D2Role} {quota : Nat → D2Role → Nat}
+    {cap : Nat → Nat}
+    (children : Fin 8 → D2FlowTree h)
+    (htree : d2FlowTreeInv scale (.node G low high children))
+    (hinputs : d2FlowStageInvInputs scale active role quota cap i
+      (.node G low high children))
+    (ha : active i = true)
+    (hr : role i = .topRise ∨ role i = .mid ∨ role i = .botDesc) :
+    StaticHolesFit (low + quota i (role i) / 2)
+      (d2FlowNodeStaticHolesClamped 0 (scale * 8 ^ h)
+        (low + quota i (role i) / 2)
+        (high + quota i (role i) / 2)
+        (fun j => d2FlowTreeChild
+          (d2FlowStage active role quota (h + 1) i
+            (.node G low high children)) j))
+      (8 * (scale * 8 ^ h) - (high + quota i (role i) / 2)) := by
+  have hfit := d2FlowStage_active_ordinary_static_fit
+    (scale := scale) (h := h) (i := i) (G := G) (low := low)
+    (high := high) (active := active) (role := role) (quota := quota)
+    (cap := cap) children htree hinputs ha hr
+  have hout := d2FlowStage_preserves_inv_of_inputs
+    (.node G low high children) htree hinputs
+  have hinvOutput : ∀ j, d2FlowTreeInv scale
+      (d2FlowTreeChild
+        (d2FlowStage active role quota (h + 1) i
+          (.node G low high children)) j) := by
+    intro j
+    rcases hr with htop | hmid | hbot
+    · have hout' := hout
+      simp only [d2FlowStage, ha, htop, d2FlowTreeInv] at hout'
+      simpa [d2FlowTreeChild, d2FlowStage, ha, htop] using hout'.2.2.2 j
+    · have hout' := hout
+      simp only [d2FlowStage, ha, hmid, d2FlowTreeInv] at hout'
+      simpa [d2FlowTreeChild, d2FlowStage, ha, hmid] using hout'.2.2.2 j
+    · have hout' := hout
+      simp only [d2FlowStage, ha, hbot, d2FlowTreeInv] at hout'
+      simpa [d2FlowTreeChild, d2FlowStage, ha, hbot] using hout'.2.2.2 j
+  have hclamped := d2FlowNodeStaticHolesClamped_fit_of_static_fit
+    (base := 0) (width := scale * 8 ^ h)
+    (left := low + quota i (role i) / 2)
+    (right := high + quota i (role i) / 2)
+    (fun j => d2FlowTreeChild
+      (d2FlowStage active role quota (h + 1) i
+        (.node G low high children)) j)
+    rfl hinvOutput (by simpa using hfit)
+  simpa using hclamped
+
 /-- Inward-moving child fronts preserve clamped fit inside a fixed parent.
 Any child that becomes saturated is empty; every other new interval lies
 inside its old interval, which was already contained in the parent. -/

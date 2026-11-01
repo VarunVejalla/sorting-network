@@ -521,9 +521,11 @@ from containment of every nonsaturated child interval, while
 canonical list to the clamped list. The new
 `d2FlowNodeStaticHolesClamped_fit_of_fronts_mono` also preserves clamped fit
 when child deficits and both fronts move inward. Thus the inactive-node stage
-case is now proved from a clamped input fit, and existing initial-fit and
-active ordinary-fit results can be converted. Active exceptional updates and
-the routed next-bag identity remain open.
+case is now proved from a clamped input fit. The active ordinary-stage fit is
+also converted to clamped fit by
+`d2FlowStage_active_ordinary_static_fit_clamped`. Existing initial-fit results
+can be converted as well. The active top-descending and bottom-rising fit
+cases and routed next-bag identity remain open.
 
 The same file now proves `d2FlowStage_active_top_desc_static_bag_empty` for
 positive native width: the startup top-descending reset sets all eight child
