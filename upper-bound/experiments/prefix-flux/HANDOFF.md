@@ -490,8 +490,12 @@ history; do not try to derive the fit from `d2FlowTreeInv` alone.
 The recursive property `d2FlowTreeStaticFits` is now defined, and its initial
 case is proved: both `d2FlowTreeFull_static_fits` and
 `d2FlowTreeInitial_static_fits` establish nested static-hole fit for every
-depth. Thus the remaining fit obligation is preservation through
-`d2FlowStage` with the schedule's role and endpoint-reserve hypotheses.
+depth. `D2PhysicalBagState.lean` also proves
+`d2FlowStage_regular_child_root_data`, identifying each active ordinary
+post-stage child's root tuple with its cut tuple. Fit preservation must
+reconcile the cut endpoint `total - (high + quota/2)` with the stage assignment
+`total - high - quota/2`; prove this equality from endpoint reserve/bounds
+before reusing the static-hole fit theorem.
 
 Next prove fit for the concrete candidate snapshots using their endpoint
 reserve/history contract, then the one-stage identity: inactive retained

@@ -149,6 +149,27 @@ theorem d2FlowTreeInitial_static_fits (scale h : Nat) :
       · intro j
         exact d2FlowTreeFull_static_fits scale h
 
+/-- An active ordinary update sets each child's root data to the corresponding
+cut tuple. This exposes the exact link between the abstract cut contract and
+the post-stage static-hole geometry. -/
+theorem d2FlowStage_regular_child_root_data {active : Nat -> Bool}
+    {role : Nat -> D2Role} {quota : Nat -> D2Role -> Nat}
+    {h i G low high : Nat} (children : Fin 8 -> D2FlowTree h)
+    (ha : active i = true)
+    (hr : role i = .topRise ∨ role i = .mid ∨ role i = .botDesc)
+    (j : Fin 8) :
+    d2FlowTreeRootData
+      (d2FlowTreeChild (d2FlowStage active role quota (h + 1) i
+        (.node G low high children)) j) =
+      d2FlowCutChild
+        (d2FlowPosition (fun k => d2FlowTreeRootDeficit (children k)) j)
+        (d2FlowTreeRootDeficit (children j))
+        (low + quota i (role i) / 2)
+        (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) -
+          high - quota i (role i) / 2) := by
+  rw [d2FlowStage_regular_child_setroot children ha hr j]
+  exact d2FlowTreeRootData_setRoot _ _ _ _
+
 /-- A non-saturated node's sender bag is exactly the union of its ordered
 static runs; the same fit condition proves those runs are address-ordered. -/
 theorem d2FlowNodeStaticBag_eq_runs
