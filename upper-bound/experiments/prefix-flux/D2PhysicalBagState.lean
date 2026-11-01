@@ -2103,7 +2103,7 @@ theorem d2FlowNode_active_ordinary_piece_partition
     (ha : active i = true)
     (hr : role i = .topRise ∨ role i = .mid ∨ role i = .botDesc)
     (hfit : StaticHolesFit (base + low)
-      (d2FlowNodeStaticHoles base (scale * 8 ^ h) low high children)
+      (d2FlowNodeStaticHolesClamped base (scale * 8 ^ h) low high children)
       (base + 8 * (scale * 8 ^ h) - high))
     (hstop : base + 8 * (scale * 8 ^ h) - high ≤ n)
     (hGlt : G < 8 * (scale * 8 ^ h)) :
@@ -2146,7 +2146,8 @@ theorem d2FlowNode_active_ordinary_piece_partition
   have hsender : sender.card =
       d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G := by
     dsimp [sender]
-    exact d2FlowNodeStaticBag_card_eq_child_total_sub_G base G low high
+    exact d2FlowNodeStaticBag_card_eq_child_total_sub_G_of_clamped_fit
+      base G low high
       children htree hfit hstop hGlt
   have hfront := d2FlowStageInvInputs_ordinary_front_bounds
     children hinputs ha hr

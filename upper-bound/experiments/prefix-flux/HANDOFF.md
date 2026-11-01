@@ -767,7 +767,9 @@ length. `D2DynamicSenderNode.lean` now exposes this as
 canonical-fit theorem as a wrapper. It also provides
 `d2OrdinaryRankSenderPorts_static_bag_complete_contract`, which instantiates
 the ordinary partition and exact port-size theorem directly on a clamped-fit
-static bag. Focused current-source rebuilds of both files pass.
+static bag. `d2FlowNode_active_ordinary_piece_partition` now likewise accepts
+clamped fit and proves the concrete static bag's parent/child rank pieces
+partition it. Focused current-source rebuilds of both files pass.
 This removes the mismatch between the reachable clamped representation and
 the sender-cardinality interface; it does not establish clamped fit at every
 reachable stage. Canonical hole markers still fail the all-stage fit screen,
