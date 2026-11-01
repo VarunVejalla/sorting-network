@@ -21,6 +21,8 @@ research candidate, not an established improvement.
    for the mathematical status and next gate.
 3. Treat `STATUS-HISTORY.md` and `docs/sub300-search.md` as historical search
    logs; prefer the handoff and current gate notes when they disagree.
+4. For a compact goal to reuse after context resets, see
+   [`sub300-goal.md`](sub300-goal.md) and its [agent guide](sub300-agent-guide.md).
 
 ## Research priority
 
