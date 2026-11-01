@@ -454,7 +454,6 @@ theorem reflected_core_ordinary_child_tile_false_count_eq_profile
     {tiles n : Nat} (S : Finset (Fin n))
     (quota : Nat) (widths : Fin 8 -> Nat) (child : Fin 8)
     (t : Fin tiles) (input : Wire -> Bool)
-    (hconserve : quota + d2FlowTotal widths = S.card)
     (hcomplete : (t.val + 1) * 262144 <= S.card) :
     (Finset.univ.sum fun c : Col =>
       prefixIntervalMass
@@ -499,7 +498,6 @@ theorem reflected_core_ordinary_child_complete_tiles_false_count_eq_profile
     {tiles n : Nat} (S : Finset (Fin n))
     (quota : Nat) (widths : Fin 8 -> Nat) (child : Fin 8)
     (input : Fin tiles -> Wire -> Bool)
-    (hconserve : quota + d2FlowTotal widths = S.card)
     (hcomplete : forall t : Fin tiles,
       (t.val + 1) * 262144 <= S.card) :
     (Finset.univ.sum fun t : Fin tiles =>
@@ -529,6 +527,100 @@ theorem reflected_core_ordinary_child_complete_tiles_false_count_eq_profile
   apply Finset.sum_congr rfl
   intro t ht
   exact reflected_core_ordinary_child_tile_false_count_eq_profile
-    S quota widths child t (input t) hconserve (hcomplete t)
+    S quota widths child t (input t) (hcomplete t)
+
+/-- Grouped actual profile counts reduce to a uniform port whenever the tag
+selects that port identically in every tile and column. -/
+theorem clippedFlowGroupedActualOfProfile_eq_uniform_port
+    {ports tiles : Nat} {J : Type*} [DecidableEq J]
+    (bounds : Fin (ports + 1) -> Nat)
+    (actualProfile : Fin tiles -> Col -> Nat)
+    (tag : Fin tiles -> Prod Col (Fin ports) -> J) (label : J) (p : Fin ports)
+    (htag : forall t c q, tag t (c, q) = label <-> q = p) :
+    clippedFlowGroupedActualOfProfile 4096 bounds actualProfile tag label =
+      Finset.univ.sum fun t : Fin tiles =>
+        Finset.univ.sum fun c : Col =>
+          clippedFlowProfileActualCountOfProfile 4096 bounds actualProfile t
+            (c, p) := by
+  classical
+  let source := Finset.univ.filter
+    fun x : Prod (Fin tiles) (Prod Col (Fin ports)) => tag x.1 x.2 = label
+  have hsum := Finset.sum_bij
+    (fun x _ => (x.1, x.2.1))
+    (s := source) (t := (Finset.univ : Finset (Fin tiles × Col)))
+    (f := fun x : Prod (Fin tiles) (Prod Col (Fin ports)) =>
+      clippedFlowProfileActualCountOfProfile 4096 bounds actualProfile x.1 x.2)
+    (g := fun y : Fin tiles × Col =>
+      clippedFlowProfileActualCountOfProfile 4096 bounds actualProfile y.1
+        (y.2, p))
+    ?_ ?_ ?_ ?_
+  · simpa [clippedFlowGroupedActualOfProfile, source, Fintype.sum_prod_type]
+      using hsum
+  · intro x hx
+    exact Finset.mem_univ _
+  · intro x hx y hy heq
+    obtain ⟨xt, ⟨xc, xp⟩⟩ := x
+    obtain ⟨yt, ⟨yc, yp⟩⟩ := y
+    have hxp : xp = p := (htag xt xc xp).1 (Finset.mem_filter.mp hx).2
+    have hyp : yp = p := (htag yt yc yp).1 (Finset.mem_filter.mp hy).2
+    simp_all
+  · intro y hy
+    obtain ⟨yt, yc⟩ := y
+    exact ⟨(yt, (yc, p)),
+      Finset.mem_filter.mpr ⟨Finset.mem_univ _, (htag yt yc p).2 rfl⟩, rfl⟩
+  · intro x hx
+    obtain ⟨xt, ⟨xc, xp⟩⟩ := x
+    have hxp : xp = p := (htag xt xc xp).1 (Finset.mem_filter.mp hx).2
+    simp [hxp]
+
+/-- For any uniform child-port tag, the grouped actual reflected-core false
+count over all complete sender tiles is exactly the count of false output
+wires whose canonical sender addresses lie in that child's destination. -/
+theorem reflected_core_ordinary_child_grouped_count_eq_physical
+    {tiles n : Nat} (S : Finset (Fin n))
+    (quota : Nat) (widths : Fin 8 -> Nat) (child : Fin 8)
+    (input : Fin tiles -> Wire -> Bool)
+    (tag : Fin tiles -> Prod Col (Fin 10) -> Option (Fin 8))
+    (hcomplete : forall t : Fin tiles,
+      (t.val + 1) * 262144 <= S.card)
+    (htag : forall t c q,
+      tag t (c, q) = some child <-> q.val = child.val + 1) :
+    clippedFlowGroupedActualOfProfile 4096
+        (fun i : Fin 11 => d2SenderPortBoundaryNat quota S.card widths i.val)
+        (fun t c => matrixColumnFalseCount c
+          ((Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+            reflectedSigma35 reflectedSigma25).exec (input t)))
+        tag (some child) =
+      Finset.univ.sum fun t : Fin tiles =>
+        Finset.univ.sum fun b : Wire =>
+          if S.orderEmbOfFin rfl
+              (Fin.mk (t.val * 262144 + b.val) (by
+                have hb := b.isLt
+                have ht := hcomplete t
+                omega)) ∈ destinationPiece (ports := 8) S
+                  (d2FlowRankBoundary widths) (quota / 2)
+                  (S.card - quota / 2) (some child) ∧
+              (Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+                reflectedSigma35 reflectedSigma25).exec (input t) b = false
+          then 1 else 0 := by
+  let bounds : Fin 11 -> Nat := fun i =>
+    d2SenderPortBoundaryNat quota S.card widths i.val
+  let port : Fin 10 := ⟨child.val + 1, by omega⟩
+  have htag' : forall t c q, tag t (c, q) = some child <-> q = port := by
+    intro t c q
+    rw [htag]
+    constructor
+    · intro h
+      apply Fin.ext
+      exact h
+    · intro h
+      exact congrArg Fin.val h
+  rw [clippedFlowGroupedActualOfProfile_eq_uniform_port bounds
+    (fun t c => matrixColumnFalseCount c
+      ((Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+        reflectedSigma35 reflectedSigma25).exec (input t))) tag
+    (some child) port htag']
+  exact reflected_core_ordinary_child_complete_tiles_false_count_eq_profile
+    S quota widths child input hcomplete
 
 end Chvatal.D2ClippedCellRankInterval

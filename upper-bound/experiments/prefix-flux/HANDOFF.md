@@ -317,11 +317,16 @@ port formulas: for child `j`, port `j+1` of
 `destinationPiece` with child interval boundaries
 `quota/2 + d2FlowRankBoundary widths j`. The corresponding all-complete-tiles
 theorem is checked in `D2ClippedCellRankInterval.lean` and assumes only the
-sender conservation equation plus complete-tile bounds. This resolves the
-local flow-cut-to-child-label composition at full-tile scale. It is not yet
-an identification with a recursive run: the schedule still must provide the
-same finite set `S`, per-tile inputs, static-hole destination sets, and next
-child bags, as well as the leftover suffix and startup/exceptional adapters.
+complete-tile bounds; the local identity itself does not need total sender
+conservation. `clippedFlowGroupedActualOfProfile_eq_uniform_port` then
+reindexes the actual-profile group by its selected port, and
+`reflected_core_ordinary_child_grouped_count_eq_physical` equates that grouped
+count to the false outputs routed to the child over all complete tiles. These
+are focused-current-source checked. This resolves the local flow-cut-to-child
+label composition at full-tile scale. It is not yet an identification with a
+recursive run: the schedule still must provide the same finite set `S`,
+per-tile inputs, static-hole destination sets, and next child bags, as well as
+the leftover suffix and startup/exceptional adapters.
 
 `D2StrongDeficitPropagation.lean` already proves the sharp local affine
 profile transition for ordinary eight-child updates. The profile is
