@@ -219,9 +219,15 @@ coordinate-shift concern; deriving the shifted ideal-group identity from the
 actual tile allocation remains open. `D2ClippedFlowProfileTransfer.lean` now
 proves that, within each full-height tile, summing exact-rank cell counts over
 the 64 columns of one port equals the prefix mass in that tile's clipped
-flattened interval. The next small gate is to sum these tile intervals for
-the concrete ideal mass allocation and show they recover each sender port's
-shifted global interval.
+flattened interval. `D2ClippedTilePrefixAllocation.lean` proves that the
+clipped tile intervals partition a global prefix interval, and
+`D2ClippedTilePortAggregation.lean` composes the two: when each tile's ideal
+mass is the restriction of one global prefix, all exact-rank cells across all
+tiles and columns of one port sum exactly to that port's global prefix mass.
+The next gate is receiver-tag alignment: prove that each child tag in the
+actual static routing selects precisely the corresponding sender port(s),
+including the left-parent offset. This gives the grouped ideal identity, but
+does not yet identify physical Boolean tile masses/tags with this ideal model.
 
 `D2StrongDeficitPropagation.lean` already proves the sharp local affine
 profile transition for ordinary eight-child updates. The profile is
@@ -316,13 +322,17 @@ displacement.
 
 The all-time abstract full-tree affine-core plus invariant theorem is now
 kernel-checked in `D2AffineCoreAllStages.lean`, using the bootstrap snapshots
-and the one-step transition from `D2TreePathGeometry.lean`. The next formal
-gate is the physical sender-mass/tag identity for the actual schedule,
-including ragged heights and startup/exceptional roles. The existing path
-adapters establish only the abstract flow-reserve state; they do not link it to
-the Boolean tile profiles or actual receiver tags. After that identity, the
-remaining gates are a spatial terminal invariant, fixed cleanup, and depth
-accounting remain open. Aggregate error alone is not terminal purity.
+and the one-step transition from `D2TreePathGeometry.lean`. The generic
+all-tile/all-column ideal port identity is also checked by
+`D2ClippedTilePortAggregation.lean`. The next formal gate is to derive actual
+receiver tags from the fixed static sender sets and show they select the
+corresponding flow ports (with the left-parent shift). Then identify the
+physical sender mass/profile with the ideal prefix restriction, including
+ragged heights and startup/exceptional roles. The existing path adapters
+establish only the abstract flow-reserve state; they do not link it to the
+Boolean tile profiles or actual receiver tags. After that identity, a spatial
+terminal invariant, fixed cleanup, and depth accounting remain open.
+Aggregate error alone is not terminal purity.
 
 ## Files and artifacts
 
