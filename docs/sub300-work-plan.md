@@ -101,6 +101,14 @@ port uniformly across tiles and columns. Next prove the actual receiver-tag/
 port and boundary alignment from static sender sets; this does not yet
 identify physical Boolean profiles with the ideal prefix model.
 
+The all-stage flow-side port-grid premise is now discharged by
+`D2AllStagePortGrid.lean`: every active ordinary sender has 4096-aligned
+ten-port boundaries for every stage and `d >= 7`. `D2AlignedPortReceiverCells.lean`
+also proves that a grid-aligned child-port fragment maps to a whole 4096-wire
+physical cell inside that child's static destination set. Next instantiate
+the static-hole fit/grid conditions from actual sender paths and connect each
+clipped tile/column profile count to those routed cells.
+
 The physical sender's Boolean false mass and tags are still **not** identified
 with the flow deficit `G` and the rank intervals. The remaining ordinary
 gate is to prove the grouped-count identification, ideal interval domination,

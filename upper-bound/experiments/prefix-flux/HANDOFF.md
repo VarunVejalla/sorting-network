@@ -231,6 +231,18 @@ grouped ideal mass is exactly the shifted flow interval. The next gate is to
 prove those tag/boundary hypotheses from the actual static routing, and then
 identify physical Boolean tile masses/tags with this ideal model.
 
+Two prerequisites for that gate are now kernel-checked. `D2AllStagePortGrid.lean`
+derives the stage-input contract from the all-stage affine-core theorem and
+proves that every active ordinary candidate sender has 4096-aligned ten-port
+boundaries, at every stage and for every dimension `d >= 7`.
+`D2AlignedPortReceiverCells.lean` shows that, given the static-hole fit and
+grid premises, every 4096-rank fragment of an ordinary child port is a whole
+physical 4096-wire cell contained in that child's `destinationPiece`. This
+establishes the local receiver label for aligned fragments. Still to prove is
+the full actual-schedule instantiation of the static-hole premises and the
+identification of each clipped tile/column profile cell and its false count
+with those physical routed cells.
+
 `D2StrongDeficitPropagation.lean` already proves the sharp local affine
 profile transition for ordinary eight-child updates. The profile is
 `G = 0 ∧ 256*pi <= c`, or

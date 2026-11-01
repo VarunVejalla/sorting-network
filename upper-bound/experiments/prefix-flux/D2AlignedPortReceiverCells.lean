@@ -1,0 +1,71 @@
+import D2VariableTilePhysicalFlowTransfer
+
+namespace Chvatal.D2AlignedPortReceiverCells
+
+open Chvatal
+open Chvatal.D2OrdinaryRankRouting
+open Chvatal.D2StaticWireSets
+open Chvatal.D2VariableTilePhysicalFlowTransfer
+
+theorem blockOf_rank_interval_subset {n : Nat} (s : Finset (Fin n))
+    {lo hi lo' hi' : Nat} (hlo : lo' <= lo) (hhi : hi <= hi') :
+    Chvatal.blockOf s lo hi ⊆ Chvatal.blockOf s lo' hi' := by
+  intro w hw
+  have hw' := Chvatal.mem_blockOf.mp hw
+  exact Chvatal.mem_blockOf.mpr
+    ⟨hw'.1, le_trans hlo hw'.2.1, lt_of_lt_of_le hw'.2.2 hhi⟩
+
+/-- If the sender's static gaps and an ordinary child's rank port are
+4096-aligned, every 4096-rank fragment in that port is one physical cell
+entirely assigned to that child by the ordinary routing. This is the exact
+cell-level receiver-label fact needed to instantiate a uniform port tag. -/
+theorem ordinary_child_rank_port_cells_are_receiver
+    {n cursor stop left rightStart start finish q : Nat}
+    (holes : List (Nat × Nat)) (boundary : Nat → Nat) (child : Fin 8)
+    (hfit : StaticHolesFit cursor holes stop)
+    (hn : 4096 ∣ n) (hcursor : 4096 ∣ cursor) (hstop : 4096 ∣ stop)
+    (hstopBound : stop ≤ n)
+    (hholes : ∀ hole, hole ∈ holes → 4096 ∣ hole.1 ∧ 4096 ∣ hole.2)
+    (hstart : 4096 ∣ start) (hfinish : 4096 ∣ finish)
+    (hlen : finish = start + q * 4096)
+    (hbound : finish ≤
+      (staticWireInterval (n := n) cursor stop \ staticHoleUnion holes).card)
+    (hportStart : start = left + boundary child.val)
+    (hportFinish : finish = left + boundary (child.val + 1)) :
+    ∀ k : Fin q, ∃ cellLo, 4096 ∣ cellLo ∧ cellLo + 4096 ≤ n ∧
+      Chvatal.blockOf
+        (staticWireInterval (n := n) cursor stop \ staticHoleUnion holes)
+        (start + k.val * 4096) (start + (k.val + 1) * 4096) =
+          staticWireInterval cellLo (cellLo + 4096) ∧
+      staticWireInterval cellLo (cellLo + 4096) ⊆
+        destinationPiece (staticWireInterval (n := n) cursor stop \ staticHoleUnion holes)
+          boundary left rightStart (some child) := by
+  intro k
+  have hcells := staticGapRankPort_cells holes q hn hfit hcursor hstop
+    hstopBound hholes hstart hfinish hlen hbound
+  obtain ⟨cellLo, hcellGrid, hcellBound, hfragment⟩ := hcells k
+  have hkq : k.val + 1 ≤ q := Nat.succ_le_of_lt k.isLt
+  have hlow : left + boundary child.val ≤ start + k.val * 4096 := by
+    rw [hportStart]
+    exact Nat.le_add_right _ _
+  have hhigh : start + (k.val + 1) * 4096 ≤
+      left + boundary (child.val + 1) := by
+    rw [← hportFinish, hlen]
+    have := Nat.mul_le_mul_right 4096 hkq
+    omega
+  refine ⟨cellLo, hcellGrid, hcellBound, hfragment, ?_⟩
+  calc
+    staticWireInterval cellLo (cellLo + 4096) =
+        Chvatal.blockOf
+          (staticWireInterval (n := n) cursor stop \ staticHoleUnion holes)
+          (start + k.val * 4096) (start + (k.val + 1) * 4096) := hfragment.symm
+    _ ⊆ Chvatal.blockOf
+        (staticWireInterval (n := n) cursor stop \ staticHoleUnion holes)
+        (left + boundary child.val) (left + boundary (child.val + 1)) :=
+      blockOf_rank_interval_subset _ hlow hhigh
+    _ = destinationPiece
+        (staticWireInterval (n := n) cursor stop \ staticHoleUnion holes)
+        boundary left rightStart (some child) := by
+      rfl
+
+end Chvatal.D2AlignedPortReceiverCells
