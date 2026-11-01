@@ -5,6 +5,18 @@ research status, not a proved improvement to the repository's accepted bound.
 
 ## Latest focused checkpoint (2026-11-01)
 
+`D2NestedCutContainment.lean` now proves
+`d2FlowCandidateStage_regular_endpoint_cuts_le_grandchild_native`: under the
+actual candidate input contract, an active ordinary node's first and last cut
+pieces each fit inside the native width of the corresponding active ordinary
+grandchild, two levels below. The proof combines the two-front reserve,
+ordinary endpoint-cut bounds, the candidate schedule's inactive intervening
+level, and the ordinary grandchild's native-front bound. A focused current-
+source rebuild passes. This closes endpoint containment for those two pieces;
+it does not identify their routed wire sets with next-stage physical bags or
+prove a whole-tree invariant. Exceptional roles, receiver tags, and the global
+rank-profile recurrence remain open.
+
 `D2BotRiseStaticFit.lean` now proves that every candidate-run `botRise`
 snapshot has clamped static-hole fit both before and after the update, for any
 selected path satisfying the schedule window. Before the update, the saturated
