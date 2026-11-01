@@ -1,8 +1,33 @@
 import D2TopDescHistory
+import D2RootFrontierCase
 
 namespace Chvatal.D2Reserve
 
 set_option linter.unusedVariables false
+
+/-- A current affine core provider supplies the one-stage invariant inputs, so
+the existing invariant preservation theorem yields the next run snapshot. -/
+theorem d2FlowCandidateRun_preserves_inv_next_of_affine_core
+    {d t : Nat} (hd : 7 <= d) (ht : 0 < t)
+    (hinv : d2FlowTreeInv 8192
+      (d2FlowCandidateRun d (d2FlowTreeInitial 8192 d) t))
+    (hcore : d2FlowStageAffineCoreInputs
+      (fun k => d2FlowCandidateActive d t k)
+      (fun k => d2FlowCandidateRole d t k)
+      (fun k => d2FlowCandidateCapacity d k t) 0
+      (d2FlowCandidateRun d (d2FlowTreeInitial 8192 d) t)) :
+    d2FlowTreeInv 8192
+      (d2FlowCandidateRun d (d2FlowTreeInitial 8192 d) (t + 1)) := by
+  let tree := d2FlowCandidateRun d (d2FlowTreeInitial 8192 d) t
+  have hnoAlloc := d2FlowCandidateStageAffineCoreInputs_to_noAlloc
+    (d := d) hd ht tree (by simpa [tree] using hcore)
+  have hinputs := d2FlowStageAffineInputs_of_noAlloc tree hnoAlloc
+  have hpres := d2FlowStage_preserves_inv_of_affine_inputs tree
+    (by simpa [tree] using hinv) hinputs
+  change d2FlowTreeInv 8192
+    (d2FlowCandidateStage d t (d2FlowCandidateRun d
+      (d2FlowTreeInitial 8192 d) t))
+  simpa only [d2FlowCandidateRun] using hpres
 
 /-- Append a final port to a root-first path. -/
 def d2FlowPathSnoc : {n : Nat} → D2FlowPath n → Fin 8 → D2FlowPath (n + 1)
@@ -159,9 +184,9 @@ theorem d2FlowCandidateRun_active_child_affine_local_contract
       (fun k => d2FlowCandidateCapacity (h + 2 + i) k t) 0
       (d2FlowCandidateRun (h + 2 + i)
         (d2FlowTreeInitial 8192 (h + 2 + i)) t))
-    (hinvNext : d2FlowTreeInv 8192
+    (hinvNow : d2FlowTreeInv 8192
       (d2FlowCandidateRun (h + 2 + i)
-        (d2FlowTreeInitial 8192 (h + 2 + i)) (t + 1))) :
+        (d2FlowTreeInitial 8192 (h + 2 + i)) t)) :
     let child := d2FlowTreeChild
       (d2FlowTreeAtPath i
         (d2FlowCandidateRun (h + 2 + i)
@@ -190,6 +215,9 @@ theorem d2FlowCandidateRun_active_child_affine_local_contract
   let child := d2FlowTreeChild
     (d2FlowTreeAtPath i
       (d2FlowCandidateRun d (d2FlowTreeInitial 8192 d) (t + 1)) path) port
+  have hinvNext := d2FlowCandidateRun_preserves_inv_next_of_affine_core
+    (d := d) (t := t) (by simpa [d] using hd) (by omega)
+    (by simpa [d] using hinvNow) (by simpa [d] using hcoreNow)
   have hbalance := d2FlowCandidateRun_active_child_balanced_of_prior_core
     (h := h) (i := i) (t := t) hd ht path port hchildActive
     (by simpa [d] using hcorePrev) (by simpa [d] using hinvNext)
@@ -203,5 +231,50 @@ theorem d2FlowCandidateRun_active_child_affine_local_contract
     simpa [child, d] using
       d2FlowCandidateRun_active_child_endpoint_reserves
         hd ht path port hchildActive hregular hcorePrev
+
+/-- At the root, the invariant supplies balance and the moving-root history
+supplies exact zero. This is the root-local case complementary to the
+active-child contract. -/
+theorem d2FlowCandidateRun_active_root_affine_local_contract
+    {d t : Nat} (hd : 7 <= d) (ht : 4 <= t)
+    (hrootActive : active d (tfD2 d) 0 t)
+    (hcorePrev : d2FlowStageAffineCoreInputs
+      (fun k => d2FlowCandidateActive d (t - 2) k)
+      (fun k => d2FlowCandidateRole d (t - 2) k)
+      (fun k => d2FlowCandidateCapacity d k (t - 2)) 0
+      (d2FlowCandidateRun d (d2FlowTreeInitial 8192 d) (t - 2)))
+    (hinvNow : d2FlowTreeInv 8192
+      (d2FlowCandidateRun d (d2FlowTreeInitial 8192 d) t)) :
+    (d2FlowTreeRootData (d2FlowCandidateRun d
+      (d2FlowTreeInitial 8192 d) t)).2.1 +
+    (d2FlowTreeRootData (d2FlowCandidateRun d
+      (d2FlowTreeInitial 8192 d) t)).2.2 =
+      d2FlowTreeRootDeficit (d2FlowCandidateRun d
+        (d2FlowTreeInitial 8192 d) t) /\
+    d2FlowTreeRootDeficit (d2FlowCandidateRun d
+      (d2FlowTreeInitial 8192 d) t) = 0 /\
+    d2ScheduleRole d 0 t = .topDesc := by
+  cases d with
+  | zero => omega
+  | succ d =>
+    have hzero := d2FlowCandidate_active_root_zero_of_prior_core
+      (d := d + 1) hd ht hrootActive hcorePrev
+    have hrole := d2FlowCandidate_root_active_is_topDesc
+      (d := d + 1) (by omega) (by omega) hrootActive
+    cases htree : d2FlowCandidateRun (d + 1)
+        (d2FlowTreeInitial 8192 (d + 1)) t with
+    | node G low high children =>
+      have hinv := hinvNow
+      simp [htree, d2FlowTreeInv] at hinv
+      rcases hinv with ⟨_, _, hbalance, _⟩
+      have hGzero : G = 0 := by
+        simpa [htree, d2FlowTreeRootDeficit] using hzero
+      have hcapacity : G < 8192 * 8 ^ (d + 1) := by
+        rw [hGzero]
+        positivity
+      refine ⟨?_, ?_, hrole⟩
+      · simpa [htree, d2FlowTreeRootData, d2FlowTreeRootDeficit] using
+          hbalance hcapacity
+      · simpa [htree, d2FlowTreeRootDeficit] using hGzero
 
 end Chvatal.D2Reserve

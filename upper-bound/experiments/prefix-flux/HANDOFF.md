@@ -223,9 +223,13 @@ across the associated height indices. Its
 `d2FlowCandidateRun_active_child_affine_local_contract` combines balance,
 the role-dependent root profile, and endpoint reserves for the *same* actual
 active child. The focused current-source rebuild passes. Thus the local child
-contract and its path/index adapter are closed; packaging those fields
-recursively into one full-tree transition from snapshots `t-1,t` to `t+1`
-remains open.
+contract and its path/index adapter are closed. It derives the needed
+next-snapshot invariant from the current invariant and current affine core
+using the existing one-stage preservation theorem, so it no longer assumes a
+future invariant. The same module packages root balance, exact-zero profile,
+and top-descending role for an active root. Its focused current-source rebuild
+passes. Packaging the root and child contracts recursively into one full-tree
+transition from snapshots `t-1,t` to `t+1` remains open.
 
 The exact compressed-flow screen
 `d2_deficit_tolerance_screen.py --depth 100 --scale 8192 --params 3 3 2`
@@ -244,16 +248,14 @@ terminal purity or bounded displacement.
 
 ## Next proof gate
 
-The immediate formal gate is now to package the checked local child contract
-recursively into a reusable full-tree transition from snapshots `t-1,t` to
-`t+1`, then compose it into an all-time core-provider induction. The local
-balance, root-profile, and two endpoint-reserve fields are combined in
-`d2FlowCandidateRun_active_child_affine_local_contract`, with endpoint reserves
-covering the terminal active stage. The path-snoc projection resolves the
-height association for that local composition. The remaining tree-level proof
-must handle the root frontier, recursively provide the same contract for all
-descendants, and use the stage invariant at snapshot `t` for invariant
-propagation. A
+The immediate formal gate is now to package the checked local root/child
+contracts recursively into a reusable full-tree transition from snapshots
+`t-1,t` to `t+1`, then compose it into an all-time core-provider induction.
+The local child theorem combines balance, root profile, and two endpoint
+reserves; one-step invariant propagation is available from the current core
+and invariant. The path-snoc projection resolves height association. The
+remaining tree-level proof must recurse through every descendant and assemble
+the root-frontier case with the child contracts. A
 reusable step should use
 core snapshots at `t` and `t-1` to prove the next snapshot: the prior core
 gives invariant/balance, `D2TopDescHistory.lean` supplies role-specific root
