@@ -947,6 +947,60 @@ theorem d2FlowStage_active_ordinary_clamped_fit_of_inputs
     outChildren rfl hinvOut (by simpa using hparent) hcontain
   simpa using hfit
 
+/-! When a parent overwrites a child root, the changed fronts need only be
+checked against the two exposed edge grandchildren. The six interior slots
+remain inside the parent whenever each new front is at most one child width. -/
+
+theorem d2FlowNodeStaticHolesClamped_fit_of_endpoint_front_bounds
+    {scale h width left right : Nat} (children : Fin 8 -> D2FlowTree h)
+    (hwidth : width = scale * 8 ^ h)
+    (hinv : forall j, d2FlowTreeInv scale (children j))
+    (hparent : left <= 8 * width - right)
+    (hleft : left <= width) (hright : right <= width)
+    (hfirst : d2FlowTreeRootDeficit (children 0) < width ->
+      left <= (d2FlowTreeRootData (children 0)).2.1)
+    (hlast : d2FlowTreeRootDeficit (children 7) < width ->
+      right <= (d2FlowTreeRootData (children 7)).2.2) :
+    StaticHolesFit left
+      (d2FlowNodeStaticHolesClamped 0 width left right children)
+      (8 * width - right) := by
+  have hfit := d2FlowNodeStaticHolesClamped_fit_of_child_intervals_contained
+    (base := 0) (width := width) (left := left) (right := right)
+    children hwidth hinv (by simpa using hparent) (by
+      intro j hunsat
+      constructor
+      · by_cases hj : j.val = 0
+        · have hj' : j = (0 : Fin 8) := Fin.ext hj
+          subst j
+          simpa [Nat.zero_add] using hfirst hunsat
+        · have hjpos : 1 <= j.val := by omega
+          have hslot : width <= j.val * width := by
+            simpa using Nat.mul_le_mul_right width hjpos
+          have hbound : left <= j.val * width +
+              (d2FlowTreeRootData (children j)).2.1 := by
+            calc
+            left <= width := hleft
+            _ <= j.val * width := hslot
+            _ <= j.val * width +
+                (d2FlowTreeRootData (children j)).2.1 := Nat.le_add_right _ _
+          simpa [Nat.zero_add] using hbound
+      · by_cases hj : j.val = 7
+        · have hj' : j = (7 : Fin 8) := Fin.ext hj
+          subst j
+          simpa [Nat.zero_add] using
+            Nat.sub_le_sub_left (hlast hunsat) (8 * width)
+        · have hjlt : j.val + 1 <= 7 := by omega
+          have hslot : (j.val + 1) * width <= 7 * width :=
+            Nat.mul_le_mul_right width hjlt
+          have hstop : 7 * width <= 8 * width - right := by
+            apply Nat.le_sub_of_add_le
+            omega
+          have hbound : (j.val + 1) * width -
+              (d2FlowTreeRootData (children j)).2.2 <= 8 * width - right :=
+            le_trans (Nat.sub_le _ _) (le_trans hslot hstop)
+          simpa [Nat.zero_add] using hbound)
+  simpa using hfit
+
 /-! The geometric fit itself has a natural recursive invariant in the clamped
 representation. The transition below isolates the sole exceptional local
 provider (botRise); the ordinary, inactive, and topDesc cases are discharged

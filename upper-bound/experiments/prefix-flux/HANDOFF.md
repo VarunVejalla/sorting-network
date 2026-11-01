@@ -1023,3 +1023,19 @@ ordinary parent cut vector from stage inputs: the first child receives only
 the left cut, the last child only the right cut, and all six interior cuts
 are zero. This is for arbitrary nonuniform child deficits, not just a
 uniform/full profile.
+
+
+## Endpoint-front fit adapter
+
+`D2NestedCutContainment.lean` now proves
+`d2FlowNodeStaticHolesClamped_fit_of_endpoint_front_bounds`. For an eight-child
+node, if the new left/right fronts are each at most one child width, the parent
+interval is nonempty, and any unsaturated first/last child fronts contain those
+respective new fronts, then the clamped child-hole list fits. Saturated edge
+children contribute only clamped empty markers. The six interior slots are
+handled by their native slot bounds. This is the generic geometry needed after
+an ordinary parent overwrites a child root: the schedule-specific endpoint
+theorems already bound the outer cuts by the updated edge-grandchild fronts.
+It does not yet assemble child-stage recursive fit, the inactive/saturated and
+exceptional schedule cases, or an all-stage invariant. Focused Lean checking
+passes for `D2NestedCutContainment.lean`.
