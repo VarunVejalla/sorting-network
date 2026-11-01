@@ -95,10 +95,22 @@ before building more profile lemmas on it.
   allocation plus the parent down-port (`old root - overwritten root`) plus
   the total child up-port (`increase in child-root mass`). It assumes the
   overwritten root remains below the recursively updated child mass.
+- `d2FlowStage_regular_child_root_drop` derives the ordinary parent down-port
+  from the cut: the overwritten child root never exceeds its old root.
+  `d2FlowStage_regular_child_postoverwrite_cover` derives the required child
+  cover from the existing recursive-child invariant and the cut's native cap.
+- Active ordinary senders have zero post-stage allocation by aggregate cut
+  conservation. The startup `topDesc` sender also has zero post-stage
+  allocation when its root deficit is zero; `botRise` has zero post-stage
+  allocation when the next level is inactive and the input tree is invariant.
+- The `topDesc` reset gives each child root-drop and post-overwrite cover
+  immediately (`new root = 0`). For `botRise`, the next-level inactivity
+  lemma proves child roots are preserved, so the parent sends no down-port to
+  them.
 
-Thus the local size algebra is established. The next bridge must instantiate
-these facts together on the actual tree: establish the parent-port root drop,
-the post-overwrite child-cover condition for every role, and a recursively
-indexed family of sender sets whose local partitions route to the same nodes.
-Startup and exceptional role routing must be included. This still says
+The parent root-drop/cover conditions are therefore closed under the existing
+ordinary and top-descending contracts; bottom-rise's no-overwrite case is also
+closed when the next level is inactive. The next bridge is to instantiate the
+source partition and port targeting for the actual candidate tree, and define
+the recursively indexed sender sets routed to each node. This still says
 nothing about contraction of the physical prefix defect or terminal cleanup.

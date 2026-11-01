@@ -20,6 +20,24 @@ def d2FlowTreeCapacityMass (scale : Nat) : {h : Nat} → D2FlowTree h → Nat
   | _ + 1, .node _ _ _ children =>
       d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j))
 
+theorem d2FlowTreeCapacityMass_setRoot {h scale : Nat}
+    (tree : D2FlowTree h) (G low high : Nat) :
+    d2FlowTreeCapacityMass scale
+        (d2FlowTreeSetRoot tree G low high) =
+      d2FlowTreeCapacityMass scale tree := by
+  cases tree <;> rfl
+
+theorem d2FlowTreeInv_root_le_capacityMass {h scale : Nat}
+    (tree : D2FlowTree h) (hinv : d2FlowTreeInv scale tree) :
+    d2FlowTreeRootDeficit tree ≤ d2FlowTreeCapacityMass scale tree := by
+  cases tree with
+  | leaf G low high =>
+      simpa [d2FlowTreeRootDeficit, d2FlowTreeCapacityMass,
+        d2FlowTreeInv] using hinv.1
+  | node G low high children =>
+      simpa [d2FlowTreeRootDeficit, d2FlowTreeCapacityMass,
+        d2FlowTreeInv] using hinv.2.1
+
 /-- A receiver's allocation after its parent overwrites the root is its old
 allocation plus the incoming parent down-port plus all incoming child
 up-ports. The latter total is the growth of the receiver's child-root mass.
@@ -166,6 +184,210 @@ theorem d2FlowTreeAllocation_after_inactive_recursive_stage
     hbeforeCover hnewCover hrootDrop
     (d2FlowTreeCapacityMass_inactive_stage_mono
       active role quota i tree ha)
+
+/-- An active ordinary parent only lowers a child's root deficit. This is
+the exact down-port width charged in the inactive-receiver recurrence. -/
+theorem d2FlowStage_regular_child_root_drop
+    {active : Nat → Bool} {role : Nat → D2Role}
+    {quota : Nat → D2Role → Nat} {h i G low high : Nat}
+    (children : Fin 8 → D2FlowTree h) (ha : active i = true)
+    (hr : role i = .topRise ∨ role i = .mid ∨ role i = .botDesc)
+    (hcuts : low + quota i (role i) / 2 ≤
+      d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) -
+        high - quota i (role i) / 2) (j : Fin 8) :
+    d2FlowTreeRootDeficit
+      (d2FlowTreeChild
+        (d2FlowStage active role quota (h + 1) i
+          (.node G low high children)) j) ≤
+      d2FlowTreeRootDeficit (children j) := by
+  rw [d2FlowStage_regular_child_deficit children ha hr j]
+  exact d2FlowCutChild_le_native (Nat.le_refl _) hcuts
+
+/-- The ordinary parent cut also leaves every overwritten child with a valid
+flow invariant. Its child-cover clause supplies the post-overwrite cover
+hypothesis needed by the dynamic receiver-size recurrence. -/
+theorem d2FlowStage_regular_child_postoverwrite_cover
+    {active : Nat → Bool} {role : Nat → D2Role}
+    {quota : Nat → D2Role → Nat} {h i G low high scale : Nat}
+    (children : Fin 8 → D2FlowTree h) (ha : active i = true)
+    (hr : role i = .topRise ∨ role i = .mid ∨ role i = .botDesc)
+    (j : Fin 8)
+    (hinv : d2FlowTreeInv scale
+      (d2FlowStage active role quota h (i + 1) (children j)))
+    (hcuts : low + quota i (role i) / 2 ≤
+      d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) -
+        high - quota i (role i) / 2)
+    (hcap : (d2FlowCutChild
+        (d2FlowPosition (fun k => d2FlowTreeRootDeficit (children k)) j)
+        (d2FlowTreeRootDeficit (children j))
+        (low + quota i (role i) / 2)
+        (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) -
+          high - quota i (role i) / 2)).1 ≤ scale * 8 ^ h) :
+    (d2FlowCutChild
+        (d2FlowPosition (fun k => d2FlowTreeRootDeficit (children k)) j)
+        (d2FlowTreeRootDeficit (children j))
+        (low + quota i (role i) / 2)
+        (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) -
+          high - quota i (role i) / 2)).1 ≤
+      d2FlowTreeCapacityMass scale
+        (d2FlowStage active role quota h (i + 1) (children j)) := by
+  have hchildInv := d2FlowStage_regular_child_inv
+    (G := G) (low := low) (high := high) children ha hr j hinv hcuts hcap
+  have hcover := d2FlowTreeInv_root_le_capacityMass
+    (d2FlowTreeChild
+      (d2FlowStage active role quota (h + 1) i
+        (.node G low high children)) j) hchildInv
+  rw [d2FlowStage_regular_child_setroot children ha hr j] at hcover
+  rw [d2FlowTreeCapacityMass_setRoot] at hcover
+  simpa only [d2FlowTreeSetRoot_deficit] using hcover
+
+/-- A top-descending parent overwrites each child root with zero. This gives
+both a nonnegative down-port and the post-overwrite cover automatically. -/
+theorem d2FlowStage_topDesc_child_root_drop_and_cover
+    {active : Nat → Bool} {role : Nat → D2Role}
+    {quota : Nat → D2Role → Nat} {h i G low high scale : Nat}
+    (children : Fin 8 → D2FlowTree h) (ha : active i = true)
+    (hr : role i = .topDesc) (j : Fin 8) :
+    d2FlowTreeRootDeficit
+      (d2FlowTreeChild
+        (d2FlowStage active role quota (h + 1) i
+          (.node G low high children)) j) ≤
+      d2FlowTreeRootDeficit (children j) ∧
+    d2FlowTreeRootDeficit
+      (d2FlowTreeChild
+        (d2FlowStage active role quota (h + 1) i
+          (.node G low high children)) j) ≤
+      d2FlowTreeCapacityMass scale
+        (d2FlowStage active role quota h (i + 1) (children j)) := by
+  rw [d2FlowStage_topDesc_child_deficit children ha hr j]
+  exact ⟨Nat.zero_le _, Nat.zero_le _⟩
+
+/-- At a bottom-rise parent the children are not overwritten. If the next
+level is inactive, their root is exactly preserved, so the down-port is zero. -/
+theorem d2FlowStage_botRise_child_root_preserved
+    {active : Nat → Bool} {role : Nat → D2Role}
+    {quota : Nat → D2Role → Nat} {h i G low high : Nat}
+    (children : Fin 8 → D2FlowTree h) (ha : active i = true)
+    (hr : role i = .botRise) (hnext : active (i + 1) = false)
+    (j : Fin 8) :
+    d2FlowTreeRootDeficit
+      (d2FlowTreeChild
+        (d2FlowStage active role quota (h + 1) i
+          (.node G low high children)) j) =
+      d2FlowTreeRootDeficit (children j) := by
+  rw [d2FlowStage_botRise_child_deficit children ha hr j]
+  exact d2FlowStage_root_deficit_of_inactive
+    (active := active) (role := role) (quota := quota)
+    (i := i + 1) (children j) hnext
+
+/-- An active ordinary sender routes its entire allocation away: the total
+post-cut child mass equals its updated root deficit. -/
+theorem d2FlowStage_regular_sender_allocation_zero
+    {active : Nat → Bool} {role : Nat → D2Role}
+    {quota : Nat → D2Role → Nat} {h i G low high scale : Nat}
+    (children : Fin 8 → D2FlowTree h) (ha : active i = true)
+    (hr : role i = .topRise ∨ role i = .mid ∨ role i = .botDesc)
+    (hbal : G = low + high)
+    (heven : quota i (role i) % 2 = 0)
+    (hleft : low + quota i (role i) / 2 ≤
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)))
+    (hright : high + quota i (role i) / 2 ≤
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)))
+    (hdisjoint : low + quota i (role i) / 2 ≤
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) -
+        high - quota i (role i) / 2) :
+    d2FlowTreeAllocation scale
+      (d2FlowStage active role quota (h + 1) i
+        (.node G low high children)) = 0 := by
+  have hmass := d2FlowStage_regular_child_mass children ha hr hbal
+    heven hleft hright hdisjoint
+  have hroot : d2FlowTreeRootDeficit
+      (d2FlowStage active role quota (h + 1) i
+        (.node G low high children)) = G + quota i (role i) := by
+    rw [d2FlowStage_active_node_deficit children ha]
+    rcases hr with htop | hmid | hbot
+    · simp [htop]
+    · simp [hmid]
+    · simp [hbot]
+  cases hstage : d2FlowStage active role quota (h + 1) i
+      (.node G low high children) with
+  | node G' low' high' children' =>
+      have hmass' : d2FlowTotal (fun j =>
+          d2FlowTreeRootDeficit (children' j)) = G + quota i (role i) := by
+        simpa [hstage] using hmass
+      have hroot' : G' = G + quota i (role i) := by
+        simpa [hstage] using hroot
+      simp only [d2FlowTreeAllocation]
+      rw [hmass', hroot']
+      omega
+
+/-- The startup top-descending sender has zero post-stage allocation when
+its required zero-deficit input contract holds. -/
+theorem d2FlowStage_topDesc_sender_allocation_zero
+    {active : Nat → Bool} {role : Nat → D2Role}
+    {quota : Nat → D2Role → Nat} {h i G low high scale : Nat}
+    (children : Fin 8 → D2FlowTree h) (ha : active i = true)
+    (hr : role i = .topDesc) (hG : G = 0) :
+    d2FlowTreeAllocation scale
+      (d2FlowStage active role quota (h + 1) i
+        (.node G low high children)) = 0 := by
+  have hmass := d2FlowStage_topDesc_child_mass
+    (quota := quota) (low := low) (high := high) children ha hr hG
+  have hroot : d2FlowTreeRootDeficit
+      (d2FlowStage active role quota (h + 1) i
+        (.node G low high children)) = 0 := by
+    rw [d2FlowStage_active_node_deficit children ha]
+    simp [hr, hG]
+  cases hstage : d2FlowStage active role quota (h + 1) i
+      (.node G low high children) with
+  | node G' low' high' children' =>
+      have hmass' : d2FlowTotal (fun j =>
+          d2FlowTreeRootDeficit (children' j)) = G' := by
+        simpa [hstage] using hmass
+      have hroot' : G' = 0 := by simpa [hstage] using hroot
+      simp only [d2FlowTreeAllocation]
+      rw [hmass', hroot']
+
+/-- A bottom-rising sender has zero post-stage allocation when its children
+are inactive at the following stage, so their root deficits do not change. -/
+theorem d2FlowStage_botRise_sender_allocation_zero
+    {active : Nat → Bool} {role : Nat → D2Role}
+    {quota : Nat → D2Role → Nat} {h i G low high scale : Nat}
+    (children : Fin 8 → D2FlowTree h) (ha : active i = true)
+    (hr : role i = .botRise) (hnext : active (i + 1) = false)
+    (hinv : d2FlowTreeInv scale (.node G low high children)) :
+    d2FlowTreeAllocation scale
+      (d2FlowStage active role quota (h + 1) i
+        (.node G low high children)) = 0 := by
+  have hsum : d2FlowTotal (fun j => d2FlowTreeRootDeficit
+      (d2FlowTreeChild
+        (d2FlowStage active role quota (h + 1) i
+          (.node G low high children)) j)) =
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) := by
+    unfold d2FlowTotal
+    apply Finset.sum_congr rfl
+    intro j hj
+    exact d2FlowStage_botRise_child_root_deficit children ha hr hnext j
+  have hcover := d2FlowTreeInv_node_children_cover children hinv
+  have hroot : d2FlowTreeRootDeficit
+      (d2FlowStage active role quota (h + 1) i
+        (.node G low high children)) =
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) := by
+    rw [d2FlowStage_active_node_deficit children ha, hr]
+    exact Nat.add_sub_of_le hcover
+  cases hstage : d2FlowStage active role quota (h + 1) i
+      (.node G low high children) with
+  | node G' low' high' children' =>
+      have hsum' : d2FlowTotal (fun j =>
+          d2FlowTreeRootDeficit (children' j)) =
+          d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) := by
+        simpa [hstage] using hsum
+      have hroot' : G' = d2FlowTotal
+          (fun j => d2FlowTreeRootDeficit (children j)) := by
+        simpa [hstage] using hroot
+      simp only [d2FlowTreeAllocation]
+      rw [hsum', hroot']
+      omega
 
 /-- The size of one receiver's union is the sum of the sizes of the routed
 pieces, provided pieces emitted by one sender are disjoint. -/

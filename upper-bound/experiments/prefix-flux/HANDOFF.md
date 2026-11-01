@@ -667,10 +667,18 @@ flow side, `d2FlowTreeAllocation_after_inactive_recursive_stage` proves that
 an inactive receiver's allocation changes by exactly its parent down-port
 plus its children's up-ports. It requires the parent-overwritten root to be
 below the receiver's recursively updated child mass. The unresolved physical
-bridge is now specifically to instantiate the source partition, root-drop,
-post-overwrite cover, and role routing together for the candidate tree; the
-generic size formulas alone do not establish that layout or its prefix-profile
-contraction.
+bridge is now specifically to instantiate the source partition and these
+identities together for the candidate tree. For ordinary parent cuts,
+`d2FlowStage_regular_child_root_drop` proves the root drop and
+`d2FlowStage_regular_child_postoverwrite_cover` supplies the child-cover
+condition, assuming the existing cut validity, recursive-child invariant, and
+native cap. The top-descending reset gives both facts directly by setting the
+child root to zero; at a bottom-rise visit with an inactive next level, child
+roots are preserved and there is no child down-port. Zero post-stage
+allocation is proved conditionally for all active roles (`regular`,
+`topDesc`, and `botRise`). Startup/exceptional role routing still needs
+integration into the set-valued layout. None of these size results establishes
+the spatial profile contraction.
 
 ## Files and artifacts
 
