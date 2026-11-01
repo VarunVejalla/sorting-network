@@ -980,3 +980,11 @@ child masses, respectively, only those two endpoint children receive cuts.
 This supplies the cut-shape reduction needed to lift grandchild endpoint
 inequalities to each overwritten child; the full adapter still needs to
 assemble the stage-input reserves and recursive child fits.
+
+The stage-input adapter is now closed as well:
+`d2FlowStageInvInputs_ordinary_fronts_fit_endpoint_child_deficits` derives
+those endpoint-mass conditions directly from the ordinary sender deficit,
+quota, and `1/128` endpoint-reserve clauses. Thus the nonuniform cut support
+lemma applies under the actual ordinary stage-input contract. Still open is
+the recursive child-fit assembly, including the schedule cases where the
+level-`i+2` grandchild is inactive, saturated, or in an exceptional role.

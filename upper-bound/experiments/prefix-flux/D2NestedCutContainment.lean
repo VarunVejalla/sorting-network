@@ -236,6 +236,45 @@ theorem d2FlowCutChild_endpoint_support
         omega
       simp [hleftZero, hrightZero, hjne0, hj7]
 
+theorem d2FlowStageInvInputs_ordinary_fronts_fit_endpoint_child_deficits
+    {scale h i G low high : Nat} {active : Nat -> Bool}
+    {role : Nat -> D2Role} {quota : Nat -> D2Role -> Nat}
+    {cap : Nat -> Nat} (children : Fin 8 -> D2FlowTree h)
+    (hinputs : d2FlowStageInvInputs scale active role quota cap i
+      (.node G low high children)) (ha : active i = true)
+    (hr : role i = .topRise \/ role i = .mid \/ role i = .botDesc) :
+    low + quota i (role i) / 2 <=
+        d2FlowTreeRootDeficit (children 0) /\
+      high + quota i (role i) / 2 <=
+        d2FlowTreeRootDeficit (children 7) := by
+  have hstage := hinputs.2
+  simp only [ha, if_true] at hstage
+  rcases hr with htop | hmid | hbot
+  · simp only [htop] at hstage ⊢
+    rcases hstage with ⟨hbalance, hG, hqcap, hqtotal, heven, hleft, hright⟩
+    have hlow : low <= G := by omega
+    have hhigh : high <= G := by omega
+    have hquotaEven : quota i .topRise = 2 * (quota i .topRise / 2) := by omega
+    have hfronts := d2_endpoint_fronts_fit_of_reserve
+      hG hlow hhigh hqcap hquotaEven hleft hright
+    exact ⟨hfronts.1, hfronts.2⟩
+  · simp only [hmid] at hstage ⊢
+    rcases hstage with ⟨hbalance, hG, hqcap, hqtotal, heven, hleft, hright⟩
+    have hlow : low <= G := by omega
+    have hhigh : high <= G := by omega
+    have hquotaEven : quota i .mid = 2 * (quota i .mid / 2) := by omega
+    have hfronts := d2_endpoint_fronts_fit_of_reserve
+      hG hlow hhigh hqcap hquotaEven hleft hright
+    exact ⟨hfronts.1, hfronts.2⟩
+  · simp only [hbot] at hstage ⊢
+    rcases hstage with ⟨hbalance, hG, hqcap, hqtotal, heven, hleft, hright⟩
+    have hlow : low <= G := by omega
+    have hhigh : high <= G := by omega
+    have hquotaEven : quota i .botDesc = 2 * (quota i .botDesc / 2) := by omega
+    have hfronts := d2_endpoint_fronts_fit_of_reserve
+      hG hlow hhigh hqcap hquotaEven hleft hright
+    exact ⟨hfronts.1, hfronts.2⟩
+
 theorem d2FlowStage_active_ordinary_root_left_front
     {active : Nat -> Bool} {role : Nat -> D2Role}
     {quota : Nat -> D2Role -> Nat}
