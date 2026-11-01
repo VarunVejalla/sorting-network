@@ -243,6 +243,15 @@ the full actual-schedule instantiation of the static-hole premises and the
 identification of each clipped tile/column profile cell and its false count
 with those physical routed cells.
 
+`D2ClippedCellRankInterval.lean` adds the exact local criterion: a row and
+column lie in a tile's clipped port iff their flattened coordinate
+`tile*262144 + 64*row + column` lies in the global port interval. Under the
+sender-rank placement equation, this proves the corresponding wire is in the
+child's physical destination. The focused current-source rebuild passes.
+This is still conditional on the rank-placement equation and does not identify
+the actual schedule's Boolean profile/counts; proving that placement remains
+the next bridge.
+
 `D2StrongDeficitPropagation.lean` already proves the sharp local affine
 profile transition for ordinary eight-child updates. The profile is
 `G = 0 ∧ 256*pi <= c`, or
