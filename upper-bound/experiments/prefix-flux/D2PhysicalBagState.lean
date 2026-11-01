@@ -329,6 +329,103 @@ theorem d2FlowStage_root_fronts_mono
           simp [d2FlowStage, d2FlowTreeRootData, ha, hrole] <;> omega
       · simp [d2FlowStage, d2FlowTreeRootData, ha]
 
+/-! At the same stage, an ordinary sender two levels below has quota at
+least that of its ordinary ancestor. The capacity exponent grows by six;
+the smallest cross-role ratio is still 60. This is the arithmetic reserve
+used to absorb an ancestor's boundary cut in the descendant's front. -/
+theorem d2FlowCandidateQuota_le_quota_two_levels_below
+    {d i t : Nat} {parentRole childRole : D2Role}
+    (hexp : d2FlowCandidateCapacityExponent d (i + 2) t =
+      d2FlowCandidateCapacityExponent d i t + 6)
+    (hexpLower : 12 <= d2FlowCandidateCapacityExponent d i t)
+    (hparent : parentRole = .topRise \/ parentRole = .mid \/
+      parentRole = .botDesc)
+    (hchild : childRole = .topRise \/ childRole = .mid \/
+      childRole = .botDesc) :
+    d2FlowCandidateQuota d t i parentRole <=
+      d2FlowCandidateQuota d t (i + 2) childRole := by
+  let e := d2FlowCandidateCapacityExponent d i t
+  have hparentTop : 2 ^ (e - 8) = 16 * 2 ^ (e - 12) := by
+    have he : e - 8 = (e - 12) + 4 := by dsimp [e]; omega
+    rw [he, Nat.pow_add]
+    norm_num
+    ring
+  have hchildTop : 2 ^ (e + 6 - 8) = 1024 * 2 ^ (e - 12) := by
+    have he : e + 6 - 8 = (e - 12) + 10 := by dsimp [e]; omega
+    rw [he, Nat.pow_add]
+    norm_num
+    ring
+  have hchildMid : 15 * 2 ^ (e + 6 - 12) = 960 * 2 ^ (e - 12) := by
+    have he : e + 6 - 12 = (e - 12) + 6 := by dsimp [e]; omega
+    rw [he, Nat.pow_add]
+    norm_num
+    ring
+  rcases hparent with hp | hp | hp <;>
+    rcases hchild with hc | hc | hc
+  · subst parentRole
+    subst childRole
+    simp only [d2FlowCandidateQuota]
+    rw [hexp]
+    change 2 ^ (e - 8) <= 2 ^ (e + 6 - 8)
+    rw [hparentTop, hchildTop]
+    omega
+  · subst parentRole
+    subst childRole
+    simp only [d2FlowCandidateQuota]
+    rw [hexp]
+    change 2 ^ (e - 8) <= 15 * 2 ^ (e + 6 - 12)
+    rw [hparentTop, hchildMid]
+    omega
+  · subst parentRole
+    subst childRole
+    simp only [d2FlowCandidateQuota]
+    rw [hexp]
+    change 2 ^ (e - 8) <= 15 * 2 ^ (e + 6 - 12)
+    rw [hparentTop, hchildMid]
+    omega
+  · subst parentRole
+    subst childRole
+    simp only [d2FlowCandidateQuota]
+    rw [hexp]
+    change 15 * 2 ^ (e - 12) <= 2 ^ (e + 6 - 8)
+    rw [hchildTop]
+    omega
+  · subst parentRole
+    subst childRole
+    simp only [d2FlowCandidateQuota]
+    rw [hexp]
+    change 15 * 2 ^ (e - 12) <= 15 * 2 ^ (e + 6 - 12)
+    rw [hchildMid]
+    omega
+  · subst parentRole
+    subst childRole
+    simp only [d2FlowCandidateQuota]
+    rw [hexp]
+    change 15 * 2 ^ (e - 12) <= 15 * 2 ^ (e + 6 - 12)
+    rw [hchildMid]
+    omega
+  · subst parentRole
+    subst childRole
+    simp only [d2FlowCandidateQuota]
+    rw [hexp]
+    change 15 * 2 ^ (e - 12) <= 2 ^ (e + 6 - 8)
+    rw [hchildTop]
+    omega
+  · subst parentRole
+    subst childRole
+    simp only [d2FlowCandidateQuota]
+    rw [hexp]
+    change 15 * 2 ^ (e - 12) <= 15 * 2 ^ (e + 6 - 12)
+    rw [hchildMid]
+    omega
+  · subst parentRole
+    subst childRole
+    simp only [d2FlowCandidateQuota]
+    rw [hexp]
+    change 15 * 2 ^ (e - 12) <= 15 * 2 ^ (e + 6 - 12)
+    rw [hchildMid]
+    omega
+
 /-- An active ordinary update sets each child's root data to the corresponding
 cut tuple. This exposes the exact link between the abstract cut contract and
 the post-stage static-hole geometry. -/

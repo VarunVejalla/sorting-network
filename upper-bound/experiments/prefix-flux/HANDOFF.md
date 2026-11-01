@@ -804,16 +804,18 @@ recurrence.
 ## Nested cut-child endpoint screen (2026-11-02)
 
 `d2_cut_child_endpoint_screen.py` checks the exact candidate `FlowDAG` after
-each active parent update. For every overwritten child it checks both
-first/last unsaturated grandchild inequalities needed for that child's
-clamped static-hole fit; saturated grandchildren are the clamped empty-marker
-case. Depths 12, 20, 24, 30, 40, and 60 have zero failures (747,200 checks at
-depth 60). The minimum observed slack is exactly `45/256` of parent capacity
-for each of `topDesc`, `topRise`, and `mid`; other observed edge cases are
-saturated. This is finite model evidence only. Next try to derive a uniform
-reserve for these exact two inequalities from the candidate stage/endpoint
-contracts, then prove the cut-child fit lemma in Lean. The screen is listed in
-the prefix-flux README.
+each active parent update. Only `topDesc`, `topRise`, `mid`, and `botDesc`
+overwrite child roots; `botRise` emits no child-root cut. For each overwrite
+role, every non-boundary child's corresponding cut is zero, so only the first
+child's left edge and last child's right edge can constrain descendant fit.
+Depths 12, 20, 30, 60, 80, and 100 have zero failures and zero misplaced
+cuts; depth 100 has 420,454 relevant endpoint checks. The minimum observed
+unsaturated margins, normalized by parent capacity, are `23/128` for
+`topDesc`, `13/64` for `topRise`, and `1665/8192` for `mid`; tested `botDesc`
+grandchildren are saturated. This is finite model evidence only. The next
+proof gate is to derive a uniform reserve for the two active boundary
+inequalities from the candidate stage/endpoint contracts, then prove the
+cut-child fit lemma in Lean. The screen is listed in the prefix-flux README.
 
 The recursive static-fit provider is itself still missing. The existing
 one-node clamped-fit lemmas establish that updated holes fit inside the current
@@ -918,3 +920,19 @@ correct flow-allocation size. This is reusable by the dynamic-set layout. Next,
 assemble the ordinary, top-descending, and bottom-rising local providers in the
 flat layout and prove the receiver-allocation induction. The arbitrary-root
 profile recurrence also remains open, so the central sub-300 risk is unchanged.
+
+
+## Two-level quota reserve (2026-11-02)
+
+`D2PhysicalBagState.lean` now proves
+`d2FlowCandidateQuota_le_quota_two_levels_below`: if the capacity exponent
+increases by six over two levels, is at least twelve, and both roles are
+ordinary, the descendant quota is at least the ancestor quota. The smallest
+ratio is 60 (topRise parent to mid/botDesc descendant). Focused Lean checking
+passes. This supplies the arithmetic needed when a grandchild's own active
+cut must absorb its parent's boundary movement; it does not establish that
+the relevant grandchild is active. The next all-depth schedule gate is to show
+that under every active ordinary parent, each unsaturated boundary grandchild
+is active with an ordinary role at level `i+2`, while inactive/botRise
+boundary grandchildren are saturated and hence handled by clamped markers.
+The finite screen exhibits that split through depth 100, but does not prove it.

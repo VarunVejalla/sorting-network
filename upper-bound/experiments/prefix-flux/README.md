@@ -20,8 +20,11 @@ and should be consulted only for provenance.
 
 `d2_cut_child_endpoint_screen.py` checks whether each parent cut leaves its
 post-stage child's first/last unsaturated grandchild fronts inside the
-overwritten child fronts. It is exact finite model evidence only; depths
-12–60 currently pass with minimum normalized endpoint slack `45/256`.
+overwritten child fronts. It is exact finite model evidence only. Through
+depth 100, only the first/last children have nonzero relevant cuts; all
+420,454 checked boundary cases pass. Minimum normalized slack is `23/128`
+for `topDesc`, `13/64` for `topRise`, and `1665/8192` for `mid`; tested
+`botDesc` boundary grandchildren are saturated.
 
 Lean sources and scripts stay in the repository. Reproducible outputs and
 compiled artifacts live in the ignored worktree-specific cache at
