@@ -269,6 +269,51 @@ theorem d2FlowNodeStaticBag_eq_runs
         (base + 8 * width - high)
         (d2FlowNodeStaticHoles base width low high children) hfit
 
+/-- A child-tagged rank port of the physical sender bag is exactly the
+corresponding rank slice of its ordered static address runs. -/
+theorem d2FlowNodeStaticBag_child_port_eq_run_slice
+    {n h ports : Nat} {base width G low high : Nat}
+    (children : Fin 8 → D2FlowTree h) (hnonsat : G ≠ 8 * width)
+    (hfit : StaticHolesFit (base + low)
+      (d2FlowNodeStaticHoles base width low high children)
+      (base + 8 * width - high))
+    (boundary : Nat → Nat) (left rightStart : Nat) (j : Fin ports) :
+    destinationPiece (ports := ports)
+        (d2FlowNodeStaticBag (n := n) base width G low high children)
+        boundary left rightStart (some j) =
+      orderedRunSlice
+        (d2FlowNodeStaticRuns (n := n) base width G low high children)
+        (left + boundary j.val) (left + boundary (j.val + 1)) := by
+  have hrep := d2FlowNodeStaticBag_eq_runs (n := n) children hnonsat hfit
+  simp only [destinationPiece]
+  rw [← hrep.1]
+  exact blockOf_orderedRuns (n := n) _ hrep.2 _ _
+
+/-- The two parent end ports of the physical sender bag are the corresponding
+left and right slices of its ordered static address runs. -/
+theorem d2FlowNodeStaticBag_parent_ports_eq_run_slices
+    {n h ports : Nat} {base width G low high : Nat}
+    (children : Fin 8 → D2FlowTree h) (hnonsat : G ≠ 8 * width)
+    (hfit : StaticHolesFit (base + low)
+      (d2FlowNodeStaticHoles base width low high children)
+      (base + 8 * width - high))
+    (boundary : Nat → Nat) (left rightStart : Nat) :
+    destinationPiece (ports := ports)
+        (d2FlowNodeStaticBag (n := n) base width G low high children)
+        boundary left rightStart none =
+      orderedRunSlice
+          (d2FlowNodeStaticRuns (n := n) base width G low high children)
+          0 left ∪
+        orderedRunSlice
+          (d2FlowNodeStaticRuns (n := n) base width G low high children)
+          rightStart
+          (d2FlowNodeStaticBag (n := n) base width G low high children).card := by
+  have hrep := d2FlowNodeStaticBag_eq_runs (n := n) children hnonsat hfit
+  simp only [destinationPiece]
+  rw [← hrep.1]
+  rw [blockOf_orderedRuns (n := n) _ hrep.2]
+  rw [blockOf_orderedRuns (n := n) _ hrep.2]
+
 /-- The cardinality of an ordered, fitting hole union is the sum of its
 interval lengths. -/
 theorem staticHoleUnion_card_of_fit {n : Nat} (cursor stop : Nat)
