@@ -988,3 +988,12 @@ quota, and `1/128` endpoint-reserve clauses. Thus the nonuniform cut support
 lemma applies under the actual ordinary stage-input contract. Still open is
 the recursive child-fit assembly, including the schedule cases where the
 level-`i+2` grandchild is inactive, saturated, or in an exceptional role.
+The two endpoint inequalities are now composed at candidate-schedule level:
+`d2FlowCandidateStage_regular_first_cut_le_grandchild_left_front` and its
+last/right counterpart consume the candidate parent/grandchild activity and
+role, plus the all-stage sender-input contract (the right theorem also uses
+the recursive flow invariant). Each compares the actual ordinary parent cut
+to the corresponding active ordinary grandchild's post-stage root front.
+This closes both endpoint directions for the ordinary-grandchild subcase;
+the remaining role split and full recursive child-fit induction are still
+necessary.
