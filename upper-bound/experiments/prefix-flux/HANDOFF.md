@@ -969,3 +969,8 @@ schedule fact, but not a whole-tree clamped-fit induction: exceptional
 saturated, and path-level assembly of all stage-input premises still need
 separate handling. Even after geometric fit closes, the actual routed-bag and
 Boolean profile transition remains the principal obstacle to a sub-300 proof.
+The same file now defines `d2FlowTreeClampedStaticFits`, a recursive version
+of the fit invariant using the bag-equivalent clamped holes, and proves its
+initial-tree base case by converting the existing canonical initial fit.
+This gives the right representation for a future all-stage induction; no
+stage-preservation theorem for that recursive predicate has been proved yet.

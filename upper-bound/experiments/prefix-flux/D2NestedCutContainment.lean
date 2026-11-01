@@ -4,6 +4,7 @@ import D2PhysicalBagState
 namespace Chvatal.D2Reserve
 
 open Chvatal.D2PhysicalBagState
+open Chvatal.D2StaticWireSets
 
 /-! The cut front of an ordinary sender is much smaller than the quota at an
 active ordinary grandchild. This is the arithmetic core of nested endpoint
@@ -336,5 +337,49 @@ theorem d2FlowStage_regular_last_cut_le_grandchild_right_front
       hgrandchildRole
   rw [hgrandchildStage, hupdated]
   exact le_trans (by simpa [sizes] using hcutle) (by omega)
+
+/-! The geometric fit itself has a natural recursive invariant in the clamped
+representation. The transition below isolates the sole exceptional local
+provider (botRise); the ordinary, inactive, and topDesc cases are discharged
+from existing local fit lemmas. -/
+
+def d2FlowTreeClampedStaticFits (scale : Nat) : {h : Nat} ->
+    D2FlowTree h -> Prop
+  | 0, .leaf _ _ _ => True
+  | h + 1, .node _ low high children =>
+      StaticHolesFit low
+        (d2FlowNodeStaticHolesClamped 0 (scale * 8 ^ h) low high children)
+        (8 * (scale * 8 ^ h) - high) /\
+      forall j, d2FlowTreeClampedStaticFits scale (children j)
+
+theorem d2FlowTreeClampedStaticFits_of_staticFits
+    {scale h : Nat} {tree : D2FlowTree h}
+    (hfit : d2FlowTreeStaticFits scale tree)
+    (hinv : d2FlowTreeInv scale tree) :
+    d2FlowTreeClampedStaticFits scale tree := by
+  induction tree with
+  | leaf G low high => trivial
+  | node G low high children ih =>
+      simp only [d2FlowTreeStaticFits] at hfit
+      simp only [d2FlowTreeClampedStaticFits]
+      constructor
+      · have hinvChildren : forall j, d2FlowTreeInv scale (children j) := by
+          have hx := hinv
+          simp only [d2FlowTreeInv] at hx
+          exact hx.2.2.2
+        simpa using d2FlowNodeStaticHolesClamped_fit_of_static_fit
+          (base := 0) (width := scale * 8 ^ _) (left := low) (right := high)
+          children rfl hinvChildren (by simpa using hfit.1)
+      · intro j
+        have hinvChild : d2FlowTreeInv scale (children j) := by
+          have hx := hinv
+          simp only [d2FlowTreeInv] at hx
+          exact hx.2.2.2 j
+        exact ih j (hfit.2 j) hinvChild
+
+theorem d2FlowTreeInitial_clamped_static_fits (scale h : Nat) :
+    d2FlowTreeClampedStaticFits scale (d2FlowTreeInitial scale h) := by
+  exact d2FlowTreeClampedStaticFits_of_staticFits
+    (d2FlowTreeInitial_static_fits scale h) (d2FlowTreeInitial_inv scale h)
 
 end Chvatal.D2Reserve
