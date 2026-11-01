@@ -518,10 +518,12 @@ depths through 20. Two Lean interfaces now support this representation:
 `d2FlowNodeStaticHolesClamped_fit_of_child_intervals_contained` proves fit
 from containment of every nonsaturated child interval, while
 `d2FlowNodeStaticHolesClamped_fit_of_static_fit` converts any already-fitting
-canonical list to the clamped list. Thus existing initial-fit and active
-ordinary-fit results can be reused; an all-stage proof still needs to handle
-inactive and exceptional updates, and the routed next-bag identity remains
-open.
+canonical list to the clamped list. The new
+`d2FlowNodeStaticHolesClamped_fit_of_fronts_mono` also preserves clamped fit
+when child deficits and both fronts move inward. Thus the inactive-node stage
+case is now proved from a clamped input fit, and existing initial-fit and
+active ordinary-fit results can be converted. Active exceptional updates and
+the routed next-bag identity remain open.
 
 The same file now proves `d2FlowStage_active_top_desc_static_bag_empty` for
 positive native width: the startup top-descending reset sets all eight child
@@ -532,9 +534,9 @@ transition.
 
 `d2FlowStage_root_fronts_mono` proves that a subtree's own recursive stage
 never decreases either root front offset; together with deficit monotonicity,
-this supplies the inactive-parent fit preservation above. It does not cover a
-later parent `setRoot` overwrite; active-parent cases need their cut geometry
-and special-role lemmas.
+this supplies the inactive-parent clamped-fit preservation above. It does not
+cover a later parent `setRoot` overwrite; active-parent cases need their cut
+geometry and special-role lemmas.
 
 `d2FlowNodeStaticBag_eq_empty_of_child_total_eq_G` proves that a fitted node
 bag is empty whenever its child deficits sum to the parent deficit. Combining
