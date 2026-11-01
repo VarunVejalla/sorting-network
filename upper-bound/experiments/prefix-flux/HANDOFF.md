@@ -25,6 +25,17 @@ receiver-cardinality recurrence. The exact `FlowDAG` model's 178 even snapshots
 for dimensions 7 through 12 are superseded as evidence by this all-dimension
 Lean result.
 
+`D2DynamicSenderNode.lean` now also proves
+`d2OrdinaryRankSenderPorts_of_stage_inputs`: for any ordinary active node and
+any sender set with the required flow-allocation cardinality, its stage-input
+contract and flow invariant imply the complete disjoint port partition and
+exact parent/child port sizes. The proof derives both endpoint-front bounds
+from the 1/512 deficit, 1/256 quota, and endpoint reserves; it uses no static
+sender-bag fit. Together with the bot-rise adapter, this advances the
+all-role dynamic-layout gate. The top-descending arbitrary-set adapter and the
+actual induction matching routed receiver sizes to flow allocations remain.
+The spatial profile recurrence is still the main analytic blocker.
+
 ## Candidate and price
 
 The strongest deterministic candidate is the `(3,3,2)` D2 schedule with the
@@ -816,6 +827,7 @@ all-role physical transition, or prove profile contraction/terminal cleanup.
 The parity result is now composed with `bot_rise_sender_piece_partition` in
 `candidate_botRise_path_piece_partition`, uniformly for any sender set with the
 correct flow-allocation size. This is reusable by the dynamic-set layout. Next,
-use it in the receiver-cardinality induction and close the remaining roles;
-then return to the arbitrary-root profile recurrence. Neither global gate is
-closed, so the central sub-300 risk is unchanged.
+use the ordinary and bot-rise adapters to assemble the candidate one-step
+receiver-size transition, adding the top-descending reset case. The actual
+receiver-allocation induction and the arbitrary-root profile recurrence remain
+open, so the central sub-300 risk is unchanged.

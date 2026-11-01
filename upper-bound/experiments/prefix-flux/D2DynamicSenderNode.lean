@@ -964,6 +964,82 @@ theorem d2OrdinaryRankSenderPorts_complete_contract
   simpa [widths, boundary, ports, d2OrdinaryRankSenderPorts] using
     And.intro hlocal hcards
 
+/-- For an ordinary active node, the all-stage sender-input contract itself
+supplies the cut-front bounds needed by the arbitrary-set port theorem. Thus
+an inductive sender set needs only its flow-allocation cardinality; no static
+hole fit or separate endpoint-cut argument is required. -/
+theorem d2OrdinaryRankSenderPorts_of_stage_inputs
+    {active : Nat -> Bool} {role : Nat -> D2Role}
+    {quota : Nat -> D2Role -> Nat} {cap : Nat -> Nat}
+    {scale h i G low high n : Nat}
+    (children : Fin 8 -> D2FlowTree h) (s : Finset (Fin n))
+    (htree : d2FlowTreeInv scale (.node G low high children))
+    (hinputs : d2FlowStageInvInputs scale active role quota cap i
+      (.node G low high children))
+    (ha : active i = true)
+    (hr : role i = .topRise \/ role i = .mid \/ role i = .botDesc)
+    (hsender : s.card =
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) :
+    let widths : Fin 8 -> Nat := fun j =>
+      d2FlowTreeRootDeficit (children j) -
+        d2FlowTreeRootDeficit
+          (d2FlowTreeChild
+            (d2FlowStage active role quota (h + 1) i
+              (.node G low high children)) j)
+    let boundary : Nat -> Nat := d2FlowRankBoundary widths
+    let ports := d2OrdinaryRankSenderPorts s boundary
+      (quota i (role i) / 2) (s.card - quota i (role i) / 2)
+    And
+      (And (forall port, d2SenderPortsLocalPiece ports port <= s)
+        (And (Finset.univ.biUnion (d2SenderPortsLocalPiece ports) = s)
+          (forall port port', Not (port = port') ->
+            Disjoint (d2SenderPortsLocalPiece ports port)
+              (d2SenderPortsLocalPiece ports port'))))
+      (And (ports.up.card = quota i (role i))
+        (forall j, (ports.down j).card = widths j)) := by
+  have hactiveFields := hinputs.2
+  simp only [ha, if_pos] at hactiveFields
+  rcases hactiveFields with ⟨hbal, hroleFields⟩
+  have hfields : 512 * G <= cap i /\
+      256 * quota i (role i) <= cap i /\
+      quota i (role i) <=
+        d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G /\
+      quota i (role i) % 2 = 0 /\
+      cap i <= 128 * d2FlowTreeRootDeficit (children ⟨0, by omega⟩) /\
+      cap i <= 128 * d2FlowTreeRootDeficit (children ⟨7, by omega⟩) := by
+    rcases hr with htop | hmid | hbot
+    · simpa [htop] using hroleFields
+    · simpa [hmid] using hroleFields
+    · simpa [hbot] using hroleFields
+  rcases hfields with ⟨hG, hqCap, hqAlloc, hqEven, hreserveLeft, hreserveRight⟩
+  have hquotaEven : quota i (role i) = 2 * (quota i (role i) / 2) := by
+    omega
+  have hfronts := d2_endpoint_fronts_fit_of_reserve hG
+    (by omega : low <= G) (by omega : high <= G)
+    hqCap hquotaEven hreserveLeft hreserveRight
+  have hleft : low + quota i (role i) / 2 <=
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) :=
+    le_trans hfronts.1 (d2FlowSize_le_total
+      (fun j => d2FlowTreeRootDeficit (children j)) ⟨0, by omega⟩)
+  have hright : high + quota i (role i) / 2 <=
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) :=
+    le_trans hfronts.2 (d2FlowSize_le_total
+      (fun j => d2FlowTreeRootDeficit (children j)) ⟨7, by omega⟩)
+  have hqplus : G + quota i (role i) <=
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) := by
+    have hGtotal : G <=
+        d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) :=
+      htree.2.1
+    have hsum := (Nat.le_sub_iff_add_le hGtotal).mp hqAlloc
+    omega
+  have hgap : low + quota i (role i) / 2 <=
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) -
+        high - quota i (role i) / 2 := by
+    rw [Nat.sub_sub]
+    omega
+  exact d2OrdinaryRankSenderPorts_complete_contract children s ha hr
+    (by omega) hqEven hleft hright hgap hsender
+
 /-- The ordinary port contract applies directly to a fitted physical static
 bag: its exact cardinality premise is discharged by the clamped-fit theorem.
 Schedule reachability must still provide the fit and cut hypotheses. -/
