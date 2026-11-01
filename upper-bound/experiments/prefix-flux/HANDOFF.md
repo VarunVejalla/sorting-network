@@ -497,7 +497,7 @@ post-stage child's root tuple with its cut tuple, and
 the updated parent fronts. The ordinary stage-input balance and quota clauses
 establish the equality between the cut endpoint `total - (high + quota/2)`
 and the stage assignment `total - high - quota/2`. Inactive/exceptional roles
-and recursive whole-tree preservation remain open.
+The inactive-node case is now proved by `d2FlowStage_inactive_node_static_fit`: when a parent is inactive, child deficit/front monotonicity preserves its hole fit through the recursive stage. This is local geometry only; recursive whole-tree preservation and active exceptional/overwrite cases remain open.
 
 The same file now proves `d2FlowStage_active_top_desc_static_bag_empty` for
 positive native width: the startup top-descending reset sets all eight child
