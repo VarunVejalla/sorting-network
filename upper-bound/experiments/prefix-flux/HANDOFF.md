@@ -811,6 +811,15 @@ containment. First state and prove a one-cut-child containment lemma, with
 hypotheses on the recursively staged descendants and the parent's actual cut
 fronts, then attempt the whole-tree induction.
 
+The one-node fit proof reduces this geometric containment to two endpoint
+obligations: for the overwritten child's first grandchild, either that
+grandchild is saturated or the new left cut is at most its stored low front;
+for the last grandchild, either it is saturated or the new right cut is at
+most its stored high front. Interior ordering follows from native-slot
+containment. The next decisive gate is deriving these two inequalities from
+the actual parent cut and candidate endpoint reserves at every reachable cut
+child.
+
 `D2DynamicSenderNode.lean` now also defines a concrete static physical bag for
 each flat flow-tree node, using its native base-eight address and the checked
 static-hole construction. The root selector reduces to the root subtree, and
