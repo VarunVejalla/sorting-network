@@ -300,9 +300,151 @@ theorem fullHeightTwoShuffle_row_cut_defect_le_896
       countDistance_sum_le Finset.univ _ _
     _ ≤ 896 := hsum
 
+/-- Because both cut profiles have the same total height mass, the positive
+prefix error is at most half the 896 height L1 bound. -/
+theorem fullHeightTwoShuffle_row_cut_defect_le_448
+    (sourceHeight : Col -> Nat) (cuts : Col -> Nat) :
+    countDistance
+      (Finset.univ.sum fun c : Col =>
+        prefixIntervalMass (fullHeightTwoShuffle sourceHeight c) 0 (cuts c))
+      (Finset.univ.sum fun c : Col =>
+        prefixIntervalMass
+          (exactRankColumnHeight
+            (Finset.univ.sum fun c : Col => fullHeightTwoShuffle sourceHeight c) c)
+          0 (cuts c)) <= 448 := by
+  let H := Finset.univ.sum fun c : Col => fullHeightTwoShuffle sourceHeight c
+  have hpoint (c : Col) :
+      countDistance (fullHeightTwoShuffle sourceHeight c)
+        (exactRankColumnHeight H c) <= 14 := by
+    have hupper (d : Col) :
+        fullHeightTwoShuffle sourceHeight d <=
+          fullHeightTwoShuffle sourceHeight c + 13 :=
+      fullHeightTwoShuffle_range_le_thirteen sourceHeight d c
+    have hlower (d : Col) :
+        fullHeightTwoShuffle sourceHeight c <=
+          fullHeightTwoShuffle sourceHeight d + 13 :=
+      fullHeightTwoShuffle_range_le_thirteen sourceHeight c d
+    have hsumUpper : H <= 64 * (fullHeightTwoShuffle sourceHeight c + 13) := by
+      dsimp [H]
+      calc
+        (Finset.univ.sum fun d : Col => fullHeightTwoShuffle sourceHeight d) <=
+            Finset.univ.sum fun _ : Col => fullHeightTwoShuffle sourceHeight c + 13 :=
+          Finset.sum_le_sum fun d hd => hupper d
+        _ = 64 * (fullHeightTwoShuffle sourceHeight c + 13) := by simp
+    have hsumLower : 64 * fullHeightTwoShuffle sourceHeight c <= H + 832 := by
+      calc
+        64 * fullHeightTwoShuffle sourceHeight c =
+            Finset.univ.sum fun _ : Col => fullHeightTwoShuffle sourceHeight c := by simp
+        _ <= Finset.univ.sum fun d : Col => fullHeightTwoShuffle sourceHeight d + 13 :=
+          Finset.sum_le_sum fun d hd => hlower d
+        _ = H + 832 := by simp [H, Finset.sum_add_distrib]
+    have hqlo : H / 64 <= fullHeightTwoShuffle sourceHeight c + 13 := by omega
+    have hqhi : fullHeightTwoShuffle sourceHeight c <= H / 64 + 13 := by omega
+    have htargetLo : H / 64 <= exactRankColumnHeight H c := by
+      unfold exactRankColumnHeight
+      omega
+    have htargetHi : exactRankColumnHeight H c <= H / 64 + 1 := by
+      unfold exactRankColumnHeight
+      split_ifs <;> omega
+    unfold countDistance
+    omega
+  have hL1 :
+      (Finset.univ.sum fun c : Col => countDistance
+        (fullHeightTwoShuffle sourceHeight c) (exactRankColumnHeight H c)) <= 896 := by
+    calc
+      _ <= Finset.univ.sum fun _ : Col => 14 :=
+        Finset.sum_le_sum fun c hc => hpoint c
+      _ = 896 := by simp [Fintype.card_fin]
+  have hsumIdeal :
+      (Finset.univ.sum fun c : Col => exactRankColumnHeight H c) = H := by
+    let q := H / 64
+    let r := H % 64
+    have hr : r < 64 := by dsimp [r]; omega
+    have hcount : (Finset.univ.sum fun c : Col => if c.val < r then 1 else 0) = r := by
+      have hcard : (Finset.univ.filter fun c : Col => c.val < r).card = r := by
+        rw [show (Finset.univ.filter fun c : Col => c.val < r) =
+          Finset.Iio (Fin.mk r hr) by
+            ext c
+            simp [Finset.mem_Iio, Fin.lt_def]]
+        simp
+      simpa using hcard
+    calc
+      (Finset.univ.sum fun c : Col => exactRankColumnHeight H c) = 64 * q + r := by
+        simp [exactRankColumnHeight, q, r, Finset.sum_add_distrib, hcount]
+      _ = H := by dsimp [q, r]; omega
+  have htotal :
+      (Finset.univ.sum fun c : Col => fullHeightTwoShuffle sourceHeight c) =
+        Finset.univ.sum fun c : Col => exactRankColumnHeight H c := by
+    dsimp [H]
+    exact hsumIdeal.symm
+  have hleak := balanced_port_directional_leakage
+    (fun c : Col => fullHeightTwoShuffle sourceHeight c)
+    (fun c : Col => exactRankColumnHeight H c) 896 htotal hL1
+  let actual : Col -> Nat := fun c => min (fullHeightTwoShuffle sourceHeight c) (cuts c)
+  let ideal : Col -> Nat := fun c => min (exactRankColumnHeight H c) (cuts c)
+  have hlocal (c : Col) : actual c <= ideal c +
+      (fullHeightTwoShuffle sourceHeight c - exactRankColumnHeight H c) := by
+    dsimp [actual, ideal]
+    omega
+  have hsumLocal := Finset.sum_le_sum (s := Finset.univ) (fun c hc => hlocal c)
+  have hforward : (Finset.univ.sum actual) - (Finset.univ.sum ideal) <= 448 := by
+    have hpos : (Finset.univ.sum fun c : Col =>
+        fullHeightTwoShuffle sourceHeight c - exactRankColumnHeight H c) <= 448 := by
+      have hdir : 2 * (Finset.univ.sum fun c : Col =>
+          fullHeightTwoShuffle sourceHeight c - exactRankColumnHeight H c) <= 896 := by
+        simpa using hleak.1
+      omega
+    have hsum : Finset.univ.sum actual <=
+        Finset.univ.sum ideal +
+          (Finset.univ.sum fun c : Col =>
+            fullHeightTwoShuffle sourceHeight c - exactRankColumnHeight H c) := by
+      calc
+        Finset.univ.sum actual <=
+            Finset.univ.sum (fun c : Col => ideal c +
+              (fullHeightTwoShuffle sourceHeight c - exactRankColumnHeight H c)) := hsumLocal
+        _ = _ := by rw [Finset.sum_add_distrib]
+    omega
+  have hlocal' (c : Col) : ideal c <= actual c +
+      (exactRankColumnHeight H c - fullHeightTwoShuffle sourceHeight c) := by
+    dsimp [actual, ideal]
+    omega
+  have hsumLocal' := Finset.sum_le_sum (s := Finset.univ) (fun c hc => hlocal' c)
+  have hback : (Finset.univ.sum ideal) - (Finset.univ.sum actual) <= 448 := by
+    have hpos : (Finset.univ.sum fun c : Col =>
+        exactRankColumnHeight H c - fullHeightTwoShuffle sourceHeight c) <= 448 := by
+      have hdir : 2 * (Finset.univ.sum fun c : Col =>
+          exactRankColumnHeight H c - fullHeightTwoShuffle sourceHeight c) <= 896 := by
+        simpa using hleak.2
+      omega
+    have hsum : Finset.univ.sum ideal <=
+        Finset.univ.sum actual +
+          (Finset.univ.sum fun c : Col =>
+            exactRankColumnHeight H c - fullHeightTwoShuffle sourceHeight c) := by
+      calc
+        Finset.univ.sum ideal <=
+            Finset.univ.sum (fun c : Col => actual c +
+              (exactRankColumnHeight H c - fullHeightTwoShuffle sourceHeight c)) := hsumLocal'
+        _ = _ := by rw [Finset.sum_add_distrib]
+    omega
+  have hactual : Finset.univ.sum actual =
+      Finset.univ.sum fun c : Col =>
+        prefixIntervalMass (fullHeightTwoShuffle sourceHeight c) 0 (cuts c) := by
+    apply Finset.sum_congr rfl
+    intro c hc
+    simp [actual, prefixIntervalMass]
+  have hideal : Finset.univ.sum ideal =
+      Finset.univ.sum fun c : Col =>
+        prefixIntervalMass (exactRankColumnHeight H c) 0 (cuts c) := by
+    apply Finset.sum_congr rfl
+    intro c hc
+    simp [ideal, prefixIntervalMass]
+  rw [<- hactual, <- hideal]
+  unfold countDistance
+  omega
+
 /-- Convert the natural-number prefix discrepancy above into the signed
 rational endpoint error used by summation by parts. -/
-theorem fullHeightTwoShuffle_row_cut_abs_endpoint_error_le_896
+theorem fullHeightTwoShuffle_row_cut_abs_endpoint_error_le_448
     (sourceHeight : Col → Nat) (cuts : Col → Nat) :
     |(Finset.univ.sum fun c : Col =>
         (prefixIntervalMass (fullHeightTwoShuffle sourceHeight c) 0 (cuts c) : Rat)) -
@@ -310,7 +452,7 @@ theorem fullHeightTwoShuffle_row_cut_abs_endpoint_error_le_896
         (prefixIntervalMass
           (exactRankColumnHeight
             (Finset.univ.sum fun c : Col => fullHeightTwoShuffle sourceHeight c) c)
-          0 (cuts c) : Rat))| ≤ 896 := by
+          0 (cuts c) : Rat))| ≤ 448 := by
   let a := Finset.univ.sum fun c : Col =>
     prefixIntervalMass (fullHeightTwoShuffle sourceHeight c) 0 (cuts c)
   let b := Finset.univ.sum fun c : Col =>
@@ -318,10 +460,10 @@ theorem fullHeightTwoShuffle_row_cut_abs_endpoint_error_le_896
       (exactRankColumnHeight
         (Finset.univ.sum fun c : Col => fullHeightTwoShuffle sourceHeight c) c)
       0 (cuts c)
-  have hdist : countDistance a b ≤ 896 := by
-    simpa [a, b] using fullHeightTwoShuffle_row_cut_defect_le_896 sourceHeight cuts
-  have hab : a - b ≤ 896 := by unfold countDistance at hdist; omega
-  have hba : b - a ≤ 896 := by unfold countDistance at hdist; omega
+  have hdist : countDistance a b ≤ 448 := by
+    simpa [a, b] using fullHeightTwoShuffle_row_cut_defect_le_448 sourceHeight cuts
+  have hab : a - b ≤ 448 := by unfold countDistance at hdist; omega
+  have hba : b - a ≤ 448 := by unfold countDistance at hdist; omega
   have hcastDist : (countDistance a b : Rat) =
       |(a : Rat) - (b : Rat)| := by
     unfold countDistance
@@ -341,8 +483,8 @@ theorem fullHeightTwoShuffle_row_cut_abs_endpoint_error_le_896
       rw [hz, hsub]
       rw [abs_of_nonneg (sub_nonneg.mpr (by exact_mod_cast hba'))]
       ring
-  have hdistRat : (countDistance a b : Rat) ≤ 896 := by exact_mod_cast hdist
-  have hboundRat : |(a : Rat) - (b : Rat)| ≤ 896 := by
+  have hdistRat : (countDistance a b : Rat) ≤ 448 := by exact_mod_cast hdist
+  have hboundRat : |(a : Rat) - (b : Rat)| ≤ 448 := by
     rw [← hcastDist]
     exact hdistRat
   simpa [a, b, Nat.cast_sum] using hboundRat
@@ -351,7 +493,7 @@ theorem fullHeightTwoShuffle_row_cut_abs_endpoint_error_le_896
 cuts are controlled by the total variation of the port weights. This composes
 the pointwise row-cut contract with summation by parts; it is still a local
 fixed-core statement and makes no claim about how the scheduler chooses cuts. -/
-theorem fullHeightTwoShuffle_weighted_column_port_error_le_896_variation
+theorem fullHeightTwoShuffle_weighted_column_port_error_le_448_variation
     (sourceHeight : Col → Nat) (ports : Nat) (cuts : Nat → Col → Nat)
     (weight : Nat → Rat) (hports : 0 < ports)
     (hmono : ∀ c i, i < ports → cuts i c ≤ cuts (i + 1) c) :
@@ -363,7 +505,7 @@ theorem fullHeightTwoShuffle_weighted_column_port_error_le_896_variation
               (exactRankColumnHeight
                 (∑ c : Col, fullHeightTwoShuffle sourceHeight c) c)
               (cuts i c) (cuts (i + 1) c) : Rat)))| ≤
-      896 * (|weight (ports - 1)| + |weight 0| +
+      448 * (|weight (ports - 1)| + |weight 0| +
         ∑ i ∈ Finset.range (ports - 1), |weight i - weight (i + 1)|) := by
   let defect : Nat → Rat := fun i =>
     Finset.univ.sum fun col : Col =>
@@ -371,8 +513,8 @@ theorem fullHeightTwoShuffle_weighted_column_port_error_le_896_variation
         ((min (exactRankColumnHeight
           (Finset.univ.sum fun d : Col => fullHeightTwoShuffle sourceHeight d) col)
             (cuts i col) : Nat) : Rat)
-  have hbound (i : Nat) (hi : i ≤ ports) : |defect i| ≤ 896 := by
-    have hrow := fullHeightTwoShuffle_row_cut_abs_endpoint_error_le_896
+  have hbound (i : Nat) (hi : i ≤ ports) : |defect i| ≤ 448 := by
+    have hrow := fullHeightTwoShuffle_row_cut_abs_endpoint_error_le_448
       sourceHeight (cuts i)
     simpa [defect, prefixIntervalMass] using hrow
   have hincrement (i : Nat) (hi : i < ports) :
@@ -408,7 +550,7 @@ theorem fullHeightTwoShuffle_weighted_column_port_error_le_896_variation
     rw [hincrement i (Finset.mem_range.mp hi)]
   rw [hsumEq]
   have hgeneric := abs_weighted_prefix_increments_le_variation
-    weight defect (ports - 1) 896 (by
+    weight defect (ports - 1) 448 (by
       intro i hi
       apply hbound
       omega)
@@ -418,7 +560,7 @@ theorem fullHeightTwoShuffle_weighted_column_port_error_le_896_variation
 /-- The spatially weighted error bound adds over an arbitrary finite family
 of sender tiles. Each tile may use its own monotone column cuts and its own
 weights; the charged quantity is the sum of the per-tile weight variations. -/
-theorem tiled_weighted_column_port_error_le_896_variation
+theorem tiled_weighted_column_port_error_le_448_variation
     {tiles : Nat} (sourceHeight : Fin tiles → Col → Nat) (ports : Nat)
     (cuts : Nat → Fin tiles → Col → Nat)
     (weight : Fin tiles → Nat → Rat) (hports : 0 < ports)
@@ -431,7 +573,7 @@ theorem tiled_weighted_column_port_error_le_896_variation
               (exactRankColumnHeight
                 (∑ c : Col, fullHeightTwoShuffle (sourceHeight t) c) c)
               (cuts i t c) (cuts (i + 1) t c) : Rat)))| ≤
-      896 * ∑ t : Fin tiles,
+      448 * ∑ t : Fin tiles,
         (|weight t (ports - 1)| + |weight t 0| +
           ∑ i ∈ Finset.range (ports - 1), |weight t i - weight t (i + 1)|) := by
   let err : Fin tiles → Rat := fun t =>
@@ -446,18 +588,18 @@ theorem tiled_weighted_column_port_error_le_896_variation
   let cost : Fin tiles → Rat := fun t =>
     |weight t (ports - 1)| + |weight t 0| +
       ∑ i ∈ Finset.range (ports - 1), |weight t i - weight t (i + 1)|
-  have hlocal (t : Fin tiles) : |err t| ≤ 896 * cost t := by
-    have h := fullHeightTwoShuffle_weighted_column_port_error_le_896_variation
+  have hlocal (t : Fin tiles) : |err t| ≤ 448 * cost t := by
+    have h := fullHeightTwoShuffle_weighted_column_port_error_le_448_variation
       (sourceHeight t) ports (fun i c => cuts i t c) (weight t) hports
       (by intro c i hi; exact hmono t c i hi)
     simpa [err, cost] using h
-  have hsum : |∑ t : Fin tiles, err t| ≤ 896 * ∑ t : Fin tiles, cost t := by
+  have hsum : |∑ t : Fin tiles, err t| ≤ 448 * ∑ t : Fin tiles, cost t := by
     calc
       |∑ t : Fin tiles, err t| ≤ ∑ t : Fin tiles, |err t| :=
         Finset.abs_sum_le_sum_abs _ _
-      _ ≤ ∑ t : Fin tiles, 896 * cost t :=
+      _ ≤ ∑ t : Fin tiles, 448 * cost t :=
         Finset.sum_le_sum fun t ht => hlocal t
-      _ = 896 * ∑ t : Fin tiles, cost t := by rw [Finset.mul_sum]
+      _ = 448 * ∑ t : Fin tiles, cost t := by rw [Finset.mul_sum]
   simpa [err, cost] using hsum
 
 end Chvatal.D2WeightedPortDefect

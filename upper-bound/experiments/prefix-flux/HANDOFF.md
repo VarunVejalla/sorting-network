@@ -118,6 +118,18 @@ two-front reserves is at most `E`. A focused current-source rebuild passes.
 This provides the one-sided analytic interface, but not its physical count
 and rank/tag hypotheses.
 
+## Spatial weighted local bound (2026-10-31)
+
+`D2WeightedPortDefect.lean` now improves the fixed-core row-cut discrepancy
+from 896 to 448. The proof uses the same per-column height error bound 14
+(total L1 at most 896), then uses equality of actual and ideal total mass to
+halve either directional prefix error. Summation by parts propagates this to
+`fullHeightTwoShuffle_weighted_column_port_error_le_448_variation` and its
+tiled counterpart, with charge `448 * total weight variation` instead of 896.
+A focused current-source Lean rebuild passes. This is a local fixed-core
+improvement; it does not identify the schedule's spatial weights or prove an
+all-stage recurrence. The exact physical transition remains the top priority.
+
 ## Main unresolved gate
 
 The fixed-core-to-schedule **count identity** is still open. Some of its
