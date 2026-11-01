@@ -1407,6 +1407,134 @@ theorem d2FlowNodeStaticBag_card_eq_child_total_sub_G {n scale h : Nat}
   rw [hparentLength]
   omega
 
+/-- Clamped holes have the same total length as the canonical child holes.
+This lets reachable clamped-fit states use the same exact mass accounting. -/
+theorem d2FlowNodeStaticBag_card_of_clamped_fit {n h : Nat}
+    (base width G low high : Nat) (children : Fin 8 → D2FlowTree h)
+    (hnonsat : G ≠ 8 * width)
+    (hfit : StaticHolesFit (base + low)
+      (d2FlowNodeStaticHolesClamped base width low high children)
+      (base + 8 * width - high))
+    (hstop : base + 8 * width - high ≤ n) :
+    (d2FlowNodeStaticBag (n := n) base width G low high children).card =
+      (8 * width - low - high) -
+        (staticHoleUnion (n := n)
+          (d2FlowNodeStaticHolesClamped base width low high children)).card := by
+  classical
+  have hsubset := staticHoleUnion_subset_interval
+    (n := n) (base + low) (base + 8 * width - high)
+    (d2FlowNodeStaticHolesClamped base width low high children) hfit
+  rw [d2FlowNodeStaticBag_eq_clamped_holes]
+  simp only [if_neg hnonsat]
+  rw [Finset.card_sdiff_of_subset hsubset, staticWireInterval_card hstop]
+  omega
+
+theorem d2FlowNodeStaticHolesClamped_card {n scale h : Nat}
+    (base low high : Nat) (children : Fin 8 → D2FlowTree h)
+    (hinv : ∀ j, d2FlowTreeInv scale (children j))
+    (hfit : StaticHolesFit (base + low)
+      (d2FlowNodeStaticHolesClamped base (scale * 8 ^ h) low high children)
+      (base + 8 * (scale * 8 ^ h) - high))
+    (hstop : base + 8 * (scale * 8 ^ h) - high ≤ n) :
+    (staticHoleUnion (n := n)
+      (d2FlowNodeStaticHolesClamped base (scale * 8 ^ h) low high children)).card =
+      8 * (scale * 8 ^ h) -
+        d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) := by
+  have hcard := staticHoleUnion_card_of_fit (base + low)
+    (base + 8 * (scale * 8 ^ h) - high)
+    (d2FlowNodeStaticHolesClamped base (scale * 8 ^ h) low high children)
+    hfit hstop
+  have hlength := staticHoleList_lengths_sum
+    (fun j => (d2EightChildHoleClamped base (scale * 8 ^ h) low high
+      children j).1)
+    (fun j => (d2EightChildHoleClamped base (scale * 8 ^ h) low high
+      children j).2)
+  have hsumLengths :
+      ((d2FlowNodeStaticHolesClamped base (scale * 8 ^ h) low high children).map
+        (fun p => p.2 - p.1)).sum =
+      Finset.univ.sum (fun j : Fin 8 =>
+        (scale * 8 ^ h) - d2FlowTreeRootDeficit (children j)) := by
+    calc
+      _ = Finset.univ.sum (fun j : Fin 8 =>
+          (d2EightChildHoleClamped base (scale * 8 ^ h) low high children j).2 -
+            (d2EightChildHoleClamped base (scale * 8 ^ h) low high children j).1) := by
+          simpa [d2FlowNodeStaticHolesClamped] using hlength
+      _ = Finset.univ.sum (fun j : Fin 8 =>
+          (scale * 8 ^ h) - d2FlowTreeRootDeficit (children j)) := by
+          apply Finset.sum_congr rfl
+          intro j hj
+          by_cases hsat : d2FlowTreeRootDeficit (children j) = scale * 8 ^ h
+          · simp [d2EightChildHoleClamped, d2EightChildHole, hsat]
+          · have hcanonical := d2FlowNodeChildHole_length
+              base low high children hinv j
+            simpa [d2EightChildHoleClamped, hsat] using hcanonical
+  have hsum :
+      Finset.univ.sum (fun j : Fin 8 =>
+        (scale * 8 ^ h) - d2FlowTreeRootDeficit (children j)) =
+        8 * (scale * 8 ^ h) -
+          d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) := by
+    simp only [d2FlowTotal]
+    have hcap (j : Fin 8) : d2FlowTreeRootDeficit (children j) ≤ scale * 8 ^ h :=
+      d2FlowTreeInv_root_native_bound (children j) (hinv j)
+    have hadd :
+        Finset.univ.sum (fun j : Fin 8 =>
+          (scale * 8 ^ h) - d2FlowTreeRootDeficit (children j)) +
+        Finset.univ.sum (fun j : Fin 8 => d2FlowTreeRootDeficit (children j)) =
+        Finset.univ.sum (fun _ : Fin 8 => scale * 8 ^ h) := by
+      rw [← Finset.sum_add_distrib]
+      apply Finset.sum_congr rfl
+      intro j hj
+      exact Nat.sub_add_cancel (hcap j)
+    have hwidth : Finset.univ.sum (fun _ : Fin 8 => scale * 8 ^ h) =
+        8 * (scale * 8 ^ h) := by simp
+    omega
+  rw [hcard, hsumLengths, hsum]
+
+/-- A clamped-fit sender bag has the same exact cardinality contract as the
+canonical-fit version; the clamped convention changes only empty markers. -/
+theorem d2FlowNodeStaticBag_card_eq_child_total_sub_G_of_clamped_fit
+    {n scale h : Nat} (base G low high : Nat)
+    (children : Fin 8 → D2FlowTree h)
+    (htree : d2FlowTreeInv scale (.node G low high children))
+    (hfit : StaticHolesFit (base + low)
+      (d2FlowNodeStaticHolesClamped base (scale * 8 ^ h) low high children)
+      (base + 8 * (scale * 8 ^ h) - high))
+    (hstop : base + 8 * (scale * 8 ^ h) - high ≤ n)
+    (hGlt : G < 8 * (scale * 8 ^ h)) :
+    (d2FlowNodeStaticBag (n := n) base (scale * 8 ^ h)
+      G low high children).card =
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G := by
+  have htree' := htree
+  simp only [d2FlowTreeInv] at htree'
+  have hchildren : ∀ j, d2FlowTreeInv scale (children j) := htree'.2.2.2
+  have hbalance : low + high = G := by
+    have hroot := htree'.2.2.1
+    have hnative : G < scale * 8 ^ (h + 1) := by
+      simpa [Nat.pow_succ, Nat.mul_assoc, Nat.mul_comm, Nat.mul_left_comm]
+        using hGlt
+    exact hroot hnative
+  have hbag := d2FlowNodeStaticBag_card_of_clamped_fit base
+    (scale * 8 ^ h) G low high children (by omega) hfit hstop
+  have hholes := d2FlowNodeStaticHolesClamped_card base low high children
+    hchildren hfit hstop
+  have htotal : G ≤ d2FlowTotal
+      (fun j => d2FlowTreeRootDeficit (children j)) := by
+    simpa [d2FlowTotal] using htree'.2.1
+  have htotalcap : d2FlowTotal
+      (fun j => d2FlowTreeRootDeficit (children j)) ≤
+        8 * (scale * 8 ^ h) := by
+    unfold d2FlowTotal
+    calc
+      _ ≤ Finset.univ.sum (fun _ : Fin 8 => scale * 8 ^ h) :=
+        Finset.sum_le_sum fun j _ =>
+          d2FlowTreeInv_root_native_bound (children j) (hchildren j)
+      _ = 8 * (scale * 8 ^ h) := by simp
+  have hparentLength : 8 * (scale * 8 ^ h) - low - high =
+      8 * (scale * 8 ^ h) - G := by omega
+  rw [hbag, hholes]
+  rw [hparentLength]
+  omega
+
 /-- If the parent deficit exhausts its children, no wires remain in that
 node's static sender bag. -/
 theorem d2FlowNodeStaticBag_eq_empty_of_child_total_eq_G

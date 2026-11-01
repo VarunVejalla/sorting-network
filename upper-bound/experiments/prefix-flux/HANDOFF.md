@@ -758,13 +758,18 @@ now packages the local partition and exact sizes together for downstream use.
 `d2FlowTreePhysicalBag_leaf_card_eq_allocation` discharge the sender
 cardinality equation for internal and leaf static bags, respectively, under
 the flow invariant, geometric fit (internal nodes), and wire-bound hypotheses.
-The ordinary local contract can therefore use static source bags once those
-geometric premises are supplied. They are not yet supplied for every reachable
-stage: canonical hole markers fail the all-stage fit screen, and the clamped
-representation still lacks an all-stage fit provider. Every post-stage bag
-identity remains open. Next close the reachable fit/provider gate, then
-compose the local port sizes through the recursive stage and compare each
-post-stage routed receiver with `d2FlowTreeAllocation`; startup/exceptional
+The clamped representation now has the matching pricing lemma:
+`d2FlowNodeStaticBag_card_eq_child_total_sub_G_of_clamped_fit` proves the same
+exact sender-bag cardinality from clamped fit, and
+`d2FlowNodeStaticHolesClamped_card` proves its holes have the required total
+length. A focused current-source rebuild of `D2PhysicalBagState.lean` passes.
+This removes the mismatch between the reachable clamped representation and
+the sender-cardinality interface; it does not establish clamped fit at every
+reachable stage. Canonical hole markers still fail the all-stage fit screen,
+and the clamped representation still lacks an all-stage fit provider. Every
+post-stage bag identity remains open. Next close the reachable fit/provider
+gate, then compose the local port sizes through the recursive stage and compare
+each post-stage routed receiver with `d2FlowTreeAllocation`; startup/exceptional
 roles and root overwrites remain to be covered. The decisive risk remains
 whether this exact identity holds for all role and overwrite cases.
 
