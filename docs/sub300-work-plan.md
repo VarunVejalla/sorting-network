@@ -69,15 +69,16 @@ The physical sender recurrence already has a concrete Python source model:
 `wire_partition_check.py` checks each next bag as the union of its retained
 inactive bag, parent down-port, and active child up-ports. `receiver_fiber_types.py`
 also handles the parent-root overwrite context. These are finite model checks,
-not all-depth theorems. Port that precise recurrence to Lean first: define
-occupied native intervals and bag runs from a `D2FlowTree`, then prove the
-one-stage routed-piece equality and disjointness for every receiver. Only
-then bridge the concrete sender sets to `d2FlowCandidateRun` and identify
-Boolean 64-column profiles using the physical core's output map. Include
-clipped final tiles and startup/exceptional roles in the full transition.
-State root-profile hypotheses explicitly; a selected-cut LP that allows
-independently chosen local cuts is only a relaxation and cannot verify this
-identity.
+not all-depth theorems. `D2PhysicalBagState.lean` now defines the node bag as
+its occupied native interval minus child holes and proves its ordered-run
+representation under `StaticHolesFit`. The next formal step is proving this
+fit for concrete candidate snapshots, then proving the one-stage routed-piece
+equality and disjointness for every receiver. Only then bridge the concrete
+sender sets to `d2FlowCandidateRun` and identify Boolean 64-column profiles
+using the physical core's output map. Include clipped final tiles and
+startup/exceptional roles in the full transition. State root-profile
+hypotheses explicitly; a selected-cut LP that allows independently chosen
+local cuts is only a relaxation and cannot verify this identity.
 
 Exact equality between the single-prefix profile used by
 `D2FalseClippedTransfer.lean` and the ordinary flow's two-front child
@@ -121,9 +122,10 @@ The all-stage flow-side port-grid premise is now discharged by
 `D2AllStagePortGrid.lean`: every active ordinary sender has 4096-aligned
 ten-port boundaries for every stage and `d >= 7`; it now also projects the
 all-stage sender-input contract and port-grid facts to any path. `D2CutAlignment.lean` projects
-endpoint alignment to active ordinary candidate paths. These are flow-side
-premises only; first define the missing recursive physical sender state and
-receiver targets (see the handoff) before extending path geometry. The static-hole fit
+endpoint alignment to active ordinary candidate paths. `D2PhysicalBagState.lean`
+defines the local bag/run state, but the candidate-snapshot fit and routed
+next-bag identity remain open. Do not add more path projections before those
+identities are established. The static-hole fit
 lemma in `D2StaticWireSets.lean` now derives geometric fit directly from the
 actual deficit/quota limits and endpoint reserves, without assuming that the
 time-dependent schedule capacity equals the native tree capacity.

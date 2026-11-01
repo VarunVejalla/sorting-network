@@ -473,20 +473,25 @@ which takes the target map as input; the static-hole lemmas do not yet prove
 that the Python interval recurrence is the candidate tree's all-depth
 physical execution.
 
-The next formal artifact should port the Python bag-address recurrence, not
-invent a new scheduler: define a node's occupied native interval and its
-sender bag as that interval minus its occupied child intervals, represented
-by ordered runs. Then prove one all-stage transition identity: the union of
-inactive retained bags, the parent's down-port, and active children's
-up-ports equals each next node's bag, with disjointness. Match the exact
-indices/overwrite behavior in `wire_partition_check.py` and
-`receiver_fiber_types.py`. This turns the finite audit into an induction
-target and supplies concrete receiver tags for the already checked clipped
-tile identity. Start with the ordinary case if it is a genuine lemma of the
-same general transition, and separately handle startup/exceptional/ragged
-cases. Only after the physical/flow identity is proved should the profile
-transition, spatial terminal invariant, fixed cleanup, and depth/padding
-accounting be resumed. Aggregate error alone is not terminal purity.
+`D2PhysicalBagState.lean` now defines `d2FlowNodeStaticBag` as the node's
+occupied native interval minus its eight child holes, and
+`d2FlowNodeStaticRuns` as the corresponding ordered gaps. The checked theorem
+`d2FlowNodeStaticBag_eq_runs` proves exact equality and run ordering whenever
+the holes fit; `d2FlowNodeChildHole_eq_interval` identifies every nonsaturated
+child hole with its native address interval. This is a local representation
+interface, not yet an all-stage invariant: it assumes `StaticHolesFit` and
+does not show routed pieces equal the next node's bag.
+
+Next prove fit for the concrete candidate snapshots and then the one-stage
+identity: inactive retained bags, the parent's down-port, and active
+children's up-ports are disjoint and union to each next node's
+`d2FlowNodeStaticBag`. Match the exact indices/overwrite behavior in
+`wire_partition_check.py` and `receiver_fiber_types.py`. This would supply
+concrete receiver tags for the clipped-tile identity. Cover startup,
+exceptional roles, and ragged cases before claiming the full bridge. The
+profile transition, spatial terminal invariant, fixed cleanup, and
+depth/padding accounting remain open. Aggregate error alone is not terminal
+purity.
 
 ## Files and artifacts
 
