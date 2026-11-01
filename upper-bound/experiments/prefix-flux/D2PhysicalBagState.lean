@@ -607,6 +607,37 @@ theorem d2FlowNodeStaticBag_card_eq_child_total_sub_G {n scale h : Nat}
   rw [hparentLength]
   omega
 
+/-- If the parent deficit exhausts its children, no wires remain in that
+node's static sender bag. -/
+theorem d2FlowNodeStaticBag_eq_empty_of_child_total_eq_G
+    {n scale h : Nat} (base G low high : Nat)
+    (children : Fin 8 → D2FlowTree h)
+    (htree : d2FlowTreeInv scale (.node G low high children))
+    (hfit : StaticHolesFit (base + low)
+      (d2FlowNodeStaticHoles base (scale * 8 ^ h) low high children)
+      (base + 8 * (scale * 8 ^ h) - high))
+    (hstop : base + 8 * (scale * 8 ^ h) - high ≤ n)
+    (hsum : d2FlowTotal
+      (fun j => d2FlowTreeRootDeficit (children j)) = G) :
+    d2FlowNodeStaticBag (n := n) base (scale * 8 ^ h)
+      G low high children = ∅ := by
+  by_cases hsat : G = 8 * (scale * 8 ^ h)
+  · simp [d2FlowNodeStaticBag, hsat]
+  · have hGnative := d2FlowTreeInv_root_native_bound
+      (.node G low high children) htree
+    have hGlt : G < 8 * (scale * 8 ^ h) := by
+      have hGle : G ≤ 8 * (scale * 8 ^ h) := by
+        simpa [Nat.pow_succ, Nat.mul_assoc, Nat.mul_comm, Nat.mul_left_comm]
+          using hGnative
+      exact lt_of_le_of_ne hGle hsat
+    have hcard := d2FlowNodeStaticBag_card_eq_child_total_sub_G
+      base G low high children htree hfit hstop hGlt
+    rw [hsum] at hcard
+    have hzero :
+        (d2FlowNodeStaticBag (n := n) base (scale * 8 ^ h)
+          G low high children).card = 0 := by omega
+    exact Finset.card_eq_zero.mp hzero
+
 /-- The ordinary sender reserve contract puts both front cuts inside the
 child-rank interval, so the eight child ports form a valid middle block. -/
 theorem d2FlowStageInvInputs_ordinary_front_bounds
@@ -673,6 +704,75 @@ theorem d2FlowStageInvInputs_ordinary_front_bounds
         omega
       · have hbalance' : low + high = G := hbalance
         omega
+
+/-- After an active ordinary cut, all wires in the updated node interval are
+accounted for by its child holes: its own static sender bag is empty. -/
+theorem d2FlowStage_active_ordinary_static_bag_empty
+    {n scale h i G low high : Nat} {active : Nat → Bool}
+    {role : Nat → D2Role} {quota : Nat → D2Role → Nat}
+    {cap : Nat → Nat} (children : Fin 8 → D2FlowTree h)
+    (htree : d2FlowTreeInv scale (.node G low high children))
+    (hinputs : d2FlowStageInvInputs scale active role quota cap i
+      (.node G low high children))
+    (ha : active i = true)
+    (hr : role i = .topRise ∨ role i = .mid ∨ role i = .botDesc)
+    (hstop : 8 * (scale * 8 ^ h) -
+      (high + quota i (role i) / 2) ≤ n) :
+    d2FlowNodeStaticBag (n := n) 0
+      (scale * 8 ^ h) (G + quota i (role i))
+      (low + quota i (role i) / 2)
+      (high + quota i (role i) - quota i (role i) / 2)
+      (fun j => d2FlowTreeChild
+        (d2FlowStage active role quota (h + 1) i
+          (.node G low high children)) j) = ∅ := by
+  have hfit := d2FlowStage_active_ordinary_static_fit children htree
+    hinputs ha hr
+  have hstage := hinputs.2
+  simp only [ha, if_true] at hstage
+  have hbalance : G = low + high := by
+    rcases hr with htop | hmid | hbot
+    · simp only [htop] at hstage
+      exact hstage.1.symm
+    · simp only [hmid] at hstage
+      exact hstage.1.symm
+    · simp only [hbot] at hstage
+      exact hstage.1.symm
+  have hbounds := d2FlowStageInvInputs_ordinary_front_bounds
+    children hinputs ha hr
+  have hsum := d2FlowStage_regular_child_mass children ha hr
+    hbalance hbounds.1 hbounds.2.1 hbounds.2.2.1 hbounds.2.2.2
+  have hsum' : d2FlowTotal (fun j => d2FlowTreeRootDeficit
+      (d2FlowTreeChild
+        (d2FlowStage active role quota (h + 1) i
+          (.node G low high children)) j)) = G + quota i (role i) := by
+    simpa [d2FlowTotal] using hsum
+  have hright : high + quota i (role i) - quota i (role i) / 2 =
+      high + quota i (role i) / 2 := by omega
+  have hfit' : StaticHolesFit (low + quota i (role i) / 2)
+      (d2FlowNodeStaticHoles 0 (scale * 8 ^ h)
+        (low + quota i (role i) / 2)
+        (high + quota i (role i) - quota i (role i) / 2)
+        (fun j => d2FlowTreeChild
+          (d2FlowStage active role quota (h + 1) i
+            (.node G low high children)) j))
+      (8 * (scale * 8 ^ h) -
+        (high + quota i (role i) - quota i (role i) / 2)) := by
+    rw [hright]
+    simpa using hfit
+  have houtinv := d2FlowStage_preserves_inv_of_inputs
+    (.node G low high children) htree hinputs
+  apply d2FlowNodeStaticBag_eq_empty_of_child_total_eq_G
+    (base := 0) (G := G + quota i (role i))
+    (low := low + quota i (role i) / 2)
+    (high := high + quota i (role i) - quota i (role i) / 2)
+    (children := fun j => d2FlowTreeChild
+      (d2FlowStage active role quota (h + 1) i
+        (.node G low high children)) j)
+  · rcases hr with hrole | hrole | hrole <;>
+      simpa [d2FlowStage, ha, hrole] using houtinv
+  · simpa [Nat.zero_add] using hfit'
+  · omega
+  · exact hsum'
 
 /-- Instantiate the generic ordinary rank-port partition with the concrete
 static physical bag of a flow node. This partitions the current sender set;

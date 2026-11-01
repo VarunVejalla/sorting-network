@@ -81,7 +81,11 @@ post-stage child's root tuple with its cut tuple, and
 `d2FlowStage_active_ordinary_static_fit`, proving that those post-stage holes
 fit between the updated parent fronts. The latter derives the subtraction
 identity from the quota and balance clauses in the endpoint-reserve contract.
-This is only the active ordinary node case; inactive and exceptional roles
+`d2FlowStage_active_ordinary_static_bag_empty` now combines this fit with
+ordinary-cut deficit conservation to show that an updated active ordinary
+parent has no residual sender wires. This is only a conservation fact: the
+next unresolved identity is still that each routed child/parent piece equals
+the corresponding next-stage physical bag. Inactive and exceptional roles
 and recursive whole-tree preservation remain. `D2OrdinaryRankRouting.lean`
 already proves the generic ordinary sender destination-piece partition.
 `D2PhysicalBagState.lean` now proves the actual static bag has cardinality
