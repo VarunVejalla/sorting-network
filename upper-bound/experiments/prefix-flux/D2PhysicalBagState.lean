@@ -1019,6 +1019,75 @@ theorem d2FlowStage_active_ordinary_static_bag_empty
   · omega
   · exact hsum'
 
+/-- At a bottom-rise step whose child level is inactive, the sender bag is
+sent wholly to its parent. Under the post-step fit, this conservation is the
+corresponding empty-bag statement for the updated node. -/
+theorem d2FlowStage_active_bot_rise_static_bag_empty
+    {n scale h i G low high : Nat} {active : Nat → Bool}
+    {role : Nat → D2Role} {quota : Nat → D2Role → Nat}
+    {cap : Nat → Nat} (children : Fin 8 → D2FlowTree h)
+    (htree : d2FlowTreeInv scale (.node G low high children))
+    (hinputs : d2FlowStageInvInputs scale active role quota cap i
+      (.node G low high children))
+    (ha : active i = true) (hr : role i = .botRise)
+    (hnext : active (i + 1) = false)
+    (hfit : StaticHolesFit
+      (low + (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2)
+      (d2FlowNodeStaticHoles 0 (scale * 8 ^ h)
+        (low + (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2)
+        (high + (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) -
+          (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2)
+        (fun j => d2FlowTreeChild
+          (d2FlowStage active role quota (h + 1) i
+            (.node G low high children)) j))
+      (8 * (scale * 8 ^ h) -
+        (high + (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) -
+          (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2)))
+    (hstop : 8 * (scale * 8 ^ h) -
+        (high + (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) -
+          (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2) ≤ n) :
+    d2FlowNodeStaticBag (n := n) 0 (scale * 8 ^ h)
+      (G + (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G))
+      (low + (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2)
+      (high + (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) -
+        (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2)
+      (fun j => d2FlowTreeChild
+        (d2FlowStage active role quota (h + 1) i
+          (.node G low high children)) j) = ∅ := by
+  let pi := d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G
+  have hcover : G ≤ d2FlowTotal
+      (fun j => d2FlowTreeRootDeficit (children j)) := htree.2.1
+  have hstage := hinputs.2
+  simp only [ha, if_true, hr] at hstage
+  have hbalance : low + high = G := hstage.1
+  have hsum : d2FlowTotal (fun j => d2FlowTreeRootDeficit
+      (d2FlowTreeChild
+        (d2FlowStage active role quota (h + 1) i
+          (.node G low high children)) j)) = G + pi := by
+    calc
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit
+          (d2FlowTreeChild
+            (d2FlowStage active role quota (h + 1) i
+              (.node G low high children)) j)) =
+          d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) := by
+        unfold d2FlowTotal
+        apply Finset.sum_congr rfl
+        intro j hj
+        exact d2FlowStage_botRise_child_root_deficit children ha hr hnext j
+      _ = G + pi := by simp [pi]; omega
+  have houtinv := d2FlowStage_preserves_inv_of_inputs
+    (.node G low high children) htree hinputs
+  apply d2FlowNodeStaticBag_eq_empty_of_child_total_eq_G
+    (base := 0) (G := G + pi)
+    (low := low + pi / 2) (high := high + pi - pi / 2)
+    (children := fun j => d2FlowTreeChild
+      (d2FlowStage active role quota (h + 1) i
+        (.node G low high children)) j)
+  · simpa [d2FlowStage, ha, hr, pi] using houtinv
+  · simpa [Nat.zero_add, pi] using hfit
+  · simpa [Nat.zero_add, pi] using hstop
+  · simpa [pi] using hsum
+
 /-- The startup top-descending reset also leaves no residual parent bag:
 its eight children occupy the full parent interval. -/
 theorem d2FlowStage_active_top_desc_static_bag_empty

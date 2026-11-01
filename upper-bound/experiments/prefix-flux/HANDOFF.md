@@ -496,8 +496,11 @@ post-stage child's root tuple with its cut tuple, and
 `d2FlowStage_active_ordinary_static_fit`, proving that those holes fit between
 the updated parent fronts. The ordinary stage-input balance and quota clauses
 establish the equality between the cut endpoint `total - (high + quota/2)`
-and the stage assignment `total - high - quota/2`. Inactive/exceptional roles
-The inactive-node case is now proved by `d2FlowStage_inactive_node_static_fit`: when a parent is inactive, child deficit/front monotonicity preserves its hole fit through the recursive stage. This is local geometry only; recursive whole-tree preservation and active exceptional/overwrite cases remain open.
+and the stage assignment `total - high - quota/2`. The inactive-node case is
+proved by `d2FlowStage_inactive_node_static_fit`: child deficit/front
+monotonicity preserves an inactive parent's hole fit through the recursive
+stage. This is local geometry only; recursive whole-tree preservation and
+active exceptional/overwrite cases remain open.
 
 The same file now proves `d2FlowStage_active_top_desc_static_bag_empty` for
 positive native width: the startup top-descending reset sets all eight child
@@ -507,10 +510,10 @@ case; it does not establish the startup receiver-tag or Boolean-profile
 transition.
 
 `d2FlowStage_root_fronts_mono` proves that a subtree's own recursive stage
-never decreases either root front offset. This is a useful ingredient for
-preserving an inactive ancestor's hole fit as its children run. The theorem
-does not cover a later parent `setRoot` overwrite; those active-parent cases
-must continue to use their cut geometry and special-role lemmas.
+never decreases either root front offset; together with deficit monotonicity,
+this supplies the inactive-parent fit preservation above. It does not cover a
+later parent `setRoot` overwrite; active-parent cases need their cut geometry
+and special-role lemmas.
 
 `d2FlowNodeStaticBag_eq_empty_of_child_total_eq_G` proves that a fitted node
 bag is empty whenever its child deficits sum to the parent deficit. Combining
@@ -519,6 +522,15 @@ ordinary-cut conservation with stage invariant preservation gives
 the updated parent bag is empty because the children account for all of its
 deficit. This is only the parent-side conservation fact; it does not identify
 the routed child port with the next-stage child's static bag.
+
+For `.botRise`, `D2OrdinaryRankRouting.lean` proves that, when the child level
+is inactive, the whole sender is routed to its parent and the child pieces are
+empty. `D2PhysicalBagState.lean` now proves the matching conditional
+conservation fact, `d2FlowStage_active_bot_rise_static_bag_empty`: given the
+post-step static-hole fit, the updated node bag is empty. Establishing that
+post-step fit from the reachable schedule is still open, as is identifying
+the receiver's union of parent, retained-self, and child-up ports with its
+next-stage static bag.
 
 `D2OrdinaryRankRouting.lean` already proves the generic local destination-piece
 partition for an abstract sender set; do not reprove it.
