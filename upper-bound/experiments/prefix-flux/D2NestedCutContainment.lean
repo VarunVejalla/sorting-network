@@ -520,6 +520,50 @@ theorem d2FlowCandidateStage_regular_first_cut_le_grandchild_left_front
     (quota := d2FlowCandidateQuota d t)
     children hparent hparentRole hnext hgrandchild hgrandchildRole hfront)
 
+theorem d2FlowCandidateStage_regular_cut_endpoint_support
+    {d i t h G low high : Nat} (children : Fin 8 -> D2FlowTree h)
+    (hparent : d2FlowCandidateActive d t i = true)
+    (hparentRole : d2FlowCandidateRole d t i = .topRise \/
+      d2FlowCandidateRole d t i = .mid \/
+      d2FlowCandidateRole d t i = .botDesc)
+    (hinputs : d2FlowStageInvInputs 8192
+      (d2FlowCandidateActive d t) (d2FlowCandidateRole d t)
+      (d2FlowCandidateQuota d t)
+      (fun k => d2FlowCandidateCapacity d k t) i
+      (.node G low high children)) :
+    forall j : Fin 8,
+      d2FlowCutChild (d2FlowPosition
+        (fun k => d2FlowTreeRootDeficit (children k)) j)
+        (d2FlowTreeRootDeficit (children j))
+        (low + d2FlowCandidateQuota d t i
+          (d2FlowCandidateRole d t i) / 2)
+        (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - high -
+          d2FlowCandidateQuota d t i
+            (d2FlowCandidateRole d t i) / 2) =
+      if j.val = 0 then
+        (low + d2FlowCandidateQuota d t i
+          (d2FlowCandidateRole d t i) / 2,
+         low + d2FlowCandidateQuota d t i
+          (d2FlowCandidateRole d t i) / 2, 0)
+      else if j.val = 7 then
+        (high + d2FlowCandidateQuota d t i
+          (d2FlowCandidateRole d t i) / 2, 0,
+         high + d2FlowCandidateQuota d t i
+          (d2FlowCandidateRole d t i) / 2)
+      else (0, 0, 0) := by
+  have hfronts := d2FlowStageInvInputs_ordinary_fronts_fit_endpoint_child_deficits
+    children hinputs hparent hparentRole
+  have hrightEq := d2FlowStage_right_front_subtraction_eq
+    children hinputs hparent hparentRole
+  rw [hrightEq]
+  exact d2FlowCutChild_endpoint_support
+    (fun k => d2FlowTreeRootDeficit (children k))
+    (low + d2FlowCandidateQuota d t i
+      (d2FlowCandidateRole d t i) / 2)
+    (high + d2FlowCandidateQuota d t i
+      (d2FlowCandidateRole d t i) / 2)
+    hfronts.1 hfronts.2
+
 theorem d2FlowCandidateStage_regular_last_cut_le_grandchild_right_front
     {d i t h G low high : Nat} (children : Fin 8 -> D2FlowTree (h + 2))
     (hd : 7 <= d) (ht : 2 <= t)

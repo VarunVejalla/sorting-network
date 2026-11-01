@@ -997,3 +997,8 @@ to the corresponding active ordinary grandchild's post-stage root front.
 This closes both endpoint directions for the ordinary-grandchild subcase;
 the remaining role split and full recursive child-fit induction are still
 necessary.
+`d2FlowCandidateStage_regular_cut_endpoint_support` also packages the exact
+ordinary parent cut vector from stage inputs: the first child receives only
+the left cut, the last child only the right cut, and all six interior cuts
+are zero. This is for arbitrary nonuniform child deficits, not just a
+uniform/full profile.
