@@ -688,6 +688,16 @@ Startup/exceptional role routing still needs integration into the set-valued
 layout. None of these size/layout facts establishes the spatial profile
 contraction.
 
+`D2DynamicSenderLayout.lean` now defines the recursive set-valued transition:
+process children first; an inactive node keeps its set and absorbs child
+up-ports; an active node empties itself, adds its down-ports to child results,
+and returns its up-port. The active/inactive root equations are kernel-checked.
+This makes the intended physical update concrete, but does not yet prove
+global coverage/disjointness or cardinality agreement with the flow. Next add
+the recursive partition invariant and prove its one-stage preservation under
+local port partitions, candidate no-adjacency, root/leaf boundary facts, and
+the role-specific flow width equalities.
+
 ## Files and artifacts
 
 Start at `README.md` for the module map. `STATUS-HISTORY.md` preserves the
