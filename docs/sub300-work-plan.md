@@ -84,7 +84,12 @@ conditional transition interface for arbitrary positive port counts. For an
 ordinary sender, use ten ordered ports, tagging the two parent ends as a
 separate destination and the eight child pieces individually; the all-tag
 transfer error then bounds child error as well. This is not yet the actual
-schedule transition.
+schedule transition. The physical child intervals start after the left
+parent port, so their ideal mass is naturally measured on right-shifted rank
+intervals. `D2FlowRankBridge.lean` now proves that such a shift only decreases
+initial-prefix mass, giving the required unshifted reserve comparison. The
+remaining ideal-profile obligation is to derive the shifted interval counts
+from the actual tile-to-sender rank allocation.
 
 The physical sender's Boolean false mass and tags are still **not** identified
 with the flow deficit `G` and the rank intervals. The remaining ordinary

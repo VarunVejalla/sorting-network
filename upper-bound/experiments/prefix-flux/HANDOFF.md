@@ -210,6 +210,13 @@ partial-height and exceptional roles are outside this full-height theorem.
 The composition passes a focused current-source Lean rebuild. The next step is
 to derive its parent-mass, actual-tag, and ideal-rank hypotheses from one
 ordinary sender's static-hole routing geometry.
+The rank hypothesis can now be stated in the physical coordinates: ideal
+child mass need only be bounded by the prefix mass on the interval shifted by
+the sender's left-parent offset. `D2FlowRankBridge.lean` proves that shifting
+an interval right cannot increase its initial-prefix mass, and the composition
+uses this to obtain the unshifted two-front reserve bound. This removes the
+coordinate-shift concern; deriving the shifted ideal-group identity from the
+actual tile allocation remains open.
 
 `D2StrongDeficitPropagation.lean` already proves the sharp local affine
 profile transition for ordinary eight-child updates. The profile is

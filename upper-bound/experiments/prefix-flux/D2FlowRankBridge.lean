@@ -41,6 +41,34 @@ theorem d2FlowRankBoundary_mono (sizes : Fin 8 → Nat) :
   rw [d2FlowRankBoundary_succ sizes i hi]
   exact Nat.le_add_right _ _
 
+/-- Moving a fixed-width interval to the right cannot increase its mass in
+an initial prefix. This lets the physical child ports, which begin after the
+sender's left parent port, use the unshifted ideal-prefix reserve. -/
+theorem prefixIntervalMass_shift_right_le
+    (H offset lo hi : Nat) (hlohi : lo ≤ hi) :
+    prefixIntervalMass H (offset + lo) (offset + hi) ≤
+      prefixIntervalMass H lo hi := by
+  unfold prefixIntervalMass
+  have hleft : H - (offset + lo) ≤ H - lo := by omega
+  have hwidth : offset + hi - (offset + lo) = hi - lo := by omega
+  rw [hwidth]
+  exact min_le_min hleft le_rfl
+
+/-- The ordinary sender's physical child rank interval is shifted right by
+its left parent port. Its ideal prefix mass is therefore bounded by the
+unshifted flow interval mass. -/
+theorem d2FlowRankBoundary_prefix_shift_right_le
+    (sizes : Fin 8 → Nat) (H offset : Nat) (j : Fin 8) :
+    prefixIntervalMass H
+        (offset + d2FlowRankBoundary sizes j.val)
+        (offset + d2FlowRankBoundary sizes (j.val + 1)) ≤
+      prefixIntervalMass H (d2FlowRankBoundary sizes j.val)
+        (d2FlowRankBoundary sizes (j.val + 1)) :=
+  prefixIntervalMass_shift_right_le H offset
+    (d2FlowRankBoundary sizes j.val)
+    (d2FlowRankBoundary sizes (j.val + 1))
+    (d2FlowRankBoundary_mono sizes j.val j.isLt)
+
 /-- A finite set of size equal to the total child-deficit mass can be partitioned
 into the eight abstract deficit rank intervals. This is not the sender's wire
 bag when its own deficit `G` is positive; that bag has size `total-G`. -/

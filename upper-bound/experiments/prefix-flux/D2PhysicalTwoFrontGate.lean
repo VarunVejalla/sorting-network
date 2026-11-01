@@ -59,10 +59,11 @@ theorem d2_physical_grouped_overrun_le_parent_add_448
         (fun tile c => reflectedCoreFalseProfile (input tile) c) tag (some j))
     (hidealGroup : ∀ j, ideal j =
       clippedFlowGroupedRank 4096 bounds idealTileMass tag (some j))
-    (hideal : ∀ j : Fin 8, ideal j ≤ prefixIntervalMass G
-      (d2FlowRankBoundary
+    (senderOffset : Nat)
+    (hidealShifted : ∀ j : Fin 8, ideal j ≤ prefixIntervalMass G
+      (senderOffset + d2FlowRankBoundary
         (fun k => d2FlowTreeRootDeficit (children k)) j.val)
-      (d2FlowRankBoundary
+      (senderOffset + d2FlowRankBoundary
         (fun k => d2FlowTreeRootDeficit (children k)) (j.val + 1))) :
     (Finset.univ.sum fun j : Fin 8 => actual j -
       d2FlowTreeRootDeficit
@@ -99,6 +100,15 @@ theorem d2_physical_grouped_overrun_le_parent_add_448
         exact Nat.le_add_left _ _
       _ ≤ parentError + 448 * tiles := by
         simpa [err] using hphysical
+  have hideal : ∀ j : Fin 8, ideal j ≤ prefixIntervalMass G
+      (d2FlowRankBoundary
+        (fun k => d2FlowTreeRootDeficit (children k)) j.val)
+      (d2FlowRankBoundary
+        (fun k => d2FlowTreeRootDeficit (children k)) (j.val + 1)) := by
+    intro j
+    exact le_trans (hidealShifted j)
+      (d2FlowRankBoundary_prefix_shift_right_le
+        (fun k => d2FlowTreeRootDeficit (children k)) G senderOffset j)
   exact d2FlowCandidateRun_active_ordinary_mass_overrun_le_transfer_atPath
     hd ht path ha hr G low high children hnode actual ideal
     (parentError + 448 * tiles) htransfer hideal
