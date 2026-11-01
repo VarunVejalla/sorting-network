@@ -262,10 +262,113 @@ theorem d2FlowNodeStaticBag_eq_runs
       staticGapRuns_union_eq_complement (n := n) (base + low)
         (base + 8 * width - high)
         (d2FlowNodeStaticHoles base width low high children) hfit
+
   · simpa [d2FlowNodeStaticRuns, hnonsat] using
       staticGapRuns_ordered (n := n) (base + low)
         (base + 8 * width - high)
         (d2FlowNodeStaticHoles base width low high children) hfit
+
+/-- The cardinality of an ordered, fitting hole union is the sum of its
+interval lengths. -/
+theorem staticHoleUnion_card_of_fit {n : Nat} (cursor stop : Nat)
+    (holes : List (Nat × Nat))
+    (hfit : StaticHolesFit cursor holes stop) (hstop : stop ≤ n) :
+    (staticHoleUnion (n := n) holes).card =
+      (holes.map (fun p => p.2 - p.1)).sum := by
+  induction holes generalizing cursor with
+  | nil => simp [staticHoleUnion]
+  | cons hole holes ih =>
+      rcases hole with ⟨lo, hi⟩
+      rcases hfit with ⟨hcursor, hwidth, hend, htail⟩
+      have hdisj : Disjoint (staticWireInterval lo hi)
+          (staticHoleUnion (n := n) holes) := by
+        rw [Finset.disjoint_left]
+        intro w hw htailw
+        simp only [staticWireInterval, Finset.mem_filter,
+          Finset.mem_univ, true_and] at hw
+        have htailLower := staticHoleUnion_lower_bound hi stop holes htail htailw
+        omega
+      have hhiN : hi ≤ n := le_trans hend hstop
+      simp only [staticHoleUnion, List.map_cons, List.sum_cons]
+      rw [Finset.card_union_of_disjoint hdisj,
+        staticWireInterval_card hhiN, ih hi htail]
+
+/-- Every wire in a fitting hole lies inside its enclosing parent interval. -/
+theorem staticHoleUnion_subset_interval {n : Nat} (cursor stop : Nat)
+    (holes : List (Nat × Nat))
+    (hfit : StaticHolesFit cursor holes stop) :
+    staticHoleUnion (n := n) holes ⊆ staticWireInterval cursor stop := by
+  induction holes generalizing cursor with
+  | nil => simp [staticHoleUnion]
+  | cons hole holes ih =>
+      rcases hole with ⟨lo, hi⟩
+      rcases hfit with ⟨hcursor, hwidth, hend, htail⟩
+      intro w hw
+      simp only [staticHoleUnion, Finset.mem_union] at hw
+      simp only [staticWireInterval, Finset.mem_filter, Finset.mem_univ,
+        true_and]
+      rcases hw with hw | hw
+      · simp only [staticWireInterval, Finset.mem_filter,
+          Finset.mem_univ, true_and] at hw
+        exact ⟨by omega, by omega⟩
+      · have htailMem := ih hi htail hw
+        simp only [staticWireInterval, Finset.mem_filter,
+          Finset.mem_univ, true_and] at htailMem ⊢
+        exact ⟨by omega, by omega⟩
+
+/-- Under the fit invariant, a non-saturated sender's physical bag size is
+the parent interval size minus the occupied child-hole sizes. -/
+theorem d2FlowNodeStaticBag_card_of_fit {n h : Nat}
+    (base width G low high : Nat) (children : Fin 8 → D2FlowTree h)
+    (hnonsat : G ≠ 8 * width)
+    (hfit : StaticHolesFit (base + low)
+      (d2FlowNodeStaticHoles base width low high children)
+      (base + 8 * width - high))
+    (hstop : base + 8 * width - high ≤ n) :
+    (d2FlowNodeStaticBag (n := n) base width G low high children).card =
+      (8 * width - low - high) -
+        (staticHoleUnion (n := n)
+          (d2FlowNodeStaticHoles base width low high children)).card := by
+  classical
+  have hsubset := staticHoleUnion_subset_interval
+    (n := n) (base + low) (base + 8 * width - high)
+    (d2FlowNodeStaticHoles base width low high children) hfit
+  simp only [d2FlowNodeStaticBag, if_neg hnonsat]
+  rw [Finset.card_sdiff_of_subset hsubset,
+    staticWireInterval_card hstop]
+  omega
+
+/-- Every static child hole has length equal to its native width minus the
+child deficit; saturated children contribute length zero. -/
+theorem d2EightChildHole_length_eq {base width left right : Nat}
+    (deficit low high : Fin 8 → Nat) (j : Fin 8)
+    (hcap : deficit j ≤ width)
+    (hbalance : deficit j < width → low j + high j = deficit j) :
+    (d2EightChildHole base width left right deficit low high j).2 -
+        (d2EightChildHole base width left right deficit low high j).1 =
+      width - deficit j := by
+  by_cases hsat : deficit j = width
+  · simp [d2EightChildHole, hsat] <;> split_ifs <;> simp
+  · have hbal := hbalance (by omega)
+    have hslot : (j.val + 1) * width = j.val * width + width := by
+      rw [Nat.add_mul, Nat.one_mul]
+    simp [d2EightChildHole, hsat]
+    omega
+
+/-- A non-saturated valid flow-tree root has balanced endpoint reserves. -/
+theorem d2FlowTreeInv_root_balance {scale h : Nat}
+    (tree : D2FlowTree h) (hinv : d2FlowTreeInv scale tree)
+    (hunsat : d2FlowTreeRootDeficit tree < scale * 8 ^ h) :
+    (d2FlowTreeRootData tree).2.1 +
+        (d2FlowTreeRootData tree).2.2 =
+      d2FlowTreeRootDeficit tree := by
+  cases tree with
+  | leaf G low high =>
+      simp only [d2FlowTreeInv, d2FlowTreeRootDeficit] at hinv hunsat ⊢
+      exact hinv.2 (by simpa using hunsat)
+  | node G low high children =>
+      simp only [d2FlowTreeInv, d2FlowTreeRootDeficit] at hinv hunsat ⊢
+      exact hinv.2.2.1 (by simpa [Nat.pow_succ, Nat.mul_comm] using hunsat)
 
 /-- The tree-capacity/balance invariant alone does not guarantee that a
 node's child holes fit between its fronts. Thus the candidate proof must use

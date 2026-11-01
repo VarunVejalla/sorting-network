@@ -82,8 +82,15 @@ post-stage child's root tuple with its cut tuple, and
 fit between the updated parent fronts. The latter derives the subtraction
 identity from the quota and balance clauses in the endpoint-reserve contract.
 This is only the active ordinary node case; inactive and exceptional roles
-and recursive whole-tree preservation remain. Then prove the one-stage
-routed-piece equality and disjointness for every receiver. Only then
+and recursive whole-tree preservation remain. `D2OrdinaryRankRouting.lean`
+already proves the generic ordinary sender destination-piece partition when
+the sender set has cardinality `child-total - G`; do not reprove that abstract
+partition. The next local gate is to prove that the static physical bag has
+this cardinality. `D2PhysicalBagState.lean` now proves hole-union cardinality
+as a sum of interval lengths and expresses bag size as parent interval size
+minus hole-union size. Finish the eight-hole length sum from each child's
+native width and deficit, then instantiate the existing partition and prove
+its pieces match the next physical bags. Only then
 bridge the concrete sender sets to `d2FlowCandidateRun` and identify Boolean
 64-column profiles using the physical core's output map. Include clipped final tiles and
 startup/exceptional roles in the full transition. State root-profile
