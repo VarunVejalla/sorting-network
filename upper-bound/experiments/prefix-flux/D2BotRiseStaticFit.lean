@@ -33,6 +33,8 @@ theorem candidate_botRise_path_static_fit_clamped
         (8192 * 8 ^ h) G low high children).card =
           8 * (8192 * 8 ^ h) - G /\
       (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - G) % 2 = 0 /\
+      d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) =
+        8 * (8192 * 8 ^ h) /\
       StaticHolesFit
         (low + (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - G) / 2)
         (d2FlowNodeStaticHolesClamped 0 (8192 * 8 ^ h)
@@ -190,6 +192,73 @@ theorem candidate_botRise_path_static_fit_clamped
       by simpa [d, width] using hsourceFit,
       by simpa [d, width] using hsourceCard,
       by simpa [d] using hallocationEven,
+      by simpa [d, width] using htotal,
       by simpa [d, width] using hfit, by simpa [d, width] using hbag⟩
+
+def CandidateBotRisePorts {n : Nat} (h j G low high : Nat)
+    (children : Fin 8 -> D2FlowTree h) (s : Finset (Fin n)) : Prop :=
+  let d := h + 1 + (j + 2)
+  let widths : Fin 8 -> Nat := fun k =>
+    d2FlowTreeRootDeficit (children k) -
+      d2FlowTreeRootDeficit
+        (d2FlowTreeChild
+          (d2FlowStage (d2FlowCandidateActive d (3 * j))
+            (d2FlowCandidateRole d (3 * j))
+            (d2FlowCandidateQuota d (3 * j))
+            (h + 1) (j + 2) (.node G low high children)) k)
+  let pi := d2FlowTotal
+    (fun k => d2FlowTreeRootDeficit (children k)) - G
+  let boundary := d2FlowRankBoundary widths
+  (forall target : Option (Fin 8), destinationPiece (ports := 8) s boundary (pi / 2)
+      (s.card - pi / 2) target ⊆ s) /\
+    Finset.univ.biUnion (destinationPiece (ports := 8) s boundary (pi / 2)
+      (s.card - pi / 2)) = s /\
+    (forall (a b : Option (Fin 8)), a ≠ b ->
+      Disjoint (destinationPiece (ports := 8) s boundary (pi / 2)
+        (s.card - pi / 2) a)
+        (destinationPiece (ports := 8) s boundary (pi / 2)
+          (s.card - pi / 2) b))
+
+/-- The all-stage parity result instantiates the generic bottom-rise routing
+partition for every sender set with the candidate flow-allocation cardinality. -/
+theorem candidate_botRise_path_piece_partition
+    {h j : Nat} (hd : 7 <= h + 1 + (j + 2)) (hj : 1 <= j)
+    (hwindow : 3 * j + 2 <= tfD2 (h + 1 + (j + 2)))
+    (path : D2FlowPath (j + 2)) :
+    exists G low high, exists children : Fin 8 -> D2FlowTree h,
+      d2FlowTreeAtPath (j + 2)
+          (d2FlowCandidateRun (h + 1 + (j + 2))
+            (d2FlowTreeInitial 8192 (h + 1 + (j + 2))) (3 * j)) path =
+        .node G low high children /\
+      (forall {n : Nat} (s : Finset (Fin n)),
+        s.card = d2FlowTotal
+          (fun k => d2FlowTreeRootDeficit (children k)) - G ->
+        CandidateBotRisePorts h j G low high children s) := by
+  obtain ⟨G, low, high, children, hnode, hfit, hcard, heven, htotal,
+      hpostfit, hpostempty⟩ :=
+    candidate_botRise_path_static_fit_clamped hd hj hwindow path
+  let d := h + 1 + (j + 2)
+  have hrole := d2FlowCandidate_botRise_current_active_role hd hj hwindow
+  have ha : d2FlowCandidateActive d (3 * j) (j + 2) = true := by
+    simpa [d, d2FlowCandidateRunActive] using hrole.1
+  have hr : d2FlowCandidateRole d (3 * j) (j + 2) = .botRise := by
+    simpa [d, d2FlowCandidateRunRole] using hrole.2
+  have hwindow' := d2FlowCandidate_botRise_callback_window hd hj hwindow
+    (3 * j) (by omega)
+  have hnext : d2FlowCandidateActive d (3 * j) (j + 3) = false := by
+    simpa [d, d2FlowCandidateRunActive] using hwindow'.1
+  have hroute : forall {n : Nat} (s : Finset (Fin n)),
+      s.card = d2FlowTotal
+        (fun k => d2FlowTreeRootDeficit (children k)) - G ->
+      CandidateBotRisePorts h j G low high children s := by
+    intro n s hsender
+    have hparts := bot_rise_sender_piece_partition
+      (active := d2FlowCandidateActive d (3 * j))
+      (role := d2FlowCandidateRole d (3 * j))
+      (quota := d2FlowCandidateQuota d (3 * j))
+      (h := h) (i := j + 2) (G := G) (low := low) (high := high)
+      children s ha hr hnext heven hsender
+    simpa [CandidateBotRisePorts, d] using hparts
+  exact ⟨G, low, high, children, hnode, hroute⟩
 
 end Chvatal.D2BotRiseStaticFit

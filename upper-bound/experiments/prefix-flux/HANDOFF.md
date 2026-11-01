@@ -16,14 +16,14 @@ equal full capacity. The proof uses
 `D2BotRiseRunBridge.lean` to identify the role and
 `D2PathNativePreservation.lean` to preserve child roots through callback
 history. Current-source focused checks pass for `D2PhysicalBagState.lean` and
-`D2BotRiseStaticFit.lean`. This closes the `botRise` source and post-bag
-geometry and cardinality cases; it does not establish that the allocation is
-even for the local parent-port split, identify routed pieces with next-stage
-bags, or prove physical receiver tags. Prove candidate allocation parity next,
-then compose its local route with the receiver-allocation identity.
-The exact `FlowDAG` model found even bot-rise allocations in all 178
-candidate bot-rise snapshots for dimensions 7 through 12; this is only a
-finite screen, and an all-dimension parity argument is still needed.
+`D2BotRiseStaticFit.lean`. The file also proves the allocation is even at every
+candidate path, then applies `bot_rise_sender_piece_partition` uniformly to
+any finite sender set with the required flow-allocation cardinality. This
+supplies the bot-rise local routing contract for the dynamic-set layout; it
+does not identify routed pieces with next-stage receiver sets or prove the
+receiver-cardinality recurrence. The exact `FlowDAG` model's 178 even snapshots
+for dimensions 7 through 12 are superseded as evidence by this all-dimension
+Lean result.
 
 ## Candidate and price
 
@@ -813,7 +813,9 @@ child-root preservation. Focused current-source Lean check: PASS for
 `D2BotRiseStaticFit`. This remains a local bot-rise routing fact; it does not
 identify routed receiver sets with next-stage bags, establish the full
 all-role physical transition, or prove profile contraction/terminal cleanup.
-Next, use this parity result to instantiate the local partition at the actual
-clamped static sender (if useful to the receiver-layout gate), then prioritize
-the all-role sender-set/cardinality transition and arbitrary-root profile
-recurrence. The central sub-300 risk is unchanged.
+The parity result is now composed with `bot_rise_sender_piece_partition` in
+`candidate_botRise_path_piece_partition`, uniformly for any sender set with the
+correct flow-allocation size. This is reusable by the dynamic-set layout. Next,
+use it in the receiver-cardinality induction and close the remaining roles;
+then return to the arbitrary-root profile recurrence. Neither global gate is
+closed, so the central sub-300 risk is unchanged.
