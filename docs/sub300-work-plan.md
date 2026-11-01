@@ -75,8 +75,19 @@ shows that if the actual eight grouped counts are within aggregate L1 error
 `E` of those ideal masses, their total positive overrun above the next
 two-front reserves is at most `E`.
 
+`D2PhysicalTwoFrontGate.lean` composes this with the checked physical
+false-profile transfer: for full-height source tiles, parent tile-mass
+discrepancy `P` plus the `448*tiles` fresh core error bounds actual overrun,
+provided the grouped actual/ideal counts are identified and the ideal groups
+are bounded by the sender's flow rank intervals. This is an explicit
+conditional transition interface, not yet the actual schedule transition.
+
 The physical sender's Boolean false mass and tags are still **not** identified
-with the flow deficit `G` and the rank intervals. The older tolerant gate
+with the flow deficit `G` and the rank intervals. The remaining ordinary
+gate is to prove the grouped-count identification, ideal interval domination,
+and parent tile-mass discrepancy invariant from actual static sender sets.
+The theorem currently covers full-height tiles; ragged tiles and exceptional
+roles need separate adapters. The older tolerant gate
 `4096*G <= 23*capacity` alone gives up to 992 ideal overrun per 262144-wire
 core tile (32 flow blocks), so it cannot pay for the local 448 transfer error
 within the 512-per-tile doubling budget. The stronger affine reserve removes

@@ -195,6 +195,19 @@ The weaker strict `512*G <= capacity` reserve gives 32 per physical tile;
 either strict bound leaves the local 448 charge within the 512-per-tile
 doubling budget.
 
+`D2PhysicalTwoFrontGate.lean` now composes the full-height physical
+false-profile theorem with the all-stage two-front gate. Under an aggregate
+parent tile-mass discrepancy `P`, exact identification of the eight grouped
+actual/ideal counts, and the one-sided rank-interval hypothesis for those
+ideal groups, it proves actual child overrun at most `P + 448*tiles`. This is
+the current ordinary-sender invariant interface. It does not yet prove the
+schedule supplies these hypotheses: the root-to-sender tile mass invariant,
+static receiver tags/cuts, and ideal grouped-mass domination remain open;
+partial-height and exceptional roles are outside this full-height theorem.
+The composition passes a focused current-source Lean rebuild. The next step is
+to derive its parent-mass, actual-tag, and ideal-rank hypotheses from one
+ordinary sender's static-hole routing geometry.
+
 `D2StrongDeficitPropagation.lean` already proves the sharp local affine
 profile transition for ordinary eight-child updates. The profile is
 `G = 0 ∧ 256*pi <= c`, or
