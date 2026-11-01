@@ -964,6 +964,61 @@ theorem d2OrdinaryRankSenderPorts_complete_contract
   simpa [widths, boundary, ports, d2OrdinaryRankSenderPorts] using
     And.intro hlocal hcards
 
+/-- The ordinary port contract applies directly to a fitted physical static
+bag: its exact cardinality premise is discharged by the clamped-fit theorem.
+Schedule reachability must still provide the fit and cut hypotheses. -/
+theorem d2OrdinaryRankSenderPorts_static_bag_complete_contract
+    {active : Nat → Bool} {role : Nat → D2Role}
+    {quota : Nat → D2Role → Nat} {scale h i G low high n : Nat}
+    (children : Fin 8 → D2FlowTree h)
+    (htree : d2FlowTreeInv scale (.node G low high children))
+    (hfit : StaticHolesFit low
+      (d2FlowNodeStaticHolesClamped 0 (scale * 8 ^ h) low high children)
+      (8 * (scale * 8 ^ h) - high))
+    (hstop : 8 * (scale * 8 ^ h) - high ≤ n)
+    (hGlt : G < 8 * (scale * 8 ^ h))
+    (ha : active i = true)
+    (hr : Or (role i = .topRise)
+      (Or (role i = .mid) (role i = .botDesc)))
+    (hbal : G = low + high)
+    (heven : quota i (role i) % 2 = 0)
+    (hleft : low + quota i (role i) / 2 ≤
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)))
+    (hright : high + quota i (role i) / 2 ≤
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)))
+    (hgap : low + quota i (role i) / 2 ≤
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) -
+        high - quota i (role i) / 2) :
+    let s : Finset (Fin n) := d2FlowNodeStaticBag (n := n) 0 (scale * 8 ^ h)
+      G low high children
+    let widths : Fin 8 → Nat := fun j =>
+      d2FlowTreeRootDeficit (children j) -
+        d2FlowTreeRootDeficit
+          (d2FlowTreeChild
+            (d2FlowStage active role quota (h + 1) i
+              (.node G low high children)) j)
+    let boundary : Nat → Nat := d2FlowRankBoundary widths
+    let ports := d2OrdinaryRankSenderPorts s boundary
+      (quota i (role i) / 2) (s.card - quota i (role i) / 2)
+    And
+      (And (∀ port, d2SenderPortsLocalPiece ports port ⊆ s)
+        (And (Finset.univ.biUnion (d2SenderPortsLocalPiece ports) = s)
+          (∀ port port', port ≠ port' →
+            Disjoint (d2SenderPortsLocalPiece ports port)
+              (d2SenderPortsLocalPiece ports port'))))
+      (And (ports.up.card = quota i (role i))
+        (∀ j, (ports.down j).card = widths j)) := by
+  let s := d2FlowNodeStaticBag (n := n) 0 (scale * 8 ^ h)
+    G low high children
+  have hsender : s.card = d2FlowTotal
+      (fun j => d2FlowTreeRootDeficit (children j)) - G := by
+    have hcard := d2FlowNodeStaticBag_card_eq_flow_allocation_of_clamped_fit
+      (n := n) (scale := scale) 0 G low high children htree
+      (by simpa using hfit) (by simpa using hstop)
+    simpa [s, d2FlowTreeAllocation] using hcard
+  simpa [s] using d2OrdinaryRankSenderPorts_complete_contract children s
+    ha hr hbal heven hleft hright hgap hsender
+
 /-- The flat one-stage receiver bags obtained by routing every local piece to
 its indexed parent/child (or to the explicit external boundary bucket). -/
 noncomputable def d2SenderNodeRoutedBag {Wire : Type*} [DecidableEq Wire]

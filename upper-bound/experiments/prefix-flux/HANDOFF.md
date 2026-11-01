@@ -764,8 +764,10 @@ exact sender-bag cardinality from clamped fit, and
 `d2FlowNodeStaticHolesClamped_card` proves its holes have the required total
 length. `D2DynamicSenderNode.lean` now exposes this as
 `d2FlowNodeStaticBag_card_eq_flow_allocation_of_clamped_fit`, preserving the
-canonical-fit theorem as a wrapper. Focused current-source rebuilds of both
-files pass.
+canonical-fit theorem as a wrapper. It also provides
+`d2OrdinaryRankSenderPorts_static_bag_complete_contract`, which instantiates
+the ordinary partition and exact port-size theorem directly on a clamped-fit
+static bag. Focused current-source rebuilds of both files pass.
 This removes the mismatch between the reachable clamped representation and
 the sender-cardinality interface; it does not establish clamped fit at every
 reachable stage. Canonical hole markers still fail the all-stage fit screen,
