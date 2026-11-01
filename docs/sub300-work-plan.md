@@ -49,7 +49,10 @@ specific gap:
 - `D2AffineCoreAllStages.lean` proves the abstract flow invariant for all
   stages. `D2AllStageInvariant.lean` separately lifts a physical sender-input
   provider to all stages; identifying that provider with the actual schedule
-  remains open.
+  remains open. `D2AllStageTwoFrontGate.lean` also proves that every active
+  ordinary abstract sender has zero ideal-prefix overrun above its two-front
+  child reserves; this does not identify the flow deficit with physical false
+  mass.
 
 The missing theorem must instantiate these interfaces on one actual
 `d2FlowCandidateRun` transition: from the Boolean 64-column profiles in its
@@ -92,9 +95,12 @@ The sharp local recurrence is already kernel-checked in
 `8192*G + 7 ≤ 15*c ∧ 4096*pi ≤ 15*c`. The file proves this profile propagates
 through an ordinary eight-child update at capacity `2*c`, implies the existing
 `512*G ≤ capacity` and quota gates, and handles the seven-unit integer slack.
-Do not redo this local arithmetic. The missing step is to establish the
-profile's hypotheses for every sender in the actual scheduled run, including
-startup, top-rise, mid, bottom-descending, and exceptional/ragged roles.
+Do not redo this local arithmetic. The all-stage abstract flow provider now
+establishes its hypotheses throughout the candidate run, and
+`D2AllStageTwoFrontGate.lean` closes the resulting ideal overrun gate. The
+missing step is to link actual sender masses, cuts, and tags to those flow
+states, including startup, top-rise, mid, bottom-descending, and
+exceptional/ragged roles.
 
 The exact compressed-flow screen
 `d2_deficit_tolerance_screen.py --depth 100 --scale 8192 --params 3 3 2`

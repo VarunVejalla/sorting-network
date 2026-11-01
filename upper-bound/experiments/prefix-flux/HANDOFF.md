@@ -93,6 +93,8 @@ and invariant bootstrap to prove the abstract affine-core provider and tree
 invariant for every stage and dimension `d >= 7`. A focused current-source
 rebuild passes. This closes the abstract flow-reserve induction; it does not
 identify physical sender counts or receiver tags.
+`D2AllStageTwoFrontGate.lean` additionally proves zero ideal-prefix overrun
+above the two-front reserves for every active ordinary candidate path.
 
 ## Main unresolved gate
 
@@ -170,7 +172,10 @@ overrun is 3968 = 992 per tile. This refutes deriving the recurrence from the
 tolerant predicate alone; it is not a reachable-run counterexample. The
 stronger `8192*G <= 15*capacity` reserve makes the ideal overrun zero because
 half the candidate quota is at least `15/8192` of capacity. This implication
-is kernel-checked in `candidate_sender_two_front_overrun_zero_of_15over8192`.
+is kernel-checked in `candidate_sender_two_front_overrun_zero_of_15over8192`,
+and `D2AllStageTwoFrontGate.lean` derives the reserve at every active ordinary
+candidate path. This remains an abstract flow fact; actual physical
+source-tile false mass is not yet shown to equal `G`.
 The weaker strict `512*G <= capacity` reserve gives 32 per physical tile;
 either strict bound leaves the local 448 charge within the 512-per-tile
 doubling budget.
@@ -253,7 +258,8 @@ checks 217470 reachable stage/node entries. Its maximum is
 `G/capacity = 15/8192 - 7/capacity`; all quota and endpoint gates pass. This
 is finite model evidence, not an all-depth theorem. The affine local update
 and its side conditions are now proved for the abstract candidate flow tree
-at all stages. What remains is to identify actual physical sender profiles
+at all stages, and `D2AllStageTwoFrontGate.lean` closes its ideal overrun gate.
+What remains is to identify actual physical sender profiles
 and tags with this tree for the fixed schedule, including startup, top-rise,
 mid, bottom-descending, exceptional, and ragged roles.
 
