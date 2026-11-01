@@ -159,6 +159,58 @@ def d2FlowTreePhysicalLayout {n scale : Nat} :
         (fun j => d2FlowTreePhysicalLayout (n := n) (scale := scale)
           (base + j.val * (scale * 8 ^ h)) (children j))
 
+theorem d2FlowTreePhysicalLayout_cast {n scale a b : Nat}
+    (h : a = b) (base : Nat) (tree : D2FlowTree a) :
+    cast (congrArg (D2SenderLayout (Fin n)) h)
+        (d2FlowTreePhysicalLayout (n := n) (scale := scale) base tree) =
+      d2FlowTreePhysicalLayout (n := n) (scale := scale) base
+        (cast (congrArg D2FlowTree h) tree) := by
+  cases h
+  rfl
+
+theorem nativePathStart_cons (scale remaining : Nat) {levels : Nat}
+    (j : Fin 8) (path : D2FlowPath levels) :
+    nativePathStart scale remaining (.cons j path) =
+      j.val * (scale * 8 ^ (remaining + levels)) +
+        nativePathStart scale remaining path := by
+  simp only [nativePathStart, D2NativePathIntervals.pathIndex, Nat.pow_add]
+  ring
+
+theorem d2FlowTreePhysicalLayout_bagAtPath {n scale base remaining levels : Nat}
+    (tree : D2FlowTree (remaining + levels)) (path : D2FlowPath levels) :
+    d2SenderLayoutBagAtPath levels
+        (d2FlowTreePhysicalLayout (n := n) (scale := scale) base tree) path =
+      d2FlowTreePhysicalBag (scale := scale)
+        (base + nativePathStart scale remaining path)
+        (d2FlowTreeAtPath levels tree path) := by
+  induction path generalizing remaining base with
+  | nil =>
+      cases remaining with
+      | zero =>
+          cases tree with
+          | leaf G low high =>
+              simp [d2SenderLayoutBagAtPath, d2FlowTreePhysicalLayout,
+                d2FlowTreePhysicalBag, d2FlowTreeAtPath, d2SenderLayoutRootBag,
+                nativePathStart,
+                D2NativePathIntervals.pathIndex]
+      | succ remaining =>
+          cases tree with
+          | node G low high children =>
+              simp [d2SenderLayoutBagAtPath, d2FlowTreePhysicalLayout,
+                d2FlowTreePhysicalBag, d2FlowTreeAtPath, d2SenderLayoutRootBag,
+                nativePathStart,
+                D2NativePathIntervals.pathIndex]
+  | @cons levels j tail ih =>
+      cases tree with
+      | node G low high children =>
+          simp only [d2SenderLayoutBagAtPath, d2FlowTreePhysicalLayout,
+            d2FlowTreeAtPath]
+          rw [nativePathStart_cons]
+          simpa [d2FlowTreeChild, Nat.add_assoc] using
+            (ih (remaining := remaining) (base :=
+              base + j.val * (scale * 8 ^ (remaining + levels)))
+              (tree := children j))
+
 theorem d2FlowTreePhysicalBag_full_eq_empty {n scale : Nat}
     (base h : Nat) :
     d2FlowTreePhysicalBag (n := n) (scale := scale) base
@@ -203,6 +255,32 @@ def d2SenderNodePhysicalBag {n scale depth : Nat}
   d2FlowTreePhysicalBag (scale := scale)
     (nativePathStart scale (depth - node.1.val) node.2)
     (d2SenderNodeSubtree tree node)
+
+theorem d2SenderNodeBag_physical_eq {n scale depth : Nat}
+    (base : Nat) (tree : D2FlowTree depth) (node : D2SenderNode depth) :
+    d2SenderNodeBag (d2FlowTreePhysicalLayout (n := n) (scale := scale)
+      base tree) node =
+      d2FlowTreePhysicalBag (scale := scale)
+        (base + nativePathStart scale (depth - node.1.val) node.2)
+        (d2SenderNodeSubtree tree node) := by
+  classical
+  let level := node.1.val
+  have hle : level ≤ depth := by omega
+  have heq : (depth - level) + level = depth := Nat.sub_add_cancel hle
+  let fullTree : D2FlowTree ((depth - level) + level) :=
+    cast (congrArg D2FlowTree heq.symm) tree
+  let fullLayout : D2SenderLayout (Fin n) ((depth - level) + level) :=
+    cast (congrArg (D2SenderLayout (Fin n)) heq.symm)
+      (d2FlowTreePhysicalLayout (n := n) (scale := scale) base tree)
+  have hcast : fullLayout =
+      d2FlowTreePhysicalLayout (n := n) (scale := scale) base fullTree := by
+    exact d2FlowTreePhysicalLayout_cast heq.symm base tree
+  change d2SenderLayoutBagAtPath level fullLayout node.2 =
+    d2FlowTreePhysicalBag (scale := scale)
+      (base + nativePathStart scale (depth - level) node.2)
+      (d2FlowTreeAtPath level fullTree node.2)
+  rw [hcast]
+  exact d2FlowTreePhysicalLayout_bagAtPath fullTree node.2
 
 theorem d2SenderNodePhysicalBag_root {n scale depth : Nat}
     (tree : D2FlowTree depth) :

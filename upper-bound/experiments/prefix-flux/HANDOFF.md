@@ -739,10 +739,13 @@ subtree contributes no wires, and
 `d2FlowTreePhysicalLayout_initial_wires_eq_univ` proves that the initial
 recursive layout covers the complete wire universe. These are base-state
 results. The equality between flat-index bag projections and these recursive
-physical bags, explicit flat source disjointness, and every post-stage bag
-identity remain open. Prove the flat/recursive projection equality and derive
-the initial flat partition; then attempt the one-stage receiver-cardinality
-identity.
+physical bags is now proved by `d2FlowTreePhysicalLayout_bagAtPath` and its
+flat-node adapter `d2SenderNodeBag_physical_eq`. The initial flat source
+cover/disjointness proof and every post-stage bag identity remain open. Next
+derive the initial flat partition from this projection, then attempt the
+one-stage receiver-cardinality identity. The decisive risk remains whether
+post-stage receiver sets really have the `d2FlowTreeAllocation` sizes under
+all role and overwrite cases.
 
 ## Files and artifacts
 
