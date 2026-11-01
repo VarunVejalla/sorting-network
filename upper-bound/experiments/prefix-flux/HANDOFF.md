@@ -19,8 +19,11 @@ history. Current-source focused checks pass for `D2PhysicalBagState.lean` and
 `D2BotRiseStaticFit.lean`. This closes the `botRise` source and post-bag
 geometry and cardinality cases; it does not establish that the allocation is
 even for the local parent-port split, identify routed pieces with next-stage
-bags, or prove physical receiver tags. Check candidate allocation parity next,
+bags, or prove physical receiver tags. Prove candidate allocation parity next,
 then compose its local route with the receiver-allocation identity.
+The exact `FlowDAG` model found even bot-rise allocations in all 178
+candidate bot-rise snapshots for dimensions 7 through 12; this is only a
+finite screen, and an all-dimension parity argument is still needed.
 
 ## Candidate and price
 
