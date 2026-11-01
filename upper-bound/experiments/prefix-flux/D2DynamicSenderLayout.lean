@@ -84,6 +84,23 @@ theorem d2SenderLayoutStage_node_active {Wire : Type*} [DecidableEq Wire]
   classical
   simp [d2SenderLayoutStage, ha, d2SenderLayoutRootBag]
 
+theorem d2SenderLayoutStage_node_active_eq {Wire : Type*}
+    [DecidableEq Wire] {h : Nat} (active : Nat -> Bool)
+    (split : Nat -> Finset Wire -> D2SenderPorts Wire) (level : Nat)
+    (bag : Finset Wire) (children : Fin 8 -> D2SenderLayout Wire h)
+    (ha : active level = true) :
+    d2SenderLayoutStage active split (h + 1) level (.node bag children) =
+      (.node Finset.empty (fun j =>
+        d2SenderLayoutSetRoot
+          (d2SenderLayoutStage active split h (level + 1)
+            (children j)).1
+          (d2SenderLayoutRootBag
+            (d2SenderLayoutStage active split h (level + 1)
+              (children j)).1 ∪ (split level bag).down j)),
+        (split level bag).up) := by
+  classical
+  simp [d2SenderLayoutStage, ha]
+
 theorem d2SenderLayoutStage_node_inactive {Wire : Type*} [DecidableEq Wire]
     {h : Nat} (active : Nat -> Bool)
     (split : Nat -> Finset Wire -> D2SenderPorts Wire) (level : Nat)
@@ -98,6 +115,20 @@ theorem d2SenderLayoutStage_node_inactive {Wire : Type*} [DecidableEq Wire]
         (.node bag children)).2 = Finset.empty := by
   classical
   simp [d2SenderLayoutStage, ha, d2SenderLayoutRootBag]
+
+theorem d2SenderLayoutStage_node_inactive_eq {Wire : Type*}
+    [DecidableEq Wire] {h : Nat} (active : Nat -> Bool)
+    (split : Nat -> Finset Wire -> D2SenderPorts Wire) (level : Nat)
+    (bag : Finset Wire) (children : Fin 8 -> D2SenderLayout Wire h)
+    (ha : active level = false) :
+    d2SenderLayoutStage active split (h + 1) level (.node bag children) =
+      (.node (bag ∪ Finset.univ.biUnion (fun j =>
+        (d2SenderLayoutStage active split h (level + 1)
+          (children j)).2)) (fun j =>
+        (d2SenderLayoutStage active split h (level + 1)
+          (children j)).1), Finset.empty) := by
+  classical
+  simp [d2SenderLayoutStage, ha]
 
 theorem d2SenderLayoutStage_up_empty_of_inactive {Wire : Type*}
     [DecidableEq Wire] (active : Nat -> Bool)
