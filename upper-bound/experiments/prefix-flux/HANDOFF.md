@@ -727,6 +727,17 @@ step is to define node-dependent source bags and splits from the actual
 candidate stage/static bags, then match receiver cardinality to
 `d2FlowTreeAllocation` without assuming the agreement.
 
+`D2DynamicSenderNode.lean` now also defines a concrete static physical bag for
+each flat flow-tree node, using its native base-eight address and the checked
+static-hole construction. The root selector reduces to the root subtree, and
+`d2SenderNodePhysicalBag_initial_root_eq_univ` proves that the initial root
+source bag is exactly the full wire universe (including depth zero and zero
+width). This is a base-state fact only: it does not yet prove the initial
+descendant bags are empty as a flat partition, nor identify the post-stage
+physical bags with routed port pieces. Continue by proving those initial
+descendant facts and packaging the recursive physical bags as a flat
+`D2SenderLayout`; then attempt the one-stage receiver-cardinality identity.
+
 ## Files and artifacts
 
 Start at `README.md` for the module map. `STATUS-HISTORY.md` preserves the

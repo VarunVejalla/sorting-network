@@ -1,6 +1,8 @@
 import D2DynamicSenderCardinality
 import D2DynamicSenderLayout
 import D2FlowPathLast
+import D2NativePathIntervals
+import D2PhysicalBagState
 
 /-! A finite flat index for every node of a full D2 flow tree. -/
 
@@ -8,6 +10,9 @@ namespace Chvatal.D2OrdinaryRankRouting
 
 open Chvatal
 open Chvatal.D2Reserve
+open Chvatal.D2NativePathIntervals
+open Chvatal.D2PhysicalBagState
+open Chvatal.D2StaticWireSets
 
 noncomputable instance instD2FlowPathDecidableEq (n : Nat) :
     DecidableEq (D2FlowPath n) := Classical.decEq _
@@ -37,6 +42,10 @@ noncomputable def d2FlowPathFintype : (n : Nat) -> Fintype (D2FlowPath n)
 
 abbrev D2SenderNode (depth : Nat) :=
   Sigma fun level : Fin (depth + 1) => D2FlowPath level.val
+
+/-- The unique level-zero node. -/
+def d2SenderNodeRoot (depth : Nat) : D2SenderNode depth :=
+  ⟨⟨0, Nat.zero_lt_succ depth⟩, D2FlowPath.nil⟩
 
 noncomputable instance instD2SenderNodeFintype (depth : Nat) :
     Fintype (D2SenderNode depth) := by
@@ -129,6 +138,101 @@ def d2SenderNodeBag {Wire : Type*} [DecidableEq Wire] {depth : Nat}
   let fullLayout : D2SenderLayout Wire ((depth - level) + level) :=
     cast (congrArg (D2SenderLayout Wire) heq.symm) layout
   exact d2SenderLayoutBagAtPath level fullLayout node.2
+
+/-- The physical address bag represented by one flow subtree. Leaves use
+their native interval; internal nodes use the checked static-hole bag. -/
+def d2FlowTreePhysicalBag {n scale : Nat} :
+    (base : Nat) -> {h : Nat} -> D2FlowTree h -> Finset (Fin n)
+  | base, 0, .leaf G low high =>
+      if G = scale then Finset.empty else
+        staticWireInterval (base + low) (base + scale - high)
+  | base, h + 1, .node G low high children =>
+      d2FlowNodeStaticBag base (scale * 8 ^ h) G low high children
+
+/-- The static physical sender set at a flat node index, using the base-eight
+native address of its path. -/
+def d2SenderNodePhysicalBag {n scale depth : Nat}
+    (tree : D2FlowTree depth) (node : D2SenderNode depth) : Finset (Fin n) :=
+  d2FlowTreePhysicalBag (scale := scale)
+    (nativePathStart scale (depth - node.1.val) node.2)
+    (d2SenderNodeSubtree tree node)
+
+theorem d2SenderNodePhysicalBag_root {n scale depth : Nat}
+    (tree : D2FlowTree depth) :
+    d2SenderNodePhysicalBag (n := n) (scale := scale) tree
+      (d2SenderNodeRoot depth) =
+      d2FlowTreePhysicalBag (n := n) (scale := scale) 0 tree := by
+  simp [d2SenderNodePhysicalBag, d2SenderNodeSubtree, d2SenderNodeRoot,
+    nativePathStart, D2NativePathIntervals.pathIndex, d2FlowTreeAtPath]
+
+/-- Initially, the root's static sender bag is the complete wire universe. -/
+theorem d2SenderNodePhysicalBag_initial_root_eq_univ (scale depth : Nat) :
+    d2SenderNodePhysicalBag (n := scale * 8 ^ depth) (scale := scale)
+      (d2FlowTreeInitial scale depth) (d2SenderNodeRoot depth) = Finset.univ := by
+  rw [d2SenderNodePhysicalBag_root]
+  cases depth with
+  | zero =>
+      by_cases hscale : scale = 0
+      · subst scale
+        ext w
+        exact Fin.elim0 w
+      · have hzero : 0 ≠ scale := Ne.symm hscale
+        ext w
+        simp [d2FlowTreePhysicalBag, d2FlowTreeInitial, hzero,
+          staticWireInterval, Nat.pow_zero]
+        omega
+  | succ depth =>
+      by_cases hscale : scale = 0
+      · subst scale
+        have hzero : 0 * 8 ^ (depth + 1) = 0 := Nat.zero_mul _
+        ext w
+        exact Fin.elim0 (Fin.cast hzero w)
+      · let width := scale * 8 ^ depth
+        let children : Fin 8 → D2FlowTree depth := fun _ =>
+          d2FlowTreeFull scale depth
+        have hfit := d2FlowFullChildren_static_holes_fit scale depth
+        have hchildInv : ∀ j, d2FlowTreeInv scale (children j) := by
+          intro j
+          exact d2FlowTreeFull_inv scale depth
+        have hfit' : StaticHolesFit (0 + 0)
+            (d2FlowNodeStaticHoles 0 width 0 0 children)
+            (0 + 8 * width - 0) := by
+          simpa [width] using hfit
+        have hstop : 8 * width ≤ scale * 8 ^ (depth + 1) := by
+          simp [width, Nat.pow_succ, Nat.mul_assoc, Nat.mul_comm,
+            Nat.mul_left_comm]
+        have hstop' : 0 + 8 * width - 0 ≤ scale * 8 ^ (depth + 1) := by
+          simpa using hstop
+        have hholesCard := d2FlowNodeStaticHoles_card (n := scale * 8 ^ (depth + 1))
+          (scale := scale) (base := 0) (low := 0) (high := 0) children
+          hchildInv hfit' hstop'
+        have hchildrenMass : d2FlowTotal
+            (fun j => d2FlowTreeRootDeficit (children j)) = 8 * width := by
+          simp [d2FlowTotal, children, width, d2FlowTreeFull_root_deficit]
+        have hholesEmpty : staticHoleUnion (n := scale * 8 ^ (depth + 1))
+            (d2FlowNodeStaticHoles 0 width 0 0 children) = Finset.empty := by
+          have hcard : (staticHoleUnion (n := scale * 8 ^ (depth + 1))
+              (d2FlowNodeStaticHoles 0 width 0 0 children)).card = 0 := by
+            rw [hholesCard, hchildrenMass]
+            omega
+          exact Finset.card_eq_zero.mp hcard
+        have hwidth : 0 < width := by
+          have hpow : 0 < 8 ^ depth := by positivity
+          have hscalePos : 0 < scale := Nat.pos_of_ne_zero hscale
+          exact Nat.mul_pos hscalePos hpow
+        have hnotSat : 0 ≠ 8 * width := by omega
+        change d2FlowNodeStaticBag (n := scale * 8 ^ (depth + 1))
+          0 width 0 0 0 children = Finset.univ
+        rw [d2FlowNodeStaticBag, if_neg hnotSat, hholesEmpty]
+        have hnative : 8 * width = scale * 8 ^ (depth + 1) := by
+          simp only [width, Nat.pow_succ]
+          ring
+        rw [hnative]
+        classical
+        ext w
+        simp [staticWireInterval]
+        intro hw
+        exact (Finset.not_nonempty_iff_eq_empty.mpr rfl) ⟨w, hw⟩
 
 /-- Port labels for one sender: its parent/output port, or one of its eight
 child ports. -/
