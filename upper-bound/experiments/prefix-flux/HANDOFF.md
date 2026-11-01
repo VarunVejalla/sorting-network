@@ -801,6 +801,16 @@ reduce its incoming sum to its retained self-piece, active parent's down-port,
 and active children's up-ports, then match those widths to the flow allocation
 recurrence.
 
+The recursive static-fit provider is itself still missing. The existing
+one-node clamped-fit lemmas establish that updated holes fit inside the current
+parent, but a parent may overwrite each child's root fronts after that child's
+recursive stage. The child's internal hole fit must therefore be re-established
+against the overwritten fronts. `d2FlowStageDescEndpointsAligned_setRoot`
+survives this overwrite only as 4096-divisibility; it does not prove geometric
+containment. First state and prove a one-cut-child containment lemma, with
+hypotheses on the recursively staged descendants and the parent's actual cut
+fronts, then attempt the whole-tree induction.
+
 `D2DynamicSenderNode.lean` now also defines a concrete static physical bag for
 each flat flow-tree node, using its native base-eight address and the checked
 static-hole construction. The root selector reduces to the root subtree, and
