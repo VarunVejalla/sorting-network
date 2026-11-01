@@ -9,16 +9,18 @@ research status, not a proved improvement to the repository's accepted bound.
 snapshot has clamped static-hole fit both before and after the update, for any
 selected path satisfying the schedule window. Before the update, the saturated
 children's clamped empty-hole markers remain ordered in the valid parent
-interval. After the update, the updated parent's physical static sender bag is
-empty: child preservation makes its post-step deficit equal full capacity. The
-proof uses
+interval. It also proves the current sender bag has exactly `8 * width - G`
+wires, its flow allocation. After the update, the updated parent's physical
+static sender bag is empty: child preservation makes its post-step deficit
+equal full capacity. The proof uses
 `D2BotRiseRunBridge.lean` to identify the role and
 `D2PathNativePreservation.lean` to preserve child roots through callback
 history. Current-source focused checks pass for `D2PhysicalBagState.lean` and
 `D2BotRiseStaticFit.lean`. This closes the `botRise` source and post-bag
-geometry cases; it does not identify routed pieces with next-stage bags or
-establish physical receiver tags/counts. The next exact-transition obligation
-remains unchanged.
+geometry and cardinality cases; it does not establish that the allocation is
+even for the local parent-port split, identify routed pieces with next-stage
+bags, or prove physical receiver tags. Check candidate allocation parity next,
+then compose its local route with the receiver-allocation identity.
 
 ## Candidate and price
 

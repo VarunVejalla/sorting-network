@@ -28,6 +28,9 @@ theorem candidate_botRise_path_static_fit_clamped
       StaticHolesFit low
         (d2FlowNodeStaticHolesClamped 0 (8192 * 8 ^ h) low high children)
         (8 * (8192 * 8 ^ h) - high) /\
+      (d2FlowNodeStaticBag (n := 8 * (8192 * 8 ^ h)) 0
+        (8192 * 8 ^ h) G low high children).card =
+          8 * (8192 * 8 ^ h) - G /\
       StaticHolesFit
         (low + (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - G) / 2)
         (d2FlowNodeStaticHolesClamped 0 (8192 * 8 ^ h)
@@ -129,6 +132,21 @@ theorem candidate_botRise_path_static_fit_clamped
           intro k hk
           exact hsat k
         _ = 8 * (8192 * 8 ^ h) := by simp
+    have hsourceCard :
+        (d2FlowNodeStaticBag (n := 8 * (8192 * 8 ^ h)) 0
+          (8192 * 8 ^ h) G low high children).card =
+            8 * (8192 * 8 ^ h) - G := by
+      by_cases hsatG : G = 8 * (8192 * 8 ^ h)
+      · rw [d2FlowNodeStaticBag, if_pos hsatG]
+        simp [hsatG]
+      · have hstop : 8 * (8192 * 8 ^ h) - high <=
+            8 * (8192 * 8 ^ h) := by omega
+        have hcard := d2FlowNodeStaticBag_card_eq_child_total_sub_G_of_clamped_fit
+          (n := 8 * (8192 * 8 ^ h)) (scale := 8192) 0 G low high
+          children htreeNode (by simpa using hsourceFit)
+          (by simpa using hstop) (by omega)
+        rw [htotal] at hcard
+        exact hcard
     have hcover : G <= d2FlowTotal
         (fun k => d2FlowTreeRootDeficit (children k)) := by
       simpa using htreeNode.2.1
@@ -150,6 +168,7 @@ theorem candidate_botRise_path_static_fit_clamped
       rfl
     exact ⟨G, low, high, children, hnode,
       by simpa [d, width] using hsourceFit,
+      by simpa [d, width] using hsourceCard,
       by simpa [d, width] using hfit, by simpa [d, width] using hbag⟩
 
 end Chvatal.D2BotRiseStaticFit
