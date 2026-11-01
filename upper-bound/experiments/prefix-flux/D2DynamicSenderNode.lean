@@ -128,6 +128,38 @@ def d2SenderLayoutBagAtPath {Wire : Type*} [DecidableEq Wire] :
   | n + 1, _, .node _ children, .cons j tail =>
       d2SenderLayoutBagAtPath n (children j) tail
 
+theorem d2SenderLayoutRootBag_subset_wires {Wire : Type*}
+    [DecidableEq Wire] {h : Nat} (layout : D2SenderLayout Wire h) :
+    d2SenderLayoutRootBag layout ⊆ d2SenderLayoutWires layout := by
+  cases layout <;> simp [d2SenderLayoutRootBag, d2SenderLayoutWires]
+
+theorem d2SenderLayoutBagAtPath_subset_wires {Wire : Type*}
+    [DecidableEq Wire] :
+    ∀ (levels : Nat) {h : Nat}
+      (layout : D2SenderLayout Wire (h + levels))
+      (path : D2FlowPath levels),
+      d2SenderLayoutBagAtPath levels layout path ⊆
+        d2SenderLayoutWires layout := by
+  intro levels
+  induction levels with
+  | zero =>
+      intro h layout path
+      cases path
+      simpa [d2SenderLayoutBagAtPath] using
+        d2SenderLayoutRootBag_subset_wires layout
+  | succ levels ih =>
+      intro h layout path
+      cases path with
+      | cons j tail =>
+          cases layout with
+          | node bag children =>
+              simp only [d2SenderLayoutBagAtPath]
+              have hsub := ih (h := h) (layout := children j) tail
+              intro wire hwire
+              simp only [d2SenderLayoutWires, Finset.mem_union,
+                Finset.mem_biUnion, Finset.mem_univ, true_and]
+              exact Or.inr ⟨j, hsub hwire⟩
+
 /-- A sender bag indexed by the same flat node type as the abstract flow. -/
 def d2SenderNodeBag {Wire : Type*} [DecidableEq Wire] {depth : Nat}
     (layout : D2SenderLayout Wire depth) (node : D2SenderNode depth) :
