@@ -448,6 +448,39 @@ theorem d2FlowNodeStaticBag_eq_runs
         (base + 8 * width - high)
         (d2FlowNodeStaticHoles base width low high children) hfit
 
+/-- Ordered address runs using the clamped convention for empty child holes. -/
+def d2FlowNodeStaticRunsClamped {n h : Nat} (base width G low high : Nat)
+    (children : Fin 8 → D2FlowTree h) : List (Finset (Fin n)) :=
+  if G = 8 * width then [] else
+    staticGapRuns (base + low)
+      (d2FlowNodeStaticHolesClamped base width low high children)
+      (base + 8 * width - high)
+
+/-- A fitted clamped-hole list gives an ordered-run representation of the
+same physical sender bag; the marker repair does not change any wires. -/
+theorem d2FlowNodeStaticBag_eq_runs_clamped
+    {n h : Nat} {base width G low high : Nat}
+    (children : Fin 8 → D2FlowTree h)
+    (hnonsat : G ≠ 8 * width)
+    (hfit : StaticHolesFit (base + low)
+      (d2FlowNodeStaticHolesClamped base width low high children)
+      (base + 8 * width - high)) :
+    orderedRunUnion
+        (d2FlowNodeStaticRunsClamped (n := n) base width G low high children) =
+        d2FlowNodeStaticBag (n := n) base width G low high children ∧
+      OrderedRuns (n := n)
+        (d2FlowNodeStaticRunsClamped (n := n) base width G low high children) := by
+  constructor
+  · rw [d2FlowNodeStaticBag_eq_clamped_holes]
+    simpa [d2FlowNodeStaticRunsClamped, hnonsat] using
+      staticGapRuns_union_eq_complement (n := n) (base + low)
+        (base + 8 * width - high)
+        (d2FlowNodeStaticHolesClamped base width low high children) hfit
+  · simpa [d2FlowNodeStaticRunsClamped, hnonsat] using
+      staticGapRuns_ordered (n := n) (base + low)
+        (base + 8 * width - high)
+        (d2FlowNodeStaticHolesClamped base width low high children) hfit
+
 /-- A child-tagged rank port of the physical sender bag is exactly the
 corresponding rank slice of its ordered static address runs. -/
 theorem d2FlowNodeStaticBag_child_port_eq_run_slice
@@ -492,6 +525,96 @@ theorem d2FlowNodeStaticBag_parent_ports_eq_run_slices
   rw [← hrep.1]
   rw [blockOf_orderedRuns (n := n) _ hrep.2]
   rw [blockOf_orderedRuns (n := n) _ hrep.2]
+
+/-- Child rank-port slices remain exact with the clamped run representation. -/
+theorem d2FlowNodeStaticBag_child_port_eq_clamped_run_slice
+    {n h ports : Nat} {base width G low high : Nat}
+    (children : Fin 8 → D2FlowTree h) (hnonsat : G ≠ 8 * width)
+    (hfit : StaticHolesFit (base + low)
+      (d2FlowNodeStaticHolesClamped base width low high children)
+      (base + 8 * width - high))
+    (boundary : Nat → Nat) (left rightStart : Nat) (j : Fin ports) :
+    destinationPiece (ports := ports)
+        (d2FlowNodeStaticBag (n := n) base width G low high children)
+        boundary left rightStart (some j) =
+      orderedRunSlice
+        (d2FlowNodeStaticRunsClamped (n := n) base width G low high children)
+        (left + boundary j.val) (left + boundary (j.val + 1)) := by
+  have hrep := d2FlowNodeStaticBag_eq_runs_clamped
+    (n := n) children hnonsat hfit
+  simp only [destinationPiece]
+  rw [← hrep.1]
+  exact blockOf_orderedRuns (n := n) _ hrep.2 _ _
+
+/-- Parent rank-port slices remain exact with the clamped run representation. -/
+theorem d2FlowNodeStaticBag_parent_ports_eq_clamped_run_slices
+    {n h ports : Nat} {base width G low high : Nat}
+    (children : Fin 8 → D2FlowTree h) (hnonsat : G ≠ 8 * width)
+    (hfit : StaticHolesFit (base + low)
+      (d2FlowNodeStaticHolesClamped base width low high children)
+      (base + 8 * width - high))
+    (boundary : Nat → Nat) (left rightStart : Nat) :
+    destinationPiece (ports := ports)
+        (d2FlowNodeStaticBag (n := n) base width G low high children)
+        boundary left rightStart none =
+      orderedRunSlice
+          (d2FlowNodeStaticRunsClamped (n := n) base width G low high children)
+          0 left ∪
+        orderedRunSlice
+          (d2FlowNodeStaticRunsClamped (n := n) base width G low high children)
+          rightStart
+          (d2FlowNodeStaticBag (n := n) base width G low high children).card := by
+  have hrep := d2FlowNodeStaticBag_eq_runs_clamped
+    (n := n) children hnonsat hfit
+  simp only [destinationPiece]
+  rw [← hrep.1]
+  rw [blockOf_orderedRuns (n := n) _ hrep.2]
+  rw [blockOf_orderedRuns (n := n) _ hrep.2]
+
+/-- Cell fragments of child rank ports use the clamped physical run order. -/
+theorem d2FlowNodeStaticBag_child_port_inter_cell_clamped
+    {n h ports : Nat} {base width G low high : Nat}
+    (children : Fin 8 → D2FlowTree h) (hnonsat : G ≠ 8 * width)
+    (hfit : StaticHolesFit (base + low)
+      (d2FlowNodeStaticHolesClamped base width low high children)
+      (base + 8 * width - high))
+    (boundary : Nat → Nat) (left rightStart : Nat) (j : Fin ports)
+    (cellLo cellHi : Nat) :
+    (destinationPiece (ports := ports)
+        (d2FlowNodeStaticBag (n := n) base width G low high children)
+        boundary left rightStart (some j)) ∩
+        staticWireInterval cellLo cellHi =
+      orderedRunSliceInCell
+        (d2FlowNodeStaticRunsClamped (n := n) base width G low high children)
+        (left + boundary j.val) (left + boundary (j.val + 1)) cellLo cellHi := by
+  rw [d2FlowNodeStaticBag_child_port_eq_clamped_run_slice
+    children hnonsat hfit boundary left rightStart j]
+  exact orderedRunSlice_inter_cell _ _ _ _ _
+
+/-- Cell fragments of the parent end ports use the clamped physical run order. -/
+theorem d2FlowNodeStaticBag_parent_ports_inter_cell_clamped
+    {n h ports : Nat} {base width G low high : Nat}
+    (children : Fin 8 → D2FlowTree h) (hnonsat : G ≠ 8 * width)
+    (hfit : StaticHolesFit (base + low)
+      (d2FlowNodeStaticHolesClamped base width low high children)
+      (base + 8 * width - high))
+    (boundary : Nat → Nat) (left rightStart cellLo cellHi : Nat) :
+    (destinationPiece (ports := ports)
+        (d2FlowNodeStaticBag (n := n) base width G low high children)
+        boundary left rightStart none) ∩
+        staticWireInterval cellLo cellHi =
+      orderedRunSliceInCell
+          (d2FlowNodeStaticRunsClamped (n := n) base width G low high children)
+          0 left cellLo cellHi ∪
+        orderedRunSliceInCell
+          (d2FlowNodeStaticRunsClamped (n := n) base width G low high children)
+          rightStart
+          (d2FlowNodeStaticBag (n := n) base width G low high children).card
+          cellLo cellHi := by
+  rw [d2FlowNodeStaticBag_parent_ports_eq_clamped_run_slices
+    children hnonsat hfit boundary left rightStart]
+  rw [Finset.union_inter_distrib_right]
+  rw [orderedRunSlice_inter_cell, orderedRunSlice_inter_cell]
 
 /-- A concrete child port intersected with a physical cell is exactly its
 per-run address fragments. -/
