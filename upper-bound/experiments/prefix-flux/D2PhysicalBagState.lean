@@ -170,6 +170,80 @@ theorem d2FlowStage_regular_child_root_data {active : Nat -> Bool}
   rw [d2FlowStage_regular_child_setroot children ha hr j]
   exact d2FlowTreeRootData_setRoot _ _ _ _
 
+/-- The two notations for the new right front agree under the ordinary
+stage-input quota and balance bounds. -/
+theorem d2FlowStage_right_front_subtraction_eq {scale h i G low high : Nat}
+    {active : Nat -> Bool} {role : Nat -> D2Role}
+    {quota : Nat -> D2Role -> Nat} {cap : Nat -> Nat}
+    (children : Fin 8 -> D2FlowTree h)
+    (hinputs : d2FlowStageInvInputs scale active role quota cap i
+      (.node G low high children)) (ha : active i = true)
+    (hr : role i = .topRise ∨ role i = .mid ∨ role i = .botDesc) :
+    d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - high -
+        quota i (role i) / 2 =
+      d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) -
+        (high + quota i (role i) / 2) := by
+  have hstage := hinputs.2
+  simp only [ha, if_true] at hstage
+  rcases hr with hrole | hrole | hrole <;>
+    simp only [hrole] at hstage <;>
+    rcases hstage with ⟨hbalance, hG, hquotacap, hquota, heven,
+      hleft, hright⟩ <;>
+    simp only [d2FlowTotal] at hquota ⊢ <;> omega
+
+/-- An active ordinary update leaves the new child holes inside its updated
+parent fronts. This combines the reserve-derived subtraction identity with
+the cut-based static-hole fit. -/
+theorem d2FlowStage_active_ordinary_static_fit
+    {scale h i G low high : Nat} {active : Nat -> Bool}
+    {role : Nat -> D2Role} {quota : Nat -> D2Role -> Nat}
+    {cap : Nat -> Nat}
+    (children : Fin 8 -> D2FlowTree h)
+    (htree : d2FlowTreeInv scale (.node G low high children))
+    (hinputs : d2FlowStageInvInputs scale active role quota
+      cap i (.node G low high children))
+    (ha : active i = true)
+    (hr : role i = .topRise ∨ role i = .mid ∨ role i = .botDesc) :
+    StaticHolesFit (low + quota i (role i) / 2)
+      (d2FlowNodeStaticHoles 0 (scale * 8 ^ h)
+        (low + quota i (role i) / 2)
+        (high + quota i (role i) / 2)
+        (fun j => d2FlowTreeChild
+          (d2FlowStage active role quota (h + 1) i
+            (.node G low high children)) j))
+      (8 * (scale * 8 ^ h) - (high + quota i (role i) / 2)) := by
+  cases hrole : role i with
+  | topDesc => simp [hrole] at hr
+  | botRise => simp [hrole] at hr
+  | topRise | mid | botDesc =>
+      have hfit := d2FlowStageInvInputs_static_holes
+        (scale := scale) (i := i) (base := 0) (G := G)
+        (low := low) (high := high) children htree hinputs ha hr
+      simp only [hrole] at hfit
+      have hright := d2FlowStage_right_front_subtraction_eq
+        (scale := scale) (h := h) (i := i) (G := G) (low := low)
+        (high := high) (active := active) (role := role) (quota := quota)
+        (cap := cap) children hinputs ha hr
+      simp only [hrole] at hright
+      have hdata (j : Fin 8) :=
+        d2FlowStage_regular_child_root_data (h := h) (i := i)
+          (G := G) (low := low) (high := high) (quota := quota)
+          children ha hr j
+      simp only [hrole] at hdata ⊢
+      have hdef (j : Fin 8) :
+          d2FlowTreeRootDeficit
+            (d2FlowTreeChild (d2FlowStage active role quota (h + 1) i
+              (.node G low high children)) j) =
+          (d2FlowCutChild
+            (d2FlowPosition (fun k => d2FlowTreeRootDeficit (children k)) j)
+            (d2FlowTreeRootDeficit (children j))
+            (low + quota i (role i) / 2)
+            (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) -
+              (high + quota i (role i) / 2))).1 := by
+        simp only [hrole]
+        rw [← d2FlowTreeRootData_fst_eq_deficit, hdata, hright]
+      simpa [hrole, d2FlowNodeStaticHoles, hdef, hdata, hright] using hfit
+
 /-- A non-saturated node's sender bag is exactly the union of its ordered
 static runs; the same fit condition proves those runs are address-ordered. -/
 theorem d2FlowNodeStaticBag_eq_runs

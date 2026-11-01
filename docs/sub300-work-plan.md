@@ -77,11 +77,13 @@ a reachable-run obstruction). The initial fit base case is closed by
 `d2FlowTreeStaticFits`, `d2FlowTreeFull_static_fits`, and
 `d2FlowTreeInitial_static_fits`. `D2PhysicalBagState.lean` now also proves
 `d2FlowStage_regular_child_root_data`, identifying each active ordinary
-post-stage child's root tuple with its cut tuple. Fit preservation must
-reconcile the cut endpoint `total - (high + quota/2)` with the stage assignment
-`total - high - quota/2`; prove this equality from the endpoint reserve/bounds
-before reusing the static-hole fit theorem. Then prove the one-stage routed-
-piece equality and disjointness for every receiver. Only then
+post-stage child's root tuple with its cut tuple, and
+`d2FlowStage_active_ordinary_static_fit`, proving that those post-stage holes
+fit between the updated parent fronts. The latter derives the subtraction
+identity from the quota and balance clauses in the endpoint-reserve contract.
+This is only the active ordinary node case; inactive and exceptional roles
+and recursive whole-tree preservation remain. Then prove the one-stage
+routed-piece equality and disjointness for every receiver. Only then
 bridge the concrete sender sets to `d2FlowCandidateRun` and identify Boolean
 64-column profiles using the physical core's output map. Include clipped final tiles and
 startup/exceptional roles in the full transition. State root-profile

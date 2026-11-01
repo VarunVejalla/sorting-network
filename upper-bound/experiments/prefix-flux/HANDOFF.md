@@ -492,10 +492,12 @@ case is proved: both `d2FlowTreeFull_static_fits` and
 `d2FlowTreeInitial_static_fits` establish nested static-hole fit for every
 depth. `D2PhysicalBagState.lean` also proves
 `d2FlowStage_regular_child_root_data`, identifying each active ordinary
-post-stage child's root tuple with its cut tuple. Fit preservation must
-reconcile the cut endpoint `total - (high + quota/2)` with the stage assignment
-`total - high - quota/2`; prove this equality from endpoint reserve/bounds
-before reusing the static-hole fit theorem.
+post-stage child's root tuple with its cut tuple, and
+`d2FlowStage_active_ordinary_static_fit`, proving that those holes fit between
+the updated parent fronts. The ordinary stage-input balance and quota clauses
+establish the equality between the cut endpoint `total - (high + quota/2)`
+and the stage assignment `total - high - quota/2`. Inactive/exceptional roles
+and recursive whole-tree preservation remain open.
 
 Next prove fit for the concrete candidate snapshots using their endpoint
 reserve/history contract, then the one-stage identity: inactive retained
