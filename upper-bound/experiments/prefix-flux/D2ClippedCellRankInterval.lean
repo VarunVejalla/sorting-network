@@ -1,6 +1,7 @@
 import D2ClippedFlowProfileTransfer
 import D2OrdinaryRankRouting
 import D2StaticWireSets
+import D2PhysicalRankRouting
 
 set_option maxHeartbeats 500000
 
@@ -10,8 +11,13 @@ open Chvatal.D2ClippedFlowProfileTransfer
 open Chvatal.D2RowMajorFlowCuts
 open Chvatal.D2OrdinaryRankRouting
 open Chvatal.D2StaticWireSets
+open Chvatal.D2PhysicalRankRouting
+open Chvatal.D2RankProfileRouting
+open Chvatal.D2RankAlignment
 
 abbrev Col := Fin 64
+abbrev Row := Fin 4096
+abbrev Wire := Fin (4096 * 64)
 
 /-- A nonempty interval obtained by clipping `[a,b)` to the tile
 `[start,start+width)` contains only global coordinates in `[a,b)`. -/
@@ -249,5 +255,99 @@ theorem ordered_tile_profile_cell_tag_iff
       t.val * 262144 + (64 * r + c.val) < bounds (Fin.succ p) := by
       simpa [hrank, slot] using hbounds
     exact (clippedFlowProfile_cell_rank_iff_port bounds t p c r hr).1 hglobal
+
+/-- For one complete sender tile, the false count in a clipped column/port
+profile equals the actual number of false output wires in that child's
+physical destination. This is the count identity needed to instantiate the
+ordinary-sender transition from the local profile theorem. -/
+theorem ordered_tile_child_false_count_eq_profile
+    {ports tiles n : Nat} (S : Finset (Fin n))
+    (bounds : Fin (ports + 1) -> Nat)
+    (t : Fin tiles) (p : Fin ports)
+    (child : Fin 8) (boundary : Nat -> Nat) (left rightStart : Nat)
+    (height : Col -> Nat) (out : Wire -> Bool)
+    (htile : (t.val + 1) * 262144 <= S.card)
+    (hlo : bounds (Fin.castSucc p) = left + boundary child.val)
+    (hhi : bounds (Fin.succ p) = left + boundary (child.val + 1))
+    (hprofile : forall r : Row, forall c : Col,
+      out (Chvatal.matrixWire 4096 64 r c) = decide (height c <= r.val)) :
+    (Finset.univ.sum fun c : Col =>
+      prefixIntervalMass (height c)
+        (clippedFlowProfileCuts 4096 bounds t c p.val)
+        (clippedFlowProfileCuts 4096 bounds t c (p.val + 1))) =
+    (Finset.univ.sum fun b : Wire =>
+      if S.orderEmbOfFin rfl
+          (Fin.mk (t.val * 262144 + b.val) (by
+            have hb := b.isLt
+            omega)) ∈ destinationPiece (ports := 8) S boundary left rightStart
+            (some child) ∧ out b = false then 1 else 0) := by
+  let address : Wire -> Fin n := fun b =>
+    S.orderEmbOfFin rfl (Fin.mk (t.val * 262144 + b.val) (by
+      have hb := b.isLt
+      omega))
+  let lo : Col -> Nat := fun c => clippedFlowProfileCuts 4096 bounds t c p.val
+  let hi : Col -> Nat := fun c => clippedFlowProfileCuts 4096 bounds t c (p.val + 1)
+  let rowCount : Col -> Nat := fun c =>
+    Finset.univ.sum fun r : Row =>
+      if lo c <= r.val ∧ r.val < hi c ∧ r.val < height c then 1 else 0
+  have hslot :
+      (Finset.univ.sum fun b : Wire =>
+        if address b ∈ destinationPiece (ports := 8) S boundary left rightStart
+            (some child) ∧ out b = false then 1 else 0) =
+      Finset.univ.sum fun c : Col => Finset.univ.sum fun r : Row =>
+        if lo c <= r.val /\ r.val < hi c /\ r.val < height c then 1 else 0 := by
+    rw [Chvatal.sum_matrixWire (by omega)]
+    apply Finset.sum_congr rfl
+    intro c hc
+    apply Finset.sum_congr rfl
+    intro r hr
+    have haddr : address (Chvatal.matrixWire 4096 64 r c) =
+        S.orderEmbOfFin rfl (Fin.mk
+          (t.val * 262144 + (64 * r.val + c.val)) (by
+            have hcr : 64 * r.val + c.val < 262144 := by
+              have hc' := c.isLt
+              omega
+            omega)) := by
+      apply congrArg (S.orderEmbOfFin rfl)
+      apply Fin.ext
+      simp [address, Chvatal.matrixWire]
+      omega
+    have htag := ordered_tile_profile_cell_tag_iff S bounds t p c r.val
+      child boundary left rightStart r.isLt htile hlo hhi
+    have hclass : address (Chvatal.matrixWire 4096 64 r c) ∈
+        destinationPiece (ports := 8) S boundary left rightStart (some child) <->
+        lo c <= r.val /\ r.val < hi c := by
+      rw [haddr]
+      simpa [lo, hi] using htag.symm
+    have hfalse : out (Chvatal.matrixWire 4096 64 r c) = false <->
+        r.val < height c := by
+      rw [hprofile r c]
+      simp
+    simp only [hclass, hfalse]
+    simp [and_assoc]
+  have hrow (c : Col) :
+      (Finset.univ.sum fun r : Row =>
+        if lo c <= r.val /\ r.val < hi c /\ r.val < height c then 1 else 0) =
+      prefixIntervalMass (height c) (lo c) (hi c) := by
+    rw [Fin.sum_univ_eq_sum_range
+      (fun r : Nat => if lo c <= r /\ r < hi c /\ r < height c then 1 else 0)
+      4096]
+    have hhiBound : hi c <= 4096 := by
+      dsimp [hi, clippedFlowProfileCuts, rowMajorFlowCutsM, rowCutAtRankM]
+      exact Nat.min_le_left _ _
+    exact Chvatal.D2PhysicalRankRouting.rowMajorPortCount_eq_prefixIntervalMass
+      4096 (height c) (lo c) (hi c) hhiBound
+  calc
+    _ = Finset.univ.sum fun c : Col => rowCount c := by
+      apply Finset.sum_congr rfl
+      intro c hc
+      exact (hrow c).symm
+    _ = Finset.univ.sum fun c : Col =>
+          Finset.univ.sum fun r : Row =>
+            if lo c <= r.val /\ r.val < hi c /\ r.val < height c then 1 else 0 := by
+      rfl
+    _ = Finset.univ.sum fun b : Wire =>
+          if address b ∈ destinationPiece (ports := 8) S boundary left rightStart
+              (some child) ∧ out b = false then 1 else 0 := hslot.symm
 
 end Chvatal.D2ClippedCellRankInterval

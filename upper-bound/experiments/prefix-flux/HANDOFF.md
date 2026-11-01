@@ -267,6 +267,29 @@ The next decisive gate is instead to compose the complete-tile ordered
 embedding, clipped cell counts, and receiver tags into one actual ordinary
 sender transition, then expose the partial-tile/startup exceptions.
 
+### Current incremental gate: one-tile false-count identity
+
+`ordered_tile_child_false_count_eq_profile` in
+`D2ClippedCellRankInterval.lean` now proves that, for one complete sender-rank
+tile, the sum of clipped `prefixIntervalMass` values for a port equals the
+actual number of false wires in that tile whose canonical `orderEmbOfFin`
+addresses lie in the tagged child destination. Its hypotheses make the
+coordinates explicit: port endpoints match the child's static destination
+boundaries, and each physical column is already an exact false-prefix of
+height `height c`. The proof reindexes the tile's 262144 wires by
+`matrixWire`, applies the checked cell-tag iff, and evaluates the resulting
+row count as interval mass. A focused rebuild of
+`D2ClippedCellRankInterval.lean` passed on 2026-10-31.
+
+This is a useful exact composition lemma, not yet the candidate-run transition:
+the fixed core must still supply those column profiles, and the actual sender
+must supply the canonical rank-tile embedding and matching cuts. It is also
+only one complete tile and one child port; aggregate across tiles, include the
+two parent tags, prove arbitrary-root input mass correspondence, and cover
+ragged/startup/exceptional roles next. If the fixed core only guarantees a
+non-prefix profile, replace the exact identity with the transfer-error bound
+and carry its discrepancy explicitly.
+
 `D2StrongDeficitPropagation.lean` already proves the sharp local affine
 profile transition for ordinary eight-child updates. The profile is
 `G = 0 ∧ 256*pi <= c`, or
