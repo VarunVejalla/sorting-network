@@ -68,4 +68,42 @@ theorem ordinary_child_rank_port_cells_are_receiver
         boundary left rightStart (some child) := by
       rfl
 
+/-- The cell count need not be supplied separately: aligned port endpoints
+and their order determine an integer number of 4096-rank cells. -/
+theorem ordinary_child_rank_port_cells_are_receiver_of_aligned_endpoints
+    {n cursor stop left rightStart start finish : Nat}
+    (holes : List (Nat × Nat)) (boundary : Nat → Nat) (child : Fin 8)
+    (hfit : StaticHolesFit cursor holes stop)
+    (hn : 4096 ∣ n) (hcursor : 4096 ∣ cursor) (hstop : 4096 ∣ stop)
+    (hstopBound : stop ≤ n)
+    (hholes : ∀ hole, hole ∈ holes → 4096 ∣ hole.1 ∧ 4096 ∣ hole.2)
+    (hstart : 4096 ∣ start) (hfinish : 4096 ∣ finish)
+    (horder : start ≤ finish)
+    (hbound : finish ≤
+      (staticWireInterval (n := n) cursor stop \ staticHoleUnion holes).card)
+    (hportStart : start = left + boundary child.val)
+    (hportFinish : finish = left + boundary (child.val + 1)) :
+    ∃ q : Nat, ∀ k : Fin q, ∃ cellLo, 4096 ∣ cellLo ∧
+      cellLo + 4096 ≤ n ∧
+      Chvatal.blockOf
+        (staticWireInterval (n := n) cursor stop \ staticHoleUnion holes)
+        (start + k.val * 4096) (start + (k.val + 1) * 4096) =
+          staticWireInterval cellLo (cellLo + 4096) ∧
+      staticWireInterval cellLo (cellLo + 4096) ⊆
+        destinationPiece (staticWireInterval (n := n) cursor stop \ staticHoleUnion holes)
+          boundary left rightStart (some child) := by
+  rcases hfinish with ⟨f, rfl⟩
+  rcases hstart with ⟨s, rfl⟩
+  have hsf : s ≤ f := by omega
+  refine ⟨f - s, ?_⟩
+  have hlen : 4096 * f = 4096 * s + (f - s) * 4096 := by
+    rw [Nat.mul_comm (f - s) 4096]
+    rw [Nat.mul_sub_left_distrib]
+    omega
+  exact ordinary_child_rank_port_cells_are_receiver
+    (rightStart := rightStart) holes boundary child hfit hn hcursor hstop hstopBound hholes
+    (show 4096 ∣ 4096 * s from ⟨s, rfl⟩)
+    (show 4096 ∣ 4096 * f from ⟨f, rfl⟩)
+    (by simpa using hlen) hbound hportStart hportFinish
+
 end Chvatal.D2AlignedPortReceiverCells

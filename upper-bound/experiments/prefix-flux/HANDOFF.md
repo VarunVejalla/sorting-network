@@ -238,7 +238,10 @@ boundaries, at every stage and for every dimension `d >= 7`.
 `D2AlignedPortReceiverCells.lean` shows that, given the static-hole fit and
 grid premises, every 4096-rank fragment of an ordinary child port is a whole
 physical 4096-wire cell contained in that child's `destinationPiece`. This
-establishes the local receiver label for aligned fragments. Still to prove is
+establishes the local receiver label for aligned fragments. Its new
+`ordinary_child_rank_port_cells_are_receiver_of_aligned_endpoints` wrapper
+derives the number of such fragments from aligned ordered endpoints, so callers
+need not supply a separate cell-count equation. Still to prove is
 the full actual-schedule instantiation of the static-hole premises and the
 identification of each clipped tile/column profile cell and its false count
 with those physical routed cells.
