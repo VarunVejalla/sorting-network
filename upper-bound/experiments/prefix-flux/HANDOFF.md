@@ -717,10 +717,15 @@ retain their source bag locally. The theorem
 `d2SenderNodeRoute_preserves_partition` instantiates the generic destination
 partition theorem on this actual finite parent/child map. Its focused check
 passes, but its source partition and local-piece partition hypotheses have not
-been derived for the candidate execution; in particular, root-boundary output
-must be shown empty. The next decisive step is to identify the candidate's
-role-specific physical port pieces with this interface, then prove receiver
-cardinality matches the flow allocation without assuming that agreement.
+been derived for the candidate execution. The same file now packages a
+parent-plus-eight-child local partition as an `Option (Fin 8)` port contract;
+`d2OrdinaryRankSenderPorts_contract` adapts the existing rank-cut partition
+theorem to that interface. Thus the regular/top-desc/bot-rise local partition
+results can supply the local part whenever their stage and sender-cardinality
+hypotheses hold. Root-boundary output must still be shown empty. The next
+decisive step is to define the node-dependent source and split from the actual
+candidate stage/static bags, then prove receiver cardinality matches the flow
+allocation without assuming that agreement.
 
 ## Files and artifacts
 

@@ -110,6 +110,13 @@ def d2SenderNodeBag {Wire : Type*} [DecidableEq Wire] {depth : Nat}
 child ports. -/
 abbrev D2SenderRoutePort := Option (Fin 8)
 
+/-- The parent piece (`none`) and child pieces (`some j`) of a sender. -/
+def d2SenderPortsLocalPiece {Wire : Type*} [DecidableEq Wire]
+    (ports : D2SenderPorts Wire) (port : D2SenderRoutePort) : Finset Wire :=
+  match port with
+  | none => ports.up
+  | some j => ports.down j
+
 /-- The receiver of a local port. `none` as a receiver is the external
 boundary: the root's parent output or a child below the represented tree. -/
 def d2SenderNodeRouteTarget {depth : Nat} (active : Nat → Bool)
@@ -129,13 +136,136 @@ def d2SenderNodeLocalPiece {Wire : Type*} [DecidableEq Wire]
     (split : D2SenderNode depth → D2SenderPorts Wire)
     (node : D2SenderNode depth) (port : D2SenderRoutePort) : Finset Wire :=
   if active node.1.val then
-    match port with
-    | none => (split node).up
-    | some j => (split node).down j
+    d2SenderPortsLocalPiece (split node) port
   else
     match port with
     | none => source node
     | some _ => Finset.empty
+
+/-- An explicit parent-plus-eight-child partition gives the local port
+contract consumed by the flat routing theorem. -/
+theorem d2SenderPorts_partition_contract {Wire : Type*}
+    [DecidableEq Wire] (source : Finset Wire) (ports : D2SenderPorts Wire)
+    (hparentSubset : ports.up ⊆ source)
+    (hchildSubset : ∀ j, ports.down j ⊆ source)
+    (hcover : ports.up ∪ Finset.univ.biUnion ports.down = source)
+    (hparentDisjoint : Disjoint ports.up
+      (Finset.univ.biUnion ports.down))
+    (hchildDisjoint : ∀ j j', j ≠ j' →
+      Disjoint (ports.down j) (ports.down j')) :
+    (∀ port, d2SenderPortsLocalPiece ports port ⊆ source) ∧
+      Finset.univ.biUnion (d2SenderPortsLocalPiece ports) = source ∧
+      (∀ port port', port ≠ port' →
+        Disjoint (d2SenderPortsLocalPiece ports port)
+          (d2SenderPortsLocalPiece ports port')) := by
+  classical
+  refine ⟨?_, ?_, ?_⟩
+  · intro port
+    cases port with
+    | none => simpa [d2SenderPortsLocalPiece] using hparentSubset
+    | some j => simpa [d2SenderPortsLocalPiece] using hchildSubset j
+  · ext x
+    constructor
+    · intro hx
+      rcases Finset.mem_biUnion.mp hx with ⟨port, _, hxport⟩
+      have hxUnion : x ∈ ports.up ∪ Finset.univ.biUnion ports.down := by
+        cases port with
+        | none => exact Finset.mem_union_left _ hxport
+        | some j =>
+            exact Finset.mem_union_right _
+              (Finset.mem_biUnion.mpr ⟨j, Finset.mem_univ _, hxport⟩)
+      exact hcover ▸ hxUnion
+    · intro hx
+      have hx' : x ∈ ports.up ∪ Finset.univ.biUnion ports.down := by
+        simpa [hcover] using hx
+      rcases Finset.mem_union.mp hx' with hparent | hchild
+      · exact Finset.mem_biUnion.mpr ⟨none, Finset.mem_univ _, hparent⟩
+      · rcases Finset.mem_biUnion.mp hchild with ⟨j, _, hj⟩
+        exact Finset.mem_biUnion.mpr ⟨some j, Finset.mem_univ _, hj⟩
+  · intro port port' hne
+    cases port with
+    | none =>
+        cases port' with
+        | none => exact (hne rfl).elim
+        | some j =>
+            rw [Finset.disjoint_left]
+            intro x hx hxj
+            exact Finset.disjoint_left.mp hparentDisjoint hx
+              (Finset.mem_biUnion.mpr ⟨j, Finset.mem_univ _, hxj⟩)
+    | some j =>
+        cases port' with
+        | none =>
+            rw [Finset.disjoint_left]
+            intro x hxj hx
+            exact Finset.disjoint_left.mp hparentDisjoint hx
+              (Finset.mem_biUnion.mpr ⟨j, Finset.mem_univ _, hxj⟩)
+        | some j' =>
+            have hj : j ≠ j' := by
+              intro heq
+              apply hne
+              rw [heq]
+            exact hchildDisjoint j j' hj
+
+/-- Package the existing ordinary rank cuts as the parent/eight-child port
+record consumed by the flat route. -/
+def d2OrdinaryRankSenderPorts {n : Nat} (s : Finset (Fin n))
+    (boundary : Nat → Nat) (left rightStart : Nat) :
+    D2SenderPorts (Fin n) where
+  up := Chvatal.blockOf s 0 left ∪ Chvatal.blockOf s rightStart s.card
+  down j := Chvatal.blockOf s (left + boundary j.val)
+    (left + boundary (j.val + 1))
+
+/-- The ordinary rank-cut cover/disjointness theorem supplies the exact local
+partition contract for `d2SenderPorts_partition_contract`. -/
+theorem d2OrdinaryRankSenderPorts_contract {n : Nat}
+    (s : Finset (Fin n)) (boundary : Nat → Nat) (left rightStart : Nat)
+    (hcover :
+      Chvatal.blockOf s 0 left ∪
+        ((Finset.univ.biUnion fun j : Fin 8 =>
+          Chvatal.blockOf s (left + boundary j.val)
+            (left + boundary (j.val + 1))) ∪
+          Chvatal.blockOf s rightStart s.card) = s)
+    (hdisjoint : Disjoint
+        (Chvatal.blockOf s 0 left ∪
+          Chvatal.blockOf s rightStart s.card)
+        (Finset.univ.biUnion fun j : Fin 8 =>
+          Chvatal.blockOf s (left + boundary j.val)
+            (left + boundary (j.val + 1))) ∧
+      ∀ j j' : Fin 8, j ≠ j' →
+        Disjoint
+          (Chvatal.blockOf s (left + boundary j.val)
+            (left + boundary (j.val + 1)))
+          (Chvatal.blockOf s (left + boundary j'.val)
+            (left + boundary (j'.val + 1)))) :
+    (∀ port, d2SenderPortsLocalPiece
+      (d2OrdinaryRankSenderPorts s boundary left rightStart) port ⊆ s) ∧
+      Finset.univ.biUnion
+        (d2SenderPortsLocalPiece
+          (d2OrdinaryRankSenderPorts s boundary left rightStart)) = s ∧
+      (∀ port port', port ≠ port' →
+        Disjoint
+          (d2SenderPortsLocalPiece
+            (d2OrdinaryRankSenderPorts s boundary left rightStart) port)
+          (d2SenderPortsLocalPiece
+            (d2OrdinaryRankSenderPorts s boundary left rightStart) port')) := by
+  let ports := d2OrdinaryRankSenderPorts s boundary left rightStart
+  have hparentSubset : ports.up ⊆ s := by
+    exact Finset.union_subset Chvatal.blockOf_subset Chvatal.blockOf_subset
+  have hchildSubset : ∀ j, ports.down j ⊆ s := by
+    intro j
+    exact Chvatal.blockOf_subset
+  have hcover' : ports.up ∪ Finset.univ.biUnion ports.down = s := by
+    simpa [ports, d2OrdinaryRankSenderPorts, Finset.union_assoc,
+      Finset.union_left_comm, Finset.union_comm] using hcover
+  have hparentDisjoint : Disjoint ports.up
+      (Finset.univ.biUnion ports.down) := by
+    simpa [ports, d2OrdinaryRankSenderPorts] using hdisjoint.1
+  have hchildDisjoint : ∀ j j', j ≠ j' →
+      Disjoint (ports.down j) (ports.down j') := by
+    intro j j' hj
+    simpa [ports, d2OrdinaryRankSenderPorts] using hdisjoint.2 j j' hj
+  simpa [ports] using d2SenderPorts_partition_contract s ports
+    hparentSubset hchildSubset hcover' hparentDisjoint hchildDisjoint
 
 /-- The flat one-stage receiver bags obtained by routing every local piece to
 its indexed parent/child (or to the explicit external boundary bucket). -/
