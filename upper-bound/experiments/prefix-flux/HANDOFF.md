@@ -518,6 +518,14 @@ depths through 20, but no Lean fit-preservation proof uses it yet. Rework the
 physical bag/run representation around this fact before extending the old
 `StaticHolesFit` bridge.
 
+Update: `d2FlowNodeStaticHolesClamped_fit_of_child_intervals_contained` now
+kernel-checks the clamped fit conditionally. Given a parent interval and the
+two endpoint-containment inequalities for every nonsaturated child, it proves
+the whole clamped hole list fits, using only the native deficit bound and root
+balance. This isolates the remaining fit obligation as a stage-history
+containment lemma. It does not yet supply that lemma for reachable snapshots
+or prove routed next-bag identity.
+
 The same file now proves `d2FlowStage_active_top_desc_static_bag_empty` for
 positive native width: the startup top-descending reset sets all eight child
 root tuples to zero, so their static holes fill the parent interval. This

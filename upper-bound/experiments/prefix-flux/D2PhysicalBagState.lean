@@ -642,6 +642,114 @@ theorem d2FlowTreeInv_root_balance {scale h : Nat}
       simp only [d2FlowTreeInv, d2FlowTreeRootDeficit] at hinv hunsat ⊢
       exact hinv.2.2.1 (by simpa [Nat.pow_succ, Nat.mul_comm] using hunsat)
 
+/-- When every nonempty child interval stays inside the parent interval,
+clamping empty saturated markers yields a fitting ordered hole list. -/
+theorem d2FlowNodeStaticHolesClamped_fit_of_child_intervals_contained
+    {scale h base width left right : Nat}
+    (children : Fin 8 → D2FlowTree h)
+    (hwidth : width = scale * 8 ^ h)
+    (hinv : ∀ j, d2FlowTreeInv scale (children j))
+    (hparent : base + left ≤ base + 8 * width - right)
+    (hcontain : ∀ j,
+      d2FlowTreeRootDeficit (children j) < width →
+        base + left ≤ base + j.val * width +
+            (d2FlowTreeRootData (children j)).2.1 ∧
+        base + (j.val + 1) * width -
+            (d2FlowTreeRootData (children j)).2.2 ≤
+          base + 8 * width - right) :
+    StaticHolesFit (base + left)
+      (d2FlowNodeStaticHolesClamped base width left right children)
+      (base + 8 * width - right) := by
+  let cursor := base + left
+  let stop := base + 8 * width - right
+  let lo : Fin 8 → Nat := fun j =>
+    (d2EightChildHoleClamped base width left right children j).1
+  let hi : Fin 8 → Nat := fun j =>
+    (d2EightChildHoleClamped base width left right children j).2
+  have hcap (j : Fin 8) : d2FlowTreeRootDeficit (children j) ≤ width := by
+    simpa [hwidth] using d2FlowTreeInv_root_native_bound (children j) (hinv j)
+  have hopen (j : Fin 8) (hsat :
+      d2FlowTreeRootDeficit (children j) ≠ width) :
+      d2FlowTreeRootDeficit (children j) < width := by
+    have hcapj := hcap j
+    omega
+  have hsatLo (j : Fin 8) (hsat :
+      d2FlowTreeRootDeficit (children j) = width) :
+      lo j = max cursor (min (base + j.val * width) stop) := by
+    simp [lo, d2EightChildHoleClamped, cursor, stop, hsat]
+  have hsatHi (j : Fin 8) (hsat :
+      d2FlowTreeRootDeficit (children j) = width) :
+      hi j = max cursor (min (base + j.val * width) stop) := by
+    simp [hi, d2EightChildHoleClamped, cursor, stop, hsat]
+  have hopenLo (j : Fin 8) (hsat :
+      d2FlowTreeRootDeficit (children j) ≠ width) :
+      lo j = base + j.val * width +
+        (d2FlowTreeRootData (children j)).2.1 := by
+    simp [lo, d2EightChildHoleClamped, d2EightChildHole, hsat]
+  have hopenHi (j : Fin 8) (hsat :
+      d2FlowTreeRootDeficit (children j) ≠ width) :
+      hi j = base + (j.val + 1) * width -
+        (d2FlowTreeRootData (children j)).2.2 := by
+    simp [hi, d2EightChildHoleClamped, d2EightChildHole, hsat]
+  have hstart : ∀ j, cursor ≤ lo j := by
+    intro j
+    by_cases hs : d2FlowTreeRootDeficit (children j) = width
+    · rw [hsatLo j hs]
+      exact le_max_left _ _
+    · rw [hopenLo j hs]
+      exact (hcontain j (hopen j hs)).1
+  have hwidths : ∀ j, lo j ≤ hi j := by
+    intro j
+    by_cases hs : d2FlowTreeRootDeficit (children j) = width
+    · rw [hsatLo j hs, hsatHi j hs]
+    · rw [hopenLo j hs, hopenHi j hs]
+      have hbalance := d2FlowTreeInv_root_balance (children j) (hinv j)
+        (by simpa [hwidth] using hopen j hs)
+      have hslot : (j.val + 1) * width = j.val * width + width := by
+        rw [Nat.add_mul, Nat.one_mul]
+      have hcapj := hcap j
+      omega
+  have hend : ∀ j, hi j ≤ stop := by
+    intro j
+    by_cases hs : d2FlowTreeRootDeficit (children j) = width
+    · rw [hsatHi j hs]
+      exact max_le (by simpa [cursor] using hparent) (min_le_right _ _)
+    · rw [hopenHi j hs]
+      exact (hcontain j (hopen j hs)).2
+  have hordered : ∀ i j, i.val < j.val → hi i ≤ lo j := by
+    intro i j hij
+    by_cases his : d2FlowTreeRootDeficit (children i) = width <;>
+      by_cases hjs : d2FlowTreeRootDeficit (children j) = width
+    · rw [hsatHi i his, hsatLo j hjs]
+      have hslot : base + i.val * width ≤ base + j.val * width := by
+        have hmul := Nat.mul_le_mul_right width (Nat.le_of_lt hij)
+        omega
+      exact max_le_max le_rfl
+        (min_le_min hslot le_rfl)
+    · rw [hsatHi i his, hopenLo j hjs]
+      have hcursor := (hcontain j (hopen j hjs)).1
+      have hslot : base + i.val * width ≤
+          base + j.val * width + (d2FlowTreeRootData (children j)).2.1 := by
+        have hmul := Nat.mul_le_mul_right width (Nat.le_of_lt hij)
+        omega
+      exact max_le hcursor (le_trans (min_le_left _ _) hslot)
+    · rw [hopenHi i his, hsatLo j hjs]
+      have hstop := (hcontain i (hopen i his)).2
+      have hslot : base + (i.val + 1) * width -
+          (d2FlowTreeRootData (children i)).2.2 ≤ base + j.val * width := by
+        have hmul := Nat.mul_le_mul_right width (by omega : i.val + 1 ≤ j.val)
+        omega
+      have hmin : base + (i.val + 1) * width -
+          (d2FlowTreeRootData (children i)).2.2 ≤
+            min (base + j.val * width) stop := le_min hslot hstop
+      exact le_trans hmin (le_max_right _ _)
+    · rw [hopenHi i his, hopenLo j hjs]
+      have hmul := Nat.mul_le_mul_right width (by omega : i.val + 1 ≤ j.val)
+      omega
+  have hfit := staticHoleList_fits cursor stop lo hi
+    (by simpa [cursor, stop] using hparent) hstart hwidths hend hordered
+  simpa [cursor, stop, d2FlowNodeStaticHolesClamped, lo, hi] using hfit
+
 /-- Monotone child fronts preserve an existing fitted parent hole list. -/
 theorem d2FlowNodeStaticHoles_fit_of_child_fronts_mono
     {scale h base width left right : Nat}
