@@ -1116,3 +1116,21 @@ establish recursive child-fit preservation or a run-wide clamped-fit invariant;
 other schedule roles, reachable routed-bag/profile transition, terminal bound,
 and depth accounting remain open. No global coefficient improvement follows
 yet.
+
+## Active-parent child allocation adapter
+
+`D2DynamicSenderStageCardinality.lean` proves
+`d2SenderLayout_active_parent_child_cardinality`. It composes the recursive
+size induction hypothesis for an inactive child with an active parent's
+down-port: when the down-port has size equal to the child's old root deficit
+minus its post-overwrite deficit, is disjoint from the recursively updated
+child bag, and the flow overwrite is covered, the resulting child bag has
+exactly the post-overwrite flow allocation. The proof uses the existing
+inactive-recursive allocation identity; it does not assume static-hole fit.
+
+This closes a generic size-accounting step, not its candidate instantiation.
+The actual sender ports must still supply the root-drop cardinality and
+disjointness, and the recursive child cardinality hypothesis must be proved
+uniformly across roles and startup. The actual schedule tag map and spatial
+profile recurrence, including partial tiles and terminal cleanup, remain the
+main global gates. Focused Lean checking passes for the new module.
