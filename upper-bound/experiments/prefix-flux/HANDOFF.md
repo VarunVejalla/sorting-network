@@ -639,6 +639,27 @@ profile transition, spatial terminal invariant, fixed cleanup, and
 depth/padding accounting remain open. Aggregate error alone is not terminal
 purity.
 
+## Candidate representation pivot (2026-10-31)
+
+`D2-DYNAMIC-SENDER-SETS.md` specifies a proposed alternative to proving that
+the routed physical sets equal the canonical static-hole bags. It stores each
+sender as an actual `Finset (Fin n)`, partitions an active sender by its local
+rank-port theorem, retains inactive senders, and defines each next sender set
+as the union of pieces routed to that node. The existing
+`routed_local_destinations_preserve_partition` theorem supplies global
+coverage/disjointness once the source sets partition the wires and local port
+pieces partition each source.
+
+This is only a representation proposal. The decisive unproved part is an
+all-tree-level cardinality theorem matching each dynamically defined sender
+set to `d2FlowTreeAllocation` after `d2FlowStage`, including exceptional roles,
+startup, and parent-root overwrites. Even if that closes, it only supplies a
+physical layout and receiver tags; the all-stage spatial false-profile
+contraction and terminal cleanup still need proof. First test the one-stage
+partition-plus-cardinality theorem before adding more profile adapters. If its
+allocation recurrence fails in a reachable case, record the counterexample
+and return to the static-bag transition gate.
+
 ## Files and artifacts
 
 Start at `README.md` for the module map. `STATUS-HISTORY.md` preserves the
