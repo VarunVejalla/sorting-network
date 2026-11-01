@@ -500,16 +500,15 @@ and the stage assignment `total - high - quota/2`. Inactive/exceptional roles
 and recursive whole-tree preservation remain open.
 
 `D2OrdinaryRankRouting.lean` already proves the generic local destination-piece
-partition for an abstract sender set of cardinality `child-total - G`; do not
-reprove it. The concrete instantiation first needs that cardinality for
-`d2FlowNodeStaticBag`. `D2PhysicalBagState.lean` now proves that a fitting
-hole union has cardinality equal to its interval-length sum, and that a
-non-saturated bag has size equal to parent-interval size minus hole-union
-size. The next arithmetic step is to sum the eight child-hole lengths as
-`8 * nativeWidth - childTotal`, using child balance and native-capacity bounds.
-Then instantiate the existing local partition and prove its pieces match the
-next physical bags: inactive retained bags, the parent's down-port, and
-active children's up-ports. Match exact indices/overwrite behavior in
+partition for an abstract sender set; do not reprove it.
+`D2PhysicalBagState.lean` now proves that a fitting hole union's cardinality
+is its interval-length sum, each child hole has length `nativeWidth - deficit`,
+and a valid nonsaturated node's static bag has cardinality `child-total - G`.
+It instantiates the generic rank-port partition with this concrete bag, so the
+parent/child pieces cover the sender set disjointly. The next step is to prove
+the pieces match the actual next physical bags: inactive retained bags, the
+parent's down-port, and active children's up-ports. Match exact indices/
+overwrite behavior in
 `wire_partition_check.py` and `receiver_fiber_types.py`. This would supply
 concrete receiver tags for the clipped-tile identity. Cover startup,
 exceptional roles, and ragged cases before claiming the full bridge. The

@@ -13,6 +13,7 @@ namespace Chvatal.D2PhysicalBagState
 open Chvatal
 open Chvatal.D2Reserve
 open Chvatal.D2StaticWireSets
+open Chvatal.D2OrdinaryRankRouting
 
 /-- The eight static child holes determined by one flow-tree node. A saturated
 child contributes an empty hole, placed at the appropriate boundary by
@@ -369,6 +370,282 @@ theorem d2FlowTreeInv_root_balance {scale h : Nat}
   | node G low high children =>
       simp only [d2FlowTreeInv, d2FlowTreeRootDeficit] at hinv hunsat ⊢
       exact hinv.2.2.1 (by simpa [Nat.pow_succ, Nat.mul_comm] using hunsat)
+
+/-- For a valid child tree, the static interval removed from its native slot
+has length equal to native capacity minus its root deficit. -/
+theorem d2FlowNodeChildHole_length {scale h : Nat} (base left right : Nat)
+    (children : Fin 8 → D2FlowTree h)
+    (hinv : ∀ j, d2FlowTreeInv scale (children j)) (j : Fin 8) :
+    (d2EightChildHole base (scale * 8 ^ h) left right
+      (fun k => d2FlowTreeRootDeficit (children k))
+      (fun k => (d2FlowTreeRootData (children k)).2.1)
+      (fun k => (d2FlowTreeRootData (children k)).2.2) j).2 -
+    (d2EightChildHole base (scale * 8 ^ h) left right
+      (fun k => d2FlowTreeRootDeficit (children k))
+      (fun k => (d2FlowTreeRootData (children k)).2.1)
+      (fun k => (d2FlowTreeRootData (children k)).2.2) j).1 =
+      scale * 8 ^ h - d2FlowTreeRootDeficit (children j) := by
+  have hcap := d2FlowTreeInv_root_native_bound (children j) (hinv j)
+  have hbalance :
+      d2FlowTreeRootDeficit (children j) < scale * 8 ^ h →
+        (d2FlowTreeRootData (children j)).2.1 +
+            (d2FlowTreeRootData (children j)).2.2 =
+          d2FlowTreeRootDeficit (children j) := by
+    intro hunsat
+    exact d2FlowTreeInv_root_balance (children j) (hinv j) hunsat
+  exact d2EightChildHole_length_eq _ _ _ j hcap hbalance
+
+/-- The list encoding of finitely many holes preserves the sum of their
+lengths. -/
+theorem staticHoleList_lengths_sum {m : Nat} (lo hi : Fin m → Nat) :
+    ((staticHoleList m lo hi).map (fun p => p.2 - p.1)).sum =
+      Finset.univ.sum (fun j : Fin m => hi j - lo j) := by
+  induction m with
+  | zero => simp [staticHoleList]
+  | succ m ih =>
+      rw [staticHoleList, List.map_cons, List.sum_cons,
+        Fin.sum_univ_succ]
+      congr 1
+      exact ih (fun j => lo j.succ) (fun j => hi j.succ)
+
+/-- Under the recursive flow invariant, all eight static child holes remove
+exactly their native capacity minus the total child deficit. -/
+theorem d2FlowNodeStaticHoles_card {n scale h : Nat}
+    (base low high : Nat) (children : Fin 8 → D2FlowTree h)
+    (hinv : ∀ j, d2FlowTreeInv scale (children j))
+    (hfit : StaticHolesFit (base + low)
+      (d2FlowNodeStaticHoles base (scale * 8 ^ h) low high children)
+      (base + 8 * (scale * 8 ^ h) - high))
+    (hstop : base + 8 * (scale * 8 ^ h) - high ≤ n) :
+    (staticHoleUnion (n := n)
+      (d2FlowNodeStaticHoles base (scale * 8 ^ h) low high children)).card =
+      8 * (scale * 8 ^ h) -
+        d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) := by
+  have hcard := staticHoleUnion_card_of_fit (base + low)
+    (base + 8 * (scale * 8 ^ h) - high)
+    (d2FlowNodeStaticHoles base (scale * 8 ^ h) low high children) hfit hstop
+  let hole : Fin 8 → Nat × Nat := fun j =>
+    d2EightChildHole base (scale * 8 ^ h) low high
+      (fun k => d2FlowTreeRootDeficit (children k))
+      (fun k => (d2FlowTreeRootData (children k)).2.1)
+      (fun k => (d2FlowTreeRootData (children k)).2.2) j
+  have hlength := staticHoleList_lengths_sum
+    (fun j => (hole j).1) (fun j => (hole j).2)
+  have hsumLengths :
+      ((d2FlowNodeStaticHoles base (scale * 8 ^ h) low high children).map
+        (fun p => p.2 - p.1)).sum =
+      Finset.univ.sum (fun j : Fin 8 =>
+        (scale * 8 ^ h) - d2FlowTreeRootDeficit (children j)) := by
+    calc
+      ((d2FlowNodeStaticHoles base (scale * 8 ^ h) low high children).map
+          (fun p => p.2 - p.1)).sum =
+        Finset.univ.sum (fun j : Fin 8 => (hole j).2 - (hole j).1) := by
+          simpa [d2FlowNodeStaticHoles, hole] using hlength
+      _ = Finset.univ.sum (fun j : Fin 8 =>
+          (scale * 8 ^ h) - d2FlowTreeRootDeficit (children j)) := by
+            apply Finset.sum_congr rfl
+            intro j hj
+            exact d2FlowNodeChildHole_length base low high children hinv j
+  have hsum :
+      (Finset.univ.sum (fun j : Fin 8 => (scale * 8 ^ h) -
+        d2FlowTreeRootDeficit (children j))) =
+        8 * (scale * 8 ^ h) -
+          d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) := by
+    simp only [d2FlowTotal]
+    have hcap (j : Fin 8) :
+        d2FlowTreeRootDeficit (children j) ≤ scale * 8 ^ h :=
+      d2FlowTreeInv_root_native_bound (children j) (hinv j)
+    have hadd :
+        Finset.univ.sum (fun j : Fin 8 =>
+          (scale * 8 ^ h) - d2FlowTreeRootDeficit (children j)) +
+        Finset.univ.sum (fun j : Fin 8 =>
+          d2FlowTreeRootDeficit (children j)) =
+        Finset.univ.sum (fun _ : Fin 8 => scale * 8 ^ h) := by
+      rw [← Finset.sum_add_distrib]
+      apply Finset.sum_congr rfl
+      intro j hj
+      exact Nat.sub_add_cancel (hcap j)
+    have hwidth : Finset.univ.sum (fun _ : Fin 8 =>
+        scale * 8 ^ h) = 8 * (scale * 8 ^ h) := by simp
+    omega
+  rw [hcard, hsumLengths, hsum]
+
+/-- A valid nonsaturated flow node's static physical bag has exactly the
+mass expected by the ordinary sender rank-port partition. -/
+theorem d2FlowNodeStaticBag_card_eq_child_total_sub_G {n scale h : Nat}
+    (base G low high : Nat) (children : Fin 8 → D2FlowTree h)
+    (htree : d2FlowTreeInv scale (.node G low high children))
+    (hfit : StaticHolesFit (base + low)
+      (d2FlowNodeStaticHoles base (scale * 8 ^ h) low high children)
+      (base + 8 * (scale * 8 ^ h) - high))
+    (hstop : base + 8 * (scale * 8 ^ h) - high ≤ n)
+    (hGlt : G < 8 * (scale * 8 ^ h)) :
+    (d2FlowNodeStaticBag (n := n) base (scale * 8 ^ h)
+      G low high children).card =
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G := by
+  have htree' := htree
+  simp only [d2FlowTreeInv] at htree'
+  have hchildren : ∀ j, d2FlowTreeInv scale (children j) := htree'.2.2.2
+  have hbalance : low + high = G := by
+    have hroot := htree'.2.2.1
+    have hnative : G < scale * 8 ^ (h + 1) := by
+      simpa [Nat.pow_succ, Nat.mul_assoc, Nat.mul_comm, Nat.mul_left_comm]
+        using hGlt
+    exact hroot hnative
+  have hbag := d2FlowNodeStaticBag_card_of_fit base (scale * 8 ^ h)
+    G low high children (by omega) hfit hstop
+  have hholes := d2FlowNodeStaticHoles_card base low high children
+    hchildren hfit hstop
+  have htotal : G ≤ d2FlowTotal
+      (fun j => d2FlowTreeRootDeficit (children j)) := by
+    simpa [d2FlowTotal] using htree'.2.1
+  have htotalcap : d2FlowTotal
+      (fun j => d2FlowTreeRootDeficit (children j)) ≤
+        8 * (scale * 8 ^ h) := by
+    unfold d2FlowTotal
+    calc
+      _ ≤ Finset.univ.sum (fun _ : Fin 8 => scale * 8 ^ h) :=
+        Finset.sum_le_sum fun j _ =>
+          d2FlowTreeInv_root_native_bound (children j) (hchildren j)
+      _ = 8 * (scale * 8 ^ h) := by simp
+  rw [hbag, hholes]
+  have hparentLength :
+      8 * (scale * 8 ^ h) - low - high =
+        8 * (scale * 8 ^ h) - G := by omega
+  rw [hparentLength]
+  omega
+
+/-- The ordinary sender reserve contract puts both front cuts inside the
+child-rank interval, so the eight child ports form a valid middle block. -/
+theorem d2FlowStageInvInputs_ordinary_front_bounds
+    {scale h i G low high : Nat} {active : Nat → Bool}
+    {role : Nat → D2Role} {quota : Nat → D2Role → Nat}
+    {cap : Nat → Nat} (children : Fin 8 → D2FlowTree h)
+    (hinputs : d2FlowStageInvInputs scale active role quota cap i
+      (.node G low high children)) (ha : active i = true)
+    (hr : role i = .topRise ∨ role i = .mid ∨ role i = .botDesc) :
+    quota i (role i) % 2 = 0 ∧
+      low + quota i (role i) / 2 ≤
+        d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) ∧
+      high + quota i (role i) / 2 ≤
+        d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) ∧
+      low + quota i (role i) / 2 ≤
+        d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) -
+          high - quota i (role i) / 2 := by
+  have hstage := hinputs.2
+  simp only [ha, if_true] at hstage
+  cases hrole : role i with
+  | topDesc => simp [hrole] at hr
+  | botRise => simp [hrole] at hr
+  | topRise | mid | botDesc =>
+      simp only [hrole] at hstage ⊢
+      rcases hstage with ⟨hbalance, hG, hqcap, hqtotal, heven,
+        hleftcap, hrightcap⟩
+      have hquotaEq : quota i (role i) =
+          2 * (quota i (role i) / 2) := by
+        rw [hrole]
+        omega
+      have hquotaEq' := hquotaEq
+      rw [hrole] at hquotaEq'
+      have hqcapHalf : 512 * (quota i (role i) / 2) ≤ cap i := by
+        rw [hrole]
+        rw [hquotaEq'] at hqcap
+        nlinarith [hqcap]
+      have hfront_left : 2 * G + quota i (role i) ≤
+          d2FlowTreeRootDeficit (children ⟨0, by omega⟩) := by
+        have hsum := Nat.add_le_add hG hqcapHalf
+        have hcap' := Nat.add_le_add hleftcap hleftcap
+        omega
+      have hfront_right : 2 * G + quota i (role i) ≤
+          d2FlowTreeRootDeficit (children ⟨7, by omega⟩) := by
+        have hsum := Nat.add_le_add hG hqcapHalf
+        have hcap' := Nat.add_le_add hrightcap hrightcap
+        omega
+      have htotEnds :
+          d2FlowTreeRootDeficit (children ⟨0, by omega⟩) +
+            d2FlowTreeRootDeficit (children ⟨7, by omega⟩) ≤
+          d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) := by
+        have hsum := Finset.sum_le_sum_of_subset_of_nonneg
+          (Finset.subset_univ ({⟨0, by omega⟩, ⟨7, by omega⟩} :
+            Finset (Fin 8)))
+          (fun j hj hj' => Nat.zero_le
+            (d2FlowTreeRootDeficit (children j)))
+        simpa [d2FlowTotal] using hsum
+      constructor
+      · exact heven
+      constructor
+      · have hbalance' : low ≤ G := by omega
+        omega
+      constructor
+      · have hbalance' : high ≤ G := by omega
+        omega
+      · have hbalance' : low + high = G := hbalance
+        omega
+
+/-- Instantiate the generic ordinary rank-port partition with the concrete
+static physical bag of a flow node. This partitions the current sender set;
+identifying the pieces with all next-stage bags is a separate global step. -/
+theorem d2FlowNode_active_ordinary_piece_partition
+    {n scale h i G low high : Nat} {active : Nat → Bool}
+    {role : Nat → D2Role} {quota : Nat → D2Role → Nat}
+    {cap : Nat → Nat} (base : Nat)
+    (children : Fin 8 → D2FlowTree h)
+    (htree : d2FlowTreeInv scale (.node G low high children))
+    (hinputs : d2FlowStageInvInputs scale active role quota cap i
+      (.node G low high children))
+    (ha : active i = true)
+    (hr : role i = .topRise ∨ role i = .mid ∨ role i = .botDesc)
+    (hfit : StaticHolesFit (base + low)
+      (d2FlowNodeStaticHoles base (scale * 8 ^ h) low high children)
+      (base + 8 * (scale * 8 ^ h) - high))
+    (hstop : base + 8 * (scale * 8 ^ h) - high ≤ n)
+    (hGlt : G < 8 * (scale * 8 ^ h)) :
+    let sender := d2FlowNodeStaticBag (n := n) base (scale * 8 ^ h)
+      G low high children
+    let widths : Fin 8 → Nat := fun j =>
+      d2FlowTreeRootDeficit (children j) -
+        d2FlowTreeRootDeficit
+          (d2FlowTreeChild
+            (d2FlowStage active role quota (h + 1) i
+              (.node G low high children)) j)
+    let boundary : Nat → Nat := d2FlowRankBoundary widths
+    (∀ target : Option (Fin 8),
+      destinationPiece (ports := 8) sender boundary (quota i (role i) / 2)
+        (sender.card - quota i (role i) / 2) target ⊆ sender) ∧
+    Finset.univ.biUnion
+      (destinationPiece (ports := 8) sender boundary (quota i (role i) / 2)
+        (sender.card - quota i (role i) / 2)) = sender ∧
+    (∀ a b, a ≠ b →
+      Disjoint
+        (destinationPiece (ports := 8) sender boundary (quota i (role i) / 2)
+          (sender.card - quota i (role i) / 2) a)
+        (destinationPiece (ports := 8) sender boundary (quota i (role i) / 2)
+          (sender.card - quota i (role i) / 2) b)) := by
+  let sender := d2FlowNodeStaticBag (n := n) base (scale * 8 ^ h)
+    G low high children
+  let widths : Fin 8 → Nat := fun j =>
+    d2FlowTreeRootDeficit (children j) -
+      d2FlowTreeRootDeficit
+        (d2FlowTreeChild
+          (d2FlowStage active role quota (h + 1) i
+            (.node G low high children)) j)
+  let boundary : Nat → Nat := d2FlowRankBoundary widths
+  have hbalance : G = low + high := by
+    have hroot := d2FlowTreeInv_root_balance
+      (.node G low high children) htree (by
+        simpa [Nat.pow_succ, Nat.mul_assoc, Nat.mul_comm, Nat.mul_left_comm]
+          using hGlt)
+    exact hroot.symm
+  have hsender : sender.card =
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G := by
+    dsimp [sender]
+    exact d2FlowNodeStaticBag_card_eq_child_total_sub_G base G low high
+      children htree hfit hstop hGlt
+  have hfront := d2FlowStageInvInputs_ordinary_front_bounds
+    children hinputs ha hr
+  simpa only [sender, widths, boundary] using
+    (regular_stage_sender_piece_partition children sender ha hr hbalance
+      hfront.1 hfront.2.1 hfront.2.2.1 hfront.2.2.2 hsender)
 
 /-- The tree-capacity/balance invariant alone does not guarantee that a
 node's child holes fit between its fronts. Thus the candidate proof must use
