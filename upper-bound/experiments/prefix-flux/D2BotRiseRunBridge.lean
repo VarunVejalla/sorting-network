@@ -72,9 +72,9 @@ theorem d2FlowCandidate_botRise_current_active_role
 
 /-- Schedule callbacks along the exceptional bottom-rise history: the child
 is inactive throughout; the parent is inactive except at the rise itself. -/
-theorem d2FlowCandidate_botRise_callback_window
+theorem d2FlowCandidate_botRise_callback_of_stage_bound
     {d j : Nat} (hd : 7 ≤ d) (hj : 1 ≤ j)
-    (hwindow : 3 * j + 2 ≤ tfD2 d) :
+    (hstage : 3 * j < tfD2 d) :
     ∀ k, k < 3 * j + 2 →
       d2FlowCandidateRunActive d k (j + 3) = false ∧
         (d2FlowCandidateRunActive d k (j + 2) = false ∨
@@ -112,7 +112,7 @@ theorem d2FlowCandidate_botRise_callback_window
           simp [hchild]
         have hboundary : 3 * (j + 2) = 3 * j + 6 := by omega
         have hfront := botRise_boundary_frontier (by omega) hboundary
-        have htf : 3 * j < tfD2 d := by omega
+        have htf : 3 * j < tfD2 d := hstage
         have hgap := frontiers_separated_before_tf hd (by omega) htf
         have hnotTop : j + 2 ≠ alpha d (3 * j) := by
           intro heq
@@ -151,6 +151,17 @@ theorem d2FlowCandidate_botRise_callback_window
             (t := 3 * j + 1) (i := j + 2) (by omega)]
           simp [hparent]
         exact ⟨hchild', Or.inl hparent'⟩
+
+/-- Window-form wrapper retained for callers that need the entire
+two-callback interval to lie before the terminal stage. -/
+theorem d2FlowCandidate_botRise_callback_window
+    {d j : Nat} (hd : 7 ≤ d) (hj : 1 ≤ j)
+    (hwindow : 3 * j + 2 ≤ tfD2 d) :
+    ∀ k, k < 3 * j + 2 →
+      d2FlowCandidateRunActive d k (j + 3) = false ∧
+        (d2FlowCandidateRunActive d k (j + 2) = false ∨
+          d2FlowCandidateRunRole d k (j + 2) = .botRise) :=
+  d2FlowCandidate_botRise_callback_of_stage_bound hd hj (by omega)
 
 /-- Along any path, the actual candidate run preserves a child root through
 the two-stage bot-rise window. If the initial root is native, so is the

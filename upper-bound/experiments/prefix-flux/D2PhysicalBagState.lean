@@ -457,6 +457,60 @@ theorem d2FlowTreeInv_children_saturated_of_total_full
   rw [htotal] at hsplit
   omega
 
+/-- A `botDesc` visit occurs only in the two rising phases of the period-three
+bottom frontier, with its exact frontier level. -/
+theorem d2ScheduleRole_botDesc_phase
+    {d i t : Nat} (ht : 2 ≤ t)
+    (hrole : d2ScheduleRole d i t = .botDesc) :
+    (∃ j, 1 ≤ j ∧ t = 3 * j + 1 ∧ i = j + 1) ∨
+      (∃ j, t = 3 * j + 2 ∧ i = j + 2) := by
+  have hnotTop : i ≠ alpha d t := by
+    intro htop
+    have hroleTop := hrole
+    simp only [d2ScheduleRole, if_pos htop] at hroleTop
+    split at hroleTop <;> cases hroleTop
+  have hbottom : i = omega t := by
+    by_contra hnot
+    simp only [d2ScheduleRole, if_neg hnotTop, if_neg hnot] at hrole
+    cases hrole
+  have hmove : omega t < omega (t + 1) := by
+    by_contra hnotmove
+    simp only [d2ScheduleRole, if_neg hnotTop, if_pos hbottom,
+      if_neg hnotmove] at hrole
+    cases hrole
+  let j := t / 3
+  have hdecomp : t = 3 * j + t % 3 := by
+    dsimp [j]
+    omega
+  have hrem : t % 3 = 0 ∨ t % 3 = 1 ∨ t % 3 = 2 := by omega
+  rcases hrem with hzero | hone | htwo
+  · have htEq : t = 3 * j := by omega
+    have hj : 1 ≤ j := by omega
+    have hnow : omega t = j + 2 := by
+      rw [htEq, omega_three_mul j hj]
+    have hnext : omega (t + 1) = j + 1 := by
+      rw [htEq, omega_three_mul_add_one]
+    rw [hnow, hnext] at hmove
+    omega
+  · have htEq : t = 3 * j + 1 := by omega
+    have hnow : omega t = j + 1 := by
+      rw [htEq, omega_three_mul_add_one]
+    have hnext : omega (t + 1) = j + 2 := by
+      rw [htEq, show 3 * j + 1 + 1 = 3 * j + 2 by omega,
+        omega_three_mul_add_two]
+    rw [hnow] at hbottom
+    left
+    exact ⟨j, by omega, htEq, hbottom⟩
+  · have htEq : t = 3 * j + 2 := by omega
+    have hnow : omega t = j + 2 := by
+      rw [htEq, omega_three_mul_add_two]
+    have hnext : omega (t + 1) = j + 3 := by
+      rw [htEq, show 3 * j + 2 + 1 = 3 * (j + 1) by omega,
+        omega_three_mul (j + 1) (by omega)]
+    rw [hnow] at hbottom
+    right
+    exact ⟨j, htEq, hbottom⟩
+
 /-! At the same stage, an ordinary sender two levels below has quota at
 least that of its ordinary ancestor. The capacity exponent grows by six;
 the smallest cross-role ratio is still 60. This is the arithmetic reserve

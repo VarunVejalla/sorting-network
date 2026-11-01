@@ -1,6 +1,9 @@
 import D2BotRiseRunBridge
+import D2PhysicalBagState
 
 namespace Chvatal.D2Reserve
+
+open D2PhysicalBagState
 
 theorem d2FlowTreeAtPath_full
     {h n : Nat} (path : D2FlowPath n) :
@@ -151,6 +154,62 @@ private theorem d2FlowCandidateRunActive_false_of_schedule_inactive
   rw [d2FlowCandidateRunActive,
     d2FlowCandidateActive_matches_schedule (d := d) (t := t) (i := i) ht]
   simp [hinactive]
+
+/-- A bot-descending frontier has never visited its level-two descendants:
+their root deficits remain at native capacity through the actual candidate
+run. -/
+theorem d2FlowCandidateRun_botDesc_grandchild_root_native
+    {h i t : Nat} (hd : 7 ≤ h + 1 + (i + 1))
+    (ht : 2 ≤ t) (htf : t < tfD2 (h + 1 + (i + 1)))
+    (hrole : d2FlowCandidateRole (h + 1 + (i + 1)) t i = .botDesc)
+    (path : D2FlowPath (i + 1)) (child : Fin 8) :
+    d2FlowTreeRootDeficit
+      (d2FlowTreeChild
+        (d2FlowTreeAtPath (i + 1)
+          (d2FlowCandidateRun (h + 1 + (i + 1))
+            (d2FlowTreeInitial 8192 (h + 1 + (i + 1))) t) path) child) =
+      8192 * 8 ^ h := by
+  have hroleSchedule : d2ScheduleRole (h + 1 + (i + 1)) i t = .botDesc := by
+    simpa [d2FlowCandidateRole_matches_schedule (t := t) (i := i)
+      (by omega)] using hrole
+  rcases d2ScheduleRole_botDesc_phase ht hroleSchedule with
+    ⟨j, hj, htEq, hiEq⟩ | ⟨j, htEq, hiEq⟩
+  · have hcallback := d2FlowCandidate_botRise_callback_of_stage_bound
+      (d := h + 1 + (i + 1)) (j := j) hd hj (by omega)
+    have hpreserves : ∀ k, k < t →
+        d2FlowCandidateRunActive (h + 1 + (i + 1)) k (i + 2) = false ∧
+          (d2FlowCandidateRunActive (h + 1 + (i + 1)) k (i + 1) = false ∨
+            d2FlowCandidateRunRole (h + 1 + (i + 1)) k (i + 1) = .botRise) := by
+      intro k hk
+      have h := hcallback k (by omega)
+      simpa [hiEq, show i + 1 = j + 2 by omega] using h
+    exact d2FlowCandidateRun_path_child_root_preserved
+      (h := h) (n := i) (t := t) path child hpreserves
+  · have hpreserves : ∀ k, k < t →
+        d2FlowCandidateRunActive (h + 1 + (i + 1)) k (i + 2) = false ∧
+          (d2FlowCandidateRunActive (h + 1 + (i + 1)) k (i + 1) = false ∨
+            d2FlowCandidateRunRole (h + 1 + (i + 1)) k (i + 1) = .botRise) := by
+      intro k hk
+      by_cases hk0 : k = 0
+      · subst k
+        simp [d2FlowCandidateRunActive, d2FlowCandidateActive]
+      · have hinactive := botRise_history_inactive_before
+          (d := h + 1 + (i + 1)) (tf := tfD2 (h + 1 + (i + 1)))
+          (j := j + 1) (s := k) (by omega) (by omega)
+        rcases hinactive with ⟨hinactiveParent, hinactiveChild⟩
+        have hchild := d2FlowCandidateRunActive_false_of_schedule_inactive
+          (by omega) hinactiveChild
+        have hparent := d2FlowCandidateRunActive_false_of_schedule_inactive
+          (by omega) hinactiveParent
+        have hchild' : d2FlowCandidateRunActive
+            (h + 1 + (i + 1)) k (i + 2) = false := by
+          simpa [hiEq] using hchild
+        have hparent' : d2FlowCandidateRunActive
+            (h + 1 + (i + 1)) k (i + 1) = false := by
+          simpa [hiEq] using hparent
+        exact ⟨hchild', Or.inl hparent'⟩
+    exact d2FlowCandidateRun_path_child_root_preserved
+      (h := h) (n := i) (t := t) path child hpreserves
 
 theorem d2FlowCandidateRun_strong_parent_grandchildren_native
     {h j : Nat} (hh : 1 ≤ h)

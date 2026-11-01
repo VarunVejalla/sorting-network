@@ -937,35 +937,10 @@ is active with an ordinary role at level `i+2`, while inactive/botRise
 boundary grandchildren are saturated and hence handled by clamped markers.
 The finite screen exhibits that split through depth 100, but does not prove it.
 
-## Two-level active-interval gate
+## Nested frontier schedule case split
 
-`D2PhysicalBagState.lean` now proves
-`d2FlowCandidateActive_two_levels_below_or_botDesc`: for `d >= 7`, before the
-terminal frontier meeting, if an active sender has an ordinary role and its
-same-parity level-`i+2` descendant is outside the active interval, then the
-sender is the bottom frontier with role `botDesc`. Otherwise that descendant
-is active. A focused current-source rebuild of `D2PhysicalBagState.lean`
-passes. This removes the schedule-parity ambiguity for the nested endpoint
-containment gate, but does not classify the active descendant's role as
-ordinary and does not prove saturation in the `botDesc` exception. Next derive
-that stronger ordinary-or-saturated dichotomy from the reachable flow invariant;
-then use the two-level quota reserve to prove the first/last grandchild cut
-containment. The physical all-stage bag identity and profile/terminal gates
-remain open.
+`D2PhysicalBagState.lean` now proves `d2FlowCandidateActive_two_levels_below_or_botDesc` and `d2FlowCandidateActive_two_levels_below_role`: before terminal frontier meeting, an active ordinary sender's level-`i+2` descendant is active unless the sender is `botDesc`; if active, the descendant role is `mid`, `botDesc`, or `botRise`. It also proves `d2FlowTreeInv_children_saturated_of_total_full`.
 
+`D2BotRiseStaticFit.lean` exports `candidate_botRise_path_children_saturated` and `candidate_botRise_path_post_root_saturated`. `D2PathNativePreservation.lean` now proves `d2FlowCandidateRun_botDesc_grandchild_root_native`: in either `botDesc` phase, the level-`i+2` grandchild root stays native along every actual candidate-run path, using the exact earlier `botRise` callback history where needed. Focused current-source checks pass for `D2PhysicalBagState.lean`, `D2BotRiseStaticFit.lean`, `D2BotRiseRunBridge.lean`, and `D2PathNativePreservation.lean`.
 
-The schedule gate has since been sharpened. `D2PhysicalBagState.lean` also
-proves `d2FlowCandidateActive_two_levels_below_role`: an active level-`i+2`
-descendant must have role `mid`, `botDesc`, or `botRise` (the separated upper
-frontier rules out both top roles). The generic
-`d2FlowTreeInv_children_saturated_of_total_full` turns full child mass into
-pointwise saturation. `D2BotRiseStaticFit.lean` now exports
-`candidate_botRise_path_children_saturated` and
-`candidate_botRise_path_post_root_saturated`, so the reachable `botRise`
-exception has a kernel-checked saturated post-stage root. Focused current-source
-checks pass for `D2PhysicalBagState.lean` and `D2BotRiseStaticFit.lean`. The
-remaining schedule case is the `botDesc` parent whose level-`i+2` descendants
-are inactive; prove their native saturation from the actual prior callback
-history, then combine the ordinary-descendant quota reserve with the two
-boundary-cut inequalities. No recursive physical fit provider or sorting bound
-has been closed yet.
+This closes the schedule-side ordinary-or-saturated case split. Still open: instantiate the descendant quota comparison at actual candidate roles/exponents and derive both endpoint cut-containment inequalities. The recursive physical fit provider, fixed-core profile transition, and sorting bound remain open.
