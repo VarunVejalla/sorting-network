@@ -561,4 +561,19 @@ theorem d2FlowCandidateActive_no_adjacent {d t i : Nat}
     simpa [d2FlowCandidateActive, ht0, ht1, decide_eq_true_eq] using hnext
   omega
 
+/-- The bottom leaf level of the candidate tree is never an active sender.
+This is the boundary fact needed to define its recursive physical routing
+without inventing a child port below the represented tree. -/
+theorem d2FlowCandidate_leaf_inactive {d t : Nat} (hd : 7 ≤ d) :
+    d2FlowCandidateActive d t d = false := by
+  by_cases ht0 : t = 0
+  · simp [d2FlowCandidateActive, ht0, show d ≠ 0 by omega]
+  by_cases ht1 : t = 1
+  · simp [d2FlowCandidateActive, ht0, ht1, show d ≠ 1 by omega]
+  cases hactive : d2FlowCandidateActive d t d with
+  | false => rfl
+  | true =>
+      simp [d2FlowCandidateActive, ht0, ht1, tfD2] at hactive
+      omega
+
 end Chvatal.D2OrdinaryRankRouting

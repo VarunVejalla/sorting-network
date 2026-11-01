@@ -681,9 +681,12 @@ proves that the candidate root is only active as `topDesc`; hence the root has
 no parent up-port requiring a receiver outside the tree. The separate
 zero-root input contract for this reset is still needed.
 `d2FlowCandidateActive_no_adjacent` proves neighboring levels are never active
-simultaneously. Startup/exceptional role routing still needs integration into
-the set-valued layout. None of these size/layout facts establishes the spatial
-profile contraction.
+simultaneously, and `d2FlowCandidate_leaf_inactive` proves level `d` is never
+active for candidate depth `d >= 7`. Together with the root-role result, the
+schedule has no active sender beyond the represented tree boundaries.
+Startup/exceptional role routing still needs integration into the set-valued
+layout. None of these size/layout facts establishes the spatial profile
+contraction.
 
 ## Files and artifacts
 

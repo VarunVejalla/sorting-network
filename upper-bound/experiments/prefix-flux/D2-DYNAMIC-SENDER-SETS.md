@@ -116,11 +116,15 @@ before building more profile lemmas on it.
   levels are active in the same stage. This is what lets an active parent add
   down-ports to child sets after their recursive updates without a same-stage
   comparator network also changing those child sets.
+- `d2FlowCandidate_leaf_inactive` proves that level `d` is never active for
+  candidate depth `d >= 7`. Thus a recursive sender cannot emit a child port
+  below the represented tree.
 
-The parent root-drop/cover conditions are therefore closed under the existing
-ordinary and top-descending contracts; bottom-rise's no-overwrite case is also
-closed when the next level is inactive. The root needs no external parent
-receiver. The next bridge is to instantiate the source partition and port
-targeting for the actual candidate tree, and define the recursively indexed
-sender sets routed to each node. This still says nothing about contraction of
-the physical prefix defect or terminal cleanup.
+The root and leaf boundaries and adjacent-level activity are now closed as
+schedule facts. The parent root-drop/cover conditions are closed under the
+existing ordinary and top-descending contracts; bottom-rise's no-overwrite
+case is also closed when the next level is inactive. The next bridge is to
+instantiate the source partition and port targeting for the actual candidate
+tree, and define the recursively indexed sender sets routed to each node.
+This still says nothing about contraction of the physical prefix defect or
+terminal cleanup.
