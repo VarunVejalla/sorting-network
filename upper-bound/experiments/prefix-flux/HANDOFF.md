@@ -1077,3 +1077,22 @@ The focused checker passes for `D2NestedCutContainment.lean` after adding the
 symmetric last-child theorem. Its proof uses the existing right endpoint-cut
 bound, the same schedule-derived capacity inequality, and the saturated-edge
 clamped-fit adapter.
+
+
+## Saturated-grandchild overwrite adapter
+
+`D2NestedCutContainment.lean` now proves
+`d2FlowCandidateStage_children_clamped_fit_of_saturated_grandchildren`. For
+an active ordinary parent, if level `i+2` is inactive and each grandchild
+root below every immediate child is saturated, then all eight overwritten
+children have clamped root fit. The proof uses `d2FlowCutChild_le_native` to
+keep each new interval inside its native child capacity, the exact two-level
+stage identity, and the saturated-marker fit theorem. Focused Lean checking
+passes.
+
+This is a local adapter, not yet a reachable-state theorem. The existing
+`d2FlowCandidateRun_botDesc_grandchild_root_native` is the provider for the
+bottom-descending case; still needed is the path-level composition proving
+its path and child indexing match these hypotheses, together with the
+inactive-level fact. Then recursive child fits and the all-stage clamped-fit
+invariant remain.

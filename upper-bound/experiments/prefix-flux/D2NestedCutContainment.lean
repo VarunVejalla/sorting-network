@@ -1359,6 +1359,124 @@ theorem d2FlowCandidateStage_inner_child_clamped_fit
     exact hdeep k
   simpa [stage, hchildren] using hfit
 
+/-- If an ordinary parent has an inactive level-two descendant and every
+grandchild below each immediate child is saturated, then every overwritten
+child has clamped root fit. This is the local geometry needed at botDesc. -/
+theorem d2FlowCandidateStage_children_clamped_fit_of_saturated_grandchildren
+    {d i t h G low high : Nat} (children : Fin 8 -> D2FlowTree (h + 2))
+    (hparent : d2FlowCandidateActive d t i = true)
+    (hparentRole : d2FlowCandidateRole d t i = .topRise \/
+      d2FlowCandidateRole d t i = .mid \/
+      d2FlowCandidateRole d t i = .botDesc)
+    (hinactive2 : d2FlowCandidateActive d t (i + 2) = false)
+    (htree : d2FlowTreeInv 8192 (.node G low high children))
+    (hinputs : d2FlowStageInvInputs 8192
+      (d2FlowCandidateActive d t) (d2FlowCandidateRole d t)
+      (d2FlowCandidateQuota d t)
+      (fun k => d2FlowCandidateCapacity d k t) i
+      (.node G low high children))
+    (hsaturated : forall j k,
+      d2FlowTreeRootDeficit (d2FlowTreeChild (children j) k) =
+        8192 * 8 ^ (h + 1)) :
+    forall j : Fin 8,
+      let stage := d2FlowStage (d2FlowCandidateActive d t)
+        (d2FlowCandidateRole d t) (d2FlowCandidateQuota d t)
+        (h + 3) i (.node G low high children)
+      let cut := d2FlowCutChild
+        (d2FlowPosition (fun k => d2FlowTreeRootDeficit (children k)) j)
+        (d2FlowTreeRootDeficit (children j))
+        (low + d2FlowCandidateQuota d t i
+          (d2FlowCandidateRole d t i) / 2)
+        (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - high -
+          d2FlowCandidateQuota d t i (d2FlowCandidateRole d t i) / 2)
+      StaticHolesFit cut.2.1
+        (d2FlowNodeStaticHolesClamped 0 (8192 * 8 ^ (h + 1))
+          cut.2.1 cut.2.2
+          (fun k => d2FlowTreeChild (d2FlowTreeChild stage j) k))
+        (8 * (8192 * 8 ^ (h + 1)) - cut.2.2) := by
+  let stage := d2FlowStage (d2FlowCandidateActive d t)
+    (d2FlowCandidateRole d t) (d2FlowCandidateQuota d t)
+    (h + 3) i (.node G low high children)
+  let width := 8192 * 8 ^ (h + 1)
+  let grandchildren : Fin 8 -> Fin 8 -> D2FlowTree (h + 1) := fun j k =>
+    d2FlowStage (d2FlowCandidateActive d t)
+      (d2FlowCandidateRole d t) (d2FlowCandidateQuota d t)
+      (h + 1) (i + 2) (d2FlowTreeChild (children j) k)
+  have hnext := d2FlowCandidateActive_adjacent_false_of_active hparent
+  have hdeep (j k : Fin 8) :
+      d2FlowTreeChild (d2FlowTreeChild stage j) k = grandchildren j k := by
+    have heq := d2FlowStage_regular_child_grandchild_stage
+      (active := d2FlowCandidateActive d t)
+      (role := d2FlowCandidateRole d t)
+      (quota := d2FlowCandidateQuota d t) (h := h + 1) (i := i)
+      (G := G) (low := low) (high := high) children
+      hparent hparentRole hnext j k
+    simpa [stage, grandchildren] using heq
+  have hinvChildren : forall j, d2FlowTreeInv 8192 (children j) := by
+    have hx := htree
+    simp only [d2FlowTreeInv] at hx
+    exact hx.2.2.2
+  have hcore := d2FlowStageInvInputs_ordinary_cut_core
+    children hinputs hparent hparentRole
+  have hfrontsDisjoint :
+      low + d2FlowCandidateQuota d t i
+          (d2FlowCandidateRole d t i) / 2 <=
+        d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - high -
+          d2FlowCandidateQuota d t i (d2FlowCandidateRole d t i) / 2 := by
+    have halloc := hcore.2.2.2.1
+    have htotal : G <=
+        d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) := htree.2.1
+    have heven := hcore.2.2.2.2
+    have hquotaEven : d2FlowCandidateQuota d t i
+        (d2FlowCandidateRole d t i) = 2 *
+          (d2FlowCandidateQuota d t i (d2FlowCandidateRole d t i) / 2) := by
+      omega
+    omega
+  have hwidth : 8192 * 8 ^ (h + 2) = 8 * width := by
+    simp [width, Nat.pow_succ, Nat.mul_assoc, Nat.mul_comm, Nat.mul_left_comm]
+  intro j
+  let cut := d2FlowCutChild
+    (d2FlowPosition (fun k => d2FlowTreeRootDeficit (children k)) j)
+    (d2FlowTreeRootDeficit (children j))
+    (low + d2FlowCandidateQuota d t i (d2FlowCandidateRole d t i) / 2)
+    (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - high -
+      d2FlowCandidateQuota d t i (d2FlowCandidateRole d t i) / 2)
+  have hchildSize : d2FlowTreeRootDeficit (children j) <= 8 * width := by
+    have hnative := d2FlowTreeInv_root_native_bound (children j) (hinvChildren j)
+    rw [hwidth] at hnative
+    exact hnative
+  have hcutBound := d2FlowCutChild_le_native
+    (pos := d2FlowPosition (fun k => d2FlowTreeRootDeficit (children k)) j)
+    (size := d2FlowTreeRootDeficit (children j))
+    (left := low + d2FlowCandidateQuota d t i
+      (d2FlowCandidateRole d t i) / 2)
+    (right := d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - high -
+      d2FlowCandidateQuota d t i (d2FlowCandidateRole d t i) / 2)
+    (native := 8 * width) hchildSize hfrontsDisjoint
+  have hparentInterval : cut.2.1 + cut.2.2 <= 8 * width := by
+    have hsum : cut.1 = cut.2.1 + cut.2.2 := by
+      simp [cut, d2FlowCutChild]
+    rw [← hsum]
+    exact hcutBound
+  have hsatStage : forall k, d2FlowTreeRootDeficit (grandchildren j k) = width := by
+    intro k
+    change d2FlowTreeRootDeficit
+      (d2FlowStage (d2FlowCandidateActive d t)
+        (d2FlowCandidateRole d t) (d2FlowCandidateQuota d t)
+        (h + 1) (i + 2) (d2FlowTreeChild (children j) k)) = width
+    rw [d2FlowStage_root_deficit_of_inactive
+      (d2FlowTreeChild (children j) k) hinactive2]
+    exact hsaturated j k
+  have hfit := d2FlowNodeStaticHolesClamped_fit_of_saturated_children_in_parent
+    (base := 0) (width := width) (low := cut.2.1) (high := cut.2.2)
+    (grandchildren j) hparentInterval hsatStage
+  have hchildren :
+      (fun k => d2FlowTreeChild (d2FlowTreeChild stage j) k) =
+        grandchildren j := by
+    funext k
+    exact hdeep j k
+  simpa [stage, width, cut, hchildren] using hfit
+
 /-! The geometric fit itself has a natural recursive invariant in the clamped
 representation. The transition below isolates the sole exceptional local
 provider (botRise); the ordinary, inactive, and topDesc cases are discharged
