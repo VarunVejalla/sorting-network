@@ -311,6 +311,18 @@ are the recursively scheduled sender contents or cover the residual suffix;
 the key remaining physical step is identifying this canonical rank-tile
 execution with the concrete static-hole stage and its next-run child bags.
 
+The fixed-core count bridge now reaches the actual one-step ordinary sender
+port formulas: for child `j`, port `j+1` of
+`d2SenderPortBoundaryNat quota senderCard widths` is matched to
+`destinationPiece` with child interval boundaries
+`quota/2 + d2FlowRankBoundary widths j`. The corresponding all-complete-tiles
+theorem is checked in `D2ClippedCellRankInterval.lean` and assumes only the
+sender conservation equation plus complete-tile bounds. This resolves the
+local flow-cut-to-child-label composition at full-tile scale. It is not yet
+an identification with a recursive run: the schedule still must provide the
+same finite set `S`, per-tile inputs, static-hole destination sets, and next
+child bags, as well as the leftover suffix and startup/exceptional adapters.
+
 `D2StrongDeficitPropagation.lean` already proves the sharp local affine
 profile transition for ordinary eight-child updates. The profile is
 `G = 0 ∧ 256*pi <= c`, or
