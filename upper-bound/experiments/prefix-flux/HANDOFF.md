@@ -506,6 +506,12 @@ closes the local parent-bag case for top-descending alongside the ordinary
 case; it does not establish the startup receiver-tag or Boolean-profile
 transition.
 
+`d2FlowStage_root_fronts_mono` proves that a subtree's own recursive stage
+never decreases either root front offset. This is a useful ingredient for
+preserving an inactive ancestor's hole fit as its children run. The theorem
+does not cover a later parent `setRoot` overwrite; those active-parent cases
+must continue to use their cut geometry and special-role lemmas.
+
 `d2FlowNodeStaticBag_eq_empty_of_child_total_eq_G` proves that a fitted node
 bag is empty whenever its child deficits sum to the parent deficit. Combining
 ordinary-cut conservation with stage invariant preservation gives

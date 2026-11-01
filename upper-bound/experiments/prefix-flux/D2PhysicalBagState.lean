@@ -150,6 +150,24 @@ theorem d2FlowTreeInitial_static_fits (scale h : Nat) :
       · intro j
         exact d2FlowTreeFull_static_fits scale h
 
+/-- A subtree's own recursive stage never moves either occupied-interval
+front inward. Parent overwrites are separate and are handled at that parent. -/
+theorem d2FlowStage_root_fronts_mono
+    (active : Nat → Bool) (role : Nat → D2Role)
+    (quota : Nat → D2Role → Nat) {h : Nat} (i : Nat)
+    (tree : D2FlowTree h) :
+    (d2FlowTreeRootData tree).2.1 ≤
+        (d2FlowTreeRootData (d2FlowStage active role quota h i tree)).2.1 ∧
+      (d2FlowTreeRootData tree).2.2 ≤
+        (d2FlowTreeRootData (d2FlowStage active role quota h i tree)).2.2 := by
+  cases tree with
+  | leaf G low high => simp [d2FlowStage, d2FlowTreeRootData]
+  | node G low high children =>
+      by_cases ha : active i = true
+      · cases hrole : role i <;>
+          simp [d2FlowStage, d2FlowTreeRootData, ha, hrole] <;> omega
+      · simp [d2FlowStage, d2FlowTreeRootData, ha]
+
 /-- An active ordinary update sets each child's root data to the corresponding
 cut tuple. This exposes the exact link between the abstract cut contract and
 the post-stage static-hole geometry. -/
