@@ -1096,3 +1096,23 @@ bottom-descending case; still needed is the path-level composition proving
 its path and child indexing match these hypotheses, together with the
 inactive-level fact. Then recursive child fits and the all-stage clamped-fit
 invariant remain.
+
+## Bot-descending path composition
+
+The path-level gap above is closed for the `botDesc` role. In
+`D2NestedCutContainment.lean`,
+`d2FlowCandidateActive_two_levels_below_false_of_botDesc` proves that the
+candidate stage two levels below a bottom-descending sender is inactive.
+`D2BotDescNestedFit.lean` then composes the existing native-history provider
+`d2FlowCandidateRun_botDesc_grandchild_root_native` with the tree-path snoc
+identity and the saturated-grandchild fit adapter. This proves all eight
+immediate child-root clamped fits for the botDesc branch, under the actual
+sender stage-input contract and the selected path node equality. Focused checks
+pass for both `D2PathNativePreservation.lean` (refreshed first) and
+`D2BotDescNestedFit.lean`.
+
+This closes only the local botDesc branch of child-root geometry. It does not
+establish recursive child-fit preservation or a run-wide clamped-fit invariant;
+other schedule roles, reachable routed-bag/profile transition, terminal bound,
+and depth accounting remain open. No global coefficient improvement follows
+yet.

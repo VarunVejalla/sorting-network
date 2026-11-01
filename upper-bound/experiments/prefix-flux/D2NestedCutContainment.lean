@@ -1064,6 +1064,36 @@ theorem d2FlowCandidateCapacity_le_256_grandchild_slot
     _ <= 2 ^ (24 + 3 * h) := Nat.pow_le_pow_right (by omega) hexp
     _ = 256 * (8192 * 8 ^ (h + 1)) := hscale
 
+/-- A bot-descending sender is the current bottom frontier, so the level two
+below it is outside the active interval. -/
+theorem d2FlowCandidateActive_two_levels_below_false_of_botDesc
+    {d i t : Nat} (hd : 7 <= d) (ht : 2 <= t)
+    (htf : t < tfD2 d)
+    (hrole : d2FlowCandidateRole d t i = .botDesc) :
+    d2FlowCandidateActive d t (i + 2) = false := by
+  classical
+  have hroleEq := d2FlowCandidateRole_matches_schedule
+    (d := d) (t := t) (i := i) (by omega)
+  have hroleSchedule : d2ScheduleRole d i t = .botDesc := by
+    rw [← hroleEq]
+    exact hrole
+  have hphase := d2ScheduleRole_botDesc_phase ht hroleSchedule
+  have hfrontier : i = omega t := by
+    rcases hphase with ⟨j, hj, htEq, hiEq⟩ | ⟨j, htEq, hiEq⟩
+    · rw [htEq, hiEq]
+      exact (omega_three_mul_add_one j).symm
+    · rw [htEq, hiEq]
+      exact (omega_three_mul_add_two j).symm
+  have hnotActive : ¬ active d (tfD2 d) (i + 2) t := by
+    intro ha
+    have hwindow := (active_iff_frontiers (d := d) (tf := tfD2 d)
+      (i := i + 2) (t := t) ht).1 ha
+    have hupper := hwindow.2.2.1
+    omega
+  rw [d2FlowCandidateActive_matches_schedule (d := d) (t := t)
+    (i := i + 2) (by omega)]
+  simp [hnotActive]
+
 /-- In the active-ordinary-grandchild case, the first child overwritten by an
 ordinary parent has a fitted clamped root interval. The only extra scale gate
 is that the parent's scheduled capacity be at most 256 times one grandchild
