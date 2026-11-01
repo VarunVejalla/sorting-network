@@ -820,6 +820,65 @@ theorem d2OrdinaryRankSenderPorts_contract {n : Nat}
   simpa [ports] using d2SenderPorts_partition_contract s ports
     hparentSubset hchildSubset hcover' hparentDisjoint hchildDisjoint
 
+/-- Combined local contract for an ordinary active sender: the concrete rank
+pieces partition the source bag, and their cardinalities equal the flow
+up-port quota and child deficit drops. -/
+theorem d2OrdinaryRankSenderPorts_complete_contract
+    {active : Nat -> Bool} {role : Nat -> D2Role}
+    {quota : Nat -> D2Role -> Nat} {h i G low high n : Nat}
+    (children : Fin 8 -> D2FlowTree h) (s : Finset (Fin n))
+    (ha : active i = true)
+    (hr : Or (role i = .topRise)
+      (Or (role i = .mid) (role i = .botDesc)))
+    (hbal : G = low + high)
+    (heven : quota i (role i) % 2 = 0)
+    (hleft : low + quota i (role i) / 2 <=
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)))
+    (hright : high + quota i (role i) / 2 <=
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)))
+    (hgap : low + quota i (role i) / 2 <=
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) -
+        high - quota i (role i) / 2)
+    (hsender : s.card = d2FlowTotal
+      (fun j => d2FlowTreeRootDeficit (children j)) - G) :
+    let widths : Fin 8 -> Nat := fun j =>
+      d2FlowTreeRootDeficit (children j) -
+        d2FlowTreeRootDeficit
+          (d2FlowTreeChild
+            (d2FlowStage active role quota (h + 1) i
+              (.node G low high children)) j)
+    let boundary : Nat -> Nat := d2FlowRankBoundary widths
+    let ports := d2OrdinaryRankSenderPorts s boundary
+      (quota i (role i) / 2) (s.card - quota i (role i) / 2)
+    And
+      (And (forall port, d2SenderPortsLocalPiece ports port <= s)
+        (And (Finset.univ.biUnion (d2SenderPortsLocalPiece ports) = s)
+          (forall port port', Not (port = port') ->
+            Disjoint (d2SenderPortsLocalPiece ports port)
+              (d2SenderPortsLocalPiece ports port'))))
+      (And (ports.up.card = quota i (role i))
+        (forall j, (ports.down j).card = widths j)) := by
+  classical
+  let widths : Fin 8 -> Nat := fun j =>
+    d2FlowTreeRootDeficit (children j) -
+      d2FlowTreeRootDeficit
+        (d2FlowTreeChild
+          (d2FlowStage active role quota (h + 1) i
+            (.node G low high children)) j)
+  let boundary := d2FlowRankBoundary widths
+  let ports := d2OrdinaryRankSenderPorts s boundary
+    (quota i (role i) / 2) (s.card - quota i (role i) / 2)
+  have hcover := d2FlowStage_regular_sender_rank_ports_cover children s
+    ha hr hbal heven hleft hright hgap hsender
+  have hdisjoint := d2FlowStage_regular_sender_rank_ports_disjoint children s
+    ha hr hbal heven hleft hright hgap hsender
+  have hlocal := d2OrdinaryRankSenderPorts_contract s boundary
+    (quota i (role i) / 2) (s.card - quota i (role i) / 2) hcover hdisjoint
+  have hcards := d2OrdinaryRankSenderPorts_card_eq_flow_widths children s
+    ha hr hbal heven hleft hright hgap hsender
+  simpa [widths, boundary, ports, d2OrdinaryRankSenderPorts] using
+    And.intro hlocal hcards
+
 /-- The flat one-stage receiver bags obtained by routing every local piece to
 its indexed parent/child (or to the explicit external boundary bucket). -/
 noncomputable def d2SenderNodeRoutedBag {Wire : Type*} [DecidableEq Wire]
