@@ -480,10 +480,22 @@ occupied native interval minus its eight child holes, and
 the holes fit; `d2FlowNodeChildHole_eq_interval` identifies every nonsaturated
 child hole with its native address interval. This is a local representation
 interface, not yet an all-stage invariant: it assumes `StaticHolesFit` and
-does not show routed pieces equal the next node's bag.
+does not show routed pieces equal the next node's bag. The accompanying
+`d2FlowTreeInv_alone_not_static_holes_fit` theorem is an exact warning: the
+recursive capacity/balance invariant by itself does not imply this fit. Its
+counterexample is an arbitrary legal invariant tree, not a reachable candidate
+state. The scheduled proof must use the stronger endpoint reserves and stage
+history; do not try to derive the fit from `d2FlowTreeInv` alone.
 
-Next prove fit for the concrete candidate snapshots and then the one-stage
-identity: inactive retained bags, the parent's down-port, and active
+The recursive property `d2FlowTreeStaticFits` is now defined, and its initial
+case is proved: both `d2FlowTreeFull_static_fits` and
+`d2FlowTreeInitial_static_fits` establish nested static-hole fit for every
+depth. Thus the remaining fit obligation is preservation through
+`d2FlowStage` with the schedule's role and endpoint-reserve hypotheses.
+
+Next prove fit for the concrete candidate snapshots using their endpoint
+reserve/history contract, then the one-stage identity: inactive retained
+bags, the parent's down-port, and active
 children's up-ports are disjoint and union to each next node's
 `d2FlowNodeStaticBag`. Match the exact indices/overwrite behavior in
 `wire_partition_check.py` and `receiver_fiber_types.py`. This would supply

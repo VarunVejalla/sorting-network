@@ -71,11 +71,15 @@ inactive bag, parent down-port, and active child up-ports. `receiver_fiber_types
 also handles the parent-root overwrite context. These are finite model checks,
 not all-depth theorems. `D2PhysicalBagState.lean` now defines the node bag as
 its occupied native interval minus child holes and proves its ordered-run
-representation under `StaticHolesFit`. The next formal step is proving this
-fit for concrete candidate snapshots, then proving the one-stage routed-piece
-equality and disjointness for every receiver. Only then bridge the concrete
-sender sets to `d2FlowCandidateRun` and identify Boolean 64-column profiles
-using the physical core's output map. Include clipped final tiles and
+representation under `StaticHolesFit`. It also proves that `d2FlowTreeInv`
+alone cannot supply the fit (an arbitrary invariant-tree counterexample, not
+a reachable-run obstruction). The initial fit base case is closed by
+`d2FlowTreeStaticFits`, `d2FlowTreeFull_static_fits`, and
+`d2FlowTreeInitial_static_fits`. Next preserve this fit through `d2FlowStage`
+using the candidate's endpoint-reserve/stage-history contract, then prove the
+one-stage routed-piece equality and disjointness for every receiver. Only then
+bridge the concrete sender sets to `d2FlowCandidateRun` and identify Boolean
+64-column profiles using the physical core's output map. Include clipped final tiles and
 startup/exceptional roles in the full transition. State root-profile
 hypotheses explicitly; a selected-cut LP that allows independently chosen
 local cuts is only a relaxation and cannot verify this identity.
