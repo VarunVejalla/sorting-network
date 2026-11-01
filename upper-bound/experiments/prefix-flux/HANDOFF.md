@@ -466,6 +466,18 @@ Boolean tile profiles or actual receiver tags. After that identity, a spatial
 terminal invariant, fixed cleanup, and depth accounting remain open.
 Aggregate error alone is not terminal purity.
 
+The candidate-run path interface is now explicit for both sender-input
+invariants and 4096-port boundary alignment (`d2FlowCandidateRun_stage_inv_inputs_atPath`
+and `d2FlowCandidateRun_sender_boundary_grid_atPath` in
+`D2AllStagePortGrid.lean`). This makes the abstract premises available at the
+same concrete path; it does not establish that the corresponding static-hole
+list is the actual recursive sender set or identify the routed Boolean counts.
+The next useful lemma should consume these path facts plus the static-hole fit
+and aligned-receiver-cell results to prove a receiver-tag/port identity for
+one ordinary sender. If that identity cannot be stated without reintroducing
+idealized sender sets, isolate that mismatch as the obstruction and stop
+adding path projections.
+
 ## Files and artifacts
 
 Start at `README.md` for the module map. `STATUS-HISTORY.md` preserves the

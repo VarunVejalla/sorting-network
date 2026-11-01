@@ -267,6 +267,24 @@ def d2FlowStagePortGrid (m : Nat) (active : Nat -> Bool)
       forall j, d2FlowStagePortGrid m active role quota (i + 1)
         (children j)
 
+theorem d2FlowStagePortGrid_atPath
+    {m : Nat} {active : Nat -> Bool} {role : Nat -> D2Role}
+    {quota : Nat -> D2Role -> Nat} {h n i : Nat}
+    (tree : D2FlowTree (h + n)) (path : D2FlowPath n)
+    (hgrid : d2FlowStagePortGrid m active role quota i tree) :
+    d2FlowStagePortGrid m active role quota (i + n)
+      (d2FlowTreeAtPath n tree path) := by
+  induction path generalizing h i with
+  | nil => simpa [d2FlowTreeAtPath] using hgrid
+  | @cons n j tail ih =>
+      cases tree with
+      | node G low high children =>
+          simp only [d2FlowStagePortGrid] at hgrid
+          have hchild := ih (h := h) (i := i + 1)
+            (tree := children j) (hgrid.2 j)
+          simpa [d2FlowTreeAtPath, show i + 1 + n = i + (n + 1) by omega]
+            using hchild
+
 /-- The existing recursive stage-input contract exposes exactly the local
 balance, quota-reserve, and parity facts needed to prove the two sender fronts
 are disjoint. -/

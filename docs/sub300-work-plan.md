@@ -114,7 +114,7 @@ identify physical Boolean profiles with the ideal prefix model.
 The all-stage flow-side port-grid premise is now discharged by
 `D2AllStagePortGrid.lean`: every active ordinary sender has 4096-aligned
 ten-port boundaries for every stage and `d >= 7`; it now also projects the
-all-stage sender-input contract to any path. `D2CutAlignment.lean` projects
+all-stage sender-input contract and port-grid facts to any path. `D2CutAlignment.lean` projects
 endpoint alignment to active ordinary candidate paths. The static-hole fit
 lemma in `D2StaticWireSets.lean` now derives geometric fit directly from the
 actual deficit/quota limits and endpoint reserves, without assuming that the

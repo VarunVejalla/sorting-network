@@ -67,4 +67,23 @@ theorem d2FlowCandidateRun_sender_boundary_grid_all
   exact d2FlowCandidateRun_sender_boundary_grid_of_invariants
     hd hsnapshot.2 hinputs
 
+/-- Project the all-stage port-grid theorem to a concrete candidate sender
+path, so the local rank boundaries are available at the same node as its
+static-hole and endpoint contracts. -/
+theorem d2FlowCandidateRun_sender_boundary_grid_atPath
+    {d h n t : Nat} (hd : 7 <= d) (hdepth : d = h + n)
+    (path : D2FlowPath n) :
+    d2FlowStagePortGrid 4096
+      (d2FlowCandidateActive (h + n) t)
+      (d2FlowCandidateRole (h + n) t)
+      (d2FlowCandidateQuota (h + n) t) n
+      (d2FlowTreeAtPath n
+        (cast (congrArg D2FlowTree hdepth)
+          (d2FlowCandidateRun d (d2FlowTreeInitial 8192 d) t)) path) := by
+  cases hdepth
+  simpa using d2FlowStagePortGrid_atPath
+    (tree := d2FlowCandidateRun (h + n)
+      (d2FlowTreeInitial 8192 (h + n)) t)
+    path (d2FlowCandidateRun_sender_boundary_grid_all (h + n) hd t)
+
 end Chvatal.D2AllStagePortGrid
