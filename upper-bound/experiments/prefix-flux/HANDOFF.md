@@ -505,9 +505,11 @@ ordered static intervals; `wire_partition_check.py` assembles every next bag
 from retained inactive bags, parent down-ports, and child up-ports, then checks
 exact interval equality and no duplicate routing. The receiver-context logic
 in `receiver_fiber_types.py` additionally records the important parent-root
-overwrite case. These scripts are source (not generated artifacts), but the
-compressed exact-routing screen through depth 20 is only model evidence. On
-the Lean side,
+overwrite case. These scripts are source (not generated artifacts). The
+compressed exact-routing screen now passes at depths 40, 80, and 120 for
+scale 1: respectively 96,008, 765,356, and 2,577,568 routing cases over
+29,483, 247,233, and 847,827 shared states. This remains finite model
+evidence. On the Lean side,
 `D2OrdinaryRankRouting.lean` proves local pieces partition an arbitrary
 sender and has the generic `routed_local_destinations_preserve_partition`,
 which takes the target map as input; the static-hole lemmas do not yet prove
@@ -515,8 +517,8 @@ that the Python interval recurrence is the candidate tree's all-depth
 physical execution.
 
 `D2-RECEIVER-FIBER-DEGREE-SCREEN.md` records a related finite locality
-diagnostic: with `scale=8192`, `(3,3,2)`, and depths 7–9, maximum source-tile
-fan-out is 3 while target fan-in reaches 4. This may help design a spatial
+diagnostic: with `scale=8192`, `(3,3,2)`, and depths 7–10, maximum source-tile
+fan-out is 3 while target fan-in reaches 4 (already at depth 9). This may help design a spatial
 potential, but it does not bound error mass or prove contraction. The current
 screen expands physical tiles and is too slow for deep asymptotic exploration;
 replace that expansion with compressed interval incidence before extending
