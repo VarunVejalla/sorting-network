@@ -95,9 +95,11 @@ exact-rank counts across all columns of one port sum to the prefix mass in its
 clipped flattened interval. `D2ClippedTilePrefixAllocation.lean` and
 `D2ClippedTilePortAggregation.lean` now prove that, when tile masses are the
 restrictions of one global ideal prefix, all tile/column counts for a port sum
-to its shifted global interval. Next prove the actual receiver-tag/port
-alignment from static sender sets; this does not yet identify physical Boolean
-profiles with the ideal prefix model.
+to its shifted global interval. `clippedFlowGroupedRank_eq_shifted_child_interval`
+packages this under the condition that each child tag selects exactly one
+port uniformly across tiles and columns. Next prove the actual receiver-tag/
+port and boundary alignment from static sender sets; this does not yet
+identify physical Boolean profiles with the ideal prefix model.
 
 The physical sender's Boolean false mass and tags are still **not** identified
 with the flow deficit `G` and the rank intervals. The remaining ordinary

@@ -224,10 +224,12 @@ clipped tile intervals partition a global prefix interval, and
 `D2ClippedTilePortAggregation.lean` composes the two: when each tile's ideal
 mass is the restriction of one global prefix, all exact-rank cells across all
 tiles and columns of one port sum exactly to that port's global prefix mass.
-The next gate is receiver-tag alignment: prove that each child tag in the
-actual static routing selects precisely the corresponding sender port(s),
-including the left-parent offset. This gives the grouped ideal identity, but
-does not yet identify physical Boolean tile masses/tags with this ideal model.
+`clippedFlowGroupedRank_eq_shifted_child_interval` packages the consequence:
+if a receiver tag selects exactly one child port uniformly over tiles and
+columns, and its two global boundaries equal the sender-offset flow cuts, its
+grouped ideal mass is exactly the shifted flow interval. The next gate is to
+prove those tag/boundary hypotheses from the actual static routing, and then
+identify physical Boolean tile masses/tags with this ideal model.
 
 `D2StrongDeficitPropagation.lean` already proves the sharp local affine
 profile transition for ordinary eight-child updates. The profile is
