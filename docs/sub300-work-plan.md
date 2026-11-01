@@ -88,8 +88,9 @@ already proves the generic ordinary sender destination-piece partition.
 `child-total - G`, from the eight child-hole lengths and the flow-tree
 invariant, and instantiates that partition for the concrete bag. It also
 identifies each child and parent destination piece with its rank slice of the
-bag's ordered static address runs. The next gate is to prove each routed
-piece, together with retained inactive bags,
+bag's ordered static address runs; the corresponding per-cell fragment
+identities are also checked. The next gate is to prove each routed piece,
+together with retained inactive bags,
 equals the corresponding next-stage static bag. Only then
 bridge the concrete sender sets to `d2FlowCandidateRun` and identify Boolean
 64-column profiles using the physical core's output map. Include clipped final tiles and

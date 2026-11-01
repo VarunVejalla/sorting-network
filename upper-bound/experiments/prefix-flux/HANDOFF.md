@@ -509,8 +509,10 @@ parent/child pieces cover the sender set disjointly. The next step is to prove
 `d2FlowNodeStaticBag_child_port_eq_run_slice` and
 `d2FlowNodeStaticBag_parent_ports_eq_run_slices` also identify the concrete
 child and parent destination pieces with their ordered static-run slices. The
-next step is to prove the pieces match the actual next physical bags: inactive
-retained bags, the parent's down-port, and active children's up-ports. Match exact indices/
+per-cell refinements are `d2FlowNodeStaticBag_child_port_inter_cell` and
+`d2FlowNodeStaticBag_parent_ports_inter_cell`. The next step is to prove these
+pieces match the actual next physical bags: inactive retained bags, the
+parent's down-port, and active children's up-ports. Match exact indices/
 overwrite behavior in
 `wire_partition_check.py` and `receiver_fiber_types.py`. This would supply
 concrete receiver tags for the clipped-tile identity. Cover startup,

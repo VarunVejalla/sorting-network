@@ -314,6 +314,53 @@ theorem d2FlowNodeStaticBag_parent_ports_eq_run_slices
   rw [blockOf_orderedRuns (n := n) _ hrep.2]
   rw [blockOf_orderedRuns (n := n) _ hrep.2]
 
+/-- A concrete child port intersected with a physical cell is exactly its
+per-run address fragments. -/
+theorem d2FlowNodeStaticBag_child_port_inter_cell
+    {n h ports : Nat} {base width G low high : Nat}
+    (children : Fin 8 → D2FlowTree h) (hnonsat : G ≠ 8 * width)
+    (hfit : StaticHolesFit (base + low)
+      (d2FlowNodeStaticHoles base width low high children)
+      (base + 8 * width - high))
+    (boundary : Nat → Nat) (left rightStart : Nat) (j : Fin ports)
+    (cellLo cellHi : Nat) :
+    (destinationPiece (ports := ports)
+        (d2FlowNodeStaticBag (n := n) base width G low high children)
+        boundary left rightStart (some j)) ∩
+        staticWireInterval cellLo cellHi =
+      orderedRunSliceInCell
+        (d2FlowNodeStaticRuns (n := n) base width G low high children)
+        (left + boundary j.val) (left + boundary (j.val + 1)) cellLo cellHi := by
+  rw [d2FlowNodeStaticBag_child_port_eq_run_slice
+    children hnonsat hfit boundary left rightStart j]
+  exact orderedRunSlice_inter_cell _ _ _ _ _
+
+/-- The two concrete parent end ports intersect a physical cell in exactly
+the corresponding fragments of the sender's ordered address runs. -/
+theorem d2FlowNodeStaticBag_parent_ports_inter_cell
+    {n h ports : Nat} {base width G low high : Nat}
+    (children : Fin 8 → D2FlowTree h) (hnonsat : G ≠ 8 * width)
+    (hfit : StaticHolesFit (base + low)
+      (d2FlowNodeStaticHoles base width low high children)
+      (base + 8 * width - high))
+    (boundary : Nat → Nat) (left rightStart cellLo cellHi : Nat) :
+    (destinationPiece (ports := ports)
+        (d2FlowNodeStaticBag (n := n) base width G low high children)
+        boundary left rightStart none) ∩
+        staticWireInterval cellLo cellHi =
+      orderedRunSliceInCell
+          (d2FlowNodeStaticRuns (n := n) base width G low high children)
+          0 left cellLo cellHi ∪
+        orderedRunSliceInCell
+          (d2FlowNodeStaticRuns (n := n) base width G low high children)
+          rightStart
+          (d2FlowNodeStaticBag (n := n) base width G low high children).card
+          cellLo cellHi := by
+  rw [d2FlowNodeStaticBag_parent_ports_eq_run_slices
+    children hnonsat hfit boundary left rightStart]
+  rw [Finset.union_inter_distrib_right]
+  rw [orderedRunSlice_inter_cell, orderedRunSlice_inter_cell]
+
 /-- The cardinality of an ordered, fitting hole union is the sum of its
 interval lengths. -/
 theorem staticHoleUnion_card_of_fit {n : Nat} (cursor stop : Nat)
