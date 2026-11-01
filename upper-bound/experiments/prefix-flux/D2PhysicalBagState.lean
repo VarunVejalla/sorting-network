@@ -386,6 +386,77 @@ theorem d2FlowCandidateActive_two_levels_below_or_botDesc
         rw [d2ScheduleRole, if_neg hnotAlpha, if_pos hbottom, if_neg hmove]
       simp [hbotRise] at hrole'
 
+/-- An active level-two descendant of an active sender cannot be a top
+frontier role: it is strictly below the separated upper frontier. -/
+theorem d2FlowCandidateActive_two_levels_below_role
+    {d i t : Nat} (hd : 7 ≤ d) (ht : 2 ≤ t) (htf : t < tfD2 d)
+    (hparent : d2FlowCandidateActive d t i = true)
+    (hchild : d2FlowCandidateActive d t (i + 2) = true) :
+    d2FlowCandidateRole d t (i + 2) = .mid \/
+      d2FlowCandidateRole d t (i + 2) = .botDesc \/
+      d2FlowCandidateRole d t (i + 2) = .botRise := by
+  classical
+  have hparent' : active d (tfD2 d) i t := by
+    rw [d2FlowCandidateActive_matches_schedule (by omega)] at hparent
+    exact of_decide_eq_true hparent
+  have hparentFront := (active_iff_frontiers (d := d) (tf := tfD2 d)
+    (i := i) (t := t) ht).1 hparent'
+  have hsep := frontiers_separated_before_tf (d := d) hd ht htf
+  have hchild' : active d (tfD2 d) (i + 2) t := by
+    rw [d2FlowCandidateActive_matches_schedule (by omega)] at hchild
+    exact of_decide_eq_true hchild
+  have hchildFront := (active_iff_frontiers (d := d) (tf := tfD2 d)
+    (i := i + 2) (t := t) ht).1 hchild'
+  have hnotAlpha : i + 2 ≠ alpha d t := by omega
+  have hωneq : omega t ≠ alpha d t := by
+    intro heq
+    omega
+  have hroleEq : d2FlowCandidateRole d t (i + 2) =
+      d2ScheduleRole d (i + 2) t :=
+    d2FlowCandidateRole_matches_schedule (d := d) (t := t)
+      (i := i + 2) (by omega)
+  rw [hroleEq]
+  by_cases hbottom : i + 2 = omega t
+  · by_cases hmove : omega t < omega (t + 1)
+    · right
+      left
+      rw [hbottom]
+      simp [d2ScheduleRole, hωneq, hmove]
+    · right
+      right
+      rw [hbottom]
+      simp [d2ScheduleRole, hωneq, hmove]
+  · left
+    simp [d2ScheduleRole, hnotAlpha, hbottom]
+
+/-- If the eight invariant child deficits sum to full native capacity, each
+child is saturated. -/
+theorem d2FlowTreeInv_children_saturated_of_total_full
+    {h scale : Nat} (children : Fin 8 → D2FlowTree h)
+    (hinv : ∀ j, d2FlowTreeInv scale (children j))
+    (htotal : d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) =
+      8 * (scale * 8 ^ h)) :
+    ∀ j, d2FlowTreeRootDeficit (children j) = scale * 8 ^ h := by
+  intro j
+  have hbound : ∀ k, d2FlowTreeRootDeficit (children k) ≤ scale * 8 ^ h := by
+    intro k
+    exact d2FlowTreeInv_root_native_bound (children k) (hinv k)
+  let f : Fin 8 → Nat := fun k => d2FlowTreeRootDeficit (children k)
+  have hsplit : f j + (∑ k ∈ Finset.univ.erase j, f k) = d2FlowTotal f := by
+    simpa [f, d2FlowTotal] using
+      (Finset.add_sum_erase Finset.univ f (Finset.mem_univ j))
+  have hothers : (∑ k ∈ Finset.univ.erase j, f k) ≤
+      7 * (scale * 8 ^ h) := by
+    calc
+      _ ≤ ∑ k ∈ Finset.univ.erase j, scale * 8 ^ h :=
+        Finset.sum_le_sum fun k hk => hbound k
+      _ = 7 * (scale * 8 ^ h) := by simp
+  have hle : f j ≤ scale * 8 ^ h := hbound j
+  by_contra hne
+  have hlt : f j < scale * 8 ^ h := lt_of_le_of_ne hle hne
+  rw [htotal] at hsplit
+  omega
+
 /-! At the same stage, an ordinary sender two levels below has quota at
 least that of its ordinary ancestor. The capacity exponent grows by six;
 the smallest cross-role ratio is still 60. This is the arithmetic reserve

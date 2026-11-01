@@ -196,6 +196,100 @@ theorem candidate_botRise_path_static_fit_clamped
       by simpa [d, width] using htotal,
       by simpa [d, width] using hfit, by simpa [d, width] using hbag⟩
 
+/-- Expose the all-child saturation consequence at every reachable bot-rise
+path, for use in nested static-hole containment. -/
+theorem candidate_botRise_path_children_saturated
+    {h j : Nat} (hd : 7 <= h + 1 + (j + 2)) (hj : 1 <= j)
+    (hwindow : 3 * j + 2 <= tfD2 (h + 1 + (j + 2)))
+    (path : D2FlowPath (j + 2)) :
+    exists G low high, exists children : Fin 8 -> D2FlowTree h,
+      d2FlowTreeAtPath (j + 2)
+          (d2FlowCandidateRun (h + 1 + (j + 2))
+            (d2FlowTreeInitial 8192 (h + 1 + (j + 2))) (3 * j)) path =
+        .node G low high children /\
+      forall k, d2FlowTreeRootDeficit (children k) = 8192 * 8 ^ h := by
+  let d := h + 1 + (j + 2)
+  let initial := d2FlowTreeInitial 8192 d
+  let run := d2FlowCandidateRun d initial
+  let tree := d2FlowTreeAtPath (j + 2) (run (3 * j)) path
+  obtain ⟨G, low, high, children, hnode, -, -, -, htotal, -⟩ :=
+    candidate_botRise_path_static_fit_clamped hd hj hwindow path
+  have hinvRoot := (d2FlowCandidateRun_affine_core_and_inv_all d hd (3 * j)).2
+  have htree : d2FlowTreeInv 8192 tree := by
+    exact d2FlowTreeInv_atPath (scale := 8192)
+      (tree := run (3 * j)) path hinvRoot
+  have hnodeInv : d2FlowTreeInv 8192 (.node G low high children) := by
+    rw [← hnode]
+    exact htree
+  have hinvChildren : forall k, d2FlowTreeInv 8192 (children k) := by
+    intro k
+    have h := hnodeInv
+    simp only [d2FlowTreeInv] at h
+    exact h.2.2.2 k
+  have hsat := d2FlowTreeInv_children_saturated_of_total_full
+    children hinvChildren htotal
+  exact ⟨G, low, high, children, hnode, hsat⟩
+
+/-- At a reachable bot-rise callback, the node itself becomes saturated after
+its children have supplied their full native mass. -/
+theorem candidate_botRise_path_post_root_saturated
+    {h j : Nat} (hd : 7 <= h + 1 + (j + 2)) (hj : 1 <= j)
+    (hwindow : 3 * j + 2 <= tfD2 (h + 1 + (j + 2)))
+    (path : D2FlowPath (j + 2)) :
+    exists G low high, exists children : Fin 8 -> D2FlowTree h,
+      d2FlowTreeAtPath (j + 2)
+          (d2FlowCandidateRun (h + 1 + (j + 2))
+            (d2FlowTreeInitial 8192 (h + 1 + (j + 2))) (3 * j)) path =
+        .node G low high children /\
+      d2FlowTreeRootDeficit
+        (d2FlowStage (d2FlowCandidateActive (h + 1 + (j + 2)) (3 * j))
+          (d2FlowCandidateRole (h + 1 + (j + 2)) (3 * j))
+          (d2FlowCandidateQuota (h + 1 + (j + 2)) (3 * j))
+          (h + 1) (j + 2) (.node G low high children)) = 8192 * 8 ^ (h + 1) := by
+  let d := h + 1 + (j + 2)
+  obtain ⟨G, low, high, children, hnode, hsat⟩ :=
+    candidate_botRise_path_children_saturated hd hj hwindow path
+  have hinvRoot := (d2FlowCandidateRun_affine_core_and_inv_all d hd (3 * j)).2
+  have htree := d2FlowTreeInv_atPath (scale := 8192)
+    (tree := d2FlowCandidateRun d (d2FlowTreeInitial 8192 d) (3 * j))
+    path hinvRoot
+  have hnodeInv : d2FlowTreeInv 8192 (.node G low high children) := by
+    rw [← hnode]
+    exact htree
+  have hcover := d2FlowTreeInv_node_children_cover children hnodeInv
+  have hactiveRole := d2FlowCandidate_botRise_current_active_role hd hj hwindow
+  have ha : d2FlowCandidateActive d (3 * j) (j + 2) = true := by
+    simpa [d] using hactiveRole.1
+  have hr : d2FlowCandidateRole d (3 * j) (j + 2) = .botRise := by
+    simpa [d] using hactiveRole.2
+  have hsaturates := d2FlowStage_botRise_root_saturates
+    (quota := d2FlowCandidateQuota d (3 * j)) (h := h)
+    (i := j + 2) (G := G) (low := low) (high := high)
+    children ha hr hcover
+  have htotal : d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) =
+      8 * (8192 * 8 ^ h) := by
+    unfold d2FlowTotal
+    calc
+      Finset.univ.sum (fun k : Fin 8 => d2FlowTreeRootDeficit (children k)) =
+          Finset.univ.sum (fun _ : Fin 8 => 8192 * 8 ^ h) := by
+        apply Finset.sum_congr rfl
+        intro k hk
+        exact hsat k
+      _ = 8 * (8192 * 8 ^ h) := by simp
+  have hsaturates' : d2FlowTreeRootDeficit
+      (d2FlowStage (d2FlowCandidateActive
+          (h + 1 + (j + 2)) (3 * j))
+        (d2FlowCandidateRole (h + 1 + (j + 2)) (3 * j))
+        (d2FlowCandidateQuota (h + 1 + (j + 2)) (3 * j))
+        (h + 1) (j + 2) (.node G low high children)) =
+      d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) := by
+    simpa [d] using hsaturates
+  refine ⟨G, low, high, children, hnode, ?_⟩
+  calc
+    _ = d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) := hsaturates'
+    _ = 8 * (8192 * 8 ^ h) := htotal
+    _ = 8192 * 8 ^ (h + 1) := by rw [Nat.pow_succ]; ring
+
 def CandidateBotRisePorts {n : Nat} (h j G low high : Nat)
     (children : Fin 8 -> D2FlowTree h) (s : Finset (Fin n)) : Prop :=
   let d := h + 1 + (j + 2)

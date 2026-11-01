@@ -952,3 +952,20 @@ that stronger ordinary-or-saturated dichotomy from the reachable flow invariant;
 then use the two-level quota reserve to prove the first/last grandchild cut
 containment. The physical all-stage bag identity and profile/terminal gates
 remain open.
+
+
+The schedule gate has since been sharpened. `D2PhysicalBagState.lean` also
+proves `d2FlowCandidateActive_two_levels_below_role`: an active level-`i+2`
+descendant must have role `mid`, `botDesc`, or `botRise` (the separated upper
+frontier rules out both top roles). The generic
+`d2FlowTreeInv_children_saturated_of_total_full` turns full child mass into
+pointwise saturation. `D2BotRiseStaticFit.lean` now exports
+`candidate_botRise_path_children_saturated` and
+`candidate_botRise_path_post_root_saturated`, so the reachable `botRise`
+exception has a kernel-checked saturated post-stage root. Focused current-source
+checks pass for `D2PhysicalBagState.lean` and `D2BotRiseStaticFit.lean`. The
+remaining schedule case is the `botDesc` parent whose level-`i+2` descendants
+are inactive; prove their native saturation from the actual prior callback
+history, then combine the ordinary-descendant quota reserve with the two
+boundary-cut inequalities. No recursive physical fit provider or sorting bound
+has been closed yet.
