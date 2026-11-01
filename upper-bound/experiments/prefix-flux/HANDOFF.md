@@ -21,9 +21,8 @@ candidate path, then applies `bot_rise_sender_piece_partition` uniformly to
 any finite sender set with the required flow-allocation cardinality. This
 supplies the bot-rise local routing contract for the dynamic-set layout; it
 does not identify routed pieces with next-stage receiver sets or prove the
-receiver-cardinality recurrence. The exact `FlowDAG` model's 178 even snapshots
-for dimensions 7 through 12 are superseded as evidence by this all-dimension
-Lean result.
+receiver-cardinality recurrence. Its output also prices the bot-rise parent
+piece exactly at the allocation and proves all eight child pieces empty.
 
 `D2DynamicSenderNode.lean` now also proves
 `d2OrdinaryRankSenderPorts_of_stage_inputs`: for any ordinary active node and
@@ -32,9 +31,14 @@ contract and flow invariant imply the complete disjoint port partition and
 exact parent/child port sizes. The proof derives both endpoint-front bounds
 from the 1/512 deficit, 1/256 quota, and endpoint reserves; it uses no static
 sender-bag fit. Together with the bot-rise adapter, this advances the
-all-role dynamic-layout gate. The top-descending arbitrary-set adapter and the
-actual induction matching routed receiver sizes to flow allocations remain.
-The spatial profile recurrence is still the main analytic blocker.
+all-role dynamic-layout gate. The top-descending arbitrary-set adapter now also supplies the exact port
+sizes: zero to the parent and each child deficit drop to its child. Thus all
+three active-role cases (`topRise`/`mid`/`botDesc`, `topDesc`, `botRise`) have
+local arbitrary-set partition and port-size providers under the flow-size
+contract. The next construction gate is to assemble these local providers in
+the flat layout and prove its receiver bags have the post-stage flow
+allocations, including inactive nodes and overwrite cases. The spatial profile
+recurrence remains the main analytic blocker.
 
 ## Candidate and price
 
@@ -827,7 +831,6 @@ all-role physical transition, or prove profile contraction/terminal cleanup.
 The parity result is now composed with `bot_rise_sender_piece_partition` in
 `candidate_botRise_path_piece_partition`, uniformly for any sender set with the
 correct flow-allocation size. This is reusable by the dynamic-set layout. Next,
-use the ordinary and bot-rise adapters to assemble the candidate one-step
-receiver-size transition, adding the top-descending reset case. The actual
-receiver-allocation induction and the arbitrary-root profile recurrence remain
-open, so the central sub-300 risk is unchanged.
+assemble the ordinary, top-descending, and bottom-rising local providers in the
+flat layout and prove the receiver-allocation induction. The arbitrary-root
+profile recurrence also remains open, so the central sub-300 risk is unchanged.

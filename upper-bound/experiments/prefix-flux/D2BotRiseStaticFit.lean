@@ -2,6 +2,7 @@ import D2BotRiseRunBridge
 import D2PathNativePreservation
 import D2AllStagePortGrid
 import D2PhysicalBagState
+import D2DynamicSenderNode
 
 /-! Schedule-to-geometry adapter for the exceptional bottom-rise case. -/
 
@@ -217,7 +218,12 @@ def CandidateBotRisePorts {n : Nat} (h j G low high : Nat)
       Disjoint (destinationPiece (ports := 8) s boundary (pi / 2)
         (s.card - pi / 2) a)
         (destinationPiece (ports := 8) s boundary (pi / 2)
-          (s.card - pi / 2) b))
+          (s.card - pi / 2) b)) /\
+    (destinationPiece (ports := 8) s boundary (pi / 2)
+      (s.card - pi / 2) none).card = pi /\
+    (forall j : Fin 8,
+      (destinationPiece (ports := 8) s boundary (pi / 2)
+        (s.card - pi / 2) (some j)).card = 0)
 
 /-- The all-stage parity result instantiates the generic bottom-rise routing
 partition for every sender set with the candidate flow-allocation cardinality. -/
@@ -252,13 +258,49 @@ theorem candidate_botRise_path_piece_partition
         (fun k => d2FlowTreeRootDeficit (children k)) - G ->
       CandidateBotRisePorts h j G low high children s := by
     intro n s hsender
+    let widths : Fin 8 -> Nat := fun k =>
+      d2FlowTreeRootDeficit (children k) -
+        d2FlowTreeRootDeficit
+          (d2FlowTreeChild
+            (d2FlowStage (d2FlowCandidateActive d (3 * j))
+              (d2FlowCandidateRole d (3 * j))
+              (d2FlowCandidateQuota d (3 * j))
+              (h + 1) (j + 2) (.node G low high children)) k)
+    let pi := d2FlowTotal
+      (fun k => d2FlowTreeRootDeficit (children k)) - G
+    let boundary := d2FlowRankBoundary widths
     have hparts := bot_rise_sender_piece_partition
       (active := d2FlowCandidateActive d (3 * j))
       (role := d2FlowCandidateRole d (3 * j))
       (quota := d2FlowCandidateQuota d (3 * j))
       (h := h) (i := j + 2) (G := G) (low := low) (high := high)
       children s ha hr hnext heven hsender
-    simpa [CandidateBotRisePorts, d] using hparts
+    have hwidth (k : Fin 8) : widths k = 0 := by
+      simp [widths, d2FlowStage_botRise_child_root_deficit children ha hr hnext k]
+    have htotalZero : d2FlowTotal widths = 0 := by
+      simp [d2FlowTotal, hwidth]
+    have hparentCard :
+        (destinationPiece (ports := 8) s boundary (pi / 2)
+          (s.card - pi / 2) none).card = pi := by
+      simpa [pi, boundary] using
+        destinationPiece_d2_parent_card s (d2FlowRankBoundary widths) pi
+          (by omega) heven
+    have hchildCard (k : Fin 8) :
+        (destinationPiece (ports := 8) s boundary (pi / 2)
+          (s.card - pi / 2) (some k)).card = 0 := by
+      have hboundary : d2FlowRankBoundary widths (k.val + 1) = 0 := by
+        have hbound := d2FlowRankBoundary_le_total_local widths (k.val + 1)
+        rw [htotalZero] at hbound
+        omega
+      rw [destinationPiece_d2_child_card s widths (pi / 2)
+        (s.card - pi / 2) k (by
+          rw [hboundary]
+          have hpi : pi = s.card := by simpa [pi] using hsender.symm
+          omega)]
+      exact hwidth k
+    exact ⟨hparts.1, hparts.2.1, hparts.2.2,
+      by simpa [pi, boundary] using hparentCard,
+      by simpa [pi, boundary] using hchildCard⟩
   exact ⟨G, low, high, children, hnode, hroute⟩
 
 end Chvatal.D2BotRiseStaticFit

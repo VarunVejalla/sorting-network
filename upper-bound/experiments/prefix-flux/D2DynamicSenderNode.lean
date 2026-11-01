@@ -1040,6 +1040,85 @@ theorem d2OrdinaryRankSenderPorts_of_stage_inputs
   exact d2OrdinaryRankSenderPorts_complete_contract children s ha hr
     (by omega) hqEven hleft hright hgap hsender
 
+/-- The startup top-descending reset is also an arbitrary-set local routing
+contract: its stage-input clause supplies the exact zero root needed by the
+generic child-port partition. -/
+theorem d2TopDescSenderPieces_of_stage_inputs
+    {active : Nat -> Bool} {role : Nat -> D2Role}
+    {quota : Nat -> D2Role -> Nat} {cap : Nat -> Nat}
+    {h i G low high n : Nat}
+    (children : Fin 8 -> D2FlowTree h) (s : Finset (Fin n))
+    (hinputs : d2FlowStageInvInputs 8192 active role quota cap i
+      (.node G low high children))
+    (ha : active i = true) (hr : role i = .topDesc)
+    (hsender : s.card =
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) :
+    let widths : Fin 8 -> Nat := fun j =>
+      d2FlowTreeRootDeficit (children j) -
+        d2FlowTreeRootDeficit
+          (d2FlowTreeChild
+            (d2FlowStage active role quota (h + 1) i
+              (.node G low high children)) j)
+    let boundary : Nat -> Nat := d2FlowRankBoundary widths
+    (forall target, destinationPiece (ports := 8) s boundary 0 s.card target ⊆ s) /\
+      Finset.univ.biUnion (destinationPiece (ports := 8) s boundary 0 s.card) = s /\
+      (forall a b, a ≠ b ->
+        Disjoint (destinationPiece (ports := 8) s boundary 0 s.card a)
+          (destinationPiece (ports := 8) s boundary 0 s.card b)) /\
+      (destinationPiece (ports := 8) s boundary 0 s.card none).card = 0 /\
+      (forall j : Fin 8,
+        (destinationPiece (ports := 8) s boundary 0 s.card (some j)).card =
+          widths j) := by
+  have hactiveFields := hinputs.2
+  simp only [ha, if_pos, hr] at hactiveFields
+  rcases hactiveFields with ⟨_, hG⟩
+  let widths : Fin 8 -> Nat := fun j =>
+    d2FlowTreeRootDeficit (children j) -
+      d2FlowTreeRootDeficit
+        (d2FlowTreeChild
+          (d2FlowStage active role quota (h + 1) i
+            (.node G low high children)) j)
+  let boundary := d2FlowRankBoundary widths
+  have hparts := top_desc_sender_piece_partition
+    (active := active) (role := role) (quota := quota)
+    (h := h) (i := i) (G := G) (low := low) (high := high)
+    (n := n) children s ha hr hG hsender
+  have hpost (j : Fin 8) :
+      d2FlowTreeRootDeficit
+        (d2FlowTreeChild
+          (d2FlowStage active role quota (h + 1) i
+            (.node G low high children)) j) = 0 := by
+    exact d2FlowStage_topDesc_child_deficit children ha hr j
+  have hwidthTotal : d2FlowTotal widths =
+      d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) := by
+    unfold d2FlowTotal
+    apply Finset.sum_congr rfl
+    intro j hj
+    simp [widths, hpost]
+  have hcard : s.card = d2FlowTotal widths := by
+    calc
+      s.card = d2FlowTotal
+          (fun j => d2FlowTreeRootDeficit (children j)) := by
+        simpa [hG] using hsender
+      _ = d2FlowTotal widths := hwidthTotal.symm
+  have hparentCard :
+      (destinationPiece (ports := 8) s boundary 0 s.card none).card = 0 := by
+    rw [destinationPiece_parent_card s boundary 0 s.card (by omega) (by omega)]
+    simp
+  have hchildCard (j : Fin 8) :
+      (destinationPiece (ports := 8) s boundary 0 s.card (some j)).card =
+        widths j := by
+    apply destinationPiece_d2_child_card s widths 0 s.card j
+    have hbound : d2FlowRankBoundary widths (j.val + 1) <= s.card := by
+      calc
+        d2FlowRankBoundary widths (j.val + 1) <= d2FlowTotal widths :=
+          d2FlowRankBoundary_le_total_local widths (j.val + 1)
+        _ = s.card := hcard.symm
+    simpa [boundary] using hbound
+  refine ⟨hparts.1, hparts.2.1, hparts.2.2, hparentCard, ?_⟩
+  intro j
+  simpa [widths, boundary] using hchildCard j
+
 /-- The ordinary port contract applies directly to a fitted physical static
 bag: its exact cardinality premise is discharged by the clamped-fit theorem.
 Schedule reachability must still provide the fit and cut hypotheses. -/
