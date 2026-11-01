@@ -526,11 +526,13 @@ the routed child port with the next-stage child's static bag.
 For `.botRise`, `D2OrdinaryRankRouting.lean` proves that, when the child level
 is inactive, the whole sender is routed to its parent and the child pieces are
 empty. `D2PhysicalBagState.lean` now proves the matching conditional
-conservation fact, `d2FlowStage_active_bot_rise_static_bag_empty`: given the
-post-step static-hole fit, the updated node bag is empty. Establishing that
-post-step fit from the reachable schedule is still open, as is identifying
-the receiver's union of parent, retained-self, and child-up ports with its
-next-stage static bag.
+conservation fact, `d2FlowStage_active_bot_rise_static_bag_empty`. The fit
+premise is reduced by `d2FlowNodeStaticHoles_fit_of_child_endpoint_bounds`:
+child invariants put each hole in its native slot, so only the first and last
+child-front bounds at the updated parent endpoints remain. These are the two
+spatial endpoint reserves still to derive from reachable schedule history.
+Identifying the receiver's union of parent, retained-self, and child-up ports
+with its next-stage static bag also remains open.
 
 `D2OrdinaryRankRouting.lean` already proves the generic local destination-piece
 partition for an abstract sender set; do not reprove it.

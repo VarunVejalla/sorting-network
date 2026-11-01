@@ -655,6 +655,66 @@ theorem d2FlowNodeStaticHoles_fit_of_child_fronts_mono
     (left := left) (right := right) newLo newHi hleft hright hparent hslots
     hfirst hlast
 
+/-- Child invariants place every hole in its native slot, so global static
+fit reduces to the two endpoint holes staying inside the parent interval. -/
+theorem d2FlowNodeStaticHoles_fit_of_child_endpoint_bounds
+    {scale h base width left right : Nat}
+    (children : Fin 8 → D2FlowTree h)
+    (hwidth : width = scale * 8 ^ h)
+    (hinv : ∀ j, d2FlowTreeInv scale (children j))
+    (hleft : left ≤ width) (hright : right ≤ width)
+    (hparent : base + left ≤ base + 8 * width - right)
+    (hfirst : d2FlowTreeRootDeficit (children 0) = width ∨
+      left ≤ (d2FlowTreeRootData (children 0)).2.1)
+    (hlast : d2FlowTreeRootDeficit (children 7) = width ∨
+      right ≤ (d2FlowTreeRootData (children 7)).2.2) :
+    StaticHolesFit (base + left)
+      (d2FlowNodeStaticHoles base width left right children)
+      (base + 8 * width - right) := by
+  let lo : Fin 8 → Nat := fun j =>
+    (d2EightChildHole base width left right
+      (fun k => d2FlowTreeRootDeficit (children k))
+      (fun k => (d2FlowTreeRootData (children k)).2.1)
+      (fun k => (d2FlowTreeRootData (children k)).2.2) j).1
+  let hi : Fin 8 → Nat := fun j =>
+    (d2EightChildHole base width left right
+      (fun k => d2FlowTreeRootDeficit (children k))
+      (fun k => (d2FlowTreeRootData (children k)).2.1)
+      (fun k => (d2FlowTreeRootData (children k)).2.2) j).2
+  have hslots : ∀ j, base + j.val * width ≤ lo j ∧
+      lo j ≤ hi j ∧ hi j ≤ base + (j.val + 1) * width := by
+    intro j
+    have hcap := d2FlowTreeInv_root_native_bound (children j) (hinv j)
+    exact d2EightChildHole_within_slot
+      (fun k => d2FlowTreeRootDeficit (children k))
+      (fun k => (d2FlowTreeRootData (children k)).2.1)
+      (fun k => (d2FlowTreeRootData (children k)).2.2)
+      hleft hright j (by simpa [hwidth] using hcap) (by
+        intro hunsat
+        exact d2FlowTreeInv_root_balance (children j) (hinv j)
+          (by simpa [hwidth] using hunsat))
+  have hfirst' : base + left ≤ lo ⟨0, by omega⟩ := by
+    by_cases hsat : d2FlowTreeRootDeficit (children 0) = width
+    · simp [lo, d2EightChildHole, hsat]
+    · have hlow : left ≤ (d2FlowTreeRootData (children 0)).2.1 := by
+        rcases hfirst with hs | hl
+        · exact (hsat hs).elim
+        · exact hl
+      simp [lo, d2EightChildHole, hsat]
+      omega
+  have hlast' : hi ⟨7, by omega⟩ ≤ base + 8 * width - right := by
+    by_cases hsat : d2FlowTreeRootDeficit (children 7) = width
+    · simp [hi, d2EightChildHole, hsat]
+    · have hhigh : right ≤ (d2FlowTreeRootData (children 7)).2.2 := by
+        rcases hlast with hs | hh
+        · exact (hsat hs).elim
+        · exact hh
+      simp [hi, d2EightChildHole, hsat]
+      omega
+  apply d2EightChildHolesFit (base := base) (width := width)
+    (left := left) (right := right) lo hi hleft hright hparent hslots
+    hfirst' hlast'
+
 /-- An inactive node preserves its static-hole fit when its children take
 their recursive stages: their roots only gain deficit and front offsets. -/
 theorem d2FlowStage_inactive_node_static_fit
@@ -1031,18 +1091,28 @@ theorem d2FlowStage_active_bot_rise_static_bag_empty
       (.node G low high children))
     (ha : active i = true) (hr : role i = .botRise)
     (hnext : active (i + 1) = false)
-    (hfit : StaticHolesFit
-      (low + (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2)
-      (d2FlowNodeStaticHoles 0 (scale * 8 ^ h)
-        (low + (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2)
-        (high + (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) -
-          (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2)
-        (fun j => d2FlowTreeChild
+    (hleft : low +
+      (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2 ≤
+        scale * 8 ^ h)
+    (hright : high +
+      (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) -
+        (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2 ≤
+        scale * 8 ^ h)
+    (hfirst : d2FlowTreeRootDeficit
+        (d2FlowTreeChild (d2FlowStage active role quota (h + 1) i
+          (.node G low high children)) 0) = scale * 8 ^ h ∨
+      low + (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2 ≤
+        (d2FlowTreeRootData (d2FlowTreeChild
           (d2FlowStage active role quota (h + 1) i
-            (.node G low high children)) j))
-      (8 * (scale * 8 ^ h) -
-        (high + (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) -
-          (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2)))
+            (.node G low high children)) 0)).2.1)
+    (hlast : d2FlowTreeRootDeficit
+        (d2FlowTreeChild (d2FlowStage active role quota (h + 1) i
+          (.node G low high children)) 7) = scale * 8 ^ h ∨
+      high + (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) -
+          (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2 ≤
+        (d2FlowTreeRootData (d2FlowTreeChild
+          (d2FlowStage active role quota (h + 1) i
+            (.node G low high children)) 7)).2.2)
     (hstop : 8 * (scale * 8 ^ h) -
         (high + (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) -
           (d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) - G) / 2) ≤ n) :
@@ -1075,6 +1145,45 @@ theorem d2FlowStage_active_bot_rise_static_bag_empty
         intro j hj
         exact d2FlowStage_botRise_child_root_deficit children ha hr hnext j
       _ = G + pi := by simp [pi]; omega
+  have hinvChildren : ∀ j, d2FlowTreeInv scale (children j) := by
+    have h := htree
+    simp only [d2FlowTreeInv] at h
+    exact h.2.2.2
+  have htotalBound : d2FlowTotal
+      (fun j => d2FlowTreeRootDeficit (children j)) ≤
+      8 * (scale * 8 ^ h) := by
+    unfold d2FlowTotal
+    calc
+      Finset.univ.sum (fun j : Fin 8 => d2FlowTreeRootDeficit (children j)) ≤
+          Finset.univ.sum (fun _ : Fin 8 => scale * 8 ^ h) := by
+        apply Finset.sum_le_sum
+        intro j hj
+        exact d2FlowTreeInv_root_native_bound (children j) (hinvChildren j)
+      _ = 8 * (scale * 8 ^ h) := by simp
+  have hparent : low + pi / 2 ≤
+      8 * (scale * 8 ^ h) - (high + pi - pi / 2) := by
+    have hsumFront : low + pi / 2 + (high + pi - pi / 2) =
+        d2FlowTotal (fun j => d2FlowTreeRootDeficit (children j)) := by
+      simp [pi]
+      omega
+    omega
+  have hfit := d2FlowNodeStaticHoles_fit_of_child_endpoint_bounds
+    (base := 0) (width := scale * 8 ^ h) (left := low + pi / 2)
+    (right := high + pi - pi / 2)
+    (children := fun j => d2FlowTreeChild
+      (d2FlowStage active role quota (h + 1) i
+        (.node G low high children)) j) rfl
+    (by
+      intro j
+      have hchild := d2FlowStage_preserves_inv_of_inputs (children j)
+        (hinvChildren j) (by
+          simp only [d2FlowStageInvInputs] at hinputs
+          exact hinputs.1 j)
+      simpa [d2FlowStage, ha, hr, d2FlowTreeChild] using hchild)
+    (by simpa [pi] using hleft) (by simpa [pi] using hright)
+    (by simpa [Nat.zero_add, pi] using hparent)
+    (by simpa [pi] using hfirst)
+    (by simpa [pi] using hlast)
   have houtinv := d2FlowStage_preserves_inv_of_inputs
     (.node G low high children) htree hinputs
   apply d2FlowNodeStaticBag_eq_empty_of_child_total_eq_G
