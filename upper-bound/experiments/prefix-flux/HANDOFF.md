@@ -61,6 +61,16 @@ its updated flow allocation. These are conditional layout adapters: actual
 candidate port widths and global disjointness/coverage still need deriving
 from the node routing contracts. The focused current-source check passes.
 
+The same module now proves `d2SenderNodeLocalPiece_partition_contract` and
+`d2SenderNodeRoute_preserves_partition_of_active_contract`. Thus, from a
+partition of the current sender bags and a local parent/eight-child partition
+at each active node, the flat destination routing partitions all wires at the
+next stage (with the external boundary bucket included). Inactive-node local
+contracts are automatic. This composes the already-proved role-specific
+arbitrary-set partitions into a stage-wide conservation theorem; the candidate
+all-stage source-size provider and the boundary-empty instantiation remain to
+be proved. Focused current-source check passes.
+
 ## Candidate and price
 
 The strongest deterministic candidate is the `(3,3,2)` D2 schedule with the

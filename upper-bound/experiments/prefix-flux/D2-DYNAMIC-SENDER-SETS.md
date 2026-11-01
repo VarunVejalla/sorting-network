@@ -79,20 +79,18 @@ parent down-port overwrite. They assume exact port sizes and disjointness of
 the relevant pieces. The next task is to derive those premises uniformly
 from the local route partitions and the all-stage sender-set invariant.
 
-For the global partition proof, avoid a second recursive `Finset.biUnion`
-induction: `D2OrdinaryRankRouting.routed_local_destinations_preserve_partition`
-already proves conservation and disjointness for a finite flat sender index.
-Encode all nodes of a depth-`d` tree as one finite index type and define
-the destination function for each local port (self, parent, or child). Treat
-the root's parent as an external sentinel and prove its piece empty from the
-root-role theorem. Then instantiate the existing generic partition theorem
-with the local active/inactive port partitions. Separately prove the receiver
-cardinality recurrence against `d2FlowTreeAllocation` after `d2FlowStage`,
-including startup, exceptional roles, and parent-root overwrites. The needed
-rank-port widths and abstract inactive-receiver allocation equation are
-formalized, but their premises are not yet derived together for the candidate
-flow. The dynamic layout and finite node indexing are not yet identified with
-the candidate flow.
+`d2SenderNodeLocalPiece_partition_contract` converts the active-node
+parent/eight-child partition into one local partition theorem, using the
+automatic self-piece partition for inactive nodes.
+`d2SenderNodeRoute_preserves_partition_of_active_contract` then applies the
+existing finite flat routing theorem and proves stage-wide wire conservation
+and disjointness, with the external boundary represented explicitly. The
+remaining size step is to simplify each receiver's incoming-port sum to the
+flow allocation update: inactive self-piece, parent down-port, active child
+up-ports, and active senders' zero post-stage allocation. The recursive
+layout has conditional inactive-root and parent-overwrite card adapters, but
+the flat route has not yet been identified with the recursive layout or
+instantiated from the candidate stage's actual sender sizes and ports.
 
 ## Formal progress
 

@@ -751,6 +751,105 @@ theorem d2SenderPorts_partition_contract {Wire : Type*}
               rw [heq]
             exact hchildDisjoint j j' hj
 
+/-- Uniform local partition contract for a flat stage: active nodes use their
+rank-port partitions, while inactive nodes retain their whole bag on the
+self-port and emit empty child pieces. -/
+theorem d2SenderNodeLocalPiece_partition_contract
+    {Wire : Type*} [DecidableEq Wire] {depth : Nat}
+    (active : Nat -> Bool)
+    (source : D2SenderNode depth -> Finset Wire)
+    (split : D2SenderNode depth -> D2SenderPorts Wire)
+    (hactive : forall node, active node.1.val = true ->
+      (forall port, d2SenderPortsLocalPiece (split node) port <= source node) /\
+      Finset.univ.biUnion (d2SenderPortsLocalPiece (split node)) = source node /\
+      (forall port port', Not (port = port') ->
+        Disjoint (d2SenderPortsLocalPiece (split node) port)
+          (d2SenderPortsLocalPiece (split node) port'))) :
+    (forall node port,
+      d2SenderNodeLocalPiece active source split node port <= source node) /\
+    (forall node,
+      Finset.univ.biUnion (d2SenderNodeLocalPiece active source split node) =
+        source node) /\
+    (forall node port port', Not (port = port') ->
+      Disjoint (d2SenderNodeLocalPiece active source split node port)
+        (d2SenderNodeLocalPiece active source split node port')) := by
+  classical
+  refine ⟨?_, ?_, ?_⟩
+  · intro node port
+    by_cases ha : active node.1.val = true
+    · have hlocalEq : d2SenderNodeLocalPiece active source split node =
+          d2SenderPortsLocalPiece (split node) := by
+        funext port
+        simp [d2SenderNodeLocalPiece, ha]
+      rw [hlocalEq]
+      exact (hactive node ha).1 port
+    · have haFalse : active node.1.val = false := by
+        cases hactiveLevel : active node.1.val <;> simp_all
+      have hlocalEq : d2SenderNodeLocalPiece active source split node =
+          fun port => match port with
+            | none => source node
+            | some _ => Finset.empty := by
+        funext port
+        cases port <;> simp [d2SenderNodeLocalPiece, haFalse]
+      rw [hlocalEq]
+      cases port with
+      | none => exact fun _ hx => hx
+      | some j => exact Finset.empty_subset _
+  · intro node
+    by_cases ha : active node.1.val = true
+    · have hlocalEq : d2SenderNodeLocalPiece active source split node =
+          d2SenderPortsLocalPiece (split node) := by
+        funext port
+        simp [d2SenderNodeLocalPiece, ha]
+      rw [hlocalEq]
+      exact (hactive node ha).2.1
+    · have haFalse : active node.1.val = false := by
+        cases hactiveLevel : active node.1.val <;> simp_all
+      have hlocalEq : d2SenderNodeLocalPiece active source split node =
+          fun port => match port with
+            | none => source node
+            | some _ => Finset.empty := by
+        funext port
+        cases port <;> simp [d2SenderNodeLocalPiece, haFalse]
+      rw [hlocalEq]
+      ext wire
+      simp only [Finset.mem_biUnion, Finset.mem_univ, true_and]
+      constructor
+      · intro h
+        cases h with
+        | intro port hp =>
+          cases port with
+          | none => exact hp
+          | some j => exact (Finset.notMem_empty wire hp).elim
+      · intro h
+        exact Exists.intro none h
+  · intro node port port' hne
+    by_cases ha : active node.1.val = true
+    · have hlocalEq : d2SenderNodeLocalPiece active source split node =
+          d2SenderPortsLocalPiece (split node) := by
+        funext port
+        simp [d2SenderNodeLocalPiece, ha]
+      rw [hlocalEq]
+      exact (hactive node ha).2.2 port port' hne
+    · have haFalse : active node.1.val = false := by
+        cases hactiveLevel : active node.1.val <;> simp_all
+      have hlocalEq : d2SenderNodeLocalPiece active source split node =
+          fun port => match port with
+            | none => source node
+            | some _ => Finset.empty := by
+        funext port
+        cases port <;> simp [d2SenderNodeLocalPiece, haFalse]
+      rw [hlocalEq]
+      cases port with
+      | none =>
+        cases port' with
+        | none => exact (hne rfl).elim
+        | some j => exact Finset.disjoint_empty_right _
+      | some j =>
+        cases port' with
+        | none => exact Finset.disjoint_empty_left _
+        | some j' => exact Finset.disjoint_empty_left _
+
 /-- Package the existing ordinary rank cuts as the parent/eight-child port
 record consumed by the flat route. -/
 def d2OrdinaryRankSenderPorts {n : Nat} (s : Finset (Fin n))
@@ -1268,6 +1367,33 @@ theorem d2SenderNodeRoute_preserves_partition
     (d2SenderNodeLocalPiece active source split)
     (d2SenderNodeRouteTarget active)
     hsourceCover hsourceDisjoint hlocalSubset hlocalCover hlocalDisjoint
+
+/-- Stage-wide wire conservation follows from per-active-node rank-port
+partitions; inactive nodes need no routing hypothesis because their local
+piece contract is automatic. -/
+theorem d2SenderNodeRoute_preserves_partition_of_active_contract
+    {Wire : Type*} [Fintype Wire] [DecidableEq Wire]
+    {depth : Nat} (active : Nat -> Bool)
+    (source : D2SenderNode depth -> Finset Wire)
+    (split : D2SenderNode depth -> D2SenderPorts Wire)
+    (hsourceCover : Finset.univ.biUnion source = Finset.univ)
+    (hsourceDisjoint : forall node node', Not (node = node') ->
+      Disjoint (source node) (source node'))
+    (hactive : forall node, active node.1.val = true ->
+      (forall port, d2SenderPortsLocalPiece (split node) port <= source node) /\
+      Finset.univ.biUnion (d2SenderPortsLocalPiece (split node)) = source node /\
+      (forall port port', Not (port = port') ->
+        Disjoint (d2SenderPortsLocalPiece (split node) port)
+          (d2SenderPortsLocalPiece (split node) port'))) :
+    (forall receiver receiver', Not (receiver = receiver') ->
+      Disjoint (d2SenderNodeRoutedBag active source split receiver)
+        (d2SenderNodeRoutedBag active source split receiver')) /\
+    Finset.univ.biUnion (d2SenderNodeRoutedBag active source split) =
+      Finset.univ := by
+  have hlocal := d2SenderNodeLocalPiece_partition_contract
+    active source split hactive
+  exact d2SenderNodeRoute_preserves_partition active source split
+    hsourceCover hsourceDisjoint hlocal.1 hlocal.2.1 hlocal.2.2
 
 /-- The cardinality of one flat receiver bag is exactly the sum of the sizes
 of all local ports tagged for that receiver. This exposes the remaining
