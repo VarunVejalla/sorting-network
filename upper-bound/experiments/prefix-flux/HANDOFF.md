@@ -252,6 +252,18 @@ This is still conditional on the rank-placement equation and does not identify
 the actual schedule's Boolean profile/counts; proving that placement remains
 the next bridge.
 
+There is a quantitative warning for that bridge. `D2RankCutSeamBound.lean`
+proves at most 14,985 all-slot port-label mismatches for one fixed core and
+nine sender seams. This is only a worst-case slot count, not a false-mass
+counterexample, but it is far above the current 64-per-tile headroom between
+the local 448 transfer error and the 512 recurrence budget. Do not charge this
+coarse count into the current recurrence. The next decisive gate is a
+false-weighted seam bound for the actual core and ordinary cuts, or a concrete
+input/cut witness showing that the needed allowance is too large. It must
+exploit the core's threshold profile, rather than just its maximum rank
+displacement. If the weighted allowance cannot fit an all-stage invariant,
+reassess this candidate before extending the Lean transition bridge.
+
 `D2StrongDeficitPropagation.lean` already proves the sharp local affine
 profile transition for ordinary eight-child updates. The profile is
 `G = 0 ∧ 256*pi <= c`, or

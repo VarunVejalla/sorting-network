@@ -36,6 +36,12 @@ invariant and a distance-sensitive terminal cleanup bound. If this gate fails,
 record the obstruction and reassess the route before extending many stage
 specific Lean bridges.
 
+Within that gate, first test the false-weighted cost of physical-slot versus
+sender-rank port-label disagreements. The existing 14,985 all-slot seam bound
+is much larger than the 64-per-tile slack in the current 448-to-512 recurrence;
+it is not itself a false-mass lower bound, so derive a threshold-aware bound or
+an actual counterexample before attempting to charge it.
+
 ### Exact transition gate
 
 Several local parts are already formalized; do not rebuild them without a
