@@ -1,21 +1,24 @@
 # Sub-300 D2 handoff
 
-State checked against the `sub300-structural` worktree on 2026-10-31. This is
+State checked against the `sub300-structural` worktree on 2026-11-01. This is
 research status, not a proved improvement to the repository's accepted bound.
 
-## Latest focused checkpoint (2026-10-31)
+## Latest focused checkpoint (2026-11-01)
 
 `D2BotRiseStaticFit.lean` now proves that every candidate-run `botRise`
-snapshot has clamped static-hole fit at the updated parent, for any selected
-path satisfying the schedule window. It also proves the updated parent's
-physical static sender bag is empty: the saturated-child history makes its
-post-step deficit equal full capacity. The proof uses
+snapshot has clamped static-hole fit both before and after the update, for any
+selected path satisfying the schedule window. Before the update, the saturated
+children's clamped empty-hole markers remain ordered in the valid parent
+interval. After the update, the updated parent's physical static sender bag is
+empty: child preservation makes its post-step deficit equal full capacity. The
+proof uses
 `D2BotRiseRunBridge.lean` to identify the role and
 `D2PathNativePreservation.lean` to preserve child roots through callback
 history. Current-source focused checks pass for `D2PhysicalBagState.lean` and
-`D2BotRiseStaticFit.lean`. This closes the `botRise` post-bag geometry case;
-it does not identify routed pieces with next-stage bags or establish physical
-receiver tags/counts. The next exact-transition obligation remains unchanged.
+`D2BotRiseStaticFit.lean`. This closes the `botRise` source and post-bag
+geometry cases; it does not identify routed pieces with next-stage bags or
+establish physical receiver tags/counts. The next exact-transition obligation
+remains unchanged.
 
 ## Candidate and price
 

@@ -2155,23 +2155,44 @@ theorem d2FlowNode_active_ordinary_piece_partition
     (regular_stage_sender_piece_partition children sender ha hr hbalance
       hfront.1 hfront.2.1 hfront.2.2.1 hfront.2.2.2 hsender)
 
-/-- If every child is saturated, its clamped hole is the empty point at the
-parent boundary. When the parent interval has zero length, these eight
-markers fit regardless of their original slot order. -/
+/-- When all children are saturated, clamping their empty markers into any
+valid parent interval preserves their slot order and hence gives fit. -/
+theorem d2FlowNodeStaticHolesClamped_fit_of_saturated_children_in_parent
+    {h base width low high : Nat} (children : Fin 8 -> D2FlowTree h)
+    (hparent : low + high <= 8 * width)
+    (hsaturated : forall j, d2FlowTreeRootDeficit (children j) = width) :
+    StaticHolesFit (base + low)
+      (d2FlowNodeStaticHolesClamped base width low high children)
+      (base + 8 * width - high) := by
+  let cursor := base + low
+  let stop := base + 8 * width - high
+  let point : Fin 8 -> Nat := fun j =>
+    max cursor (min (base + j.val * width) stop)
+  have hcursor : cursor <= stop := by dsimp [cursor, stop]; omega
+  have hfit := staticHoleList_fits cursor stop point point hcursor
+    (by intro j; exact le_max_left _ _)
+    (by intro j; exact le_rfl)
+    (by intro j; exact max_le hcursor (min_le_right _ _))
+    (by
+      intro i j hij
+      apply max_le_max le_rfl
+      exact min_le_min_right stop
+        (Nat.add_le_add_left
+          (Nat.mul_le_mul_right width (Nat.le_of_lt hij)) base))
+  simpa [cursor, stop, point, d2FlowNodeStaticHolesClamped,
+    d2EightChildHoleClamped, hsaturated] using hfit
+
+/-- In particular, when the parent interval is empty, saturated-child
+markers fit at its collapsed boundary. -/
 theorem d2FlowNodeStaticHolesClamped_fit_of_all_children_saturated
     {h base width low high : Nat} (children : Fin 8 -> D2FlowTree h)
     (hbalance : low + high = 8 * width)
     (hsaturated : forall j, d2FlowTreeRootDeficit (children j) = width) :
     StaticHolesFit (base + low)
       (d2FlowNodeStaticHolesClamped base width low high children)
-      (base + 8 * width - high) := by
-  have hstop : base + 8 * width - high = base + low := by omega
-  have hfit := staticHoleList_fits (base + low) (base + low)
-      (fun _ : Fin 8 => base + low) (fun _ : Fin 8 => base + low)
-      le_rfl (by intro j; exact le_rfl) (by intro j; exact le_rfl)
-      (by intro j; exact le_rfl) (by intro i j hij; exact le_rfl)
-  simpa [d2FlowNodeStaticHolesClamped, d2EightChildHoleClamped,
-    hsaturated, hstop] using hfit
+      (base + 8 * width - high) :=
+  d2FlowNodeStaticHolesClamped_fit_of_saturated_children_in_parent
+    children (by omega) hsaturated
 
 /-- At a bot-rise whose immediate children are all saturated and inactive,
 the update fills the parent deficit completely. Its clamped holes then fit at

@@ -25,6 +25,9 @@ theorem candidate_botRise_path_static_fit_clamped
           (d2FlowCandidateRun (h + 1 + (j + 2))
             (d2FlowTreeInitial 8192 (h + 1 + (j + 2))) (3 * j)) path =
         .node G low high children /\
+      StaticHolesFit low
+        (d2FlowNodeStaticHolesClamped 0 (8192 * 8 ^ h) low high children)
+        (8 * (8192 * 8 ^ h) - high) /\
       StaticHolesFit
         (low + (d2FlowTotal (fun k => d2FlowTreeRootDeficit (children k)) - G) / 2)
         (d2FlowNodeStaticHolesClamped 0 (8192 * 8 ^ h)
@@ -50,6 +53,7 @@ theorem candidate_botRise_path_static_fit_clamped
             (d2FlowCandidateQuota (h + 1 + (j + 2)) (3 * j))
             (h + 1) (j + 2) (.node G low high children)) k) = Finset.empty := by
   let d := h + 1 + (j + 2)
+  let width := 8192 * 8 ^ h
   let initial := d2FlowTreeInitial 8192 d
   let run := d2FlowCandidateRun d initial
   let tree := d2FlowTreeAtPath (j + 2) (run (3 * j)) path
@@ -97,6 +101,17 @@ theorem candidate_botRise_path_static_fit_clamped
       simpa [d, d2FlowCandidateRunActive] using hroleActive.1
     have hr : d2FlowCandidateRole d (3 * j) (j + 2) = .botRise := by
       simpa [d, d2FlowCandidateRunRole] using hroleActive.2
+    have hstageInput := hinputsNode.2
+    simp only [ha, if_pos, hr] at hstageInput
+    have hbalance : low + high = G := hstageInput.1
+    have hrootCap : G <= 8 * width := by
+      have hcap := htreeNode.1
+      simpa [width, Nat.pow_succ, Nat.mul_assoc, Nat.mul_comm,
+        Nat.mul_left_comm] using hcap
+    have hparent : low + high <= 8 * width := by omega
+    have hsourceFit := d2FlowNodeStaticHolesClamped_fit_of_saturated_children_in_parent
+      (base := 0) (width := width) (low := low) (high := high)
+      children hparent (by simpa [width] using hsat)
     have hwindow' := d2FlowCandidate_botRise_callback_window hd hj hwindow
       (3 * j) (by omega)
     have hnext : d2FlowCandidateActive d (3 * j) (j + 3) = false := by
@@ -134,6 +149,7 @@ theorem candidate_botRise_path_static_fit_clamped
       rw [d2FlowNodeStaticBag, if_pos (by simpa [d, htotal] using hfull)]
       rfl
     exact ⟨G, low, high, children, hnode,
-      by simpa [d] using hfit, by simpa [d] using hbag⟩
+      by simpa [d, width] using hsourceFit,
+      by simpa [d, width] using hfit, by simpa [d, width] using hbag⟩
 
 end Chvatal.D2BotRiseStaticFit
