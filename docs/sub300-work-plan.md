@@ -46,8 +46,10 @@ specific gap:
   `D2FlowRankBridge.lean`; conditional 4096-grid cuts and whole-cell routing
   are in `D2VariableTilePhysicalFlowTransfer.lean` and
   `D2StaticWireSets.lean`.
-- `D2AllStageInvariant.lean` closes induction *assuming* the universal
-  sender-input provider. The provider itself is still open.
+- `D2AffineCoreAllStages.lean` proves the abstract flow invariant for all
+  stages. `D2AllStageInvariant.lean` separately lifts a physical sender-input
+  provider to all stages; identifying that provider with the actual schedule
+  remains open.
 
 The missing theorem must instantiate these interfaces on one actual
 `d2FlowCandidateRun` transition: from the Boolean 64-column profiles in its

@@ -53,7 +53,9 @@ price only; no limsup bound below 300 is proved.
   are also not covered by this extension.
 - Stage-specific reserve/invariant proofs reach the Run-20-to-Run-21
   transition. `D2AllStageInvariant.lean` lifts a provider to all stages
-  conditionally; the required universal sender-input provider is missing.
+  conditionally. `D2AffineCoreAllStages.lean` now proves the abstract flow
+  provider at every stage; the missing provider is the construction-specific
+  link from physical sender profiles and tags to that flow state.
 
 These are source-level results with focused Lean checks recorded in the
 historical log. The moved `.olean` files are caches, not verification evidence;
@@ -217,9 +219,11 @@ ordinary parents on actual candidate paths. Finally,
 `d2FlowCandidateRun_active_child_balanced_of_prior_core`, combining the
 schedule's parent-role split, top-descending reset history, and the next-tree
 invariant to get balance for every active child. Focused current-source
-rebuilds pass for both modules. The remaining flow-reserve step must combine
-this balance theorem with the existing child profile and endpoint-reserve
-theorems and package them over the entire recursive tree.
+rebuilds pass for both modules. `D2TreePathGeometry.lean` packages the local
+child profile and endpoint-reserve theorems into the full-tree transition;
+`D2AffineCoreAllStages.lean` closes its induction from the bootstrap. The
+remaining gap is the physical schedule-to-flow identification, not another
+flow-reserve induction.
 
 The final-stage edge case in the two-visit endpoint reserve is now closed.
 `D2TerminalScheduleFacts.lean` proves the exact top-frontier levels at `tfD2`
@@ -239,23 +243,25 @@ next-snapshot invariant from the current invariant and current affine core
 using the existing one-stage preservation theorem, so it no longer assumes a
 future invariant. The same module packages root balance, exact-zero profile,
 and top-descending role for an active root. Its focused current-source rebuild
-passes. Packaging the root and child contracts recursively into one full-tree
-transition from snapshots `t-1,t` to `t+1` remains open.
+passes. Packaging the root and child contracts recursively into a full-tree
+transition and then an all-stage theorem is now closed by
+`D2TreePathGeometry.lean` and `D2AffineCoreAllStages.lean`.
 
 The exact compressed-flow screen
 `d2_deficit_tolerance_screen.py --depth 100 --scale 8192 --params 3 3 2`
 checks 217470 reachable stage/node entries. Its maximum is
 `G/capacity = 15/8192 - 7/capacity`; all quota and endpoint gates pass. This
 is finite model evidence, not an all-depth theorem. The affine local update
-is proved; what remains is to establish its side conditions for every sender
-in the actual schedule, including startup, top-rise, mid, bottom-descending,
-exceptional, and ragged roles. The physical sender-mass/tag identity is also
-open.
+and its side conditions are now proved for the abstract candidate flow tree
+at all stages. What remains is to identify actual physical sender profiles
+and tags with this tree for the fixed schedule, including startup, top-rise,
+mid, bottom-descending, exceptional, and ragged roles.
 
-After the exact profile transition, the proof still needs an all-depth sender
-invariant, a spatial/distance-sensitive terminal bound, fixed terminal
-cleanup, and depth/padding accounting. Aggregate L1 error alone does not imply
-terminal purity or bounded displacement.
+After the physical profile transition, the proof still needs an invariant
+linking actual sender masses to the abstract flow state, a spatial or
+distance-sensitive terminal bound, fixed terminal cleanup, and depth/padding
+accounting. Aggregate L1 error alone does not imply terminal purity or bounded
+displacement.
 
 ## Next proof gate
 
