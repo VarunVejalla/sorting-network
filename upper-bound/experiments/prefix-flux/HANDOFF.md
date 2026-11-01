@@ -732,11 +732,17 @@ each flat flow-tree node, using its native base-eight address and the checked
 static-hole construction. The root selector reduces to the root subtree, and
 `d2SenderNodePhysicalBag_initial_root_eq_univ` proves that the initial root
 source bag is exactly the full wire universe (including depth zero and zero
-width). This is a base-state fact only: it does not yet prove the initial
-descendant bags are empty as a flat partition, nor identify the post-stage
-physical bags with routed port pieces. Continue by proving those initial
-descendant facts and packaging the recursive physical bags as a flat
-`D2SenderLayout`; then attempt the one-stage receiver-cardinality identity.
+width). The same file packages all recursive static bags as a
+`D2SenderLayout`; `d2FlowTreePhysicalBag_full_eq_empty` and
+`d2FlowTreePhysicalLayout_full_wires_eq_empty` show that a full-capacity
+subtree contributes no wires, and
+`d2FlowTreePhysicalLayout_initial_wires_eq_univ` proves that the initial
+recursive layout covers the complete wire universe. These are base-state
+results. The equality between flat-index bag projections and these recursive
+physical bags, explicit flat source disjointness, and every post-stage bag
+identity remain open. Prove the flat/recursive projection equality and derive
+the initial flat partition; then attempt the one-stage receiver-cardinality
+identity.
 
 ## Files and artifacts
 

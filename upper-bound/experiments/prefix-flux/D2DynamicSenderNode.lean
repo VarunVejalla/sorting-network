@@ -149,6 +149,53 @@ def d2FlowTreePhysicalBag {n scale : Nat} :
   | base, h + 1, .node G low high children =>
       d2FlowNodeStaticBag base (scale * 8 ^ h) G low high children
 
+/-- Recursive sender layout obtained from the concrete static physical bags. -/
+def d2FlowTreePhysicalLayout {n scale : Nat} :
+    (base : Nat) -> {h : Nat} -> D2FlowTree h ->
+      D2SenderLayout (Fin n) h
+  | base, 0, tree => .leaf (d2FlowTreePhysicalBag (scale := scale) base tree)
+  | base, h + 1, .node G low high children =>
+      .node (d2FlowTreePhysicalBag (scale := scale) base (.node G low high children))
+        (fun j => d2FlowTreePhysicalLayout (n := n) (scale := scale)
+          (base + j.val * (scale * 8 ^ h)) (children j))
+
+theorem d2FlowTreePhysicalBag_full_eq_empty {n scale : Nat}
+    (base h : Nat) :
+    d2FlowTreePhysicalBag (n := n) (scale := scale) base
+      (d2FlowTreeFull scale h) = Finset.empty := by
+  induction h with
+  | zero => simp [d2FlowTreePhysicalBag, d2FlowTreeFull]
+  | succ h ih =>
+      have hsat : scale * 8 ^ (h + 1) = 8 * (scale * 8 ^ h) := by
+        rw [Nat.pow_succ]
+        ring
+      simp [d2FlowTreePhysicalBag, d2FlowTreeFull, d2FlowNodeStaticBag,
+        hsat]
+      rfl
+
+theorem d2FlowTreePhysicalLayout_full_wires_eq_empty {n scale : Nat}
+    (base h : Nat) :
+    d2SenderLayoutWires
+      (d2FlowTreePhysicalLayout (n := n) (scale := scale) base
+        (d2FlowTreeFull scale h)) = Finset.empty := by
+  induction h generalizing base with
+  | zero =>
+      simp [d2FlowTreePhysicalLayout, d2FlowTreePhysicalBag,
+        d2FlowTreeFull]
+      rfl
+  | succ h ih =>
+      have hroot : d2FlowTreePhysicalBag (n := n) (scale := scale) base
+          (d2FlowTreeFull scale (h + 1)) = Finset.empty :=
+        d2FlowTreePhysicalBag_full_eq_empty base (h + 1)
+      have hroot' : d2FlowTreePhysicalBag (n := n) (scale := scale) base
+          (.node (scale * 8 ^ (h + 1)) 0 0
+            (fun _ => d2FlowTreeFull scale h)) = Finset.empty := by
+        simpa [d2FlowTreeFull] using hroot
+      simp only [d2FlowTreePhysicalLayout, d2FlowTreeFull,
+        d2SenderLayoutWires]
+      rw [hroot']
+      simp [ih]
+
 /-- The static physical sender set at a flat node index, using the base-eight
 native address of its path. -/
 def d2SenderNodePhysicalBag {n scale depth : Nat}
@@ -233,6 +280,26 @@ theorem d2SenderNodePhysicalBag_initial_root_eq_univ (scale depth : Nat) :
         simp [staticWireInterval]
         intro hw
         exact (Finset.not_nonempty_iff_eq_empty.mpr rfl) ⟨w, hw⟩
+
+theorem d2FlowTreePhysicalLayout_initial_wires_eq_univ (scale depth : Nat) :
+    d2SenderLayoutWires
+      (d2FlowTreePhysicalLayout (n := scale * 8 ^ depth) (scale := scale) 0
+        (d2FlowTreeInitial scale depth)) = Finset.univ := by
+  have hroot := d2SenderNodePhysicalBag_initial_root_eq_univ scale depth
+  rw [d2SenderNodePhysicalBag_root] at hroot
+  cases depth with
+  | zero =>
+      simpa [d2FlowTreePhysicalLayout, d2FlowTreeInitial,
+        d2SenderLayoutWires] using hroot
+  | succ depth =>
+      have hroot' : d2FlowTreePhysicalBag (n := scale * 8 ^ (depth + 1))
+          (scale := scale) 0
+          (.node 0 0 0 (fun _ => d2FlowTreeFull scale depth)) = Finset.univ := by
+        simpa [d2FlowTreeInitial] using hroot
+      simp only [d2FlowTreePhysicalLayout, d2FlowTreeInitial,
+        d2SenderLayoutWires]
+      rw [hroot']
+      simp [d2FlowTreePhysicalLayout_full_wires_eq_empty]
 
 /-- Port labels for one sender: its parent/output port, or one of its eight
 child ports. -/
