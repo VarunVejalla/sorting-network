@@ -558,6 +558,7 @@ theorem d2FlowCandidateQuota_le_quota_two_levels_below
     change 2 ^ (e - 8) <= 15 * 2 ^ (e + 6 - 12)
     rw [hparentTop, hchildMid]
     omega
+
   · subst parentRole
     subst childRole
     simp only [d2FlowCandidateQuota]
@@ -607,6 +608,36 @@ theorem d2FlowCandidateQuota_le_quota_two_levels_below
     change 15 * 2 ^ (e - 12) <= 15 * 2 ^ (e + 6 - 12)
     rw [hchildMid]
     omega
+
+/-! This wrapper discharges the exponent premises from the actual schedule,
+so downstream fit arguments need only establish that the ancestor and its
+two-level descendant have ordinary candidate roles. -/
+theorem d2FlowCandidateQuota_le_quota_two_levels_below_of_schedule
+    {d i t : Nat}
+    (hd : 7 <= d) (ht : 2 <= t)
+    (hparentActive : d2FlowCandidateActive d t i = true)
+    (hparentRole : d2FlowCandidateRole d t i = .topRise ∨
+      d2FlowCandidateRole d t i = .mid ∨
+      d2FlowCandidateRole d t i = .botDesc)
+    (hchildRole : d2FlowCandidateRole d t (i + 2) = .topRise ∨
+      d2FlowCandidateRole d t (i + 2) = .mid ∨
+      d2FlowCandidateRole d t (i + 2) = .botDesc) :
+    d2FlowCandidateQuota d t i (d2FlowCandidateRole d t i) <=
+      d2FlowCandidateQuota d t (i + 2)
+        (d2FlowCandidateRole d t (i + 2)) := by
+  classical
+  have hparentSchedule : active d (tfD2 d) i t := by
+    rw [d2FlowCandidateActive_matches_schedule (by omega)] at hparentActive
+    exact of_decide_eq_true hparentActive
+  have hexpLower : 12 <= d2FlowCandidateCapacityExponent d i t := by
+    exact le_trans (by norm_num) (d2FlowCandidateCapacityExponent_ge_twenty hd hparentSchedule)
+  have hexp : d2FlowCandidateCapacityExponent d (i + 2) t =
+      d2FlowCandidateCapacityExponent d i t + 6 := by
+    unfold d2FlowCandidateCapacityExponent
+    unfold d2FlowCandidateCapacityExponent at hexpLower
+    omega
+  exact d2FlowCandidateQuota_le_quota_two_levels_below
+    hexp hexpLower hparentRole hchildRole
 
 /-- An active ordinary update sets each child's root data to the corresponding
 cut tuple. This exposes the exact link between the abstract cut contract and

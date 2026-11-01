@@ -929,13 +929,12 @@ profile recurrence also remains open, so the central sub-300 risk is unchanged.
 increases by six over two levels, is at least twelve, and both roles are
 ordinary, the descendant quota is at least the ancestor quota. The smallest
 ratio is 60 (topRise parent to mid/botDesc descendant). Focused Lean checking
-passes. This supplies the arithmetic needed when a grandchild's own active
-cut must absorb its parent's boundary movement; it does not establish that
-the relevant grandchild is active. The next all-depth schedule gate is to show
-that under every active ordinary parent, each unsaturated boundary grandchild
-is active with an ordinary role at level `i+2`, while inactive/botRise
-boundary grandchildren are saturated and hence handled by clamped markers.
-The finite screen exhibits that split through depth 100, but does not prove it.
+passes. `d2FlowCandidateQuota_le_quota_two_levels_below_of_schedule` now
+discharges the exponent premises from an actual active candidate parent and
+packages the comparison for ordinary candidate roles. The nested-frontier case
+split below handles whether the level-`i+2` descendant is active and identifies
+the exceptional `botRise` case. The first/last grandchild endpoint-containment
+inequalities remain open; this quota comparison alone does not prove static fit.
 
 ## Nested frontier schedule case split
 
