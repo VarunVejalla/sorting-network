@@ -50,9 +50,9 @@ specific gap:
   stages. `D2AllStageInvariant.lean` separately lifts a physical sender-input
   provider to all stages; identifying that provider with the actual schedule
   remains open. `D2AllStageTwoFrontGate.lean` also proves that every active
-  ordinary abstract sender has zero ideal-prefix overrun above its two-front
-  child reserves; this does not identify the flow deficit with physical false
-  mass.
+  ordinary abstract sender has zero aggregate ideal-prefix overrun, giving a
+  pointwise bound of each exact-prefix child mass by its two-front reserve.
+  This does not identify the flow deficit with physical false mass.
 
 The missing theorem must instantiate these interfaces on one actual
 `d2FlowCandidateRun` transition: from the Boolean 64-column profiles in its

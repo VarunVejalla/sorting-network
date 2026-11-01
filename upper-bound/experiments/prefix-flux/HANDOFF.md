@@ -93,8 +93,9 @@ and invariant bootstrap to prove the abstract affine-core provider and tree
 invariant for every stage and dimension `d >= 7`. A focused current-source
 rebuild passes. This closes the abstract flow-reserve induction; it does not
 identify physical sender counts or receiver tags.
-`D2AllStageTwoFrontGate.lean` additionally proves zero ideal-prefix overrun
-above the two-front reserves for every active ordinary candidate path.
+`D2AllStageTwoFrontGate.lean` additionally proves zero aggregate ideal-prefix
+overrun and per-child domination of exact-prefix mass by two-front reserves
+for every active ordinary candidate path.
 
 ## Main unresolved gate
 
@@ -113,14 +114,17 @@ The local orientation/provider and its full-height clipped arbitrary-tag
 composition are now available. The remaining ordinary-sender composition
 must (1) instantiate the Boolean input tile and its column profile on the
 actual `d2FlowCandidateRun`, (2) identify the cumulative rank cuts and each
-receiver tag from the run's static sender sets, and (3) prove the per-child
-ideal false mass equals the next child's capacity/deficit. The exact child
-identity is required per child, not only after summing all eight. A regular
-sender has ten ordered ports (two parent halves and eight child intervals),
-so its cuts are the eleven boundary positions `0..10`. Prove the parent mass
-error from the flow state and use the arbitrary-tag `+448` theorem. Then
-extend to sub-4096 ragged heights, startup, `botRise`, and exceptional
-intervals; none of those cases is supplied by the current full-height lemma.
+receiver tag from the run's static sender sets, and (3) control the physical
+source false mass against the sender flow deficit `G`. Exact equality between
+single-prefix masses and two-front child deficits is false in general and is
+not required: `D2AllStageTwoFrontGate.lean` proves each ideal exact-prefix
+child mass is at most its corresponding two-front reserve for actual
+candidate flow states. Use this one-sided comparison with the arbitrary-tag
+`+448` transfer and the parent mass error. A regular sender has ten ordered
+ports (two parent halves and eight child intervals), so its cuts are the
+eleven boundary positions `0..10`. Then extend to sub-4096 ragged heights,
+startup, `botRise`, and exceptional intervals; those cases are not supplied
+by the current full-height lemma.
 
 The corrected arbitrary-root selected-cut LP keeps exact total root mass yet
 still admits large terminal error under the current independent tail
@@ -174,8 +178,9 @@ stronger `8192*G <= 15*capacity` reserve makes the ideal overrun zero because
 half the candidate quota is at least `15/8192` of capacity. This implication
 is kernel-checked in `candidate_sender_two_front_overrun_zero_of_15over8192`,
 and `D2AllStageTwoFrontGate.lean` derives the reserve at every active ordinary
-candidate path. This remains an abstract flow fact; actual physical
-source-tile false mass is not yet shown to equal `G`.
+candidate path, then proves each ideal prefix child mass is bounded by its
+corresponding two-front reserve. This remains an abstract flow fact; actual
+physical source-tile false mass is not yet shown to equal `G`.
 The weaker strict `512*G <= capacity` reserve gives 32 per physical tile;
 either strict bound leaves the local 448 charge within the 512-per-tile
 doubling budget.
