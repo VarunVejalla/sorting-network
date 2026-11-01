@@ -2,6 +2,8 @@ import D2ClippedFlowProfileTransfer
 import D2OrdinaryRankRouting
 import D2StaticWireSets
 import D2PhysicalRankRouting
+import D2ReflectedPhysicalPack
+import D2LiftedShuffleBridge
 
 set_option maxHeartbeats 500000
 
@@ -14,6 +16,8 @@ open Chvatal.D2StaticWireSets
 open Chvatal.D2PhysicalRankRouting
 open Chvatal.D2RankProfileRouting
 open Chvatal.D2RankAlignment
+open Chvatal.D2LiftedShuffleBridge
+open Chvatal.D2ReflectedPhysicalPack
 
 abbrev Col := Fin 64
 abbrev Row := Fin 4096
@@ -349,5 +353,59 @@ theorem ordered_tile_child_false_count_eq_profile
     _ = Finset.univ.sum fun b : Wire =>
           if address b ∈ destinationPiece (ports := 8) S boundary left rightStart
               (some child) ∧ out b = false then 1 else 0 := hslot.symm
+
+/-- Instantiate the exact tile-count identity on the actual reflected physical
+core for an arbitrary Boolean sender input. The core's checked column
+monotonicity makes its output a false-prefix profile with heights equal to
+the actual per-column false counts, so no output-profile hypothesis is
+needed. -/
+theorem reflected_core_ordered_tile_child_false_count_eq_profile
+    {ports tiles n : Nat} (S : Finset (Fin n))
+    (bounds : Fin (ports + 1) -> Nat)
+    (t : Fin tiles) (p : Fin ports)
+    (child : Fin 8) (boundary : Nat -> Nat) (left rightStart : Nat)
+    (input : Wire -> Bool)
+    (htile : (t.val + 1) * 262144 <= S.card)
+    (hlo : bounds (Fin.castSucc p) = left + boundary child.val)
+    (hhi : bounds (Fin.succ p) = left + boundary (child.val + 1)) :
+    (Finset.univ.sum fun c : Col =>
+      prefixIntervalMass
+        (matrixColumnFalseCount c
+          ((Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+            reflectedSigma35 reflectedSigma25).exec input))
+        (clippedFlowProfileCuts 4096 bounds t c p.val)
+        (clippedFlowProfileCuts 4096 bounds t c (p.val + 1))) =
+    (Finset.univ.sum fun b : Wire =>
+      if S.orderEmbOfFin rfl
+          (Fin.mk (t.val * 262144 + b.val) (by
+            have hb := b.isLt
+            omega)) ∈ destinationPiece (ports := 8) S boundary left rightStart
+            (some child) ∧
+          (Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+            reflectedSigma35 reflectedSigma25).exec input b = false then 1 else 0) := by
+  let output := (Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+    reflectedSigma35 reflectedSigma25).exec input
+  have hmono : ColumnMonotoneInput 4096 64 (by omega) output := by
+    intro c r s hrs
+    exact reflectedPhysicalPackTwoGrid_columnMonotone input
+      (fun c => matrixColumnTrueCount c input) (by intro c; rfl)
+      (by intro c; exact matrixColumnTrueCount_le c input) c hrs
+  have hprefix := columnMonotone_eq_lowPrefixBool output hmono
+  have hprofile (r : Row) (c : Col) :
+      output (Chvatal.matrixWire 4096 64 r c) =
+        decide (matrixColumnFalseCount c output <= r.val) := by
+    have h := congrFun hprefix (Chvatal.matrixWire 4096 64 r c)
+    change output (Chvatal.matrixWire 4096 64 r c) =
+      decide (matrixColumnFalseCount
+        (Chvatal.matrixCol 4096 64 (by omega)
+          (Chvatal.matrixWire 4096 64 r c)) output <=
+        (Chvatal.matrixRow 4096 64 (by omega)
+          (Chvatal.matrixWire 4096 64 r c)).val) at h
+    rcases Chvatal.matrixWire_row_col (by omega) r c with ⟨hr, hc⟩
+    rw [hr, hc] at h
+    exact h
+  exact ordered_tile_child_false_count_eq_profile
+    S bounds t p child boundary left rightStart
+    (fun c => matrixColumnFalseCount c output) output htile hlo hhi hprofile
 
 end Chvatal.D2ClippedCellRankInterval
