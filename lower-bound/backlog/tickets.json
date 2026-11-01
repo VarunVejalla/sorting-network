@@ -51,11 +51,11 @@
       "id": "LB-03",
       "title": "Coupled information/certificate tradeoff: Kahale-extremal schedules waste comparison information",
       "priority": "P3",
-      "status": "active",
-      "claim_level": "none",
+      "status": "rejected",
+      "claim_level": "simulation",
       "baseline": 3.2706,
       "projected": null,
-      "owner": "claude-lb-03",
+      "owner": null,
       "branch": "lb-03-information-screen",
       "depends_on": [],
       "first_deliverable": "Exact or analytic sum of (1-h_g) on the positional barrier family and sorted-block families as a function of d; if the slot saving rho is well above 0.388 on extremal schedules, state the tradeoff inequality",
@@ -63,9 +63,12 @@
         "lower-bound/backlog/SURVEY.md",
         "docs/kahale-proof-plan.md",
         "docs/kahale-positional-barrier.md",
-        "docs/kahale-swap-charging.md"
+        "docs/kahale-swap-charging.md",
+        "docs/kahale-information-screen.md",
+        "docs/kahale-information-screen-output.txt",
+        "lower-bound/experiments/scripts/kahale_information_screen.py"
       ],
-      "notes": "Counting (2) and Kahale (3.27) are each tight on their own relaxations; a joint inequality could beat both. Risk: the charging problem of LB-26 returns."
+      "notes": "Rejected, no coefficient. Proved: total waste of a sorter is exactly M - lg n!, a function of (n, d), so waste has no independent variable; doubling networks have equal heights and exactly zero marginal waste for lg n layers, so the marginal form of 'certificate efficiency forces waste' is false; with true h_g the candidate is the LB-26 charging lemma with threshold 2/c, so it stops on LB-26's obstruction. Numeric: at d = 64, n = 16530 both schedules pass heights and wire, yet sum H(S_g)/lg n! is 0.913 on the barrier and 1.83 on tr, so efficiency does not determine waste. The barrier fails the sound test sum H(S_g) >= lg n! (certified at d = 64 only, one network). tr's residual entropy stays below 0.02 nd through d = 64 at 0.38 of it, but grows, so the size stop condition is not settled. A bank with uncontrolled interior range is not refuted; that is LB-26."
     },
     {
       "id": "LB-04",

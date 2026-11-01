@@ -70,6 +70,17 @@ specific family, not to the general idea behind it; recheck an entry if its assu
     and random wiring at `N_d`, `d >= 40`. That is a sound test of one network, not a bound. Sorters pass, and Batcher
     reaches `N_d` through `d = 44`. Its schedule optimum cannot be evaluated, so it gives no coefficient.
   - Evidence: `kahale-worst-case-inputs.md`, `kahale_worst_case_inputs.py`.
+* **Information/certificate tradeoff on extremal schedules (LB-03).**
+  - Proved: every sorter has total waste exactly `M - lg n!`, a function of `(n, d)`. Height slack and information slack
+    are functions of `(n, d)` too, so a coupling of those totals is a depth statement with no independent variable.
+  - Proved: the marginal form of "certificate efficiency forces waste" is false. Doubling networks have equal heights at
+    every gate and exactly zero marginal waste for `lg n` layers, so a charge needs a bank of size `Θ(n lg n)` mid-run.
+  - Proved: with the true `h_g`, the candidate at coefficient `c` is the LB-26 charging lemma with threshold `2/c`.
+  - Numeric: at `d = 64`, `n = 16530` the barrier and `tr` both pass heights and wire, yet `Σ H(S_g)/lg n!` is 0.913 and
+    1.83. Efficiency does not determine waste. The ticket's test `ρ > 0.388` is vacuous at `N_d`: every sorter has 0.62 to 0.72.
+  - **Not ruled out:** a bank with uncontrolled interior range (that is LB-26). Whether the best schedule's excess stays
+    below `0.02 nd`: `tr` reaches 0.38 of it at `d = 64`, and growing.
+  - Evidence: `kahale-information-screen.md`, `kahale_information_screen.py`.
 * **Additive monomial joint potentials `Σ z_i^p o_i^q` with a uniform per-stage factor (LB-23).**
   - The coefficient is at most `2`.
   - `(z, o)` does not determine its own update, even at non-redundant comparators (kernel-checked on 4 wires).
@@ -123,7 +134,7 @@ specific family, not to the general idea behind it; recheck an entry if its assu
 * **Adding the counting bound to the Fibonacci bound.**
   - Without a coupled inequality, the result is their maximum: Kahale above `n ≈ 2^33`, counting below
     (`docs/kahale-proof-plan.md` §5; table in `SURVEY.md` (a)).
-  - The coupled version is LB-03.
+  - The coupled version is LB-03, rejected above: its true-`h_g` form is LB-26's charging lemma.
 * **Shrinking the polynomial factor in `n·F_{d+1} ≤ 2^{d+1}(d+1)^2`.**
   - This improves only the finite error, not the leading coefficient (`docs/kahale-lower-bound.md`).
 

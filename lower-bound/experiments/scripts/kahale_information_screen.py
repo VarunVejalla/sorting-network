@@ -27,6 +27,8 @@ Modes:
   screen   barrier and tr at n = N_d: stage profile, totals, residual entropy bound
   control  Batcher at n = N_d (a real sorter) on the same estimators
   butterfly  recursive doubling on 2^t wires: marginal waste, equal heights
+  certify  barrier: high-probability upper bound on sum H(S_g) (Wilson, Bonferroni)
+  table    tables from screen output files
 Sampled figures are finite estimates.  Nothing here is a rate or a sorting claim.
 """
 
@@ -381,6 +383,71 @@ def cmd_butterfly(a):
                           "sum_H_mm": round(sum(r["marg_mm"] for r in rows), 2)}), flush=True)
 
 
+def cmd_certify(a):
+    """High-probability upper bound on sum H(S_g): per gate, the largest binary
+    entropy inside a Wilson interval at z = a.z (Bonferroni over all gates)."""
+    z = a.z
+    for d in a.depths:
+        n = arity(d)
+        L = build(d, n, "barrier")
+        cnt = [np.zeros(lo.size, np.int64) for lo, _ in L]
+        rng = np.random.default_rng(a.seed)
+        for _ in range(a.rounds):
+            X = np.argsort(rng.random((a.T, n)), axis=1).astype(np.int32).T.copy()
+            for k, (lo, hi) in enumerate(L):
+                cnt[k] += (X[lo] > X[hi]).sum(1)
+                u, v = X[lo], X[hi]
+                X[lo], X[hi] = np.minimum(u, v), np.maximum(u, v)
+        T = a.T * a.rounds
+        c = np.concatenate(cnt)
+        p = c / T
+        den = 1 + z * z / T
+        mid = (p + z * z / (2 * T)) / den
+        half = z * np.sqrt(p * (1 - p) / T + z * z / (4.0 * T * T)) / den
+        nearest = np.clip(0.5, mid - half, mid + half)
+        up = float(h2(nearest).sum())
+        M, need, fw = forced(n, len(L))
+        print(json.dumps({"mode": "certify", "d": d, "n": n, "T": T, "z": z, "gates": int(c.size),
+                          "never_swapped": int((c == 0).sum()), "always_swapped": int((c == T).sum()),
+                          "sum_H_plug": round(float(h2(p).sum()), 1), "sum_H_upper": round(up, 1),
+                          "lg_n!": round(need, 1), "H_final_lower": round(need - up, 1),
+                          "threshold_0.02nd": round(0.02 * n * d, 1),
+                          "H_final_lower/0.02nd": round((need - up) / (0.02 * n * d), 4)}), flush=True)
+
+
+def cmd_table(a):
+    rows = []
+    for f in a.files:
+        for line in open(f):
+            if line.startswith("{"):
+                r = json.loads(line)
+                if r.get("mode") == "screen":
+                    rows.append(r)
+    print("sched d n D/lg_n forced W_marg/M W_ctx2/M sum_H/lg_n! ctx2/lg_n! exact wrong H_up/n H_up/0.02nd "
+          "excess_rate_bits_per_stage_per_wire")
+    for r in rows:
+        if r["seed"] != 1:
+            continue
+        print(r["sched"], r["d"], r["n"], r["D/lg_n"], r["forced_frac"], r["W_marg/M"],
+              round(1 - r["sum_H_ctx2"] / r["M"], 4),
+              round(r["sum_H_mm"] / r["lg_n!"], 4), round(r["sum_H_ctx2"] / r["lg_n!"], 4),
+              r["exact_sorted"], r["wrong_wires"], r.get("H_final_upper_per_wire"),
+              r.get("H_final_upper/0.02nd"), round(r["H_final_upper_per_wire"] / r["d"], 5))
+    print("stage waste, fraction of the n/2 slots, marginal, mean over quarters of the depth")
+    for r in rows:
+        if r["seed"] != 1:
+            continue
+        slots = r["n"] // 2
+        st = r["stage"]
+        D = len(st)
+        q = [st[i * D // 4:(i + 1) * D // 4] for i in range(4)]
+        idle = [round(sum(slots - s[1] for s in b) / (slots * len(b)), 4) for b in q]
+        w = [round(sum(slots - s[2] for s in b) / (slots * len(b)), 4) for b in q]
+        lo = min(1 - s[2] / slots for s in st[2:])
+        print(r["sched"], r["d"], "idle", idle, "waste_incl_idle", w, "min_stage>=2", round(lo, 4),
+              "fair_gates", sum(s[5] for s in st), "forced_gates", sum(s[6] for s in st), "of", r["G"])
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -395,9 +462,17 @@ def main():
         s.add_argument("--T", type=int, default=4096)
         s.add_argument("--seed", type=int, default=1)
         s.add_argument("--sched", default="barrier,tr")
+    s = sub.add_parser("certify")
+    s.add_argument("depths", type=int, nargs="+")
+    s.add_argument("--T", type=int, default=4096)
+    s.add_argument("--rounds", type=int, default=16)
+    s.add_argument("--seed", type=int, default=3)
+    s.add_argument("--z", type=float, default=5.5)
+    s = sub.add_parser("table")
+    s.add_argument("files", nargs="+")
     a = ap.parse_args()
     {"exact": cmd_exact, "blocks": cmd_blocks, "screen": cmd_screen, "control": cmd_control,
-     "butterfly": cmd_butterfly}[a.mode](a)
+     "butterfly": cmd_butterfly, "certify": cmd_certify, "table": cmd_table}[a.mode](a)
 
 
 if __name__ == "__main__":

@@ -46,6 +46,7 @@ Ticket statuses live in [`../backlog/tickets.json`](../backlog/tickets.json). Th
 | [kahale-correlation-potential.md](../../docs/kahale-correlation-potential.md) | `S:kahale_correlation_potential.py`, `docs/kahale-correlation-potential-output.txt` | rejected, LB-33 (Harris = sizes; BK vacuous) |
 | [kahale-amplification-kill.md](../../docs/kahale-amplification-kill.md) | `S:kahale_amplification_kill.py`, `docs/kahale-amplification-kill-output.txt` | rejected, LB-35 (sharpness potentials; no proved rate barrier) |
 | [kahale-worst-case-inputs.md](../../docs/kahale-worst-case-inputs.md) | `S:kahale_worst_case_inputs.py`, `docs/kahale-worst-case-inputs-output.txt` | rejected, LB-34 (mixed polarity adds no witness; tree family tests one network; no coefficient) |
+| [kahale-information-screen.md](../../docs/kahale-information-screen.md) | `S:kahale_information_screen.py`, `docs/kahale-information-screen-output.txt` | rejected, LB-03 (waste forced by `(n, d)`; marginal form false; true `h_g` form is LB-26; no coefficient) |
 
 ## Congestion and routing
 

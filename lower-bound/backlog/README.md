@@ -35,7 +35,6 @@ Supporting files:
 |---|---|---|---|---|
 | LB-01 | P1 | Finite bound `max(lg n, lg n!/⌊n/2⌋, Kahale)` in Lean | ready | `n! ≤ 2^G` from trace injectivity |
 | LB-02 | P2 | Two-sided (0/1) certificate-height relaxation | ready | exact DP/LP rate of the joint relaxation |
-| LB-03 | P3 | Information/certificate tradeoff on extremal schedules | proposed | `Σ(1-h_g)` on the positional barrier family |
 | LB-04 | P2 | k-sorter constant-depth bounds (ITCS 2023) | proposed | depth 3 needs `k ≥ ⌈n/2⌉` in Lean |
 | LB-05 | P2 | ε-halver / approximate-selector depth bound | proposed | reuse `ApproxSelection` / `SelectionCounting` |
 | LB-06 | P2 | Exact `D(n)` for small `n` | proposed | `D(4)=3`, `D(5)=5` by kernel `decide` |
@@ -66,3 +65,4 @@ Supporting files:
 | LB-33 | Correlation (Harris/BK/Reimer) potentials | rejected |
 | LB-34 | Mixed-polarity restriction families, worst-case inputs of `tr` | rejected (no coefficient; tree family is a test of one network) |
 | LB-35 | Amplification kill test | rejected (no proved rate barrier) |
+| LB-03 | Information/certificate tradeoff on extremal schedules | rejected (waste is forced by `(n, d)`; marginal form false; true `h_g` form is LB-26) |
