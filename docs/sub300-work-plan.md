@@ -80,7 +80,11 @@ false-profile transfer: for full-height source tiles, parent tile-mass
 discrepancy `P` plus the `448*tiles` fresh core error bounds actual overrun,
 provided the grouped actual/ideal counts are identified and the ideal groups
 are bounded by the sender's flow rank intervals. This is an explicit
-conditional transition interface, not yet the actual schedule transition.
+conditional transition interface for arbitrary positive port counts. For an
+ordinary sender, use ten ordered ports, tagging the two parent ends as a
+separate destination and the eight child pieces individually; the all-tag
+transfer error then bounds child error as well. This is not yet the actual
+schedule transition.
 
 The physical sender's Boolean false mass and tags are still **not** identified
 with the flow deficit `G` and the rank intervals. The remaining ordinary

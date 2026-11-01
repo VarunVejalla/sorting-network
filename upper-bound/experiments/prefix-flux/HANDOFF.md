@@ -198,9 +198,12 @@ doubling budget.
 `D2PhysicalTwoFrontGate.lean` now composes the full-height physical
 false-profile theorem with the all-stage two-front gate. Under an aggregate
 parent tile-mass discrepancy `P`, exact identification of the eight grouped
-actual/ideal counts, and the one-sided rank-interval hypothesis for those
-ideal groups, it proves actual child overrun at most `P + 448*tiles`. This is
-the current ordinary-sender invariant interface. It does not yet prove the
+child actual/ideal counts, and the one-sided rank-interval hypothesis for
+those ideal groups, it proves actual child overrun at most `P + 448*tiles`.
+The theorem supports an arbitrary positive number of ordered ports, with the
+two parent ends tagged separately from the eight child groups; their error is
+included in the all-tag transfer estimate. This is the current
+ordinary-sender invariant interface. It does not yet prove the
 schedule supplies these hypotheses: the root-to-sender tile mass invariant,
 static receiver tags/cuts, and ideal grouped-mass domination remain open;
 partial-height and exceptional roles are outside this full-height theorem.
