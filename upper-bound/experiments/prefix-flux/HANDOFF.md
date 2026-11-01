@@ -333,6 +333,23 @@ states the grouped child-count identity for this canonical input, eliminating
 the unrelated-per-tile-input gap. It still does not define or identify the
 recursive sequence of sender sets across stages.
 
+The local transition is now represented by an actual global comparator
+network as well. `canonicalSenderRankTileEmbedding` embeds each complete
+262144-wire rank tile into the global wire universe;
+`reflectedSenderFullTileStageNet` scatter-embeds the reflected core on all
+such tiles. Its execution theorem proves that each embedded tile runs on the
+canonical slice of the global input word. Finally,
+`reflected_sender_stage_grouped_child_count_eq_physical` equates the ordinary
+child's grouped clipped-profile count to false outputs of this actual stage
+network whose addresses lie in that child's `destinationPiece`. The focused
+current-source rebuild passes. This closes the one-sender, full-tile local
+network/count composition. The network leaves a ragged suffix untouched; no
+profile transition for it is proved. More significantly, the repository still
+has no recursive definition connecting these per-sender stage networks and
+their destination pieces to the next stage's sender sets/inputs and the
+all-depth `d2FlowCandidateRun` state. That recursive realization remains the
+main physical-flow bridge.
+
 `D2StrongDeficitPropagation.lean` already proves the sharp local affine
 profile transition for ordinary eight-child updates. The profile is
 `G = 0 ∧ 256*pi <= c`, or

@@ -5,6 +5,7 @@ import D2PhysicalRankRouting
 import D2ReflectedPhysicalPack
 import D2LiftedShuffleBridge
 import D2VariableTilePhysicalFlowTransfer
+import AKS.Chvatal.StageNet
 
 set_option maxHeartbeats 500000
 
@@ -635,6 +636,88 @@ def canonicalSenderRankTileInput {tiles n : Nat} (S : Finset (Fin n))
       have ht := hcomplete t
       omega)))
 
+/-- The order embedding of one complete sender-rank tile into global wires. -/
+noncomputable def canonicalSenderRankTileEmbedding {tiles n : Nat}
+    (S : Finset (Fin n)) (t : Fin tiles)
+    (hcomplete : (t.val + 1) * 262144 <= S.card) :
+    Wire ↪o Fin n :=
+  OrderEmbedding.ofStrictMono
+    (fun b => S.orderEmbOfFin rfl (Fin.mk
+      (t.val * 262144 + b.val) (by
+        have hb := b.isLt
+        omega)))
+    (by
+      intro a b hab
+      apply (S.orderEmbOfFin rfl).strictMono
+      apply Fin.lt_def.mpr
+      have ha := a.isLt
+      have hb := b.isLt
+      have ht := hcomplete
+      have habval := Fin.lt_def.mp hab
+      simp only [Fin.val_mk]
+      omega)
+
+/-- Execute the reflected physical core independently on each complete
+sender-rank tile, embedded into the actual global sender wires. Any final
+ragged rank suffix is left untouched by this finite stage network. -/
+noncomputable def reflectedSenderFullTileStageNet {tiles n : Nat}
+    (S : Finset (Fin n))
+    (hcomplete : forall t : Fin tiles,
+      (t.val + 1) * 262144 <= S.card) : ComparatorNetwork n :=
+  ⟨(Finset.univ : Finset (Fin tiles)).toList.flatMap fun t =>
+    ((Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+      reflectedSigma35 reflectedSigma25).scatterEmbed n
+        (canonicalSenderRankTileEmbedding S t (hcomplete t))).comparators⟩
+
+/-- On a sender-rank tile, the embedded stage executes exactly the reflected
+physical core on the sender's local rank-ordered input. -/
+theorem reflectedSenderFullTileStageNet_exec_inside
+    {tiles n : Nat} (S : Finset (Fin n))
+    (hcomplete : forall t : Fin tiles,
+      (t.val + 1) * 262144 <= S.card)
+    (word : Fin n -> Bool) (t : Fin tiles) (b : Wire) :
+    (reflectedSenderFullTileStageNet S hcomplete).exec word
+        (canonicalSenderRankTileEmbedding S t (hcomplete t) b) =
+      (Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+        reflectedSigma35 reflectedSigma25).exec
+        (canonicalSenderRankTileInput S word hcomplete t) b := by
+  let tilesList := (Finset.univ : Finset (Fin tiles)).toList
+  let embed := fun u : Fin tiles =>
+    canonicalSenderRankTileEmbedding S u (hcomplete u)
+  let localNet := fun _ : Fin tiles =>
+    Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+      reflectedSigma35 reflectedSigma25
+  have hdisjoint : forall u, u ∈ tilesList -> forall v, v ∈ tilesList ->
+      u ≠ v -> forall i j : Wire, embed u i ≠ embed v j := by
+    intro u hu v hv huv i j heq
+    have heq' := (S.orderEmbOfFin rfl).injective heq
+    have hval := congrArg Fin.val heq'
+    have hi := i.isLt
+    have hj := j.isLt
+    have huvVal : u.val ≠ v.val := by
+      intro heqVal
+      apply huv
+      exact Fin.ext heqVal
+    have hne : u.val * 262144 + i.val ≠ v.val * 262144 + j.val := by
+      intro h
+      have hstep : u.val < v.val ∨ v.val < u.val := by
+        rcases lt_or_gt_of_ne huvVal with h | h
+        · exact Or.inl h
+        · exact Or.inr h
+      rcases hstep with hlt | hlt <;> omega
+    exact hne hval
+  have hrun := Chvatal.flatMap_scatter_exec_inside
+    (m := fun _ : Fin tiles => 262144) embed localNet tilesList word
+    (by simpa [tilesList] using
+      Finset.nodup_toList (Finset.univ : Finset (Fin tiles))) (by
+      intro u hu v hv huv i j
+      exact hdisjoint u hu v hv huv i j)
+    t (Finset.mem_toList.mpr (Finset.mem_univ t)) b
+  unfold reflectedSenderFullTileStageNet
+  rw [ComparatorNetwork.exec_flatMap]
+  simpa [tilesList, embed, localNet, reflectedSenderFullTileStageNet,
+    canonicalSenderRankTileEmbedding, canonicalSenderRankTileInput] using hrun
+
 /-- The grouped child-count identity now holds for the actual sender slice of
 an arbitrary global input word, not merely unrelated per-tile Boolean inputs.
 This is the canonical rank-order tile interface for a concrete physical
@@ -671,5 +754,51 @@ theorem reflected_core_sender_word_ordinary_child_grouped_count_eq_physical
   exact reflected_core_ordinary_child_grouped_count_eq_physical
     S quota widths child (canonicalSenderRankTileInput S word hcomplete)
     tag hcomplete htag
+
+/-- The complete-tile grouped child count is the false-wire count produced by
+an actual global comparator network, composed of disjoint scatter embeddings
+of the reflected core on the sender's rank tiles. -/
+theorem reflected_sender_stage_grouped_child_count_eq_physical
+    {tiles n : Nat} (S : Finset (Fin n))
+    (quota : Nat) (widths : Fin 8 -> Nat) (child : Fin 8)
+    (word : Fin n -> Bool)
+    (tag : Fin tiles -> Prod Col (Fin 10) -> Option (Fin 8))
+    (hcomplete : forall t : Fin tiles,
+      (t.val + 1) * 262144 <= S.card)
+    (htag : forall t c q,
+      tag t (c, q) = some child <-> q.val = child.val + 1) :
+    clippedFlowGroupedActualOfProfile 4096
+        (fun i : Fin 11 => d2SenderPortBoundaryNat quota S.card widths i.val)
+        (fun t c => matrixColumnFalseCount c
+          ((Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+            reflectedSigma35 reflectedSigma25).exec
+              (canonicalSenderRankTileInput S word hcomplete t)))
+        tag (some child) =
+      Finset.univ.sum fun t : Fin tiles =>
+        Finset.univ.sum fun b : Wire =>
+          if S.orderEmbOfFin rfl
+              (Fin.mk (t.val * 262144 + b.val) (by
+                have hb := b.isLt
+                have ht := hcomplete t
+                omega)) ∈ destinationPiece (ports := 8) S
+                  (d2FlowRankBoundary widths) (quota / 2)
+                  (S.card - quota / 2) (some child) ∧
+              (reflectedSenderFullTileStageNet S hcomplete).exec word
+                (canonicalSenderRankTileEmbedding S t (hcomplete t) b) = false
+          then 1 else 0 := by
+  rw [reflected_core_sender_word_ordinary_child_grouped_count_eq_physical
+    S quota widths child word tag hcomplete htag]
+  apply Finset.sum_congr rfl
+  intro t ht
+  apply Finset.sum_congr rfl
+  intro b hb
+  have hrun := reflectedSenderFullTileStageNet_exec_inside
+    S hcomplete word t b
+  have haddr : canonicalSenderRankTileEmbedding S t (hcomplete t) b =
+      S.orderEmbOfFin rfl (Fin.mk (t.val * 262144 + b.val) (by
+        have hb' := b.isLt
+        have ht' := hcomplete t
+        omega)) := rfl
+  rw [← hrun, haddr]
 
 end Chvatal.D2ClippedCellRankInterval
