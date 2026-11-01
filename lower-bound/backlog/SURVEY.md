@@ -317,6 +317,9 @@ success probability. Items 2, 3 and 8 are the attempts on the constant itself.
      repairs the sharpness deficit on the actual network at tested `N_d` (`d <= 80`), and the sound influence bound never
      binds. Exact sorting of random inputs (about 0.21 bits/stage) and structured inputs remain unrepaired
      (`docs/kahale-amplification-kill.md`). Next: LB-34, aimed at worst-case inputs.
+   - *Follow-up LB-34 (2026-10-31): mixed-polarity families rejected, no coefficient.* A pair witness projects to a zero
+     certificate, so mixed polarity adds no witness. `tr` breaks at `0.29 n` at `d = 64` from single strays. A one-polarity
+     tree family fails on `tr` and the barrier, but it only tests one network (`docs/kahale-worst-case-inputs.md`).
 3. **LB-03 — Coupled information and certificate tradeoff.**
    - *Why:* the counting bound (2) and Kahale (3.27) are separately tight. Kahale-extremal schedules may waste many
      comparisons (low `h_g`). A coupled inequality "height slack + information slack ≥ ..." could beat both, whereas

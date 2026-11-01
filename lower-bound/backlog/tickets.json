@@ -539,7 +539,7 @@
     },
     {
       "priority": "P2",
-      "claim_level": "none",
+      "claim_level": "simulation",
       "baseline": 3.2706,
       "projected": null,
       "depends_on": [
@@ -547,15 +547,19 @@
       ],
       "id": "LB-34",
       "title": "Mixed-polarity restriction families: (1,0)-forcing partial assignments for wire pairs with tracked supports",
-      "status": "active",
+      "status": "rejected",
       "owner": null,
       "branch": "lb-34-worst-case",
-      "first_deliverable": "A closed (or upper-closed) recurrence for pair-forcing assignment families with support compatibility, evaluated on the barrier schedule at small d; does it see the middle-wire failure?",
+      "first_deliverable": "none (mixed-polarity family rejected): the (1,0)-forcing pair family with supports finds no inversion on tr or the barrier at d = 40, 44, B <= 4, where inversions exist; mixed polarity adds no witness by the endpoint projection. A one-polarity tree family does fail on tr, but only as a test of that network; no coefficient",
       "evidence": [
+        "docs/kahale-worst-case-inputs.md",
+        "docs/kahale-worst-case-inputs-output.txt",
+        "lower-bound/experiments/scripts/kahale_worst_case_inputs.py",
         "docs/kahale-pair-union-rate.md",
+        "docs/kahale-amplification-kill.md",
         "lower-bound/experiments/AKS/Kahale/PairUnionRecurrence.lean"
       ],
-      "notes": "Second recommendation from LB-24; plain k-wise union costs are not recommended (n^k cost, same saturation)."
+      "notes": "Rejected 2026-10-31 (docs/kahale-worst-case-inputs.md). No coefficient above 3.2706. Proved: worst rank error = max_w max(w+1-z_w, n-w-o_w) with true certificate sizes; a pair witness projects to a zero certificate and back, so mixed polarity adds no witness and compatibility only deletes. Numeric: tr sorts through d=36 (z3) and not at d=40. Worst rank error found at N_d: 0.114 n at d=48, 0.225 n at d=56, 0.291 n at d=64, 0.338 n at d=72, against ~0.05 n on the LB-35 structured inputs; misplacement on these witnesses is 1 to 10 wires. Structure: a stray: a single wire at the barrier/tail boundary with a Fibonacci-grown, heavily shared proof tree (multiplicity 50 to 24000 times the certificate), then an AND-free path to its reach limit; no input-side structure found. Tree family (one set per wire, OR by uncapped LB-24 tree cost, AND by union) fails on tr, barrier and random wiring at N_d for d >= 40 (0.275 n at d=64, tr). This is a sound test of one network, not a bound: Batcher sorts N_d wires within depth d+2 through d=44, and the schedule optimum of the test cannot be evaluated. Coefficient interval [3.2706, 789.75] only. Open core: a lower bound on forced certificate overlap for every network; no technique known. Next: LB-08 screen, else stop."
     },
     {
       "id": "LB-35",

@@ -59,6 +59,17 @@ specific family, not to the general idea behind it; recheck an entry if its assu
   - The conditional bound `(a + 1/(2 lg kappa)) lg n` exceeds 3.5 only with `a = 2`, `kappa <= 1.26` and no comparator
     sharing. Sound values are `a = 1`, `kappa = 2`. Formula-only 3.5 needs `n^3.5` against a known `n^2`.
   - Evidence: `kahale-amplification-kill.md`, `kahale_amplification_kill.py`.
+* **Mixed-polarity restriction families (LB-34).**
+  - Proved: a `(1,0)`-forcing pair `(S, T)` projects to a zero certificate `S`, and any zero certificate with `|S| <= j`
+    gives the pair `(S, complement of S)`. So mixed polarity adds no witness, and compatibility only deletes candidates.
+  - Numeric: the pair family with supports finds no inversion on `tr` or the barrier at `d = 40, 44`, `B <= 4`, though
+    inversions exist. Size-ranked one-polarity beams are blind too (`B = 64`, `d = 48`).
+  - `tr` itself breaks: worst rank error found is `0.29 n` at `d = 64`, from a single stray (1 to 10 wrong wires). The
+    stray is a shared Fibonacci proof tree at the barrier/tail boundary, then an AND-free path. Inputs show no structure.
+  - **Not ruled out:** the one-polarity tree family (OR by uncapped LB-24 cost, AND by set union) fails on `tr`, the barrier
+    and random wiring at `N_d`, `d >= 40`. That is a sound test of one network, not a bound. Sorters pass, and Batcher
+    reaches `N_d` through `d = 44`. Its schedule optimum cannot be evaluated, so it gives no coefficient.
+  - Evidence: `kahale-worst-case-inputs.md`, `kahale_worst_case_inputs.py`.
 * **Additive monomial joint potentials `Σ z_i^p o_i^q` with a uniform per-stage factor (LB-23).**
   - The coefficient is at most `2`.
   - `(z, o)` does not determine its own update, even at non-redundant comparators (kernel-checked on 4 wires).
@@ -108,8 +119,7 @@ specific family, not to the general idea behind it; recheck an entry if its assu
 
 Parked, not dead:
 - LB-22: two-sided certificates. Its per-wire part is dead (LB-02). The pair union-cost part is dead too (LB-24), and
-  so are correlation potentials (LB-33) and sharpness potentials (LB-35). Mixed-polarity restriction families remain
-  open (LB-34).
+  so are correlation potentials (LB-33), sharpness potentials (LB-35) and mixed-polarity restriction families (LB-34).
 - LB-25: congestion rate.
 - LB-26: the charging lemma.
 - LB-30: quadratic witness charges, continued as LB-08.

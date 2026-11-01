@@ -45,7 +45,6 @@ Supporting files:
 | LB-10 | P3 | Depth for "usually sorts" networks | proposed | worst-case use in `SelectionCounting` |
 | LB-11 | P1 | Liminf headline without the legacy upper bound | ready | `EReal` liminf statement |
 | LB-12 | P3 | Merging-network bounds | proposed | fan-in depth bound for merging |
-| LB-34 | P2 | Mixed-polarity restriction families, aimed at worst-case inputs | proposed | 0-1 inputs that break the LB-35 `tr` hybrid: shared restriction structure? |
 
 ## Prior routes (all keep 3.2706)
 
@@ -65,4 +64,5 @@ Supporting files:
 | LB-31 | Fiber-charge correction chain | rejected |
 | LB-32 | Coupled Boolean faces and transport | parked |
 | LB-33 | Correlation (Harris/BK/Reimer) potentials | rejected |
+| LB-34 | Mixed-polarity restriction families, worst-case inputs of `tr` | rejected (no coefficient; tree family is a test of one network) |
 | LB-35 | Amplification kill test | rejected (no proved rate barrier) |

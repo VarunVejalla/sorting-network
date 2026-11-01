@@ -45,6 +45,7 @@ Ticket statuses live in [`../backlog/tickets.json`](../backlog/tickets.json). Th
 | [kahale-pair-union-rate.md](../../docs/kahale-pair-union-rate.md) | `S:kahale_pair_union_rate.py`, `docs/kahale-pair-union-rate-output.txt` | rejected, LB-24 (rate barrier) |
 | [kahale-correlation-potential.md](../../docs/kahale-correlation-potential.md) | `S:kahale_correlation_potential.py`, `docs/kahale-correlation-potential-output.txt` | rejected, LB-33 (Harris = sizes; BK vacuous) |
 | [kahale-amplification-kill.md](../../docs/kahale-amplification-kill.md) | `S:kahale_amplification_kill.py`, `docs/kahale-amplification-kill-output.txt` | rejected, LB-35 (sharpness potentials; no proved rate barrier) |
+| [kahale-worst-case-inputs.md](../../docs/kahale-worst-case-inputs.md) | `S:kahale_worst_case_inputs.py`, `docs/kahale-worst-case-inputs-output.txt` | rejected, LB-34 (mixed polarity adds no witness; tree family tests one network; no coefficient) |
 
 ## Congestion and routing
 

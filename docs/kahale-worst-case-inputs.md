@@ -17,7 +17,7 @@ for, but it is a test on one network, not a bound.**
 1. **`tr` breaks badly, and from a single stray. [numeric]** At `n = N_d` the
    worst rank error found is 11% of `n` at `d = 48`, 22% at `d = 56` and **29% at
    `d = 64`, wire 7314, against about 4% on the LB-35 structured inputs.** Every
-   witness is re-simulated. The misplacement stays small: 1 to 7 wrong wires on
+   witness is re-simulated. The misplacement stays small: 1 to 10 wrong wires on
    these witnesses, and at most about 1% of `n` on the best inputs found per
    threshold. So this is a stray, not a badly sorted network.
 2. **The ticket's recurrence passes `tr`, for a structural reason. [proved, numeric]**
@@ -25,7 +25,8 @@ for, but it is a test on one network, not a bound.**
    where inversions exist. Mixed polarity cannot help: at the endpoint every pair
    witness projects to a zero certificate and back (§4.1), and compatibility only
    deletes candidates (§4.3).
-3. **A one-polarity recurrence fails on every tested non-sorter. [numeric]** Keep,
+3. **A one-polarity recurrence fails on `tr`, the barrier and a randomly wired
+   barrier at `N_d`, `d >= 40`. [numeric]** Keep,
    per wire, one input set: at an OR take the set of the child with the smaller
    *uncapped LB-24 tree cost*, at an AND take the union. This adds one thing to
    LB-24: the union of the leaves of its own argmin tree, instead of their count.
@@ -76,7 +77,7 @@ a search for small certificates**, and that is what the search below does.
 **Proof-tree search.** Compute the LB-24 tree cost forward, uncapped, then walk back
 from a target wire: both inputs at an AND, the cheaper input at an OR. The leaves are
 a valid certificate. Repeat with low prices on the current set. This found far more
-than hill climbing on inputs did, which from random starts reaches only 5% to 25% of
+than hill climbing on inputs did, which from random starts reaches only 2% to 23% of
 the proof-tree error on the same sizes.
 
 ## 2. Question 1: adversarial inputs
@@ -105,7 +106,7 @@ worst error. Every value is a re-simulated witness.
 | 56 | 3459 | 778 | 0.225 | 2177, zero | 1400 | all | 36.1% | up to 0.051 |
 | 64 | 16530 | 4816 | **0.291** | 7314, one | 4400 | every 6th | 31.2% | up to 0.051 |
 | 72 | 80209 | 27109 | 0.338 | 32768, one | 20332 | every 512th | 53.2% | up to 0.051 |
-D80ROW
+| 80 | 393913 | 81405 | 0.207 (partial) | 35840, one | 276668 | every 512th, wires < 36000 only | 50% of those | up to 0.051 |
 
 The error on random inputs at these depths is far smaller. It is 0.012 of `n` at
 `d = 48` and 0.033 at `d = 52` over 64 samples.
@@ -137,33 +138,32 @@ The profile is flat across the middle thresholds and falls at the ends. At `d = 
 `m` are only lower bounds, and the grid does not hit every `k`.
 
 Worst `E` and worst `m` are different quantities. The single-wire witnesses have
-`m` between 1 and 7. So the rank error is linear in `n`, while the misplacement found
+`m` between 1 and 10. So the rank error is linear in `n`, while the misplacement found
 is about 1% of `n`, with no evidence yet that the true maximum of `m` is that small.
 
 ## 3. Question 2: structure of the breaking inputs
 
 **A shared structure was found on the network side, and none on the input side.**
 
-**The witness anatomy. [numeric, top 40 witnesses at each of `d = 40..64`]**
+**The witness anatomy. [numeric, top 40 witnesses at each of `d = 44..64`]**
 
 Walk back from the target wire through the proof tree of the certificate.
 
-- **The tail is AND-free.** In every one of those witnesses the tree is a *single
+- **The tail is AND-free.** In all 200 of those witnesses the tree is a *single
   wire* from the output back to its last AND gate. So one wire `u` at time `t*` forces
   the target, through min outputs only.
 - **`t*` sits at the barrier/tail boundary.** The median distance of the last AND
   from the end is 23, 25, 31, 35 at `d = 48, 52, 56, 64`, against `K + 2` = 22, 24,
   30, 34.
-- **The target is the reach limit of `u`.** In all witnesses listed by `struct`, `w`
-  equals the lowest output reachable from `u` through the tail (the highest, on the
-  one side). The stray goes as far as the tail allows and stops.
+- **The target is the reach limit of `u`.** In 198 of the 200, `w` equals the lowest
+  output reachable from `u` through the tail (the highest, on the one side). The stray goes as far as the tail allows and stops.
 - **The tail is local.** Median reach is 7 wires in the last 8 layers and about 40
   in the last 20 at `d = 48`, against 87 and 354 on the barrier. The drift `|u - w|`
   is 62, 124, 281, 1300 at those depths.
 - **The tree behind `t*` grows like Kahale's tree.** The width of the proof tree per
   layer backward has median growth 1.49, 1.52, 1.59, 1.58 at `d = 48, 52, 56, 64`,
   against `phi = 1.618`, until it saturates at `|S|`.
-- **The tree is heavily shared.** Leaves with multiplicity are 190 to 21000 times
+- **The tree is heavily shared.** Leaves with multiplicity are 50 to 24000 times
   `|S|`. This is why every closed size recurrence is capped here. At wire 599, `d = 48`,
   LB-24 gives `n = 738`, and the true certificate has at most 516 inputs.
 
@@ -178,14 +178,15 @@ last cleanup layer makes odd wires min outputs. That part is trivial.
 
 - first-layer comparators hold 0, 1, 2 certificate inputs at binomial frequencies,
   to within about 0.06;
-- index-bit correlation is at most 0.05;
+- index-bit correlation is about 0.05 or less;
 - the density by index sixteenth is flat, and the two sides of a first-layer comparator
   have equal density.
 
 A witness looks locally like a density-`p` random set, yet it is exponentially rare
 under that measure: random inputs at those densities never show it. It has no short
 description visible to these tests. No small set of input wires, and no partial
-assignment on a wire pair, is shared: Jaccard overlap of certificates is 0.15 to 0.56.
+assignment on a wire pair, is shared: Jaccard overlap of certificates at `d = 48, 52`
+is 0.15 to 0.56.
 
 **A correction to the obvious reading.** Reach looks like the cause, but it is not
 sufficient. Rule `tw` replaces alternate tail stages with wide comparators by mean-rank
@@ -198,8 +199,9 @@ cheap, because strays are plentiful: 53% of targets at `d = 72` have `E > 0`.
 for every network. If `r_t(u)` is the lowest output reachable from `u` at time `t`, a
 sorter has `z_u(t) >= r_t(u) + 1`, since the zero on `u` ends at a wire `>= r_t(u)`
 and must end below `|S|`. The width rule is the case `r_t(u) >= u - 2^s + 1`. Applied
-to LB-24's upper bounds, this test still passes on `tr`, with margin 0 at the trivial
-endpoint, because the bound on `z_u(t)` is capped at `n` there. Tail reach only moves
+to LB-24's upper bounds, this test still passes on `tr` at `d = 40..56`, with worst
+margin 0 at the first layer, which is trivial, because the bound on `z_u(t)` is capped
+at `n` in the stretch that matters. Tail reach only moves
 the failure to where the sizes are saturated.
 
 ## 4. Question 3: the recurrences
@@ -288,9 +290,9 @@ wire relaxation.
 family and the search find nothing on Batcher at `n = 32, 64, 344, 738`, or on `tr` at
 `d <= 36`, where z3 confirms it is a sorter.
 
-**Which schedules fail. [numeric]**
+**Which schedules fail. [numeric]** Entries are tree-family `E/n`.
 
-| `d` | `n` | barrier tree | `tr` tree | random wiring tree | `tr` on random tail, tree |
+| `d` | `n` | barrier | `tr` | random wiring | random prefix, `tr` tail |
 |---:|---:|---:|---:|---:|---:|
 | 44 | 344 | 0.084 | 0.073 | 0.111 | 0.064 |
 | 48 | 738 | 0.098 | 0.084 | 0.107 | 0.102 |
@@ -324,8 +326,9 @@ round. `E` below uses the weaker scan each round, so it is less than the §2 num
 | search | 48 | 12 | 0.080 | 0.054 | 0.075 | 0.2% to 22% |
 | tree | 48 | 60 | 0.084 | 0.030 | 0.045 | 0.2% to 66% |
 
-Against a weak adversary the error reached 0 at `d = 44` within 4 rounds, which only
-shows that the adversary was weak. So a simple repair lowers the error by at most about
+The tree test was never passed in those 60 rounds. Against a weak adversary (4 search
+rounds per wire) the error reached 0 at `d = 44` within 4 rounds, which only shows that
+the adversary was weak. So a simple repair lowers the error by at most about
 3 times, it never clears it, and it gives up random-input sharpness to do so: `exact`
 falls to 0. This repair is crude, and nothing here shows that a better one fails.
 
@@ -389,13 +392,17 @@ better non-sorter certificate than random or structured inputs.
 ## Not verified
 
 - Every `E` is a lower bound on the true worst error, except at `d <= 36`, where the
-  network sorts. The exact worst error is unknown from `d = 40` on.ZEXACT
+  network sorts. The exact worst error is unknown from `d = 40` on: z3 on
+  "`E >= 6` at `d = 40`" returned unknown after 900 s, and the MILP bound is useless.
 - Scans at `d = 64, 72, 80` test only every 6th, 512th and 512th wire. Fractions of
   targets at those depths are sampled.
+- The `d = 80` scan ran out of budget in the lowest tenth of the wires, so its `E/n` is not
+  comparable with the other rows and is left out of the trend.
 - `m` values are weak lower bounds on a 17-point grid of `k`. "About 1% of `n`" is what
   the search found, not a measured maximum.
 - MILP gave no exact certificate sizes: the LP bound stayed near 2 to 4 at `n = 36`.
-- The anatomy statistics cover the top 40 witnesses per depth, not all of them.
+- The anatomy statistics cover the top 40 witnesses at `d = 44..64`, not all of them.
+  At `d = 40` only 10 targets have `E > 0`, and they were not tabulated.
 - The pair family ran on `tr` only at `d <= 44` and `B <= 4`, and on the barrier only at
   `d = 40`. Its behaviour at larger `B` or `d` is unknown.
 - CEGAR nets were checked for heights and wire only, not the pair relaxation, and the
@@ -426,7 +433,7 @@ python -B $S scan 72 80 --iters 6 --stride 512 --budget 1500 --top 24 --save W
 python -B $S scan 56 --n 13836 --K 28 --iters 6 --stride 16 --budget 500 --top 20   # also 6918 1729 864
 python -B $S thresh 40 48 --grid 17 --tlimit 15 --steps 600
 python -B $S thresh 56 64 --grid 17 --tlimit 25 --steps 300 --batch 64
-python -B $S struct 40 44 48 52 56 64 --save W --show 2
+python -B $S struct 40 44 48 52 56 64 --save W --show 40
 python -B $S fib 48 52 56 64 --save W
 python -B $S dump 40 44 48 52 56 64 --save W
 python -B $S family 32 40 44 48 52 --kind zero --B 1,4,16
@@ -440,6 +447,7 @@ python -B $S compare 48 52 56 --save W
 python -B $S matrix 44 48 52 --budget 30 --stride 3
 python -B $S repair 48 52 --wide 2,3 --budget 60 --iters 4
 python -B $S batcher 32 64 344 738
+python -B $S cegar 44 --rounds 16                        # weak adversary
 python -B $S cegar 44 --rounds 14 --iters 30 --stride 3
 python -B $S cegar 48 --rounds 12 --iters 30 --stride 6
 python -B $S cegar 48 --adv tree --rounds 60 --add 128 --stride 4 --final 120
