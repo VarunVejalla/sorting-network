@@ -762,7 +762,10 @@ The clamped representation now has the matching pricing lemma:
 `d2FlowNodeStaticBag_card_eq_child_total_sub_G_of_clamped_fit` proves the same
 exact sender-bag cardinality from clamped fit, and
 `d2FlowNodeStaticHolesClamped_card` proves its holes have the required total
-length. A focused current-source rebuild of `D2PhysicalBagState.lean` passes.
+length. `D2DynamicSenderNode.lean` now exposes this as
+`d2FlowNodeStaticBag_card_eq_flow_allocation_of_clamped_fit`, preserving the
+canonical-fit theorem as a wrapper. Focused current-source rebuilds of both
+files pass.
 This removes the mismatch between the reachable clamped representation and
 the sender-cardinality interface; it does not establish clamped fit at every
 reachable stage. Canonical hole markers still fail the all-stage fit screen,

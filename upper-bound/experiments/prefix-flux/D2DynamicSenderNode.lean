@@ -181,12 +181,12 @@ def d2FlowTreePhysicalBag {n scale : Nat} :
   | base, h + 1, .node G low high children =>
       d2FlowNodeStaticBag base (scale * 8 ^ h) G low high children
 
-theorem d2FlowNodeStaticBag_card_eq_flow_allocation_of_fit
+theorem d2FlowNodeStaticBag_card_eq_flow_allocation_of_clamped_fit
     {n scale h : Nat} (base G low high : Nat)
     (children : Fin 8 -> D2FlowTree h)
     (hinv : d2FlowTreeInv scale (.node G low high children))
     (hfit : StaticHolesFit (base + low)
-      (d2FlowNodeStaticHoles base (scale * 8 ^ h) low high children)
+      (d2FlowNodeStaticHolesClamped base (scale * 8 ^ h) low high children)
       (base + 8 * (scale * 8 ^ h) - high))
     (hstop : base + 8 * (scale * 8 ^ h) - high <= n) :
     (d2FlowNodeStaticBag (n := n) base (scale * 8 ^ h)
@@ -217,9 +217,31 @@ theorem d2FlowNodeStaticBag_card_eq_flow_allocation_of_fit
       simpa [Nat.pow_succ, Nat.mul_assoc, Nat.mul_comm, Nat.mul_left_comm]
         using hinv.1
     have hGlt : G < 8 * (scale * 8 ^ h) := Nat.lt_of_le_of_ne hcap hsat
-    rw [d2FlowNodeStaticBag_card_eq_child_total_sub_G base G low high
-      children hinv hfit hstop hGlt]
+    rw [d2FlowNodeStaticBag_card_eq_child_total_sub_G_of_clamped_fit
+      base G low high children hinv hfit hstop hGlt]
     rfl
+
+/-- Canonical-fit compatibility wrapper for the clamped sender-cardinality
+contract. -/
+theorem d2FlowNodeStaticBag_card_eq_flow_allocation_of_fit
+    {n scale h : Nat} (base G low high : Nat)
+    (children : Fin 8 -> D2FlowTree h)
+    (hinv : d2FlowTreeInv scale (.node G low high children))
+    (hfit : StaticHolesFit (base + low)
+      (d2FlowNodeStaticHoles base (scale * 8 ^ h) low high children)
+      (base + 8 * (scale * 8 ^ h) - high))
+    (hstop : base + 8 * (scale * 8 ^ h) - high <= n) :
+    (d2FlowNodeStaticBag (n := n) base (scale * 8 ^ h)
+      G low high children).card =
+      d2FlowTreeAllocation scale (.node G low high children) := by
+  have hinvChildren : ∀ j, d2FlowTreeInv scale (children j) := by
+    have h := hinv
+    simp only [d2FlowTreeInv] at h
+    exact h.2.2.2
+  have hclamped := d2FlowNodeStaticHolesClamped_fit_of_static_fit
+    children rfl hinvChildren hfit
+  exact d2FlowNodeStaticBag_card_eq_flow_allocation_of_clamped_fit
+    base G low high children hinv hclamped hstop
 
 theorem d2FlowTreePhysicalBag_leaf_card_eq_allocation
     {n scale : Nat} (base G low high : Nat)
