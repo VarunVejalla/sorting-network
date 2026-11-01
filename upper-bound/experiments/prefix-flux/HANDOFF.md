@@ -694,16 +694,12 @@ up-ports; an active node empties itself, adds its down-ports to child results,
 and returns its up-port. The active/inactive root equations, empty up-port for
 inactive nodes, flattening lemma for adding a down-port, and finite-union
 distributivity/congruence lemmas are kernel-checked.
-This makes the intended physical update concrete, but does not yet prove
-global coverage/disjointness or cardinality agreement with the flow. Next add
-the finite global node index and target function, then instantiate the already
-proved `routed_local_destinations_preserve_partition` theorem rather than
-duplicating its partition induction over the recursive layout. Use a parent
-sentinel for the root and discharge its empty port from the root-role result.
-The dynamic layout still needs an all-node cardinality bridge to
-`d2FlowTreeAllocation` after `d2FlowStage`, including exceptional roles and
-root overwrites. A direct nested `Finset.biUnion` conservation proof was
-discarded after elaboration failures; do not resume that proof strategy.
+The flat-index route and its conditional global partition/cardinality
+interfaces are now in `D2DynamicSenderNode.lean`. A direct nested
+`Finset.biUnion` conservation proof was discarded after elaboration failures;
+do not resume that proof strategy. The remaining construction-specific
+obligation is to identify actual schedule node bags and local port pieces with
+the flat interfaces, including exceptional roles and parent-root overwrites.
 
 ## Flat-index checkpoint (2026-11-01)
 
@@ -722,10 +718,14 @@ parent-plus-eight-child local partition as an `Option (Fin 8)` port contract;
 `d2OrdinaryRankSenderPorts_contract` adapts the existing rank-cut partition
 theorem to that interface. Thus the regular/top-desc/bot-rise local partition
 results can supply the local part whenever their stage and sender-cardinality
-hypotheses hold. Root-boundary output must still be shown empty. The next
-decisive step is to define the node-dependent source and split from the actual
-candidate stage/static bags, then prove receiver cardinality matches the flow
-allocation without assuming that agreement.
+hypotheses hold. The receiver-cardinality lemma expresses each routed bag's
+size as the sum of incoming port sizes. The external bucket is proved empty
+assuming active roots have empty parent output and the leaf level is inactive;
+the candidate schedule supplies leaf inactivity and the root-role fact, but
+connecting that role to the concrete split remains open. The next decisive
+step is to define node-dependent source bags and splits from the actual
+candidate stage/static bags, then match receiver cardinality to
+`d2FlowTreeAllocation` without assuming the agreement.
 
 ## Files and artifacts
 

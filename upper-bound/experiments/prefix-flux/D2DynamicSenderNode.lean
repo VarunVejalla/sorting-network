@@ -68,6 +68,14 @@ def d2SenderNodeParent? {depth : Nat} (node : D2SenderNode depth) :
       | succ n =>
           exact some ⟨⟨n, by omega⟩, d2FlowPathInit n path⟩
 
+theorem d2SenderNodeParent?_eq_none_iff {depth : Nat}
+    (node : D2SenderNode depth) :
+    d2SenderNodeParent? node = none ↔ node.1.val = 0 := by
+  rcases node with ⟨⟨level, hlevel⟩, path⟩
+  cases level with
+  | zero => simp [d2SenderNodeParent?]
+  | succ level => simp [d2SenderNodeParent?]
+
 /-- The child at port `j`, if it lies within the finite tree. -/
 def d2SenderNodeChild? {depth : Nat} (node : D2SenderNode depth)
     (j : Fin 8) : Option (D2SenderNode depth) := by
@@ -76,6 +84,22 @@ def d2SenderNodeChild? {depth : Nat} (node : D2SenderNode depth)
   · exact some ⟨⟨level.val + 1, by omega⟩,
       d2FlowPathSnoc path j⟩
   · exact none
+
+theorem d2SenderNodeChild?_eq_none_iff {depth : Nat}
+    (node : D2SenderNode depth) (j : Fin 8) :
+    d2SenderNodeChild? node j = none ↔ node.1.val = depth := by
+  unfold d2SenderNodeChild?
+  by_cases hlt : node.1.val < depth
+  · constructor
+    · intro h
+      simp [hlt] at h
+    · intro heq
+      omega
+  · constructor
+    · intro _
+      omega
+    · intro heq
+      simp [hlt]
 
 /-- The recursive flow state at a flat sender index. -/
 def d2SenderNodeSubtree {depth : Nat} (tree : D2FlowTree depth)
@@ -278,6 +302,60 @@ noncomputable def d2SenderNodeRoutedBag {Wire : Type*} [DecidableEq Wire]
     routedTargetPiece (d2SenderNodeLocalPiece active source split)
       (d2SenderNodeRouteTarget active) node receiver
 
+/-- The external receiver bucket is empty when every active root has empty
+parent output and the leaf level is inactive. -/
+theorem d2SenderNodeRoutedBag_external_empty
+    {Wire : Type*} [DecidableEq Wire] {depth : Nat}
+    (active : Nat → Bool) (source : D2SenderNode depth → Finset Wire)
+    (split : D2SenderNode depth → D2SenderPorts Wire)
+    (hrootUp : ∀ node, node.1.val = 0 → active node.1.val = true →
+      (split node).up = Finset.empty)
+    (hleaf : active depth = false) :
+    d2SenderNodeRoutedBag active source split none = Finset.empty := by
+  classical
+  apply Finset.ext
+  intro x
+  constructor
+  · intro hx
+    unfold d2SenderNodeRoutedBag at hx
+    simp only [Finset.mem_biUnion, Finset.mem_univ, true_and] at hx
+    rcases hx with ⟨node, hx⟩
+    change x ∈ routedTargetPiece (d2SenderNodeLocalPiece active source split)
+      (d2SenderNodeRouteTarget active) node none at hx
+    unfold routedTargetPiece at hx
+    rcases Finset.mem_biUnion.mp hx with ⟨port, hport, hxpiece⟩
+    have htarget := (Finset.mem_filter.mp hport).2
+    cases port with
+    | none =>
+      have ha : active node.1.val = true := by
+        by_cases hactive : active node.1.val = true
+        · exact hactive
+        · simp [d2SenderNodeRouteTarget, hactive] at htarget
+      have hroot : node.1.val = 0 := by
+        apply (d2SenderNodeParent?_eq_none_iff node).mp
+        simpa [d2SenderNodeRouteTarget, ha] using htarget
+      have hup := hrootUp node hroot ha
+      have hfalse : False := by
+        have hp : x ∈ (Finset.empty : Finset Wire) := by
+          simpa [d2SenderNodeLocalPiece, ha, d2SenderPortsLocalPiece, hup]
+            using hxpiece
+        exact Finset.notMem_empty x hp
+      exact hfalse.elim
+    | some j =>
+      have ha : active node.1.val = true := by
+        by_cases hactive : active node.1.val = true
+        · exact hactive
+        · simp [d2SenderNodeRouteTarget, hactive] at htarget
+      have hnodeLevel : node.1.val = depth := by
+        apply (d2SenderNodeChild?_eq_none_iff node j).mp
+        simpa [d2SenderNodeRouteTarget, ha] using htarget
+      rw [hnodeLevel] at ha
+      have hfalse : False := by simp [hleaf] at ha
+      exact hfalse.elim
+  · intro hx
+    have hfalse : False := Finset.notMem_empty x hx
+    exact hfalse.elim
+
 /-- The flat D2 route preserves a global wire partition once source bags and
 each sender's local pieces satisfy the partition contracts. This is the
 finite-tree instantiation of `routed_local_destinations_preserve_partition`;
@@ -307,5 +385,75 @@ theorem d2SenderNodeRoute_preserves_partition
     (d2SenderNodeLocalPiece active source split)
     (d2SenderNodeRouteTarget active)
     hsourceCover hsourceDisjoint hlocalSubset hlocalCover hlocalDisjoint
+
+/-- The cardinality of one flat receiver bag is exactly the sum of the sizes
+of all local ports tagged for that receiver. This exposes the remaining
+flow-allocation comparison as a port-width identity. -/
+theorem d2SenderNodeRoutedBag_card_eq_incoming_ports
+    {Wire : Type*} [Fintype Wire] [DecidableEq Wire]
+    {depth : Nat} (active : Nat → Bool)
+    (source : D2SenderNode depth → Finset Wire)
+    (split : D2SenderNode depth → D2SenderPorts Wire)
+    (hsourceDisjoint : ∀ node node', node ≠ node' →
+      Disjoint (source node) (source node'))
+    (hlocalSubset : ∀ node port,
+      d2SenderNodeLocalPiece active source split node port ⊆ source node)
+    (hlocalDisjoint : ∀ node port port', port ≠ port' →
+      Disjoint (d2SenderNodeLocalPiece active source split node port)
+        (d2SenderNodeLocalPiece active source split node port'))
+    (receiver : Option (D2SenderNode depth)) :
+    (d2SenderNodeRoutedBag active source split receiver).card =
+      ∑ node ∈ Finset.univ,
+        ∑ port ∈ Finset.univ.filter
+          (fun port : D2SenderRoutePort =>
+            d2SenderNodeRouteTarget active node port = receiver),
+          (d2SenderNodeLocalPiece active source split node port).card := by
+  classical
+  simpa [d2SenderNodeRoutedBag] using
+    (routedReceiver_card_eq_sum_of_piece_cards source
+      (d2SenderNodeLocalPiece active source split)
+      (d2SenderNodeRouteTarget active)
+      hsourceDisjoint hlocalSubset hlocalDisjoint receiver)
+
+/-- If the boundary bucket is empty, the partition after routing is a
+partition by internal sender nodes alone. -/
+theorem d2SenderNodeRoute_internal_partition_of_external_empty
+    {Wire : Type*} [Fintype Wire] [DecidableEq Wire]
+    {depth : Nat} (active : Nat → Bool)
+    (source : D2SenderNode depth → Finset Wire)
+    (split : D2SenderNode depth → D2SenderPorts Wire)
+    (hpartition :
+      (∀ receiver receiver', receiver ≠ receiver' →
+        Disjoint (d2SenderNodeRoutedBag active source split receiver)
+          (d2SenderNodeRoutedBag active source split receiver')) ∧
+        Finset.univ.biUnion (d2SenderNodeRoutedBag active source split) =
+          Finset.univ)
+    (hexternal : d2SenderNodeRoutedBag active source split none = Finset.empty) :
+    (∀ node node', node ≠ node' →
+      Disjoint (d2SenderNodeRoutedBag active source split (some node))
+        (d2SenderNodeRoutedBag active source split (some node'))) ∧
+      Finset.univ.biUnion
+        (fun node => d2SenderNodeRoutedBag active source split (some node)) =
+          Finset.univ := by
+  refine ⟨?_, ?_⟩
+  · intro node node' hne
+    apply hpartition.1 (some node) (some node')
+    intro heq
+    exact hne (Option.some.inj heq)
+  · ext x
+    constructor
+    · intro _
+      exact Finset.mem_univ x
+    · intro _
+      have hx : x ∈ Finset.univ.biUnion (d2SenderNodeRoutedBag active source split) := by
+        rw [hpartition.2]
+        exact Finset.mem_univ x
+      rcases Finset.mem_biUnion.mp hx with ⟨receiver, _, hxreceiver⟩
+      cases receiver with
+      | none =>
+          rw [hexternal] at hxreceiver
+          exact (Finset.notMem_empty x hxreceiver).elim
+      | some node =>
+          exact Finset.mem_biUnion.mpr ⟨node, Finset.mem_univ _, hxreceiver⟩
 
 end Chvatal.D2OrdinaryRankRouting
