@@ -1298,6 +1298,120 @@ theorem d2SenderNodeRoutedBag_card_eq_incoming_ports
       (d2SenderNodeRouteTarget active)
       hsourceDisjoint hlocalSubset hlocalDisjoint receiver)
 
+/-- At an inactive internal node, the recursively updated child up-ports
+increase the retained root bag by exactly the flow allocation increment.
+This is the layout-side cardinality step for a dynamic sender-set induction. -/
+theorem d2SenderLayoutStage_inactive_root_card_eq_allocation
+    {Wire : Type*} [DecidableEq Wire]
+    {active : Nat -> Bool} {role : Nat -> D2Role}
+    {quota : Nat -> D2Role -> Nat} {h scale i G low high : Nat}
+    (bag : Finset Wire) (layoutChildren : Fin 8 -> D2SenderLayout Wire h)
+    (flowChildren : Fin 8 -> D2FlowTree h)
+    (split : Nat -> Finset Wire -> D2SenderPorts Wire)
+    (ha : active i = false)
+    (hinv : d2FlowTreeInv scale (.node G low high flowChildren))
+    (hbag : bag.card = d2FlowTreeAllocation scale
+      (.node G low high flowChildren))
+    (hports : forall j, (d2SenderLayoutStage active split h (i + 1)
+      (layoutChildren j)).2.card =
+        d2FlowStagePort active role quota h (i + 1) (flowChildren j))
+    (hchildDisjoint : forall j j', j ≠ j' ->
+      Disjoint
+        ((d2SenderLayoutStage active split h (i + 1)
+          (layoutChildren j)).2)
+        ((d2SenderLayoutStage active split h (i + 1)
+          (layoutChildren j')).2))
+    (hdisjoint : Disjoint bag (Finset.univ.biUnion fun j =>
+      (d2SenderLayoutStage active split h (i + 1)
+        (layoutChildren j)).2)) :
+    (d2SenderLayoutRootBag
+      (d2SenderLayoutStage active split (h + 1) i
+        (.node bag layoutChildren)).1).card =
+      d2FlowTreeAllocation scale
+        (d2FlowStage active role quota (h + 1) i
+          (.node G low high flowChildren)) := by
+  rcases d2SenderLayoutStage_node_inactive active split i bag
+    layoutChildren ha with ⟨hroot, _⟩
+  rw [hroot]
+  have hunion : (Finset.univ.biUnion fun j =>
+      (d2SenderLayoutStage active split h (i + 1)
+        (layoutChildren j)).2).card =
+      d2FlowTotal (fun j => d2FlowStagePort active role quota h (i + 1)
+        (flowChildren j)) := by
+    rw [Finset.card_biUnion (fun j _ j' _ hne => hchildDisjoint j j' hne)]
+    unfold d2FlowTotal
+    apply Finset.sum_congr rfl
+    intro j hj
+    exact hports j
+  rw [Finset.card_union_of_disjoint hdisjoint, hunion, hbag]
+  exact (d2FlowTreeAllocation_after_inactive_node_ports
+    flowChildren ha hinv).symm
+
+/-- If an active parent appends a down-port to this recursively updated
+inactive child, the child's resulting root bag still has its flow allocation
+size. The down-port pays for the root overwrite; descendant up-ports pay for
+the recursive capacity growth. -/
+theorem d2SenderLayoutStage_inactive_child_overwrite_card_eq_allocation
+    {Wire : Type*} [DecidableEq Wire]
+    {active : Nat -> Bool} {role : Nat -> D2Role}
+    {quota : Nat -> D2Role -> Nat} {h scale i G low high newRoot newLow newHigh : Nat}
+    (bag : Finset Wire) (layoutChildren : Fin 8 -> D2SenderLayout Wire h)
+    (flowChildren : Fin 8 -> D2FlowTree h)
+    (split : Nat -> Finset Wire -> D2SenderPorts Wire)
+    (parentDown : Finset Wire)
+    (ha : active i = false)
+    (hinv : d2FlowTreeInv scale (.node G low high flowChildren))
+    (hbag : bag.card = d2FlowTreeAllocation scale
+      (.node G low high flowChildren))
+    (hports : forall j, (d2SenderLayoutStage active split h (i + 1)
+      (layoutChildren j)).2.card =
+        d2FlowStagePort active role quota h (i + 1) (flowChildren j))
+    (hchildDisjoint : forall j j', j ≠ j' ->
+      Disjoint
+        ((d2SenderLayoutStage active split h (i + 1)
+          (layoutChildren j)).2)
+        ((d2SenderLayoutStage active split h (i + 1)
+          (layoutChildren j')).2))
+    (hdisjoint : Disjoint bag (Finset.univ.biUnion fun j =>
+      (d2SenderLayoutStage active split h (i + 1)
+        (layoutChildren j)).2))
+    (hdown : parentDown.card = G - newRoot)
+    (hdownDisjoint : Disjoint
+      (d2SenderLayoutRootBag
+        (d2SenderLayoutStage active split (h + 1) i
+          (.node bag layoutChildren)).1) parentDown)
+    (hnewCover : newRoot <= d2FlowTreeCapacityMass scale
+      (d2FlowStage active role quota (h + 1) i
+        (.node G low high flowChildren)))
+    (hrootDrop : newRoot <= G) :
+    (d2SenderLayoutRootBag
+      (d2SenderLayoutSetRoot
+        (d2SenderLayoutStage active split (h + 1) i
+          (.node bag layoutChildren)).1
+        (d2SenderLayoutRootBag
+          (d2SenderLayoutStage active split (h + 1) i
+          (.node bag layoutChildren)).1 ∪ parentDown)
+        )).card =
+      d2FlowTreeAllocation scale
+        (d2FlowTreeSetRoot
+          (d2FlowStage active role quota (h + 1) i
+            (.node G low high flowChildren)) newRoot newLow newHigh) := by
+  have hstageCard := d2SenderLayoutStage_inactive_root_card_eq_allocation
+    bag layoutChildren flowChildren split ha hinv hbag hports
+    hchildDisjoint hdisjoint
+  rw [d2SenderLayoutRootBag_setRoot,
+    Finset.card_union_of_disjoint hdownDisjoint, hstageCard, hdown]
+  have halloc := d2FlowTreeAllocation_after_inactive_recursive_stage
+    (.node G low high flowChildren) ha hinv newRoot newLow newHigh
+    hnewCover (by simpa [d2FlowTreeRootDeficit] using hrootDrop)
+  have hincrement := d2FlowTreeCapacityMass_inactive_stage_increment
+    active role quota (h := h) (scale := scale) i flowChildren G low high ha
+  have hstageAlloc := d2FlowTreeAllocation_after_inactive_node_ports
+    (active := active) (role := role) (quota := quota) flowChildren ha hinv
+  rw [← hincrement] at halloc
+  simp only [d2FlowTreeRootDeficit] at halloc
+  omega
+
 /-- If the boundary bucket is empty, the partition after routing is a
 partition by internal sender nodes alone. -/
 theorem d2SenderNodeRoute_internal_partition_of_external_empty

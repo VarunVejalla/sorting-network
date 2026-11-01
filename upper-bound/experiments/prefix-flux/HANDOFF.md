@@ -51,6 +51,16 @@ checks pass for both `D2DynamicSenderCardinality.lean` and its downstream
 arithmetic, but does not prove the physical routed pieces have those
 widths/tags or identify a receiver bag with the flow allocation.
 
+`D2DynamicSenderNode.lean` now lifts this equation to the recursive set
+representation. `d2SenderLayoutStage_inactive_root_card_eq_allocation` proves
+the retained root bag has the updated flow allocation when child up-ports
+have their prescribed widths and are disjoint from each other and the root
+bag. `d2SenderLayoutStage_inactive_child_overwrite_card_eq_allocation` adds
+the parent's down-port and proves the overwritten child's root bag also has
+its updated flow allocation. These are conditional layout adapters: actual
+candidate port widths and global disjointness/coverage still need deriving
+from the node routing contracts. The focused current-source check passes.
+
 ## Candidate and price
 
 The strongest deterministic candidate is the `(3,3,2)` D2 schedule with the

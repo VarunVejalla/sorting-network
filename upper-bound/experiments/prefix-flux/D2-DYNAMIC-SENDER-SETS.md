@@ -71,19 +71,28 @@ sender-set cardinalities and aggregate error alone do not imply sorted output.
 ## First decisive Lean milestone
 
 `D2DynamicSenderLayout.lean` now supplies the recursive layout and update.
+The recursive layout now has conditional cardinality adapters in
+`D2DynamicSenderNode.lean`: `d2SenderLayoutStage_inactive_root_card_eq_allocation`
+matches an inactive retained root to the flow allocation, and
+`d2SenderLayoutStage_inactive_child_overwrite_card_eq_allocation` includes a
+parent down-port overwrite. They assume exact port sizes and disjointness of
+the relevant pieces. The next task is to derive those premises uniformly
+from the local route partitions and the all-stage sender-set invariant.
+
 For the global partition proof, avoid a second recursive `Finset.biUnion`
 induction: `D2OrdinaryRankRouting.routed_local_destinations_preserve_partition`
 already proves conservation and disjointness for a finite flat sender index.
-Next encode all nodes of a depth-`d` tree as one finite index type and define
+Encode all nodes of a depth-`d` tree as one finite index type and define
 the destination function for each local port (self, parent, or child). Treat
 the root's parent as an external sentinel and prove its piece empty from the
 root-role theorem. Then instantiate the existing generic partition theorem
 with the local active/inactive port partitions. Separately prove the receiver
 cardinality recurrence against `d2FlowTreeAllocation` after `d2FlowStage`,
 including startup, exceptional roles, and parent-root overwrites. The needed
-rank-port widths and inactive-receiver allocation equation are already
-formalized below; the dynamic layout and the finite node indexing are not yet
-identified with the candidate flow.
+rank-port widths and abstract inactive-receiver allocation equation are
+formalized, but their premises are not yet derived together for the candidate
+flow. The dynamic layout and finite node indexing are not yet identified with
+the candidate flow.
 
 ## Formal progress
 
