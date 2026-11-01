@@ -509,4 +509,56 @@ theorem destinationPiece_d2_parent_card {n : Nat}
     (s.card - quota / 2) hleft hgap]
   omega
 
+/-- The root of the candidate D2 tree never emits a parent up-port: whenever
+it is active, its schedule role is top-descending. This closes the root-boundary
+case for a set-valued global routing, which has no node above the root. -/
+theorem d2FlowCandidate_root_active_role_topDesc {d t : Nat}
+    (ha : d2FlowCandidateActive d t 0 = true) :
+    d2FlowCandidateRole d t 0 = .topDesc := by
+  by_cases ht0 : t = 0
+  · subst t
+    simp [d2FlowCandidateRole]
+  by_cases ht1 : t = 1
+  · subst t
+    simp [d2FlowCandidateActive] at ha
+  have ht : 2 ≤ t := by omega
+  classical
+  have hmatch := d2FlowCandidateActive_matches_schedule
+    (d := d) (t := t) (i := 0) (by omega)
+  have hactive : active d (tfD2 d) 0 t := by
+    have hb : decide (active d (tfD2 d) 0 t) = true := by
+      rw [← hmatch]
+      exact ha
+    exact of_decide_eq_true hb
+  have hfront := (active_iff_frontiers (tf := tfD2 d) ht).mp hactive
+  have halpha : alpha d t = 0 := by omega
+  have hpar : t % 2 = 0 := by omega
+  have hnextParity := alpha_parity d (t + 1)
+  have hnextOdd : (t + 1) % 2 = 1 := by omega
+  have hnextPos : 0 < alpha d (t + 1) := by omega
+  have hmove : alpha d t < alpha d (t + 1) := by omega
+  rw [d2FlowCandidateRole_matches_schedule (d := d) (t := t) (i := 0)
+    (by omega)]
+  simp [d2ScheduleRole, halpha, hnextPos]
+
+/-- Adjacent tree levels are never simultaneously active in one candidate
+stage. This is the locality condition that makes the recursively updated
+children inactive receivers when their parent routes down-ports. -/
+theorem d2FlowCandidateActive_no_adjacent {d t i : Nat}
+    (hi : d2FlowCandidateActive d t i = true)
+    (hnext : d2FlowCandidateActive d t (i + 1) = true) : False := by
+  by_cases ht0 : t = 0
+  · subst t
+    simp [d2FlowCandidateActive] at hi hnext <;> omega
+  by_cases ht1 : t = 1
+  · subst t
+    simp [d2FlowCandidateActive] at hi hnext <;> omega
+  have hcond : 2 ≤ t ∧ t ≤ tfD2 d ∧ i % 2 = t % 2 ∧
+      3 * i + 3 * d ≥ 2 * t + 11 ∧ 3 * i < t + 8 := by
+    simpa [d2FlowCandidateActive, ht0, ht1, decide_eq_true_eq] using hi
+  have hnextcond : 2 ≤ t ∧ t ≤ tfD2 d ∧ (i + 1) % 2 = t % 2 ∧
+      3 * (i + 1) + 3 * d ≥ 2 * t + 11 ∧ 3 * (i + 1) < t + 8 := by
+    simpa [d2FlowCandidateActive, ht0, ht1, decide_eq_true_eq] using hnext
+  omega
+
 end Chvatal.D2OrdinaryRankRouting

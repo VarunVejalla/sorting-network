@@ -107,10 +107,20 @@ before building more profile lemmas on it.
   immediately (`new root = 0`). For `botRise`, the next-level inactivity
   lemma proves child roots are preserved, so the parent sends no down-port to
   them.
+- `d2FlowCandidate_root_active_role_topDesc` proves that an active root is
+  always top-descending. Thus the root has no parent up-port that would need
+  an out-of-tree receiver; this closes the global layout's root-boundary role
+  case (the separate zero-root input contract is still needed for its flow
+  partition).
+- `d2FlowCandidateActive_no_adjacent` proves that no two neighboring tree
+  levels are active in the same stage. This is what lets an active parent add
+  down-ports to child sets after their recursive updates without a same-stage
+  comparator network also changing those child sets.
 
 The parent root-drop/cover conditions are therefore closed under the existing
 ordinary and top-descending contracts; bottom-rise's no-overwrite case is also
-closed when the next level is inactive. The next bridge is to instantiate the
-source partition and port targeting for the actual candidate tree, and define
-the recursively indexed sender sets routed to each node. This still says
-nothing about contraction of the physical prefix defect or terminal cleanup.
+closed when the next level is inactive. The root needs no external parent
+receiver. The next bridge is to instantiate the source partition and port
+targeting for the actual candidate tree, and define the recursively indexed
+sender sets routed to each node. This still says nothing about contraction of
+the physical prefix defect or terminal cleanup.

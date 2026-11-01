@@ -676,9 +676,14 @@ native cap. The top-descending reset gives both facts directly by setting the
 child root to zero; at a bottom-rise visit with an inactive next level, child
 roots are preserved and there is no child down-port. Zero post-stage
 allocation is proved conditionally for all active roles (`regular`,
-`topDesc`, and `botRise`). Startup/exceptional role routing still needs
-integration into the set-valued layout. None of these size results establishes
-the spatial profile contraction.
+`topDesc`, and `botRise`). `d2FlowCandidate_root_active_role_topDesc` also
+proves that the candidate root is only active as `topDesc`; hence the root has
+no parent up-port requiring a receiver outside the tree. The separate
+zero-root input contract for this reset is still needed.
+`d2FlowCandidateActive_no_adjacent` proves neighboring levels are never active
+simultaneously. Startup/exceptional role routing still needs integration into
+the set-valued layout. None of these size/layout facts establishes the spatial
+profile contraction.
 
 ## Files and artifacts
 
