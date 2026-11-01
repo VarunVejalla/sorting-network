@@ -89,7 +89,12 @@ parent port, so their ideal mass is naturally measured on right-shifted rank
 intervals. `D2FlowRankBridge.lean` now proves that such a shift only decreases
 initial-prefix mass, giving the required unshifted reserve comparison. The
 remaining ideal-profile obligation is to derive the shifted interval counts
-from the actual tile-to-sender rank allocation.
+from the actual tile-to-sender rank allocation. The local row-major step is
+now checked in `D2ClippedFlowProfileTransfer.lean`: per full-height tile, the
+exact-rank counts across all columns of one port sum to the prefix mass in its
+clipped flattened interval. Next, prove that the candidate's ideal per-tile
+masses partition each sender prefix so those tile intervals sum to its
+shifted global port interval.
 
 The physical sender's Boolean false mass and tags are still **not** identified
 with the flow deficit `G` and the rank intervals. The remaining ordinary

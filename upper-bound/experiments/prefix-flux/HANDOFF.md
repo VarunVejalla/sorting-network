@@ -216,7 +216,12 @@ the sender's left-parent offset. `D2FlowRankBridge.lean` proves that shifting
 an interval right cannot increase its initial-prefix mass, and the composition
 uses this to obtain the unshifted two-front reserve bound. This removes the
 coordinate-shift concern; deriving the shifted ideal-group identity from the
-actual tile allocation remains open.
+actual tile allocation remains open. `D2ClippedFlowProfileTransfer.lean` now
+proves that, within each full-height tile, summing exact-rank cell counts over
+the 64 columns of one port equals the prefix mass in that tile's clipped
+flattened interval. The next small gate is to sum these tile intervals for
+the concrete ideal mass allocation and show they recover each sender port's
+shifted global interval.
 
 `D2StrongDeficitPropagation.lean` already proves the sharp local affine
 profile transition for ordinary eight-child updates. The profile is

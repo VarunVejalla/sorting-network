@@ -48,6 +48,102 @@ theorem exactRankColumnHeight_sum (H : Nat) (hH : H <= 64 * 4096) :
       simp [exactRankColumnHeight, q, r, Finset.sum_add_distrib, hcount]
     _ = H := by dsimp [q, r]; omega
 
+/-- A flattened row-major cut, converted to per-column row cuts, is exactly
+the corresponding exact-rank column profile. -/
+theorem rowCutAtRankM_eq_exactRankColumnHeight
+    {m x : Nat} (hm : m <= 4096) (hx : x <= 64 * m) (c : Col) :
+    rowCutAtRankM m x c = exactRankColumnHeight x c := by
+  rw [rowCutAtRankM, exactRankColumnHeight_eq_offset]
+  have hc : c.val < 64 := c.isLt
+  have hcut : (x + 63 - c.val) / 64 <= m := by omega
+  rw [Nat.min_eq_right hcut]
+
+/-- The exact-rank column profile contains exactly the first `min H x`
+positions of a row-major prefix ending at flattened rank `x`. -/
+theorem exactRankColumnHeight_cut_prefix_sum
+    (H x m : Nat) (hm : m <= 4096)
+    (hH : H <= 64 * m) (hx : x <= 64 * m) :
+    (Finset.univ.sum fun c : Col =>
+      prefixIntervalMass (exactRankColumnHeight H c) 0
+        (rowCutAtRankM m x c)) = min H x := by
+  have hsumH : (Finset.univ.sum fun c : Col =>
+      exactRankColumnHeight H c) = H :=
+    exactRankColumnHeight_sum H (by omega)
+  have hsumX : (Finset.univ.sum fun c : Col =>
+      exactRankColumnHeight x c) = x :=
+    exactRankColumnHeight_sum x (by omega)
+  by_cases hHx : H <= x
+  · have hprofile (c : Col) : exactRankColumnHeight H c <=
+        rowCutAtRankM m x c := by
+      rw [rowCutAtRankM_eq_exactRankColumnHeight hm hx]
+      rw [exactRankColumnHeight_eq_offset, exactRankColumnHeight_eq_offset]
+      exact Nat.div_le_div_right (by omega)
+    calc
+      _ = Finset.univ.sum fun c : Col => exactRankColumnHeight H c := by
+        apply Finset.sum_congr rfl
+        intro c hc
+        simp [prefixIntervalMass, Nat.min_eq_left (hprofile c)]
+      _ = H := hsumH
+      _ = min H x := by simp [Nat.min_eq_left hHx]
+  · have hxH : x <= H := by omega
+    have hprofile (c : Col) : rowCutAtRankM m x c <=
+        exactRankColumnHeight H c := by
+      rw [rowCutAtRankM_eq_exactRankColumnHeight hm hx]
+      rw [exactRankColumnHeight_eq_offset, exactRankColumnHeight_eq_offset]
+      exact Nat.div_le_div_right (by omega)
+    calc
+      _ = Finset.univ.sum fun c : Col => rowCutAtRankM m x c := by
+        apply Finset.sum_congr rfl
+        intro c hc
+        simp [prefixIntervalMass, Nat.min_eq_right (hprofile c)]
+      _ = x := by
+        simpa only [rowCutAtRankM_eq_exactRankColumnHeight hm hx] using hsumX
+      _ = min H x := by simp [Nat.min_eq_right hxH]
+
+/-- Summing an exact-rank profile over the per-column cuts for one flattened
+port gives exactly the prefix mass in that flattened rank interval. -/
+theorem exactRankColumnHeight_cut_interval_sum
+    (H x y m : Nat) (hm : m <= 4096)
+    (hH : H <= 64 * m) (hxy : x <= y) (hy : y <= 64 * m) :
+    (Finset.univ.sum fun c : Col =>
+      prefixIntervalMass (exactRankColumnHeight H c)
+        (rowCutAtRankM m x c) (rowCutAtRankM m y c)) =
+      prefixIntervalMass H x y := by
+  have hx : x <= 64 * m := le_trans hxy hy
+  have hcut (c : Col) : rowCutAtRankM m x c <= rowCutAtRankM m y c :=
+    rowCutAtRankM_mono c hxy
+  have hsplit (c : Col) := prefixIntervalMass_split
+    (exactRankColumnHeight H c) (rowCutAtRankM m x c)
+    (rowCutAtRankM m y c) (hcut c)
+  have hsumSplit :
+      (Finset.univ.sum fun c : Col =>
+        prefixIntervalMass (exactRankColumnHeight H c) 0
+          (rowCutAtRankM m x c)) +
+      (Finset.univ.sum fun c : Col =>
+        prefixIntervalMass (exactRankColumnHeight H c)
+          (rowCutAtRankM m x c) (rowCutAtRankM m y c)) =
+      (Finset.univ.sum fun c : Col =>
+        prefixIntervalMass (exactRankColumnHeight H c) 0
+          (rowCutAtRankM m y c)) := by
+    calc
+      _ = Finset.univ.sum fun c : Col =>
+          (prefixIntervalMass (exactRankColumnHeight H c) 0
+            (rowCutAtRankM m x c) +
+           prefixIntervalMass (exactRankColumnHeight H c)
+            (rowCutAtRankM m x c) (rowCutAtRankM m y c)) := by
+        rw [Finset.sum_add_distrib]
+      _ = _ := by
+        apply Finset.sum_congr rfl
+        intro c hc
+        exact hsplit c
+  have hprefixX := exactRankColumnHeight_cut_prefix_sum H x m hm hH hx
+  have hprefixY := exactRankColumnHeight_cut_prefix_sum H y m hm hH hy
+  have hglobal := prefixIntervalMass_split H x y hxy
+  rw [hprefixX, hprefixY] at hsumSplit
+  have hglobal' : min H x + prefixIntervalMass H x y = min H y := by
+    simpa [prefixIntervalMass] using hglobal
+  omega
+
 /-- Two exact row-major rank prefixes induce nested column profiles, so the
 l1 distance between those profiles is exactly the difference in their total
 masses. -/
@@ -201,6 +297,50 @@ def clippedFlowProfileRankCount {ports tiles : Nat} (m : Nat)
   prefixIntervalMass (exactRankColumnHeight (tileMass t) cell.1)
     (clippedFlowProfileCuts m bounds t cell.1 cell.2.val)
     (clippedFlowProfileCuts m bounds t cell.1 (cell.2.val + 1))
+
+/-- On a clipped full-height tile, the exact-rank column/port cells for one
+port sum to the exact prefix mass in that tile's clipped flattened interval. -/
+theorem clippedFlowProfileRankCount_sum_columns
+    {ports tiles : Nat} (bounds : Fin (ports + 1) -> Nat)
+    (idealTileMass : Fin tiles -> Nat) (t : Fin tiles) (p : Fin ports)
+    (hfirst : bounds 0 = 0)
+    (hlast : bounds (Fin.last ports) = 262144 * tiles)
+    (hmono : forall i : Fin ports,
+      bounds (Fin.castSucc i) <= bounds (Fin.succ i))
+    (hMass : idealTileMass t <= 262144) :
+    (Finset.univ.sum fun c : Col =>
+      clippedFlowProfileRankCount 4096 bounds idealTileMass t (c, p)) =
+      prefixIntervalMass (idealTileMass t)
+        (clippedTileFlowBounds 4096 bounds t (Fin.castSucc p))
+        (clippedTileFlowBounds 4096 bounds t (Fin.succ p)) := by
+  have hclipped := clippedTileFlowBounds_valid 4096 bounds t hfirst hlast hmono
+  have hx : clippedTileFlowBounds 4096 bounds t (Fin.castSucc p) <= 262144 := by
+    simp [clippedTileFlowBounds]
+  have hy : clippedTileFlowBounds 4096 bounds t (Fin.succ p) <= 262144 := by
+    simp [clippedTileFlowBounds]
+  have hxy : clippedTileFlowBounds 4096 bounds t (Fin.castSucc p) <=
+      clippedTileFlowBounds 4096 bounds t (Fin.succ p) := by
+    have h := hclipped.2.2 p
+    simpa using h
+  have hcutLo (c : Col) :
+      clippedFlowProfileCuts 4096 bounds t c p.val =
+        rowCutAtRankM 4096
+          (clippedTileFlowBounds 4096 bounds t (Fin.castSucc p)) c := by
+    simp only [clippedFlowProfileCuts, rowMajorFlowCutsM,
+      Nat.min_eq_left (Nat.le_of_lt p.isLt)]
+    congr 1
+  have hcutHi (c : Col) :
+      clippedFlowProfileCuts 4096 bounds t c (p.val + 1) =
+        rowCutAtRankM 4096
+          (clippedTileFlowBounds 4096 bounds t (Fin.succ p)) c := by
+    simp only [clippedFlowProfileCuts, rowMajorFlowCutsM,
+      Nat.min_eq_left (Nat.succ_le_of_lt p.isLt)]
+    congr 1
+  simpa [clippedFlowProfileRankCount, hcutLo, hcutHi] using
+    exactRankColumnHeight_cut_interval_sum (idealTileMass t)
+      (clippedTileFlowBounds 4096 bounds t (Fin.castSucc p))
+      (clippedTileFlowBounds 4096 bounds t (Fin.succ p))
+      4096 (by norm_num) hMass hxy hy
 
 /-- The parent-mass discrepancy for one tile controls the full refined
 column/port reference profile after global boundaries are clipped to it. -/
