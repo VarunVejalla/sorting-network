@@ -224,6 +224,35 @@ theorem d2FlowTreeAllocation_after_inactive_node_ports
   rw [← hincrement] at halloc
   simpa [d2FlowTreeRootDeficit] using halloc
 
+/-- The full inactive-receiver equation, including a root overwrite by its
+active parent: the old allocation grows by the incoming parent down-port and
+the child up-ports emitted during the recursive update. -/
+theorem d2FlowTreeAllocation_after_inactive_node_incoming_ports
+    {active : Nat -> Bool} {role : Nat -> D2Role}
+    {quota : Nat -> D2Role -> Nat} {h scale i G low high newRoot newLow newHigh : Nat}
+    (children : Fin 8 -> D2FlowTree h)
+    (ha : active i = false)
+    (hinv : d2FlowTreeInv scale (.node G low high children))
+    (hnewCover : newRoot <= d2FlowTreeCapacityMass scale
+      (d2FlowStage active role quota (h + 1) i
+        (.node G low high children)))
+    (hrootDrop : newRoot <= G) :
+    d2FlowTreeAllocation scale
+        (d2FlowTreeSetRoot
+          (d2FlowStage active role quota (h + 1) i
+            (.node G low high children)) newRoot newLow newHigh) =
+      d2FlowTreeAllocation scale (.node G low high children) +
+        (G - newRoot) +
+        d2FlowTotal (fun j =>
+          d2FlowStagePort active role quota h (i + 1) (children j)) := by
+  have halloc := d2FlowTreeAllocation_after_inactive_recursive_stage
+    (.node G low high children) ha hinv newRoot newLow newHigh hnewCover
+    (by simpa [d2FlowTreeRootDeficit] using hrootDrop)
+  have hincrement := d2FlowTreeCapacityMass_inactive_stage_increment
+    active role quota (h := h) (scale := scale) i children G low high ha
+  rw [← hincrement] at halloc
+  simpa [d2FlowTreeRootDeficit] using halloc
+
 /-- An active ordinary parent only lowers a child's root deficit. This is
 the exact down-port width charged in the inactive-receiver recurrence. -/
 theorem d2FlowStage_regular_child_root_drop

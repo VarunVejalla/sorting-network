@@ -41,13 +41,14 @@ allocations, including inactive nodes and overwrite cases. The spatial profile
 recurrence remains the main analytic blocker.
 
 `D2DynamicSenderCardinality.lean` now packages the inactive internal-node
-case as `d2FlowTreeAllocation_after_inactive_node_ports`: when the node retains
-its root, its allocation increases exactly by the sum of child up-port widths.
-This follows from the recursive capacity-mass increment and the allocation
-overwrite identity. Focused current-source checks pass for both
-`D2DynamicSenderCardinality.lean` and its downstream
-`D2DynamicSenderNode.lean`. This closes one arithmetic case of the receiver
-size recurrence; it does not prove that physical routed pieces have those
+equation as `d2FlowTreeAllocation_after_inactive_node_incoming_ports`: after
+the recursive child update and a parent overwrite, the receiver's allocation
+is its old allocation plus the incoming parent down-port and its child
+up-ports. The no-overwrite specialization is
+`d2FlowTreeAllocation_after_inactive_node_ports`. Focused current-source
+checks pass for both `D2DynamicSenderCardinality.lean` and its downstream
+`D2DynamicSenderNode.lean`. This closes the abstract inactive-receiver
+arithmetic, but does not prove the physical routed pieces have those
 widths/tags or identify a receiver bag with the flow allocation.
 
 ## Candidate and price
