@@ -132,11 +132,24 @@ to distinct whole physical cells. The sender-port boundaries are proved
 grid-aligned conditionally from the stage invariants.
 
 The local orientation/provider and its full-height clipped arbitrary-tag
-composition are now available. The remaining ordinary-sender composition
-must (1) instantiate the Boolean input tile and its column profile on the
-actual `d2FlowCandidateRun`, (2) identify the cumulative rank cuts and each
-receiver tag from the run's static sender sets, and (3) control the physical
-source false mass against the sender flow deficit `G`. Exact equality between
+composition are now available. Do not redo the complete-tile local
+count/tag identity: `D2ClippedCellRankInterval.lean` theorem
+`reflected_core_ordinary_child_grouped_count_eq_physical` proves it for an
+arbitrary sender set, quota, eight child widths, complete sender-rank tiles,
+and uniform child-port tags. Its cuts are exactly
+`d2SenderPortBoundaryNat`; `d2FlowStage_regular_sender_port_length` supplies
+their ordinary-stage lengths. This does not provide the reachable Boolean
+source profile, its macro parent-error bound, the ragged rank suffix, or the
+identification of a relaxed sender set with the concrete recursive schedule.
+
+The next analytic gate is a reachable spatial profile invariant: define the
+Boolean false-mass profile on each actual static sender bag in canonical rank
+order, prove its startup base, and derive a one-stage update that bounds the
+macro parent discrepancy together with the local `+448` transfer. The state
+must retain enough rank-distance information to support all-depth contraction
+and terminal cleanup; existing selected-cut LPs do not establish this for the
+fixed network. Include clipped final tiles and startup/exceptional roles in
+the transition. Exact equality between
 single-prefix masses and two-front child deficits is false in general and is
 not required: `D2AllStageTwoFrontGate.lean` proves each ideal exact-prefix
 child mass is at most its corresponding two-front reserve for actual
@@ -145,9 +158,10 @@ only needs aggregate L1 error against those ideal child masses; that error
 directly bounds reserve overrun. The arbitrary-tag `+448` transfer and parent
 mass error are candidate sources for that estimate. A regular sender has ten ordered
 ports (two parent halves and eight child intervals), so its cuts are the
-eleven boundary positions `0..10`. Then extend to sub-4096 ragged heights,
-startup, `botRise`, and exceptional intervals; those cases are not supplied
-by the current full-height lemma.
+eleven boundary positions `0..10`. Extend the count transition to sub-4096
+ragged heights, startup, and exceptional intervals. `botRise` static fit and
+its empty post-stage sender bag are proved for the candidate run, but its full
+physical count transition is not supplied by the full-height lemma.
 
 The corrected arbitrary-root selected-cut LP keeps exact total root mass yet
 still admits large terminal error under the current independent tail
