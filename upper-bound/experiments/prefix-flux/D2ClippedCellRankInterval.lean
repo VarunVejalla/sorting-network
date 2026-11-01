@@ -408,4 +408,40 @@ theorem reflected_core_ordered_tile_child_false_count_eq_profile
     S bounds t p child boundary left rightStart
     (fun c => matrixColumnFalseCount c output) output htile hlo hhi hprofile
 
+/-- Sum the actual reflected-core tile identities over a sender's complete
+rank tiles. This leaves the final ragged rank suffix out explicitly, so the
+ordinary-sender bridge can handle it with a separate partial-tile lemma. -/
+theorem reflected_core_complete_tiles_child_false_count_eq_profile
+    {ports tiles n : Nat} (S : Finset (Fin n))
+    (bounds : Fin (ports + 1) -> Nat) (p : Fin ports)
+    (child : Fin 8) (boundary : Nat -> Nat) (left rightStart : Nat)
+    (input : Fin tiles -> Wire -> Bool)
+    (hcomplete : forall t : Fin tiles,
+      (t.val + 1) * 262144 <= S.card)
+    (hlo : bounds (Fin.castSucc p) = left + boundary child.val)
+    (hhi : bounds (Fin.succ p) = left + boundary (child.val + 1)) :
+    (Finset.univ.sum fun t : Fin tiles =>
+      Finset.univ.sum fun c : Col =>
+        prefixIntervalMass
+          (matrixColumnFalseCount c
+            ((Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+              reflectedSigma35 reflectedSigma25).exec (input t)))
+          (clippedFlowProfileCuts 4096 bounds t c p.val)
+          (clippedFlowProfileCuts 4096 bounds t c (p.val + 1))) =
+    (Finset.univ.sum fun t : Fin tiles =>
+      Finset.univ.sum fun b : Wire =>
+        if S.orderEmbOfFin rfl
+            (Fin.mk (t.val * 262144 + b.val) (by
+              have hb := b.isLt
+              have ht := hcomplete t
+              omega)) ∈ destinationPiece (ports := 8) S boundary left rightStart
+              (some child) ∧
+            (Chvatal.D2PhysicalPackTwoGrid.physicalPackTwoGridNet
+              reflectedSigma35 reflectedSigma25).exec (input t) b = false
+        then 1 else 0) := by
+  apply Finset.sum_congr rfl
+  intro t ht
+  exact reflected_core_ordered_tile_child_false_count_eq_profile
+    S bounds t p child boundary left rightStart (input t) (hcomplete t) hlo hhi
+
 end Chvatal.D2ClippedCellRankInterval

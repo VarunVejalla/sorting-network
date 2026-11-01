@@ -288,6 +288,16 @@ bridge: still aggregate tile identities, derive cuts and tags from the actual
 sender routing, relate source false mass to the flow deficit, include parent
 tags, and cover ragged/startup/exceptional roles.
 
+The identities now compose over any finite family of complete sender-rank
+tiles via `reflected_core_complete_tiles_child_false_count_eq_profile`. This
+is an exact sum over actual reflected-core false wires whose ordered sender
+addresses lie in the tagged child destination. It deliberately stops at the
+last complete 262144-wire tile; the residual rank suffix has no theorem yet.
+The ordinary-sender bridge can now focus on (a) proving the schedule's static
+rank intervals and receiver labels agree with these tile cuts, (b) covering
+the ragged suffix, and (c) connecting total physical false mass to the flow
+deficit.
+
 `D2StrongDeficitPropagation.lean` already proves the sharp local affine
 profile transition for ordinary eight-child updates. The profile is
 `G = 0 ∧ 256*pi <= c`, or
