@@ -528,11 +528,14 @@ is inactive, the whole sender is routed to its parent and the child pieces are
 empty. `D2PhysicalBagState.lean` now proves the matching conditional
 conservation fact, `d2FlowStage_active_bot_rise_static_bag_empty`. The fit
 premise is reduced by `d2FlowNodeStaticHoles_fit_of_child_endpoint_bounds`:
-child invariants put each hole in its native slot, so only the first and last
-child-front bounds at the updated parent endpoints remain. These are the two
-spatial endpoint reserves still to derive from reachable schedule history.
-Identifying the receiver's union of parent, retained-self, and child-up ports
-with its next-stage static bag also remains open.
+child invariants put each hole in its native slot, so it suffices to bound the
+updated parent fronts by one native child width and check the first/last
+endpoint holes. Each endpoint check is a disjunction: that endpoint child is
+saturated, or its root front reaches past the updated parent front. The
+existing `D2CoreProviderReserveStep.lean` botRise predecessor reserve appears
+relevant to the saturation branch, but no adapter to this static-fit contract
+is proved yet. The exact receiver union (parent down-port, retained self bag,
+and child up-ports) equaling its next-stage static bag remains open.
 
 `D2OrdinaryRankRouting.lean` already proves the generic local destination-piece
 partition for an abstract sender set; do not reprove it.
