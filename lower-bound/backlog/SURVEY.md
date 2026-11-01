@@ -321,6 +321,7 @@ success probability. Items 2, 3 and 8 are the attempts on the constant itself.
      certificate, so mixed polarity adds no witness. `tr` breaks at `0.29 n` at `d = 64` from single strays. A one-polarity
      tree family fails on `tr` and the barrier, but it only tests one network (`docs/kahale-worst-case-inputs.md`).
 3. **LB-03 — Coupled information and certificate tradeoff.**
+   - *Follow-up LB-03 (2026-10-31): rejected, no coefficient.* Total waste of a sorter is fixed by (n, d), the marginal form is false, and the global form is the LB-26 charging lemma (`docs/kahale-information-screen.md`).
    - *Why:* the counting bound (2) and Kahale (3.27) are separately tight. Kahale-extremal schedules may waste many
      comparisons (low `h_g`). A coupled inequality "height slack + information slack ≥ ..." could beat both, whereas
      route 7 needed a universal saving.
@@ -351,6 +352,7 @@ success probability. Items 2, 3 and 8 are the attempts on the constant itself.
    - *First test:* map the paper's §3–4 onto existing modules and list the missing lemmas.
    - *Risk:* a long proof with its own optimization; the depth coefficient is unchanged.
 8. **LB-08 — Scale-compatible nonlinear witness charge at varying baselines.**
+   - *Follow-up LB-08 (2026-10-31): parked, no coefficient.* The central charge is rejected with exact certificates; ranks {2..n-2} are finite fits at n = 6, 7 with no weight rule (`docs/kahale-signed-charge-screen.md`).
    - *Why:* signed quadratic cross-image charges are the only route that reproduced exact small depths (route 12).
      The low-rank barrier recommends conditional pair routing at central Hamming weights.
    - *First test:* exact 6–7-wire screens of pair routing at central baselines. Does a quadratic charge with unit
