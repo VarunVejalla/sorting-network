@@ -692,7 +692,8 @@ contraction.
 process children first; an inactive node keeps its set and absorbs child
 up-ports; an active node empties itself, adds its down-ports to child results,
 and returns its up-port. The active/inactive root equations, empty up-port for
-inactive nodes, and flattening lemma for adding a down-port are kernel-checked.
+inactive nodes, flattening lemma for adding a down-port, and finite-union
+distributivity/congruence lemmas are kernel-checked.
 This makes the intended physical update concrete, but does not yet prove
 global coverage/disjointness or cardinality agreement with the flow. Next add
 the recursive partition invariant and prove its one-stage preservation under

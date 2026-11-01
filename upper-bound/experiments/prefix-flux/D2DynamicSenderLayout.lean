@@ -154,4 +154,25 @@ theorem d2SenderLayoutWires_setRoot_union {Wire : Type*} [DecidableEq Wire]
       d2SenderLayoutRootBag, Finset.union_assoc, Finset.union_left_comm,
       Finset.union_comm]
 
+theorem d2SenderLayoutBiUnion_union {Wire : Type*} [DecidableEq Wire]
+    (left right : Fin 8 -> Finset Wire) :
+    (Finset.univ.biUnion left) ∪ (Finset.univ.biUnion right) =
+      Finset.univ.biUnion (fun j => left j ∪ right j) := by
+  classical
+  ext x
+  simp only [Finset.mem_union, Finset.mem_biUnion,
+    Finset.mem_univ, true_and, exists_or]
+
+theorem d2SenderLayoutBiUnion_congr {Wire : Type*} [DecidableEq Wire]
+    (left right : Fin 8 -> Finset Wire) (heq : forall j, left j = right j) :
+    Finset.univ.biUnion left = Finset.univ.biUnion right := by
+  classical
+  ext x
+  simp only [Finset.mem_biUnion, Finset.mem_univ, true_and]
+  constructor
+  · rintro ⟨j, hx⟩
+    exact ⟨j, by simpa only [heq j] using hx⟩
+  · rintro ⟨j, hx⟩
+    exact ⟨j, by simpa only [← heq j] using hx⟩
+
 end Chvatal.D2OrdinaryRankRouting
