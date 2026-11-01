@@ -17,6 +17,15 @@ it does not identify their routed wire sets with next-stage physical bags or
 prove a whole-tree invariant. Exceptional roles, receiver tags, and the global
 rank-profile recurrence remain open.
 
+The same file now proves `d2FlowStage_active_ordinary_clamped_fit_of_inputs`:
+for any ordinary active node satisfying the stage-input contract and flow-tree
+invariant, its post-update clamped child holes fit within the updated parent
+fronts. The proof uses endpoint-reserve fit, the exact cut-support identity
+(only the first and last child receive cuts), and native child-capacity bounds.
+This gives a root-level fit provider that does not assume canonical saturated
+marker order. It does not prove clamped fit for each recursively updated child,
+so the full tree-preservation induction remains open.
+
 `D2BotRiseStaticFit.lean` now proves that every candidate-run `botRise`
 snapshot has clamped static-hole fit both before and after the update, for any
 selected path satisfying the schedule window. Before the update, the saturated
