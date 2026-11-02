@@ -22,7 +22,8 @@ Do not extend tile-scatter bridges. Section 7 of that note tests the sender-wide
 provider. Existing row-scramble bounds are rejected at height 4096. At height 8192
 (depth 273) section 9 gives the exact closure: `B` must be at most 14.9 rows at
 attack-level capture, against 17.7 certified, so the stage is retired on current
-bounds. The next step is to cost a schedule with fringe at least 17.
+bounds. Section 10 finds no `Par` geometry under 300 with a stable fringe large
+enough to close, so the next step is to pin down the true worst-case bulk leak `B`.
 The older text below is kept for its theorem inventory, and its "next gate"
 statements are superseded.
 

@@ -6,7 +6,8 @@ at every sender. No spatial invariant can hold for it on arbitrary inputs. Secti
 4 states the invariant for a sender-wide stage, which is the form that can still
 hold. That form is a specification only: its provider is not proved. Section 7
 reports the first test of it. Section 9 gives the exact closure and the current
-verdict on the three-sort `(3,3,2)` stage at height 8192.
+verdict on the three-sort `(3,3,2)` stage at height 8192. Section 10 costs a larger
+fringe and finds no schedule geometry under 300 that closes.
 
 Evidence labels: **hand** (short argument given here, not kernel-checked),
 **model** (exact finite computation), **crude** (order-of-magnitude budget).
@@ -501,7 +502,113 @@ depth cost, so it does not change the coefficient, but it is not proved.
 
 **Next decision.** Stop work on this stage and do not add Lean bridges for it. The two
 options left are a non-union bulk bound, or a schedule with fringe at least 17 whose
-reserves still close. Costing the fringe change is cheaper and comes first.
+reserves still close. Section 10 costs the fringe change and closes that option.
 
 Reproduce with `python d2_capture_curve.py --out curve.json`, then
 `python d2_exact_closure.py --depth 40 --attack curve.json --startup-bulk 1 --bisect`.
+
+## 10. Fringe costing
+
+**Verdict: no D2 schedule geometry under depth 300 gives a stable fringe large enough
+to close.** Geometries with a bounded fringe all have a fringe near 15 rows, and all
+fail closure at the certified `B`. Geometries with a larger formula fringe either drift
+toward zero fringe with depth or have no valid flow. The fringe option from section 9
+is closed for this schedule family.
+
+### The fringe is set by geometry, not by the quota
+
+For `Par(x,y,z)`, with `k = 2^x`, `A = 2^y`, `nu = 2^-z` and sender height
+`m = 2^mu`, the up-quota is `(k*A*nu - 1) c / (k*A)^2`. Raising it raises the
+children's up-flow, and so the parent allocations, in the same proportion. So for a bag
+near capacity
+
+```text
+f = m (k*A*nu - 1) / (2 (k*A)^2),   feed = 1/(A*nu),   gain = 1/nu^2,
+price = (x+y)/(x*z) * 3 * mu(mu+1)/2.
+```
+
+(hand.) For `(3,3,2)` at `m = 8192` this is exactly 15. No quota choice gives fringe
+17 there, and `m = 2^14` costs 315.
+
+### Flow check
+
+The formula holds only while `a/c` stays bounded. `d2_geometry_scan.py` builds each
+geometry under 300 on `FlowDAG` (sparse-bottom routing) and reports the worst `mid`
+fringe among senders of at least 4000 columns. Evidence is at model level.
+
+| Class | Geometries | Behaviour |
+|---|---|---|
+| Bounded | `(2,3,2)` 2^12, `(3,3,2)` 2^13, `(4,3,2)` 2^14 | fringe 13.5, 14.7, 15.3 at depths 10 and 20 |
+| Drifts | every runnable `A=4`, `nu=1/2`, or `nu=1/8` geometry | worst fringe falls about like `1/d` |
+| No flow | `A=2` with `nu=1/4`; most `nu=1/8` | conservation fails at the frontier |
+
+Drift examples, worst `mid` fringe at depths 10, 20, 30, 40:
+
+| Geometry | Price | Formula `f` | Worst fringe by depth |
+|---|---:|---:|---|
+| `(2,1,1)` 2^11 | 297 | 48 | 43.6, 27.7, 19.7, 15.3 |
+| `(2,2,2)` 2^13 | 273 | 48 | 45.5, 26.0, 17.6, 13.3 |
+| `(4,1,1)` 2^12 | 292.5 | 30 | 27.1, 22.6, 19.4, 17.2 |
+| `(3,1,1)` 2^11 | 264 | 28 | 24.3, 18.4, 14.2, 11.9 |
+| `(3,2,2)` 2^13 | 227.5 | 28 | 24.4, 16.9, 12.6 (depth 30) |
+
+`(3,2,2)` matches the lemma in `D2-SPARSE-BOTTOM-300.md`, where `a/c` grows linearly
+in `d`. The coefficient is asymptotic, so a fringe that falls with depth cannot close
+at any fixed `B`.
+
+The `A=2` flows break early. For `(2,1,2)` at 2^13, the worst `mid` allocation is
+1.2, 1.8, 1.9, 3.3, 6.0 and 7.3 times capacity at stages 4 to 10. Its fringe falls
+from 64 to 8.8 rows, and at stage 11 a `topDesc` node holds 6.1 times capacity with a
+nonzero deficit, which the flow cannot route. So the formula fringe of 64 never
+exists.
+
+### Closure in the bounded family
+
+`d2_exact_closure.py --params ... --rows ...`, attack-level capture, startup leak 1 row
+(0.25 for `k = 16`):
+
+| Geometry | Price | Closing `B` in rows | Certified `B` in rows | Miss |
+|---|---:|---:|---:|---:|
+| `(3,3,2)` 2^13 | 273 | 14.94 (depth 40) | 17.7 | 1.18 times |
+| `(2,3,2)` 2^12 | 292.5 | 10.34 (depth 32) | 14.9 | 1.44 times |
+| `(4,3,2)` 2^14 | 275.6 | 11.58 (depth 20) | 21.06 | 1.82 times |
+
+Certified `B` at `n = 4000` columns by height: 2^9 8.83, 2^10 10.51, 2^11 12.51,
+2^12 14.9, 2^13 17.7, 2^14 21.06 rows. `(3,3,2)` stays the closest case.
+
+### What larger fringes would have bought
+
+The attack curve near larger fringes closes up to about `f - 8` rows at gain 16:
+
+| Fringe | 20 | 24 | 28 | 32 | 40 | 48 | 56 | 64 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Closing incoming mass `i0*` | 12.3 | 16.2 | 20.0 | 23.8 | 31.8 | 39.8 | 47.7 | 55.8 |
+
+At formula fringes, `(2,1,2)` 2^13 would allow capture 20.7 times worse than attack.
+`(4,1,2)` 2^14 would allow 3.4 times, `(3,1,2)` 2^13 2.7, `(3,2,2)` 2^13 1.8 and
+`(2,2,2)` 2^12 1.4. None of these fringes survives the flow check. The certified
+one-round bound fails at all of them anyway: its best `i - 16E` is -26 to -61 rows,
+because its entropy cost does not fall with the fringe.
+
+### Limits
+
+- Flow checks are finite depths, at most 40, and use only the `Par` family with its
+  Chvatal schedule. A different schedule, port design or allocation rule is not
+  covered.
+- Attack curves at `f >= 20` use two seeds and `n = 1000`.
+- The closure limits for `(2,3,2)` and `(4,3,2)` come from fewer depths than
+  `(3,3,2)`.
+
+**Next decision.** Inside the `Par` family, the sender-wide three-sort stage now
+depends only on the true worst-case `B` at height 8192. Closure needs `B` at most
+14.9 rows with capture at attack level, or about 10 rows with capture up to 2.2 times
+attack. The best explicit attack reaches 1.9 rows, and the first-moment limit is
+about 14.2. The decisive next step is a stronger bulk attack, or a structural lower
+bound on `B`. If worst-case `B` is at least about 14.9 rows, this stage is dead for any
+proof. If it is near the mean-field 2 rows, a non-union bulk bound plus a two-round
+capture certificate within a few times attack is the route.
+
+Reproduce with `python d2_geometry_scan.py`, `python d2_geometry_scan.py --flow 2 1 1 11
+--depths 10 20 30 40`, and
+`python d2_exact_closure.py --depth 32 --params 2 3 2 --rows 4096 --attack curve.json
+--startup-bulk 1 --bisect --bisect-range 6 22`.

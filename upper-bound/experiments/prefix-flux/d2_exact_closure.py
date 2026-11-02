@@ -62,7 +62,8 @@ class Contract:
         i = max(i, 0.0)
         scale = self.startup_bulk if self.stage < self.startup_stages else self.bulk
         bulk = scale * math.exp(-gap / self.sigma)
-        if i <= 40 and y <= 64:
+        top = self.table.fringes[-1] + 16 if self.table else 64
+        if y <= top and i <= y + 40:
             excess = max(self.capture(i, y) - max(i - y, 0.0), 0.0)
             bulk = min(bulk, excess * self.capture_scale)
         return bulk * (self.sides[side] if side is not None else 1.0)
@@ -93,24 +94,31 @@ class Table:
         return pts[-1][1] + (i - pts[-1][0])
 
     def value(self, i, y):
-        lo, hi = self.fringes[0], self.fringes[-1]
+        fr = self.fringes
+        lo, hi = fr[0], fr[-1]
         if y <= lo:
             return self.curve(lo, i) + (lo - y)
         if y >= hi:
-            top, below = self.curve(hi, i), self.curve(hi - 1, i)
-            ratio = min(top / below, 1.0) if below > 0 else 1.0
-            return max(top * ratio ** (y - hi), i - y, 0.0)
-        a = int(math.floor(y))
-        b = min(a + 1, hi)
-        w = y - a
+            prev = fr[-2] if len(fr) > 1 else hi
+            top, below = self.curve(hi, i), self.curve(prev, i)
+            ratio = min(top / below, 1.0) if below > 0 and prev < hi else 1.0
+            step = (y - hi) / (hi - prev) if prev < hi else 0.0
+            return max(top * ratio ** step, i - y, 0.0)
+        b = next(f for f in fr if f >= y)
+        a = max(f for f in fr if f <= y)
+        if a == b:
+            return self.curve(a, i)
+        w = (y - a) / (b - a)
         return (1 - w) * self.curve(a, i) + w * self.curve(b, i)
 
 
 class Closure:
-    def __init__(self, depth, params=(3, 3, 2), scale=ROWS):
+    def __init__(self, depth, params=(3, 3, 2), scale=ROWS, sparse_bottom=False):
+        self.rows = scale
         self.p = Par(*params)
         self.d = depth
-        self.flow = FlowDAG(depth, scale=scale, p=self.p).build()
+        self.flow = FlowDAG(depth, scale=scale, p=self.p,
+                            sparse_bottom=sparse_bottom).build()
         self.T = len(self.flow.rows)
         self.N = self.p.k ** depth * scale
 
@@ -167,7 +175,8 @@ class Closure:
         log = []
         for t in range(self.T):
             self.measuring = t <= last + 1
-            if stop_ratio and worst['ratio'] > stop_ratio:
+            if stop_ratio and (worst['ratio'] > stop_ratio or len(D) > 50000):
+                worst['ratio'] = max(worst['ratio'], stop_ratio + 1)
                 break
             contract.stage = t
             new = {}
@@ -201,13 +210,13 @@ class Closure:
         assert -ideal <= defect <= a - ideal, (key, t, defect, ideal, a)
         zero_side = 2 * ideal + defect <= a
         low_keys = ideal + defect if zero_side else a - ideal - defect
-        n = a / ROWS
+        n = a / self.rows
         low = low_keys / n
         on_spine = key in spine
         role = 'topDesc' if t == 0 else self.p.role(self.d, lev, t)
         if (self.measuring and not on_spine and role in OFF_SPINE_ROLES and pi < a
-                and a >= MIN_COLUMNS * ROWS):
-            f = ROWS * pi / (2 * a)
+                and a >= MIN_COLUMNS * self.rows):
+            f = self.rows * pi / (2 * a)
             if low / f > worst['ratio']:
                 worst.update(rows=low, ratio=low / f, role=role, t=t, lev=lev, f=f)
         side = None if on_spine else 0 if idx * self.flow.native(lev) >= q else 1
@@ -267,6 +276,9 @@ def worst_over(c, contract, qs=None, stop_ratio=None):
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--depth', type=int, default=20)
+    ap.add_argument('--params', type=int, nargs=3, default=[3, 3, 2])
+    ap.add_argument('--rows', type=int, default=ROWS, help='sender height m')
+    ap.add_argument('--sparse-bottom', action='store_true')
     ap.add_argument('--bulk', type=float, default=17.7, help='wrong rows per sender')
     ap.add_argument('--sigma', type=float)
     ap.add_argument('--startup-bulk', type=float)
@@ -278,10 +290,11 @@ def main():
     ap.add_argument('--capture-scale', type=float, default=1.0)
     ap.add_argument('--bisect-capture', action='store_true',
                     help='largest multiple of the capture curve that closes at --bulk')
+    ap.add_argument('--bisect-range', type=float, nargs=2, default=[2.0, 40.0])
     ap.add_argument('--bisect', action='store_true',
                     help='largest bulk with every off-spine mass below its fringe')
     args = ap.parse_args()
-    c = Closure(args.depth)
+    c = Closure(args.depth, tuple(args.params), args.rows, args.sparse_bottom)
     table = Table(args.attack) if args.attack else None
     contract = Contract(args.bulk, escape=args.escape, table=table, sigma=args.sigma,
                         startup_bulk=args.startup_bulk,
@@ -304,7 +317,7 @@ def main():
         print(f"bulk {args.bulk}: largest closing capture scale about {lo:.3f}")
         return
     if args.bisect:
-        lo, hi = 2.0, 40.0
+        lo, hi = args.bisect_range
         for _ in range(9):
             mid = (lo + hi) / 2
             trial = Contract(mid, escape=args.escape, table=table, sigma=args.sigma,
