@@ -247,7 +247,7 @@ height. It is not an impossibility for random scrambles at all heights.
 | Certified bulk leak `B` | 0.00363 (14.9 rows) | walk bound, `na_precision.py` |
 | Mean-field bulk leak | 0.00041 (1.7 rows) | floor |
 | Gate mass `B/2` | 7.43 rows | fringe is 6 to 8 rows |
-| Floor `E/a` at gate mass, `f = 6, 7, 8` | 0.20, 0.095, 0.032 | model; need 0.0078 |
+| Floor `E/a` at gate mass, `f = 6, 7, 8` | 0.20, 0.096, 0.032 | model; need 0.0078 |
 | Certified one-round `E/a` | 0.55, 0.50, 0.45 | `moderate_tail.py` |
 | Certified two-round F2 | no witness at `J >= 2`, or at `i >= 1/256` | grid search |
 | Any-scramble floor on F2 `J` | 84, 120, 165 | hand, pyramid input |
@@ -277,7 +277,7 @@ grid, and a certificate assertion counted as a miss. The floor is exact only as
 
 **Height 8192 survives on floors only.** It costs `3*91 = 273`, leaving 27 units
 for all other per-stage work and cleanup. Certified `B = 0.00216`, so gate mass is
-8.85 rows against a 13 to 15 row fringe. The mean-field floor is `1.3e-5` at
+8.85 rows against a 13 to 15 row fringe. The mean-field floor is `1.4e-5` at
 `f = 13`, and the pyramid floor is `J <= 560`. Section 8 shows that this mean-field
 floor is far too optimistic. Certified one-round capture is 0.33 at `f = 13`, about
 40 times too large. Height `2^14` costs 315 and does not fit.
