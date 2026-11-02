@@ -33,8 +33,9 @@ Height 4096 is rejected for existing tail bounds, and at height 8192 the capture
 gate is false for sampled random scrambles at the certified bulk mass (sections 7
 to 9 of that note). The exact closure retires the three-sort `(3,3,2)` stage at
 height 8192 on current bounds, and section 10 finds no other `Par` geometry under
-300 that closes. Next, pin down the true worst-case bulk leak `B` at height 8192. No
-further Lean bridge until that is decided; the text below describes the earlier
+300 that closes. Section 11 parks the stage: no union proof can bring the bulk leak
+low enough, and the attack does not show it is high. Reopen only with a non-union
+bulk bound. No further Lean bridge for it; the text below describes the earlier
 tile-based plan.
 
 The candidate is a `(3,3,2)` D2 schedule with a reflected physical sorting

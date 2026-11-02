@@ -9,14 +9,19 @@ so `B = B_rows / m` is the quantity bounded by na_precision.py. Every reported v
 comes from an exact run of the heights, so it is a lower bound on the worst case for
 that scramble pair.
 
-The search fixes a final half S of the columns. Each key is priced by whether its
-exact cell chain lands in S. In turn, each input column re-picks its height over a
-window to maximize its prefix value. A middle column is valued by the concave
-majorant of its walk in S, so crossing a bad cell on the way to a better height is
-priced correctly. Mass may drift; the leak is measured against the actual mean, so
-this only moves the threshold.
+Two-level attack (default). Fix a final half T. Middle column v then has a walk
+W2_v, and the final excess on T is exactly sum_v W2_v(middle_v). Put v in a middle
+set S when its walk rises across a gap around m/2. Round 1 prices cells +1 into S
+and -1 elsewhere, and every input column climbs its full walk, which moves S up and
+the rest down by about 72 rows. T is then reset to the top half of the final, and
+the steps repeat. `--anneal` then flips S members one at a time, scored by the
+exact leak. `--local` runs the older single-window search, which is much weaker.
+
+Mass may drift; the leak is measured against the actual mean, so this only moves
+the threshold.
 
     python d2_bulk_attack.py --columns 1000 --rows 8192
+    python d2_bulk_attack.py --columns 1000 --anneal 8000
 """
 import argparse
 import math
@@ -121,6 +126,50 @@ def attack(stage, sweeps, seed, window=256, spread=0, radius=64):
     return max(history), history
 
 
+def climb(stage, price):
+    """Every input column takes the best height on its full walk of cell prices."""
+    walk = np.vstack([np.zeros(stage.n), np.cumsum(price[stage.s1], axis=0)])
+    return np.argmax(walk, axis=0)
+
+
+def two_level(stage, seed, gap=128, alternations=4):
+    rng = np.random.default_rng(seed + 7)
+    n, m = stage.n, stage.rows
+    i = m // 2
+    member = rng.permutation(n) < n // 2
+    best, best_up = 0.0, None
+    for _ in range(alternations):
+        target = np.where(member, 0.5, -0.5)
+        walk2 = np.vstack([np.zeros(n), np.cumsum(target[stage.s2], axis=0)])
+        inc = walk2[i + gap] - walk2[i - gap]
+        up = inc > np.median(inc)
+        middle, final = stage.run(climb(stage, np.where(up, 1.0, -1.0)))
+        if leak(final) > best:
+            best, best_up = leak(final), up.copy()
+        member = final > np.median(final)
+    return best, best_up
+
+
+def anneal(stage, up, flips, seed, start_temp=0.05):
+    rng = np.random.default_rng(seed + 11)
+    score = leak(stage.run(climb(stage, np.where(up, 1.0, -1.0)))[1])
+    best, best_up = score, up.copy()
+    for k in range(flips):
+        temp = start_temp * (1 - k / flips) + 1e-4
+        c = rng.integers(stage.n)
+        up[c] = ~up[c]
+        trial = leak(stage.run(climb(stage, np.where(up, 1.0, -1.0)))[1])
+        if trial >= score or rng.random() < np.exp((trial - score) / temp):
+            score = trial
+            if score > best:
+                best, best_up = score, up.copy()
+        else:
+            up[c] = ~up[c]
+    check = leak(stage.run(climb(stage, np.where(best_up, 1.0, -1.0)))[1])
+    assert abs(check - best) < 1e-9
+    return best
+
+
 def first_moment_limit(rows):
     """Heuristic leak below which a union over inputs and column sets is vacuous.
 
@@ -150,6 +199,8 @@ def main():
     ap.add_argument('--spread', type=int, default=0)
     ap.add_argument('--radius', type=int, default=64)
     ap.add_argument('--limit', action='store_true', help='print the first-moment limit')
+    ap.add_argument('--local', action='store_true', help='older single-window search')
+    ap.add_argument('--anneal', type=int, default=0, help='flips after the two-level start')
     args = ap.parse_args()
     if args.limit:
         first_moment_limit(args.rows)
@@ -157,6 +208,14 @@ def main():
     for seed in args.seeds:
         stage = Stage(args.columns, args.rows, seed)
         flat = np.random.default_rng(seed).integers(0, args.rows, args.columns)
+        if not args.local:
+            value, up = two_level(stage, seed)
+            line = f'two-level leak {value:.2f} rows'
+            if args.anneal:
+                line += f', annealed {anneal(stage, up, args.anneal, seed):.2f} rows'
+            print(f'n={args.columns} m={args.rows} seed {seed}: {line}; random input '
+                  f'{leak(stage.run(flat)[1]):.2f} rows', flush=True)
+            continue
         value, history = attack(stage, args.sweeps, seed, args.window, args.spread,
                                 args.radius)
         typical = leak(stage.run(flat)[1])

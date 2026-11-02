@@ -23,7 +23,9 @@ provider. Existing row-scramble bounds are rejected at height 4096. At height 81
 (depth 273) section 9 gives the exact closure: `B` must be at most 14.9 rows at
 attack-level capture, against 17.7 certified, so the stage is retired on current
 bounds. Section 10 finds no `Par` geometry under 300 with a stable fringe large
-enough to close, so the next step is to pin down the true worst-case bulk leak `B`.
+enough to close. Section 11 puts the true worst-case `B` between 3.79 rows (attack)
+and about 14.0 (union limit), shows no union proof can close the stage, and parks
+it. Reopen only with a non-union bulk bound of about 12 rows or less.
 The older text below is kept for its theorem inventory, and its "next gate"
 statements are superseded.
 

@@ -7,7 +7,8 @@ at every sender. No spatial invariant can hold for it on arbitrary inputs. Secti
 hold. That form is a specification only: its provider is not proved. Section 7
 reports the first test of it. Section 9 gives the exact closure and the current
 verdict on the three-sort `(3,3,2)` stage at height 8192. Section 10 costs a larger
-fringe and finds no schedule geometry under 300 that closes.
+fringe and finds no schedule geometry under 300 that closes. Section 11 bounds the
+true worst-case bulk leak and parks the route.
 
 Evidence labels: **hand** (short argument given here, not kernel-checked),
 **model** (exact finite computation), **crude** (order-of-magnitude budget).
@@ -608,7 +609,90 @@ bound on `B`. If worst-case `B` is at least about 14.9 rows, this stage is dead 
 proof. If it is near the mean-field 2 rows, a non-union bulk bound plus a two-round
 capture certificate within a few times attack is the route.
 
+Section 11 takes this step.
+
 Reproduce with `python d2_geometry_scan.py`, `python d2_geometry_scan.py --flow 2 1 1 11
 --depths 10 20 30 40`, and
 `python d2_exact_closure.py --depth 32 --params 2 3 2 --rows 4096 --attack curve.json
 --startup-bulk 1 --bisect --bisect-range 6 22`.
+
+## 11. True worst-case bulk leak at height 8192
+
+**Verdict: narrowed, not closed, and the route is parked.** For sampled random
+scrambles, the worst-case bulk leak lies between 3.79 rows (attack) and about 14.0
+rows (the first-moment limit of a two-stage union proof, heuristic). So:
+
+- The stage is not dead on `B`. The attack is 3.9 times below the 14.9 rows at which
+  no proof could close it.
+- No union proof saves it. Its best bulk value, about 14.0 rows, leaves capture a
+  multiple of about 1.16 times attack, and capture's own union limit is about 1.3 to
+  1.7 times attack at the masses involved.
+- Closing needs a bulk bound of about 12 rows or less (rough interpolation), which
+  must beat the union limit. Such a bound is a research problem in its own right: it
+  is a maximum over correlated sums, like a spin-glass ground state.
+
+### The exact decomposition
+
+Fix a final half `T`. Middle column `v` then has a walk `W2_v`, and the final excess
+on `T` is exactly `sum_v W2_v(middle_v)`. The leak therefore depends on two things:
+how far round 1 can move each middle column, and how well that matches the walks.
+
+Round 1 has one walk per input column. If cells landing in a middle half `S` are
+priced +1 and the rest -1, every input column climbs its full walk. This is the move
+the certified round-1 bound charges for, and it shifts `S` up and the rest down by
+about 72 rows.
+
+### Where the certified 17.7 comes from
+
+| Round-1 middle spread (mean shift) | Rows | Evidence |
+|---|---:|---|
+| Typical half `S` | 71.7 | exact walk law |
+| Attack, alternation | 75 to 81 | `n = 100` to 4000 |
+| Attack, annealing over `S` | 95 | `n = 100` and 200 |
+| First-moment limit, union over `S` | 122.8 | exact law, `d2_bulk_limits.py` |
+| Certified (`na_precision.py`) | 192 | |
+
+| Round-1 spread fed into round 2 | 80 | 95 | 123 | 141 | 192 |
+|---|---:|---:|---:|---:|---:|
+| Union over `T`, free middle, leak in rows | 11.16 | 12.21 | 13.99 | 14.89 | 17.44 |
+| Typical `T`, free middle | 7.51 | 8.26 | 9.36 | 9.90 | 11.39 |
+
+At the certified spread, round 2 reproduces the certified leak (17.44 against 17.7).
+So `na_precision.py` is, in effect, a union over `T` given a round-1 spread of 192,
+and that spread is 1.56 times its own union limit. A tight union certificate for
+round 1 would give about 14.0 rows. Reaching 14.9 needs a certified spread of 141 or
+less.
+
+### Attacks on the full leak
+
+| Attack | Leak in rows |
+|---|---:|
+| Random input | 1.8 |
+| Single-window local search (section 9) | 1.9 |
+| Two-level, `n = 1000` and 4000 | 3.2 to 3.7 |
+| Two-level, then key-level polishing | 3.79 |
+| Annealing the price set, `n = 200` / 1000 | 3.24 / 3.02 (from 2.38 / 2.83) |
+| Ideal round 1 (any middle at spread 80), alternating `T` | 5.09 |
+
+All are exact runs, so each is a lower bound on the worst case for its scramble pair.
+The last row is not realizable; it bounds what perfect steering could add at the
+attained spread. Attack values do not fall with `n` (3.69 at `n = 4000`).
+
+### Limits
+
+- Both first-moment limits treat columns as independent given the set. They are
+  heuristic levels, not theorems, and the true maximum over sets lies between the
+  annealed value and the limit.
+- The capture union-limit ratios come from section 8 at `f = 13`.
+- The 12-row threshold interpolates the capture-slack table of section 9.
+
+**Next decision.** Park the sender-wide three-sort `(3,3,2)` stage. Both cheap
+options are spent: no geometry under 300 gives more fringe (section 10), and no
+union proof brings `B` low enough. Reopen it only with a structural bulk bound below
+the union limit, for example one that controls the maximum over middle sets by
+chaining or a second moment, rather than by a union. A tight union certificate of
+round 1 alone (192 to 123) is a real improvement, but it cannot close the stage. The
+coefficient is unchanged: best proved 789.75.
+
+Reproduce with `python d2_bulk_limits.py`, `python d2_bulk_attack.py --columns 1000`
+and `python d2_bulk_attack.py --columns 200 --anneal 8000`.

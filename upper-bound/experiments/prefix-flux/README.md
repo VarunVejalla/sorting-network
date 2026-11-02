@@ -12,7 +12,8 @@ the capture gate at the certified bulk mass; the exact closure then retires this
 stage on current bounds). Scripts: `d2_cut_crossing_gate.py`,
 `d2_sender_tail_gate.py`, `d2_f2_fringe_scan.py`, `d2_capture_attack.py`,
 `d2_capture_limits.py`, `d2_capture_curve.py`, `d2_exact_closure.py`,
-`d2_bulk_attack.py`, `d2_geometry_scan.py`. The table below predates it.
+`d2_bulk_attack.py`, `d2_geometry_scan.py`, `d2_bulk_limits.py`. The stage is
+parked (section 11). The table below predates it.
 
 ## Source map
 
