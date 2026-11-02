@@ -198,9 +198,9 @@ adopted to avoid, and it comes back unchanged.
 
 Do not add Lean bridges to the tile-scatter stage. Decide the provider first:
 
-**Claim to test.** There is a sender-wide network of depth at most about 250 per
-stage on `(3,3,2)` (or 300 on `(3,2,2)`, with cleanup still to be paid from either
-budget) satisfying `Sep(tau)` with `eps` near `1/512` at a fringe near `1/512`, for
+**Claim to test.** There is a sender-wide network of depth below 300 per stage on
+`(3,3,2)` (or below 360 on `(3,2,2)`, at rate `5/6`), with cleanup still to be paid
+from either budget, satisfying `Sep(tau)` with `eps` near `1/512` at a fringe near `1/512`, for
 all sender sizes.
 
 **Rejects the route** if the available row-scramble tail bounds at height 4096 miss

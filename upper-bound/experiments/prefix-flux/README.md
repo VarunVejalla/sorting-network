@@ -5,6 +5,10 @@ For the current mathematical status, read [HANDOFF.md](HANDOFF.md). The old
 chronological status log is retained as [STATUS-HISTORY.md](STATUS-HISTORY.md)
 and should be consulted only for provenance.
 
+**Current gate:** [D2-SPATIAL-INVARIANT.md](D2-SPATIAL-INVARIANT.md) shows the
+tile-scatter stage cannot sort and states the invariant for a sender-wide stage.
+`d2_cut_crossing_gate.py` reproduces the check. The table below predates it.
+
 ## Source map
 
 | Area | Start here | Purpose and current limit |
