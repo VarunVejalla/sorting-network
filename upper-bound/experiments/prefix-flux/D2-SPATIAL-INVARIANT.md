@@ -8,7 +8,8 @@ hold. That form is a specification only: its provider is not proved. Section 7
 reports the first test of it. Section 9 gives the exact closure and the current
 verdict on the three-sort `(3,3,2)` stage at height 8192. Section 10 costs a larger
 fringe and finds no schedule geometry under 300 that closes. Section 11 bounds the
-true worst-case bulk leak and parks the route.
+true worst-case bulk leak and parks the route. Section 12 shows spectral
+certificates cannot reopen it, and retires the stage.
 
 Evidence labels: **hand** (short argument given here, not kernel-checked),
 **model** (exact finite computation), **crude** (order-of-magnitude budget).
@@ -696,3 +697,61 @@ coefficient is unchanged: best proved 789.75.
 
 Reproduce with `python d2_bulk_limits.py`, `python d2_bulk_attack.py --columns 1000`
 and `python d2_bulk_attack.py --columns 200 --anneal 8000`.
+
+## 12. Spectral certificates of the bulk leak
+
+**Verdict: they fail, by a wide margin, and the three-sort `(3,3,2)` stage is
+retired.** Section 11 asked for a bulk bound of about 12 rows or less that beats the
+union. The most natural non-union proof is spectral: dominate each column's walk
+maximum by a quadratic form, sum over columns, and bound the sum by `lambda_max`. The
+best value any such certificate can reach (the floor below, rigorous for this class)
+is far above the union bound, in both rounds.
+
+### The floor
+
+Each column contributes `F(sigma) = max_k (x_k - mu k)`, where `x_k` is the walk's
+prefix sum over `sigma` in `{+-1/2}`. A spectral certificate uses
+`F <= sigma^T Q sigma + c0` on `R^K`. By the S-lemma this needs
+`Q >= 1_k 1_k^T / (4(mu k + c0))` for every prefix `k`. Since
+`lambda_max(sum_v Q_v)` is at least the average trace, the certificate is at least
+`mu D + c0 + tr(Q)/4` per side of the walk. Weak duality bounds `min tr Q` below by
+`(tr sqrt(Sigma_rho))^2` for any distribution `rho` over prefixes. Grouping rows
+into blocks of `b` drops constraints, so every value below is a lower bound, and it
+rises as `b` shrinks. This is the regime `n >> m`, where each walk visits distinct
+columns.
+
+| Quantity, rows | Block 64 | Block 32 | Block 16 | Union limit | Certified |
+|---|---:|---:|---:|---:|---:|
+| Round-1 spread | 190.1 | 209.2 | 228.5 | 122.8 | 192 |
+| Round-2 leak at spread 95 | 27.7 | 27.2 | 30.9 | 12.21 | |
+| Round-2 leak at spread 123 | 29.7 | 30.9 | 35.1 | 13.99 | |
+
+The round-2 rows minimise over a grid of `mu` and `c0`; at block 16 the optimum is
+interior in `mu` (0.14 to 0.17) and at `c0 = 0`. The block-8 round-1 floor is 247.9.
+
+### Why it fails
+
+A quadratic majorant has to dominate the walk at every scale at once, for every
+`sigma` in the ball. It cannot use the fact that one `sigma` cannot be atypical at all
+scales together, which the union bound gets from the exact walk-maximum law. That
+costs a factor that grows with the number of scales, like the Rademacher-Menshov
+logarithm, and the floor keeps rising as the grid is refined. Round 1, which has no
+drift penalty, covers 12 octaves and is hit hardest.
+
+### Limits
+
+- The floor covers certificates that dominate `F` on all of `R^K`, with
+  `lambda_max` of the summed forms. A degree-2 sum-of-squares certificate that uses
+  the cube constraints `sigma_i^2 = 1/4` with prefix-dependent diagonal shifts is not
+  formally excluded. A one-direction check shows a uniform diagonal shift does not
+  help for `mu < 1/4`.
+- Proofs that beat the first moment for such maxima are spin-glass interpolation
+  (Guerra-type) or counting only locally optimal halves. Both are research problems,
+  not certificates to compute.
+
+**Next decision.** Retire the sender-wide three-sort `(3,3,2)` stage. Its one live
+question was a non-union bulk bound of about 12 rows, and the natural non-union
+proof gives about 31. Sub-300 now needs a new stage design, not a sharper bound for
+this one. The coefficient is unchanged: best proved 789.75.
+
+Reproduce with `python d2_spectral_floor.py --block 16` (and `--block 64`, `32`).

@@ -34,9 +34,10 @@ gate is false for sampled random scrambles at the certified bulk mass (sections 
 to 9 of that note). The exact closure retires the three-sort `(3,3,2)` stage at
 height 8192 on current bounds, and section 10 finds no other `Par` geometry under
 300 that closes. Section 11 parks the stage: no union proof can bring the bulk leak
-low enough, and the attack does not show it is high. Reopen only with a non-union
-bulk bound. No further Lean bridge for it; the text below describes the earlier
-tile-based plan.
+low enough, and the attack does not show it is high. Section 12 retires it: spectral
+certificates of the bulk leak have a floor of about 31 rows, against the 12 needed.
+Sub-300 needs a new stage design. No further Lean bridge for this one; the text below
+describes the earlier tile-based plan.
 
 The candidate is a `(3,3,2)` D2 schedule with a reflected physical sorting
 core. Its fixed-core depth and local Boolean error bounds are promising, but

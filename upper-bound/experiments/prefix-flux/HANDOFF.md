@@ -25,7 +25,9 @@ attack-level capture, against 17.7 certified, so the stage is retired on current
 bounds. Section 10 finds no `Par` geometry under 300 with a stable fringe large
 enough to close. Section 11 puts the true worst-case `B` between 3.79 rows (attack)
 and about 14.0 (union limit), shows no union proof can close the stage, and parks
-it. Reopen only with a non-union bulk bound of about 12 rows or less.
+it. Section 12 shows spectral certificates cannot give that bound (their floor is
+about 31 rows against a 12-row target), and retires the stage. Sub-300 needs a new
+stage design.
 The older text below is kept for its theorem inventory, and its "next gate"
 statements are superseded.
 
