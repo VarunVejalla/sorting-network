@@ -13,9 +13,16 @@ an independent review or a Lean proof.
 The price is also corrected. Lean's `(3,3,2)` schedule has `tfD2 d = 3*d - 14`,
 rate 1, so its price is 276, not 230; rate `5/6` belongs to `(3,2,2)`.
 
-Do not extend tile-scatter bridges. The next gate is a sender-wide provider, as
-defined in that note. The older text below is kept for its theorem inventory,
-and its "next gate" statements are superseded.
+An independent review confirmed the non-sorting result and corrected its wording;
+the note carries those corrections. No whole-run network exists in Lean, so
+"tile-scatter" means the per-sender definition read at every sender, and
+sender-wide designs in `RAGGED-*.md` and `MODERATE-TAIL.md` are not covered.
+
+Do not extend tile-scatter bridges. Section 7 of that note tests the sender-wide
+provider. Existing row-scramble bounds are rejected at height 4096. Height 8192
+(depth 273) survives on floors only, and needs a certified capture bound about 40
+times better than the one-round bound. That is the next gate. The older text below
+is kept for its theorem inventory, and its "next gate" statements are superseded.
 
 State checked against the `sub300-structural` worktree on 2026-11-01. This is
 research status, not a proved improvement to the repository's accepted bound.

@@ -1,9 +1,11 @@
 # D2 spatial invariant: exact statement and first gate
 
-Status (2026-11-01): the gate **fails** for the stage network formalized so far.
-No spatial invariant can hold for it on arbitrary inputs. Section 4 states the
-invariant for a bag-wide stage network, which is the form that can still hold.
-That form is a specification only: its provider does not exist yet.
+Status (2026-11-01, corrected after independent review): the gate **fails** for
+the tile-scatter construction, meaning the formal per-sender tile network applied
+at every sender. No spatial invariant can hold for it on arbitrary inputs. Section
+4 states the invariant for a sender-wide stage, which is the form that can still
+hold. That form is a specification only: its provider is not proved. Section 7
+reports the first test of it.
 
 Evidence labels: **hand** (short argument given here, not kernel-checked),
 **model** (exact finite computation), **crude** (order-of-magnitude budget).
@@ -16,9 +18,19 @@ address interval. `D2-DYNAMIC-SENDER-SETS.md` defines the routing: sets are
 actual wire indices, with no wire permutation, and output slots are ordered by
 increasing address.
 
-The formal stage is `reflectedSenderFullTileStageNet` in
-`D2ClippedCellRankInterval.lean`. It runs the core independently on consecutive
-`T`-wire rank tiles of a sender, and comparators exist only inside a tile.
+The only stage network defined in Lean is `reflectedSenderFullTileStageNet` in
+`D2ClippedCellRankInterval.lean`. It is a one-sender definition: it runs the core
+independently on consecutive `T`-wire rank tiles, with comparators only inside a
+tile. No whole-run network exists in Lean. No source defines comparators at the
+root: every active root is `topDesc`, which has only a partition theorem, and root
+initialization has been listed as open since `PLAN.md`. So "tile-scatter" here is
+this note's construction, reading the per-sender definition at every sender,
+including the root.
+
+Sender-wide designs are recorded in the notes and are **not** covered by section 2,
+since their columns cross all cuts: `RAGGED-13BIT-PROVIDER.md`,
+`RAGGED-ALL-SENDERS-GATE.md` and `MODERATE-TAIL.md`, with about `a/8192` columns.
+They are unproved, and their physical embeddings are open.
 
 ## 2. No-go: the tile-scatter network cannot sort
 
@@ -39,31 +51,44 @@ The model supplies both premises:
   bags. For `(3,3,2)` at depths 7, 8, 10, 20, 40 and 100 it is **0 of 2^(log2 n
   - 1)** keys. Containment passes for all active states, 217,470 of them at
   depth 100. The same run with `--params 3 2 2 --sparse-bottom` also gives 0.
-- Root mass after stage 0 is only `n/240` for `(3,3,2)`, and `n/120` for
-  `(3,2,2)`. So the zero is not an accident of alignment that a shifted tiling
-  would repair: shifting would still allow at most one straddling root tile per
-  stage, which is at most `T/2` keys per stage against the `n/2` needed.
+- The zero is not needed: a shifted tiling allows at most one straddling root tile
+  per stage, so at most `T/2` keys per stage against the `n/2` needed.
+- Cumulative root mass after stage 0 is only `n/240` for `(3,3,2)` and `n/120` for
+  `(3,2,2)`. So even a bag-wide network at the root after stage 0 crosses at most
+  `n/480` keys. **Stage 0 alone must be a near-perfect halver on `n` wires.**
 - `wire_partition_check.py --compressed` confirms routed sets equal static bags
   (rerun at depth 20; 32,750 routing cases). Earlier runs reached depth 120.
 
 **Consequence.** Take the input with all false keys on the upper half of the
-addresses. It needs `n/2` keys to cross `m`, and none do. Any completion would
-need the cleanup to move all of them, so the cleanup would itself be a full
-sorter. Depth 276 buys nothing here.
+addresses. It needs `n/2` keys to cross `m`, and none do, so the staged network
+does not sort it. The review confirmed this with an explicit wire simulation at
+`n = 2^21` on an analogous schedule: the prefix false count stayed 0, and exact
+bag-wide sorting did sort. Independent routing at depths 7 to 9 also confirmed
+containment.
+
+The midpoint alone does not make cleanup a full sorter: merge sort shows that
+sorted halves plus a merger sort. It only forces work after the two halves are
+handled. Using all cuts makes that much stronger, but "cleanup must be a full
+sorter" is not proved. A bag-wide fix at the root alone escapes the midpoint, and
+the same argument then applies at `n/16` unless the root itself sorts.
 
 For a general cut the same argument applies through the cut's ancestors: at most
 one straddling tile per ancestor per stage. That is `O(log^2 n)` keys in total,
 so the network can only repair inputs whose cut defects are already that small.
 
-The premises are checked at finite depths, not all depths. The conclusion is
-about this construction, not about D2 schedules in general.
+The premises are checked at finite depths, not all depths; all-depth containment
+is unproved. The conclusion is about this construction, not about D2 schedules or
+sender-wide stages.
 
 ### Why earlier gates did not show this
 
-- `D2GeometricProfileBudget.lean` assumes `error 0 <= 512 * tiles 0`. On the input
-  above the root has parent discrepancy about `n/2`, while `512 * tiles` is
-  `n/512`. The premise is false at startup for arbitrary inputs. The theorems are
-  sound; their hypothesis is never supplied.
+- `D2GeometricProfileBudget.lean` is abstract and is never instantiated. Its
+  `hdouble` cannot start at root stage 0, since tiles fall from `n/T` to `n/8T`.
+  With global-threshold ideals, senders in the low half are wrong by `T` per tile
+  at every stage, so a start away from `n/2` fails too (the l1 discrepancy is `n`,
+  and `n/2` is one-sided). `idealTileMass` is free, so a sender-local ideal gives a
+  valid start, but it then proves only local rank. The theorems are sound; the
+  hypothesis needed for a global statement is never supplied.
 - `D2-MARGIN-TAIL-TRANSFER.md` composes displacement per stage, but displacement
   starts near `n` on arbitrary input.
 - The arbitrary-root LP assumed local tail caps at the root and still found large
@@ -83,7 +108,8 @@ Lean has `tfD2 d = 3*d - 14` for `(3,3,2)`, with `log2 n = 3*d + 13`, so the rat
 is `(x+y)/(x*z) = 1`. The price of the formalized schedule is therefore
 `276 * 1 = 276`, not 230, which leaves 24 units and not 70. The rate `5/6` belongs
 to `(3,2,2)`: `tf(100) = 241` against 286. All the all-stage Lean work targets
-`(3,3,2)`.
+`(3,3,2)`. Only `t=0` and `t=tf-1` lack an ordinary sender, so this is the limit;
+finite values are lower (250 at `d=100`).
 
 ## 4. The invariant, for a bag-wide stage
 
@@ -120,10 +146,12 @@ and every `s >= 0`, the stage output has at most `tau(s,|S|)` false keys in slot
 `>= f+s`, and at most `tau(s,|S|)` true keys in slots `< f-s`.
 
 `tau` must scale with `|S|`, since no constant-depth network gives an absolute
-band on a large bag. The provider must be sender-wide. By section 2, any
-provider built from disjoint address-consecutive pieces fails, whatever the local
-quality. Scattered pieces are not excluded by section 2, but each such piece then
-acts as one column, and a single column pass gives no separation.
+band on a large bag. The provider must be sender-wide. By section 2, a provider
+built from disjoint address-consecutive pieces of size bounded well below `n`
+fails, whatever the local quality (polylog times below `n` suffices for the
+counting). A piece equal to the whole sender is the bag-wide case and is not
+excluded. Scattered pieces fail a single-stage `Sep`, since a piecewise-constant
+input is a fixed point; multi-stage scattered designs are not excluded.
 
 ### Invariant
 
@@ -145,7 +173,9 @@ fact 4 spills error to address neighbors.
 
 ### Obligations
 
-- **Startup.** Immediate from fact 1. The envelopes must only be nonnegative.
+- **Startup.** The state at `t=0` is immediate from fact 1, but the first step is
+  not cheap: after stage 0 root mass is `n/240` in total, so the root sender's first
+  output must already meet the bulk gate on `n` wires.
 - **O1, sender to port.** From `Sep(tau)` and fact 4, bound `X` and `D` of each port.
   Slots do not determine addresses: a slot offset can jump a whole child hole, so
   this must use the static bag geometry (`g` is flat across a hole).
@@ -166,23 +196,28 @@ fact 4 spills error to address neighbors.
   `D2-MARGIN-TAIL-TRANSFER.md` finishes at `o(log n)` depth when `W` is small
   enough. All-sized accounting and padding then follow as in `D2PowerPadding.lean`.
 
-### First budget check (crude)
+### Budget gate (crude)
 
 Capacity is `cap(i,t) = N * A^i * nu^t / (A*nu*k)` with `A = 8`, `nu = 1/4`, so a
-child at time `t` is 32 times `cap(i,t+1)` and a parent is 1/2 of it. Take
-geometric envelopes `delta^r * cap`, with up-ports passing all strangers and a
-fraction `eps` of the parent's strangers escaping capture. Closure needs
+child at time `t` is 32 times `cap(i,t+1)` and a parent is 1/2 of it. Let `a_r` be
+the stranger mass, as a fraction of capacity, at distance `r`. Assume up-ports pass
+all strangers, and let `E(a)` be the mass escaping capture when a bag holds mass
+`a`. Then
 
 ```text
-256*delta + eps/(2*delta) <= 1.
+a_r >= 256*a_(r+1) + E(a_(r-1))/2,   a_1 >= B/2 + 256*a_2,
 ```
 
-With `delta = 1/512` this needs `eps <= 1/512`. The end-port fraction is only
-`pi/c = 1/256`, so about `1/512` per end. Thus the provider would need to catch all
-but about `1/512` of a bag's extreme strangers in a fringe of about `1/512`, which
-is 8 rows at height 4096. With `eps = 1` no `delta` works (the left side is at
-least `2*sqrt(128)`). This is the same fringe question that the fixed core was
-adopted to avoid, and it comes back unchanged.
+where `B` is the bulk wrong-side leak. Since `a_(r+1) <= a_r/256`, and `E(a)/a`
+increases with `a` in every table below, this closes iff
+
+```text
+E(a)/a <= 1/128 at a = B/2.
+```
+
+Splitting strangers by side might relax this to `1/64`. An earlier version of this
+note asked for `eps <= 1/512` at mass equal to the fringe. That came from forcing
+geometric envelopes and was stricter than necessary.
 
 ## 5. What survives
 
@@ -196,15 +231,60 @@ adopted to avoid, and it comes back unchanged.
 
 ## 6. Next gate
 
-Do not add Lean bridges to the tile-scatter stage. Decide the provider first:
+Do not add Lean bridges to the tile-scatter stage. Section 7 tests the provider.
 
-**Claim to test.** There is a sender-wide network of depth below 300 per stage on
-`(3,3,2)` (or below 360 on `(3,2,2)`, at rate `5/6`), with cleanup still to be paid
-from either budget, satisfying `Sep(tau)` with `eps` near `1/512` at a fringe near `1/512`, for
-all sender sizes.
+## 7. Row-scramble tail test at height 4096
 
-**Rejects the route** if the available row-scramble tail bounds at height 4096 miss
-that target by a clear factor, using the existing R1 and F2 tooling and the
-recorded fringe screens. **Passes** only if a certified tail meets O2 and O4 at the
-actual role quotas. An independent review of section 2 should come first, because
-it reverses the route's standing assumption.
+**Claim tested.** A sender-wide stage of three sorts and two random row-scramble
+rounds at height 4096 (depth `3*78 = 234`; a fourth sort costs 312) meets the budget
+gate using existing tail bounds.
+
+**Verdict: rejected at height 4096.** This rejects the existing bounds at this
+height. It is not an impossibility for random scrambles at all heights.
+
+| Quantity at `m = 4096`, `n = 8000` | Value | Evidence |
+|---|---|---|
+| Certified bulk leak `B` | 0.00363 (14.9 rows) | walk bound, `na_precision.py` |
+| Mean-field bulk leak | 0.00041 (1.7 rows) | floor |
+| Gate mass `B/2` | 7.43 rows | fringe is 6 to 8 rows |
+| Floor `E/a` at gate mass, `f = 6, 7, 8` | 0.20, 0.096, 0.032 | model; need 0.0078 |
+| Certified one-round `E/a` | 0.55, 0.50, 0.45 | `moderate_tail.py` |
+| Certified two-round F2 | no witness at `J >= 2`, or at `i >= 1/256` | grid search |
+| Any-scramble floor on F2 `J` | 84, 120, 165 | hand, pyramid input |
+
+Three separate reasons:
+
+1. **Bulk forces too much mass.** At the certified `B`, even the mean-field floor
+   misses by 12 times at `f = 7` (6 times against `1/64`). That floor is the typical
+   behaviour of a random scramble, so no tail bound for random scrambles passes from
+   this `B`. Tightening `B` by 1.35 times (`f = 7`; 1.14 to 1.65 across `f = 8` to
+   `6`) would clear the floor. Mean field suggests a factor of 8.8 is available.
+2. **Certified capture is far off.** Even at low mass the one-round bound gives
+   `E/a` near 0.4, about 50 times above the need. It carries an entropy cost per
+   column that does not vanish with small mass. F2 was built for sparse keys, and in
+   the grid it certified only `f = 8`, `J = 1`, at about `1/1024` rows.
+3. **An adversarial floor applies.** F2 is quantified over all inputs. Forcing
+   height `h` after `k` rounds takes `c_k(h)` keys, with `c_0(h) = h` and `c_k(h) =
+   sum_(r<=h) c_(k-1)(r)`, so `(f+1)(f+2)(f+3)/6` keys force an escape under every
+   scramble pair. Thus `J <= 120` at `f = 7`: F2 at `J = 128` is impossible there
+   for any scramble, though `1/64` is not excluded. Mean field does not see this,
+   because it describes typical inputs. Whether these pyramids pack up to the gate
+   mass was not checked.
+
+**Limits.** The closure inequality is crude. F2 misses are limited to the searched
+grid, and a certificate assertion counted as a miss. The floor is exact only as
+`n` grows, and only for random scrambles, not structured ones.
+
+**Height 8192 survives on floors only.** It costs `3*91 = 273`, leaving 27 units
+for all other per-stage work and cleanup. Certified `B = 0.00216`, so gate mass is
+8.85 rows against a 13 to 15 row fringe. The floor is `1.4e-5` at `f = 13`, and the
+pyramid floor is `J <= 560`. Certified one-round capture is 0.33 at `f = 13`, about
+40 times too large. Height `2^14` costs 315 and does not fit.
+
+**Next gate.** A certified all-input capture bound at height 8192 with
+`E/a <= 1/128` at about 9 rows of mass and fringe 13, using both scramble rounds. If
+that cannot be reached, the three-sort `(3,3,2)` route is out of budget.
+
+Reproduce with `python d2_sender_tail_gate.py --budget-gate` and
+`python d2_f2_fringe_scan.py --fringes 7 8 --masses 1/1024 1/256 1/64 1/16 1/4 1
+--inverse-eps 128 32 8 2 1`.

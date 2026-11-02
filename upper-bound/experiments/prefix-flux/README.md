@@ -6,8 +6,10 @@ chronological status log is retained as [STATUS-HISTORY.md](STATUS-HISTORY.md)
 and should be consulted only for provenance.
 
 **Current gate:** [D2-SPATIAL-INVARIANT.md](D2-SPATIAL-INVARIANT.md) shows the
-tile-scatter stage cannot sort and states the invariant for a sender-wide stage.
-`d2_cut_crossing_gate.py` reproduces the check. The table below predates it.
+tile-scatter stage cannot sort, states the invariant for a sender-wide stage, and
+tests row-scramble tails (rejected at height 4096, open at 8192). Scripts:
+`d2_cut_crossing_gate.py`, `d2_sender_tail_gate.py`, `d2_f2_fringe_scan.py`. The
+table below predates it.
 
 ## Source map
 
