@@ -20,9 +20,9 @@ sender-wide designs in `RAGGED-*.md` and `MODERATE-TAIL.md` are not covered.
 
 Do not extend tile-scatter bridges. Section 7 of that note tests the sender-wide
 provider. Existing row-scramble bounds are rejected at height 4096. At height 8192
-(depth 273) section 8 shows the capture gate is false for sampled random scrambles
-at the certified bulk mass: an explicit attack reaches `E/a = 0.0208` against
-`1/128`. The next step is the exact closure recurrence, not a capture certificate.
+(depth 273) section 9 gives the exact closure: `B` must be at most 14.9 rows at
+attack-level capture, against 17.7 certified, so the stage is retired on current
+bounds. The next step is to cost a schedule with fringe at least 17.
 The older text below is kept for its theorem inventory, and its "next gate"
 statements are superseded.
 

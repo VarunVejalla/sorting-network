@@ -5,7 +5,8 @@ the tile-scatter construction, meaning the formal per-sender tile network applie
 at every sender. No spatial invariant can hold for it on arbitrary inputs. Section
 4 states the invariant for a sender-wide stage, which is the form that can still
 hold. That form is a specification only: its provider is not proved. Section 7
-reports the first test of it.
+reports the first test of it. Section 9 gives the exact closure and the current
+verdict on the three-sort `(3,3,2)` stage at height 8192.
 
 Evidence labels: **hand** (short argument given here, not kernel-checked),
 **model** (exact finite computation), **crude** (order-of-magnitude budget).
@@ -196,7 +197,12 @@ fact 4 spills error to address neighbors.
   `D2-MARGIN-TAIL-TRANSFER.md` finishes at `o(log n)` depth when `W` is small
   enough. All-sized accounting and padding then follow as in `D2PowerPadding.lean`.
 
-### Budget gate (crude)
+### Budget gate (crude, superseded by section 9)
+
+This gate is wrong in two ways, kept here because sections 7 and 8 quote it. It
+charges strangers to all 8 children, though escapes on one side enter only the end
+child on that side, so its gain 128 should be 16. Its "iff" is also false: it omits
+feedback, so `E/a <= 1/128` at `B/2` was neither necessary nor sufficient.
 
 Capacity is `cap(i,t) = N * A^i * nu^t / (A*nu*k)` with `A = 8`, `nu = 1/4`, so a
 child at time `t` is 32 times `cap(i,t+1)` and a parent is 1/2 of it. Let `a_r` be
@@ -343,10 +349,159 @@ Required: 0.0078, or 0.0156 if splitting strangers by side is valid.
 or structured scramble pairs are not excluded: the only all-scramble floor is the
 pyramid, `E/a >= 1/560` at sparse mass. This does not show that sub-300 is impossible.
 
-**Next decision.** Do not start a capture certificate at these parameters. First
-replace the crude closure with the exact role-by-role recurrence, because the verdict
-turns on a factor of 2.7 that the crude closure does not pin down. If the exact
-closure still needs `E/a` below about 0.02 at the certified `B`, retire the three-sort
-`(3,3,2)` route at height 8192 and reconsider the fringe size of the schedule.
+**Next decision.** Section 9 replaces the `1/128` threshold used above. The attack
+values stand. The factors 2.7, 2.2 and 1.3 above do not; section 9 gives the exact
+ones. The rule set here was: if the exact closure still needs `E/a` below about 0.02
+at the certified `B`, retire the three-sort `(3,3,2)` route at height 8192 and
+reconsider the fringe size of the schedule.
 
 Reproduce with `python d2_capture_attack.py` and `python d2_capture_limits.py`.
+
+## 9. Exact closure
+
+**Verdict: the three-sort `(3,3,2)` stage at height 8192 is retired on current
+bounds.** At the certified `B` the exact closure fails even at attack-level capture,
+so the rule in section 8 applies. This is a verdict on the contract route with sampled
+random scrambles. It is not a proof that the network fails or that sub-300 is
+impossible, because the true worst-case `B` is unknown.
+
+### What was computed
+
+`d2_exact_closure.py` fixes a threshold `q` and tracks the exact integer defect
+`D_t(v)` of every bag on the real `(3,3,2)` flow, using its ports, blocks and roles.
+A sender is abstract: it may leak up to the bulk curve and the capture curve, chosen
+worst-case. Exact sorts give zero defect everywhere, and `sum D = 0` is asserted at
+every stage. An earlier float version broke that law at `D` near `1e24`, and the
+imbalance faked a runaway, so defects are now integers.
+
+The test is that every off-spine sender with at least 4000 columns keeps its mass
+within its fringe. That size is where the curves were measured. Smaller bags are left
+to T2.
+
+### Exact role data
+
+| Quantity | Value | Crude value |
+|---|---|---:|
+| `mid` fringe | 14.65 to 15.06 rows | 13 |
+| `topRise` fringe | 15.6 to 16.1 rows | 13 |
+| `botDesc` fringe | 15 to 247 rows | not modelled |
+| `topDesc` fringe | 0, no up-port | not modelled |
+| Feed into a child, rows per row of `B` | 0.507 (`mid`) | 0.5 |
+| Mass gain per return to the same bag | 16 | 128 |
+
+Evidence is `FlowDAG` at depth 20, model level. Note that `FlowDAG` defaults to
+`Par(2,3,2)`, so `Par(3,3,2)` must be passed.
+
+### The recurrence
+
+A sender's one-sided escapes enter one end child, return two stages later, and the
+bag has shrunk 16 times by then. At mass `i` rows this gives the steady fixed point
+
+```text
+i = feed*B_rows + 16*E(i, f),
+```
+
+so closure at fringe `f` requires
+
+```text
+B_rows <= B* = max_i (i - 16*E(i,f)) / feed.
+```
+
+Escapes can go deeper before returning. For a constant rate `e`, a stationary profile
+`M_j(t) = 4^(-t) w^j` along the end chain needs `1/4 = e/w + w`, so `e <= 1/64`
+(hand). This is the role-exact form of the old `1/128`, but it matters less, because
+deep chain nodes hold tiny masses with small `E/a`. It was not seen numerically: depths
+up to 22 are too short to show it. The attack curve sets the real limit.
+
+### Result
+
+| Method | Closing `B` in rows | Compare certified 17.7 |
+|---|---:|---:|
+| Simulator, depth 16, 24, 32, 40 | 16.10, 15.21, 14.99, 14.91 | 1.19 times too large at depth 40 |
+| Steady formula, `f = 15` | 14.91 | agrees |
+| One-sided adversary, depth 32 | 21.9 | weaker than the symmetric case |
+
+Each simulator value comes from 11 sampled thresholds: cuts at levels 0 to 3 and
+offsets from the root cut. It is not a maximum over all `q`, so it is an upper limit
+on the closing `B`. The formula at `f = 14.65` gives about 14.3.
+
+Capture slack is the largest multiple of the attack curve that still closes, at depth
+32:
+
+| `B` in rows | Largest capture multiple | Meaning |
+|---:|---:|---|
+| 17.7 | 0.56 | Below attack, so false for sampled scrambles |
+| 14.2 | 1.12 | At the first-moment limit for bulk |
+| 10 | 2.19 | |
+| 5 | 4.88 | |
+
+The attack curve, in rows of escape:
+
+| `i` | `f=14` | `f=15` | `f=16` |
+|---:|---:|---:|---:|
+| 8 | 0.106 | 0.082 | 0.066 |
+| 10 | 0.213 | 0.153 | 0.115 |
+| 11 | 0.309 | 0.215 | 0.157 |
+| 12 | 0.456 | 0.309 | 0.219 |
+| 13 | 0.693 | 0.452 | 0.316 |
+| 14 | 1.045 | 0.690 | 0.463 |
+| 15 | 1.573 | 1.038 | 0.694 |
+
+`n = 1000`, best of three seeds. These are lower bounds on the worst case. Pyramids
+give an any-scramble floor at sparse mass, which the simulator applies.
+
+### Can `B` move?
+
+| Bulk value | Rows | Evidence |
+|---|---:|---|
+| Certified | 17.7 | `na_precision.py` |
+| Needed at attack-level capture | 14.9 | this section |
+| First-moment limit | about 14.2 | `d2_bulk_attack.py --limit`, heuristic |
+| Random input | 1.8 | model |
+| Best explicit attack | 1.9 | `d2_bulk_attack.py`, `n = 1000`, weak search |
+
+Here the attack is far below the limit, unlike capture, where attack and limit agreed.
+So the true worst-case `B` is between 1.9 and 17.7 rows, and this work does not
+narrow it further. That gap is the one open question left in the route.
+
+A union-bound proof has no room. Its best bulk (14.2 rows) leaves a capture multiple
+of 1.12, on a curve already near its first-moment limit, while certified capture is
+about 17 times above it (one-round 0.33 at `f = 13`, against attack `E/a = 0.0195` at
+`f = 15`, `i = 11`; no two-round certificate exists at this mass). Reaching a smaller
+`B` needs a bulk proof that is not a union over inputs.
+
+### Fringe
+
+| Fringe | 13 | 14 | 15 | 16 | 17 | 18 | 20 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `B*` in rows | 11.3 | 13.0 | 14.9 | 16.8 | 18.3 | 20.0 | 23.7 |
+
+Each extra fringe row buys about 1.7 rows of `B`, so fringe 17 clears the certified
+`B` at attack-level capture. Values at `f >= 17` use a six-point curve with two seeds.
+No certificate slack is included, and a larger up-port has not been costed against
+the schedule, whose `9/8` reserve argument assumes `pi/c = 15/4096`.
+
+### New startup requirement
+
+Stage 0 sends `n/8` wires to each child, so `B_rows` becomes `8*B_rows` in a 16-row
+fringe. Closure needs a stage-0 leak of about 2 rows or less (hand, `16/8`, limit not
+measured); the runs use 1 row, and 17.7 rows overflowed at stage 1 in a trace. The
+crude closure missed this, because its feed is 0.5 and here it is 8. It is a one-off
+depth cost, so it does not change the coefficient, but it is not proved.
+
+### Limits
+
+- The contract is worst-cased stage by stage. Escapes need not be jointly realizable
+  across stages, so failure of closure means this proof shape fails, not the network.
+- Sampled scrambles only, and curves come from `n = 1000`.
+- Bags under 4000 columns, cut residuals after a cut freezes, and T2 are not covered.
+  Residual at the end of a depth-32 run at `B = 2` rows was about 1000 keys.
+- The bulk tail shape away from a cut is assumed exponential. It matters only for
+  thresholds off a cut.
+
+**Next decision.** Stop work on this stage and do not add Lean bridges for it. The two
+options left are a non-union bulk bound, or a schedule with fringe at least 17 whose
+reserves still close. Costing the fringe change is cheaper and comes first.
+
+Reproduce with `python d2_capture_curve.py --out curve.json`, then
+`python d2_exact_closure.py --depth 40 --attack curve.json --startup-bulk 1 --bisect`.
