@@ -9,7 +9,8 @@ limsup D(n) / log2(n) < 300,
 ```
 
 for sorting networks on `n` wires. The accepted bound remains 789.75; the D2
-candidate and its local coefficient 230 are not a global theorem.
+candidate and its local coefficient are not a global theorem; its tile-based
+stage cannot sort (see `prefix-flux/D2-SPATIAL-INVARIANT.md`).
 
 ## Resume efficiently
 

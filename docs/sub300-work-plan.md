@@ -26,6 +26,12 @@ research candidate, not an established improvement.
 
 ## Research priority
 
+**Overriding gate (2026-11-01):** the tile-scatter stage network cannot sort, and
+the `(3,3,2)` price is 276, not 230. See
+[`D2-SPATIAL-INVARIANT.md`](../upper-bound/experiments/prefix-flux/D2-SPATIAL-INVARIANT.md).
+Decide the sender-wide provider before any further Lean bridge; the text below
+describes the earlier tile-based plan.
+
 The candidate is a `(3,3,2)` D2 schedule with a reflected physical sorting
 core. Its fixed-core depth and local Boolean error bounds are promising, but
 they do not yet prove a global sorting bound. The highest-risk missing piece is
@@ -258,7 +264,7 @@ Keep the proof obligations separate and explicit:
 5. Kernel-checked Lean theorem with the repository's contribution checks.
 
 The handoff has current file-level evidence and open details. Do not treat the
-conditional local price `230`, finite stage audits, oracle traces, relaxed LPs,
+conditional local price, finite stage audits, oracle traces, relaxed LPs,
 or aggregate error alone as the desired limsup theorem.
 
 ## Working rules

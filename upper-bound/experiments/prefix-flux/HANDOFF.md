@@ -1,5 +1,22 @@
 # Sub-300 D2 handoff
 
+## Read first: tile-scatter stage cannot sort (2026-11-01)
+
+`D2-SPATIAL-INVARIANT.md` records a failed gate that overrides the priorities
+below. The formal stage network compares only inside consecutive sender-rank
+tiles. In the exact flow model no such tile joins the two sides of address `n/2`
+(`d2_cut_crossing_gate.py`: 0 keys at every tested depth, on both `(3,3,2)` and
+sparse `(3,2,2)`), so an input with all false keys in the upper half stays
+unsorted. Claim level: hand argument with finite model premises; it has not had
+an independent review or a Lean proof.
+
+The price is also corrected. Lean's `(3,3,2)` schedule has `tfD2 d = 3*d - 14`,
+rate 1, so its price is 276, not 230; rate `5/6` belongs to `(3,2,2)`.
+
+Do not extend tile-scatter bridges. The next gate is a sender-wide provider, as
+defined in that note. The older text below is kept for its theorem inventory,
+and its "next gate" statements are superseded.
+
 State checked against the `sub300-structural` worktree on 2026-11-01. This is
 research status, not a proved improvement to the repository's accepted bound.
 
@@ -98,9 +115,10 @@ The strongest deterministic candidate is the `(3,3,2)` D2 schedule with the
 reflected 4096-by-64 physical core and two-grid repair. The fixed comparator
 network has checked depth at most 276 and, for every Boolean input, puts each
 threshold's errors inside a common interval of at most 832 wires. The schedule
-rate is `5/6`, so the conditional coefficient is `276 * 5/6 = 230`, leaving
-70 coefficient units for asymptotic cleanup and other costs. This is a local
-price only; no limsup bound below 300 is proved.
+rate is 1 (`tfD2 d = 3*d - 14`), so the conditional coefficient is 276, leaving
+24 coefficient units. The figure 230 used rate `5/6`, which belongs to `(3,2,2)`.
+This is a local price only, and the tile-scatter stage it prices cannot sort (see
+the top of this file); no limsup bound below 300 is proved.
 
 ## What is checked
 
