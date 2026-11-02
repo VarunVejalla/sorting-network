@@ -1134,3 +1134,24 @@ disjointness, and the recursive child cardinality hypothesis must be proved
 uniformly across roles and startup. The actual schedule tag map and spatial
 profile recurrence, including partial tiles and terminal cleanup, remain the
 main global gates. Focused Lean checking passes for the new module.
+
+## One-stage sender-size induction (conditional)
+
+`D2DynamicSenderStageCardinality.lean` now proves
+`d2SenderLayoutStage_preserves_flow_sizes`. `d2SenderLayoutFlowSizes` says every
+node's bag has its flow allocation, and `d2SenderLayoutStageSizeContract` lists
+the local facts one stage needs at each node. From these, the recursive layout
+stage preserves the size relation over the whole tree against `d2FlowStage`, and
+its returned up-port has size `d2FlowStagePort`. Parent overwrites are handled by
+`d2SenderLayout_active_parent_child_cardinality`; three small helper lemmas
+(`d2SenderLayoutFlowSizes_root_card`, `_setRoot`, `_node`) give the root and
+node projections.
+
+This is a conditional interface. The contract assumes, rather than derives, the
+flow invariant at each node, the inactive next level, zero post-stage parent
+allocation, the exact up- and down-port sizes, and the disjointness and cover
+facts. The next size step is to discharge it for the candidate run from the
+role-specific port providers, including startup, then iterate from the initial
+layout. That would give only sizes: it identifies neither the routed sets with
+static bags nor Boolean profiles with flow state, and the spatial profile
+recurrence remains the main gate. Focused Lean checking passes for the module.

@@ -22,6 +22,77 @@ private theorem d2FlowTreeAllocation_eq_capacity_sub_root
       simp only [d2FlowTreeAllocation, d2FlowTreeRootDeficit,
         d2FlowTreeCapacityMass]
 
+/-- Every node's current sender set has the allocation prescribed by its flow
+tree node. -/
+def d2SenderLayoutFlowSizes {Wire : Type*} [DecidableEq Wire]
+    (scale : Nat) : {h : Nat} -> D2SenderLayout Wire h ->
+      D2FlowTree h -> Prop
+  | 0, .leaf bag, .leaf G low high =>
+      bag.card = d2FlowTreeAllocation scale (.leaf G low high)
+  | h + 1, .node bag layoutChildren, .node G low high flowChildren =>
+      bag.card = d2FlowTreeAllocation scale
+        (.node G low high flowChildren) /\
+      forall j, d2SenderLayoutFlowSizes scale
+        (layoutChildren j) (flowChildren j)
+
+/-- Local facts needed to lift one recursive set-routing stage through the
+flow allocation recurrence. Active nodes provide their exact up/down-port
+sizes and disjointness; inactive nodes provide disjoint retained/child sets. -/
+def d2SenderLayoutStageSizeContract {Wire : Type*} [DecidableEq Wire]
+    (scale : Nat) (active : Nat -> Bool) (role : Nat -> D2Role)
+    (quota : Nat -> D2Role -> Nat)
+    (split : Nat -> Finset Wire -> D2SenderPorts Wire) :
+    {h : Nat} -> (i : Nat) -> (layout : D2SenderLayout Wire h) ->
+      (flow : D2FlowTree h) -> Prop
+  | 0, i, .leaf _, .leaf G low high =>
+      d2FlowTreeInv scale (.leaf G low high) /\ active i = false
+  | h + 1, i, .node bag layoutChildren,
+      .node G low high flowChildren =>
+      d2FlowTreeInv scale (.node G low high flowChildren) /\
+      (forall j, d2SenderLayoutStageSizeContract scale active role quota split
+        (i + 1) (layoutChildren j) (flowChildren j)) /\
+      (if active i = true then
+        active (i + 1) = false /\
+        d2FlowTreeAllocation scale
+          (d2FlowStage active role quota (h + 1) i
+            (.node G low high flowChildren)) = 0 /\
+        (split i bag).up.card = d2FlowStagePort active role quota
+          (h + 1) i (.node G low high flowChildren) /\
+        (forall j,
+          ((split i bag).down j).card =
+            d2FlowTreeRootDeficit (flowChildren j) -
+              d2FlowTreeRootDeficit
+                (d2FlowTreeChild
+                  (d2FlowStage active role quota (h + 1) i
+                    (.node G low high flowChildren)) j) /\
+          Disjoint
+            (d2SenderLayoutRootBag
+              (d2SenderLayoutStage active split h (i + 1)
+                (layoutChildren j)).1)
+            ((split i bag).down j) /\
+          d2FlowTreeRootDeficit
+              (d2FlowTreeChild
+                (d2FlowStage active role quota (h + 1) i
+                  (.node G low high flowChildren)) j) <=
+            d2FlowTreeCapacityMass scale
+              (d2FlowStage active role quota h (i + 1)
+                (flowChildren j)) /\
+          d2FlowTreeRootDeficit
+              (d2FlowTreeChild
+                (d2FlowStage active role quota (h + 1) i
+                  (.node G low high flowChildren)) j) <=
+            d2FlowTreeRootDeficit (flowChildren j))
+      else
+        Disjoint bag (Finset.univ.biUnion fun j =>
+          (d2SenderLayoutStage active split h (i + 1)
+            (layoutChildren j)).2) /\
+        (forall j k, j != k ->
+          Disjoint
+            ((d2SenderLayoutStage active split h (i + 1)
+              (layoutChildren j)).2)
+            ((d2SenderLayoutStage active split h (i + 1)
+              (layoutChildren k)).2)))
+
 /-- If an active parent sends its down-port into an inactive child, the
 updated child sender set has exactly the allocation prescribed by the flow
 tree after the parent's root overwrite.
@@ -150,5 +221,151 @@ theorem d2SenderLayout_active_parent_child_cardinality
           d2FlowTreeCapacityMass scale recFlow := by
     simpa [flowPost] using hpostCapacity
   omega
+
+theorem d2SenderLayoutFlowSizes_root_card {Wire : Type*} [DecidableEq Wire]
+    {scale h : Nat} {layout : D2SenderLayout Wire h} {flow : D2FlowTree h}
+    (hsize : d2SenderLayoutFlowSizes scale layout flow) :
+    (d2SenderLayoutRootBag layout).card =
+      d2FlowTreeAllocation scale flow := by
+  cases layout with
+  | leaf bag =>
+      cases flow with
+      | leaf G low high => exact hsize
+  | node bag children =>
+      cases flow with
+      | node G low high flowChildren => exact hsize.1
+
+theorem d2SenderLayoutFlowSizes_setRoot {Wire : Type*} [DecidableEq Wire]
+    {scale h : Nat} {layout : D2SenderLayout Wire h} {flow : D2FlowTree h}
+    (bag : Finset Wire) (G low high : Nat)
+    (hsize : d2SenderLayoutFlowSizes scale layout flow)
+    (hcard : bag.card = d2FlowTreeAllocation scale
+      (d2FlowTreeSetRoot flow G low high)) :
+    d2SenderLayoutFlowSizes scale (d2SenderLayoutSetRoot layout bag)
+      (d2FlowTreeSetRoot flow G low high) := by
+  cases layout with
+  | leaf oldBag =>
+      cases flow with
+      | leaf oldG oldLow oldHigh => exact hcard
+  | node oldBag children =>
+      cases flow with
+      | node oldG oldLow oldHigh flowChildren => exact ⟨hcard, hsize.2⟩
+
+theorem d2SenderLayoutFlowSizes_node {Wire : Type*} [DecidableEq Wire]
+    {scale h : Nat} {bag : Finset Wire}
+    {children : Fin 8 -> D2SenderLayout Wire h} {flow : D2FlowTree (h + 1)}
+    (hroot : bag.card = d2FlowTreeAllocation scale flow)
+    (hchildren : forall j, d2SenderLayoutFlowSizes scale (children j)
+      (d2FlowTreeChild flow j)) :
+    d2SenderLayoutFlowSizes scale (.node bag children) flow := by
+  cases flow with
+  | node G low high flowChildren => exact ⟨hroot, hchildren⟩
+
+/-- The recursive sender-set layout and abstract flow preserve exact sender
+cardinalities in one stage, provided each active local router supplies its
+port sizes and disjoint pieces. This is the all-tree size induction interface;
+the candidate physical ports still have to discharge its contract. -/
+theorem d2SenderLayoutStage_preserves_flow_sizes
+    {Wire : Type*} [DecidableEq Wire]
+    (scale : Nat) (active : Nat -> Bool) (role : Nat -> D2Role)
+    (quota : Nat -> D2Role -> Nat)
+    (split : Nat -> Finset Wire -> D2SenderPorts Wire) :
+    forall {h : Nat} (i : Nat) (layout : D2SenderLayout Wire h)
+      (flow : D2FlowTree h),
+      d2SenderLayoutFlowSizes scale layout flow ->
+      d2SenderLayoutStageSizeContract scale active role quota split i
+        layout flow ->
+      d2SenderLayoutFlowSizes scale
+        (d2SenderLayoutStage active split h i layout).1
+        (d2FlowStage active role quota h i flow) /\
+      (d2SenderLayoutStage active split h i layout).2.card =
+        d2FlowStagePort active role quota h i flow := by
+  intro h
+  induction h with
+  | zero =>
+      intro i layout flow hsize hcontract
+      cases layout with
+      | leaf bag =>
+        cases flow with
+        | leaf G low high =>
+          exact ⟨hsize, by
+            show (∅ : Finset Wire).card = _
+            simp [d2FlowStagePort, d2FlowStage]⟩
+  | succ h ih =>
+      intro i layout flow hsize hcontract
+      cases layout with
+      | node bag layoutChildren =>
+        cases flow with
+        | node G low high flowChildren =>
+          rcases hsize with ⟨hrootSize, hchildrenSize⟩
+          rcases hcontract with ⟨hinv, hchildrenContract, hlocal⟩
+          have hchildResult (j : Fin 8) :=
+            ih (i + 1) (layoutChildren j) (flowChildren j)
+              (hchildrenSize j) (hchildrenContract j)
+          by_cases ha : active i = true
+          · rw [if_pos ha] at hlocal
+            rcases hlocal with ⟨hnextInactive, hparentZero, hparentUp,
+              hdown⟩
+            constructor
+            · rw [d2SenderLayoutStage_node_active_eq active split i bag
+                layoutChildren ha]
+              refine d2SenderLayoutFlowSizes_node ?_ ?_
+              · rw [hparentZero]
+                rfl
+              · intro j
+                have hchildSize :=
+                  d2SenderLayout_active_parent_child_cardinality
+                    (role := role) (quota := quota) (G := G) (low := low)
+                    (high := high) (scale := scale)
+                    (layoutChildren j) flowChildren j split
+                    ((split i bag).down j) hnextInactive
+                    (hinv.2.2.2 j)
+                    (d2SenderLayoutFlowSizes_root_card (hchildResult j).1)
+                    (hdown j).1 (hdown j).2.1
+                    (hdown j).2.2.1 (hdown j).2.2.2
+                rw [d2SenderLayoutRootBag_setRoot] at hchildSize
+                have hpost := d2FlowStage_child_decomposes
+                  (active := active) (role := role) (quota := quota)
+                  (i := i) (G := G) (low := low) (high := high)
+                  flowChildren j
+                rw [hpost]
+                refine d2SenderLayoutFlowSizes_setRoot _ _ _ _
+                  (hchildResult j).1 ?_
+                rw [← hpost]
+                exact hchildSize
+            · rw [(d2SenderLayoutStage_node_active active split i bag
+                layoutChildren ha).2]
+              exact hparentUp
+          · have hinactive : active i = false := by
+              cases hactive : active i <;> simp_all
+            rw [if_neg ha] at hlocal
+            rcases hlocal with ⟨hdisjoint, hchildDisjoint⟩
+            have hroot :=
+              d2SenderLayoutStage_inactive_root_card_eq_allocation
+                (role := role) (quota := quota)
+                bag layoutChildren flowChildren split hinactive hinv
+                (by simpa using hrootSize)
+                (fun j => (hchildResult j).2)
+                (fun j k hne => hchildDisjoint j k (bne_iff_ne.mpr hne))
+                hdisjoint
+            have hparentInactive :=
+              d2SenderLayoutStage_node_inactive active split i bag
+                layoutChildren hinactive
+            rw [hparentInactive.1] at hroot
+            constructor
+            · rw [d2SenderLayoutStage_node_inactive_eq active split i bag
+                layoutChildren hinactive]
+              refine d2SenderLayoutFlowSizes_node hroot ?_
+              intro j
+              rw [d2FlowStage_inactive_child]
+              · exact (hchildResult j).1
+              · exact hinactive
+            · rw [hparentInactive.2]
+              have hrootSame := d2FlowStage_root_deficit_of_inactive
+                (active := active) (role := role) (quota := quota)
+                (h := h + 1) (i := i) (.node G low high flowChildren)
+                hinactive
+              show (∅ : Finset Wire).card = _
+              simp [d2FlowStagePort, hrootSame]
 
 end Chvatal.D2OrdinaryRankRouting
