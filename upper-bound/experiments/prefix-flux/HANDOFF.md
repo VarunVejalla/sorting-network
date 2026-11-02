@@ -19,10 +19,12 @@ the note carries those corrections. No whole-run network exists in Lean, so
 sender-wide designs in `RAGGED-*.md` and `MODERATE-TAIL.md` are not covered.
 
 Do not extend tile-scatter bridges. Section 7 of that note tests the sender-wide
-provider. Existing row-scramble bounds are rejected at height 4096. Height 8192
-(depth 273) survives on floors only, and needs a certified capture bound about 40
-times better than the one-round bound. That is the next gate. The older text below
-is kept for its theorem inventory, and its "next gate" statements are superseded.
+provider. Existing row-scramble bounds are rejected at height 4096. At height 8192
+(depth 273) section 8 shows the capture gate is false for sampled random scrambles
+at the certified bulk mass: an explicit attack reaches `E/a = 0.0208` against
+`1/128`. The next step is the exact closure recurrence, not a capture certificate.
+The older text below is kept for its theorem inventory, and its "next gate"
+statements are superseded.
 
 State checked against the `sub300-structural` worktree on 2026-11-01. This is
 research status, not a proved improvement to the repository's accepted bound.

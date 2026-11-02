@@ -29,9 +29,11 @@ research candidate, not an established improvement.
 **Overriding gate (2026-11-01):** the tile-scatter stage network cannot sort, and
 the `(3,3,2)` price is 276, not 230. See
 [`D2-SPATIAL-INVARIANT.md`](../upper-bound/experiments/prefix-flux/D2-SPATIAL-INVARIANT.md).
-Height 4096 is rejected for existing tail bounds. The open gate is a certified
-two-round capture bound at height 8192 (section 7 of that note). Decide it before
-any further Lean bridge; the text below describes the earlier tile-based plan.
+Height 4096 is rejected for existing tail bounds, and at height 8192 the capture
+gate is false for sampled random scrambles at the certified bulk mass (sections 7
+and 8 of that note). Next, replace the crude closure with the exact recurrence.
+No further Lean bridge until that is decided; the text below describes the earlier
+tile-based plan.
 
 The candidate is a `(3,3,2)` D2 schedule with a reflected physical sorting
 core. Its fixed-core depth and local Boolean error bounds are promising, but

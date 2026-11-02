@@ -7,9 +7,10 @@ and should be consulted only for provenance.
 
 **Current gate:** [D2-SPATIAL-INVARIANT.md](D2-SPATIAL-INVARIANT.md) shows the
 tile-scatter stage cannot sort, states the invariant for a sender-wide stage, and
-tests row-scramble tails (rejected at height 4096, open at 8192). Scripts:
-`d2_cut_crossing_gate.py`, `d2_sender_tail_gate.py`, `d2_f2_fringe_scan.py`. The
-table below predates it.
+tests row-scramble tails (rejected at height 4096; at 8192 an explicit attack breaks
+the capture gate at the certified bulk mass). Scripts: `d2_cut_crossing_gate.py`,
+`d2_sender_tail_gate.py`, `d2_f2_fringe_scan.py`, `d2_capture_attack.py`,
+`d2_capture_limits.py`. The table below predates it.
 
 ## Source map
 

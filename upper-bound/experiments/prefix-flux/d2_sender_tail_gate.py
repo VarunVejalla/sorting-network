@@ -31,9 +31,9 @@ from moderate_tail import bound as moderate_bound
 
 def round_step(height_dist):
     """One scramble-and-sort: height distribution to height distribution."""
-    tail = 1 - np.cumsum(height_dist)
-    p = np.clip(tail[:-1], 0, 1)
-    p = p[p > 1e-16]
+    tail = np.cumsum(height_dist[::-1])[::-1][1:]
+    p = np.clip(tail, 0, 1)
+    p = p[p > 1e-300]
     out = np.zeros(len(height_dist))
     out[0] = 1.0
     for q in p:

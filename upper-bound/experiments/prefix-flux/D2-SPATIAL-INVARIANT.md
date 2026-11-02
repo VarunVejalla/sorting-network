@@ -247,7 +247,7 @@ height. It is not an impossibility for random scrambles at all heights.
 | Certified bulk leak `B` | 0.00363 (14.9 rows) | walk bound, `na_precision.py` |
 | Mean-field bulk leak | 0.00041 (1.7 rows) | floor |
 | Gate mass `B/2` | 7.43 rows | fringe is 6 to 8 rows |
-| Floor `E/a` at gate mass, `f = 6, 7, 8` | 0.20, 0.096, 0.032 | model; need 0.0078 |
+| Floor `E/a` at gate mass, `f = 6, 7, 8` | 0.20, 0.095, 0.032 | model; need 0.0078 |
 | Certified one-round `E/a` | 0.55, 0.50, 0.45 | `moderate_tail.py` |
 | Certified two-round F2 | no witness at `J >= 2`, or at `i >= 1/256` | grid search |
 | Any-scramble floor on F2 `J` | 84, 120, 165 | hand, pyramid input |
@@ -277,14 +277,76 @@ grid, and a certificate assertion counted as a miss. The floor is exact only as
 
 **Height 8192 survives on floors only.** It costs `3*91 = 273`, leaving 27 units
 for all other per-stage work and cleanup. Certified `B = 0.00216`, so gate mass is
-8.85 rows against a 13 to 15 row fringe. The floor is `1.4e-5` at `f = 13`, and the
-pyramid floor is `J <= 560`. Certified one-round capture is 0.33 at `f = 13`, about
+8.85 rows against a 13 to 15 row fringe. The mean-field floor is `1.3e-5` at
+`f = 13`, and the pyramid floor is `J <= 560`. Section 8 shows that this mean-field
+floor is far too optimistic. Certified one-round capture is 0.33 at `f = 13`, about
 40 times too large. Height `2^14` costs 315 and does not fit.
 
-**Next gate.** A certified all-input capture bound at height 8192 with
-`E/a <= 1/128` at about 9 rows of mass and fringe 13, using both scramble rounds. If
-that cannot be reached, the three-sort `(3,3,2)` route is out of budget.
+**Next gate.** Section 8 tests the certified capture bound at height 8192.
 
 Reproduce with `python d2_sender_tail_gate.py --budget-gate` and
 `python d2_f2_fringe_scan.py --fringes 7 8 --masses 1/1024 1/256 1/64 1/16 1/4 1
 --inverse-eps 128 32 8 2 1`.
+
+## 8. Capture gate at height 8192
+
+**Gate tested.** `E/a <= 1/128` at 8.85 rows of mass and fringe 13, for every input,
+under two random scramble rounds.
+
+**Verdict: unreachable as stated for sampled random scrambles.** It cannot be
+certified, because it is false for them. This is a measured attack, not a theorem
+about all scrambles.
+
+Adding one input key changes exactly one cell chain through the two rounds, which
+makes a direct search cheap. `d2_capture_attack.py` builds inputs greedily, backward
+from target columns, then frees idle keys and rebuilds. Mean field missed this
+because it describes typical inputs, not chosen ones.
+
+| Mass `i` (rows) | Attack `E/a`, `f=13` | Union vacuous to, `f=13` | Attack `E/a`, `f=15` |
+|---:|---:|---:|---:|
+| 1 | 0.0040 | 0.0038 | 0.0020 |
+| 2 | 0.0056 | 0.0049 | 0.0040 |
+| 3 | 0.0067 | 0.0063 | 0.0043 |
+| 4 | 0.0078 | 0.0081 | 0.0053 |
+| 5 | 0.0090 | not computed | 0.0058 |
+| 6 | 0.0108 | 0.0138 | 0.0072 |
+| 8.85 | **0.0208** | 0.0354 | 0.0115 |
+
+Required: 0.0078, or 0.0156 if splitting strangers by side is valid.
+
+**Evidence.**
+- At `n = 4000`, `i = 8.85`, `f = 13`, one run gave 735 escapes against a limit of
+  277. It was re-run as a full Boolean matrix with real sorts and row shuffles from a
+  shuffled input, and gave the same count (`E/a = 0.0208`).
+- Attack values come from `n = 1000` with three seeds. At `n = 4000`, masses 2 and 4
+  match (0.0056, 0.0078). So the effect does not fade with column count, and larger
+  senders are not protected.
+- The attack gives a lower bound on the worst case, for sampled scrambles only.
+- "Union vacuous to" is a first-moment estimate that treats target columns as
+  independent. Below that `E/a`, the expected number of bad inputs exceeds 1, so a
+  union bound over inputs proves nothing however it is tuned. Attack and estimate
+  agree closely at masses 1 to 4, so both are probably near the true worst case.
+
+**What this means for the route.**
+- At the certified `B`, the gate fails by 2.7 times at `1/128`, and by 1.3 times at
+  `1/64`. Fringe 15 still fails `1/128` by 1.5 times and passes `1/64`, but the worst
+  sender sets the fringe, which is 13.
+- `1/128` holds only up to about 4 rows of mass, so `B` must fall from 0.00216 to
+  about 0.00098, which is 2.2 times tighter. Mean field (0.000245) leaves room, but
+  no certified bound is near it. At `1/64` the crossing is near 7.4 rows, which needs
+  about 1.2 times tighter, on a relaxation not yet justified.
+- Even then, a capture proof must land within a factor of about 1.2 to 1.6 of the
+  first-moment limit at masses 2 to 3, starting from a one-round bound near 0.33.
+  The window is real but narrow.
+
+**Limits.** The `1/128` closure is crude and could move in either direction. Atypical
+or structured scramble pairs are not excluded: the only all-scramble floor is the
+pyramid, `E/a >= 1/560` at sparse mass. This does not show that sub-300 is impossible.
+
+**Next decision.** Do not start a capture certificate at these parameters. First
+replace the crude closure with the exact role-by-role recurrence, because the verdict
+turns on a factor of 2.7 that the crude closure does not pin down. If the exact
+closure still needs `E/a` below about 0.02 at the certified `B`, retire the three-sort
+`(3,3,2)` route at height 8192 and reconsider the fringe size of the schedule.
+
+Reproduce with `python d2_capture_attack.py` and `python d2_capture_limits.py`.
