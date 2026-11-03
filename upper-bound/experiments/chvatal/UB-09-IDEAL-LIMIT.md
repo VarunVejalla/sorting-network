@@ -1,5 +1,12 @@
 # UB-09: ideal-limit screen of the M-sorter tree
 
+> **Correction (2026-11-03).** This screen charged two sorts per tree step, but its
+> separator constants come from the three-sort (two-scramble) stage. So the "about
+> 300" floor below is the *first-sort-free* figure. At three sorts, Chvátal's
+> analysis bottoms out at about 460, and the best analysis in the repository at about
+> 384. See `TREE-PRICING.md`, which supersedes the verdict and the sensitivity table
+> here.
+
 Date: 2026-11-02. Claim level: **model** (Chvátal's constraint system with
 attack-level separator constants). No new sorting bound.
 

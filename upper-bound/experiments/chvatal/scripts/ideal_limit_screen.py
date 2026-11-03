@@ -21,6 +21,9 @@ Every real (x, y, z, L) is searched, so with eps_F = 0 the result is a floor for
 this tree: no sharpening of separator certificates alone goes below it. Claim
 level: model (constraint system as transcribed in chvatal_param_search.py).
 
+CORRECTION (2026-11-03): the C_B and eps_F inputs belong to the three-sort stage, so the
+slope here is the "first sort free" figure; multiply by 3/2. See tree_pricing.py.
+
     python ideal_limit_screen.py
 """
 import math
