@@ -14,6 +14,11 @@ Tree pricing (2026-11-03, model): `TREE-PRICING.md`, `scripts/tree_pricing.py`,
 tree analysis gets below about 380 even at attack-level separators. Sub-300 needs a cheaper
 separator stage at the same leak.
 
+Stage screen (2026-11-03, model + attack sims): `STAGE-SCREEN.md`, `scripts/stage_screen.py`,
+`three_round_sim.py`, `round1_tail_attack.py`. No column-sort / random-scramble stage reaches 300.
+The best is band + merge-first at about 333 (attack, R2c). The binding quantity is the round-1 tail,
+which decays like 1/W under attack.
+
 Keep scratch Lean in an independent package here or in gitignored local helpers,
 never inside `../../best` until promotion. Relevant current notes are in
 `../../../docs/chvatal-two-round-small-ranks.md` and
