@@ -74,6 +74,12 @@ obstruction rather than treating the asymptotic coefficient as a finite result.
 **Acceptance:** explicit finite parameters yielding a binary limsup coefficient
 below 200, followed by a formal global theorem in the canonical model.
 
+**Outcome (2026-11-02, model):** rejected as a separate route. Theorem 1.1 is
+Theorem 1.2's construction with Batcher m-sorters, so this framework is the
+existing binary line. With attack-level separators, Chvátal's tree constraints
+bottom out at about 300 (k about 3, m about 2^12), and at 351 with the certified
+bulk constant. See `experiments/chvatal/UB-09-IDEAL-LIMIT.md`.
+
 **Source:** [Chvatal DCS-TR-294](https://users.encs.concordia.ca/~chvatal/aks.pdf).
 
 ## UB-10 — Recover the reported private sub-100 AKS construction

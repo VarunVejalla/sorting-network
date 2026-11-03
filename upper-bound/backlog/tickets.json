@@ -176,19 +176,19 @@
       "id": "UB-09",
       "title": "Screen feasible finite M before extracting the M-sorter constant",
       "priority": "P2",
-      "status": "proposed",
-      "claim_level": "hand-proof",
+      "status": "rejected",
+      "claim_level": "model",
       "baseline": 1419,
       "projected": null,
-      "owner": null,
-      "branch": null,
+      "owner": "Claude",
+      "branch": "ub-09-msorter-screen",
       "depends_on": [],
       "first_deliverable": "Use the actual finite separator/geometry/fringe conditions to find feasible M, then extract c_M and charge binary replacement. The cited proof has necessary M >=204800, already excluding M=16/32.",
       "evidence": [
         "upper-bound/backlog/high-upside-architecture.md",
         "upper-bound/backlog/archive/roadmap-700-200.md"
       ],
-      "notes": "Source audit 2026-10-13: Theorem 1.2 uses M/32 < m <= M/16 and sqrt(2(1+ln m)/m) <= (1/5)*k^(-4). For k>=2 and integer m>=1 this implies m>=12800, hence M>=204800; the real finite threshold is larger. This is a necessary-condition hand derivation, not an improved upper bound. Do not substitute the large-M asymptotic coefficient at small M."
+      "notes": "Source audit 2026-10-13: Theorem 1.2 uses M/32 < m <= M/16 and sqrt(2(1+ln m)/m) <= (1/5)*k^(-4). For k>=2 and integer m>=1 this implies m>=12800, hence M>=204800; the real finite threshold is larger. This is a necessary-condition hand derivation, not an improved upper bound. Do not substitute the large-M asymptotic coefficient at small M. Ideal-limit screen 2026-11-02 (model, experiments/chvatal/UB-09-IDEAL-LIMIT.md): Theorem 1.1 is this framework with Batcher m-sorters, so it is the existing binary line. With attack-level separators (C_B 0.084, attack eps_F table) Chvatal's constraints bottom out at about 300; certified C_B 0.39 gives 351. Removing the Lemma 4.2 slack term gives 221. Not a separate sub-300 route; the lever is the tree analysis."
     },
     {
       "id": "UB-10",

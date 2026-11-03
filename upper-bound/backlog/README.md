@@ -59,7 +59,7 @@ Gates: three sorts need `q ≤ 20` (472.5); two sorts need `q ≤ 25` (487.5). R
 | ID | Priority | Idea | Status |
 |---|---|---|---|
 | UB-08 | P3 | Compile the 2024 shallow high-arity k-sorters into binary sorters | parked |
-| UB-09 | P2 | Screen feasible finite M before extracting the M-sorter constant | proposed |
+| UB-09 | P2 | Screen feasible finite M before extracting the M-sorter constant | rejected |
 | UB-10 | P3 | Recover the reported private sub-100 AKS construction | proposed |
 | UB-25 | P2 | Persistent sorted packets with merge-and-deal balancing | proposed |
 | UB-27 | P2 | Periodic precision restoration | proposed |
