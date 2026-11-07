@@ -8,8 +8,9 @@ hold. That form is a specification only: its provider is not proved. Section 7
 reports the first test of it. Section 9 gives the exact closure and the current
 verdict on the three-sort `(3,3,2)` stage at height 8192. Section 10 costs a larger
 fringe and finds no schedule geometry under 300 that closes. Section 11 bounds the
-true worst-case bulk leak and parks the route. Section 12 shows spectral
-certificates cannot reopen it, and retires the stage.
+true worst-case bulk leak and parks the route. Section 12 gives a floating-point
+screen of one spectral-certificate class; it is not a certified no-go and does not
+rule out other non-union arguments or prove that the sender-wide stage fails.
 
 Evidence labels: **hand** (short argument given here, not kernel-checked),
 **model** (exact finite computation), **crude** (order-of-magnitude budget).
@@ -700,12 +701,16 @@ and `python d2_bulk_attack.py --columns 200 --anneal 8000`.
 
 ## 12. Spectral certificates of the bulk leak
 
-**Verdict: they fail, by a wide margin, and the three-sort `(3,3,2)` stage is
-retired.** Section 11 asked for a bulk bound of about 12 rows or less that beats the
-union. The most natural non-union proof is spectral: dominate each column's walk
-maximum by a quadratic form, sum over columns, and bound the sum by `lambda_max`. The
-best value any such certificate can reach (the floor below, rigorous for this class)
-is far above the union bound, in both rounds.
+**Verdict: the numerical search strongly disfavors this spectral certificate
+class; the three-sort `(3,3,2)` stage remains parked.** Section 11 asked for a bulk
+bound of about 12 rows or less that beats the union. The tested non-union method is
+spectral: dominate each column's walk maximum by a quadratic form, sum over columns,
+and bound the sum by `lambda_max`. The dual argument below gives a rigorous floor
+from any exact distribution over prefixes, but the current script searches in
+floating point and does not emit a checkable exact distribution or eigenvalue
+certificate. Thus the displayed values are a strong numerical screen, not yet a
+formal lower bound for this certificate class. In any event, they do not rule out
+other non-union methods or prove that the sorting stage itself fails.
 
 ### The floor
 
@@ -749,9 +754,12 @@ drift penalty, covers 12 octaves and is hit hardest.
   (Guerra-type) or counting only locally optimal halves. Both are research problems,
   not certificates to compute.
 
-**Next decision.** Retire the sender-wide three-sort `(3,3,2)` stage. Its one live
-question was a non-union bulk bound of about 12 rows, and the natural non-union
-proof gives about 31. Sub-300 now needs a new stage design, not a sharper bound for
-this one. The coefficient is unchanged: best proved 789.75.
+**Next decision.** Keep the sender-wide three-sort `(3,3,2)` stage parked unless a
+new method can bound its joint worst-case bulk leak near the roughly 12-row closure
+threshold (or improve the capture estimate enough to change that threshold). The
+spectral search alone does not settle this question. The current evidence makes
+this a high-risk rescue attempt, not a promising default route. A different stage
+design is the main search direction. The coefficient is unchanged: best proved
+789.75.
 
 Reproduce with `python d2_spectral_floor.py --block 16` (and `--block 64`, `32`).

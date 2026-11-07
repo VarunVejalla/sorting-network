@@ -20,14 +20,15 @@ sender-wide designs in `RAGGED-*.md` and `MODERATE-TAIL.md` are not covered.
 
 Do not extend tile-scatter bridges. Section 7 of that note tests the sender-wide
 provider. Existing row-scramble bounds are rejected at height 4096. At height 8192
-(depth 273) section 9 gives the exact closure: `B` must be at most 14.9 rows at
-attack-level capture, against 17.7 certified, so the stage is retired on current
-bounds. Section 10 finds no `Par` geometry under 300 with a stable fringe large
-enough to close. Section 11 puts the true worst-case `B` between 3.79 rows (attack)
-and about 14.0 (union limit), shows no union proof can close the stage, and parks
-it. Section 12 shows spectral certificates cannot give that bound (their floor is
-about 31 rows against a 12-row target), and retires the stage. Sub-300 needs a new
-stage design.
+(depth 273), section 9's exact closure requires `B <= 14.9` rows at attack-level
+capture, while the certified value is 17.7. Section 10 finds no `Par` geometry
+under 300 with a stable fringe large enough to close. Section 11 leaves the true
+worst-case `B` between the explicit attack at 3.79 rows and the approximate union
+limit near 14 rows. Section 12's spectral floor is a floating-point screen of one
+certificate class, not an exact no-go. Keep the sender-wide stage parked unless a
+new joint bulk/capture argument clears the closure threshold; the current evidence
+favors a different stage design.
+
 The older text below is kept for its theorem inventory, and its "next gate"
 statements are superseded.
 
