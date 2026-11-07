@@ -22,6 +22,10 @@ So the next lever is a round 1 whose tail is light *by construction*: a designed
 (low-discrepancy) scramble, or a height-capped round 1. A cheaper sort will not do
 it.
 
+**Update 2026-11-07 (`DESIGNED-SCRAMBLE.md`):** this lever is dead. For n ≥ m, every
+design has a tail of at least about 0.16/W, by a design-independent hand bound that
+matches the attack.
+
 ## Stages screened
 
 All stages are priced by `scripts/stage_screen.py` on the tree model of

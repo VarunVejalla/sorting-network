@@ -26,6 +26,11 @@ Keep this list so nobody repeats them.
   smaller `m` saves.
 * **Columnsort-style deterministic dirty-region bound** (Leighton). Displacement ≤ (s−1)² positions
   gives ε ≈ s/r, which grows with the number of columns `s = n`; useless for top-level nodes.
+* **Designed (low-discrepancy / Latin / affine) round-1 scrambles to lighten the 1/W tail**
+  (2026-11-07, `experiments/chvatal/DESIGNED-SCRAMBLE.md`). For n ≥ m with distinct destinations
+  per column, a random target set gives every design the same tail, ≳ 0.16/W (hand bound, which
+  matches the attack within about 5%). Structured shift designs are 30–300× worse. Latin blocks help
+  only for m > n (small nodes).
 * **Run-aware first sort beyond uniform s = 29.** Stage-dependent block size gives only ~1.5%
   more; an ideal merge tree of the actual (non-power-of-two) runs caps at about −16% in total
   (first sort ≈ 1209 instead of 1770).
