@@ -39,13 +39,11 @@ schedule. See sections 1 and 7–12 of
 These are obstructions to this stage/proof package, not an impossibility result
 for sorting networks or for every D2-derived construction.
 
-The spectral-floor calculation is a useful warning against a particular
-quadratic-majorant method. Its derivation gives a rigorous lower bound once an
-exact dual distribution is supplied, but the current script searches and
-reports in floating point and does not emit a checkable exact certificate. Do
-not describe the numerical floor as a formal no-go theorem until that witness
-is certified. Even if certified, it excludes only that certificate class.
-
+The exact block-64 rational PSD certificate rules out the standard all-real-space
+quadratic-majorant method: on a covered critical rectangle its lower bound is at
+least 14.498854 rows. Outside that rectangle, scalar terms already exceed 12.
+Cube-constrained SOS certificates, other non-union methods, and the sender-wide
+network itself remain open.
 Do not continue the old tile-to-flow Lean bridge for this stage. The next
 research step should compare two routes before adding more formalization:
 

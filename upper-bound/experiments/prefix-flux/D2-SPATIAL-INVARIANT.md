@@ -8,9 +8,7 @@ hold. That form is a specification only: its provider is not proved. Section 7
 reports the first test of it. Section 9 gives the exact closure and the current
 verdict on the three-sort `(3,3,2)` stage at height 8192. Section 10 costs a larger
 fringe and finds no schedule geometry under 300 that closes. Section 11 bounds the
-true worst-case bulk leak and parks the route. Section 12 gives a floating-point
-screen of one spectral-certificate class; it is not a certified no-go and does not
-rule out other non-union arguments or prove that the sender-wide stage fails.
+true worst-case bulk leak and parks the route. Section 12 gives an exact continuous-parameter no-go for the standard all-real-space quadratic-majorant method, but it does not rule out cube-constrained SOS bounds, other non-union arguments, or prove that the sender-wide stage fails.
 
 Evidence labels: **hand** (short argument given here, not kernel-checked),
 **model** (exact finite computation), **crude** (order-of-magnitude budget).
@@ -701,17 +699,16 @@ and `python d2_bulk_attack.py --columns 200 --anneal 8000`.
 
 ## 12. Spectral certificates of the bulk leak
 
-**Verdict: the numerical search strongly disfavors this spectral certificate
-class; the three-sort `(3,3,2)` stage remains parked.** Section 11 asked for a bulk
-bound of about 12 rows or less that beats the union. The tested non-union method is
-spectral: dominate each column's walk maximum by a quadratic form, sum over columns,
-and bound the sum by `lambda_max`. The dual argument below gives a rigorous floor
-from any exact distribution over prefixes, but the current script searches in
-floating point and does not emit a checkable exact distribution or eigenvalue
-certificate. Thus the displayed values are a strong numerical screen, not yet a
-formal lower bound for this certificate class. In any event, they do not rule out
-other non-union methods or prove that the sorting stage itself fails.
-
+**Verdict: the standard all-real-space spectral quadratic-majorant method cannot
+meet the roughly 12-row closure target.** At 8192 rows and block size 64, exact
+rational certificates give a lower bound of at least
+`1132722958590345144049/78125000000000000000` (about 14.498854 rows) throughout
+the rectangle `0<=mu<=2/15`, `0<=c0<=12`. The first-round certificate gives
+per-side spread `D >= 90`. Outside that rectangle, `90*mu+c0 > 12` by the scalar
+terms alone. Thus no choice of nonnegative `mu,c0` in this certificate class
+meets the target. Floating point only proposes the rational witnesses; exact
+integer diagonal-dominance checks verify them. This rules out the tested
+certificate class for this stage, not the sender-wide network or other methods.
 ### The floor
 
 Each column contributes `F(sigma) = max_k (x_k - mu k)`, where `x_k` is the walk's
@@ -725,15 +722,10 @@ into blocks of `b` drops constraints, so every value below is a lower bound, and
 rises as `b` shrinks. This is the regime `n >> m`, where each walk visits distinct
 columns.
 
-| Quantity, rows | Block 64 | Block 32 | Block 16 | Union limit | Certified |
-|---|---:|---:|---:|---:|---:|
-| Round-1 spread | 190.1 | 209.2 | 228.5 | 122.8 | 192 |
-| Round-2 leak at spread 95 | 27.7 | 27.2 | 30.9 | 12.21 | |
-| Round-2 leak at spread 123 | 29.7 | 30.9 | 35.1 | 13.99 | |
-
-The round-2 rows minimise over a grid of `mu` and `c0`; at block 16 the optimum is
-interior in `mu` (0.14 to 0.17) and at `c0 = 0`. The block-8 round-1 floor is 247.9.
-
+The earlier floating-point table at this point is superseded. It sampled only a
+coarse parameter grid and does not match the conservative exact continuous cover
+above; use the rational certificate result and verifier as the current screen.
+Block sizes other than 64 are not covered by that exact continuous certificate.
 ### Why it fails
 
 A quadratic majorant has to dominate the walk at every scale at once, for every
@@ -754,12 +746,9 @@ drift penalty, covers 12 octaves and is hit hardest.
   (Guerra-type) or counting only locally optimal halves. Both are research problems,
   not certificates to compute.
 
-**Next decision.** Keep the sender-wide three-sort `(3,3,2)` stage parked unless a
-new method can bound its joint worst-case bulk leak near the roughly 12-row closure
-threshold (or improve the capture estimate enough to change that threshold). The
-spectral search alone does not settle this question. The current evidence makes
-this a high-risk rescue attempt, not a promising default route. A different stage
-design is the main search direction. The coefficient is unchanged: best proved
-789.75.
-
-Reproduce with `python d2_spectral_floor.py --block 16` (and `--block 64`, `32`).
+**Next decision.** The exact screen rules out the standard all-real-space
+quadratic-majorant rescue for the sender-wide stage. The stage itself remains
+parked, not disproved: cube-constrained SOS bounds and other joint bulk/capture
+arguments remain open. Current evidence favors searching for a different stage.
+Best proved coefficient: 789.75.
+Generate the continuous exact certificate from the worktree root with `python upper-bound/experiments/prefix-flux/d2_spectral_cert.py continuous --spread 90 --output ..\\..\\..\\LLM-helpers\\sub300-check\\artifacts\\sub300-structural\\prefix-flux\\d2_spectral_continuous_block64.json`; verify it with `python upper-bound/experiments/prefix-flux/d2_spectral_cert.py verify <certificate.json>`.

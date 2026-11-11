@@ -18,6 +18,7 @@ mu * D for a round-1 spread D, in rows. Round 1 has no penalty (mu = 0).
     python d2_spectral_floor.py --block 16
 """
 import argparse
+from fractions import Fraction
 
 import numpy as np
 
@@ -28,17 +29,30 @@ def min_trace_floor(g, b, iters):
     idx = np.maximum.outer(np.arange(L), np.arange(L))
     rho = np.ones(L) / L
     best = 0.0
+    best_rho = rho.copy()
     for it in range(iters):
         tail = np.cumsum((rho * g)[::-1])[::-1]
         w, V = np.linalg.eigh(b * tail[idx])
         w = np.clip(w, 1e-300, None)
-        best = max(best, np.sqrt(w).sum() ** 2)
+        value = np.sqrt(w).sum() ** 2
+        if value > best:
+            best = value
+            best_rho = rho.copy()
         root_inv = (V / np.sqrt(w)) @ V.T
         quad = np.diag(np.cumsum(np.cumsum(root_inv, axis=0), axis=1))
         grad = 0.5 * g * b * quad
         rho = rho * np.exp(2.0 / np.sqrt(it + 1) * grad / grad.max())
         rho /= rho.sum()
-    return best
+    return best, best_rho
+
+
+def rational_distribution(rho, denominator=10**9):
+    """Round a numerical distribution to an exact normalized rational one."""
+    weights = [max(0, int(round(float(x) * denominator))) for x in rho]
+    if sum(weights) == 0:
+        raise ValueError("cannot rationalize a zero distribution")
+    total = sum(weights)
+    return [Fraction(x, total) for x in weights]
 
 
 def main():
@@ -52,14 +66,15 @@ def main():
     K, b = args.rows // 2, args.block
     L = K // b
     k = np.arange(1, L + 1) * b
-    unit = min_trace_floor(np.ones(L), b, 400)
+    unit, _ = min_trace_floor(np.ones(L), b, 400)
     print(f'round 1: T_unit/K = {unit / K:.3f}, spectral spread floor '
           f'{np.sqrt(2 * unit):.1f} rows', flush=True)
     for D in args.spreads:
-        best = min((mu * D + c0 + 2 * min_trace_floor(1 / (4 * (mu * k + c0)), b, 200) / 4,
-                    mu, c0) for mu in args.mus for c0 in args.c0s)
-        print(f'round 2 at spread {D:.0f}: spectral leak floor {best[0]:.2f} rows '
-              f'(mu {best[1]}, c0 {best[2]})', flush=True)
+        best = min((mu * D + c0 + min_trace_floor(
+                    1 / (4 * (mu * k + c0)), b, 200)[0] / 2, mu, c0)
+                   for mu in args.mus for c0 in args.c0s)
+        print(f'round 2 at spread {D:.0f}: numerical spectral floor '
+              f'{best[0]:.2f} rows (mu {best[1]}, c0 {best[2]})', flush=True)
 
 
 if __name__ == '__main__':

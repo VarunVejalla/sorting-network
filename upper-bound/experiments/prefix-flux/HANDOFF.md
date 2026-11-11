@@ -24,11 +24,20 @@ provider. Existing row-scramble bounds are rejected at height 4096. At height 81
 capture, while the certified value is 17.7. Section 10 finds no `Par` geometry
 under 300 with a stable fringe large enough to close. Section 11 leaves the true
 worst-case `B` between the explicit attack at 3.79 rows and the approximate union
-limit near 14 rows. Section 12's spectral floor is a floating-point screen of one
-certificate class, not an exact no-go. Keep the sender-wide stage parked unless a
+limit near 14 rows. Section 12 now rules out the standard all-real-space quadratic-majorant method over its full continuous parameter range, with an exact lower bound of 14.498854 rows on the critical region; outside it, scalar terms already exceed 12. Cube-constrained SOS and other methods remain open. Keep the sender-wide stage parked unless a
 new joint bulk/capture argument clears the closure threshold; the current evidence
 favors a different stage design.
 
+## Exact spectral checkpoint (2026-11-11)
+
+`d2_spectral_cert.py` verifies a rational cover at 8192 rows and block size 64.
+The first-round certificate gives per-side spread `D >= 90`. Two exact boxes
+cover `0 <= mu <= 2/15`, `0 <= c0 <= 12`; their minimum leakage lower bound is
+`1132722958590345144049/78125000000000000000` (about 14.498854 rows). Outside
+the rectangle, `90*mu+c0 > 12` already exceeds the target. This rules out the
+standard all-real-space quadratic-majorant method, not the stage itself. The
+ignored certificate is
+`LLM-helpers/sub300-check/artifacts/sub300-structural/prefix-flux/d2_spectral_continuous_block64.json`.
 The older text below is kept for its theorem inventory, and its "next gate"
 statements are superseded.
 

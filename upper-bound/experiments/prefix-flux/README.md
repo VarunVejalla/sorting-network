@@ -8,13 +8,11 @@ and should be consulted only for provenance.
 **Current gate:** [D2-SPATIAL-INVARIANT.md](D2-SPATIAL-INVARIANT.md) shows the
 tile-scatter stage cannot sort, states the invariant for a sender-wide stage, and
 tests row-scramble tails (rejected at height 4096; at 8192 an explicit attack breaks
-the capture gate at the certified bulk mass; exact closure misses on current\nbounds, so this stage is parked). Scripts: `d2_cut_crossing_gate.py`,
+the capture gate at the certified bulk mass; exact closure misses on current bounds, so this stage is parked). Scripts: `d2_cut_crossing_gate.py`,
 `d2_sender_tail_gate.py`, `d2_f2_fringe_scan.py`, `d2_capture_attack.py`,
 `d2_capture_limits.py`, `d2_capture_curve.py`, `d2_exact_closure.py`,
 `d2_bulk_attack.py`, `d2_geometry_scan.py`, `d2_bulk_limits.py`,
-`d2_spectral_floor.py`. The stage is parked: section 11 leaves a joint worst-case bulk bound unresolved, and section 12 is a floating-point screen of one spectral-certificate class, not a certified no-go.
-The table below
-predates it.
+`d2_spectral_floor.py`, `d2_spectral_cert.py`. The stage is parked: section 11 leaves a joint worst-case bulk bound unresolved, and section 12 exactly rules out the standard all-real-space quadratic-majorant method over its continuous parameters; cube-constrained SOS and other methods remain open.
 
 ## Source map
 
