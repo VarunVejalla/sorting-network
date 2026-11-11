@@ -793,6 +793,23 @@
         "upper-bound/backlog/sub500-routes.md"
       ],
       "notes": "Screen gates (fringe idealized away): T >= 5.5 for < 500, >= 36 for < 300, >= 101 for < 200 (model grid floor). Periodic T = 1000: P = 4 gives 302, P = 8 gives 208. The only modelled sub-300 routes; relates to UB-27 and the tapered invariant (UB-07/UB-24)."
+    },
+    {
+      "id": "UB-47",
+      "title": "Warm-start separators: inherited column balance as an invariant (one sort + band per stage)",
+      "priority": "P1",
+      "status": "proposed",
+      "claim_level": "model",
+      "baseline": 789.75,
+      "projected": null,
+      "owner": "Claude",
+      "branch": "ub-09-msorter-screen",
+      "depends_on": [],
+      "first_deliverable": "Write the re-bagging map (parent slabs, child fringe slabs) and count F, the fragments per new column whose deviations add; then a multi-stage stability simulation of re-bag/sort/scramble/band with the window attack.",
+      "evidence": [
+        "upper-bound/experiments/warm-start/WARM-START.md"
+      ],
+      "notes": "Bags are assembled from row slabs of just-separated (balanced) bags, so input heights are confined to a window F*W, and the round-1 tail scales with the window, not m (attack: ~0.25 D/W rows, exactly 0 for W >= D). Stage = sort, scramble, two-grid band over F*W; leak ~0.25 F^2 rows. Model price under the proved R1 tree: 191-262 for F <= 2k and leak up to 6x attack; 321+ at F = 4k. The height cap also gives exact rare-cohort capture."
     }
   ]
 }
