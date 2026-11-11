@@ -28,6 +28,19 @@ limit near 14 rows. Section 12 now rules out the standard all-real-space quadrat
 new joint bulk/capture argument clears the closure threshold; the current evidence
 favors a different stage design.
 
+## Adaptive joint cuts (2026-11-11)
+
+`d2_joint_cut_loop.py` implements a numerical MILP adversary and objective-guided
+support-cut separation with integer DP validation. It recovers exact worst
+leakage in three six-column cases (29--40 cuts), checked by enumeration after
+each solved master. Wider progress is modest: n=12,m=4 improves 0.75 to 2/3,
+but 100 cuts give no further improvement; support witnesses reach 0.5.
+n=16,m=4 improves the best numerical upper to 0.6875 with witness lower 0.5625.
+The master is already expensive, and wider solver bounds are not exact
+certificates. See [D2-JOINT-CUTS.md](D2-JOINT-CUTS.md). Next distinguish weak cut
+selection from intrinsic convex-hull loss at the twelve-column extremizer;
+do not interpret these tests as an 8192-row or sub-300 bound.
+
 ## Joint reachable-profile gate (2026-11-11)
 
 Positive small exact evidence: weighted round-one support cuts with weights

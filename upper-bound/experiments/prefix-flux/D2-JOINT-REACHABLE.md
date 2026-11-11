@@ -79,3 +79,8 @@ wider instances with exact optimization bounds, then seek a uniform probabilisti
 bound for the resulting joint quantity at 8192 rows. Keep the shared mass and
 row-permutation dependence intact. Neither the small screen nor the support
 identity supplies that uniform bound; 276 remains a conditional stage cost.
+
+Follow-up completed: [D2-JOINT-CUTS.md](D2-JOINT-CUTS.md). Adaptive cuts
+recover small exact optima, but wider tightening is modest and the
+twelve-column case stalls through 100 cuts. Resolve cut strength versus
+convex-hull loss before larger sweeps.

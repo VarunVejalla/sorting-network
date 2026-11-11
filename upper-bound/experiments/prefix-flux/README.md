@@ -53,3 +53,7 @@ cube-SOS exclusion or global coefficient improvement is claimed.
 Joint follow-up: [D2-JOINT-REACHABLE.md](D2-JOINT-REACHABLE.md),
 `d2_joint_reachable_gate.py`: exact small fixed-mass reachable versus relaxed
 profile comparison, with DP-verified weighted support cuts.
+
+Adaptive joint cuts: [D2-JOINT-CUTS.md](D2-JOINT-CUTS.md),
+`d2_joint_cut_loop.py`: integer-valid support cuts, numerical MILP bounds,
+exhaustive small validation, and modest wider improvement with a 100-cut stall.
