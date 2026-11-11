@@ -46,6 +46,11 @@ That is about S(L) + 50 levels per stage, against 3·S(L) today.
 > tight against an aligned attack at the stationary budget. Per-stage invariants therefore stay in
 > the F² class: 335 (R1) / 307 (R2c) at attack level. The 284–291 figures are void as a provable
 > target. Warm start is parked unless a multi-stage reachability argument is found.
+>
+> **Update 2026-11-11 (section 9).** Multi-stage reachability doesn't rescue it. A stage-0 input
+> steers stage 1 to the aligned state (correlation 0.99) and reaches about half the per-stage worst
+> case at stage 2. Even granting that factor, the price is 295 (R1) at attack constants. Closed as a
+> sub-300 route.
 
 ## 2. Why the height window is enough (hand, deterministic)
 
@@ -381,3 +386,65 @@ I don't see a tool for it. A union over stage-t inputs brings back the (m + 1)^n
 removed. So warm start is parked here as a model observation:
 - inherited balance is real and contracts in typical dynamics;
 - worst-case per-stage certification costs the F² law, and with it sub-300.
+
+## 9. Multi-stage reachability: the network can re-create the alignment (2026-11-11)
+
+Claim level: exact attack runs (lower bounds for the sampled scrambles), plus the model pricing.
+
+**Question.** Section 8 showed that per-stage invariants admit aligned states. Can a state aligned
+with stage t + 1's groups actually be produced by stage t from a state the network reaches? If
+not, a multi-stage argument could recover the linear-F behaviour of section 7.3.
+
+**Test (`lookahead_attack.py F n2`).** The geometry shrinks by F per stage as the real layout
+does, with no column reuse: n₀ = F²·n₂ and n₁ = F·n₂. The adversary gets the stationary budget of
+0.45F rows per column, at stage 0 only.
+
+1. **Target.** Compute δ¹*, the stage-1 input that the per-stage worst case wants: Theorem R2's
+   dual climb against stage-2-aligned sets, within the same budget.
+2. **Steer.** Each unit of stage-0 height deposits one cell into a known stage-1 group, so the
+   stage-0 climb prices each deposit by δ¹* of its group.
+3. **Run forward** and measure the stage-2 input.
+
+| F | Measure | Per-stage worst | Lookahead from stage 0 | One-stage attack (aimed at stage 1) | Random |
+|---:|---|---:|---:|---:|---:|
+| 4 | stage-2 L1/col | 6.90 | 4.00 | 3.27 | 1.82 |
+| 16 | stage-2 L1/col | 53.0 | 27.8 | 17.4 | 7.38 |
+| | leak at 4F | 4.81 | 0.39 | 0 | 0 |
+| 32 | stage-2 L1/col | 185 | 91.4 | 41.1 | 14.1 |
+| | leak at 4F | 57.4 | 7.22 | 0.69 | 0 |
+
+How the steered state compares with δ¹*:
+
+| F | Correlation with δ¹* | Stage-1 L1 reached | Budget spent at stage 0 |
+|---:|---:|---:|---:|
+| 4 | 0.947 | 4.27 | 1.80 |
+| 16 | 0.986 | 37.9 | 7.20 |
+| 32 | 0.991 | 115 | 14.4 |
+
+What this shows:
+- **The map is steerable.** A stationary-budget input at stage 0 reproduces the desired stage-1
+  state almost exactly.
+- **The reachable worst case is close to the per-stage worst case.** At stage 2 it is within
+  about 2× in grouped L1, and 4–6.5× above random.
+- **The adversary never needs a large starting state.** The first scramble amplifies the
+  aligned part by about 2√F, as in section 8.
+
+So reachability buys a constant factor at most, not the √F per stage the chain suggested.
+Section 7.3's fading came from an adversary that never aimed at later stages.
+
+**Pricing even if that factor were proved.** Halving the L1 cuts the F² leak constant by about
+4: c = 0.0625 instead of 0.25 at attack level. That gives **295 (R1) / 264 (R2c)**
+(`warm_start_screen.py 0.0625,0`), with no margin under the proved analysis R1 before any
+certificate loss. Proving the factor would itself need a multi-stage argument, and none is
+available.
+
+**Verdict: warm start is closed as a sub-300 route.**
+- **Per-stage provable class:** 335 (R1) at attack constants, about 410 with certificate-like
+  ones.
+- **Reachable-state class:** about 295 (R1) at attack constants.
+
+What survives as reusable lessons:
+- the window and cap facts (section 2), including exact rare-cohort capture under a height cap;
+- Lemma G;
+- the finding that fixed-wiring alignment is the binding adversary: worst cases are set by the
+  sets aligned with the next stage's groups, and the input can steer towards them.

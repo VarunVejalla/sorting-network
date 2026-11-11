@@ -42,3 +42,8 @@ Keep this list so nobody repeats them.
   to 850 (`experiments/sub500-screen/SCREEN.md`).
 * **More ε_B tolerance alone.** At the R1 point the fringe floor binds: tolerance ×10 to ×1000 leaves
   789.8. It must come with a fringe improvement (UB-34/UB-40).
+* **Warm-start separators (UB-47, inherited column balance; sort + scramble + band per stage)**
+  (2026-11-11, `experiments/warm-start/WARM-START.md`). The real layout stacks F ~ A/nu fringe fragments
+  per column. The per-stage worst case is attained by sets aligned with the next stage's groups (Lemma G
+  is tight), giving an F^2 leak and 335 (R1) at attack constants. A stage-0 input can steer two stages
+  ahead (correlation 0.99), so reachability gains at most about 2x (295 R1 even then).
