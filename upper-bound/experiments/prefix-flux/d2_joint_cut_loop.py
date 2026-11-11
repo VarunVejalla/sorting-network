@@ -109,7 +109,8 @@ def master(stage,mass,cuts,seconds):
     assert all(w@y<=cap for w,cap in cuts)
     f=advance_many(y[None,:],stage.s2)[0]
     score=int(np.maximum(n*f-mass,0).sum())
-    assert abs(-result.fun-score/n)<1e-5
+    assert score/n >= -result.fun-1e-5
+    if result.status==0:assert abs(-result.fun-score/n)<1e-5
     return y,dict(rows=score/(n*n),score_numerator=score,score_denominator=n*n,
                   numerical_upper_rows=-float(result.mip_dual_bound)/n,
                   status=int(result.status),gap=float(result.mip_gap))

@@ -58,8 +58,11 @@ research step should compare two routes before adding more formalization:
    7/12 versus collected-cut upper 2/3 (`prefix-flux/D2-JOINT-DIRECT.md`).
    The full fixed-mass hull-flow model now numerically matches 7/12, with
    exact rational witness replay (`prefix-flux/D2-JOINT-HULL-FLOW.md`).
-   Next make bounded wider/taller comparisons to direct reachability, then
-   seek a uniform bound on the joint flow/dual potentials.
+   Wider comparisons are inconclusive, and the affine-only uniform route
+   now has an exact 15.528-row obstruction on a sampled 8192-row second
+   scramble (`prefix-flux/D2-JOINT-UNIFORM-GATE.md`). Stop generic cut
+   sweeps; compare a concrete nonlinear/rank-localized inequality with
+   redesigning the stage. No quantitative near-12 argument is available.
    State a quantitative pass threshold using the exact closure script first;
    the current analysis puts the required bulk scale near 12 rows. If no
    plausible inequality improves on the union estimate, leave this stage parked.

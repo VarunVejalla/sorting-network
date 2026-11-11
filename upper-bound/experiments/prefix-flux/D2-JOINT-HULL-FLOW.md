@@ -87,3 +87,8 @@ can be proved uniformly for random row permutations. That is the mathematical
 step needed for a bulk bound near 12 at m=8192; finite optimization alone does
 not supply it. Startup, capture, the global recurrence and terminal cleanup
 still require their own contracts. No priced path below 300 is proved here.
+
+Follow-up completed: [D2-JOINT-UNIFORM-GATE.md](D2-JOINT-UNIFORM-GATE.md).
+Wider/taller solves are inconclusive. A further affine-envelope relaxation
+has an exact 15.528-row floor at one sampled 8192-row second scramble, so the
+natural affine-only uniform route loses too much information.

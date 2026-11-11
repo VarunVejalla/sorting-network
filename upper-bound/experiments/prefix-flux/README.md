@@ -69,3 +69,8 @@ maximum is 7/12, checked over all 19,611,175 inputs.
 Full hull: [D2-JOINT-HULL-FLOW.md](D2-JOINT-HULL-FLOW.md),
 `d2_joint_hull_flow.py`: the complete fixed-mass DP-flow relaxation numerically
 matches the true twelve-column 7/12 optimum; rational witnesses replay exactly.
+
+Current uniform gate: [D2-JOINT-UNIFORM-GATE.md](D2-JOINT-UNIFORM-GATE.md).
+Wider hull solves are inconclusive; affine-only joint bounds have exact
+15.528-row obstruction at one sampled 8192-row, 16384-column second scramble.
+Source: `d2_joint_affine_floor.py`; preserve actual-height localization to proceed.

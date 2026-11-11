@@ -28,6 +28,24 @@ limit near 14 rows. Section 12 now rules out the standard all-real-space quadrat
 new joint bulk/capture argument clears the closure threshold; the current evidence
 favors a different stage design.
 
+## Wider screens and uniform affine gate (2026-11-11)
+
+Wider/taller hull runs time out; direct witnesses are 5/8 at n=16,m=4 and
+7/8 at n=8,m=12 (numerical direct upper bounds match). More importantly, the
+natural affine-envelope/weighted-support route to a uniform joint bound has
+an **exact floor 26713433/1720320 = 15.52818 rows** on a sampled m=8192,
+n=16384 second scramble, independently of the first scramble. A reachable
+uniform middle together with artificial local two-height mixtures certifies
+the method's loss. It is not actual network leakage. See
+[D2-JOINT-UNIFORM-GATE.md](D2-JOINT-UNIFORM-GATE.md),
+`d2_joint_affine_floor.py`, and `d2_joint_hull_flow.py --affine-input`.
+The full integer-middle hull is not excluded; typical/random behavior is not
+an all-scramble theorem. Stop generic cuts/affine-only bounding. Next compare
+an explicit nonlinear/rank-localized joint inequality against redesigning the
+stage; no quantitative uniform near-12 proof is available. Timeout reporting
+now distinguishes recomputed witness leakage from slack solver objectives and
+saves no-incumbent outcomes. No Lean changes or new global coefficient.
+
 ## Full reachable-hull flow (2026-11-11)
 
 The fixed-mass DP-flow extended formulation now optimizes over the entire

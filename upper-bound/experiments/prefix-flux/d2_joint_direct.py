@@ -54,7 +54,8 @@ def solve(n,m,seed,seconds):
     assert h.sum()==M and (advance_many(h[None,:],stage.s1)[0]==y).all()
     f=advance_many(y[None,:],stage.s2)[0]
     score=int(np.maximum(n*f-M,0).sum())
-    assert abs(-result.fun-score/n)<1e-5
+    assert score/n >= -result.fun-1e-5
+    if result.status==0:assert abs(-result.fun-score/n)<1e-5
     return dict(columns=n,rows=m,seed=seed,mass=M,round1=stage.s1.tolist(),round2=stage.s2.tolist(),
                 input=h.tolist(),middle=y.tolist(),final=f.tolist(),score_numerator=score,
                 score_denominator=n*n,leakage_rows=score/(n*n),status=int(result.status),
