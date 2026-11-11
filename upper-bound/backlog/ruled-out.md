@@ -46,4 +46,6 @@ Keep this list so nobody repeats them.
   (2026-11-11, `experiments/warm-start/WARM-START.md`). The real layout stacks F ~ A/nu fringe fragments
   per column. The per-stage worst case is attained by sets aligned with the next stage's groups (Lemma G
   is tight), giving an F^2 leak and 335 (R1) at attack constants. A stage-0 input can steer two stages
-  ahead (correlation 0.99), so reachability gains at most about 2x (295 R1 even then).
+  ahead (correlation 0.99), so reachability gains at most about 2x (295 R1 even then). A whole-run (amortized) attack
+  shows the reachable leak falls about 5x per stage after the free input, but with zero leak R1 still
+  floors at 283.9 at attack constants (band/fringe terms), so amortization cannot rescue it either.

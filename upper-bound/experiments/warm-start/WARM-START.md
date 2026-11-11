@@ -448,3 +448,78 @@ What survives as reusable lessons:
 - Lemma G;
 - the finding that fixed-wiring alignment is the binding adversary: worst cases are set by the
   sets aligned with the next stage's groups, and the input can steer towards them.
+
+## 10. Whole-run (amortized) test: one input cannot hurt every stage (2026-11-11)
+
+Claim level: exact attack runs (lower bounds on the adversary, heuristic optimiser), plus the model
+pricing.
+
+**Question.** Section 9 aimed the stage-0 budget at one later stage. Can a single stage-0 input make
+stages 1, 2 and 3 all leak at once? If it can't, a potential-style argument would charge the run
+roughly one per-stage worst case in total, not one per stage.
+
+**Test (`whole_run_attack.py F nT T`, T = 3).**
+- Geometry as in section 9: it shrinks by F per stage, and strays are carried.
+- Budget: ℓ = 0.45F at stage 0.
+- Leak: (|d_t| − 4F)₊ per column.
+- Attacks: a recursive steering aimed at stage k, for k = 1, 2, 3, plus a grid of mixtures.
+- Reference: the aligned climb with a fresh budget at each stage.
+
+Leak at stage t, with the input L1 per column in parentheses:
+
+| F | Attack | t = 1 | t = 2 | t = 3 | Total |
+|---:|---|---:|---:|---:|---:|
+| 8 | aligned climb, fresh budget at every stage | 0.37 (18.6) | 0.44 (18.3) | 0.45 (19.1) | 1.26 |
+| | aim at 1 | 0.37 (18.6) | 0 (7.2) | 0 (5.2) | 0.37 |
+| | aim at 2 | **2.02** (13.8) | 0.035 (11.0) | 0 (6.7) | **2.06** |
+| | aim at 3 | 0.35 (7.0) | 0.34 (8.4) | 0.024 (9.3) | 0.72 |
+| | random | 0 (3.7) | 0 (3.5) | 0 (3.5) | 0 |
+| 16 | aligned climb, fresh budget at every stage | 8.83 (55.2) | 2.97 (62.9) | 8.62 (57.2) | 20.4 |
+| | aim at 1 | 8.83 (55.2) | 0 (17.6) | 0 (9.2) | 8.83 |
+| | aim at 2 | 9.14 (38.0) | 0.34 (30.6) | 0 (15.6) | 9.48 |
+| | aim at 3 | **11.36** (38.5) | 2.24 (26.3) | 0 (20.9) | **13.6** |
+| | random | 0 (7.4) | 0 (7.2) | 0 (6.3) | 0 |
+
+The mixture grid never beat the best pure aim. At F = 16, n₃ = 16, so the stage-3 figures are coarse.
+
+**Reading.**
+- **The aligned climb is not the leak maximiser.** Its prices are indicators, which maximise L1,
+  not the tail. Graded steering prices give heavier stage-1 tails. So the per-stage worst leak is at
+  least 2.02 (F = 8) and 11.4 (F = 16), the bold entries.
+- **The leak lands on the first stage after the free input.** Aiming later moves damage to stage 1
+  as a side effect; it doesn't sustain it.
+  - The best reachable leak at stage 2 is about 17–20% of the per-stage worst.
+  - At stage 3 it is about 0–1%.
+- **Whole-run ratio.** The best total over three stages is 2.06 vs 3 × 2.02 at F = 8 (0.34), and
+  13.6 vs 3 × 11.4 at F = 16 (0.40), i.e. about one per-stage worst in total.
+- **The input L1 stays above random at stage 3** (about 3×) but below the band. Reachable states keep
+  their L1 and lose their tail.
+
+So, at attack level, the amortized picture holds: after the first stage, the reachable leak falls by
+about 5× per stage, to near 0. The optimiser is heuristic, so this is evidence, not a bound.
+
+**Does it matter? Pricing with the leak removed (`warm_start_screen.py c,0`).**
+
+| Leak constant c | R1 | R2c |
+|---:|---:|---:|
+| 0.25 (per-stage, section 8) | 335 | 307 |
+| 0.0625 (section 9) | 295 | 264 |
+| 0.05 (about 5× reduction, this section) | 294.6 | 260.6 |
+| 0.0125 | 283.9 | 247.2 |
+| 0.001 (leak ≈ 0) | **283.9** | **229.0** |
+
+- **Under R1 the leak stops binding near c ≈ 0.0125.** The floor of 283.9 is set by the band and
+  fringe terms: f ≥ 4FW and the 2·S(⌈lg 4FW⌉) band sorts. Even a perfect amortized proof leaves R1 at
+  284 at attack constants.
+- **Certificate-like constants** added about 23% at c = 0.25 (335 → about 411). Scaling the floor the
+  same way, which is a rough estimate, gives about 350 under R1.
+- **Only R2c, which is derived but not proved, gets below 300 with margin** (229–261).
+
+**Verdict.**
+- **Under R1:** amortization is real in the model but cannot carry warm start below 300; the
+  non-leak cost of the band is the floor.
+- **Under R2c:** the route would need both an amortized proof and R2c, and neither tool exists.
+- Warm start stays rejected.
+- **What carries over:** reachable leak decays fast with distance from a free state, so a whole-run
+  potential is the right shape of argument for any fixed-wiring multi-stage design whose non-leak
+  cost is low.
