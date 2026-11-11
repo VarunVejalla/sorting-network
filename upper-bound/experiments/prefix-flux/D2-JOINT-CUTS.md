@@ -78,3 +78,7 @@ convex-hull membership at an extremizer, with a replayable membership witness.
 A convex combination of reachable profiles would show that linear support
 cuts cannot exclude that extremizer; failed quick separation alone cannot.
 Avoid wider blind sweeps before resolving this distinction.
+
+Follow-up: [D2-JOINT-HULL.md](D2-JOINT-HULL.md) exactly separates the tested
+plateau target. Stronger separation reduces small-case cut count but leaves
+the wider upper objective unchanged. Next compare with direct joint optimization.

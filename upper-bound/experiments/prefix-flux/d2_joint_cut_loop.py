@@ -36,11 +36,12 @@ def support(perm,w,mass):
     return int(dp[mass]),y
 
 
-def separate(perm,y,mass,limit=100):
+def separate(perm,y,mass,limit=100,strong=False):
     n=len(y)
     h=np.full(n,mass//n,dtype=np.int64)
     h[:mass%n]+=1
     witnesses=[advance_many(h[None,:],perm)[0]]
+    best=None; best_gap=0.0
     for k in range(limit):
         # delta <= p.(y-r) for all generated reachable r.
         A=np.array([np.r_[r-y,1] for r in witnesses],dtype=float)
@@ -49,7 +50,9 @@ def separate(perm,y,mass,limit=100):
         if not result.success:
             return None,dict(status='separation_lp_failed',iterations=k)
         if result.x[-1]<1e-7:
-            return None,dict(status='no_convex_separation_numerical',iterations=k)
+            return best,dict(status='best_valid_cut' if best else 'no_convex_separation_numerical',iterations=k)
+        if strong and best is not None and result.x[-1]<=best_gap+1e-7:
+            return best,dict(status='strong_integer_cut',iterations=k,normalized_gap=best_gap)
         w=np.rint(result.x[:n]*1000000).astype(np.int64)
         w-=w.min()  # fixed-mass translation is immaterial
         g=np.gcd.reduce(w)
@@ -57,9 +60,16 @@ def separate(perm,y,mass,limit=100):
         cap,r=support(perm,w,mass)
         gap=int(w@y-cap)
         if gap>0:
-            return (w,cap),dict(status='integer_cut',iterations=k+1,gap=gap)
+            if not strong:
+                return (w,cap),dict(status='integer_cut',iterations=k+1,gap=gap)
+            normalized=2*gap/float(w.max())
+            if normalized>best_gap:
+                best=(w,cap); best_gap=normalized
+        if any(np.array_equal(r,old) for old in witnesses):
+            return best,dict(status='best_valid_cut' if best else 'separation_duplicate',
+                             iterations=k+1,normalized_gap=best_gap)
         witnesses.append(r)
-    return None,dict(status='separation_iteration_limit',iterations=limit)
+    return best,dict(status='best_valid_cut' if best else 'separation_iteration_limit',iterations=limit)
 
 
 def master(stage,mass,cuts,seconds):
@@ -123,7 +133,7 @@ def run(a,seed):
             assert score==info['score_numerator']
         if k==a.cuts:
             info['separation']={'status':'cut_limit'}; history.append(info); break
-        cut,sep=separate(stage.s1,y,mass)
+        cut,sep=separate(stage.s1,y,mass,strong=a.strong)
         info['separation']=sep; info['middle']=y.tolist(); history.append(info)
         Path(a.output+'.progress.json').write_text(json.dumps(dict(
             seed=seed,iterations=len(history),history=history),indent=2)+'\n')
@@ -147,6 +157,7 @@ def main():
     p.add_argument('--columns',type=int,default=6); p.add_argument('--rows',type=int,default=8)
     p.add_argument('--seeds',type=int,nargs='+',default=[0,1,2])
     p.add_argument('--cuts',type=int,default=30); p.add_argument('--seconds',type=float,default=20)
+    p.add_argument('--strong',action='store_true',help='maximize infinity-normalized separation margin')
     p.add_argument('--exhaustive',action='store_true'); p.add_argument('--output',required=True)
     a=p.parse_args(); results=[]
     for seed in a.seeds:

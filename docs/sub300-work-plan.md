@@ -53,8 +53,9 @@ research step should compare two routes before adding more formalization:
    on the *joint* two-round worst-case leak (or a stronger capture theorem).
    The first small joint gate is positive (see `prefix-flux/D2-JOINT-REACHABLE.md`);
    adaptive cuts now work at small size but stall at twelve columns through
-   100 cuts (`prefix-flux/D2-JOINT-CUTS.md`). Next distinguish cut-selection
-   weakness from convex-hull loss before larger sweeps.
+   100 cuts (`prefix-flux/D2-JOINT-CUTS.md`). The saved target is now exactly separated, but stronger cuts leave the
+   wider bound unchanged (`prefix-flux/D2-JOINT-HULL.md`). Next directly
+   optimize the actual twelve-column two-round model before more cut sweeps.
    State a quantitative pass threshold using the exact closure script first;
    the current analysis puts the required bulk scale near 12 rows. If no
    plausible inequality improves on the union estimate, leave this stage parked.

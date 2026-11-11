@@ -57,3 +57,7 @@ profile comparison, with DP-verified weighted support cuts.
 Adaptive joint cuts: [D2-JOINT-CUTS.md](D2-JOINT-CUTS.md),
 `d2_joint_cut_loop.py`: integer-valid support cuts, numerical MILP bounds,
 exhaustive small validation, and modest wider improvement with a 100-cut stall.
+
+Hull distinction: [D2-JOINT-HULL.md](D2-JOINT-HULL.md),
+`d2_joint_hull_gate.py`: exact outside-hull witness for the twelve-column
+plateau target; stronger cuts improve small-case efficiency, not the wider bound.

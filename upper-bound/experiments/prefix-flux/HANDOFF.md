@@ -28,6 +28,19 @@ limit near 14 rows. Section 12 now rules out the standard all-real-space quadrat
 new joint bulk/capture argument clears the closure threshold; the current evidence
 favors a different stage design.
 
+## Convex-hull distinction (2026-11-11)
+
+The final twelve-column obstruction is exactly outside the reachable hull:
+an integer subset cut has cap 19, while the target has value 21. Thus this
+specific obstruction can be removed by linear support cuts. `--strong`
+separation reduces the checked six-column case from 40 cuts to 17, but the
+wider run still stalls at upper 2/3 versus found reachable lower 1/2 after
+40 stronger cuts. See [D2-JOINT-HULL.md](D2-JOINT-HULL.md) and
+`d2_joint_hull_gate.py` for the replayable integer certificate. No hull
+membership or general linear-cut impossibility is established. Next directly
+optimize the actual two-round twelve-column model to determine whether the
+2/3 objective level is itself attainable, before more cut sweeps.
+
 ## Adaptive joint cuts (2026-11-11)
 
 `d2_joint_cut_loop.py` implements a numerical MILP adversary and objective-guided
