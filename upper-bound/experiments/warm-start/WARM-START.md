@@ -30,6 +30,18 @@ threshold, up to a stranger mass.* With that invariant, one stage needs only:
 
 That is about S(L) + 50 levels per stage, against 3·S(L) today.
 
+> **Update, same day (section 7).** The real re-bagging layout gives F ≈ A/ν = 2^(y+z), not k.
+> Sections 4–5 assumed F = k to 4k and are superseded:
+> - **Window-only invariant:** the F² leak is confirmed by an exact attack, and warm start
+>   prices at 335 (R1) / 307 (R2c) at attack level. That is about 20% below three sorts, but not
+>   sub-300.
+> - **Back-to-back stages:** deviations contract to a fixed point and the band leaks nothing
+>   after two stages.
+> - **Variance-type invariant:** the leak is linear in F, about F/16 rows, which prices at
+>   284–291 (R1) and 236–250 (R2c).
+>
+> The new gate is an adversarial variance-contraction lemma for one row scramble.
+
 ## 2. Why the height window is enough (hand, deterministic)
 
 Take one round: sorted columns, then a row scramble. Each middle column receives exactly one
@@ -162,3 +174,117 @@ Reproduce:
 - `python window_tail.py 4099 2048` (about 2 minutes);
 - `python warm_start_screen.py` and `python warm_start_screen.py --exact-fringe` (about 3
   minutes each).
+
+## 7. The real re-bagging map and back-to-back stages (2026-11-10, second pass)
+
+### 7.1 Counting F in the layout
+
+Take Chvátal's k-ary bags with capacity n·ν^t·A^l. A separator's output column holds m rows: two
+fringe slabs of f = m·fom rows go to the parent, and k blocks of b = (m − 2f)/k rows go to the
+children. A bag v at level l, stage t + 1, is filled from stage t as follows.
+
+- **From the parent.** k blocks are shared out, so v gets a fraction π_p = 1/(Akν) of its rows
+  from the parent. That is m/(Akν) rows per column, less than one block of b ≈ m/k rows,
+  because Aν > 1. One parent block is split across Aν columns of v. At any threshold at most one
+  piece carries the parent's deviation: **F_parent ≤ 1** (2 at a block edge).
+- **From the children.** The rest, 1 − π_p, comes from 2k child-fringe types (the top and
+  bottom of each child). Each fragment is f rows, so one column of v stacks
+
+  (1 − π_p)/(2k·fom) = (A/ν)·(1 − 1/(Ak)²) fragments of each type.
+
+  The fom formula has the factor (1 − 1/(Aνk)) = 1 − π_p precisely so that this cancels.
+- **At a threshold** near a child cut, essentially one type straddles: child i's top fringe or
+  child i + 1's bottom fringe. Their rank ranges are adjacent and disjoint up to strangers. All
+  A/ν fragments of that type straddle together.
+
+So **F ≈ A/ν = 2^(y+z)**. That is 256 at design P (4, 5, 3), and about 160 at the section 4
+optimum, against the F = k = 4 assumed there.
+
+### 7.2 Exact aggregated attack (`aggregation_attack.py 32 8 512`)
+
+Setup:
+- The child window is D = 32 and W = 8, with 512 parent columns.
+- The climb is aimed at the union of the C_v over a random set of parent columns.
+- The table gives far-cell rows per parent column, E(dev_v − X)₊.
+
+| F | X = F·W/2 | F·W | 2F·W | 4F·W | Random input, X = F·W/2 |
+|---:|---:|---:|---:|---:|---:|
+| 4 | 6.23 | 3.83 | 1.78 | 0.61 | 0.008 |
+| 16 | 25.0 | 15.0 | 7.17 | 2.42 | 0 |
+| 64 | 100 | 59.7 | 28.5 | 9.50 | 0 |
+| 256 | 402 | 239 | 114 | 38.0 | 0 |
+
+The leak per parent column divided by F is the same function of X/F for every F. It equals the
+single-column window tail e_D(X/F) of section 3: (1.56, 0.94, 0.44, 0.15), against section 3's
+D = 32 row (1.62, 0.95, 0.42, 0.15). So leak = F·e_D(X/F).
+
+**Stationary case.** If the invariant only bounds every column by a window, the child's window is
+D ≈ X, and the leak is about 0.25·F² rows. The F² law is real for that invariant.
+
+Repricing with F = A/ν (`warm_start_screen.py 0.25,0 1.5,0`) gives 335 (R1) / 307 (R2c) at
+c = 0.25, and 411 / 372 at c = 1.5. The optimizer escapes to small A/ν: (y, z) ≈ (1.85, 0.85)
+or (2.45, 1.45).
+
+### 7.3 Back-to-back stages (`chain_sim.py F 16384 64 20`)
+
+The chain runs 20 stages at one threshold. The fragments of each new column come from F distinct
+old middle columns, the row scramble is exact on the active rows, and strays are kept in the
+counts (pessimistic). The adversary acts only through the stage-0 input: either random heights in
+±64 or the aggregated climb attack.
+
+| F | Stationary input sd | Input max | Middle sd | Leak at X = 4F (attacked chain) |
+|---:|---:|---:|---:|---|
+| 4 | 2.4 | ~10 | 1.2 | 5.4 rows at stage 1; 0 from stage 3 |
+| 16 | 9.0 | ~40 | 2.25 | 4.9 at stage 1; 0 from stage 3 |
+| 64 | 36 | ~150 | 4.5 | 1.8 at stage 1; 0 from stage 3 |
+| 256 | 145 | ~600 | 9.0 | 0 at every stage |
+
+What the chain shows:
+- **Fixed point.** The input sd is about 0.56·F and the middle sd about 0.56·√F. This is the
+  square-root contraction of the variance identity V_mid ≤ L1_in
+  (`docs/chvatal-separator-cost-analysis.md`), followed by summing F fragments.
+- **The attack fades.** It is diluted within about two stages, and the attacked and random chains
+  then agree.
+
+So the F² law comes from the window-only invariant, which lets every column sit at its window
+edge at once. It does not come from the dynamics.
+
+### 7.4 What a variance invariant would give
+
+Suppose the invariant bounds the column variance at every threshold, say Σ dev² ≤ σ²·(number
+of columns), instead of only a window. Then:
+- **Far cells** are bounded by Σ(|dev| − X)₊ ≤ Σ dev²/(4X).
+- **Leak.** With the attacked variance taken about 3× the random fixed point (a heuristic
+  window-climb estimate), so σ_in ≈ F, a band at X = 4F leaks about F/16 rows per column.
+- **Pricing** (`--linear`):
+  - at c = 1/16: 284 (R1) / 236 (R2c);
+  - at 6× that: 291 / 250;
+  - at c = 0.25 linear: 291 / 247;
+  - at c = 6 linear: 352 / 323.
+
+  The R1 optima are at small parameters, x ≈ 1.8–2.2 and A ≈ 2^1.9–2^2.5, where the real-exponent
+  tree model is least reliable.
+
+### 7.5 Status and next gate
+
+- **Window-only warm start:** not a sub-300 route. Model price 335 (R1) / 307 (R2c) at attack
+  level, about 20% below the three-sort stage.
+- **Warm start with a variance invariant:** a sub-300 candidate at model level, with only a few
+  per cent of margin under the proved R1 analysis (284–291) and more under R2c (236–250).
+
+The deciding lemma is an adversarial variance contraction for one fixed row scramble. For
+**every** sorted input whose column deviations at a threshold have mean square at most s², the
+middle deviations must have mean square at most κ·s, with κ certified (about 0.3 typical here).
+The union over inputs is the hard part, as for UB-29. The walk-bound decomposition (one walk per
+column, union over output sets only) is the natural tool.
+
+After that lemma:
+- the fragment-sum step (deterministic);
+- the far-cell bound;
+- the existing stranger invariant with the leak charged as strangers.
+
+Not modelled:
+- fresh adversarial content entering a bag at later stages (strangers, new fringe cohorts),
+  beyond the stage-0 input;
+- the export of strays to other bags;
+- integrality of k and A.

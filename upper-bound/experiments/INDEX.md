@@ -41,4 +41,4 @@ A fork of the whole best package is ≈190 MB with its build cache and every com
    follow `../TRUSTED.md`) and then removed from `main`.
 | `sub500-screen/` | scripts + notes | reference | UB-37 | R1 re-price sweep and structural screen (model): single levers, combinations and gates below 500/300/200. Start at `SCREEN.md` |
 | `fringe-duality/` | scripts + notes | active (Claude) | UB-34 | fringe by double weak duality (model): zero escapes at J = 190000 for f ~ 1000 (vs certified 7934); dense regime open. Start at `FRINGE-DUALITY.md` |
-| `warm-start/` | scripts | research | UB-47 | Warm-start separators (`WARM-START.md`, model): reuse the column balance that re-bagging inherits from the previous stage; stage = one sort + scramble + band; model 191-262 under R1 if F <= 2k |
+| `warm-start/` | scripts | research | UB-47 | Warm-start separators (`WARM-START.md`, model): reuse the column balance that re-bagging inherits from the previous stage; stage = one sort + scramble + band. Real layout F ~ A/nu: window-only invariant 335 (R1); with a variance invariant 284-291 (R1) / 236-250 (R2c), gated on an adversarial variance-contraction lemma |
