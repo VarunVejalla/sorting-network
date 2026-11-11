@@ -42,8 +42,10 @@ for sorting networks or for every D2-derived construction.
 The exact block-64 rational PSD certificate rules out the standard all-real-space
 quadratic-majorant method: on a covered critical rectangle its lower bound is at
 least 14.498854 rows. Outside that rectangle, scalar terms already exceed 12.
-Cube-constrained SOS certificates, other non-union methods, and the sender-wide
-network itself remain open.
+The degree-two cube-constrained follow-up is also numerically unfavorable
+(15.15 rows in an optimistic relaxation); see `prefix-flux/D2-CUBE-SOS.md`.
+Higher-degree SOS, other non-union methods, and the sender-wide network itself
+remain open.
 Do not continue the old tile-to-flow Lean bridge for this stage. The next
 research step should compare two routes before adding more formalization:
 

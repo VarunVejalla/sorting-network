@@ -45,3 +45,7 @@ Run focused Lean checks through
 `LLM-helpers/sub300-check/check_prefix_flux_lean.py` with `--repo-root`
 pointing at this worktree. Cached `.olean` files are not proof evidence and
 must be rebuilt after changing their source or dependencies.
+
+Boolean cube follow-up: [D2-CUBE-SOS.md](D2-CUBE-SOS.md), reproduced by
+`d2_cube_sos_screen.py`. Degree-two SOS is numerically unfavorable; no exact
+cube-SOS exclusion or global coefficient improvement is claimed.

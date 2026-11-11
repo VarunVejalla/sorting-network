@@ -28,6 +28,16 @@ limit near 14 rows. Section 12 now rules out the standard all-real-space quadrat
 new joint bulk/capture argument clears the closure threshold; the current evidence
 favors a different stage design.
 
+## Cube SOS screen (2026-11-11)
+
+The follow-up degree-two Boolean-cube SOS screen is numerically unfavorable:
+24 geometrically spaced blocks at K=4096 give an optimistic one-direction
+first-round spread of 92.06 and a continuously optimized second-round objective
+of 15.15 rows, above the approximately 12-row gate. This is not an exact no-go:
+solver primal feasibility and optimal status do not certify a dual lower bound.
+See [D2-CUBE-SOS.md](D2-CUBE-SOS.md) and `d2_cube_sos_screen.py` for the reduction,
+limits, reproduction, and optional rational-dual follow-up. Keep the stage parked.
+
 ## Exact spectral checkpoint (2026-11-11)
 
 `d2_spectral_cert.py` verifies a rational cover at 8192 rows and block size 64.

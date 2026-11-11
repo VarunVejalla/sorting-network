@@ -752,3 +752,11 @@ parked, not disproved: cube-constrained SOS bounds and other joint bulk/capture
 arguments remain open. Current evidence favors searching for a different stage.
 Best proved coefficient: 789.75.
 Generate the continuous exact certificate from the worktree root with `python upper-bound/experiments/prefix-flux/d2_spectral_cert.py continuous --spread 90 --output ..\\..\\..\\LLM-helpers\\sub300-check\\artifacts\\sub300-structural\\prefix-flux\\d2_spectral_continuous_block64.json`; verify it with `python upper-bound/experiments/prefix-flux/d2_spectral_cert.py verify <certificate.json>`.
+
+## 13. Boolean cube follow-up
+
+The degree-two cube-aware SDP was screened after section 12. Its optimistic
+one-direction, restricted-prefix relaxation reaches 15.15 rows at 24 blocks,
+after continuously optimizing the drift and recomputing round-one spread.
+This is numerical evidence only; see [D2-CUBE-SOS.md](D2-CUBE-SOS.md).
+Higher-degree and joint two-round arguments remain open.
