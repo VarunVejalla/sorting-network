@@ -28,6 +28,17 @@ limit near 14 rows. Section 12 now rules out the standard all-real-space quadrat
 new joint bulk/capture argument clears the closure threshold; the current evidence
 favors a different stage design.
 
+## Joint reachable-profile gate (2026-11-11)
+
+Positive small exact evidence: weighted round-one support cuts with weights
+in {0,1,2} recover the true worst two-round leakage in all ten sampled
+six-column instances at heights 8 and 12. Scalar spread alone overestimates it.
+See [D2-JOINT-REACHABLE.md](D2-JOINT-REACHABLE.md) and
+`d2_joint_reachable_gate.py`. The support function has an exact fixed-mass
+knapsack formula, checked against enumeration. This is not an 8192-row or
+all-n result. Next gate: scalable objective-guided cut separation, then a
+uniform joint bound. Degree-two scalar-interface SOS remains unfavorable.
+
 ## Cube SOS screen (2026-11-11)
 
 The follow-up degree-two Boolean-cube SOS screen is numerically unfavorable:

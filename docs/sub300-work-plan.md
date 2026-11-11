@@ -51,6 +51,8 @@ research step should compare two routes before adding more formalization:
 
 1. **Try one bounded rescue of sender-wide D2.** Seek a direct, non-union bound
    on the *joint* two-round worst-case leak (or a stronger capture theorem).
+   The first small joint gate is positive (see `prefix-flux/D2-JOINT-REACHABLE.md`);
+   next develop objective-guided weighted support cuts at wider sizes.
    State a quantitative pass threshold using the exact closure script first;
    the current analysis puts the required bulk scale near 12 rows. If no
    plausible inequality improves on the union estimate, leave this stage parked.

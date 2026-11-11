@@ -49,3 +49,7 @@ must be rebuilt after changing their source or dependencies.
 Boolean cube follow-up: [D2-CUBE-SOS.md](D2-CUBE-SOS.md), reproduced by
 `d2_cube_sos_screen.py`. Degree-two SOS is numerically unfavorable; no exact
 cube-SOS exclusion or global coefficient improvement is claimed.
+
+Joint follow-up: [D2-JOINT-REACHABLE.md](D2-JOINT-REACHABLE.md),
+`d2_joint_reachable_gate.py`: exact small fixed-mass reachable versus relaxed
+profile comparison, with DP-verified weighted support cuts.
