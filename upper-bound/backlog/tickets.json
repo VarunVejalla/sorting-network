@@ -810,6 +810,25 @@
         "upper-bound/experiments/warm-start/WARM-START.md"
       ],
       "notes": "Bags are assembled from row slabs of just-separated (balanced) bags, so input heights are confined to a window F*W, and the round-1 tail scales with the window, not m (attack: ~0.25 D/W rows, exactly 0 for W >= D). Stage = sort, scramble, two-grid band over F*W; leak ~0.25 F^2 rows. Model price under the proved R1 tree: 191-262 for F <= 2k and leak up to 6x attack; 321+ at F = 4k. The height cap also gives exact rare-cohort capture. UPDATE 2026-11-10 (WARM-START.md section 7): the real layout gives F ~ A/nu = 2^(y+z), not k. Window-only invariant: F^2 leak confirmed by exact attack, 335 (R1) / 307 (R2c) at attack level, not sub-300. Back-to-back 20-stage chains contract to a fixed point (input sd ~0.56F) and leak 0 at X = 4F after 2 stages. Variance invariant: leak ~F/16 rows, model 284-291 (R1) / 236-250 (R2c). UPDATE 2026-11-11 (section 8): Lemma G (grouped round-2 contraction, corollary of Theorem R2) proved by hand: grouped L1 l' <~ 2CF sqrt(l), fixed point ~F^2. Tight: within the stationary L1 budget an aligned dual climb gives about 2 sqrt(F) times the random grouped L1 (3.8x, 8.3x, 17x at F = 4, 16, 64; leak 240 rows at F = 64). So per-stage invariants price in the F^2 class (335 R1 / 307 R2c at attack level); not sub-300. Parked. UPDATE 2026-11-11 (section 9): multi-stage reachability fails to help. A stationary-budget stage-0 input steers stage 1 to the aligned target (corr 0.95-0.99) and reaches ~1/2 of the per-stage worst grouped L1 at stage 2 (F = 16, 32). Even granting that factor (leak constant /4) the price is 295 R1 / 264 R2c at attack constants. Rejected as a sub-300 route. 2026-11-11 section 10: whole-run attack (whole_run_attack.py) - one input cannot hurt every stage; reachable leak falls ~5x per stage after the free input (attack level). But with leak = 0 the R1 floor is 283.9 (band/fringe terms), ~350 with certificate-like scaling; still rejected."
+    },
+    {
+      "id": "UB-48",
+      "title": "Bandless warm start: one sort + scramble per stage, strays exported (leak = input L1)",
+      "priority": "P1",
+      "status": "open",
+      "claim_level": "model",
+      "baseline": 789.75,
+      "projected": 295.5,
+      "owner": "Claude",
+      "branch": "ub-09-msorter-screen",
+      "depends_on": [
+        "UB-47"
+      ],
+      "first_deliverable": "Kill tests: startup switch, stranger column spread, fringe window vs height tails, reachable L1 over T>=5 stages",
+      "evidence": [
+        "upper-bound/experiments/warm-start/WARM-START.md"
+      ],
+      "notes": "2026-11-11: stray identity (hand, exact): misplaced cells per boundary = input L1. Per-stage L1 fixed point ~2.35 F^2 (attack, C~0.75-0.8 vs Lemma G 1/sqrt2 + union) -> 295.5 R1 / 294.5 R2c, no margin; 311.7 R1 if fringe must cover 10x ell. Reachable L1 at depth 3 ~0.53 F^2 -> 224 R1 (needs a multi-stage argument)."
     }
   ]
 }

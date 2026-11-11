@@ -15,7 +15,9 @@ middle deviations, then d_{t+1} = sums over fixed groups of F middle columns. St
                   maximising the total leak.
 Exact runs, lower bounds for the sampled scrambles and wiring.
 
-    python whole_run_attack.py F nT T
+    python whole_run_attack.py F nT T [ell/F^2]
+  (optional 4th argument: stage-0 budget as a multiple of F^2, e.g. 2 = the bandless per-stage fixed
+  point of fixedpoint_attack.py; default 0.45 F)
 """
 import itertools
 import sys
@@ -26,10 +28,10 @@ from lookahead_attack import climb, gsum, stage_from
 def main():
     F, nT, T = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
     rng = np.random.default_rng(1000 + F)
-    ell = 0.45 * F
+    ell = float(sys.argv[4]) * F * F if len(sys.argv) > 4 else 0.45 * F
     X = 4 * F
     n = [F ** (T - t) * nT for t in range(T + 1)]
-    D = [int(12 * ell) + 8] + [40 * F + 50] * T
+    D = [int(12 * ell) + 8] + [max(40 * F + 50, int(8 * ell) + 50)] * T
     S = [np.stack([rng.permutation(n[t]).astype(np.int32) for _ in range(2 * D[t])]) for t in range(T)]
     own = [None]
     for t in range(1, T + 1):                      # own[t]: stage-(t-1) middle column -> stage-t column

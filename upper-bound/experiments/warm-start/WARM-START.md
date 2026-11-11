@@ -52,6 +52,12 @@ That is about S(L) + 50 levels per stage, against 3·S(L) today.
 > case at stage 2. Even granting that factor, the price is 295 (R1) at attack constants. Closed as a
 > sub-300 route.
 
+> **Update 2026-11-11 (section 11, UB-48).** Dropping the band entirely changes the picture:
+> exported strays equal the input L1 exactly, so a stage costs one sort plus an F² leak. The
+> per-stage class prices at about 295 (R1, attack constants, no margin), and the reachable
+> class at depth 3 at about 224. This is a live lead, gated on startup, strangers, the fringe
+> window and a multi-stage argument.
+
 ## 2. Why the height window is enough (hand, deterministic)
 
 Take one round: sorted columns, then a row scramble. Each middle column receives exactly one
@@ -523,3 +529,90 @@ about 5× per stage, to near 0. The optimiser is heuristic, so this is evidence,
 - **What carries over:** reachable leak decays fast with distance from a free state, so a whole-run
   potential is the right shape of argument for any fixed-wiring multi-stage design whose non-leak
   cost is low.
+
+## 11. Bandless warm start: one sort per stage (2026-11-11, UB-48)
+
+Claim levels:
+- the stray identity is a hand proof (deterministic);
+- the fixed points and chains are exact attack runs (lower bounds, heuristic optimiser);
+- the prices are model figures.
+
+**Stage.** Re-bag by wiring, then one full column sort S(L), then one free row scramble, then split
+by rows. There is no band repair, so the stage costs S(L) levels against S(L) + 2·S(⌈lg 4FW⌉) in
+section 1. The next stage's full sort cleans the order inside each column. The only cost of
+dropping the band is the cells that land on the wrong side of a block boundary.
+
+**Stray identity (hand, exact).** Take sorted columns with heights h_j at a boundary threshold whose
+ideal row is B (exact mass, n·B ones in total), then any row scramble.
+- Each row keeps its count of ones.
+- So the number of misplaced cells (ones in rows ≥ B plus zeros in rows < B), summed over the
+  middle columns, equals Σ_r min-side counts = Σ_j |h_j − B|.
+- In words: **exported strays per boundary per column = the input L1 at that threshold**, for every
+  scramble.
+
+Checked numerically: 8.756 = 8.756. The scramble's only job is the *next* stage's balance. The leak
+is therefore ε = 2ℓ/m, where ℓ is the invariant input L1 (`warm_start_screen.py --bandless`).
+
+**Per-stage provable class: the L1 fixed point (`fixedpoint_attack.py`).** The class iterates
+ℓ ← max over inputs with L1 ≤ ℓ of the grouped next-input L1, using Lemma G's aligned climb.
+
+| F | Fixed point ℓ*/F² (coarse λ grid) | Fixed point ℓ*/F² (fine grid, full budget) | C = ℓ′/(2F√ℓ) |
+|---:|---:|---:|---:|
+| 4 | 1.97–2.02 | 2.3–2.5 | 0.73–0.82 |
+| 8 | 1.8–1.9 | 2.0–2.4 | 0.73–0.84 |
+
+The attack's C sits at Lemma G's leading constant 1/√2 or slightly above. So the provable fixed
+point is at least about 2.35·F².
+
+Prices (R1 / R2c, attack fringe table, f ≥ 16F):
+
+| Leak law ℓ | R1 | R2c | Class |
+|---|---:|---:|---|
+| 2.0 F² | 285.1 | 288.4 | per-stage, coarse attack |
+| **2.35 F²** | **295.5** | **294.5** | per-stage, measured fixed point |
+| 2.5 F² | 304.4 | 297.8 | |
+| 4 F² (about C = 1) | 324.4 | 318.0 | certificate-like |
+| 1.0 F² | 248.3 | 257.1 | |
+| 0.53 F² | 224.3 | 227.4 | reachable at depth 3 (below) |
+| 1.3 F (linear) | 191.0 | 178.2 | |
+| 0.45 F (linear) | 178.6 | 166.5 | random dynamics |
+
+**Reachability from the per-stage fixed point (`whole_run_attack.py 8 16 3 2`).** The stage-0
+budget is ℓ = 2F² = 128. Input L1 at stages 1, 2 and 3 (the bandless leak):
+
+| Attack | t = 1 | t = 2 | t = 3 |
+|---|---:|---:|---:|
+| fresh budget at every stage | 134.8 | 134.1 | 113.1 |
+| aim 1 | 134.8 | 21.1 | 7.9 |
+| aim 2 | 86.1 | **51.5** | 14.5 |
+| aim 3 | 87.4 | 46.3 | **33.7** |
+| mixed best | 112.2 | 45.1 | 16.3 |
+| random | 22.3 | 9.0 | 4.8 |
+
+The reachable L1 falls to about 0.38 of the per-stage value at depth 2 and about 0.26 (0.53F²)
+at depth 3, still about 7× random. It keeps decaying, but this short chain doesn't show where it
+settles.
+
+**Reading.**
+- **This is the first one-sort-per-stage design with a sub-300 model price.**
+- **Per-stage provable class: about 295 at attack constants.** That is no margin: a proved C
+  above about 0.8 crosses 300, and Lemma G's union term adds to 1/√2.
+- **The headroom is in reachability: 224 at the depth-3 reachable level.** It needs a
+  multi-stage argument, which is the same missing tool as sections 8–10, but here it pays: the band
+  floor of section 10 is gone.
+
+**Open gates (kill tests before any proof work):**
+1. **Startup.** The first stages see arbitrary inputs, so the invariant must be established. The
+   options are standard separators for a few stages, or a contraction from large ℓ, since
+   ℓ′ ≈ 2CF√ℓ < ℓ for ℓ > 4C²F². The switch has to be checked.
+2. **Strangers.** Strangers spread unevenly over columns shift heights at every threshold. The
+   model carries strays inside the deviations; a direct check with real bag contents is needed.
+3. **Fringe.** The price uses the attack fringe table (the UB-34 gate). With the cap, exact capture
+   needs f ≥ (window). That holds at f ≥ 16F only if heights stay inside 16F, while ℓ* ≈ 2F²
+   implies tails above 16F for F ≥ 8. Requiring f ≥ g·ℓ* (`--fwin=g`):
+   - g = 4 leaves the prices unchanged (295.5 / 224.6 R1);
+   - g = 10 gives **311.7** (per-stage) and **244.4** (reachable 0.53F²) under R1, and R2c 294.5 /
+     231.4.
+
+   So the per-stage class needs a fringe argument that tolerates rare tall columns.
+4. **Longer reachable chains** (T ≥ 5) to find where the reachable L1 settles.
