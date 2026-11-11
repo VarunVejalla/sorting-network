@@ -28,6 +28,22 @@ limit near 14 rows. Section 12 now rules out the standard all-real-space quadrat
 new joint bulk/capture argument clears the closure threshold; the current evidence
 favors a different stage design.
 
+## Full reachable-hull flow (2026-11-11)
+
+The fixed-mass DP-flow extended formulation now optimizes over the entire
+reachable convex hull, with integer middle heights and actual round two.
+At n=12,m=4,seed=0 it reports optimum **7/12**, matching the exhaustively
+checked true optimum; the n=6,m=8 control also matches at 2/3. Exact rational
+path replay validates both returned witnesses (each happens to be reachable
+with a single path). Hull upper bounds remain numerical MILP results, not
+rational global certificates. No intrinsic hull gap is seen in these cases.
+See [D2-JOINT-HULL-FLOW.md](D2-JOINT-HULL-FLOW.md) and
+`d2_joint_hull_flow.py`. The former 2/3 plateau is evidence of incomplete cuts,
+not an established obstruction to the full hull approach. Next use this
+compact flow model for a few bounded wider/taller comparisons against direct
+reachability, then seek a uniform bound on flow/dual potentials. The m=8192
+bulk target and all global sorting obligations remain open.
+
 ## Direct joint optimum (2026-11-11)
 
 The actual n=12,m=4,seed=0 half-mass maximum is **7/12 rows**, not 2/3.

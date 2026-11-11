@@ -56,8 +56,10 @@ research step should compare two routes before adding more formalization:
    100 cuts (`prefix-flux/D2-JOINT-CUTS.md`). The saved target is now exactly separated, but stronger cuts leave the
    wider bound unchanged (`prefix-flux/D2-JOINT-HULL.md`). Direct optimization plus exhaustive computation now gives true maximum
    7/12 versus collected-cut upper 2/3 (`prefix-flux/D2-JOINT-DIRECT.md`).
-   Next optimize over the full reachable hull using fixed-mass DP flow,
-   to distinguish intrinsic hull loss from insufficient cuts globally.
+   The full fixed-mass hull-flow model now numerically matches 7/12, with
+   exact rational witness replay (`prefix-flux/D2-JOINT-HULL-FLOW.md`).
+   Next make bounded wider/taller comparisons to direct reachability, then
+   seek a uniform bound on the joint flow/dual potentials.
    State a quantitative pass threshold using the exact closure script first;
    the current analysis puts the required bulk scale near 12 rows. If no
    plausible inequality improves on the union estimate, leave this stage parked.

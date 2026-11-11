@@ -83,3 +83,7 @@ rational path-mixture witness would establish intrinsic convex-hull loss.
 A maximum 7/12 would instead show that all support cuts suffice in this example
 and that their extended formulation closes the finite gap. Either result would
 be more informative than more generic cut sweeps. No scaled bound is implied.
+
+Follow-up complete: [D2-JOINT-HULL-FLOW.md](D2-JOINT-HULL-FLOW.md). The
+full hull model numerically matches 7/12, with exact feasible path replay.
+No intrinsic hull objective gap was found; its upper bound remains numerical.

@@ -65,3 +65,7 @@ plateau target; stronger cuts improve small-case efficiency, not the wider bound
 Direct joint optimum: [D2-JOINT-DIRECT.md](D2-JOINT-DIRECT.md),
 `d2_joint_direct.py` and `d2_joint_exhaustive.cpp`: the twelve-column true
 maximum is 7/12, checked over all 19,611,175 inputs.
+
+Full hull: [D2-JOINT-HULL-FLOW.md](D2-JOINT-HULL-FLOW.md),
+`d2_joint_hull_flow.py`: the complete fixed-mass DP-flow relaxation numerically
+matches the true twelve-column 7/12 optimum; rational witnesses replay exactly.
