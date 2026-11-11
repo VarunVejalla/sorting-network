@@ -41,6 +41,11 @@ That is about S(L) + 50 levels per stage, against 3·S(L) today.
 >   284–291 (R1) and 236–250 (R2c).
 >
 > The new gate is an adversarial variance-contraction lemma for one row scramble.
+>
+> **Update 2026-11-11 (section 8).** That lemma is provable (Lemma G, from Theorem R2), but it is
+> tight against an aligned attack at the stationary budget. Per-stage invariants therefore stay in
+> the F² class: 335 (R1) / 307 (R2c) at attack level. The 284–291 figures are void as a provable
+> target. Warm start is parked unless a multi-stage reachability argument is found.
 
 ## 2. Why the height window is enough (hand, deterministic)
 
@@ -288,3 +293,91 @@ Not modelled:
   beyond the stage-0 input;
 - the export of strays to other bags;
 - integrality of k and A.
+
+## 8. The variance-contraction lemma: provable, tight, and not enough (2026-11-11)
+
+Claim levels:
+- **Lemma G** is a hand proof, a corollary of Theorem R2 in `../walk-bound/ROUND2.md`.
+- **The tightness result** is exact attack runs.
+- **The consequence for section 7.4** follows from these two together.
+
+### 8.1 What is needed, and what Theorem R2 already gives
+
+The leak at stage t + 1 is set by the next stage's *input* deviations. Each of those is a sum over
+a fixed group C_g of F middle columns of stage t (section 7.1). So the lemma must bound the
+grouped vector z_g = Σ_{T∈C_g} (count(T) − i), not the middle deviations column by column.
+
+**Lemma G (grouped round-2 contraction).**
+
+*Setting.* Take the setting of Theorem R2: n columns, base-row grid Γ of G rows, parameters
+(λ_q, t_q), and failure budget η. Add a fixed partition of the output columns into n/F groups
+C_g of size F, chosen independently of σ.
+
+*Conclusion.* With probability at least 1 − η over σ, every sorted state c of exact mass n·i with
+Σ_j |c_j − i| ≤ R satisfies
+
+  Σ_g |z_g| < 2 · max_{1≤q<n/F} (λ_q R′ + x′_q).
+
+Here x′_q is R2's x_s with s = qF and with ln binom(n/F, q) in place of ln binom(n, s).
+
+*Proof.*
+1. **Zero sum.** At exact mass, Σ_g z_g = Σ_T (count(T) − i) = 0. So Σ_g |z_g| = 2·max_J Σ_{g∈J} z_g.
+2. **Reduce to R2.** For a set J of q groups, S = ∪_{g∈J} C_g has s = qF columns, and
+   Σ_{g∈J} z_g = Σ_{T∈S} (count(T) − i).
+3. **Bound.** R2 §2 (reduction, base row, weak duality and grid) bounds this by λ_q R′ + Σ_j Y_j^{S,b}.
+   R2 §3–§4 (Ville, and the negative-association product) bound its MGF by M(t_q)^n.
+4. **Union.** Take the union over the binom(n/F, q) sets J, the G base rows and the values of q.
+   Only unions of groups are needed, so the union is cheaper than R2's union over all S. ∎
+
+**Per-column form.** With R = n·ℓ (input L1 ℓ per column) the dominant term is the same as R2's:
+λR′ + E ΣY ≈ n·√(2p(1−p)ℓ), with p = qF/n. The per-group L1 is therefore
+
+  ℓ′ = (F/n)·Σ_g |z_g| ≲ 2C·F·√ℓ, with C ≈ 1/√2 plus a union term.
+
+The union term is smaller than R2's C₂ because only binom(n/F, q) sets are counted. Iterating,
+**ℓ′ = 2CF√ℓ has the fixed point ℓ* = 4C²F²**.
+
+The ungrouped L2 version (the lemma as first proposed) also follows from R2: take the concave
+majorant B(s) of the set bounds; then Σ_T (count(T) − i)₊² ≤ Σ_k (B(k) − B(k−1))², which is about
+ℓ·ln n per column. It is not the quantity the leak depends on, so it is not pursued.
+
+### 8.2 Lemma G is tight within a constant (`budget_attack.py 16384`)
+
+Setup:
+- The budget is the stationary state's own input L1, ℓ = 0.45F (chain_sim, section 7.3).
+- The adversary uses R2's dual-optimal climb: each column maximises X_j(h) − λ|h|, with λ tuned
+  to spend at most the budget, aimed at an aligned S = ∪_{g∈J} C_g.
+- The baseline is a random state with the same L1.
+
+| F | Grouped next-input L1, attack | Same, random | Ratio | Leak at X = 4F, attack | Same, random |
+|---:|---:|---:|---:|---:|---:|
+| 4 | 6.95 | 1.83 | 3.8 | 0 | 0 |
+| 16 | 61.3 | 7.42 | 8.3 | 9.57 rows | 0 |
+| 64 | 496 | 28.7 | 17.3 | 240 rows | 0 |
+
+The ratio grows like about 2√F: the attack aligns the signs within each group, and a random state
+cancels them. That is the gap between Lemma G's 2CF√ℓ and the typical √F·√ℓ. Iterated, it is the
+gap between F² and F.
+
+### 8.3 Consequence
+
+- **No per-stage norm invariant gives the linear-F leak.** Section 7.4 assumed the worst variance
+  is about 3× the random fixed point; it is in fact about 4F²/F = 4F times it. The attacker's
+  state meets the same L1 budget as the typical state. Matching its L2 and L∞ was not tested.
+  A pure window (L∞) invariant is already the F² class of section 7.2.
+- **So every per-stage invariant prices warm start in the F² class.** That is 335 (R1) / 307
+  (R2c) at attack constants and about 410 / 370 with certificate-like constants, against 413 /
+  384 for three sorts. It is a modest gain, and not sub-300.
+- **The 284–291 (R1) figures of section 7.4 are void as a provable target.**
+
+**What would still rescue the linear-F behaviour.** The back-to-back chain (section 7.3) shows the
+aligned state fades when the adversary acts only through the original input. A proof would have
+to show that a state aligned with stage t + 1's groups cannot be re-created by stage t's scramble
+from any state the invariant allows. That is a *reachability* statement about the composite map
+(scramble, group, sort, scramble). Theorem R2's per-column walk decomposition does not reach it,
+because the stage-(t + 1) heights are functions of σ_t and of the whole input, not free variables.
+
+I don't see a tool for it. A union over stage-t inputs brings back the (m + 1)^n cost that UB-29
+removed. So warm start is parked here as a model observation:
+- inherited balance is real and contracts in typical dynamics;
+- worst-case per-stage certification costs the F² law, and with it sub-300.
