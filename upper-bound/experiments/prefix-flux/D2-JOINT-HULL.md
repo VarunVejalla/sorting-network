@@ -67,3 +67,7 @@ compare the true joint optimum with the 2/3 support-cut upper level. A reachable
 proved optimum would quantify the remaining relaxation loss. Only then choose
 between a compact family of joint constraints and a different stage. None of
 these fixed small-instance tests supplies the required n-uniform theorem.
+
+Direct joint follow-up completed: [D2-JOINT-DIRECT.md](D2-JOINT-DIRECT.md).
+The true maximum is 7/12 by exhaustive computation. Next compare the full
+reachable convex hull via its fixed-mass DP-flow formulation with this value.

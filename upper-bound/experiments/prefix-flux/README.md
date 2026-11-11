@@ -61,3 +61,7 @@ exhaustive small validation, and modest wider improvement with a 100-cut stall.
 Hull distinction: [D2-JOINT-HULL.md](D2-JOINT-HULL.md),
 `d2_joint_hull_gate.py`: exact outside-hull witness for the twelve-column
 plateau target; stronger cuts improve small-case efficiency, not the wider bound.
+
+Direct joint optimum: [D2-JOINT-DIRECT.md](D2-JOINT-DIRECT.md),
+`d2_joint_direct.py` and `d2_joint_exhaustive.cpp`: the twelve-column true
+maximum is 7/12, checked over all 19,611,175 inputs.

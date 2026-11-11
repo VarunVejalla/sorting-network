@@ -28,6 +28,20 @@ limit near 14 rows. Section 12 now rules out the standard all-real-space quadrat
 new joint bulk/capture argument clears the closure threshold; the current evidence
 favors a different stage design.
 
+## Direct joint optimum (2026-11-11)
+
+The actual n=12,m=4,seed=0 half-mass maximum is **7/12 rows**, not 2/3.
+A coupled two-round MILP agrees with an independent C++ enumeration of all
+19,611,175 inputs. Python checks both witnesses and the independent leaf count.
+The n=6,m=8 control also agrees with the earlier 2/3 exhaustive result.
+See [D2-JOINT-DIRECT.md](D2-JOINT-DIRECT.md), `d2_joint_direct.py`, and
+`d2_joint_exhaustive.cpp`. Thus the collected-cut relaxation genuinely
+overshoots by 1/12 row. No uniform or Lean theorem follows.
+Next encode the full fixed-mass reachable convex hull via unit flow on the
+height-choice DP, coupled to the integer middle and round-two objective.
+This can distinguish intrinsic hull loss from insufficient cuts globally in
+this small example, rather than only separating one bad target.
+
 ## Convex-hull distinction (2026-11-11)
 
 The final twelve-column obstruction is exactly outside the reachable hull:

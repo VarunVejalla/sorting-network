@@ -54,8 +54,10 @@ research step should compare two routes before adding more formalization:
    The first small joint gate is positive (see `prefix-flux/D2-JOINT-REACHABLE.md`);
    adaptive cuts now work at small size but stall at twelve columns through
    100 cuts (`prefix-flux/D2-JOINT-CUTS.md`). The saved target is now exactly separated, but stronger cuts leave the
-   wider bound unchanged (`prefix-flux/D2-JOINT-HULL.md`). Next directly
-   optimize the actual twelve-column two-round model before more cut sweeps.
+   wider bound unchanged (`prefix-flux/D2-JOINT-HULL.md`). Direct optimization plus exhaustive computation now gives true maximum
+   7/12 versus collected-cut upper 2/3 (`prefix-flux/D2-JOINT-DIRECT.md`).
+   Next optimize over the full reachable hull using fixed-mass DP flow,
+   to distinguish intrinsic hull loss from insufficient cuts globally.
    State a quantitative pass threshold using the exact closure script first;
    the current analysis puts the required bulk scale near 12 rows. If no
    plausible inequality improves on the union estimate, leave this stage parked.
